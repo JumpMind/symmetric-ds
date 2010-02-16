@@ -24,13 +24,15 @@ import java.io.BufferedWriter;
 import java.util.StringTokenizer;
 
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.mock.MockOutgoingTransport;
@@ -40,7 +42,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
-    protected IDataExtractorService dataExtractorService;
+    protected DataExtractorService dataExtractorService;
+    
+    protected IOutgoingBatchService outgoingBatchService;
 
     protected IDataService dataService;
 
@@ -54,7 +58,8 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     @Before
     public void setUp() {
-        dataExtractorService = (IDataExtractorService) find(Constants.DATAEXTRACTOR_SERVICE);
+        dataExtractorService = (DataExtractorService) find(Constants.DATAEXTRACTOR_SERVICE);
+        outgoingBatchService = (IOutgoingBatchService)find(Constants.OUTGOING_BATCH_SERVICE);
         dataService = (IDataService) find(Constants.DATA_SERVICE);
         node = new Node();
         node.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
@@ -70,7 +75,12 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         JdbcTemplate template = getJdbcTemplate();
         template.update("delete from " + TriggerRouterServiceTest.TEST_TRIGGERS_TABLE);
         TriggerRouter trigger = getTriggerRouterService().findTriggerRouterForCurrentNode(TriggerRouterServiceTest.TEST_TRIGGERS_TABLE);
-        dataExtractorService.extractInitialLoadFor(node, trigger, writer);
+        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId());
+        outgoingBatchService.insertOutgoingBatch(batch);
+        DataExtractorContext ctx = new DataExtractorContext();
+        ctx.setBatch(batch);
+
+        dataExtractorService.writeInitialLoad(node, trigger, writer, ctx);
         String loadResults = mockTransport.toString();
         assertEquals(countLines(loadResults), 5, "Unexpected number of lines in the csv result: " + loadResults);
         assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
@@ -78,7 +88,11 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT1_VALUES, template, getDbDialect());
         TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT2_VALUES, template, getDbDialect());
         
-        dataExtractorService.extractInitialLoadFor(node, trigger, writer);
+        batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId());
+        outgoingBatchService.insertOutgoingBatch(batch);
+        ctx = new DataExtractorContext();
+        ctx.setBatch(batch);
+        dataExtractorService.writeInitialLoad(node, trigger, writer, ctx);
         loadResults = mockTransport.toString();
         assertEquals(countLines(loadResults), 17, "Unexpected number of lines in the csv result: " + loadResults);
         

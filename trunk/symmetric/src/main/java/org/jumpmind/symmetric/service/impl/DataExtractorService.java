@@ -169,7 +169,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
             
             if (!triggerRouter.getTrigger().getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
-                writeInitialLoad(node, triggerRouter, triggerHistory, writer, null, ctx);
+                writeInitialLoad(node, triggerRouter, triggerHistory, writer, ctx);
             } else {
                 Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, triggerRouter.getTrigger()
                         .getSourceTableName(), null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null,
@@ -215,22 +215,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return (IDataExtractor) beanFactory.getBean(beanName);
     }
 
-    public OutgoingBatch extractInitialLoadFor(Node node, TriggerRouter trigger, BufferedWriter writer) {
-        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId());
-        outgoingBatchService.insertOutgoingBatch(batch);
-        writeInitialLoad(node, trigger, writer, batch, null);
-        return batch;
-    }
-
     public void extractInitialLoadWithinBatchFor(Node node, final TriggerRouter trigger, BufferedWriter writer,
             DataExtractorContext ctx) {
-        writeInitialLoad(node, trigger, writer, null, ctx);
+        writeInitialLoad(node, trigger, writer, ctx);
     }
 
-    protected void writeInitialLoad(Node node, TriggerRouter trigger, BufferedWriter writer, final OutgoingBatch batch,
+    protected void writeInitialLoad(Node node, TriggerRouter trigger, BufferedWriter writer, 
             final DataExtractorContext ctx) {
         writeInitialLoad(node, trigger, triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTrigger()
-                .getTriggerId()), writer, batch, ctx);
+                .getTriggerId()), writer, ctx);
     }
 
     /**
@@ -239,9 +232,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      *            batch.
      */
     protected void writeInitialLoad(final Node node, final TriggerRouter triggerRouter, TriggerHistory triggerHistory,
-            final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
+            final BufferedWriter writer, final DataExtractorContext ctx) {
 
-        final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
+        final boolean newExtractorCreated = ctx == null || ctx.getDataExtractor() == null;
+        final IDataExtractor dataExtractor = !newExtractorCreated ? ctx.getDataExtractor() : getDataExtractor(node
                 .getSymmetricVersion());
 
         // The table to use for the SQL may be different than the configured table if there is a 
@@ -263,6 +257,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
+                    OutgoingBatch batch = ctx.getBatch();
                     Table table = dbDialect.getTable(triggerRouter.getTrigger(), true);
                     NodeChannel channel = batch != null ? configurationService.getNodeChannel(batch.getChannelId())
                             : new NodeChannel(Constants.CHANNEL_RELOAD);
@@ -276,7 +271,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                         rs = st.executeQuery();
                         final DataExtractorContext ctxCopy = ctx == null ? clonableContext.copy(dataExtractor) : ctx;
-                        if (batch != null) {
+                        if (newExtractorCreated) {
                             dataExtractor.init(writer, ctxCopy);
                             dataExtractor.begin(batch, writer);
                         }
@@ -294,7 +289,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 }
                             }
                         }
-                        if (batch != null) {
+                        if (newExtractorCreated) {
                             dataExtractor.commit(batch, writer);
                         }
                     } finally {
