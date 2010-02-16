@@ -25,6 +25,8 @@ import java.util.Set;
 public class TableConstants {
 
     public static final String SYM_TRIGGER = "trigger";
+    public static final String SYM_TRIGGER_ROUTER = "trigger_router";
+    public static final String SYM_ROUTER = "router";
     public static final String SYM_TRIGGER_HIST = "trigger_hist";
     public static final String SYM_NODE = "node";
     public static final String SYM_NODE_HOST = "node_host";

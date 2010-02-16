@@ -484,7 +484,13 @@ values
             A 'subselect' is configured with a router_expression that is a SQL select statement which returns a result set of the node_ids that need routed to.  Column tokens can
             be used in the SQL expression and will be replaced with row column data.  The overhead of using this router type is high because the 'subselect' statement runs for each row 
             that is routed.  It should not be used for tables that have a lot of rows that are updated.  It also has the disadvantage that if the Order master record is deleted, 
-            then no results would be returned and routing would not happen.  
+            then no results would be returned and routing would not happen.  The router_expression is appended to the following
+            SQL statement in order to select the node ids.
+            <programlisting>
+<![CDATA[
+select c.node_id from sym_node c where 
+  c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and 
+]]></programlisting>  
         </para>                  
         <para>
             Consider a table that needs to be routed to all nodes in the target group only when a status column is set to 'OK.'  The following 
@@ -495,8 +501,7 @@ values
  router_expression, create_time, last_update_time)
 values
 ('corp-2-store','corp', 'store', 'subselect', 
- 'select c.node_id from sym_node c where c.node_group_id=:NODE_GROUP_ID and 
-   c.sync_enabled=1 and c.external_id in 
+ 'c.external_id in 
    (select STORE_ID from order where order_id=:ORDER_ID)', 
  current_timestamp, current_timestamp);
 ]]></programlisting>
