@@ -163,8 +163,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 } finally {
                     try {
                         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
+                        int batchCount = batches.size();
                         for (OutgoingBatch batch : batches) {
-                            completeBatch(batch, context);
+                            completeBatch(batch, context, batchCount);
                         }
                         context.commit();
                     } catch (SQLException e) {
@@ -365,7 +366,8 @@ public class RouterService extends AbstractService implements IRouterService {
             for (String nodeId : nodeIds) {
                 if (dataMetaData.getData().getSourceNodeId() == null
                         || !dataMetaData.getData().getSourceNodeId().equals(nodeId)) {
-                    OutgoingBatch batch = context.getBatchesByNodes().get(nodeId);
+                    Map<String, OutgoingBatch> batches = context.getBatchesByNodes();
+                    OutgoingBatch batch = batches.get(nodeId);
                     if (batch == null) {
                         batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId());
                         outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
@@ -377,7 +379,7 @@ public class RouterService extends AbstractService implements IRouterService {
                             .getBatchId(), triggerRouter.getRouter().getRouterId());
                     if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(batch,
                             dataMetaData, context)) {
-                        completeBatch(batch, context);
+                        completeBatch(batch, context, batches.size());
                     }
                 }
             }
@@ -389,8 +391,8 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    protected void completeBatch(OutgoingBatch batch, RouterContext context) {
-        batch.setRouterMillis(System.currentTimeMillis() - batch.getCreateTime().getTime());
+    protected void completeBatch(OutgoingBatch batch, RouterContext context, int numberOfBatches) {
+        batch.setRouterMillis((System.currentTimeMillis() - context.getCreatedTimeInMs())/numberOfBatches);
         Set<IDataRouter> usedRouters = context.getUsedDataRouters();
         for (IDataRouter dataRouter : usedRouters) {
             dataRouter.completeBatch(context, batch);
