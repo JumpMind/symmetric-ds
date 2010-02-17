@@ -22,19 +22,24 @@ package org.jumpmind.symmetric.integrate;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.ICacheContext;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.jms.core.JmsTemplate;
 
-public class SimpleJmsPublisher implements IPublisher {
+public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
 
     static final ILog log = LogFactory.getLog(SimpleJmsPublisher.class);
 
-    JmsTemplate jmsTemplate;
+    private BeanFactory beanFactory;
+    
+    private String jmsTemplateBeanName;
 
     public boolean enabled = true;
 
     public void publish(ICacheContext ctx, String text) {
         log.debug("TextPublishing", text);
-
+        JmsTemplate jmsTemplate = (JmsTemplate)beanFactory.getBean(jmsTemplateBeanName);
         if (enabled) {
             jmsTemplate.convertAndSend(text);
         } else {
@@ -42,16 +47,15 @@ public class SimpleJmsPublisher implements IPublisher {
         }
     }
 
-    public void setJmsTemplate(JmsTemplate jmsTemplate) {
-        this.jmsTemplate = jmsTemplate;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
     public void setEnabled(boolean enable) {
         this.enabled = enable;
     }
 
+    public void setJmsTemplateBeanName(String jmsTemplateBeanName) {
+        this.jmsTemplateBeanName = jmsTemplateBeanName;
+    }
+    
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+     this.beanFactory = beanFactory;        
+    }
 }
