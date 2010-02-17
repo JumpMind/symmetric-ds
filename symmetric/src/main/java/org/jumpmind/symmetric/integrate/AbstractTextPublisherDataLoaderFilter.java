@@ -36,7 +36,7 @@ import org.springframework.beans.factory.BeanNameAware;
 abstract public class AbstractTextPublisherDataLoaderFilter implements IPublisherFilter, INodeGroupExtensionPoint,
         BeanNameAware {
 
-    private static final ILog log = LogFactory.getLog(AbstractTextPublisherDataLoaderFilter.class);
+    private final ILog log = LogFactory.getLog(getClass());
 
     private final String MSG_CACHE = "msg_CACHE" + hashCode();
 
