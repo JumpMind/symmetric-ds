@@ -11,27 +11,35 @@
         <include>COPYING</include>
         <include>COPYING.LESSER</include>
       </includes>
-    </fileSet>
-    <fileSet>
-      <directory>src/test/resources</directory>
-      <outputDirectory>/bin</outputDirectory>
-      <includes>
-        <include>log4j.xml</include>
-      </includes>
-    </fileSet>    
+    </fileSet>  
     <fileSet>
       <directory>src/main/deploy</directory>
       <outputDirectory>/</outputDirectory>
+      <excludes>
+        <exclude>bin/sym</exclude>
+      </excludes>      
     </fileSet>
     <fileSet>
       <directory>target/site/guide</directory>
       <outputDirectory>/doc</outputDirectory>
     </fileSet>
   </fileSets>
+  <files>
+    <file>
+      <source>src/main/deploy/bin/sym</source>
+      <outputDirectory>/bin</outputDirectory>
+      <fileMode>774</fileMode>
+    </file>
+    <file>
+      <source>src/main/resources/symmetric-default.properties</source>
+      <outputDirectory>/conf</outputDirectory>
+      <fileMode>664</fileMode>
+      <destName>symmetric.properties</destName>
+    </file>
+  </files>  
   <dependencySets>
     <dependencySet>
       <outputDirectory>/lib</outputDirectory>
-      <outputFileNameMapping>${artifactId}-${version}.${extension}</outputFileNameMapping>
       <unpack>false</unpack>
       <scope>runtime</scope>
     </dependencySet>
