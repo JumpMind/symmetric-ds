@@ -3,6 +3,7 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
     <import resource="classpath*:META-INF/services/symmetric-*-ext.xml" />
+    <import resource="file:../conf/*-extensions.xml" />
 
     <bean id="pluginProcessor" class="org.jumpmind.symmetric.ext.ExtensionProcessor">
         <property name="dataLoaderService" ref="dataLoaderService" />
