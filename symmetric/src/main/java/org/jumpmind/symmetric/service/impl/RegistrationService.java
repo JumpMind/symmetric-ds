@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -205,6 +206,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         this.parameterService, dbDialect), parameterService.getRegistrationUrl()));
             } catch (ConnectException e) {
                 log.warn("NodeRegistertingFailedConnection");
+            } catch (UnknownHostException e) {
+                log.warn("NodeRegistertingFailedConnection");                
             } catch (Exception e) {
                 log.error(e);
             }
