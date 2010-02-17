@@ -225,7 +225,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
             throw ex;
         } catch (UnknownHostException ex) {
-            log.warn("TransportFailedConnectionUnavailable", ex.getMessage());
+            log.warn("TransportFailedUnknownHost", ex.getMessage());
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
             throw ex;
         } catch (RegistrationNotOpenException ex) {
