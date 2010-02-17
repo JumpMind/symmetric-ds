@@ -45,6 +45,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     private Connection connection;
     private boolean needsCommitted = false;
     private boolean routed = false;
+    private long createdTimeInMs = System.currentTimeMillis();
 
     public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
             throws SQLException {
@@ -109,6 +110,10 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     public void resetForNextData() {
         this.routed = false;
         this.needsCommitted = false;
+    }
+    
+    public long getCreatedTimeInMs() {
+        return createdTimeInMs;
     }
 
 }
