@@ -21,7 +21,6 @@
 
 package org.jumpmind.symmetric.load;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,7 +32,6 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.random.RandomDataImpl;
 import org.apache.ddlutils.model.Table;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
@@ -374,23 +372,6 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         double totalSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
         // TODO: this used to run in 1 second; can we do some optimization?
         Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow", totalSeconds <= 15.0);
-    }
-
-    protected void load(ByteArrayOutputStream out) throws Exception {
-        load(out, null);
-    }
-
-    protected void load(ByteArrayOutputStream out, Map<String, IColumnFilter> filters) throws Exception {
-        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        IDataLoader dataLoader = getDataLoader();
-        dataLoader.open(TransportUtils.toReader(in), null, filters);
-        while (dataLoader.hasNext()) {
-            dataLoader.load();
-        }
-        dataLoader.close();
-    }
-    protected IDataLoader getDataLoader() {
-        return (IDataLoader) find(Constants.DATALOADER);
-    }
+    }    
 
 }

@@ -29,6 +29,8 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.BinaryEncoding;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.INodeService;
 
 public class DataLoaderContext implements IDataLoaderContext {
 
@@ -55,9 +57,25 @@ public class DataLoaderContext implements IDataLoaderContext {
     private Map<String, Object> contextCache = new HashMap<String, Object>();
 
     private BinaryEncoding binaryEncoding = BinaryEncoding.NONE;
+    
+    private INodeService nodeService;
+    
+    private transient Node node;
 
+    public DataLoaderContext(INodeService nodeService) {
+        this();
+        this.nodeService = nodeService;
+    }
+    
     public DataLoaderContext() {
         this.tableTemplateMap = new HashMap<String, TableTemplate>();
+    }
+    
+    public Node getNode() {
+        if (node == null) {
+            this.node = nodeService != null && nodeId != null ? nodeService.findNode(this.nodeId) : null; 
+        }
+        return this.node;        
     }
 
     public TableTemplate getTableTemplate() {
@@ -102,8 +120,9 @@ public class DataLoaderContext implements IDataLoaderContext {
         return nodeId;
     }
 
-    public void setNodeId(String nodeId) {
+    public void setNodeId(String nodeId) {        
         this.nodeId = nodeId;
+        this.node = null;
     }
     
     public void setCatalogName(String catalogName) {

@@ -39,7 +39,15 @@
         <column name="status" type="CHAR" size="1" />
         <column name="deliver_date" type="DATE" />
     </table>
-
+    
+    <table name="test_column_mapping">
+      <column name="key" type="VARCHAR" size="50" primaryKey="true" required="true"/>
+      <column name="column1" type="VARCHAR" size="50" />
+      <column name="column2" type="VARCHAR" size="50" />
+      <column name="int1" type="INTEGER" />
+      <column name="time1" type="TIMESTAMP" />    
+    </table>    
+       
     <table name="test_order_detail">
         <column name="order_id" type="VARCHAR" size="50" primaryKey="true" required="true" />
         <column name="line_number" type="INTEGER" required="true" primaryKey="true" />

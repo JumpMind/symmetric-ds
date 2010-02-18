@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.load;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
+import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.mock.MockTransportManager;
 import org.junit.Assert;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -112,8 +114,24 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         return writer;
     }
 
-    protected abstract void load(ByteArrayOutputStream out) throws Exception;
+    protected void load(ByteArrayOutputStream out) throws Exception {
+        load(out, null);
+    }
 
+    protected void load(ByteArrayOutputStream out, Map<String, IColumnFilter> filters) throws Exception {
+        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        IDataLoader dataLoader = getDataLoader();
+        dataLoader.open(TransportUtils.toReader(in), null, filters);
+        while (dataLoader.hasNext()) {
+            dataLoader.load();
+        }
+        dataLoader.close();
+    }
+    
+    protected IDataLoader getDataLoader() {
+        return (IDataLoader) find(Constants.DATALOADER);
+    }
+    
     protected void writeTable(CsvWriter writer, String tableName, String[] keys, String[] columns) throws IOException {
         writer.writeRecord(new String[] { "table", tableName });
         writer.write("keys");

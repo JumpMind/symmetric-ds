@@ -26,6 +26,7 @@ import org.jumpmind.symmetric.extract.DataExtractorTest;
 import org.jumpmind.symmetric.integrate.XmlPublisherFilterTest;
 import org.jumpmind.symmetric.load.AdditiveDataLoaderFilterTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
+import org.jumpmind.symmetric.map.DataLoaderMappingTest;
 import org.jumpmind.symmetric.service.impl.AcknowledgeServiceTest;
 import org.jumpmind.symmetric.service.impl.ClusterServiceTest;
 import org.jumpmind.symmetric.service.impl.DataExtractorServiceTest;
@@ -46,7 +47,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(ParameterizedSuite.class)
-@SuiteClasses( { TriggerRouterServiceTest.class, DataLoaderTest.class, DataExtractorTest.class,
+@SuiteClasses( { TriggerRouterServiceTest.class, DataLoaderTest.class, DataLoaderMappingTest.class, DataExtractorTest.class,
         ParameterFilterTest.class, RouterServiceTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class,
         NodeConcurrencyFilterTest.class, AcknowledgeServiceTest.class, ClusterServiceTest.class,
         DataExtractorServiceTest.class, DataLoaderServiceTest.class, NodeServiceTest.class,
