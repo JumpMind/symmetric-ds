@@ -5,17 +5,20 @@ import java.util.TreeMap;
 
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.TokenConstants;
+import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.ITableColumnFilter;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
-public class AddColumnsFilter implements ITableColumnFilter {
+public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtensionPoint {
 
     private String[] tables;
 
     private Map<String, Object> additionalColumns;
     
     private boolean autoRegister = true;
+    
+    private String[] nodeGroupIdsToApplyTo;
 
     public String[] getTables() {
         return tables;
@@ -33,6 +36,14 @@ public class AddColumnsFilter implements ITableColumnFilter {
         this.autoRegister = autoRegister;
     }
 
+    public String[] getNodeGroupIdsToApplyTo() {
+        return nodeGroupIdsToApplyTo;
+    }
+
+    public void setNodeGroupIdsToApplyTo(String[] nodeGroupIdsToApplyTo) {
+        this.nodeGroupIdsToApplyTo = nodeGroupIdsToApplyTo;
+    }
+    
     public Map<String, Object> getAdditionalColumns() {
         return additionalColumns;
     }
@@ -84,5 +95,6 @@ public class AddColumnsFilter implements ITableColumnFilter {
             return columnValues;
         }
     }       
+
 
 }

@@ -3,7 +3,23 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd" default-lazy-init="true">
 
     <!-- 
-      This example shows how to publish XML messages to MqSeries.
+      This example shows how to publish XML messages to MqSeries.  The following properties
+      would need to be added to symmetric.properties or another property file specified by the
+      sym launcher command.
+      
+      jms.msg.publish.enabled=true
+      jms.topic.username=
+      jms.topic.password=
+      jms.topic.destinationname=jms/SomeTopic
+      jms.topic.maxconsumers=1
+      jms.topic.hostname=
+      jms.topic.port=
+      jms.topic.useconnectionpooling=true
+      jms.topic.transporttype=1
+      jms.topic.queuemanager=
+      jms.topic.pubsubdomain=true
+      jms.topic.clientid=
+
     <bean id="jmsPublisher" class="org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter">
         <property name="publisher">
             <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
