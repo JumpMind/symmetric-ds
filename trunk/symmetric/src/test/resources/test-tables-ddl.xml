@@ -41,7 +41,7 @@
     </table>
     
     <table name="test_column_mapping">
-      <column name="key" type="VARCHAR" size="50" primaryKey="true" required="true"/>
+      <column name="id" type="VARCHAR" size="50" primaryKey="true" required="true"/>
       <column name="column1" type="VARCHAR" size="50" />
       <column name="column2" type="VARCHAR" size="50" />
       <column name="int1" type="INTEGER" />
