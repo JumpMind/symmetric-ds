@@ -81,7 +81,7 @@ public class CsvLoader implements IDataLoader {
 
     public void open(BufferedReader reader) throws IOException {
         csvReader = CsvUtils.getCsvReader(reader);
-        context = new DataLoaderContext();
+        context = new DataLoaderContext(nodeService);
         stats = new DataLoaderStatistics();
     }
 

@@ -24,12 +24,15 @@ package org.jumpmind.symmetric.load;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ext.ICacheContext;
+import org.jumpmind.symmetric.model.Node;
 
 public interface IDataLoaderContext extends ICacheContext {
 
     public long getBatchId();
 
     public String getNodeId();
+    
+    public Node getNode();
 
     public String getSchemaName();
 

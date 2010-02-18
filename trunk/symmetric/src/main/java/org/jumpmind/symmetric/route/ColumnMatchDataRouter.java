@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.TokenConstants;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
@@ -89,25 +90,25 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
             for (Expression e : expressions) {
                 String column = e.tokens[0].trim();
                 String value = e.tokens[1];
-                if (value.equalsIgnoreCase(":NODE_ID")) {
+                if (value.equalsIgnoreCase(TokenConstants.NODE_ID)) {
                     for (Node node : nodes) {
                         if (e.equals && node.getNodeId().equals(columnValues.get(column))) {
                             nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                         }
                     }
-                } else if (value.equalsIgnoreCase(":EXTERNAL_ID")) {
+                } else if (value.equalsIgnoreCase(TokenConstants.EXTERNAL_ID)) {
                     for (Node node : nodes) {
                         if (e.equals && node.getExternalId().equals(columnValues.get(column))) {
                             nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                         }
                     }
-                } else if (value.equalsIgnoreCase(":NODE_GROUP_ID")) {
+                } else if (value.equalsIgnoreCase(TokenConstants.NODE_GROUP_ID)) {
                     for (Node node : nodes) {
                         if (e.equals && node.getNodeGroupId().equals(columnValues.get(column))) {
                             nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                         }
                     }
-                } else if (e.equals && value.equalsIgnoreCase(":REDIRECT_NODE")) {
+                } else if (e.equals && value.equalsIgnoreCase(TokenConstants.REDIRECT_NODE)) {
                     Map<String, String> redirectMap = getRedirectMap(routingContext);
                     String nodeId = redirectMap.get(columnValues.get(column));
                     if (nodeId != null) {
