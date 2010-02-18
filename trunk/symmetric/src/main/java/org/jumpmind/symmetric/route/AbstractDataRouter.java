@@ -73,6 +73,9 @@ public abstract class AbstractDataRouter implements IDataRouter {
             data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
             break;
         default:
+            data = new HashMap<String, String>(1);
+            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
+            
             break;
         }
         return data;
