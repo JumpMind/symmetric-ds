@@ -109,7 +109,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
     }
 
     private void cleanSlate() {
-        getJdbcTemplate().update("delete from " + TEST_TABLE);
+        getDbDialect().truncateTable(TEST_TABLE);
     }
     
     private ByteArrayOutputStream getStandardCsv() throws Exception {
