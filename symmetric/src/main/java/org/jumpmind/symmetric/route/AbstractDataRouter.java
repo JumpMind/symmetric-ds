@@ -92,9 +92,11 @@ public abstract class AbstractDataRouter implements IDataRouter {
             String[] rowData) {
         String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
         Map<String, String> map = new HashMap<String, String>(columns.length);
-        for (int i = 0; i < columns.length; i++) {
-            String columnName = columns[i].toUpperCase();
-            map.put(prefix != null ? prefix + columnName : columnName, rowData[i]);
+        if (rowData != null) {
+            for (int i = 0; i < columns.length; i++) {
+                String columnName = columns[i].toUpperCase();
+                map.put(prefix != null ? prefix + columnName : columnName, rowData[i]);
+            }
         }
         return map;
     }
@@ -170,7 +172,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
                 nodeIds.add(nodeId);
                 break;
             }
-        }        
+        }
         return nodeIds;
     }
 
@@ -181,7 +183,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         }
         return nodeIds;
     }
-    
+
     protected Set<String> toExternalIds(Set<Node> nodes) {
         Set<String> externalIds = new HashSet<String>();
         for (Node node : nodes) {
