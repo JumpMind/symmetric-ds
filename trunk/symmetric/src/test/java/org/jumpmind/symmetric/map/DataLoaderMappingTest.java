@@ -63,7 +63,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         final Integer ADDITIONAL_COLUMN_VALUE_2 = 42;
         
         final String ASSERT_SQL = "select count(*) from " + TEST_TABLE
-                + " where id=? and column1=? and column2=? and int1=?";
+                + " where id=? and column1=? and column2=? and field1=?";
 
         cleanSlate();
 
@@ -72,7 +72,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         AddColumnsFilter filter = new AddColumnsFilter();
         Map<String, Object> additionalColumns = new HashMap<String, Object>();
         additionalColumns.put("column2", ADDITIONAL_COLUMN_VALUE_1);
-        additionalColumns.put("int1", ADDITIONAL_COLUMN_VALUE_2);
+        additionalColumns.put("field1", ADDITIONAL_COLUMN_VALUE_2);
         filter.setAdditionalColumns(additionalColumns);
         filter.setTables(new String[] { TEST_TABLE });
         Map<String, IColumnFilter> filters = new HashMap<String, IColumnFilter>();
