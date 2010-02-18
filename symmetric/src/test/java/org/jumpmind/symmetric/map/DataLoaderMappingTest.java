@@ -19,7 +19,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
 
     protected final static String TEST_TABLE = "test_column_mapping";
 
-    protected final static String[] TEST_KEYS = { "key" };
+    protected final static String[] TEST_KEYS = { "id" };
 
     public DataLoaderMappingTest() throws Exception {
     }
@@ -29,7 +29,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
 
         final String ADDITIONAL_COLUMN_VALUE = "Hello Kitty";
         final String ASSERT_SQL = "select count(*) from " + TEST_TABLE
-                + " where key=? and column1=? and column2=?";
+                + " where id=? and column1=? and column2=?";
 
         cleanSlate();
 
@@ -63,7 +63,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         final Integer ADDITIONAL_COLUMN_VALUE_2 = 42;
         
         final String ASSERT_SQL = "select count(*) from " + TEST_TABLE
-                + " where key=? and column1=? and column2=? and int1=?";
+                + " where id=? and column1=? and column2=? and int1=?";
 
         cleanSlate();
 
@@ -88,7 +88,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
     public void testAddExternalIdColumn() throws Exception {
 
         final String ASSERT_SQL = "select count(*) from " + TEST_TABLE
-                + " where key=? and column1=? and column2=?";
+                + " where id=? and column1=? and column2=?";
 
         cleanSlate();
 
@@ -119,7 +119,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
-        writeTable(writer, TEST_TABLE, TEST_KEYS, new String[] { "key", "column1" });
+        writeTable(writer, TEST_TABLE, TEST_KEYS, new String[] { "id", "column1" });
 
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(new String[] { "1", "1" }, true);
