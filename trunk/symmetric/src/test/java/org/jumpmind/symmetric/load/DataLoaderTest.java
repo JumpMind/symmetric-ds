@@ -25,9 +25,6 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -38,7 +35,6 @@ import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
-import org.jumpmind.symmetric.map.ChangeColumnsNamesFilter;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.junit.Assert;
