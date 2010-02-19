@@ -772,4 +772,71 @@ Enter key password for <sym>
             </procedure>
         </section>
     </section>
+    <section id="basic-auth">
+        <title>Basic Authentication</title>
+        <para>
+            SymmetricDS supports basic authentication for client and server nodes. 
+            To configure a client node to use basic authentication when communicating with a server node, 
+            specify the following startup parameters:
+        </para>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <command>http.basic.auth.username</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            username for client node basic authentication.
+                            [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>http.basic.auth.password</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            password for client node basic authentication.
+                            [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        <para>
+            The SymmetricDS Standalone and Embedded Server also support basic authentication.
+            This feature is enabled by specifying the basic authentication username and
+            password using the following startup parameters:
+        </para>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <command>embedded.webserver.basic.auth.username</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            username for basic authentication for an embedded server
+                            or standalone server node.
+                            [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>embedded.webserver.basic.auth.password</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            password for basic authentication for an embedded server
+                            or standalone server node.
+                            [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        <para>
+            If the server node is deployed to Tomcat or another application server as a WAR or EAR file, then 
+            basic authentication is setup with the standard configuration in the WEB.xml file. 
+        </para>
+    </section>
 </chapter>
