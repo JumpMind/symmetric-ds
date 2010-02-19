@@ -32,7 +32,7 @@ public interface IDataLoader extends Cloneable {
 
     public void open(BufferedReader in) throws IOException;
 
-    public void open(BufferedReader in, List<IDataLoaderFilter> filters, Map<String, IColumnFilter> columnFilters)
+    public void open(BufferedReader in, List<IDataLoaderFilter> filters, Map<String,  List<IColumnFilter>> columnFilters)
             throws IOException;
 
     public boolean hasNext() throws IOException;

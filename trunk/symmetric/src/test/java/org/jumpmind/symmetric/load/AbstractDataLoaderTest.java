@@ -29,7 +29,10 @@ import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -117,8 +120,18 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     protected void load(ByteArrayOutputStream out) throws Exception {
         load(out, null);
     }
+    
+    protected Map<String, List<IColumnFilter>> createColumnFilterList(String tableName, IColumnFilter... filters) {
+        Map<String, List<IColumnFilter>> map = new HashMap<String, List<IColumnFilter>>();
+        List<IColumnFilter> list = new ArrayList<IColumnFilter>();
+        for (IColumnFilter iColumnFilter : filters) {
+            list.add(iColumnFilter);
+        }
+        map.put(tableName, list);
+        return map;
+    }
 
-    protected void load(ByteArrayOutputStream out, Map<String, IColumnFilter> filters) throws Exception {
+    protected void load(ByteArrayOutputStream out, Map<String, List<IColumnFilter>> filters) throws Exception {
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         IDataLoader dataLoader = getDataLoader();
         dataLoader.open(TransportUtils.toReader(in), null, filters);
