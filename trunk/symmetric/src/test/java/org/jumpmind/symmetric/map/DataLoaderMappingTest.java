@@ -104,6 +104,32 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         Assert.assertEquals(1, getJdbcTemplate().queryForInt(ASSERT_SQL, "1", "1",
                 TestConstants.TEST_CLIENT_EXTERNAL_ID));
     }
+    
+    
+    @Test
+    public void testColumnFilterChangingColumnName() throws Exception {
+        String tableName = "TEST_CHANGING_COLUMN_NAME";
+        String[] keys = { "id" };
+        String[] columns = { "id", "test" };
+        String[] values = { "1", "10" };
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = getWriter(out);
+        writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writeTable(writer, tableName, keys, columns);
+        String nextBatchId = getNextBatchId();
+        writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+        writer.write(CsvConstants.INSERT);
+        writer.writeRecord(values, true);
+        writer.close();
+        ChangeColumnsNamesFilter filter = new ChangeColumnsNamesFilter();
+        Map<String, String> mapping = new HashMap<String, String>();
+        mapping.put("id", "id1");
+        filter.setColumnNameMapping(mapping);
+        Map<String, List<IColumnFilter>> filters = createColumnFilterList(tableName, filter);
+        load(out, filters);
+        Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from TEST_CHANGING_COLUMN_NAME"));
+    }
 
     private void cleanSlate() {
         getDbDialect().truncateTable(TEST_TABLE);
