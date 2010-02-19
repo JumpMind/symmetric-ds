@@ -25,7 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipInputStream;
 
@@ -319,8 +319,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
                 return false;
             }
         };
-        Map<String, IColumnFilter> filters = new HashMap<String, IColumnFilter>();
-        filters.put(tableName, filter);
+        Map<String, List<IColumnFilter>> filters = createColumnFilterList(tableName, filter);
         load(out, filters);
         Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from TEST_CHANGING_COLUMN_NAME"));
     }

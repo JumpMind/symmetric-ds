@@ -77,7 +77,7 @@ public class CsvLoader implements IDataLoader {
 
     protected List<IDataLoaderFilter> filters;
 
-    protected Map<String, IColumnFilter> columnFilters;
+    protected Map<String,  List<IColumnFilter>> columnFilters;
 
     public void open(BufferedReader reader) throws IOException {
         csvReader = CsvUtils.getCsvReader(reader);
@@ -85,7 +85,7 @@ public class CsvLoader implements IDataLoader {
         stats = new DataLoaderStatistics();
     }
 
-    public void open(BufferedReader reader, List<IDataLoaderFilter> filters, Map<String, IColumnFilter> columnFilters)
+    public void open(BufferedReader reader, List<IDataLoaderFilter> filters, Map<String,  List<IColumnFilter>> columnFilters)
             throws IOException {
         open(reader);
         this.filters = filters;

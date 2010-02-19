@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.map;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
@@ -47,15 +48,13 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         additionalColumns.put("column2", ADDITIONAL_COLUMN_VALUE);
         filter.setAdditionalColumns(additionalColumns);
         filter.setTables(new String[] { TEST_TABLE });
-        Map<String, IColumnFilter> filters = new HashMap<String, IColumnFilter>();
-        filters.put(TEST_TABLE, filter);
-
+        Map<String, List<IColumnFilter>> filters = createColumnFilterList(TEST_TABLE, filter);
         load(out, filters);
 
         Assert.assertEquals(1, getJdbcTemplate().queryForInt(ASSERT_SQL, "1", "1",
                 ADDITIONAL_COLUMN_VALUE));
     }
-    
+       
     @Test
     public void testAddMultipleConstantColumns() throws Exception {
 
@@ -75,8 +74,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         additionalColumns.put("field1", ADDITIONAL_COLUMN_VALUE_2);
         filter.setAdditionalColumns(additionalColumns);
         filter.setTables(new String[] { TEST_TABLE });
-        Map<String, IColumnFilter> filters = new HashMap<String, IColumnFilter>();
-        filters.put(TEST_TABLE, filter);
+        Map<String, List<IColumnFilter>> filters = createColumnFilterList(TEST_TABLE, filter);
 
         load(out, filters);
 
@@ -99,8 +97,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         additionalColumns.put("column2", TokenConstants.EXTERNAL_ID);
         filter.setAdditionalColumns(additionalColumns);
         filter.setTables(new String[] { TEST_TABLE });
-        Map<String, IColumnFilter> filters = new HashMap<String, IColumnFilter>();
-        filters.put(TEST_TABLE, filter);
+        Map<String, List<IColumnFilter>> filters = createColumnFilterList(TEST_TABLE, filter);
 
         load(out, filters);
 

@@ -82,19 +82,19 @@ public class TableTemplate {
 
     private boolean dontIncludeKeysInUpdateStatement = false;
 
-    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName, IColumnFilter columnFilter,
+    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName,  List<IColumnFilter> columnFilters,
             boolean dontIncludeKeysInUpdateStatement) {
-        this(jdbcTemplate, dbDialect, tableName, columnFilter, dontIncludeKeysInUpdateStatement, null, null);
+        this(jdbcTemplate, dbDialect, tableName, columnFilters, dontIncludeKeysInUpdateStatement, null, null);
     }
     
-    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName, IColumnFilter columnFilter,
+    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName,  List<IColumnFilter> columnFilters,
             boolean dontIncludeKeysInUpdateStatement, String schema, String catalog) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
         this.tableName = tableName;
         this.schema = StringUtils.isBlank(schema) ?dbDialect.getDefaultSchema() : schema;
         this.catalog = StringUtils.isBlank(catalog) ? null : catalog;
-        this.setupColumnFilters(columnFilter, dbDialect);
+        this.setupColumnFilters(columnFilters, dbDialect);
         this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
         resetMetaData(true);
     }
@@ -114,9 +114,11 @@ public class TableTemplate {
         }
     }
 
-    private void setupColumnFilters(IColumnFilter pluginFilter, IDbDialect dbDialect) {
-        if (pluginFilter != null) {
-            this.columnFilters.add(pluginFilter);
+    private void setupColumnFilters( List<IColumnFilter> pluginFilters, IDbDialect dbDialect) {
+        if (pluginFilters != null) {
+            for (IColumnFilter columnFilter : pluginFilters) {
+                this.columnFilters.add(columnFilter);   
+            }            
         }
         if (dbDialect.getDatabaseColumnFilter() != null) {
             this.columnFilters.add(dbDialect.getDatabaseColumnFilter());

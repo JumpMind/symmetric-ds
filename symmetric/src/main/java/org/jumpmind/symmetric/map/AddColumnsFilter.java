@@ -10,6 +10,10 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.ITableColumnFilter;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
+/**
+ * A column filter that can add additional columns to a table that is being loaded
+ * at the node where this column filter is configured. 
+ */
 public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtensionPoint {
 
     private String[] tables;

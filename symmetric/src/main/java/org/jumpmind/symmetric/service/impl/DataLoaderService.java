@@ -95,7 +95,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private INodeService nodeService;
 
-    private Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
+    private Map<String, List<IColumnFilter>> columnFilters = new HashMap<String, List<IColumnFilter>>();
 
     private List<IBatchListener> batchListeners;
 
@@ -436,22 +436,30 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void addColumnFilter(String tableName, IColumnFilter filter) {
-        this.columnFilters.put(tableName, filter);
+List<IColumnFilter> filters = this.columnFilters.get(tableName);
+if (filters == null) {
+    filters = new ArrayList<IColumnFilter>();
+    this.columnFilters.put(tableName, filters);
+}
+        filters.add(filter);
     }
     
+    /**
+     * @see IDataLoaderService#reRegisterColumnFilter(String[], IColumnFilter)
+     */
     public void reRegisterColumnFilter(String[] tableNames, IColumnFilter filter) {
-        Set<Entry<String, IColumnFilter>> entries = this.columnFilters.entrySet();
-        Iterator<Entry<String, IColumnFilter>> it = entries.iterator();
+        Set<Entry<String, List<IColumnFilter>>> entries = this.columnFilters.entrySet();
+        Iterator<Entry<String, List<IColumnFilter>>> it = entries.iterator();
         while (it.hasNext()) {
-            Entry<String, IColumnFilter> entry = it.next();
-            if (filter.equals(entry.getValue())) {
-                it.remove();
+            Entry<String, List<IColumnFilter>> entry = it.next();
+            if (entry.getValue().contains(filter)) {
+                entry.getValue().remove(filter);
             }            
         }
         
         if (tableNames != null) {
             for (String name : tableNames) {
-                this.columnFilters.put(name, filter);
+                this.addColumnFilter(name, filter);
             }
         }        
     }
