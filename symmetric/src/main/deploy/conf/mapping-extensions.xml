@@ -30,4 +30,28 @@
 		</property>
 	</bean>
 	 -->
+	 
+	 <!-- 
+	 This is an example of how to change the names of columns at the target table.
+	<bean class="org.jumpmind.symmetric.map.ChangeColumnsNamesFilter">
+		<property name="nodeGroupIdsToApplyTo">
+			<list>
+				<value>store</value>
+			</list>
+		</property>
+		<property name="tables">
+			<list>
+				<value>STORE_TABLE</value>
+			</list>
+		</property>
+		<property name="columnNameMapping">
+			<map>
+				<entry key="ID_STR_RT" value="STORE_ID" />
+				<entry key="NM_LOC" value="LOCATION_NAME" />
+				<entry key="CO_CNT" value="COUNTRY" />
+			</map>
+		</property>
+	</bean>
+	  -->
+	  
 </beans>
