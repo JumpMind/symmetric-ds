@@ -67,6 +67,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private IConfigurationService configurationService;
 
     private Map<String, TriggerRoutersCache> triggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
+    
+    private long triggerRouterCacheTime;
 
     private List<ITriggerCreationListener> triggerCreationListeners;
 
@@ -303,7 +305,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected TriggerRoutersCache getTriggerRoutersCacheForCurrentNode(
             boolean refreshCache) {
         String myNodeGroupId = parameterService.getNodeGroupId();
-        if (!triggerRouterCacheByNodeGroupId.containsKey(myNodeGroupId) || refreshCache) {
+        long triggerRouterCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
+        if (System.currentTimeMillis()-this.triggerRouterCacheTime > triggerRouterCacheTimeoutInMs) {
+            synchronized(this) {
+                triggerRouterCacheByNodeGroupId.clear();
+            }
+        }
+        if (!triggerRouterCacheByNodeGroupId.containsKey(myNodeGroupId) || refreshCache ) {
             synchronized (this) {
                 List<TriggerRouter> triggerRouters = getAllTriggerRoutersForCurrentNode(myNodeGroupId);
                 Map<String, List<TriggerRouter>> triggerRoutersByTriggerId = new HashMap<String, List<TriggerRouter>>(

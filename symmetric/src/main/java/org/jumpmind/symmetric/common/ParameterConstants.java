@@ -98,8 +98,11 @@ final public class ParameterConstants {
     public final static String TRANSPORT_HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
     public final static String TRANSPORT_HTTPS_ALLOW_SELF_SIGNED_CERTS = "https.allow.self.signed.certs";
 
-    public final static String NODE_SECURITY_CACHE_REFRESH_PERIOD_IN_MS = "cache.node.security.time.ms"; 
-
+    public final static String CACHE_TIMEOUT_NODE_SECURITY_IN_MS = "cache.node.security.time.ms"; 
+    public final static String CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS = "cache.trigger.router.time.ms";    
+    public final static String CACHE_TIMEOUT_CHANNEL_IN_MS = "cache.channel.time.ms";
+    
+    
     public final static String DBPOOL_URL = "db.url";
     public final static String DBPOOL_DRIVER = "db.driver";
     public final static String DBPOOL_USER = "db.user";
