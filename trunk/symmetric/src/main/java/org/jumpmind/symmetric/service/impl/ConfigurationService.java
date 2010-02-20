@@ -58,8 +58,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private INodeService nodeService;
 
-    private static final long MAX_NODE_CHANNEL_CACHE_TIME = 60000;
-
     private Map<String, List<NodeChannel>> nodeChannelCache;
 
     private long nodeChannelCacheTime;
@@ -149,12 +147,13 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getNodeChannels(final String nodeId) {
         boolean loaded = false;
-        if (System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
+        long channelCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS);
+        if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
                 || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null) {
             synchronized (this) {
-                if (System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
+                if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
                         || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null) {
-                    if (System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
+                    if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
                             || nodeChannelCache == null) {
                         nodeChannelCache = new HashMap<String, List<NodeChannel>>();
                         nodeChannelCacheTime = System.currentTimeMillis();
