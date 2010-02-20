@@ -9,7 +9,7 @@
     <bean id="h2StringTemplate" class="java.lang.String">
         <constructor-arg>
             <value>
-                <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($(tableAlias)"$(columnName)",''\\'',''\\\\''),''"'',''\"'')||''"'' end ||'',''||]]>
+                <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($(tableAlias)"$(columnName)",''\'',''\\''),''"'',''\"'')||''"'' end ||'',''||]]>
             </value>
         </constructor-arg>
     </bean>
@@ -37,7 +37,7 @@
                 <property name="clobColumnTemplate" ref="h2StringTemplate" />
                 <property name="blobColumnTemplate">
                     <value>
-                         <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($[sym.sync.table.prefix]_BASE64_ENCODE($(tableAlias)"$(columnName)"),''\\'',''\\\\''),''"'',''\"'')||''"'' end ||'',''||]]>
+                         <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($[sym.sync.table.prefix]_BASE64_ENCODE($(tableAlias)"$(columnName)"),''\'',''\\''),''"'',''\"'')||''"'' end ||'',''||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
