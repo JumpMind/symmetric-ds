@@ -10,6 +10,7 @@ import org.apache.ddlutils.Platform;
 import org.jumpmind.symmetric.ddlutils.db2.Db2Platform;
 import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
+import org.jumpmind.symmetric.ddlutils.oracle.OraclePlatform;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -81,7 +82,9 @@ public class PlatformFactory {
             org.apache.ddlutils.PlatformFactory.registerPlatform(FirebirdPlatform.DATABASENAME,
                     FirebirdPlatform.class);
             org.apache.ddlutils.PlatformFactory.registerPlatform(Db2Platform.DATABASENAME,
-                    Db2Platform.class);            
+                    Db2Platform.class);     
+            org.apache.ddlutils.PlatformFactory.registerPlatform(OraclePlatform.DATABASENAME, 
+                    OraclePlatform.class);
             for (String name : H2Platform.DATABASENAMES) {
                 org.apache.ddlutils.PlatformFactory.registerPlatform(name,
                         H2Platform.class);                
