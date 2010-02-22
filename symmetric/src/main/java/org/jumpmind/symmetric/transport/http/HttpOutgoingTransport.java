@@ -76,7 +76,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     public void close() throws IOException {
-        closeWriter();
+        closeWriter(true);
         closeReader();
         if (connection != null) {
             connection.disconnect();
@@ -91,10 +91,14 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         }
     }
 
-    private void closeWriter() throws IOException {
+    private void closeWriter(boolean closeQuietly) throws IOException {
         if (writer != null) {
             writer.flush();
-            IOUtils.closeQuietly(writer);
+            if (closeQuietly) {
+                IOUtils.closeQuietly(writer);
+            } else {
+                writer.close();
+            }
             writer = null;
         }
     }
@@ -164,7 +168,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     public BufferedReader readResponse() throws IOException {
-        closeWriter();
+        closeWriter(false);
         analyzeResponseCode(connection.getResponseCode());
         this.reader = HttpTransportManager.getReaderFrom(connection);
         return this.reader;
