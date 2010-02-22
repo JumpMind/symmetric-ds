@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.ddlutils.Platform;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddlutils.db2.Db2Platform;
 import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
@@ -17,6 +19,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class PlatformFactory {
 
+    final static ILog log = LogFactory.getLog(PlatformFactory.class);
+    
     static private boolean initialized = false;
 
     public static Platform getPlatform(DataSource dataSource) {
@@ -42,6 +46,8 @@ public class PlatformFactory {
         } else {
             pf.setDataSource(dataSource);
         }
+        
+        log.info("PlatformFactory", pf.getClass().getName());
 
         return pf;
     }
