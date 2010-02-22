@@ -47,7 +47,7 @@ public class PlatformFactory {
             pf.setDataSource(dataSource);
         }
         
-        log.info("PlatformFactory", pf.getClass().getName());
+        log.info("PlatformInUse", pf.getClass().getName());
 
         return pf;
     }
