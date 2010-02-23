@@ -54,9 +54,9 @@
         <column name="os_arch" type="VARCHAR" size="50" description="The hardware architecture of the OS" />
         <column name="os_version" type="VARCHAR" size="50" description="The version of the OS" />        
         <column name="available_processors" type="INTEGER" default="0" description="The number of processors available to use." />
-        <column name="free_memory_bytes" type="INTEGER" default="0" description="The amount of free memory available to the JVM." />
-        <column name="total_memory_bytes" type="INTEGER" default="0" description="The amount of total memory available to the JVM." />
-        <column name="max_memory_bytes" type="INTEGER" default="0" description="The max amount of memory available to the JVM." />
+        <column name="free_memory_bytes" type="BIGINT" default="0" description="The amount of free memory available to the JVM." />
+        <column name="total_memory_bytes" type="BIGINT" default="0" description="The amount of total memory available to the JVM." />
+        <column name="max_memory_bytes" type="BIGINT" default="0" description="The max amount of memory available to the JVM." />
         <column name="java_version" type="VARCHAR" size="50" description="The version of java that SymmetricDS is running as." />
         <column name="java_vendor" type="VARCHAR" size="255" description="The vendor of java that SymmetricDS is running as." />        
         <column name="symmetric_version" type="VARCHAR" size="50"  description="The version of SymmetricDS running at this node." />
