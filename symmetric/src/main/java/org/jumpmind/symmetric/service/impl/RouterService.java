@@ -268,7 +268,12 @@ public class RouterService extends AbstractService implements IRouterService {
             ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
             ps.setString(1, context.getChannel().getChannelId());
             ps.setLong(2, ref.getRefDataId());
+            long executeTimeInMs = System.currentTimeMillis();
             rs = ps.executeQuery();
+            executeTimeInMs = System.currentTimeMillis()-executeTimeInMs;
+            if (executeTimeInMs > 30000) {
+                log.info("RoutedDataSelectedInTime", executeTimeInMs, context.getChannel().getChannelId());
+            }
             int peekAheadLength = dbDialect.getRouterDataPeekAheadCount();
             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
             LinkedList<Data> dataQueue = new LinkedList<Data>();
