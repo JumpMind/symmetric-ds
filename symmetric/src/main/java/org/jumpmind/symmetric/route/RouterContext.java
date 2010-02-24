@@ -44,7 +44,6 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     private Set<IDataRouter> usedDataRouters = new HashSet<IDataRouter>();
     private Connection connection;
     private boolean needsCommitted = false;
-    private boolean routed = false;
     private long createdTimeInMs = System.currentTimeMillis();
 
     public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
@@ -87,16 +86,8 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
         this.needsCommitted = b;
     }
 
-    public void setRouted(boolean b) {
-        this.routed = b;
-    }
-
     public boolean isNeedsCommitted() {
         return needsCommitted;
-    }
-
-    public boolean isRouted() {
-        return routed;
     }
 
     public Set<IDataRouter> getUsedDataRouters() {
@@ -108,7 +99,6 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     }
 
     public void resetForNextData() {
-        this.routed = false;
         this.needsCommitted = false;
     }
     
