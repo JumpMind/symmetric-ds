@@ -59,6 +59,14 @@ public class NodeChannel {
     public void setMaxBatchToSend(int maxBatchToSend) {
         channel.setMaxBatchToSend(maxBatchToSend);
     }
+    
+    public void setMaxDataToRoute(int maxDataToRoute) {
+        channel.setMaxDataToRoute(maxDataToRoute);
+    }
+    
+    public int getMaxDataToRoute() {
+        return channel.getMaxDataToRoute();
+    }
 
     public int getProcessingOrder() {
         return channel.getProcessingOrder();

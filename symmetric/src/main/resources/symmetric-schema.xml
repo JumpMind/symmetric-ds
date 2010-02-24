@@ -71,6 +71,7 @@
         <column name="processing_order" type="INTEGER" required="true" default="1" description="Order of sequence to process channel data."/>
         <column name="max_batch_size" type="INTEGER" required="true" default="1000" description="The maximum number of Data Events to process within a batch for this channel."/>
         <column name="max_batch_to_send" type="INTEGER" required="true" default="60" description="The maximum number of batches to send during a 'synchronization' between two nodes. A 'synchronization' is equivalent to a push or a pull. If there are 12 batches ready to be sent for a channel and max_batch_to_send is equal to 10, then only the first 10 batches will be sent." />
+        <column name="max_data_to_route" type="INTEGER" required="true" default="10000" description="The maximum number of data rows to route for a channel at a time." />        
         <column name="extract_period_millis" type="INTEGER" required="true" default="0" description="The minimum number of milliseconds allowed between attempts to extract data for targeted at a node_id."/>
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether channel is enabled or not."/>
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>

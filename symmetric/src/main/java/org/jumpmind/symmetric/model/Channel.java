@@ -36,6 +36,8 @@ public class Channel {
     private int maxBatchSize;
 
     private int maxBatchToSend;
+    
+    private int maxDataToRoute = 10000;
 
     private boolean enabled;
 
@@ -74,6 +76,14 @@ public class Channel {
 
     public void setProcessingOrder(int priority) {
         this.processingOrder = priority;
+    }
+    
+    public void setMaxDataToRoute(int maxDataToRoute) {
+        this.maxDataToRoute = maxDataToRoute;
+    }
+    
+    public int getMaxDataToRoute() {
+        return maxDataToRoute;
     }
 
     public int getMaxBatchSize() {

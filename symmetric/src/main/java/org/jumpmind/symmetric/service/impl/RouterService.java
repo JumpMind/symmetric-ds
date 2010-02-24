@@ -95,8 +95,8 @@ public class RouterService extends AbstractService implements IRouterService {
 
     private Map<String, IBatchAlgorithm> batchAlgorithms;
 
-    public boolean shouldDataBeRouted(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
-            boolean initialLoad) {
+    public boolean shouldDataBeRouted(IRouterContext context, DataMetaData dataMetaData,
+            Set<Node> nodes, boolean initialLoad) {
         IDataRouter router = getDataRouter(dataMetaData.getTriggerRouter());
         Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, nodes, initialLoad);
         for (Node node : nodes) {
@@ -147,7 +147,8 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
-    protected int routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel, final Node sourceNode) {
+    protected int routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel,
+            final Node sourceNode) {
         return jdbcTemplate.execute(new ConnectionCallback<Integer>() {
             public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
                 RouterContext context = null;
@@ -167,18 +168,20 @@ public class RouterService extends AbstractService implements IRouterService {
                         log.error(e);
                     } finally {
                         context.logStats(log);
-                        context.cleanup();    
+                        context.cleanup();
                     }
                 }
             }
         });
     }
-    
+
     protected void completeBatchesAndCommit(RouterContext context) throws SQLException {
-        List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
+        List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
+                .values());
         int numberOfBatches = batches.size();
         for (OutgoingBatch batch : batches) {
-            batch.setRouterMillis((System.currentTimeMillis() - context.getCreatedTimeInMs())/numberOfBatches);
+            batch.setRouterMillis((System.currentTimeMillis() - context.getCreatedTimeInMs())
+                    / numberOfBatches);
             Set<IDataRouter> usedRouters = context.getUsedDataRouters();
             for (IDataRouter dataRouter : usedRouters) {
                 dataRouter.completeBatch(context, batch);
@@ -192,27 +195,29 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected void findAndSaveNextDataId(final DataRef ref) {
         long ts = System.currentTimeMillis();
-        long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"), new Object[] { ref
-                .getRefDataId() }, new int[] { Types.INTEGER }, new ResultSetExtractor<Long>() {
-            public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
-                long lastDataId = ref.getRefDataId();
-                while (rs.next()) {
-                    long dataId = rs.getLong(1);
-                    if (lastDataId == -1 || lastDataId + 1 == dataId || lastDataId == dataId) {
-                        lastDataId = dataId;
-                    } else {
-                        if (isDataGapExpired(dataId)) {
-                            lastDataId = dataId;
-                        } else {
-                            // detected a gap!
-                            break;
+        long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"),
+                new Object[] { ref.getRefDataId() }, new int[] { Types.INTEGER },
+                new ResultSetExtractor<Long>() {
+                    public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
+                        long lastDataId = ref.getRefDataId();
+                        while (rs.next()) {
+                            long dataId = rs.getLong(1);
+                            if (lastDataId == -1 || lastDataId + 1 == dataId
+                                    || lastDataId == dataId) {
+                                lastDataId = dataId;
+                            } else {
+                                if (isDataGapExpired(dataId)) {
+                                    lastDataId = dataId;
+                                } else {
+                                    // detected a gap!
+                                    break;
+                                }
+                            }
                         }
+                        return lastDataId;
                     }
-                }
-                return lastDataId;
-            }
-        });
-        long updateTimeInMs = System.currentTimeMillis()-ts;        
+                });
+        long updateTimeInMs = System.currentTimeMillis() - ts;
         if (updateTimeInMs > 5000) {
             log.debug("RoutedDataRefUpdateTime", updateTimeInMs);
         }
@@ -222,7 +227,8 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected boolean isDataGapExpired(long dataId) {
-        long gapTimoutInMs = parameterService.getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
+        long gapTimoutInMs = parameterService
+                .getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
         Date createTime = dataService.findCreateTimeOfEvent(dataId);
         if (System.currentTimeMillis() - createTime.getTime() > gapTimoutInMs) {
             return true;
@@ -236,7 +242,8 @@ public class RouterService extends AbstractService implements IRouterService {
         if (nodes == null) {
             nodes = new HashSet<Node>();
             Router router = triggerRouter.getRouter();
-            List<NodeGroupLink> links = configurationService.getGroupLinksFor(router.getSourceNodeGroupId(), router.getTargetNodeGroupId());
+            List<NodeGroupLink> links = configurationService.getGroupLinksFor(router
+                    .getSourceNodeGroupId(), router.getTargetNodeGroupId());
             for (NodeGroupLink nodeGroupLink : links) {
                 nodes.addAll(nodeService.findTargetNodesFor(nodeGroupLink.getDataEventAction()));
             }
@@ -266,7 +273,8 @@ public class RouterService extends AbstractService implements IRouterService {
      * @param context
      *            The current context of the routing process
      */
-    protected int selectDataAndRoute(Connection conn, DataRef ref, RouterContext context) throws SQLException {
+    protected int selectDataAndRoute(Connection conn, DataRef ref, RouterContext context)
+            throws SQLException {
         PreparedStatement ps = null;
         ResultSet rs = null;
         int dataCount = 0;
@@ -281,9 +289,10 @@ public class RouterService extends AbstractService implements IRouterService {
             ps.setLong(2, ref.getRefDataId());
             long executeTimeInMs = System.currentTimeMillis();
             rs = ps.executeQuery();
-            executeTimeInMs = System.currentTimeMillis()-executeTimeInMs;
+            executeTimeInMs = System.currentTimeMillis() - executeTimeInMs;
             if (executeTimeInMs > 30000) {
-                log.warn("RoutedDataSelectedInTime", executeTimeInMs, context.getChannel().getChannelId());
+                log.warn("RoutedDataSelectedInTime", executeTimeInMs, context.getChannel()
+                        .getChannelId());
             }
             int peekAheadLength = dbDialect.getRouterDataPeekAheadCount();
             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
@@ -298,15 +307,15 @@ public class RouterService extends AbstractService implements IRouterService {
                     // don't count the event if we didn't read it
                     i--;
                 }
-                
+
                 if (hasNext) {
                     hasNext = rs.next();
                 }
             }
-            
+
             // Go ahead and close the resource if we don't need it anymore.
             if (!hasNext) {
-                JdbcUtils.closeResultSet(rs);                
+                JdbcUtils.closeResultSet(rs);
                 JdbcUtils.closeStatement(ps);
                 rs = null;
                 ps = null;
@@ -314,6 +323,15 @@ public class RouterService extends AbstractService implements IRouterService {
 
             while (dataQueue.size() > 0) {
                 routeData(dataQueue.poll(), transactionIdDataId, context);
+                if (context.isNeedsCommitted()) {
+                    completeBatchesAndCommit(context);
+                    long maxDataToRoute = context.getChannel().getMaxDataToRoute();
+                    if (maxDataToRoute > 0 && dataCount > maxDataToRoute) {
+                        log.info("RoutedMaxNumberData", dataCount, context.getChannel()
+                                .getChannelId());
+                        break;
+                    }
+                }
                 if (hasNext) {
                     long ts = System.currentTimeMillis();
                     if (readData(rs, dataQueue, transactionIdDataId)) {
@@ -325,7 +343,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
             }
-            
+
             return dataCount;
 
         } finally {
@@ -342,62 +360,59 @@ public class RouterService extends AbstractService implements IRouterService {
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
                 Table table = dbDialect.getTable(triggerRouter.getTrigger(), true);
-                DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, context.getChannel());
+                DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, context
+                        .getChannel());
 
                 context.resetForNextData();
-                if (!context.getChannel().isIgnoreEnabled() && triggerRouter.isRouted(data.getEventType())) {
+
+                if (!context.getChannel().isIgnoreEnabled()
+                        && triggerRouter.isRouted(data.getEventType())) {
                     IDataRouter dataRouter = getDataRouter(triggerRouter);
                     context.addUsedDataRouter(dataRouter);
                     long ts = System.currentTimeMillis();
-                    Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData, findAvailableNodes(
-                            triggerRouter, context), false);
+                    Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData,
+                            findAvailableNodes(triggerRouter, context), false);
                     context.incrementStat(System.currentTimeMillis() - ts, STAT_DATA_ROUTER_MS);
-                    insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);                        
-                }
-
-
-                if (context.isNeedsCommitted()) {
-                    completeBatchesAndCommit(context);
+                    insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
                 }
 
             }
 
         } else {
-            log.warn("TriggerProcessingFailedMissing", data.getTriggerHistory().getTriggerId(), data.getDataId());
+            log.warn("TriggerProcessingFailedMissing", data.getTriggerHistory().getTriggerId(),
+                    data.getDataId());
         }
 
     }
 
-    protected void insertDataEvents(RouterContext context, DataMetaData dataMetaData, Collection<String> nodeIds,
-            TriggerRouter triggerRouter) {
-        if (nodeIds == null) {
+    protected void insertDataEvents(RouterContext context, DataMetaData dataMetaData,
+            Collection<String> nodeIds, TriggerRouter triggerRouter) {
+        if (nodeIds == null || nodeIds.size() == 0) {
             nodeIds = new HashSet<String>(1);
-        }
-        if (nodeIds.size() == 0) {
             nodeIds.add(Constants.UNROUTED_NODE_ID);
             log.debug("NoNodesToRouteTo", dataMetaData.getData().getDataId());
         }
-            long ts = System.currentTimeMillis();
-            for (String nodeId : nodeIds) {
-                if (dataMetaData.getData().getSourceNodeId() == null
-                        || !dataMetaData.getData().getSourceNodeId().equals(nodeId)) {
-                    Map<String, OutgoingBatch> batches = context.getBatchesByNodes();
-                    OutgoingBatch batch = batches.get(nodeId);
-                    if (batch == null) {
-                        batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId());
-                        outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
-                        context.getBatchesByNodes().put(nodeId, batch);
-                    }
-                    batch.incrementDataEventCount();
-                    dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData().getDataId(), batch
-                            .getBatchId(), triggerRouter.getRouter().getRouterId());
-                    if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(batch,
-                            dataMetaData, context)) {
-                        context.setNeedsCommitted(true);
-                    }
+        long ts = System.currentTimeMillis();
+        for (String nodeId : nodeIds) {
+            if (dataMetaData.getData().getSourceNodeId() == null
+                    || !dataMetaData.getData().getSourceNodeId().equals(nodeId)) {
+                Map<String, OutgoingBatch> batches = context.getBatchesByNodes();
+                OutgoingBatch batch = batches.get(nodeId);
+                if (batch == null) {
+                    batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId());
+                    outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
+                    context.getBatchesByNodes().put(nodeId, batch);
+                }
+                batch.incrementDataEventCount();
+                dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData()
+                        .getDataId(), batch.getBatchId(), triggerRouter.getRouter().getRouterId());
+                if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
+                        batch, dataMetaData, context)) {
+                    context.setNeedsCommitted(true);
                 }
             }
-            context.incrementStat(System.currentTimeMillis() - ts, STAT_INSERT_DATA_EVENTS_MS);
+        }
+        context.incrementStat(System.currentTimeMillis() - ts, STAT_INSERT_DATA_EVENTS_MS);
     }
 
     protected IDataRouter getDataRouter(TriggerRouter trigger) {
@@ -405,7 +420,8 @@ public class RouterService extends AbstractService implements IRouterService {
         if (!StringUtils.isBlank(trigger.getRouter().getRouterType())) {
             router = routers.get(trigger.getRouter().getRouterType());
             if (router == null) {
-                log.warn("RouterMissing", trigger.getRouter().getRouterType(), trigger.getTrigger().getTriggerId());
+                log.warn("RouterMissing", trigger.getRouter().getRouterType(), trigger.getTrigger()
+                        .getTriggerId());
             }
         }
 
@@ -415,8 +431,8 @@ public class RouterService extends AbstractService implements IRouterService {
         return router;
     }
 
-    protected boolean readData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId)
-            throws SQLException {
+    protected boolean readData(ResultSet rs, LinkedList<Data> dataStack,
+            Map<String, Long> transactionIdDataId) throws SQLException {
         if (rs.getString(13) == null) {
             Data data = dataService.readData(rs);
             dataStack.addLast(data);
@@ -431,12 +447,10 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected List<TriggerRouter> getTriggerRoutersForData(Data data) {
         List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(
-                false).get(
-                (data.getTriggerHistory().getTriggerId()));
+                false).get((data.getTriggerHistory().getTriggerId()));
         if (triggerRouters == null || triggerRouters.size() == 0) {
-            triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(
-                    true).get(
-                    (data.getTriggerHistory().getTriggerId()));            
+            triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(true).get(
+                    (data.getTriggerHistory().getTriggerId()));
         }
         return triggerRouters;
     }
