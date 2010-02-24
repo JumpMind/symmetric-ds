@@ -48,6 +48,7 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IRouterContext;
@@ -400,6 +401,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 OutgoingBatch batch = batches.get(nodeId);
                 if (batch == null) {
                     batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId());
+                    if (nodeId.equals(Constants.UNROUTED_NODE_ID)) {
+                        batch.setStatus(Status.OK);
+                    }
                     outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
                     context.getBatchesByNodes().put(nodeId, batch);
                 }
