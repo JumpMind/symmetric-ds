@@ -309,6 +309,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (System.currentTimeMillis()-this.triggerRouterCacheTime > triggerRouterCacheTimeoutInMs) {
             synchronized(this) {
                 triggerRouterCacheByNodeGroupId.clear();
+                triggerRouterCacheTime = System.currentTimeMillis();
             }
         }
         if (!triggerRouterCacheByNodeGroupId.containsKey(myNodeGroupId) || refreshCache ) {
