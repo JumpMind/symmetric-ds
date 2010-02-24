@@ -153,6 +153,7 @@ public class RouterService extends AbstractService implements IRouterService {
         return jdbcTemplate.execute(new ConnectionCallback<Integer>() {
             public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
                 RouterContext context = null;
+                long ts = System.currentTimeMillis();
                 try {
                     context = new RouterContext(sourceNode.getNodeId(), nodeChannel, dataSource);
                     return selectDataAndRoute(c, ref, context);
@@ -168,7 +169,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     } catch (SQLException e) {
                         log.error(e);
                     } finally {
-                        context.logStats(log);
+                        context.logStats(log, System.currentTimeMillis()-ts > 30000);
                         context.cleanup();
                     }
                 }
@@ -391,7 +392,6 @@ public class RouterService extends AbstractService implements IRouterService {
         if (nodeIds == null || nodeIds.size() == 0) {
             nodeIds = new HashSet<String>(1);
             nodeIds.add(Constants.UNROUTED_NODE_ID);
-            log.debug("NoNodesToRouteTo", dataMetaData.getData().getDataId());
         }
         long ts = System.currentTimeMillis();
         for (String nodeId : nodeIds) {
