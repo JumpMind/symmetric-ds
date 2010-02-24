@@ -7,7 +7,7 @@
       xmlns:mml="http://www.w3.org/1998/Math/MathML"
       xmlns:html="http://www.w3.org/1999/xhtml">
     <bookinfo>
-        <title>SymmetricDS User Guide</title>
+        <title>SymmetricDS 2 User Guide</title>
         <authorgroup>
             <author>
                 <firstname>Eric</firstname>
@@ -22,7 +22,7 @@
                 <surname>Hanes</surname>
             </author>
         </authorgroup>
-        <edition>Version 2.0 for SymmetricDS v2.0</edition>
+        <edition>Version 2.0 for SymmetricDS 2</edition>
         <copyright>
             <year>2007 - 2010</year>
             <holder>JumpMind, Inc</holder>
@@ -32,7 +32,7 @@
         </releaseinfo>
         <legalnotice>
             <para>
-                Permission to use, copy, modify, and distribute the SymmetricDS User Guide Version
+                Permission to use, copy, modify, and distribute the SymmetricDS 2 User Guide Version
                 2.0 for any purpose and without fee is hereby granted in perpetuity, provided that
                 the above copyright notice and this paragraph appear in all copies.
             </para>
@@ -49,7 +49,7 @@
         <para>
             This User Guide introduces SymmetricDS and its uses for data synchronization. It is
             intended for users who want to be quickly familiarized with the software, configure it,
-            and use its features.
+            and use its many features.
         </para>
     </preface>
 
