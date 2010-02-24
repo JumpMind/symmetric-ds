@@ -401,7 +401,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 OutgoingBatch batch = batches.get(nodeId);
                 if (batch == null) {
                     batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId());
-                    if (nodeId.equals(Constants.UNROUTED_NODE_ID)) {
+                    if (Constants.UNROUTED_NODE_ID.equals(nodeId)) {
                         batch.setStatus(Status.OK);
                     }
                     outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
