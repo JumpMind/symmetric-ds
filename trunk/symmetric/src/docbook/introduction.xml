@@ -111,7 +111,7 @@
             <title>Transaction Awareness</title>
             <para> Many databases provide a unique transaction identifier associated with the rows that are committed together as a transaction.
                 SymmetricDS stores the transaction identifier, along with the data that changed, so it can play back the transaction exactly
-                as it occurred originally. This means the target database maintains the same transaction integrity as its source. Support for
+                as it occurred originally. This means the target database maintains the same transactional integrity as its source. Support for
                 transaction identification for supported databases is documented in the appendix of this guide.</para>
         </section>
         <section id="plugins">
@@ -133,7 +133,7 @@
                             can change the data in a column or route it somewhere else. One possible use might be to route credit
                             card data to a secure database and blank it out as it loads into a centralized sales database. The
                             filter can also prevent data from reaching the database altogether, effectively replacing the default
-                            data loading process
+                            data loading process.
                         </para>
                     </listitem>
                     <listitem>
@@ -253,7 +253,7 @@
                 SymmetricDS 1.x, the <literal>node_select</literal> expression was used for specifying the desired data routing. It was a SQL
                 expression that qualified the insert into <literal>data_event</literal> from the SymmetricDS triggers. In SymmetricDS 2 there is a
                 new extension point called the data router. Data routers are configured in the router table with a router_type and
-                a <literal>router_expression</literal>. Several different routers have been provided to serve the majority of users routing
+                a <literal>router_expression</literal>. Several different routers have been provided to serve the majority of users' routing
                 needs, but the framework is in place for a SymmetricDS programmer to develop domain- or application-specific
                 routers.
             </para>

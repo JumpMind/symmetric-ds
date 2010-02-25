@@ -5,7 +5,7 @@
  Date
  ------ 
 
-Users Guide 1.x
+User Guide - SymmetricDS 1.x
  
  To get a demo of SymmetricDS running, try the
  {{{guide/html/ch02-getting-started.html}Getting Started}} tutorial.
@@ -24,7 +24,7 @@ Users Guide 1.x
  
  Please be aware that the User Guide is not yet complete, but is useful already.
   
-Users Guide 2.x
+User Guide - SymmetricDS 2
 
  This guide has not been fully updated (or even mostly updated) to reflect the 2.x changes.
  If you are curious about 2.0, check out the guide's {{{/guide/2.x/html/introduction.html#whats-new}What's New in 2.x}} 
