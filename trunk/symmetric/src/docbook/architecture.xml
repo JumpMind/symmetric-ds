@@ -32,10 +32,10 @@
         As a client, the node runs the router job, push job and pull job on a timer thread.  
         The router job uses services to create batches that are targeted at certain nodes.  
         The push job uses services to extract and stream data to
-        another node (i.e. it pushes data).  The response from a push is a list
+        another node (that is, it pushes data).  The response from a push is a list
         of batch acknowlegements to indicate that data was loaded.
         The pull job uses services to load data that is streamed from another node
-        (i.e. it pulls data).  After loading data, a second connection is made to send a list
+        (<emphasis>i.e.</emphasis>, it pulls data).  After loading data, a second connection is made to send a list
         of batch acknowlegements.
     </para>
     <para>
@@ -144,7 +144,7 @@
                     This option means packaging a WAR file and deploying to your favorite
                     web server, like Apache Tomcat.  It's a little more work, but you
                     can configure the web server to do whatever you need.  SymmetricDS can also 
-                    be embedded in an existing web application.
+                    be embedded in an existing web application, if desired.
                 </para>                
             </listitem>
             <listitem>
@@ -162,14 +162,14 @@
                     SymmetricDS.  You would probably use Jetty web server, which is also embeddable.
                     You could bring up an embedded database like Derby or H2.  You could configure the
                     web server, database, or SymmetricDS to do whatever you needed, but it's also
-                    the most work of the 3 options.
+                    the most work of the three options discussed thus far.
                 </para>
             </listitem>
             <listitem>
                 <para>Grails Application</para>
                 <para>                
                     A <ulink url="http://grails.org/plugin/symmetricds">Grails SymmetricDS plugin</ulink> is 
-                    provided at the default Grails plugin site.  This option ends up being a war deployment, but allows 
+                    provided at the default Grails plugin site.  This option ends up being a WAR deployment, but allows 
                     for the use of the Grails SDK for configuring and building the deployment.  The plugin also
                     provides Gorm (Hibernate) access to many of the core database tables.   
                 </para>
@@ -182,13 +182,14 @@
             the <emphasis>Standalone</emphasis> or <emphasis>Web Archive</emphasis> with Tomcat 5.5 or 6.  Deploying to Tomcat
             is a good middle-of-the-road decision that requires a little more work for more flexibility.
         </para>
+        <para>Next, we will go into a little more detail on the first three deployment options listed above.</para>
         <section id="ch04-deploy-war">
             <title>Web Archive</title>
             <para>
                 As a web application archive, a WAR or EAR file is deployed to an application server,
-                such as Tomcat, Jetty, or JBoss.  The structure of the archive should have a web.xml
-                file in the WEB-INF folder, the symmetric.properties file in the WEB-INF/classes folder,
-                and the required JAR files in the WEB-INF/lib folder.
+                such as Tomcat, Jetty, or JBoss.  The structure of the archive should have a <literal>web.xml</literal>
+                file in the <literal>WEB-INF</literal> folder, the <filename>symmetric.properties</filename> file in the <literal>WEB-INF/classes</literal> folder,
+                and the required JAR files in the <literal>WEB-INF/lib</literal> folder.
             </para>
             <mediaobject>
                 <imageobject>
@@ -197,10 +198,9 @@
             </mediaobject>
             <para>
                 The <filename>WEB-INF/web.xml</filename> file
-                is configured with a <literal>SymmetricEngineContextLoaderListener</literal>
+                is configured with a <literal>SymmetricEngineContextLoaderListener</literal>,
                 the required SymmetricFilter mapping, and the required SymmetricServlet mapping.
-                Note that this was changed in version 1.4.0 to make it easier to configure
-                Symmetric.
+           
             </para>
             <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
@@ -254,7 +254,7 @@
                 stream, authenticate nodes, and reject nodes when the server is too busy.
             </para>
             <para>
-                The web.base.servlet.path property in symmetric.properties can be set if the SymmetricServlet needs to
+                The <literal>web.base.servlet.path</literal> property in <filename>symmetric.properties</filename> can be set if the SymmetricServlet needs to
                 coexist with other Servlets.
             </para>            
         </section>
@@ -292,7 +292,8 @@ public class StartSymmetricEngine {
      */
     public static void main(String[] args) throws Exception {
     
-        SymmetricWebServer node = new SymmetricWebServer("classpath://my-application.properties");
+        SymmetricWebServer node = new SymmetricWebServer(
+                                   "classpath://my-application.properties");
 
         // this will create the database, sync triggers, start jobs running
         node.start(8080);
