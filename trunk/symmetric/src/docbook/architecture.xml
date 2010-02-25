@@ -213,7 +213,8 @@
     
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <!-- You can optionally specify other Spring files to load into same context here -->
+        <!-- You can optionally specify other Spring files to 
+                load into same context here -->
         <param-value>classpath:symmetric.xml</param-value>
     </context-param>
     
