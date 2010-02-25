@@ -232,7 +232,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
             String keyStorePassword = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
             ((SslSocketConnector) connector).setKeystore(keyStoreFile);
-            ((SslSocketConnector) connector).setPassword(keyStorePassword);
+            ((SslSocketConnector) connector).setKeyPassword(keyStorePassword);
             ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
             connector.setPort(securePort);
             connector.setHost(host);
