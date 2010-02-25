@@ -11,7 +11,7 @@
         item number, description, and price. The client database sends changes to the root for sale transaction data, such as time
         of sale and items sold. The sample configuration specifies synchronization with a pull method for the client to receive
         data from root, and a push method for the root to receive data from client.</para>
-    <para> To get started, the tutorial will walk you through:
+    <para>This tutorial will walk you through:
       <procedure>
       <step><para>Installing instances of SymmetricDS for the tutorial,</para></step>
       <step><para>Creating separate database for the root and client,</para></step>
@@ -222,7 +222,8 @@ registration.url=http://localhost:8080/sync]]></programlisting>
     </section>
     <section id="ch02-register-node">
         <title>Registering a Node</title>
-        <para> Next, we need to open registration for the client node.  There are several ways to do this; we will use the administration feature on the root node.</para>
+        <para> Next, we need to open registration for the client node so that it may receive its initial load of data and so that it may receive and send data from the root node. 
+         There are several ways to do this; we will use the administration feature on the root node.</para>
         <procedure>
             <step>
                 <para>
@@ -237,7 +238,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
                     <command> ../bin/sym -p root.properties --open-registration "store,1"</command>
                 </para>
                 <para>
-                    The registration is opened for a node group called "store" with an external identifier of "1". This
+                    The registration is now opened for a node group called "store" with an external identifier of "1". This
                     information matches the settings in
                     <filename>client.properties</filename>
                     for the client node. Each node is assigned to a node group and is given an external ID that makes sense for the
@@ -253,7 +254,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
         </procedure>
     </section>
     <section id="ch02-initial-load">
-        <title>Sending Initial Load</title>
+        <title>Sending an Initial Load</title>
         <para>Next, we will send an initial load of data to our store (that is, the client node), again using the root node administration feature.</para>
         <procedure>
             <step>

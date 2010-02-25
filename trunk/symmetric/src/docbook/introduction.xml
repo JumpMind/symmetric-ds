@@ -121,7 +121,7 @@
                 <itemizedlist>
                     <listitem>
                         <para>
-                            Data routing is accomplished by assigning a router type to a <link linkend="table.router" /> configuration.
+                            Data routing is accomplished by assigning a router type to a <link linkend="router" /> configuration.
                             Routers are responsible for identifying what target nodes captured changes should be delivered to.  Custom 
                             routers are possible by providing a class implementing <literal>IDataRouter</literal>. 
                         </para>
