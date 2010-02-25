@@ -25,7 +25,7 @@
         </menu>
 
         <menu name="Documentation">
-            <item name="Users Guides" href="getting_started.html" />
+            <item name="User Guides" href="getting_started.html" />
             <item name="Wiki" href="http://docs.codehaus.org/display/SYMMETRICDS" />            
             <item name="Recent Changes" href="http://jira.codehaus.org/sr/jira.issueviews:searchrequest-printable/temp/SearchRequest.html?fixfor=-3&amp;pid=11906&amp;sorter/field=issuekey&amp;sorter/order=DESC&amp;sorter/field=fixVersions&amp;sorter/order=DESC&amp;tempMax=1000" />
         </menu>
