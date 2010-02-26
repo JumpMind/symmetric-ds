@@ -367,16 +367,18 @@ public class RouterService extends AbstractService implements IRouterService {
 
                 context.resetForNextData();
 
+                Collection<String> nodeIds = null;
                 if (!context.getChannel().isIgnoreEnabled()
                         && triggerRouter.isRouted(data.getEventType())) {
                     IDataRouter dataRouter = getDataRouter(triggerRouter);
                     context.addUsedDataRouter(dataRouter);
                     long ts = System.currentTimeMillis();
-                    Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData,
+                    nodeIds = dataRouter.routeToNodes(context, dataMetaData,
                             findAvailableNodes(triggerRouter, context), false);
-                    context.incrementStat(System.currentTimeMillis() - ts, STAT_DATA_ROUTER_MS);
-                    insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
+                    context.incrementStat(System.currentTimeMillis() - ts, STAT_DATA_ROUTER_MS);                    
                 }
+                
+                insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
 
             }
 
