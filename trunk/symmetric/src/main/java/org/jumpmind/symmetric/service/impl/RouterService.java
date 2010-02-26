@@ -304,7 +304,6 @@ public class RouterService extends AbstractService implements IRouterService {
                 long ts = System.currentTimeMillis();
                 if (readData(rs, dataQueue, transactionIdDataId)) {
                     dataCount++;
-                    context.incrementStat(System.currentTimeMillis() - ts, STAT_READ_DATA_MS);
                 } else {
                     // don't count the event if we didn't read it
                     i--;
@@ -313,8 +312,8 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (hasNext) {
                     hasNext = rs.next();
                 }
+                context.incrementStat(System.currentTimeMillis() - ts, STAT_READ_DATA_MS);
             }
-
             // Go ahead and close the resource if we don't need it anymore.
             if (!hasNext) {
                 JdbcUtils.closeResultSet(rs);
@@ -339,13 +338,14 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (readData(rs, dataQueue, transactionIdDataId)) {
                         dataCount++;
                     }
-                    context.incrementStat(System.currentTimeMillis() - ts, STAT_READ_DATA_MS);
+                  
                     if (hasNext) {
                         hasNext = rs.next();
                     }
+                    context.incrementStat(System.currentTimeMillis() - ts, STAT_READ_DATA_MS);
                 }
             }
-
+            
             return dataCount;
 
         } finally {
@@ -378,6 +378,10 @@ public class RouterService extends AbstractService implements IRouterService {
                     context.incrementStat(System.currentTimeMillis() - ts, STAT_DATA_ROUTER_MS);                    
                 }
                 
+                if (dataMetaData.getData().getSourceNodeId() != null) {
+                	nodeIds.remove(dataMetaData.getData().getSourceNodeId());
+                }
+                
                 insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
 
             }
@@ -397,8 +401,7 @@ public class RouterService extends AbstractService implements IRouterService {
         }
         long ts = System.currentTimeMillis();
         for (String nodeId : nodeIds) {
-            if (dataMetaData.getData().getSourceNodeId() == null
-                    || !dataMetaData.getData().getSourceNodeId().equals(nodeId)) {
+
                 Map<String, OutgoingBatch> batches = context.getBatchesByNodes();
                 OutgoingBatch batch = batches.get(nodeId);
                 if (batch == null) {
@@ -415,8 +418,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
                         batch, dataMetaData, context)) {
                     context.setNeedsCommitted(true);
-                }
-            }
+                }            
         }
         context.incrementStat(System.currentTimeMillis() - ts, STAT_INSERT_DATA_EVENTS_MS);
     }
