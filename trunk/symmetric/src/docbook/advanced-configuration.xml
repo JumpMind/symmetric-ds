@@ -130,13 +130,34 @@
             the <literal>sale_transaction</literal> table to the "store" Node Group from the "corp" Node Group during
             an initial load.
             <programlisting>
-<![CDATA[insert into SYM_TRIGGER 
-  (source_table_name,  channel_id, 
-   sync_on_insert, sync_on_update, sync_on_delete, 
-   last_update_by, last_update_time, create_time)
-values
-  ('sale_transaction', 'sale_transaction', 
-   0, 0, 0, 'demo', current_timestamp, current_timestamp);]]></programlisting>
+<![CDATA[
+insert into sym_trigger (TRIGGER_ID,SOURCE_CATALOG_NAME,
+  SOURCE_SCHEMA_NAME,SOURCE_TABLE_NAME,CHANNEL_ID,
+  SYNC_ON_UPDATE,SYNC_ON_INSERT,SYNC_ON_DELETE,
+  SYNC_ON_INCOMING_BATCH,NAME_FOR_UPDATE_TRIGGER,
+  NAME_FOR_INSERT_TRIGGER,NAME_FOR_DELETE_TRIGGER,
+  SYNC_ON_UPDATE_CONDITION,SYNC_ON_INSERT_CONDITION,
+  SYNC_ON_DELETE_CONDITION,EXTERNAL_SELECT,
+  TX_ID_EXPRESSION,EXCLUDED_COLUMN_NAMES,
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('SALE_TRANSACTION_DEAD',null,null,
+  'SALE_TRANSACTION','transaction',
+  0,0,0,0,null,null,null,null,null,null,null,null,null,
+  current_timestamp,'demo',current_timestamp);
+
+insert into sym_router (ROUTER_ID,TARGET_CATALOG_NAME,TARGET_SCHEMA_NAME,
+  TARGET_TABLE_NAME,SOURCE_NODE_GROUP_ID,TARGET_NODE_GROUP_ID,ROUTER_TYPE,
+  ROUTER_EXPRESSION,SYNC_ON_UPDATE,SYNC_ON_INSERT,SYNC_ON_DELETE,
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('CORP_2_STORE',null,null,null,
+  'corp','store',null,null,1,1,1,
+  current_timestamp,'demo',current_timestamp);
+   
+insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
+  INITIAL_LOAD_SELECT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('SALE_TRANSACTION_DEAD','CORP_2_REGION',100,null,
+   current_timestamp,'demo',current_timestamp);
+   ]]></programlisting>
         </para>
     </section>
     <section id='jms-publishing'>
