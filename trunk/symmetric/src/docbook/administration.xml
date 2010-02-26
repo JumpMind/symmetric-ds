@@ -12,7 +12,7 @@
         <para>
             A trigger row may be updated using SQL to change a synchronization definition.
             SymmetricDS will look for changes each night or whenever the Sync Triggers Job 
-            is run (see next section).  For example, a change to place the table price_changes 
+            is run (see below).  For example, a change to place the table <literal>price_changes</literal> 
             into the price channel would be accomplished with the following statement:
             <programlisting>
 <![CDATA[update SYM_TRIGGER
@@ -23,7 +23,7 @@ where source_table_name = 'price_changes';
 ]]></programlisting>            
             All configuration should be managed centrally at the registration node.  If enabled, configuration 
             changes will be synchronized out to client nodes.  When trigger changes reach the client
-            nodes the Sync Triggers process will run automatically.
+            nodes the Sync Triggers Job will run automatically.
          </para>
          <para>   
             Centrally, the trigger changes will not take effect until the Sync Triggers Job runs.
@@ -35,13 +35,13 @@ where source_table_name = 'price_changes';
     <section id="changing-configuration">
         <title>Changing Configuration</title>
         <para>
-            The configuration of your system as defined in the sym_* tables may be modified at runtime.  By default, any changes made to 
-            the sym_* tables (with the exception of sym_node) should be made at the registration server.  The changes will
+            The configuration of your system as defined in the <literal>sym_*</literal> tables may be modified at runtime.  By default, any changes made to 
+            the <literal>sym_*</literal> tables (with the exception of <literal>sym_node</literal>) should be made at the registration server.  The changes will
             be synchronized out to the leaf nodes by SymmetricDS triggers that are automatically created on the tables.
          </para>
          <para>   
             If this behavior is not desired, the feature can be turned off using a parameter.  Custom triggers may be added
-            to the sym_* tables when the auto syncing feature is disabled.
+            to the <literal>sym_*</literal> tables when the auto syncing feature is disabled.
         </para>
     </section>    
     <section id="sync-triggers">
@@ -70,14 +70,14 @@ where source_table_name = 'price_changes';
             A configuration entry in Trigger without any history in Trigger Hist results in a new
             trigger being created (N).  The Trigger Hist stores a hash of the underlying table, so
             any alteration to the table causes the trigger to be rebuilt (S).  When the 
-            last_update_time is changed on the Trigger entry, the configuration change causes
+            <literal>last_update_time</literal> is changed on the Trigger entry, the configuration change causes
             the trigger to be rebuilt (C).  If an entry in Trigger Hist is missing the
             corresponding database trigger, the trigger is created (T).
         </para>
         <para>
             The process of examining triggers and rebuilding them is automatically run during startup and
             each night by the SyncTriggersJob.  The user can also manually run the process at any time 
-            by invoking the syncTriggers() method over JMX.  The SyncTriggersJob is enabled by default 
+            by invoking the <literal>syncTriggers()</literal> method over JMX.  The SyncTriggersJob is enabled by default 
             to run at 15 minutes past midnight.  If SymmetricDS is being run from a collection of servers
             (multiple instances of the same Node running against the same database), then locking
             should be enable to prevent database contention.  The following runtime properties
@@ -161,16 +161,16 @@ where source_table_name = 'price_changes';
         Node registration is the act of setting up a new <link linkend="node">node</link> and
          <link linkend="node_security">node security</link> so that when the new node is brought online
          it is allowed to join the system.  Nodes are only allowed to register if rows exist for the
-         node and the registration_enabled flag is set to 1.  If the <emphasis>auto.registration</emphasis>
+         node and the registration_enabled flag is set to 1.  If the <literal>auto.registration</literal>
          SymmetricDS property is set to true, then when a node attempts to register, if registration
          has not already occurred, the node will automatically be registered.
        </para>
        <para> 
-        SymmetricDS allows you to have multiple nodes with the same external_id.  Out of the box, openRegistration 
+        SymmetricDS allows you to have multiple nodes with the same <literal>external_id</literal>.  Out of the box, openRegistration 
         will open a new registration if a registration already exists for a node with the same external_id.  A new 
-        registration means a new node with a new node_id and the same external_id will be created.  
-        If you want to re-register the same node you can use the reOpenRegistration JMX
-        method which takes a node_id as an argument.
+        registration means a new node with a new <literal>node_id</literal> and the same <literal>external_id</literal> will be created.  
+        If you want to re-register the same node you can use the <literal>reOpenRegistration()</literal> JMX
+        method which takes a <literal>node_id</literal> as an argument.
         </para>
     </section>
     <section id="running-service-windows">

@@ -224,7 +224,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
           The publisher property on the XmlPublisherDataLoaderFilter takes an interface of type IPublisher.  The implementation
           demonstrated here is an implementation that publishes to JMS using Spring's 
           <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
-          Other implementation's of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
+          Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
         </para>
         <para>
           The above configuration will publish XML similiar to the following:
@@ -282,8 +282,9 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
     <section id="purge">
         <title>Database Purging</title>
         <para>
-            Purging is the act of cleaning up captured data in SymmetricDS's runtime tables.  Data is purged through
-            delete statements by the purge job.  Only data that has been successfully synchronized will be purged.  Purged tables include:
+            Purging is the act of cleaning up captured data that is no longer needed in SymmetricDS's runtime tables.  
+            Data is purged through
+            delete statements by the <emphasis>Purge Job</emphasis>.  Only data that has been successfully synchronized will be purged.  Purged tables include:
             <itemizedlist>
                 <listitem>
                     <link linkend="data">DATA</link>
@@ -313,7 +314,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         </para>
         <para>
             The purge properties should be adjusted according to how much data is flowing through the system and the amount of storage space the database has.
-            For an initial deployment it is recommended that the purge properties be kept at the defaults.  It is often helpful to be able to look at 
+            For an initial deployment it is recommended that the purge properties be kept at the defaults, since it is often helpful to be able to look at 
             the captured data in order to triage problems and profile the synchronization patterns.  When scaling up to more nodes, it is recomended that the 
             purge parameters be scaled back to 24 hours or less.  
         </para>
@@ -322,7 +323,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
     <section id="temporary-files">
         <title>Temporary Files</title>
         <para>
-        SymmetricDS creates temporary extraction and data load files with the CSV payload of a syncrhonization when
+        SymmetricDS creates temporary extraction and data load files with the CSV payload of a synchronization when
         the value of the <literal>stream.to.file.threshold.bytes</literal> SymmetricDS property has been reached.  Before reaching the threshold, files 
         are streamed to/from memory.  The default threshold value is 32,767 bytes. This feature may be turned off by setting the <literal>stream.to.file.enabled</literal> 
         property to false.
@@ -344,8 +345,9 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  A node might be clustered to provide load balancing and failover, for example.
         </para>
         <para>
-        Typically when this is done a hardware load balancer is used
-        to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  Also, the <link linkend='basic-properties'>sync.url</link>
+        When clustered, a hardware load balancer is typically used
+        to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  
+        Also, the <link linkend='basic-properties'>sync.url</link>
         SymmetricDS property should be set to the URL of the load balancer.  
         </para>
         <para>
@@ -368,8 +370,8 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
     <section id='logging'>
         <title>Logging Configuration</title>    
         <para>
-        The standalone SymmetricDS installation uses <ulink url="http://logging.apache.org/log4j/1.2/index.html">Log4J</ulink> for logging.  The configuration file is conf/log4j.xml.
-        The log4j.xml file has hints as to what logging can be enabled for useful, finer-grained logging.
+        The standalone SymmetricDS installation uses <ulink url="http://logging.apache.org/log4j/1.2/index.html">Log4J</ulink> for logging.  The configuration file is  <literal>conf/log4j.xml</literal>.
+        The <literal>log4j.xml</literal> file has hints as to what logging can be enabled for useful, finer-grained logging.
         </para>
         <para>
         SymmetricDS proxies all of its logging through <ulink url="http://commons.apache.org/logging/">Commons Logging</ulink>.  When deploying to an application server, if Log4J is not 
@@ -402,15 +404,15 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         </para>
         <para>
              SymmetricDS will look for Spring configured extensions in the application Classpath by importing any Spring 
-             XML configuration files found matching the following pattern: META-INF/services/symmetric-*-ext.xml.  When packaged in
-             a jar file the META-INF directory should be at the root of the jar file.  When packaged in a war file, the META-INF directory
-             should be in the WEB-INF/classes directory.
+             XML configuration files found matching the following pattern: <literal>META-INF/services/symmetric-*-ext.xml</literal>.  When packaged in
+             a jar file the <literal>META-INF</literal> directory should be at the root of the jar file.  When packaged in a war file, the <literal>META-INF</literal> directory
+             should be in the <literal>WEB-INF/classes</literal> directory.
         </para>
         <section id="parameter-filter">
             <title>IParameterFilter</title>
             <para>
                 Parameter values can be specified in code using a parameter filter.  Note that there can be only one parameter
-                filter per engine instance.  The IParameterFilter replaces the depreciated IRuntimeConfig from prior releases.
+                filter per engine instance.  The IParameterFilter replaces the deprecated IRuntimeConfig from prior releases.
                 <programlisting><![CDATA[public class MyParameterFilter 
     implements IParameterFilter, INodeGroupExtensionPoint {
 
@@ -440,30 +442,30 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         <section id="extensions-data-loader-filter">
             <title>IDataLoaderFilter</title>         
             <para>
-                Data can be filtered as it is loaded into the target database or when
+                Data can be filtered as it is loaded into the target database.  It can also be
+                filtered when
                 it is extracted from the source database.
-            </para>            
-            <para>
+            
                 As data is loaded into the target database, a filter can change the
                 data in a column or save it somewhere else.  It can also specify by the
-                return type of the function call that the data loader should continue on 
+                return value of the function call that the data loader should continue on 
                 and load the data (by returning true) or ignore it (by returning false). One 
                 possible use of the filter might be to
                 route credit card data to a secure database and blank it out as it loads 
-                into less-restricted reporting database.
+                into a less-restricted reporting database.
             </para>
             <para>
                 An IDataLoaderContext is passed to each of the callback methods.  A new 
                 context is created for each synchronization.  The context provides methods to 
-                lookup column indexes by column name, get table meta data, and provides access to 
-                old data if the sync_column_level flag is enabled.  The context also provides a means 
+                lookup column indexes by column name, get table meta data, and access to 
+                old data if the <literal>sync_column_level</literal> flag is enabled.  The context also provides a means 
                 to share data during a synchronization between different rows of data that are 
                 committed in a  database transaction and are in the same channel.  It does so by 
                 providing a context cache which can be populated by the extension point.
             </para>  
             <para>
                 Many times the IDataLoaderFilter will be combined with the IBatchListener.  The 
-                XmlPublisherFilter (in the org.jumpmind.symmetric.ext package) is a good example 
+                XmlPublisherFilter (in the <literal>org.jumpmind.symmetric.ext</literal> package) is a good example 
                 of using the combination of the two extension points in order to create XML messages 
                 to be published to JMS.
             </para>          
@@ -497,7 +499,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
             </para>
             <para>
                 The filter class is specified as a Spring-managed bean.  A custom Spring XML file
-                is specified as follows in a jar at META-INF/services/symmetric-myfilter-ext.xml.
+                is specified as follows in a jar at <literal>META-INF/services/symmetric-myfilter-ext.xml</literal>.
                 
                 <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -554,7 +556,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
             <title>ISyncUrlExtension</title>
             <para>
              This extension point is used to select an appropriate URL based on
-             the URI provided in the sync_url column of sym_node.
+             the URI provided in the <literal>sync_url</literal> column of <literal>sym_node</literal>.
             </para>
             <para>
              To use this extension point configure the sync_url for a node with the
@@ -626,8 +628,8 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
     <section id="encrypted-passwords">
         <title>Encrypted Passwords</title>
         <para>
-            The db.user and db.password properties will accept encrypted text, which protects
-            against casual observation.  The text is prefixed with "enc:" to indicate
+            The <literal>db.user</literal> and <literal>db.password properties</literal> will accept encrypted text, which protects
+            against casual observation.  The text is prefixed with <literal>enc:</literal> to indicate
             that it is encrypted.  To encrypt text, use the following command:
         </para>
         <para>
@@ -721,7 +723,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                 This keystore contains the certificate aliased as "sym" for use in testing
                 and easing deployments.                
                 The trusted keystore can be overridden
-                by specifying the "javax.net.ssl.trustStore" system property.
+                by specifying the <literal>javax.net.ssl.trustStore</literal> system property.
             </para>
             <para>
                 When SymmetricDS is run as a secure server with the "sym" launcher,
