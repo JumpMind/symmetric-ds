@@ -7,8 +7,23 @@
     <para>Now that several of the features of SymmetricDS have been discussed, a quick working example of SymmetricDS is in order. 
         This section contains a hands-on tutorial that demonstrates how to synchronize a sample database between two running
         instances of SymmetricDS. This example models a retail business that has a central office database (called "root") and
-        multiple retail store databases (called "client"). The root database sends changes to the client for item data, such as
-        item number, description, and price. The client database sends changes to the root for sale transaction data, such as time
+        multiple retail store databases (called "client").  For the tutorial, we will have only one "client", as shown in the figure below.
+        </para>
+        
+        <para>
+                <figure>
+                    <title>Simplified Two Tiered Retail Store Tutorial Example</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata fileref="images/tutorial-arch.gif" format="GIF" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+            </para>     
+         <para>
+        
+        The root SymmetricDS instance sends changes to the client for item data, such as
+        item number, description, and price. The client SymmetricDS sends changes to the root for sale transaction data, such as time
         of sale and items sold. The sample configuration specifies synchronization with a pull method for the client to receive
         data from root, and a push method for the root to receive data from client.</para>
     <para>This tutorial will walk you through:
