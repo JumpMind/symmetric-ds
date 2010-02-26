@@ -18,7 +18,7 @@
         <link linkend="data_event">data event</link> and <link linkend="outgoing_batch">outgoing batch</link>.  The Route Job determines which <link linkend="node">nodes</link>
         data will be sent to, as well as how much data will be batched together for transport.  When the <literal>start.route.job</literal> SymmetricDS property is set to 
         <literal>true</literal>, the frequency that routing occurs is controlled by the <literal>job.routing.period.time.ms</literal>.  Each time data is routed, the 
-        <link linkend="data_ref">data ref</link> table is updated with the id of the last contiguous data row to have been processed.  This is done so the query to find
+        <link linkend="data_ref">data_ref</link> table is updated with the id of the last contiguous data row to have been processed.  This is done so the query to find
         unrouted data is optimal. 
         </para>
         <para>
@@ -45,8 +45,8 @@
     <section id="multi-tier">
         <title>Multi-Tiered Synchronization</title>
         <para>
-             As shown <link linkedn="terminology-node-organization">previously</link>, at times there may be
-              scenarios where data needs to flow through multiple tiers of nodes that
+            As shown <link linkedn="terminology-node-organization">previously</link>, at times there may be
+            scenarios where data needs to flow through multiple tiers of nodes that
             are organized in a tree-like network with each tier requiring a different subset of data.  For example,
             you may have a system where the lowest tier may by a computer or device located in a store.  Those devices 
             may connect to a server located physically at that store.  Then the store server may communicate with 
@@ -55,16 +55,19 @@
             the tier would belong to the node group representing that tier.   
         </para>
         <para>
-            A node will always push and pull data to other node groups according to the node group link configuration.  
-            A node can only pull and push data to other nodes that are represented as rows in the node table in its database.  Because of this, a tree-like 
+            A node will always push and pull data to other node groups according to the node group link configuration.
+            A node can only pull and push data to other nodes that are represented <literal>node</literal> table in its database and 
+            having <literal>sync_enabled = 1</literal>.
+            Because of this, a tree-like 
             hierarchy of nodes can be created by having only a subset of nodes belonging to the same node group represented at the different branches of the tree.  
         </para>
         <para>
             If auto registration is turned <emphasis>off</emphasis>, then this setup must occur manually by opening registration 
-            for the desired nodes at the desired parent node and by configuring each node's registration.url to be the parent node's URL.  
+            for the desired nodes at the desired parent node and by configuring each node's <literal>registration.url</literal>
+             to be the parent node's URL.  
             The parent node is always tracked by the setting of the parent's <literal>node_id</literal> in the <literal>created_at_node_id</literal> column of the new node.  
-            When a node registers and downloads its configuration it is always provided the configuration for all nodes that were 
-            <emphasis>created</emphasis> at the node that it is registering with.
+            When a node registers and downloads its configuration it is always provided the configuration for nodes 
+            that might register with the node itself based on the Node Group Links defined in the parent node.
         </para>
                
     </section>
@@ -74,7 +77,8 @@
             When deploying a multi-tiered system it may be advantageous to have only one registration server, even though the parent node of a registering node
             could be any of a number of nodes in the system.  In SymmetricDS the parent node is always the node that a child registers with.  The 
             <link linkend="registration_redirect">registration_redirect</link> table allows a single node, usually the root server in the network, to
-            redirect registering nodes to their true parents.  It does so based on a mapping found in the table of <literal>external_id</literal> to the parent's <literal>node_id</literal>.
+            redirect registering nodes to their true parents.  It does so based on a mapping found in the table of the external id (<literal>registrant_external_id</literal>) to the parent's node 
+            id (<literal>registration_node_id</literal>).
         </para>
         <para>
             For example, if it is desired to have a series of regional servers that workstations at retail stores get assigned to based on their <literal>external_id</literal>, the store number, then
