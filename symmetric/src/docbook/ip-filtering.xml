@@ -11,7 +11,7 @@
         <title>IP Filtering</title>
         <para>
             SymmetricDS supports restricting IP addresses of clients that are allowed to 
-            connect to servers.The following filtering functionality is supported for IPv4
+            connect to servers. The following filtering functionality is supported for IPv4
             addresses (IPv6 is currently not supported).
         </para> 
         <itemizedlist>
@@ -62,7 +62,7 @@
     <section xml:id="filter.literal">
         <title>Literal Filters</title>
         <para>
-            Literal filter definitions are just that. They define a single IP address that is authorized
+            Literal filter definitions are just that: they define a single IP address that is authorized
             to connect to the server. The only requirement is that the filter string is a complete, well
             formatted IP address.
         </para>        
