@@ -49,7 +49,7 @@ where source_table_name = 'price_changes';
         <para>
             SymmetricDS examines the current configuration, corresponding database triggers,
             and the underlying tables to determine if database triggers need created or updated.
-            The change activity is recorded on the <xref linkend="trigger_hist">trigger_hist</xref> table with a reason for the
+            The change activity is recorded on the <xref linkend="trigger_hist" xrefstyle="select: title page">trigger_hist</xref> table with a reason for the
             change.  The following reasons for a change are possible:
 
             <itemizedlist>
