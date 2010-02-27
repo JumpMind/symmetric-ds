@@ -51,6 +51,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         // this should generate 15 batches because the max batch size is 1
         insert(TEST_TABLE_2, 15, false);
         insert(TEST_TABLE_1, 50, true);
+        
         getRoutingService().routeData();
 
         final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 16 : 17;
@@ -230,8 +231,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         testChannel.setMaxBatchSize(10000);
         testChannel.setBatchAlgorithm("default");
         getConfigurationService().saveChannel(testChannel, true);
-        final int ROWS_TO_INSERT = 100000;
-        final int NODES_TO_INSERT = 1000;
+        final int ROWS_TO_INSERT = 1000;
+        final int NODES_TO_INSERT = 10;
         logger.info(String.format("About to insert %s nodes", NODES_TO_INSERT));
         for (int i = 0; i < 1000; i++) {
             String nodeId = String.format("100%s", i);

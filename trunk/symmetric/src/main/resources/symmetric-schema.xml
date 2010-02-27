@@ -74,6 +74,8 @@
         <column name="max_data_to_route" type="INTEGER" required="true" default="100000" description="The maximum number of data rows to route for a channel at a time." />        
         <column name="extract_period_millis" type="INTEGER" required="true" default="0" description="The minimum number of milliseconds allowed between attempts to extract data for targeted at a node_id."/>
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether channel is enabled or not."/>
+        <column name="use_old_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the old data during routing."/>
+        <column name="use_row_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the row data during routing."/>
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>
         <column name="description" type="VARCHAR" size="1000" description="Description on the type of data carried in this channel."/>
     </table>

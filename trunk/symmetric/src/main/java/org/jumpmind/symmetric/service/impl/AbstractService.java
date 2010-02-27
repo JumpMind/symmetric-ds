@@ -84,6 +84,10 @@ abstract class AbstractService implements IService {
     public String getSql(String key) {
         return sql.get(key);
     }
+    
+    public Map<String,String> getSql() {
+        return this.sql;
+    }
 
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
