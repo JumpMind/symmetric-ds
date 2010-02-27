@@ -180,8 +180,7 @@
                     <listitem>
                         <para>
                             The database username, which is used to login, create, and update SymmetricDS tables.
-                            To use an encrypted username, see the section 
-                            <link linkend="encrypted-passwords">Encrypted Passwords</link>.
+                            To use an encrypted username, see <xref linkend="encypted-passwords"/>.
                             If
                             <literal>db.jndi.name</literal>
                             is set, this property is ignored. [&#xA0;Default:&#xA0;symmetric&#xA0;]
@@ -195,8 +194,7 @@
                     <listitem>
                         <para>
                             The password for the database user. 
-                            To use an encrypted password, see the section 
-                            <link linkend="encrypted-passwords">Encrypted Passwords</link>.
+                            To use an encrypted password, see <xref linkend="encrypted-passwords"/>.
                             If
                             <literal>db.jndi.name</literal>
                             is set, this property is ignored. [&#xA0;Default:&#xA0;]
@@ -511,7 +509,7 @@
                         <para>
                             Whether the watchdog job is enabled for this node. The watchdog job monitors child
                             nodes to detect if they are offline.  Refer to 
-                            <link linkend="extensions-offline-server-listener">IOfflineServerListener</link> for
+                            <xref linkend="extensions-offline-server-listener"/> for
                             more information.
                             [&#xA0;Default:&#xA0;true&#xA0;]
                         </para>
@@ -623,7 +621,7 @@
                     <listitem>
                         <para>
                             This is the minimum number of minutes that a child node has been offline before taking action.  Refer to 
-                            <link linkend="extensions-offline-server-listener">IOfflineServerListener</link> for
+                            <xref linkend="extensions-offline-server-listener"/> for
                             more information.  
                             [&#xA0;Default:&#xA0;120&#xA0;]
                         </para>

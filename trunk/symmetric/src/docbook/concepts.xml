@@ -164,10 +164,10 @@ values
         <para>
             Data changes in the database are captured in the order that they occur, and that order is preserved
             when synchronizing to other nodes.  Some data may need priority for synchronization despite
-            the normal order of events.  Tables can be grouped together in <link linkend="channel">channels</link>.  
+            the normal order of events.  Tables can be grouped together in <emphasis>channels</emphasis>.  
             Channels provide a processing order for groups of tables, a limit on the
             amount of data that will be batched together, and isolation from errors in other channels.  
-            By categorizing data into channels and assigning them to <link linkend="trigger">triggers</link>, the user gains more control and visibility into
+            By categorizing data into channels and assigning them to <xref linkend="trigger" xrefstyle="select: title page"/>s, the user gains more control and visibility into
             the flow of data.  In addition, SymmetricDS allows for synchronization to be enabled, suspended, or scheduled by channels as well. The frequency of synchronization and order that data gets synchronized is also controlled at 
             the channel level.
         </para>
@@ -256,11 +256,12 @@ values
             
             
     <section id="trigger">
-        <title>Triggers</title>
+        <title>Trigger</title>
         <para>
-            SymmetricDS captures synchronization data using database triggers. Triggers are defined in the <link linkend="trigger">trigger</link> table.  
+            SymmetricDS captures synchronization data using database triggers. Triggers are defined in the 
+              <xref linkend="table_trigger" xrefstyle="select: title page"/> table.  
             Each record is used by SymmetricDS when generating database triggers.  Database triggers are only generated when a trigger 
-            is associated with a <link linkend="router">router</link> whose source_node_group_id matches the node group id of the current node.
+            is associated with a <xref linkend="router" xrefstyle="select: title page"/> whose <literal>source_node_group_id</literal> matches the node group id of the current node.
         </para>
         <para>
             The following SQL statement defines a trigger that will capture data for a table named "item"
@@ -274,7 +275,7 @@ values
         </para>
     </section>
     <section id="router">
-    <title>Routers</title>
+    <title>Router</title>
     
       <para>
                 Routers provided in the base implementation currently include:
@@ -329,8 +330,9 @@ values
         <title>Column Match Router</title>
         <para>
             Sometimes requirements may exist that require data to be routed based on the current value or the old value of a 
-            column in the table that is being routed.  Column routers are configured by setting the router_type column on the <link linkend="router">router</link> table
-            to 'column' and setting the router_expression column to an equality expression that represents
+            column in the table that is being routed.  Column routers are configured by setting the <literal>router_type</literal> column on the 
+              <xref linkend="table_router" xrefstyle="select: title page"/> table
+            to <literal>column</literal> and setting the <literal>router_expression</literal> column to an equality expression that represents
             the expected value of the column.
         </para>
         <para>             
@@ -379,7 +381,7 @@ values
     'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 
 ]]></programlisting>
-            Attributes on a <xref linkend="node" xrefstyle="select: title "/> that can be referenced with tokens include:
+            Attributes on a <xref linkend="node" xrefstyle="select: title page"/> that can be referenced with tokens include:
             <itemizedlist>
                 <listitem>NODE_ID</listitem>
                 <listitem>EXTERNAL_ID</listitem>
