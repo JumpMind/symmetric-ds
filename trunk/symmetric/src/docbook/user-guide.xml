@@ -54,7 +54,7 @@
     </preface>
 
     <xi:include href="introduction.xml" />
-    <xi:include href="concepts.xml" />
+    <xi:include href="symmetric-schema.xml" />
     <xi:include href="architecture.xml" />
     <xi:include href="basic-configuration.xml" />
     <xi:include href="advanced-configuration.xml" />
