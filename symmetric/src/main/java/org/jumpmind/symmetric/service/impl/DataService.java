@@ -139,6 +139,10 @@ public class DataService extends AbstractService implements IDataService {
                 Constants.CHANNEL_RELOAD, null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
+    
+    public int countDataInRange(long firstDataId, long secondDataId) {
+        return jdbcTemplate.queryForInt(getSql("countDataInRangeSql"), firstDataId, secondDataId);
+    }
 
     public void insertCreateEvent(final Node targetNode, final TriggerRouter triggerRouter, String xml) {
         TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()

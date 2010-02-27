@@ -69,6 +69,11 @@ public interface IDataService {
     public void insertSqlEvent(final Node targetNode, String sql);
 
     public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, String xml);
+    
+    /**
+     * Count the number of data ids in a range
+     */
+    public int countDataInRange(long firstDataId, long secondDataId);
 
     public void saveDataRef(DataRef dataRef);
 

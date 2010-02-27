@@ -41,6 +41,10 @@ public class MockDataService implements IDataService {
     public void addReloadListener(IReloadListener listener) {
 
     }
+    
+    public int countDataInRange(long firstDataId, long secondDataId) {
+        return 0;
+    }
 
     public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId,
             String routerId) {
