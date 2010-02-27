@@ -55,12 +55,12 @@
 
     <xi:include href="introduction.xml" />
     <xi:include href="concepts.xml" />
-    <xi:include href="symmetric-schema.xml" />
     <xi:include href="architecture.xml" />
     <xi:include href="advanced-configuration.xml" />
     <xi:include href="administration.xml" />
     <xi:include href="ip-filtering.xml" />
-    <xi:include href="startup-properties.xml" />
+    <xi:include href="symmetric-schema.xml" />
+    <xi:include href="parameters.xml" />
     <xi:include href="databases.xml" />
     <xi:include href="data-format.xml" />
     <xi:include href="version-numbering.xml" />
