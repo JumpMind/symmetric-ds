@@ -231,7 +231,8 @@
                 record data changes as well as the nodes to which the changes must be applied as row inserts into the <literal>data_event</literal>
                 table. Thus, the number of row-inserts grows linearly with the number of client nodes. This can lead to an obvious
                 performance issue as the number of nodes increases. In addition, the problem is made worse at times due to
-                synchronizing nodes updating the same <literal>data_event</literal> table as part of the batching process while the row-inserts are
+                synchronizing nodes updating the same <xref linkend="table_data_event" xrefstyle="select: title page"/> table as part
+                 of the batching process while the row-inserts are
                 being created.</para>
             <para>In SymmetricDS 2, triggers capture <emphasis>only</emphasis> data changes, not the node-specific details. The node-specific
                 row-inserts are replaced with a new routing mechanism that does both the routing and the batching of data on one
