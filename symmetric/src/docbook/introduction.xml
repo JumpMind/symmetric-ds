@@ -3,8 +3,8 @@
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Introduction</title>
-    <section id="intro">
-        <title>Introduction</title>
+    <section id="overview">
+        <title>Overview</title>
         <para>This User Guide will introduce both basic and advanced concepts in the configuration
             of SymmetricDS. By the end of this chapter, you will have a better understanding of SymmetricDS' capabilities, and
             many of its basic concepts. This chapter also includes a hands-on, step-by-step, tutorial meant to demonstrate some of
