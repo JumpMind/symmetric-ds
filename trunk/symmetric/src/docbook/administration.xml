@@ -158,8 +158,8 @@ where source_table_name = 'price_changes';
     <section id="registration">
         <title>Opening Registration</title>
         <para>
-        Node registration is the act of setting up a new <xref linkend="node" xrefstyle="select: title page"/> and
-         <xref linkend="node_security" xrefstyle="select: title page"/> so that when the new node is brought online
+        Node registration is the act of setting up a new <xref linkend="table_node" xrefstyle="select: title page"/> and
+         <xref linkend="table_node_security" xrefstyle="select: title page"/> so that when the new node is brought online
          it is allowed to join the system.  Nodes are only allowed to register if rows exist for the
          node and the registration_enabled flag is set to 1.  If the <literal>auto.registration</literal>
          SymmetricDS property is set to true, then when a node attempts to register, if registration
