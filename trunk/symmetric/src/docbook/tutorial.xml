@@ -117,8 +117,8 @@ registration.url=http://localhost:8080/sync]]></programlisting>
                 your database vendor. Make sure the name of the databases you create match the settings in the properties files.
             </para>
             <para>
-                See the appendix
-                <link linkend="databases">Database Notes</link>
+                See
+                 <xref linkend="databases" />
                 for compatibility with your specific database.
             </para>
         </important>

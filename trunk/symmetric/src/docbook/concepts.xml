@@ -299,8 +299,8 @@ values
         <para>
             The simplest router is a router that sends all the data that is captured by its 
             associated triggers to all the nodes that belong to the target node group defined
-            in the router.  A router is defined as a row in the <link linkend="router">router</link> table.
-            It is then linked to triggers in the <link linkend="trigger_router">trigger router</link> table.  
+            in the router.  A router is defined as a row in the <xref linkend="table_router" xrefstyle="select: title page"/> table.
+            It is then linked to triggers in the <xref linkend="table_trigger_router" xrefstyle="select: title page"/> table.  
         </para>
         <para>
             The following SQL statement defines a router that will send data from the 'corp' group to the 'store' group.            
@@ -379,7 +379,7 @@ values
     'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 
 ]]></programlisting>
-            Attributes on <link linkend="node">node</link> that can be referenced with tokens include:
+            Attributes on a <xref linkend="node" xrefstyle="select: title "/> that can be referenced with tokens include:
             <itemizedlist>
                 <listitem>NODE_ID</listitem>
                 <listitem>EXTERNAL_ID</listitem>
@@ -387,7 +387,7 @@ values
             </itemizedlist>
         </para>   
         <para>
-            Consider a table that needs to be routed to a redirect node defined by its external_id in the <link linkend="registration_redirect">registration redirect</link> table.  The following 
+            Consider a table that needs to be routed to a redirect node defined by its external id in the <xref linkend="table_registration_redirect" xrefstyle="select: title page"/> table.  The following 
             SQL statement will insert a column router to accomplish that.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
@@ -436,8 +436,8 @@ values
             to, we need to reference the master Order record.
         </para>
         <para>             
-            There are two possible ways to route the OrderLineItem in SymmetricDS.  One is to configure a 'subselect' router_type on the <link linkend="router">router</link> table
-            and the other is to configure an external_select on the <link linkend="trigger">trigger</link> table. 
+            There are two possible ways to route the OrderLineItem in SymmetricDS.  One is to configure a 'subselect' router_type on the <xref linkend="table_router" xrefstyle="select: title page"/> table
+            and the other is to configure an external_select on the <xref linkend="table_trigger" xrefstyle="select: title page"/> table. 
         </para>
         <para>
             A 'subselect' is configured with a router_expression that is a SQL select statement which returns a result set of the node_ids that need routed to.  Column tokens can
@@ -465,7 +465,7 @@ values
 ]]></programlisting>
          </para>            
         <para>
-            Alternatively, when using an external_select on the <link linkend="trigger">trigger</link> table, data is captured in the EXTERNAL_DATA column of the <link linkend="data">data</link> table at the time a trigger 
+            Alternatively, when using an external_select on the <xref linkend="table_trigger" xrefstyle="select: title page"/> table, data is captured in the EXTERNAL_DATA column of the <xref linkend="table_data" xrefstyle="select: title page"/> table at the time a trigger 
             fires.  The EXTERNAL_DATA can then be used for routing by using a router_type of 'column'.  The advantage of this approach is that it is very unlikely that the master Order table
             will have been deleted at the time any DML accures on the OrderLineItem table.  It also is a bit more effcient than the 'subselect' approach, although the triggers produced do run 
             the extra external_select inline with application database updates.  
