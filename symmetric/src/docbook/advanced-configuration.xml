@@ -349,7 +349,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         <para>
         When clustered, a hardware load balancer is typically used
         to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  
-        Also, the <link linkend='basic-properties'>sync.url</link>
+        Also, the <link linkend='basic-node-properties'>sync.url</link>
         SymmetricDS property should be set to the URL of the load balancer.  
         </para>
         <para>
