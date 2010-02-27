@@ -195,8 +195,11 @@ public class RouterService extends AbstractService implements IRouterService {
                                     || lastDataId == dataId) {
                                 lastDataId = dataId;
                             } else {
-                                if (isDataGapExpired(dataId)) {
-                                    lastDataId = dataId;
+                                if (dataService.countDataInRange(lastDataId, dataId) == 0) {
+                                    if (isDataGapExpired(dataId)) {
+                                        log.info("RouterSkippingDataIdsGapExpired", lastDataId, dataId);
+                                        lastDataId = dataId;
+                                    }                                    
                                 } else {
                                     // detected a gap!
                                     break;
@@ -207,8 +210,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 });
         long updateTimeInMs = System.currentTimeMillis() - ts;
-        if (updateTimeInMs > 5000) {
-            log.debug("RoutedDataRefUpdateTime", updateTimeInMs);
+        if (updateTimeInMs > 10000) {
+            log.info("RoutedDataRefUpdateTime", updateTimeInMs);
         }
         if (ref.getRefDataId() != lastDataId) {
             dataService.saveDataRef(new DataRef(lastDataId, new Date()));
@@ -310,12 +313,12 @@ public class RouterService extends AbstractService implements IRouterService {
                             triggerRouter, context), false);
                     context.incrementStat(System.currentTimeMillis() - ts,
                             RouterContext.STAT_DATA_ROUTER_MS);
-                    
+
                     if (data.getSourceNodeId() != null && nodeIds != null) {
-                        nodeIds.remove(data.getSourceNodeId());    
+                        nodeIds.remove(data.getSourceNodeId());
                     }
-                }                
-                
+                }
+
                 insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
             }
 

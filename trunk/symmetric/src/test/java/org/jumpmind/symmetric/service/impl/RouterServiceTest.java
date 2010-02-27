@@ -523,6 +523,26 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     public void testDataGapExpired() {
         // TODO
     }
+    
+    @Test 
+    public void testUnroutedDataCreatedBatch() {
+        // TODO        
+    }
+    
+    @Test 
+    public void testDataLoadedFromSourceNodeIsUnrouted() {
+        // TODO        
+    }
+    
+    @Test
+    public void testDontSelectOldDataDuringRouting() {
+        // TODO        
+    }
+    
+    @Test
+    public void testMaxNumberOfDataRoRoute() {
+        // TODO
+    }
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
         TriggerRouter trigger = getTriggerRouterService().findTriggerRouterForCurrentNode(tableName);
