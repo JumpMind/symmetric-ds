@@ -175,7 +175,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
        </para>
        <para>     
             The XmlPublisherDataLoaderFilter is a
-            <xref linkend="extensions-data-loader-filter" xrefstyle="section: title page"/> that may be configured to 
+            <xref linkend="extensions-data-loader-filter" xrefstyle="select: title page"/> that may be configured to 
             publish specific tables as an XML message to a JMS provider.
             See <xref linkend="extension-points"/> for information on how 
             to configure an extension point.  If the publish to JMS fails, the batch will be marked in error, 
@@ -906,7 +906,7 @@ Enter key password for <sym>
             with a ending with a <quote>/</quote> followed by a numeric value between 0 and 32. The use
             of <quote>0</quote> denotes that all IP addresses are allowed (in which case it's fairly pointless
             to enable the filtering framework), and <quote>32</quote> signifies only the precesding IP address
-            would be authorized. In the latter case, a <xref linkend="filter.literal" xrefstyle="section: title page"/> string 
+            would be authorized. In the latter case, a <xref linkend="filter.literal" xrefstyle="select: title page"/> string 
             would be recommended as it is significantly more obvious that only that address is allowed.
         </para>
         <example xml:id="ex.ip.cidr.filter">
@@ -938,8 +938,8 @@ Enter key password for <sym>
             (no other characters included whitespace).
         </para>
         <para>
-            Wildcard filters may be combined with <xref linkend="filter.range" xrefstyle="section: title page"/>. 
-            They may NOT be combined with  <xref linkend="filter.cidr" xrefstyle="section: title page"/>.
+            Wildcard filters may be combined with <xref linkend="filter.range" xrefstyle="select: title page"/>. 
+            They may NOT be combined with  <xref linkend="filter.cidr" xrefstyle="select: title page"/>.
         </para>
         <example xml:id="ex.ip.wildcard.filter">
         <title>Wildcard Filter String Definition in symmetric.properties</title>
@@ -1003,10 +1003,10 @@ Enter key password for <sym>
     <important>
         <para>
             Note, that there is obvious overlap between the some of the filtering notation, and hence, functionality. 
-            The <xref linkend="filter.wildcarding" xrefstyle="section: title page"/> and 
-            <xref linkend="filter.range" xrefstyle="section: title page"/>
-            functionality exists to provide workarounds for scenarios where <xref linkend="filter.cidr" xrefstyle="section: title page"/>
-            notation and <xref linkend="filter.literal" xrefstyle="section: title page"/> will not suffice.
+            The <xref linkend="filter.wildcarding" xrefstyle="select: title page"/> and 
+            <xref linkend="filter.range" xrefstyle="select: title page"/>
+            functionality exists to provide workarounds for scenarios where <xref linkend="filter.cidr" xrefstyle="select: title page"/>
+            notation and <xref linkend="filter.literal" xrefstyle="select: title page"/> will not suffice.
         </para>
     </important>    
         
