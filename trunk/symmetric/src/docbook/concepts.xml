@@ -4,7 +4,10 @@
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Concepts and Basic Configuration</title>
-    
+    <para>
+    This chapter defines the key terminology used in SymmetricDS.  Familiarity with these terms is essential in understanding the remainder of this guide.
+    The chapter finishes by explaining the basic configuration needed to start a node SymmetricDS.    
+    </para>
     <section id="node">
             <title>Node</title>
             <para>
@@ -529,7 +532,8 @@ values
         to connect to the database it will be synchronizing.  A typical way to specify this is to place properties
         in the <filename>symmetric.properties</filename> file.  When started up, SymmetricDS reads the configuration
         and state from the database.  If the configuration tables are missing, they are created
-        automatically (auto creation can be disabled).  Basic configuration is described by inserting into the following tables:
+        automatically (auto creation can be disabled).  Basic configuration is described by inserting into the following tables (the complete 
+        data model is defined in <xref linkend="data-model"/>).
             <itemizedlist>
                 <listitem>
                     <para><xref linkend="table_node_group" xrefstyle="select: title page"/> - specifies the tiers that exist in a SymmetricDS network</para>
@@ -544,7 +548,7 @@ values
                     <para><xref linkend="table_trigger" xrefstyle="select: title page"/> - specifies tables, channels, and conditions for which changes in the database should be captured</para>
                 </listitem>
                 <listitem>
-                    <para><xref linkend="table_router" xrefstyle="select: title page"/> - specifies the <xref linkend="node_group_link" xrefstyle="select: title page"/> to be used for synchronization, along with other routing details</para>
+                    <para><xref linkend="table_router" xrefstyle="select: title page"/> - specifies the routers defined for synchronization, along with other routing details</para>
                 </listitem>
                 <listitem>
                     <para><xref linkend="table_trigger_router" xrefstyle="select: title page"/> - provides mappings of routers and triggers</para>
