@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -39,12 +40,18 @@ import org.springframework.jdbc.support.JdbcUtils;
 
 public class RouterContext extends SimpleRouterContext implements IRouterContext {
 
+    public static final String STAT_INSERT_DATA_EVENTS_MS = "insert.data.events.ms";
+    public static final String STAT_DATA_ROUTER_MS = "data.router.ms";
+    public static final String STAT_READ_DATA_MS = "read.data.ms";
+    public static final String STAT_ENQUEUE_DATA_MS = "enqueue.data.ms";
+
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<TriggerRouter, Set<Node>> availableNodes = new HashMap<TriggerRouter, Set<Node>>();
     private Set<IDataRouter> usedDataRouters = new HashSet<IDataRouter>();
     private Connection connection;
     private boolean needsCommitted = false;
     private long createdTimeInMs = System.currentTimeMillis();
+    private Map<String, Long> transactionIdDataIds = new HashMap<String, Long>();
 
     public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
             throws SQLException {
@@ -101,9 +108,20 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     public void resetForNextData() {
         this.needsCommitted = false;
     }
-    
+
     public long getCreatedTimeInMs() {
         return createdTimeInMs;
+    }
+
+    public void setLastDataIdForTransactionId(Data data) {
+        if (data.getTransactionId() != null) {
+            this.transactionIdDataIds.put(data.getTransactionId(), data.getDataId());
+        }
+    }
+
+    public void recordTransactionBoundaryEncountered(Data data) {
+        Long dataId = transactionIdDataIds.get(data.getTransactionId());
+        setEncountedTransactionBoundary(dataId == null ? true : dataId == data.getDataId());
     }
 
 }

@@ -40,6 +40,10 @@ public class Channel {
     private int maxDataToRoute = 10000;
 
     private boolean enabled;
+    
+    private boolean useOldDataToRoute = true;
+    
+    private boolean useRowDataToRoute = true;
 
     private String batchAlgorithm = "default";
 
@@ -143,4 +147,19 @@ public class Channel {
         this.extractPeriodMillis = extractPeriodMillis;
     }
 
+    public void setUseOldDataToRoute(boolean useOldDataToRoute) {
+        this.useOldDataToRoute = useOldDataToRoute;
+    }
+ 
+    public boolean isUseOldDataToRoute() {
+        return useOldDataToRoute;
+    }
+    
+    public void setUseRowDataToRoute(boolean useRowDataToRoute) {
+        this.useRowDataToRoute = useRowDataToRoute;
+    }
+    
+    public boolean isUseRowDataToRoute() {
+        return useRowDataToRoute;
+    }
 }

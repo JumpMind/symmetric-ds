@@ -59,13 +59,29 @@ public class NodeChannel {
     public void setMaxBatchToSend(int maxBatchToSend) {
         channel.setMaxBatchToSend(maxBatchToSend);
     }
-    
+
     public void setMaxDataToRoute(int maxDataToRoute) {
         channel.setMaxDataToRoute(maxDataToRoute);
     }
-    
+
     public int getMaxDataToRoute() {
         return channel.getMaxDataToRoute();
+    }
+
+    public void setUseOldDataToRoute(boolean useOldDataToRoute) {
+        channel.setUseOldDataToRoute(useOldDataToRoute);
+    }
+
+    public boolean isUseOldDataToRoute() {
+        return channel.isUseOldDataToRoute();
+    }
+
+    public void setUseRowDataToRoute(boolean useRowDataToRoute) {
+        channel.setUseRowDataToRoute(useRowDataToRoute);
+    }
+
+    public boolean isUseRowDataToRoute() {
+        return channel.isUseRowDataToRoute();
     }
 
     public int getProcessingOrder() {
