@@ -91,7 +91,7 @@
         <title>Node Group</title>
         <para>
          Once the organization of your SymmetricDS nodes has been chosen, each node in the network is assigned to a 
-                node group.  Typically an individual tier in your network will represent one Node Group. Each Node Groups
+                node group.  Typically an individual tier in your network will represent one Node Group. Each Node Group
                 maps to a synchronization profile, which is just a list of the tables that are being synchronized to and from the different node groups.  Node groups represent
                 a particular level of the overall node hierarchy. For the examples above, we might define a node
                 groups of:
