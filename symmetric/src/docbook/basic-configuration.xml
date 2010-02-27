@@ -12,22 +12,22 @@
         automatically (auto creation can be disabled).  Basic configuration is described by inserting into the following tables:
             <itemizedlist>
                 <listitem>
-                    <para><link linkend="node_group">Node Group</link> - specify the tiers that exist in a topology</para>
+                    <para><xref linkend="node_group" xrefstyle="select: title page"/> - specify the tiers that exist in a topology</para>
                 </listitem>
                 <listitem>
-                    <para><link linkend="node_group_link">Node Group Link</link> - two nodes groups are linked together for synchronization</para>
+                    <para><xref linkend="node_group_link" xrefstyle="select: title page"/> - two nodes groups are linked together for synchronization</para>
                 </listitem>
                 <listitem>
-                    <para><link linkend="channel">Channel</link> - grouping to control synchronizations</para>
+                    <para><xref linkend="channel" xrefstyle="select: title page"/> - grouping to control synchronizations</para>
                 </listitem>
                 <listitem>
-                    <para><link linkend="trigger">Trigger</link> - specify tables, <link linkend="channel">channels</link> and conditions for which changes in the database should be captured</para>
+                    <para><xref linkend="trigger" xrefstyle="select: title page"/> - specify tables, channels, and conditions for which changes in the database should be captured</para>
                 </listitem>
                 <listitem>
-                    <para><link linkend="router">Router</link> - specify the <link linkend="node_group_link">node group link</link> to be used for synchronization, along with other routing details</para>
+                    <para><xref linkend="router" xrefstyle="select: title page"/> - specify the <xref linkend="node_group_link" xrefstyle="select: title page"/> to be used for synchronization, along with other routing details</para>
                 </listitem>
                 <listitem>
-                    <para><link linkend="trigger_router">TriggerRouter</link> - map <link linkend="router">routers</link> to <link linkend="trigger">triggers</link></para>
+                    <para><xref linkend="trigger_router" xrefstyle="select: title page"/> - map routers triggers</para>
                 </listitem>
             </itemizedlist>
         During start up, triggers are verified against the database, and database triggers

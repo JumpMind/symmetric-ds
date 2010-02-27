@@ -15,7 +15,7 @@
 ## specific language governing permissions and limitations
 ## under the License.
 
-<section id="$table.Name">
+<section id="table_$table.Name">
     <title>$table.Name.toUpperCase()</title>
     <para>$table.Description</para>
 	<table id="table-def-$table.Name">
