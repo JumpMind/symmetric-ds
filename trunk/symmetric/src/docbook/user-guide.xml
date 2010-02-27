@@ -58,7 +58,6 @@
     <xi:include href="architecture.xml" />
     <xi:include href="advanced-configuration.xml" />
     <xi:include href="administration.xml" />
-    <xi:include href="ip-filtering.xml" />
     <xi:include href="symmetric-schema.xml" />
     <xi:include href="parameters.xml" />
     <xi:include href="databases.xml" />
