@@ -14,7 +14,7 @@
         </para>    
         <para>
         After data is captured, the first event that occurs is the routing of the 
-        captured <xref linkend="data" xrefstyle="select: title page"/>.  Data is routed by the <emphasis>Route Job</emphasis>.  It is a single background task that inserts into
+        captured <xref linkend="table_data" xrefstyle="select: title page"/> rows.  Data is routed by the <emphasis>Route Job</emphasis>.  It is a single background task that inserts into
         <xref linkend="table_data_event" xrefstyle="select: title page"/> and <xref linkend="table_outgoing_batch" xrefstyle="select: title page"/>.  The Route Job determines which nodes
         data will be sent to, as well as how much data will be batched together for transport.  When the <literal>start.route.job</literal> SymmetricDS property is set to 
         <literal>true</literal>, the frequency that routing occurs is controlled by the <literal>job.routing.period.time.ms</literal>.  Each time data is routed, the 
@@ -47,7 +47,7 @@
     <section id="multi-tier">
         <title>Multi-Tiered Synchronization</title>
         <para>
-            As shown <link linkend="terminology-node-organization">previously</link>, at times there may be
+            As shown in <xref linkend="node-organization"/>, there may be
             scenarios where data needs to flow through multiple tiers of nodes that
             are organized in a tree-like network with each tier requiring a different subset of data.  For example,
             you may have a system where the lowest tier may by a computer or device located in a store.  Those devices 
@@ -177,7 +177,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
             The XmlPublisherDataLoaderFilter is a
             <link linkend="extensions-data-loader-filter">IDataLoaderFilter</link> that may be configured to 
             publish specific tables as an XML message to a JMS provider.
-            See <link linkend="extensions">extension points</link> for information on how 
+            See <xref linkend="extension-points"/> for information on how 
             to configure an extension point.  If the publish to JMS fails, the batch will be marked in error, 
             the loaded data for the batch will be rolled back
             and the batch will be retried during the next synchronization run.            
@@ -349,12 +349,12 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         <para>
         When clustered, a hardware load balancer is typically used
         to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  
-        Also, the <link linkend='basic-node-properties'>sync.url</link>
+        Also, the <literal>sync.url</literal> (discussed in <xref linkend="basic-configuration"/>)
         SymmetricDS property should be set to the URL of the load balancer.  
         </para>
         <para>
         If the cluster will be running any of the SymmetricDS jobs, then the <literal>cluster.lock.enabled</literal> property should be set to <literal>true</literal>. 
-        By setting this property to true, SymmetricDS will use a row in the <link linkend="lock">lock</link> table as a semaphore to make sure that only one instance at a time
+        By setting this property to true, SymmetricDS will use a row in the <xref linkend="table_lock" xrefstyle="select: title page"/> table as a semaphore to make sure that only one instance at a time
         runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
         when the job is finished running.  Another instance of SymmetricDS cannot aquire a lock until the locking instance (according to the server id) releases the lock.  If an 
         instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If the locking instance remains down, the lock can be 
@@ -380,7 +380,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         being leveraged, then the general rules for for Commons Logging apply.
         </para>
     </section> 
-    <section id="extensions">
+    <section id="extension-points">
         <title>Extension Points</title>
         <para>
              SymmetricDS may be extended via a plug-in like architecture where extension point interfaces 
