@@ -46,7 +46,7 @@
             <step>
                 <para>
                     Download the
-                    <ulink url="https://sourceforge.net/projects/symmetricds/files/"> symmetric-ds-2.x.x.zip</ulink>
+                    <ulink url="https://sourceforge.net/projects/symmetricds/files/">symmetric-ds-2.x.x.zip</ulink>
                     file from
                     <ulink url="http://www.symmetricds.org/">http://www.symmetricds.org/</ulink>
                 </para>
@@ -118,7 +118,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </para>
             <para>
                 See
-                 <xref linkend="databases" />
+                 <xref linkend="databases" />,
                 for compatibility with your specific database.
             </para>
         </important>
