@@ -82,12 +82,162 @@
         the organization, they could apply to a variety of application domains.
         </para>
         </section>
-    <section id="node-configuration">
+ 
+   
+    <section id="node-group">
+        <title>Node Group</title>
+        <para>
+         Once the organization of your SymmetricDS nodes has been chosen, each node in the network is assigned to a 
+                node group.  Typically an individual tier in your network will represent one Node Group. Each Node Groups
+                maps to a synchronization profile, which is just a list of the tables that are being synchronized to and from the different node groups.  Node groups represent
+                a particular level of the overall node hierarchy. For the examples above, we might define a node
+                groups of:
+                <itemizedlist>
+                    <listitem>"workstation", to represent each point-of-sale workstation</listitem>
+                    <listitem>"corp" or "central-office" to represent the centralized node.</listitem>
+                    <listitem>"store" to represent the store server that interacts with store workstations and sends and
+                        receives data from a central office server.</listitem>
+                    <listitem>"region" to represent the a regional server that interacts with store workstations and sends and
+                        receives data from a central office server.</listitem>
+                </itemizedlist>
+                Considerable thought should be given to how node groups are organized.  Groups should be created for each set of nodes
+                that synchronize the same tables.  Note that there are other mechanisms in SymmetricDS to route to individual nodes 
+                or smaller subsets of nodes in a node group.  
+          </para>
+                <para>
+                For example, although you could, you would not want to create a node group
+                for each store even though different tax rates need to be routed to each store.  Each store needs to synchronize the same tables
+                to the same groups, so 'store' would be a good choice for a node group.
+     </para>
+        <para>
+            The following SQL statements would create node groups for "corp" and "store". 
+
+            <programlisting>
+<![CDATA[insert into SYM_NODE_GROUP 
+  (node_group_id, description)
+values
+  ('store', 'A retail store node');
+
+insert into SYM_NODE_GROUP 
+  (node_group_id, description)
+values
+  ('corp', 'A corporate node');]]></programlisting>
+        </para>
+    </section>
+    <section id="node-group-link">
+        <title>Node Group Link</title>
+        
+       
+        <para>
+            To establish synchronization between node groups, two node groups are <emphasis>linked</emphasis>  together.  The direction
+            of synchronization is determined by specifying a source and target node group for each link.
+            If synchronization should needs to occur in both directions, then two links are created in opposite
+            directions.  The target node group receives data changes by either push or pull methods.
+            A push method causes the source node group to connect to the target, while a pull method
+            causes it to wait for the target to connect to it.
+        </para>
+        <para>
+            The following SQL statements links the "corp" and "store" node groups for synchronization.
+            It configures the "store" nodes to push their data changes to the "corp" nodes,
+            and the "corp" nodes to send changes to "store" nodes by waiting for a pull.
+            
+            <programlisting>
+<![CDATA[insert into SYM_NODE_GROUP_LINK
+  (source_node_group, target_node_group, data_event_action)
+values
+  ('store', 'corp', 'P');
+
+insert into SYM_NODE_GROUP_LINK
+  (source_node_group, target_node_group, data_event_action)
+values
+  ('corp', 'store', 'W');]]></programlisting>
+        </para>
+    </section>
+   
+    <section id="channel">
+        <title>Channel</title>
+        
+            
+        <para>
+            Data changes in the database are captured in the order that they occur, and that order is preserved
+            when synchronizing to other nodes.  Some data may need priority for synchronization despite
+            the normal order of events.  Tables can be grouped together in <link linkend="channel">channels</link>.  
+            Channels provide a processing order for groups of tables, a limit on the
+            amount of data that will be batched together, and isolation from errors in other channels.  
+            By categorizing data into channels and assigning them to <link linkend="trigger">triggers</link>, the user gains more control and visibility into
+            the flow of data.  In addition, SymmetricDS allows for synchronization to be enabled, suspended, or scheduled by channels as well. The frequency of synchronization and order that data gets synchronized is also controlled at 
+            the channel level.
+        </para>
+        <para>
+            The following SQL statements setup channels for a retail store.  An "item" channel includes
+            data for items and their prices, while a "sale_transaction" channel includes data for ringing
+            sales at a register. 
+            
+            <programlisting>
+<![CDATA[insert into SYM_CHANNEL 
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
+   extract_period_millis, batch_algorithm, enabled, description)
+values
+  ('item', 10, 1000, 10,  0, 'default', 1, 'Item and pricing data');
+
+insert into SYM_CHANNEL 
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
+   extract_period_millis, batch_algorithm, enabled, description)
+values
+  ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 
+   'retail sale transactions from register');]]></programlisting>
+        </para>
+        <para>
+            Batching is the grouping of data, by channel, to be transferred and committed at 
+            the client together.  There are three different out-of-the-box batching algorithms which 
+            may be configured in the batch_algorithm column on channel.  
+         <variablelist>
+            <varlistentry>
+                <term>
+                    <command>default</command>
+                </term>
+                <listitem>
+                    <para>
+                        All changes that happen in a transaction are guaranteed to be batched 
+                        together.  Multiple transactions will be batched and committed together
+                        until there is no more data to be sent or the max_batch_size is reached.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>transactional</command>
+                </term>
+                <listitem>
+                    <para>
+                        Batches will map directly to database transactions.  If there are many
+                        small database transactions, then there will be many batches.  The max_batch_size
+                        column has no effect.
+                    </para> 
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>nontransactional</command>
+                </term>
+                <listitem>
+                    <para>
+                        Multiple transactions will be batched and committed together
+                        until there is no more data to be sent or the max_batch_size is reached.  
+                        The batch will be cut off at the max_batch_size regardless of whether
+                        it is in the middle of a transaction. 
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        </para>
+    </section>
+       <section id="node-configuration">
     <title>Node Configuration</title>
     <para>
         To get a SymmetricDS node running, it needs to be given an identity and it needs to know how
         to connect to the database it will be synchronizing.  A typical way to specify this is to place properties
-        in the symmetric.properties file.  When started up, SymmetricDS reads the configuration
+        in the <filename>symmetric.properties</filename> file.  When started up, SymmetricDS reads the configuration
         and state from the database.  If the configuration tables are missing, they are created
         automatically (auto creation can be disabled).  Basic configuration is described by inserting into the following tables:
             <itemizedlist>
@@ -247,86 +397,7 @@
                 </listitem>
             </varlistentry>
         </variablelist>
-    </section>
-    <section id="node-group">
-        <title>Node Group</title>
-        <para>
-         Once the organization of your SymmetricDS nodes has been chosen, each node in the network is assigned to a 
-                node group.  Typically an individual tier in your network will represent one Node Group. Each Node Groups
-                maps to a synchronization profile, which is just a list of the tables that are being synchronized to and from the different node groups.  Node groups represent
-                a particular level of the overall node hierarchy. For the examples above, we might define a node
-                groups of:
-                <itemizedlist>
-                    <listitem>"workstation", to represent each point-of-sale workstation</listitem>
-                    <listitem>"corp" or "central-office" to represent the centralized node.</listitem>
-                    <listitem>"store" to represent the store server that interacts with store workstations and sends and
-                        receives data from a central office server.</listitem>
-                    <listitem>"region" to represent the a regional server that interacts with store workstations and sends and
-                        receives data from a central office server.</listitem>
-                </itemizedlist>
-                Considerable thought should be given to how node groups are organized.  Groups should be created for each set of nodes
-                that synchronize the same tables.  Note that there are other mechanisms in SymmetricDS to route to individual nodes 
-                or smaller subsets of nodes in a node group.  
-          </para>
-                <para>
-                For example, although you could, you would not want to create a node group
-                for each store even though different tax rates need to be routed to each store.  Each store needs to synchronize the same tables
-                to the same groups, so 'store' would be a good choice for a node group.
-     </para>
-        <para>
-            The following SQL statements would create node groups for "corp" and "store". 
-
-            <programlisting>
-<![CDATA[insert into SYM_NODE_GROUP 
-  (node_group_id, description)
-values
-  ('store', 'A retail store node');
-
-insert into SYM_NODE_GROUP 
-  (node_group_id, description)
-values
-  ('corp', 'A corporate node');]]></programlisting>
-        </para>
-    </section>
-    <section id="node-group-link">
-        <title>Node Group Link</title>
-        
        
-        <para>
-            To establish synchronization between node groups, two node groups are <emphasis>linked</emphasis>  together.  The direction
-            of synchronization is determined by specifying a source and target node group for each link.
-            If synchronization should needs to occur in both directions, then two links are created in opposite
-            directions.  The target node group receives data changes by either push or pull methods.
-            A push method causes the source node group to connect to the target, while a pull method
-            causes it to wait for the target to connect to it.
-        </para>
-        <para>
-            The following SQL statements links the "corp" and "store" node groups for synchronization.
-            It configures the "store" nodes to push their data changes to the "corp" nodes,
-            and the "corp" nodes to send changes to "store" nodes by waiting for a pull.
-            
-            <programlisting>
-<![CDATA[insert into SYM_NODE_GROUP_LINK
-  (source_node_group, target_node_group, data_event_action)
-values
-  ('store', 'corp', 'P');
-
-insert into SYM_NODE_GROUP_LINK
-  (source_node_group, target_node_group, data_event_action)
-values
-  ('corp', 'store', 'W');]]></programlisting>
-        </para>
-    </section>
-    <section id="basic-node">
-        <title>Node</title>
-        <para>
-            Each instance of SymmetricDS is a node that can be uniquely identified. 
-            The node has a unique identifier used by the system, and the user provides an external identifier
-            for context in the local system.  For most common use, the two identifiers are the same.
-            The registration process generates and sends the identity and password to the node, along
-            with its synchronization configuration.  The top-level registration server must
-            have its identity provided by the user since it has no parent to contact.
-        </para>
         <para>
             The following SQL statements setup a top-level registration server as a node identified
             as "00000" in the "corp" node group.
@@ -340,85 +411,6 @@ values
 insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         </para>
     </section>
-    <section id="channel">
-        <title>Channel</title>
-        
-            
-        <para>
-            Data changes in the database are captured in the order that they occur, and that order is preserved
-            when synchronizing to other nodes.  Some data may need priority for synchronization despite
-            the normal order of events.  Tables can be grouped together in <link linkend="channel">channels</link>.  
-            Channels provide a processing order for groups of tables, a limit on the
-            amount of data that will be batched together, and isolation from errors in other channels.  
-            By categorizing data into channels and assigning them to <link linkend="trigger">triggers</link>, the user gains more control and visibility into
-            the flow of data.  In addition, SymmetricDS allows for synchronization to be enabled, suspended, or scheduled by channels as well. The frequency of synchronization and order that data gets synchronized is also controlled at 
-            the channel level.
-        </para>
-        <para>
-            The following SQL statements setup channels for a retail store.  An "item" channel includes
-            data for items and their prices, while a "sale_transaction" channel includes data for ringing
-            sales at a register. 
-            
-            <programlisting>
-<![CDATA[insert into SYM_CHANNEL 
-  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
-   extract_period_millis, batch_algorithm, enabled, description)
-values
-  ('item', 10, 1000, 10,  0, 'default', 1, 'Item and pricing data');
-
-insert into SYM_CHANNEL 
-  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
-   extract_period_millis, batch_algorithm, enabled, description)
-values
-  ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 
-   'retail sale transactions from register');]]></programlisting>
-        </para>
-        <para>
-            Batching is the grouping of data, by channel, to be transferred and committed at 
-            the client together.  There are three different out-of-the-box batching algorithms which 
-            may be configured in the batch_algorithm column on channel.  
-         <variablelist>
-            <varlistentry>
-                <term>
-                    <command>default</command>
-                </term>
-                <listitem>
-                    <para>
-                        All changes that happen in a transaction are guaranteed to be batched 
-                        together.  Multiple transactions will be batched and committed together
-                        until there is no more data to be sent or the max_batch_size is reached.
-                    </para>
-                </listitem>
-            </varlistentry>
-            <varlistentry>
-                <term>
-                    <command>transactional</command>
-                </term>
-                <listitem>
-                    <para>
-                        Batches will map directly to database transactions.  If there are many
-                        small database transactions, then there will be many batches.  The max_batch_size
-                        column has no effect.
-                    </para> 
-                </listitem>
-            </varlistentry>
-            <varlistentry>
-                <term>
-                    <command>nontransactional</command>
-                </term>
-                <listitem>
-                    <para>
-                        Multiple transactions will be batched and committed together
-                        until there is no more data to be sent or the max_batch_size is reached.  
-                        The batch will be cut off at the max_batch_size regardless of whether
-                        it is in the middle of a transaction. 
-                    </para>
-                </listitem>
-            </varlistentry>
-        </variablelist>
-        </para>
-    </section>
-    
        <section id="triggers-and-routers">
                 <title>Triggers and Routers</title>         
             <para> SymmetricDS uses database <emphasis>triggers</emphasis> to capture and record changes to data.  After the data is captured,
@@ -439,7 +431,7 @@ values
             
             
     <section id="trigger">
-        <title>Trigger</title>
+        <title>Triggers</title>
         <para>
             SymmetricDS captures synchronization data using database triggers. Triggers are defined in the <link linkend="trigger">trigger</link> table.  
             Each record is used by SymmetricDS when generating database triggers.  Database triggers are only generated when a trigger 
@@ -457,7 +449,7 @@ values
         </para>
     </section>
     <section id="router">
-    
+    <title>Routers</title>
     
       <para>
                 Routers provided in the base implementation currently include:
