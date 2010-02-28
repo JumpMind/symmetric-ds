@@ -20,6 +20,11 @@
 <xsl:import href="urn:docbkx:stylesheet"/>
 
 
+    <context name="xref">
+      <template name="page.citation" text=" (p. %p)"/>
+    </context>
+
+
     <xsl:param name="insert.xref.page.number" select="'yes'"/>
     
     <xsl:attribute-set name="xref.properties">

@@ -14,11 +14,11 @@
         </para>    
         <para>
         After data is captured, the first event that occurs is the routing of the 
-        captured <xref linkend="table_data" xrefstyle="select: title page"/> rows.  Data is routed by the <emphasis>Route Job</emphasis>.  It is a single background task that inserts into
-        <xref linkend="table_data_event" xrefstyle="select: title page"/> and <xref linkend="table_outgoing_batch" xrefstyle="select: title page"/>.  The Route Job determines which nodes
+        captured <xref linkend="table_data" xrefstyle="select: title pageabbrev"/> rows.  Data is routed by the <emphasis>Route Job</emphasis>.  It is a single background task that inserts into
+        <xref linkend="table_data_event" xrefstyle="select: title pageabbrev"/> and <xref linkend="table_outgoing_batch" xrefstyle="select: title pageabbrev"/>.  The Route Job determines which nodes
         data will be sent to, as well as how much data will be batched together for transport.  When the <literal>start.route.job</literal> SymmetricDS property is set to 
         <literal>true</literal>, the frequency that routing occurs is controlled by the <literal>job.routing.period.time.ms</literal>.  Each time data is routed, the 
-        <xref linkend="table_data_ref" xrefstyle="select: title page"/> table is updated with the id of the last contiguous data row to have been processed.  This is done so the query to find
+        <xref linkend="table_data_ref" xrefstyle="select: title pageabbrev"/> table is updated with the id of the last contiguous data row to have been processed.  This is done so the query to find
         unrouted data is optimal. 
         </para>
         <para>
@@ -26,14 +26,14 @@
         events are controlled by the <emphasis>Push</emphasis> and the <emphasis>Pull Jobs</emphasis>.  When the <literal>start.pull.job</literal> SymmetricDS property is set to 
         <literal>true</literal>, the frequency that data is pulled is controlled by the <literal>job.pull.period.time.ms</literal>.  When the <literal>start.push.job</literal> SymmetricDS property is set to 
         <literal>true</literal>, the frequency that data is pushed is controlled by the <literal>job.push.period.time.ms</literal>.  Data is extracted by channel from the source database's 
-        <xref linkend="table_data" xrefstyle="select: title page"/> table at an interval controlled by the <literal>extract_period_millis</literal> column on the 
-        <xref linkend="table_channel" xrefstyle="select: title page"/> table.  The <literal>last_extract_time</literal> is 
-        always recorded, by channel, on the <xref linkend="table_node_channel_control" xrefstyle="select: title page"/> table for the host node's id.  When the Pull and Push Job run, if the extract period
+        <xref linkend="table_data" xrefstyle="select: title pageabbrev"/> table at an interval controlled by the <literal>extract_period_millis</literal> column on the 
+        <xref linkend="table_channel" xrefstyle="select: title pageabbrev"/> table.  The <literal>last_extract_time</literal> is 
+        always recorded, by channel, on the <xref linkend="table_node_channel_control" xrefstyle="select: title pageabbrev"/> table for the host node's id.  When the Pull and Push Job run, if the extract period
         has not passed according to the last extract time, then the channel will be skipped for this run.  If the <literal>extract_period_millis</literal> is set to zero, data extraction will happen every time the jobs run.
         </para>
         <para>
         SymmetricDS also provides the ability to configure windows of time when synchronization is allowed.  This is done using the
-        <xref linkend="table_node_group_channel_window" xrefstyle="select: title page"/> 
+        <xref linkend="table_node_group_channel_window" xrefstyle="select: title pageabbrev"/> 
         table.  A list of allowed time windows can be specified for a node group and a channel.  If one or more windows exist, then data will only be extracted and transported if the time
         of day falls within the window of time specified.  The configured times are always for the target node's local time.  If the <literal>start_time</literal> is greater than the <literal>end_time</literal>, then the window crosses
         over to the next day.
@@ -41,7 +41,7 @@
         <para>
         All data loading may be disabled by setting the <literal>dataloader.enable</literal> property to false.  This has the effect of not allowing incoming synchronizations, while allowing outgoing
         synchronizations.  All data extractions may be disabled by setting the <literal>dataextractor.enable</literal> property to false.  These properties can be controlled by inserting into the 
-        root server's <xref linkend="table_parameter" xrefstyle="select: title page"/> table.  These properties affect every channel with the exception of the 'config' channel.  
+        root server's <xref linkend="table_parameter" xrefstyle="select: title pageabbrev"/> table.  These properties affect every channel with the exception of the 'config' channel.  
         </para>
     </section>           
     <section id="multi-tier">
@@ -78,13 +78,13 @@
         <para>
             When deploying a multi-tiered system it may be advantageous to have only one registration server, even though the parent node of a registering node
             could be any of a number of nodes in the system.  In SymmetricDS the parent node is always the node that a child registers with.  The 
-            <xref linkend="table_registration_redirect" xrefstyle="select: title page"/> table allows a single node, usually the root server in the network, to
+            <xref linkend="table_registration_redirect" xrefstyle="select: title pageabbrev"/> table allows a single node, usually the root server in the network, to
             redirect registering nodes to their true parents.  It does so based on a mapping found in the table of the external id (<literal>registrant_external_id</literal>) to the parent's node 
             id (<literal>registration_node_id</literal>).
         </para>
         <para>
             For example, if it is desired to have a series of regional servers that workstations at retail stores get assigned to based on their <literal>external_id</literal>, the store number, then
-            you might insert into <xref linkend="table_registration_redirect" xrefstyle="select: title page"/> the store number as the <literal>registrant_external_id</literal> and the <literal>node_id</literal> of
+            you might insert into <xref linkend="table_registration_redirect" xrefstyle="select: title pageabbrev"/> the store number as the <literal>registrant_external_id</literal> and the <literal>node_id</literal> of
             the assigned region as the <literal>registration_node_id</literal>.  When a workstation at the store registers, the root server send an HTTP redirect to the <literal>sync_url</literal> of the node 
             that matches the <literal>registration_node_id</literal>. 
         </para>
@@ -175,7 +175,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
        </para>
        <para>     
             The XmlPublisherDataLoaderFilter is a
-            <xref linkend="extensions-data-loader-filter" xrefstyle="select: title page"/> that may be configured to 
+            <xref linkend="extensions-data-loader-filter" xrefstyle="select: title pageabbrev"/> that may be configured to 
             publish specific tables as an XML message to a JMS provider.
             See <xref linkend="extension-points"/> for information on how 
             to configure an extension point.  If the publish to JMS fails, the batch will be marked in error, 
@@ -276,9 +276,9 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
             ]]></programlisting>     
             To publish JMS messages during routing
             the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router 
-            would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="select: title page"/> to the Spring bean
-            name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="select: title page"/>s
-            to each <xref linkend="table_trigger" xrefstyle="select: title page"/>  table that needs published.                  
+            would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="select: title pageabbrev"/> to the Spring bean
+            name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="select: title pageabbrev"/>s
+            to each <xref linkend="table_trigger" xrefstyle="select: title pageabbrev"/>  table that needs published.                  
         </para>
     </section>     
     <section id="purge">
@@ -289,19 +289,19 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
             delete statements by the <emphasis>Purge Job</emphasis>.  Only data that has been successfully synchronized will be purged.  Purged tables include:
             <itemizedlist>
                 <listitem>
-                   <xref linkend="table_data" xrefstyle="select: title page"/>
+                   <xref linkend="table_data" xrefstyle="select: title pageabbrev"/>
                 </listitem>
                 <listitem>
-                    <xref linkend="table_data_event" xrefstyle="select: title page"/>
+                    <xref linkend="table_data_event" xrefstyle="select: title pageabbrev"/>
                 </listitem>
                 <listitem>
-                  <xref linkend="table_outgoing_batch" xrefstyle="select: title page"/>
+                  <xref linkend="table_outgoing_batch" xrefstyle="select: title pageabbrev"/>
                 </listitem>
                 <listitem>
-                    <xref linkend="table_incoming_batch" xrefstyle="select: title page"/>
+                    <xref linkend="table_incoming_batch" xrefstyle="select: title pageabbrev"/>
                 </listitem>
                 <listitem>
-                   <xref linkend="table_statistic" xrefstyle="select: title page"/>
+                   <xref linkend="table_statistic" xrefstyle="select: title pageabbrev"/>
                 </listitem>                
             </itemizedlist>
             The purge job is enabled by the <literal>start.purge.job</literal> SymmetricDS property.  The job runs periodically according to the 
@@ -354,7 +354,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         </para>
         <para>
         If the cluster will be running any of the SymmetricDS jobs, then the <literal>cluster.lock.enabled</literal> property should be set to <literal>true</literal>. 
-        By setting this property to true, SymmetricDS will use a row in the <xref linkend="table_lock" xrefstyle="select: title page"/> table as a semaphore to make sure that only one instance at a time
+        By setting this property to true, SymmetricDS will use a row in the <xref linkend="table_lock" xrefstyle="select: title pageabbrev"/> table as a semaphore to make sure that only one instance at a time
         runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
         when the job is finished running.  Another instance of SymmetricDS cannot aquire a lock until the locking instance (according to the server id) releases the lock.  If an 
         instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If the locking instance remains down, the lock can be 
@@ -906,7 +906,7 @@ Enter key password for <sym>
             with a ending with a <quote>/</quote> followed by a numeric value between 0 and 32. The use
             of <quote>0</quote> denotes that all IP addresses are allowed (in which case it's fairly pointless
             to enable the filtering framework), and <quote>32</quote> signifies only the precesding IP address
-            would be authorized. In the latter case, a <xref linkend="filter.literal" xrefstyle="select: title page"/> string 
+            would be authorized. In the latter case, a <xref linkend="filter.literal" xrefstyle="select: title pageabbrev"/> string 
             would be recommended as it is significantly more obvious that only that address is allowed.
         </para>
         <example xml:id="ex.ip.cidr.filter">
@@ -938,8 +938,8 @@ Enter key password for <sym>
             (no other characters included whitespace).
         </para>
         <para>
-            Wildcard filters may be combined with <xref linkend="filter.range" xrefstyle="select: title page"/>. 
-            They may NOT be combined with  <xref linkend="filter.cidr" xrefstyle="select: title page"/>.
+            Wildcard filters may be combined with <xref linkend="filter.range" xrefstyle="select: title pageabbrev"/>. 
+            They may NOT be combined with  <xref linkend="filter.cidr" xrefstyle="select: title pageabbrev"/>.
         </para>
         <example xml:id="ex.ip.wildcard.filter">
         <title>Wildcard Filter String Definition in symmetric.properties</title>
@@ -1003,10 +1003,10 @@ Enter key password for <sym>
     <important>
         <para>
             Note, that there is obvious overlap between the some of the filtering notation, and hence, functionality. 
-            The <xref linkend="filter.wildcarding" xrefstyle="select: title page"/> and 
-            <xref linkend="filter.range" xrefstyle="select: title page"/>
-            functionality exists to provide workarounds for scenarios where <xref linkend="filter.cidr" xrefstyle="select: title page"/>
-            notation and <xref linkend="filter.literal" xrefstyle="select: title page"/> will not suffice.
+            The <xref linkend="filter.wildcarding" xrefstyle="select: title pageabbrev"/> and 
+            <xref linkend="filter.range" xrefstyle="select: title pageabbrev"/>
+            functionality exists to provide workarounds for scenarios where <xref linkend="filter.cidr" xrefstyle="select: title pageabbrev"/>
+            notation and <xref linkend="filter.literal" xrefstyle="select: title pageabbrev"/> will not suffice.
         </para>
     </important>    
         
