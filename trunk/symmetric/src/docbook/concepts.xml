@@ -8,20 +8,24 @@
     This chapter defines the key terminology used in SymmetricDS.  Familiarity with these terms is essential in understanding the remainder of this guide.
     The chapter finishes by explaining the basic configuration needed to start a node SymmetricDS.    
     </para>
+    <para>
+    
+    One use case where SymmetricDS has been used is in retail, and this use case will be used when explaining
+    many of the concepts in this Chapter.
+                An example retail deployment of SymmetricDS might include many point-of-sale workstations located at stores that may have 
+                intermittent network connection to a central location.  These workstations might have point-sale-software that uses a local
+                relational database.  The database is populated with items, prices and tax information from a centralized
+                database.  The point-of-sale software looks up item information from the local database and also saves 
+                sale information to the same database.   The persisted sales need to be propagated back to the centralized database.  
+               </para>
     <section id="node">
             <title>Node</title>
             <para>
                 A <emphasis>node</emphasis> is a single instance of SymmetricDS. It can be thought of as a proxy for a database which
                 manages the synchronization of data. 
             </para>
-            <para>    
-                One use case where SymmetricDS has been used is in retail.
-                An example retail deployment of SymmetricDS might include many point-of-sale workstations located at stores that may have 
-                intermittent network connection to a central location.  These workstations might have point-sale-software that uses a local
-                relational database.  The database is populated with items, prices and tax information from a centralized
-                database.  The point-of-sale software looks up item information from the local database and also saves 
-                sale information to the same database.   The persisted sales need to be propagated back to the centralized database.  
-                In this example the following would be SymmetricDS nodes:
+            <para>
+         For the retail use case above, the following would be SymmetricDS nodes:
                 <itemizedlist>
                     <listitem>Each point-of-sale workstation.</listitem>
                     <listitem>A central office database server.</listitem>                   
@@ -29,6 +33,19 @@
                 A node instance of SymmetricDS is a program that is either embedded in another application or is running in the background as a service.  Centralized
                 nodes that have many clients can be clustered to help disperse load.
             </para>
+            
+              <para>
+            The following SQL statements setup a top-level registration server as a node identified
+            as "00000" in the "corp" node group.
+            
+            <programlisting>
+<![CDATA[insert into SYM_NODE 
+  (node_id, node_group_id, external_id, sync_enabled)
+values
+  ('00000', 'corp', '00000', 1);
+
+insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
+        </para>
     </section>
     <section id="node-organization">
             <title>Node Organization</title>
@@ -688,18 +705,7 @@ values
             </varlistentry>
         </variablelist>
        
-        <para>
-            The following SQL statements setup a top-level registration server as a node identified
-            as "00000" in the "corp" node group.
-            
-            <programlisting>
-<![CDATA[insert into SYM_NODE 
-  (node_id, node_group_id, external_id, sync_enabled)
-values
-  ('00000', 'corp', '00000', 1);
-
-insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
-        </para>
+      
     </section>
 
 </chapter>
