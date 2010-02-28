@@ -12,9 +12,13 @@ import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
 import org.apache.ddlutils.platform.oracle.Oracle10ModelReader;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 public class OracleModelReader extends Oracle10ModelReader {
 
+    static final ILog log = LogFactory.getLog(OracleModelReader.class);
+    
     public OracleModelReader(Platform platform) {
         super(platform);
     }
@@ -63,20 +67,21 @@ public class OracleModelReader extends Oracle10ModelReader {
             Map       values = new HashMap();
 
             while (rs.next())
-            {
-                values.put("INDEX_NAME",       rs.getString(1));
+            {        
+                String name =rs.getString(1);                
                 String type = rs.getString(2);
-                if (type.startsWith("NORMAL")) {
+                if (type.startsWith("NORMAL"))  
+                {
                     values.put("INDEX_TYPE",       new Short(DatabaseMetaData.tableIndexOther));
-                } else {
-                    // don't include indexes that might not reference other columns
-                    values.put("INDEX_TYPE",       new Short(DatabaseMetaData.tableIndexStatistic));
-                }
-                values.put("NON_UNIQUE",       "UNIQUE".equalsIgnoreCase(rs.getString(3)) ? Boolean.FALSE : Boolean.TRUE);
-                values.put("COLUMN_NAME",      rs.getString(4));
-                values.put("ORDINAL_POSITION", new Short(rs.getShort(5)));
+                    values.put("INDEX_NAME",       name);    
+                    values.put("NON_UNIQUE",       "UNIQUE".equalsIgnoreCase(rs.getString(3)) ? Boolean.FALSE : Boolean.TRUE);
+                    values.put("COLUMN_NAME",      rs.getString(4));
+                    values.put("ORDINAL_POSITION", new Short(rs.getShort(5)));
 
-                readIndex(metaData, values, indices);
+                    readIndex(metaData, values, indices);
+                } else {
+                    log.warn("DDLUtilsSkipOracleIndex", name);
+                }
             }
         }
         finally
