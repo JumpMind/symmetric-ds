@@ -22,6 +22,7 @@
 <!--###################################################
                    Custom Title Page
     ###################################################--> 
+    <xsl:param name="insert.xref.page.number" select="'yes'"/>
     
     <xsl:template name="book.titlepage.recto">
         <fo:block>
