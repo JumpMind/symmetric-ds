@@ -96,6 +96,8 @@ public class SymmetricLauncher {
     private static final String OPTION_RUN_SQL = "run-sql";
 
     private static final String OPTION_PROPERTIES_GEN = "generate-default-properties";
+    
+    private static final String OPTION_EXPORT_SCHEMA = "export-schema";
 
     private static final String OPTION_PROPERTIES_FILE = "properties";
 
@@ -238,6 +240,13 @@ public class SymmetricLauncher {
                 System.exit(0);
                 return;
             }
+            
+            if (line.hasOption(OPTION_EXPORT_SCHEMA)) {
+                testConnection(line);
+                exportSchema(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_EXPORT_SCHEMA));
+                System.exit(0);
+                return;
+            }
 
             if (line.hasOption(OPTION_RUN_DDL_XML)) {
                 testConnection(line);
@@ -347,6 +356,8 @@ public class SymmetricLauncher {
         addOption(options, "o", OPTION_TRIGGER_GEN_ALWAYS, false);
         addOption(options, "e", OPTION_ENCRYPT_TEXT, true);
         addOption(options, "v", OPTION_VERBOSE_CONSOLE, false);
+        
+        addOption(options, "x", OPTION_EXPORT_SCHEMA, true);
 
         return options;
     }
@@ -382,6 +393,12 @@ public class SymmetricLauncher {
         ISecurityService service = (ISecurityService) engine.getApplicationContext()
                 .getBean(Constants.SECURITY_SERVICE);
         System.out.println(SecurityConstants.PREFIX_ENC + service.encrypt(plainText));
+    }
+    
+    private static void exportSchema(ISymmetricEngine engine, String fileName) {        
+        Platform platform = engine.getDbDialect().getPlatform();
+        Database db = platform.readModelFromDatabase("model");
+        new DatabaseIO().write(db, fileName);
     }
 
     private static void openRegistration(ISymmetricEngine engine, String argument) {
