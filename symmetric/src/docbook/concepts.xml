@@ -23,9 +23,7 @@
             <para>
                 A <emphasis>node</emphasis> is a single instance of SymmetricDS. It can be thought of as a proxy for a database which
                 manages the synchronization of data. 
-            </para>
-            <para>
-         For the retail use case above, the following would be SymmetricDS nodes:
+                For the retail use case above, the following would be SymmetricDS nodes:
                 <itemizedlist>
                     <listitem>Each point-of-sale workstation.</listitem>
                     <listitem>A central office database server.</listitem>                   
@@ -35,7 +33,7 @@
             </para>
             
               <para>
-            The following SQL statements setup a top-level registration server as a node identified
+            The following SQL statements set up a top-level registration server as a node identified
             as "00000" in the "corp" node group.
             
             <programlisting>
