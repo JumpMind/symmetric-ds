@@ -5,9 +5,26 @@
  Date
  ------ 
 
+User Guide - SymmetricDS 2
+
+ This guide has been fully updated to reflect SymmetricDS 2.  Check out the guide's 
+ {{{/guide/2.x/html/introduction.html#whats-new}What's New in SymmetricDS 2}} 
+ section in Chapter 1 of the guide.
+ 
+ To get a demo of SymmetricDS 2 running, try the
+ {{{guide/html/introduction.html#tutorial}Hands-On}} tutorial.
+ 
+ {{{guide/2.x/html-single/user-guide.html}User Guide (Single Page HTML)}}
+
+ {{{guide/2.x/html/user-guide.html}User Guide (Multi Page HTML)}}
+ 
+ {{{guide/2.x/pdf/user-guide.pdf}User Guide (PDF)}}
+ 
+ {{{apidocs-2/index.html}Javadoc}}
+ 
 User Guide - SymmetricDS 1.x
  
- To get a demo of SymmetricDS running, try the
+ To get a demo of SymmetricDS 1.x running, try the
  {{{guide/html/ch02-getting-started.html}Getting Started}} tutorial.
 
  The User Guide describes the SymmetricDS library for data synchronization. It is
@@ -24,17 +41,5 @@ User Guide - SymmetricDS 1.x
  
  Please be aware that the User Guide is not yet complete, but is useful already.
   
-User Guide - SymmetricDS 2
 
- This guide has not been fully updated (or even mostly updated) to reflect the 2.x changes.
- If you are curious about 2.0, check out the guide's {{{/guide/2.x/html/introduction.html#whats-new}What's New in 2.x}} 
- section in the first chapter.
-
- {{{guide/2.x/html-single/user-guide.html}User Guide (Single Page HTML)}}
-
- {{{guide/2.x/html/user-guide.html}User Guide (Multi Page HTML)}}
- 
- {{{guide/2.x/pdf/user-guide.pdf}User Guide (PDF)}}
- 
- {{{apidocs-2/index.html}Javadoc}}
 
