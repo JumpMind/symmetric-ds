@@ -134,6 +134,12 @@ public interface IDbDialect {
     public boolean storesLowerCaseNamesInCatalog();
 
     public boolean supportsTransactionId();
+    
+    /**
+     * Use this call to check to see if the implemented database dialect supports 
+     * a way to check on pending database transactions.
+     */
+    public boolean supportsTransactionViews();
 
     public boolean requiresSavepointForFallback();
 
@@ -246,6 +252,10 @@ public interface IDbDialect {
     public String toFormattedTimestamp(Date time);
     
     public void truncateTable(String tableName);
+    
+    public long getDatabaseTime();
+    
+    public boolean areDatabaseTransactionsPendingSince(long time);
     
     public LobHandler getLobHandler();
 }
