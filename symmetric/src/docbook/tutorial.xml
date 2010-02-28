@@ -29,8 +29,8 @@
     <para>This tutorial will walk you through:
       <procedure>
       <step><para>Installing instances of SymmetricDS for the tutorial,</para></step>
-      <step><para>Creating separate database for the root and client,</para></step>
-      <step><para>Creating sample tables for client and root and data for the root,</para></step>
+      <step><para>Creating separate databases for the root and client,</para></step>
+      <step><para>Creating sample tables for client and root and sample data for the root,</para></step>
       <step><para>Starting SymmetricDS and registering the client with the root,</para></step>
       <step><para>Sending an initial load to the client,</para></step>
       <step><para>Causing a data push and data pull operation, and</para></step>
@@ -102,7 +102,7 @@ db.password=secret]]></programlisting>
                 <programlisting><![CDATA[# The HTTP URL of the root node to contact for registration
 registration.url=http://localhost:8080/sync]]></programlisting>
                 <para> For the tutorial, the client database starts out empty, and the node is not registered. Registration is the
-                    process where the node receives its configuration and stores it in the database. The configuration describes
+                    process where the node receives its configuration and stores it in its database. The configuration describes
                     which database tables to synchronize and to which nodes. When an unregistered node starts up, it will
                     register with the node specified by the registration URL. The registration node centrally controls nodes on
                     the network by allowing registration and returning configuration. In this tutorial, the registration node is
@@ -237,8 +237,9 @@ registration.url=http://localhost:8080/sync]]></programlisting>
     </section>
     <section id="ch02-register-node">
         <title>Registering a Node</title>
-        <para> Next, we need to open registration for the client node so that it may receive its initial load of data and so that it may receive and send data from the root node. 
-         There are several ways to do this; we will use the administration feature on the root node.</para>
+        <para> Next, we need to open registration for the client node so that it may receive its initial load of
+         data and so that it may receive and send data from and to the root node. 
+         There are several ways to do this.  We will use the administration feature on the root node.</para>
         <procedure>
             <step>
                 <para>
@@ -301,7 +302,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
         </para>
         <procedure>
             <step>
-                <para>Open an interactive SQL session with the root database.</para>
+                <para>Open an interactive SQL session with the <emphasis>root</emphasis> database.</para>
             </step>
             <step>
                 <para>Add a new item for sale:</para>
@@ -328,7 +329,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
         <para>We will now simulate a sale at the store and observe how SymmetricDS pushes the sale transaction to the central office.</para>
         <procedure>
             <step>
-                <para>Open an interactive SQL session with the client database.</para>
+                <para>Open an interactive SQL session with the <emphasis>client</emphasis> database.</para>
             </step>
             <step>
                 <para>Add a new sale to the client database:</para>
@@ -362,7 +363,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
                 <para>Open an interactive SQL session with either the root or client database.</para>
             </step>
             <step>
-                <para> Verify that the data changeyou made was captured:</para>
+                <para> Verify that the data change you made was captured:</para>
                 <para>
                     <command> select * from sym_data order by data_id desc;</command>
                 </para>
@@ -398,7 +399,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
     <section id="ch02-verify-incoming">
         <title>Verifying Incoming Batches</title>
         <para> The receiving node keeps track of the batches it acknowledges and records statistics about loading the data.
-            Duplicate batches are skipped by default, but this behavior can be changed with the incoming.batches.skip.duplicates
+            Duplicate batches are skipped by default, but this behavior can be changed with the <literal>incoming.batches.skip.duplicates</literal>
             runtime property.</para>
         <procedure>
             <step>

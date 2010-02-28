@@ -159,8 +159,6 @@ values
    
     <section id="channel">
         <title>Channel</title>
-        
-            
         <para>
             Data changes in the database are captured in the order that they occur, and that order is preserved
             when synchronizing to other nodes.  Some data may need priority for synchronization despite
