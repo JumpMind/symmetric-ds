@@ -21,9 +21,13 @@
 package org.jumpmind.symmetric.db.oracle;
 
 import java.sql.Types;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
+import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -39,22 +43,35 @@ import org.springframework.jdbc.support.lob.OracleLobHandler;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
-    
+
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
-    
+
+    String selectTransactionsSql;
+
+    @Override
+    public void init(Platform pf) {
+        super.init(pf);
+        try {
+            areDatabaseTransactionsPendingSince(System.currentTimeMillis());
+            supportsTransactionViews = true;
+        } catch (Exception ex) {
+            log.warn(ex);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     protected void initLobHandler() {
         lobHandler = new OracleLobHandler();
         try {
-            Class clazz = Class.forName(parameterService.getString(ParameterConstants.DB_NATIVE_EXTRACTOR));
+            Class clazz = Class.forName(parameterService
+                    .getString(ParameterConstants.DB_NATIVE_EXTRACTOR));
             NativeJdbcExtractor nativeJdbcExtractor = (NativeJdbcExtractor) clazz.newInstance();
             ((OracleLobHandler) lobHandler).setNativeJdbcExtractor(nativeJdbcExtractor);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
-        }        
+        }
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     protected Integer overrideJdbcTypeForColumn(Map values) {
@@ -75,8 +92,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist,
-            String tablePrefix, Table table) {
+    public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger,
+            TriggerHistory hist, String tablePrefix, Table table) {
         try {
             super.createTrigger(sqlBuffer, dml, trigger, hist, tablePrefix, table);
         } catch (BadSqlGrammarException ex) {
@@ -84,8 +101,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                 try {
                     // a trigger of the same name must already exist on a table
                     log.warn("TriggerAlreadyExists", jdbcTemplate.queryForMap(
-                            "select * from user_triggers where trigger_name like upper(?)", new Object[] { hist
-                                    .getTriggerNameForDmlType(dml) }));
+                            "select * from user_triggers where trigger_name like upper(?)",
+                            new Object[] { hist.getTriggerNameForDmlType(dml) }));
                 } catch (DataAccessException e) {
                 }
             }
@@ -116,7 +133,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
+            Trigger trigger) {
         return tablePrefix + "_" + "transaction_id()";
     }
 
@@ -144,10 +162,12 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
-        return jdbcTemplate.queryForInt(
-                "select count(*) from user_triggers where trigger_name like upper(?) and table_name like upper(?)",
-                new Object[] { triggerName, tableName }) > 0;
+    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+            String triggerName) {
+        return jdbcTemplate
+                .queryForInt(
+                        "select count(*) from user_triggers where trigger_name like upper(?) and table_name like upper(?)",
+                        new Object[] { triggerName, tableName }) > 0;
     }
 
     @Override
@@ -166,7 +186,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public void disableSyncTriggers(String nodeId) {
         jdbcTemplate.update(String.format("call %s.setValue(1)", getSymmetricPackageName()));
         if (nodeId != null) {
-            jdbcTemplate.update(String.format("call %s.setNodeValue('" + nodeId + "')", getSymmetricPackageName()));
+            jdbcTemplate.update(String.format("call %s.setNodeValue('" + nodeId + "')",
+                    getSymmetricPackageName()));
         }
     }
 
@@ -197,4 +218,25 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     }
 
+    @Override
+    public boolean areDatabaseTransactionsPendingSince(long time) {
+        String returnValue = jdbcTemplate.queryForObject(selectTransactionsSql, String.class);
+        if (returnValue != null) {
+            Date date;
+            try {
+                date = DateUtils.parseDate(returnValue, new String[] { "MM/dd/yy HH:mm:ss" });
+                return date.getTime() < time;
+            } catch (ParseException e) {
+                log.error(e);
+                return true;
+            }
+        } else {
+            return false;
+        }
+
+    }
+
+    public void setSelectTransactionsSql(String selectTransactionSql) {
+        this.selectTransactionsSql = selectTransactionSql;
+    }
 }

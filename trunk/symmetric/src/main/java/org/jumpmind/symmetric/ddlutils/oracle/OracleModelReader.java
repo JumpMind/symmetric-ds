@@ -70,6 +70,7 @@ public class OracleModelReader extends Oracle10ModelReader {
             {        
                 String name =rs.getString(1);                
                 String type = rs.getString(2);
+                // Only read in normal oracle indexes
                 if (type.startsWith("NORMAL"))  
                 {
                     values.put("INDEX_TYPE",       new Short(DatabaseMetaData.tableIndexOther));

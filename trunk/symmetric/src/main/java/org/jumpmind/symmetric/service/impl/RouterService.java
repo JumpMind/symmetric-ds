@@ -107,11 +107,12 @@ public class RouterService extends AbstractService implements IRouterService {
     synchronized public void routeData() {
         if (clusterService.lock(ClusterConstants.ROUTE)) {
             try {
+                long databaseTimeAtRoutingStart = dbDialect.getDatabaseTime();
                 long ts = System.currentTimeMillis();
                 Node sourceNode = nodeService.findIdentity();
                 DataRef ref = dataService.getDataRef();
                 int dataCount = routeDataForEachChannel(ref, sourceNode);
-                findAndSaveNextDataId(ref);
+                findAndSaveNextDataId(ref, databaseTimeAtRoutingStart);
                 ts = System.currentTimeMillis() - ts;
                 if (dataCount > 0 || ts > 30000) {
                     log.info("RoutedDataInTime", dataCount, ts);
@@ -182,7 +183,7 @@ public class RouterService extends AbstractService implements IRouterService {
         context.setNeedsCommitted(false);
     }
 
-    protected void findAndSaveNextDataId(final DataRef ref) {
+    protected void findAndSaveNextDataId(final DataRef ref, final long databaseTimeAtRoutingStart) {
         long ts = System.currentTimeMillis();
         long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"),
                 new Object[] { ref.getRefDataId() }, new int[] { Types.INTEGER },
@@ -196,7 +197,10 @@ public class RouterService extends AbstractService implements IRouterService {
                                 lastDataId = dataId;
                             } else {
                                 if (dataService.countDataInRange(lastDataId, dataId) == 0) {
-                                    if (isDataGapExpired(dataId)) {
+                                    if (dbDialect.supportsTransactionViews() && !dbDialect.areDatabaseTransactionsPendingSince(databaseTimeAtRoutingStart)) {
+                                        log.info("RouterSkippingDataIdsNoTransactions", lastDataId, dataId);
+                                        lastDataId = dataId;                                        
+                                    }  else if (isDataGapExpired(dataId)) {
                                         log.info("RouterSkippingDataIdsGapExpired", lastDataId, dataId);
                                         lastDataId = dataId;
                                     }                                    
