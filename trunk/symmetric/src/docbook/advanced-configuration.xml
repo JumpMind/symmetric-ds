@@ -28,7 +28,7 @@
         <literal>true</literal>, the frequency that data is pushed is controlled by the <literal>job.push.period.time.ms</literal>.  Data is extracted by channel from the source database's 
         <xref linkend="table_data" xrefstyle="table"/> table at an interval controlled by the <literal>extract_period_millis</literal> column on the 
         <xref linkend="table_channel" xrefstyle="table"/> table.  The <literal>last_extract_time</literal> is 
-        always recorded, by channel, on the <xref linkend="table_node_channel_control" xrefstyle="table"/> table for the host node's id.  When the Pull and Push Job run, if the extract period
+        always recorded, by channel, on the <xref linkend="table_node_channel_ctl" xrefstyle="table"/> table for the host node's id.  When the Pull and Push Job run, if the extract period
         has not passed according to the last extract time, then the channel will be skipped for this run.  If the <literal>extract_period_millis</literal> is set to zero, data extraction will happen every time the jobs run.
         </para>
         <para>
