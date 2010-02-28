@@ -302,7 +302,7 @@ values
       <para>
                 Routers provided in the base implementation currently include:
                 <itemizedlist>
-                <listitem>Simple Router - a router that sends all data to all nodes that belong to the target node group defined in the router.</listitem>
+                <listitem>Default Router - a router that sends all data to all nodes that belong to the target node group defined in the router.</listitem>
                     <listitem>Column Match Router - a router that compares old or new column values to a constant value or the
                         value of a node's external_id or node_id.</listitem>
                     <listitem>Sub-select Router - a router that executes a SQL expression against the database to select nodes to
@@ -317,8 +317,8 @@ values
             </para>
     
     
-    <section id="simple-router">
-        <title>Simple Router</title>
+    <section id="default-router">
+        <title>Default Router</title>
         <para>
             The simplest router is a router that sends all the data that is captured by its 
             associated triggers to all the nodes that belong to the target node group defined
