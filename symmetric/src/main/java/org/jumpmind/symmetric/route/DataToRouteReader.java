@@ -27,9 +27,9 @@ import org.springframework.jdbc.support.JdbcUtils;
  * reads ahead and tries to keep a blocking queue populated for other threads to
  * process.
  */
-public class RouterDataReader implements Runnable {
+public class DataToRouteReader implements Runnable {
 
-    final static ILog log = LogFactory.getLog(RouterDataReader.class);
+    final static ILog log = LogFactory.getLog(DataToRouteReader.class);
 
     private int fetchSize;
 
@@ -49,7 +49,7 @@ public class RouterDataReader implements Runnable {
 
     private int maxQueueSize;
 
-    public RouterDataReader(DataSource dataSource, int maxQueueSize, Map<String, String> sql,
+    public DataToRouteReader(DataSource dataSource, int maxQueueSize, Map<String, String> sql,
             int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService) {
         this.maxQueueSize = maxQueueSize;
         this.dataSource = dataSource;
@@ -96,9 +96,6 @@ public class RouterDataReader implements Runnable {
                 ResultSet rs = null;
                 try {
                     String channelId = context.getChannel().getChannelId();
-                    // TODO add a flag to sym_channel to indicate whether we
-                    // need to read the row_data and or old_data for routing. We
-                    // will get better performance if we don't read the data.
                     ps = c.prepareStatement(getSql(context.getChannel().getChannel()),
                             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                     ps.setFetchSize(fetchSize);

@@ -51,7 +51,7 @@ import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IRouterContext;
 import org.jumpmind.symmetric.route.RouterContext;
-import org.jumpmind.symmetric.route.RouterDataReader;
+import org.jumpmind.symmetric.route.DataToRouteReader;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -273,7 +273,7 @@ public class RouterService extends AbstractService implements IRouterService {
      */
     protected int selectDataAndRoute(DataRef ref, RouterContext context) throws SQLException {
 
-        RouterDataReader reader = new RouterDataReader(dataSource, dbDialect
+        DataToRouteReader reader = new DataToRouteReader(dataSource, dbDialect
                 .getRouterDataPeekAheadCount(), getSql(), dbDialect.getStreamingResultsFetchSize(),
                 context, ref, dataService);
         readThread.execute(reader);
