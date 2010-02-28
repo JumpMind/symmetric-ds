@@ -49,7 +49,7 @@ where source_table_name = 'price_changes';
         <para>
             SymmetricDS examines the current configuration, corresponding database triggers,
             and the underlying tables to determine if database triggers need created or updated.
-            The change activity is recorded on the <xref linkend="table_trigger_hist" xrefstyle="select: title pageabbrev"/> table with a reason for the
+            The change activity is recorded on the <xref linkend="table_trigger_hist" xrefstyle="table"/> table with a reason for the
             change.  The following reasons for a change are possible:
 
             <itemizedlist>
@@ -158,8 +158,8 @@ where source_table_name = 'price_changes';
     <section id="registration">
         <title>Opening Registration</title>
         <para>
-        Node registration is the act of setting up a new <xref linkend="table_node" xrefstyle="select: title pageabbrev"/> and
-         <xref linkend="table_node_security" xrefstyle="select: title pageabbrev"/> so that when the new node is brought online
+        Node registration is the act of setting up a new <xref linkend="table_node" xrefstyle="table"/> and
+         <xref linkend="table_node_security" xrefstyle="table"/> so that when the new node is brought online
          it is allowed to join the system.  Nodes are only allowed to register if rows exist for the
          node and the <literal>registration_enabled</literal> flag is set to 1.  If the <literal>auto.registration</literal>
          SymmetricDS property is set to true, then when a node attempts to register, if registration
