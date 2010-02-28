@@ -50,7 +50,8 @@ insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         created for each <emphasis>child</emphasis> node that registers with the node, assuming auto-registration is enabled.
         If auto registration is not enabled, you must create a row for a now to be able to register.  You can also, with this table,
         manually cause a node to re-register or do a re-initial load by setting the corresponding
-        columns in the table itself.
+        columns in the table itself.  Registration is discussed in more detail in
+        <xref linkend="registration"/>.
     </section>
     <section id="node-organization">
             <title>Node Organization</title>
