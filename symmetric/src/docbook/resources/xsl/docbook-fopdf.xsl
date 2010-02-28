@@ -20,16 +20,28 @@
 <xsl:import href="urn:docbkx:stylesheet"/>
 
 
-    <context name="xref">
-      <template name="page.citation" text=" (p. %p)"/>
-    </context>
-
-
-    <xsl:param name="insert.xref.page.number" select="'yes'"/>
+ 
+    <xsl:param name="insert.xref.page.number" select="'maybe'"/>
     
     <xsl:attribute-set name="xref.properties">
      <xsl:attribute name="color">blue</xsl:attribute>
    </xsl:attribute-set>
+    
+    <xsl:param name="local.l10n.xml" select="document('')"/>
+<l:i18n xmlns:l="http://docbook.sourceforge.net/xmlns/l10n/1.0">
+  <l:l10n language="en">
+    <l:context name="xref">
+      <l:template name="page.citation" text=" (p.&#160;%p)&#160; "/>
+    </l:context>
+    <l:context name="xref-number-and-title">
+      <l:template name="section" style="table" text="%t"/>
+      <l:template name="appendix" text="Appendix&#160;%n, %t (p.&#160;%p)&#160;"/>
+      <l:template name="chapter" text="Chapter&#160;%n, %t (p.&#160;%p)&#160;"/>
+      <l:template name="section" text="Section&#160;%n, %t (p.&#160;%p)&#160;"/>
+    </l:context>
+  </l:l10n>
+</l:i18n>
+
     
     
 <!--###################################################
