@@ -121,7 +121,7 @@
                 <itemizedlist>
                     <listitem>
                         <para>
-                            Data routing is accomplished by assigning a router type to a  <xref linkend="table_router" xrefstyle="select: title page"/> configuration.
+                            Data routing is accomplished by assigning a router type to a  <xref linkend="table_router" xrefstyle="select: title pageabbrev"/> configuration.
                             Routers are responsible for identifying what target nodes captured changes should be delivered to.  Custom 
                             routers are possible by providing a class implementing <literal>IDataRouter</literal>. 
                         </para>
@@ -231,7 +231,7 @@
                 record data changes as well as the nodes to which the changes must be applied as row inserts into the <literal>data_event</literal>
                 table. Thus, the number of row-inserts grows linearly with the number of client nodes. This can lead to an obvious
                 performance issue as the number of nodes increases. In addition, the problem is made worse at times due to
-                synchronizing nodes updating the same <xref linkend="table_data_event" xrefstyle="select: title page"/> table as part
+                synchronizing nodes updating the same <xref linkend="table_data_event" xrefstyle="select: title pageabbrev"/> table as part
                  of the batching process while the row-inserts are
                 being created.</para>
             <para>In SymmetricDS 2, triggers capture <emphasis>only</emphasis> data changes, not the node-specific details. The node-specific
