@@ -48,7 +48,8 @@ insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         </para>
         The second table, <xref linkend="table_node_security" xrefstyle="table"/> has rows
         created for each <emphasis>child</emphasis> node that registers with the node, assuming auto-registration is enabled.
-        If auto registration is not enabled, you must create a row for a now to be able to register.  You can also, with this table,
+        If auto registration is not enabled, you must create a row in <xref linkend="table_node" xrefstyle="table"/> 
+        and <xref linkend="table_node_security" xrefstyle="table"/> for the node to be able to register.  You can also, with this table,
         manually cause a node to re-register or do a re-initial load by setting the corresponding
         columns in the table itself.  Registration is discussed in more detail in
         <xref linkend="registration"/>.
