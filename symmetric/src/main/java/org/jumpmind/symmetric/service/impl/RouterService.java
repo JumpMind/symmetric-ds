@@ -112,7 +112,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 Node sourceNode = nodeService.findIdentity();
                 DataRef ref = dataService.getDataRef();
                 int dataCount = routeDataForEachChannel(ref, sourceNode);
-                findAndSaveNextDataId(ref, databaseTimeAtRoutingStart);
+                findAndSaveNextDataId(databaseTimeAtRoutingStart);
                 ts = System.currentTimeMillis() - ts;
                 if (dataCount > 0 || ts > 30000) {
                     log.info("RoutedDataInTime", dataCount, ts);
@@ -183,7 +183,9 @@ public class RouterService extends AbstractService implements IRouterService {
         context.setNeedsCommitted(false);
     }
 
-    protected void findAndSaveNextDataId(final DataRef ref, final long databaseTimeAtRoutingStart) {
+    protected void findAndSaveNextDataId(final long databaseTimeAtRoutingStart) {
+        // reselect the DataRef just in case somebody updated it manually during routing
+        final DataRef ref = dataService.getDataRef();
         long ts = System.currentTimeMillis();
         long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"),
                 new Object[] { ref.getRefDataId() }, new int[] { Types.INTEGER },
