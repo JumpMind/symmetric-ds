@@ -19,11 +19,18 @@
                 
 <xsl:import href="urn:docbkx:stylesheet"/>
 
+
+    <xsl:param name="insert.xref.page.number" select="'yes'"/>
+    
+    <xsl:attribute-set name="xref.properties">
+     <xsl:attribute name="color">blue</xsl:attribute>
+   </xsl:attribute-set>
+    
+    
 <!--###################################################
                    Custom Title Page
     ###################################################--> 
-    <xsl:param name="insert.xref.page.number" select="'yes'"/>
-    
+
     <xsl:template name="book.titlepage.recto">
         <fo:block>
             <fo:table table-layout="fixed" width="175mm">
