@@ -13,7 +13,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:/org/jumpmind/symmetric/service/impl/router-service-sql.xml" })
-public class RouterDataReaderUnitTest {
+public class DataToRouteReaderUnitTest {
+    
+    private static final String BLANK = "''";
     
     @Resource
     Map<String,String> routerServiceSql;
@@ -23,10 +25,10 @@ public class RouterDataReaderUnitTest {
         DataToRouteReader reader = new DataToRouteReader(null, 1, routerServiceSql, 1000, null, null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(channel).contains("old_data"));
-        Assert.assertFalse(reader.getSql(channel).contains("null"));
+        Assert.assertFalse(reader.getSql(channel).contains(BLANK));
         channel.setUseOldDataToRoute(false);
         Assert.assertFalse(reader.getSql(channel).contains("old_data"));
-        Assert.assertTrue(reader.getSql(channel).contains("null"));
+        Assert.assertTrue(reader.getSql(channel).contains(BLANK));
     }
     
     @Test
@@ -34,10 +36,10 @@ public class RouterDataReaderUnitTest {
         DataToRouteReader reader = new DataToRouteReader(null, 1, routerServiceSql, 1000, null, null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(channel).contains("row_data"));
-        Assert.assertFalse(reader.getSql(channel).contains("null"));
+        Assert.assertFalse(reader.getSql(channel).contains(BLANK));
         channel.setUseRowDataToRoute(false);
         Assert.assertFalse(reader.getSql(channel).contains("row_data"));
-        Assert.assertTrue(reader.getSql(channel).contains("null"));
+        Assert.assertTrue(reader.getSql(channel).contains(BLANK));
     }   
     
     @Test
@@ -46,12 +48,12 @@ public class RouterDataReaderUnitTest {
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(channel).contains("row_data"));
         Assert.assertTrue(reader.getSql(channel).contains("old_data"));
-        Assert.assertFalse(reader.getSql(channel).contains("null"));
+        Assert.assertFalse(reader.getSql(channel).contains(BLANK));
         channel.setUseRowDataToRoute(false);
         channel.setUseOldDataToRoute(false);
         Assert.assertFalse(reader.getSql(channel).contains("row_data"));
         Assert.assertFalse(reader.getSql(channel).contains("old_data"));
-        Assert.assertTrue(reader.getSql(channel).contains("null"));
+        Assert.assertTrue(reader.getSql(channel).contains(BLANK));
     }  
 
 }
