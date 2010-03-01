@@ -57,7 +57,7 @@ public class SimpleRouterContext implements IRouterContext {
         return String.format("Stat.%s", name);
     }
 
-    public void incrementStat(long amount, String name) {
+    synchronized public void incrementStat(long amount, String name) {
         final String KEY = getStatKey(name);
         Long val = (Long) contextCache.get(KEY);
         if (val == null) {
