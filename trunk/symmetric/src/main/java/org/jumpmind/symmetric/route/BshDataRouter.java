@@ -71,6 +71,10 @@ public class BshDataRouter extends AbstractDataRouter {
             return nodeIds;
         } else if (value instanceof Boolean && value.equals(Boolean.TRUE)) {
             return toNodeIds(nodes, null);
+        } else if (value instanceof String) {
+            Set<String> node = new HashSet<String>(1);
+            node.add(value.toString());
+            return node;
         } else {
             return Collections.emptySet();
         }

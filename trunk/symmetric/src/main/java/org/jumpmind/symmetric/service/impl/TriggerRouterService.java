@@ -307,10 +307,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         String myNodeGroupId = parameterService.getNodeGroupId();
         long triggerRouterCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
         if (System.currentTimeMillis()-this.triggerRouterCacheTime > triggerRouterCacheTimeoutInMs) {
-            synchronized(this) {
-                triggerRouterCacheByNodeGroupId.clear();
-                triggerRouterCacheTime = System.currentTimeMillis();
-            }
+           resetTriggerRouterCacheByNodeGroupId();
         }
         if (!triggerRouterCacheByNodeGroupId.containsKey(myNodeGroupId) || refreshCache ) {
             synchronized (this) {
@@ -446,6 +443,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     Types.VARCHAR });
         }
     }
+    
+    synchronized protected void resetTriggerRouterCacheByNodeGroupId() {
+        triggerRouterCacheByNodeGroupId.clear();
+        triggerRouterCacheTime = System.currentTimeMillis();
+    }
 
     public void saveRouter(Router router) {
         router.setLastUpdateTime(new Date());
@@ -473,6 +475,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.TIMESTAMP, Types.VARCHAR,
                     Types.TIMESTAMP, Types.VARCHAR });
         }
+        resetTriggerRouterCacheByNodeGroupId();
     }
 
     public void saveTrigger(Trigger trigger) {
@@ -525,7 +528,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     configurationService.reloadChannels();
                     inactivateTriggers(sqlBuffer);
                     updateOrCreateDatabaseTriggers(sqlBuffer, gen_always);
-                    triggerRouterCacheByNodeGroupId.clear();
+                    resetTriggerRouterCacheByNodeGroupId();
                 } finally {
                     clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
                     log.info("TriggersSynchronized");
