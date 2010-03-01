@@ -70,6 +70,9 @@ public abstract class AbstractDataRouter implements IDataRouter {
             data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getOldDataAsString(null, dataMetaData));
             data.putAll(getOldDataAsString(OLD_, dataMetaData));
+            if (data.size() == 0) {
+                data.putAll(getPkDataAsString(dataMetaData));
+            }
             data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
             break;
         default:
@@ -103,6 +106,19 @@ public abstract class AbstractDataRouter implements IDataRouter {
         }
         return map;
     }
+    
+    protected Map<String, String> getPkDataAsString(DataMetaData dataMetaData) {
+        String[] columns = dataMetaData.getTriggerHistory().getParsedPkColumnNames();
+        String[] rowData = dataMetaData.getData().toParsedPkData();
+        Map<String, String> map = new HashMap<String, String>(columns.length);
+        if (rowData != null) {
+            for (int i = 0; i < columns.length; i++) {
+                String columnName = columns[i].toUpperCase();
+                map.put(columnName, rowData[i]);
+            }
+        }
+        return map;
+    }
 
     protected Map<String, Object> getDataObjectMap(DataMetaData dataMetaData, IDbDialect dbDialect) {
         Map<String, Object> data = null;
@@ -123,6 +139,9 @@ public abstract class AbstractDataRouter implements IDataRouter {
             data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getOldDataAsObject(null, dataMetaData, dbDialect));
             data.putAll(getOldDataAsObject(OLD_, dataMetaData, dbDialect));
+            if (data.size() == 0) {
+                data.putAll(getPkDataAsObject(dataMetaData, dbDialect));
+            }            
             break;
         default:
             break;
@@ -160,6 +179,24 @@ public abstract class AbstractDataRouter implements IDataRouter {
                     dataMetaData.getTable(), columnNames, rowData);
             for (int i = 0; i < columnNames.length; i++) {
                 data.put(prefix != null ? (prefix + columnNames[i]).toUpperCase() : columnNames[i]
+                        .toUpperCase(), objects[i]);
+            }
+            return data;
+        } else {
+            return Collections.emptyMap();
+        }
+    }
+    
+    protected Map<String, Object> getPkDataAsObject(DataMetaData dataMetaData,
+            IDbDialect dbDialect) {
+        String[] rowData = dataMetaData.getData().toParsedPkData();
+        if (rowData != null) {
+            Map<String, Object> data = new HashMap<String, Object>(rowData.length);
+            String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
+            Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(),
+                    dataMetaData.getTable(), columnNames, rowData);
+            for (int i = 0; i < columnNames.length; i++) {
+                data.put(columnNames[i]
                         .toUpperCase(), objects[i]);
             }
             return data;
