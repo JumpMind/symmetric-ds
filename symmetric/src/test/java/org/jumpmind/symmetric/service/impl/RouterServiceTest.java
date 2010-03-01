@@ -473,9 +473,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
         
         
-    }
-    
-    
+    }        
     
     @Test
     public void testSyncOnColumnChange() {     
@@ -527,6 +525,41 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }    
     
     @Test
+    public void testSyncIncomingBatchWhenUnrouted() throws Exception {
+        resetBatches();
+
+        TriggerRouter triggerRouter = getTestRoutingTableTrigger(TEST_TABLE_1);
+        triggerRouter.getTrigger().setSyncOnIncomingBatch(true);
+        triggerRouter.getRouter().setRouterType("bsh");
+        triggerRouter.getRouter().setRouterExpression("return " + NODE_GROUP_NODE_1.getNodeId());
+        getTriggerRouterService().saveTriggerRouter(triggerRouter);
+
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        testChannel.setMaxBatchToSend(1000);
+        testChannel.setMaxBatchSize(50);
+        testChannel.setBatchAlgorithm("default");
+        getConfigurationService().saveChannel(testChannel, true);
+
+        getTriggerRouterService().syncTriggers();
+
+        insert(TEST_TABLE_1, 10, true, NODE_GROUP_NODE_1.getNodeId());
+
+        int unroutedCount = countUnroutedBatches();
+        
+        getRouterService().routeData();
+
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        filterForChannels(batches, testChannel);
+        Assert.assertEquals("Should have been 0.  We did the insert as if the data had come from node 1.", 0, batches
+                .getBatches().size());
+        
+        Assert.assertTrue(countUnroutedBatches() > unroutedCount);
+
+        resetBatches();
+
+    }    
+    
+    @Test
     public void testDataGapExpired() {
         // TODO
     }
@@ -534,11 +567,6 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     @Test 
     public void testUnroutedDataCreatedBatch() {
         // TODO        
-    }
-    
-    @Test 
-    public void testDataLoadedFromSourceNodeIsUnrouted() {
-        // TODO
     }
     
     @Test
@@ -591,6 +619,10 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testMaxNumberOfDataToRoute() {
         // TODO
+    }
+    
+    protected int countUnroutedBatches() {
+        return getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where node_id=?",Constants.UNROUTED_NODE_ID);
     }
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {

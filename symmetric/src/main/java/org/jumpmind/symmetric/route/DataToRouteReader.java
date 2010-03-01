@@ -80,10 +80,10 @@ public class DataToRouteReader implements Runnable {
     protected String getSql (Channel channel) {
         String select = sql.get("selectDataToBatchSql");
         if (!channel.isUseOldDataToRoute()) {
-            select = select.replace("d.old_data", "null");
+            select = select.replace("d.old_data", "''");
         }
         if (!channel.isUseRowDataToRoute()) {
-            select = select.replace("d.row_data", "null");
+            select = select.replace("d.row_data", "''");
         }
         return select;
     }

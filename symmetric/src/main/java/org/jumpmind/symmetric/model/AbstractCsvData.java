@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 import com.csvreader.CsvReader;
@@ -15,7 +16,7 @@ abstract class AbstractCsvData {
 
     // TODO This could probably become more efficient
     protected String[] getData(String key, String data) {
-        if (data != null) {
+        if (!StringUtils.isBlank(data)) {
             try {
                 if (parsedCsvData.containsKey(key)) {
                     return parsedCsvData.get(key);
