@@ -168,10 +168,8 @@ public class RouterService extends AbstractService implements IRouterService {
     protected void completeBatchesAndCommit(RouterContext context) throws SQLException {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
-        int numberOfBatches = batches.size();
         for (OutgoingBatch batch : batches) {
-            batch.setRouterMillis((System.currentTimeMillis() - context.getCreatedTimeInMs())
-                    / numberOfBatches);
+            batch.setRouterMillis(System.currentTimeMillis()-batch.getCreateTime().getTime());
             Set<IDataRouter> usedRouters = context.getUsedDataRouters();
             for (IDataRouter dataRouter : usedRouters) {
                 dataRouter.completeBatch(context, batch);
