@@ -33,9 +33,12 @@
             </para>
             <para>
             In addition to the <xref linkend="table_node" xrefstyle="table"/> table, two other tables play a direct role
-            in defining a node.  The first is <xref linkend="table_node_identity" xrefstyle="table"/>. A row in this table
+            in defining a node.  The first is <xref linkend="table_node_identity" xrefstyle="table"/>. The <emphasis>only</emphasis> row in this table
             is inserted in the database when the node first <emphasis>registers</emphasis> with a parent node.  In the case 
-            of a root node, the row is entered by the user.  For example, the following SQL statements set up a top-level registration server as a node identified
+            of a root node, the row is entered by the user.  The row is used by a node instance to determine its node identity.
+            </para>
+            <para>
+            The following SQL statements set up a top-level registration server as a node identified
             as "00000" in the "corp" node group.
             
             <programlisting>
@@ -46,6 +49,7 @@ values
 
 insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         </para>
+        <para>
         The second table, <xref linkend="table_node_security" xrefstyle="table"/> has rows
         created for each <emphasis>child</emphasis> node that registers with the node, assuming auto-registration is enabled.
         If auto registration is not enabled, you must create a row in <xref linkend="table_node" xrefstyle="table"/> 
@@ -53,6 +57,7 @@ insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         manually cause a node to re-register or do a re-initial load by setting the corresponding
         columns in the table itself.  Registration is discussed in more detail in
         <xref linkend="registration"/>.
+        </para>
     </section>
     <section id="node-organization">
             <title>Node Organization</title>
