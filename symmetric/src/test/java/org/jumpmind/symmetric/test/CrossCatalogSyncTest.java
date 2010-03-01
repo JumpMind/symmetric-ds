@@ -79,7 +79,7 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         getTriggerRouterService().saveTriggerRouter(triggerRouter);
         getSymmetricEngine().syncTriggers();
         jdbcTemplate.update("insert into other.other_table values('00000','first row')");
-        getRoutingService().routeData();
+        getRouterService().routeData();
         Assert.assertEquals("The data event from the other database's other_table was not captured.", 1, jdbcTemplate
                 .queryForInt("select count(*) from sym_data_event where data_id in (select data_id from sym_data where channel_id='other')"));
     }

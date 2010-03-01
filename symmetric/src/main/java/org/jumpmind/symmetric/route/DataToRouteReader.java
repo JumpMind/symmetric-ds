@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.sql.DataSource;
@@ -33,7 +34,7 @@ public class DataToRouteReader implements Runnable {
 
     private int fetchSize;
 
-    private LinkedBlockingQueue<Data> dataQueue;
+    protected BlockingQueue<Data> dataQueue;
 
     private Map<String, String> sql;
 
@@ -172,7 +173,7 @@ public class DataToRouteReader implements Runnable {
         this.reading = reading;
     }
 
-    public LinkedBlockingQueue<Data> getDataQueue() {
+    public BlockingQueue<Data> getDataQueue() {
         return dataQueue;
     }
 

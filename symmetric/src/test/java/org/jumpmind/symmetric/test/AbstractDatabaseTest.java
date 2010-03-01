@@ -99,8 +99,8 @@ public class AbstractDatabaseTest {
         return AppUtils.find(Constants.NODE_SERVICE, getSymmetricEngine());
     }
 
-    protected IRouterService getRoutingService() {
-        return AppUtils.find(Constants.ROUTING_SERVICE, getSymmetricEngine());
+    protected IRouterService getRouterService() {
+        return AppUtils.find(Constants.ROUTER_SERVICE, getSymmetricEngine());
     }
 
     protected ITriggerRouterService getTriggerRouterService() {
