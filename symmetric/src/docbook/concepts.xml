@@ -463,7 +463,8 @@ values
               <xref linkend="table_router" xrefstyle="table"/> table
             to <literal>lookuptable</literal> and setting a list of configuration parameters in the <literal>router_expression</literal> column.
         </para>
-        <para>             
+        <para>     
+            Each of the following configuration parameters are required.          
             <variablelist>
                 <varlistentry>
                     <term>
@@ -522,8 +523,7 @@ values
  'LOOKUP_TABLE=STORE
 KEY_COLUMN=BRAND_ID
 LOOKUP_KEY_COLUMN=BRAND_ID
-EXTERNAL_ID_COLUMN=STORE_ID
-', current_timestamp, current_timestamp);
+EXTERNAL_ID_COLUMN=STORE_ID', current_timestamp, current_timestamp);
 
 ]]></programlisting>
          </para>            
