@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,9 +43,9 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
 
     final static ILog log = LogFactory.getLog(LookupTableDataRouter.class);
 
-    public final static String PARAM_TABLE = "TABLE";
-    public final static String PARAM_MAPPING_COLUMN = "MAPPING_COLUMN";
+    public final static String PARAM_TABLE = "LOOKUP_TABLE";
     public final static String PARAM_KEY_COLUMN = "KEY_COLUMN";
+    public final static String PARAM_MAPPED_KEY_COLUMN = "LOOKUP_KEY_COLUMN";
     public final static String PARAM_EXTERNAL_ID_COLUMN = "EXTERNAL_ID_COLUMN";
 
     final static String EXPRESSION_KEY = String.format("%s.Expression.",
@@ -63,16 +64,16 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         Map<String, String> params = getParams(router, routingContext);
         Map<String, String> dataMap = getDataMap(dataMetaData);
         boolean validExpression = params.containsKey(PARAM_TABLE)
-                && params.containsKey(PARAM_KEY_COLUMN) && params.containsKey(PARAM_MAPPING_COLUMN)
+                && params.containsKey(PARAM_KEY_COLUMN) && params.containsKey(PARAM_MAPPED_KEY_COLUMN)
                 && params.containsKey(PARAM_EXTERNAL_ID_COLUMN);
         if (validExpression) {
-            Map<String, String> lookupTable = getLookupTable(params, router, routingContext);
-            String column = params.get(PARAM_MAPPING_COLUMN);
+            Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
+            String column = params.get(PARAM_KEY_COLUMN);
             String keyData = dataMap.get(column);
-            String externalId = lookupTable.get(keyData);
-            if (!StringUtils.isBlank(externalId)) {
+            Set<String> externalIds = lookupTable.get(keyData);
+            if (externalIds != null) {
                 for (Node node : nodes) {
-                    if (node.getExternalId().equals(externalId)) {
+                    if (externalIds.contains(node.getExternalId())) {
                         nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                     }
                 }
@@ -117,18 +118,24 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getLookupTable(Map<String, String> params, Router router,
+    protected Map<String, Set<String>> getLookupTable(Map<String, String> params, Router router,
             IRouterContext routingContext) {
         final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get("TABLENAME");
-        Map<String, String> lookupMap = (Map<String, String>) routingContext.getContextCache().get(
+        Map<String, Set<String>> lookupMap = (Map<String, Set<String>>) routingContext.getContextCache().get(
                 CTX_CACHE_KEY);
         if (lookupMap == null) {
-            final Map<String, String> fillMap = new HashMap<String, String>();
-            jdbcTemplate.query(String.format("select %s, %s from %s", params.get(PARAM_KEY_COLUMN),
+            final Map<String, Set<String>> fillMap = new HashMap<String, Set<String>>();
+            jdbcTemplate.query(String.format("select %s, %s from %s", params.get(PARAM_MAPPED_KEY_COLUMN),
                     params.get(PARAM_EXTERNAL_ID_COLUMN), params.get(PARAM_TABLE)),
                     new RowCallbackHandler() {
                         public void processRow(ResultSet rs) throws SQLException {
-                            fillMap.put(rs.getString(1), rs.getString(2));
+                            String key = rs.getString(1);
+                            Set<String> set = fillMap.get(key);
+                            if (set == null) {
+                                set = new HashSet<String>();
+                                fillMap.put(key, set);
+                            }
+                            set.add(rs.getString(2));
                         }
                     });
             lookupMap = fillMap;

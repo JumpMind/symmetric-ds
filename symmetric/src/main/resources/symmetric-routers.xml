@@ -15,7 +15,12 @@
 			<bean class="org.jumpmind.symmetric.route.ColumnMatchDataRouter">
                 <property name="registrationService" ref="registrationService" />
             </bean>
-		</entry>  		
+		</entry>
+		<entry key="lookuptable">
+			<bean class="org.jumpmind.symmetric.route.LookupTableDataRouter">
+                <property name="jdbcTemplate" ref="jdbcTemplate" />
+            </bean>
+		</entry>  				  		
 		<entry key="subselect">
 			<bean class="org.jumpmind.symmetric.route.SubSelectDataRouter">
 				<property name="sql"
