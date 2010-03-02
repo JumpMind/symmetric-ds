@@ -80,6 +80,7 @@ public class Node {
     
     public Node(String nodeId, String nodeGroupId) {
         this.nodeId = nodeId;
+        this.externalId = nodeId;
         this.nodeGroupId = nodeGroupId;
     }    
 

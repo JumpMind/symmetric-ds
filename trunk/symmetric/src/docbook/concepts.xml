@@ -454,6 +454,80 @@ values
 ]]></programlisting>    
          </para>                    
     </section>    
+    
+    <section id="lookup-table-router">
+        <title>Lookup Table Router</title>
+        <para>
+            A lookup table may contain the id of the node where data needs to be routed.  This could be an existing table or an ancillary table that is added
+            specifically for the purpose of routing data.  Lookup table routers are configured by setting the <literal>router_type</literal> column on the 
+              <xref linkend="table_router" xrefstyle="table"/> table
+            to <literal>lookuptable</literal> and setting a list of configuration parameters in the <literal>router_expression</literal> column.
+        </para>
+        <para>             
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <command>LOOKUP_TABLE</command>
+                    </term>
+                    <listitem>
+                        <para>
+                        This is the name of the lookup table.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>KEY_COLUMN</command>
+                    </term>
+                    <listitem>
+                        <para>
+                        This is the name of the column on the table that is being routed.  It will be used as a key into the lookup table.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>LOOKUP_KEY_COLUMN</command>
+                    </term>
+                    <listitem>
+                        <para>
+                        This is the name of the column that is the key on the lookup table.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>EXTERNAL_ID_COLUMN</command>
+                    </term>
+                    <listitem>
+                        <para>
+                        This is the name of the column that contains the external_id of the node to route to on the lookup table.
+                        </para>
+                    </listitem>
+                </varlistentry>                
+            </variablelist>
+        </para>
+        <para>
+            Note that the lookup table will be read into memory and cached for the duration of a routing pass for a single channel.
+        </para>                  
+        <para>
+            Consider a table that needs to be routed to a specific store, but the data in the changing table only contains brand information.  In this case,
+            the STORE table may be used as a lookup table.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-ok','corp', 'store', 'lookuptable', 
+ 'LOOKUP_TABLE=STORE
+KEY_COLUMN=BRAND_ID
+LOOKUP_KEY_COLUMN=BRAND_ID
+EXTERNAL_ID_COLUMN=STORE_ID
+', current_timestamp, current_timestamp);
+
+]]></programlisting>
+         </para>            
+     </section>
 
     <section id="relational-router">
         <title>Relational Router</title>

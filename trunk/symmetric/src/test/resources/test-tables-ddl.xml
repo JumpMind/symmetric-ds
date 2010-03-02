@@ -175,12 +175,18 @@
         <column name="ROUTING_VARCHAR" type="VARCHAR" size="10" />
         <column name="DATA_BLOB" type="BLOB" />
         <column name="MY_TIME" type="TIMESTAMP" />
-    </table>
+    </table>    
     
     <table name="TEST_ROUTING_DATA_SUBTABLE">
         <column name="PK" type="INTEGER" primaryKey="true"  autoIncrement="true" required="true" />
         <column name="FK" type="INTEGER" />
+    </table>
+    
+    <table name="TEST_LOOKUP_TABLE">
+        <column name="COLUMN_ONE" type="VARCHAR" size="10" />
+        <column name="COLUMN_TWO" type="VARCHAR" size="10" />
     </table>    
+        
         
 
 </database>

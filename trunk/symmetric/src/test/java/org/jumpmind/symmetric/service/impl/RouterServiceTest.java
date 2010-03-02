@@ -38,6 +38,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
     public RouterServiceTest() throws Exception {
     }
+    
 
     @Test
     public void testMultiChannelRoutingToEveryone() {
@@ -96,6 +97,83 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(2, countBatchesForChannel(batches, testChannel));
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 15, countBatchesForChannel(batches,
                 otherChannel));
+    }
+
+    @Test
+    public void testLookupTableRouting() {
+        
+        getDbDialect().truncateTable("TEST_LOOKUP_TABLE");
+        
+        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('A',?)",NODE_GROUP_NODE_1.getExternalId());
+        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('B',?)",NODE_GROUP_NODE_1.getExternalId());
+        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('C',?)",NODE_GROUP_NODE_3.getExternalId());
+        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('D',?)",NODE_GROUP_NODE_3.getExternalId());
+        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('D',?)",NODE_GROUP_NODE_1.getExternalId());
+
+        TriggerRouter triggerRouter = getTestRoutingTableTrigger(TEST_TABLE_1);
+        triggerRouter.getRouter().setRouterType("lookuptable");
+        triggerRouter.getRouter().setRouterExpression("LOOKUP_TABLE=TEST_LOOKUP_TABLE\nKEY_COLUMN=ROUTING_VARCHAR\nLOOKUP_KEY_COLUMN=COLUMN_ONE\nEXTERNAL_ID_COLUMN=COLUMN_TWO");        
+        getTriggerRouterService().saveTriggerRouter(triggerRouter);
+        getTriggerRouterService().syncTriggers();
+
+        getRouterService().routeData();
+        
+        resetBatches();
+        
+        insert(TEST_TABLE_1, 5, true, null, "A");
+        
+        int unroutedCount = countUnroutedBatches();
+        
+        getRouterService().routeData();
+
+        Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?", NODE_GROUP_NODE_1.getNodeId()));
+        Assert.assertEquals(0, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id!=?", NODE_GROUP_NODE_1.getNodeId()));
+        Assert.assertEquals(unroutedCount, countUnroutedBatches());
+        
+        resetBatches();
+        
+        insert(TEST_TABLE_1, 5, true, null, "B");
+        
+        getRouterService().routeData();
+
+        Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?", NODE_GROUP_NODE_1.getNodeId()));
+        Assert.assertEquals(0, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id!=?", NODE_GROUP_NODE_1.getNodeId()));
+        Assert.assertEquals(unroutedCount, countUnroutedBatches());
+        
+        resetBatches();
+        
+        insert(TEST_TABLE_1, 10, true, null, "C");
+        
+        getRouterService().routeData();
+
+        Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?", NODE_GROUP_NODE_3.getNodeId()));
+        Assert.assertEquals(0, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id!=?", NODE_GROUP_NODE_3.getNodeId()));
+        Assert.assertEquals(unroutedCount, countUnroutedBatches());
+
+        resetBatches();
+        
+        insert(TEST_TABLE_1, 5, true, null, "D");
+        
+        getRouterService().routeData();
+
+        Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?", NODE_GROUP_NODE_1.getNodeId()));
+        Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?", NODE_GROUP_NODE_3.getNodeId()));
+        Assert.assertEquals(0, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id not in (?,?)", NODE_GROUP_NODE_1.getNodeId(), NODE_GROUP_NODE_3.getNodeId()));
+        Assert.assertEquals(unroutedCount, countUnroutedBatches());
+
+
+        resetBatches();
+        
+        insert(TEST_TABLE_1, 1, true, null, "F");
+        
+        getRouterService().routeData();
+
+        Assert.assertEquals(0, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?", NODE_GROUP_NODE_1.getNodeId()));
+        Assert.assertEquals(0, getJdbcTemplate().queryForInt("select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?", NODE_GROUP_NODE_3.getNodeId()));
+        Assert.assertEquals(1, countUnroutedBatches()-unroutedCount);
+        
+        resetBatches();
+
     }
 
     @Test
@@ -658,9 +736,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
 
     protected void resetBatches() {
-        getOutgoingBatchService().markAllAsSentForNode(NODE_GROUP_NODE_1);
-        getOutgoingBatchService().markAllAsSentForNode(NODE_GROUP_NODE_2);
-        getOutgoingBatchService().markAllAsSentForNode(NODE_GROUP_NODE_3);
+        getJdbcTemplate().update("update sym_outgoing_batch set status='OK' where status != 'OK'");
     }
 
     protected int countBatchesForChannel(OutgoingBatches batches, NodeChannel channel) {
@@ -681,6 +757,10 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
 
     protected void insert(final String tableName, final int count, boolean transactional, final String node2disable) {
+        insert(tableName, count, transactional, node2disable, NODE_GROUP_NODE_1.getNodeId());
+    }
+    
+    protected void insert(final String tableName, final int count, boolean transactional, final String node2disable, final String routingVarcharFieldValue) {
         TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 try {
@@ -688,7 +768,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
                         getDbDialect().disableSyncTriggers(node2disable);
                     }
                     for (int i = 0; i < count; i++) {
-                        update(tableName, NODE_GROUP_NODE_1.getNodeId());
+                        update(tableName, routingVarcharFieldValue);
                     }
                 } finally {
                     if (node2disable != null) {
