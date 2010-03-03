@@ -191,6 +191,7 @@
         <column name="external_data" type="VARCHAR" size="50"  description="A field that can be populated by a trigger that uses the EXTERNAL_SELECT" />        
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_d_channel_id">
+            <index-column name="data_id"/>        
             <index-column name="channel_id"/>
         </index>
     </table>
