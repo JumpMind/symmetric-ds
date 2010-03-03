@@ -370,11 +370,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    private void fireBatchRolledback(IDataLoader loader, IncomingBatch batch) {
+    private void fireBatchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
         if (batchListeners != null) {
             long ts = System.currentTimeMillis();
             for (IBatchListener listener : batchListeners) {
-                listener.batchRolledback(loader, batch);
+                listener.batchRolledback(loader, batch, ex);
             }
             // update the filter milliseconds so batch listeners are also
             // included
@@ -507,7 +507,7 @@ if (filters == null) {
             } while (LoadStatus.CONTINUE == loadStatus);
             fireBatchCommitted(dataLoader, batch);
         } catch (RuntimeException ex) {
-            fireBatchRolledback(dataLoader, batch);
+            fireBatchRolledback(dataLoader, batch, ex);
             throw ex;
         }
     }

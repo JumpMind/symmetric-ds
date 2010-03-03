@@ -101,7 +101,7 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     public void batchComplete(IDataLoader loader, IncomingBatch batch) {
     }
 
-    public void batchRolledback(IDataLoader loader, IncomingBatch batch) {
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
     }
 
     public void batchCommitted(IDataLoader loader, IncomingBatch batch) {

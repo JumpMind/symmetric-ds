@@ -51,5 +51,5 @@ public interface IBatchListener extends IExtensionPoint {
     /**
      * This method is called after the database transaction for the batch has been rolled back.
      */
-    public void batchRolledback(IDataLoader loader, IncomingBatch batch); 
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex); 
 }

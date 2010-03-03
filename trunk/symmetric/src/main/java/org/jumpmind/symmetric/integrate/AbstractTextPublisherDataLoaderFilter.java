@@ -185,7 +185,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter implements IPublishe
     public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
     }
 
-    public void batchRolledback(IDataLoader loader, IncomingBatch batch) {
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
     }
 
     public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
