@@ -490,7 +490,7 @@ public class NodeService extends AbstractService implements INodeService {
                     clientNodeCurrentTime = new Date();
                 }
                 long cutOffTimeMillis = clientNodeCurrentTime.getTime() - offlineNodeDetectionMillis;
-                if (node.getHeartbeatTime().getTime() < cutOffTimeMillis) {
+                if (node.getHeartbeatTime() == null  || node.getHeartbeatTime().getTime() < cutOffTimeMillis) {
                     offlineNodeList.add(node);
                 }
             }
