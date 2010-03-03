@@ -97,6 +97,8 @@ final public class Constants {
     public static final String PUSH_SERVICE = "pushService";
 
     public static final String PULL_SERVICE = "pullService";
+    
+    public static final String BANDWIDTH_SERVICE = "bandwidthService";
 
     public static final String ACK_RESOURCE_HANDLER = "ackResourceHandler";
 

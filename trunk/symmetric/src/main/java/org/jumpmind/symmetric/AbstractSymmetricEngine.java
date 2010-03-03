@@ -58,36 +58,12 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
 
     private ApplicationContext applicationContext;
-    private IConfigurationService configurationService;
-    private IParameterService parameterService;
-    private INodeService nodeService;
-    private IRegistrationService registrationService;
-    private IUpgradeService upgradeService;
-    private IClusterService clusterService;
-    private IPurgeService purgeService;
-    private ITriggerRouterService triggerService;    
-    private IDataService dataService;
     private JdbcTemplate jdbcTemplate;
     private boolean started = false;
     private boolean starting = false;
     private boolean setup = false;
     private IDbDialect dbDialect;
     private IJobManager jobManager;    
-    private IOutgoingBatchService outgoingBatchService;
-    private IAcknowledgeService acknowledgeService;
-    private IBandwidthService bandwidthService;
-    private IDataExtractorService dataExtractorService;
-    private IDataLoaderService dataLoaderService;
-    private IIncomingBatchService incomingBatchService;
-    private INotificationService notificationService;
-    private IOfflineDetectorService offlineDetectorService;
-    private IPullService pullService;
-    private IPushService pushService;
-    private IRouterService routerService;
-    private ISecurityService securityService;
-    private IStatisticService statisticService;
-    private ITriggerRouterService triggerRouterService;
-    
     
     protected AbstractSymmetricEngine() {
     }
@@ -132,9 +108,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public boolean isConfigured() {
-        return parameterService != null && !StringUtils.isBlank(parameterService.getNodeGroupId())
-                && !StringUtils.isBlank(parameterService.getExternalId())
-                && !StringUtils.isBlank(parameterService.getSyncUrl());
+        return getParameterService() != null && !StringUtils.isBlank(getParameterService().getNodeGroupId())
+                && !StringUtils.isBlank(getParameterService().getExternalId())
+                && !StringUtils.isBlank(getParameterService().getSyncUrl());
     }
 
     public synchronized void start() {
@@ -142,23 +118,23 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
             try {
                 starting = true;
                 AppUtils.cleanupTempFiles();
-                parameterService.rereadParameters();
+                getParameterService().rereadParameters();
                 setup();
                 validateConfiguration();
                 registerEngine();
                 startDefaultServerJMXExport();
-                Node node = nodeService.findIdentity();
+                Node node = getNodeService().findIdentity();
                 if (node != null) {
                     log.info("RegisteredNodeStarting", node.getNodeGroupId(), node.getNodeId(), node.getExternalId());
                 } else {
-                    log.info("UnregisteredNodeStarting", parameterService.getNodeGroupId(), parameterService
+                    log.info("UnregisteredNodeStarting", getParameterService().getNodeGroupId(), getParameterService()
                             .getExternalId());
                 }
-                triggerService.syncTriggers();
+                getTriggerService().syncTriggers();
                 heartbeat(false);
                 jobManager.startJobs();
                 log
-                        .info("SymmetricDSStarted", parameterService.getExternalId(), Version.version(), dbDialect
+                        .info("SymmetricDSStarted", getParameterService().getExternalId(), Version.version(), dbDialect
                                 .getName(), dbDialect.getVersion());
                 started = true;
             } finally {
@@ -168,7 +144,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized void stop() {
-        log.info("SymmetricDSClosing", parameterService.getExternalId(), Version.version(), dbDialect.getName());
+        log.info("SymmetricDSClosing", getParameterService().getExternalId(), Version.version(), dbDialect.getName());
         jobManager.stopJobs();
         removeMeFromMap(registeredEnginesByName);
         removeMeFromMap(registeredEnginesByUrl);
@@ -181,15 +157,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
             }
         }
         applicationContext = null;
-        configurationService = null;
-        parameterService = null;
-        clusterService = null;
-        upgradeService = null;
-        triggerService = null;
-        nodeService = null;
-        registrationService = null;
-        purgeService = null;
-        dataService = null;
         jdbcTemplate = null;
         dbDialect = null;
         started = false;
@@ -236,15 +203,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected void init(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        configurationService = AppUtils.find(Constants.CONFIG_SERVICE, this);
-        parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, this);
-        nodeService = AppUtils.find(Constants.NODE_SERVICE, this);
-        registrationService = AppUtils.find(Constants.REGISTRATION_SERVICE, this);
-        upgradeService = AppUtils.find(Constants.UPGRADE_SERVICE, this);
-        clusterService = AppUtils.find(Constants.CLUSTER_SERVICE, this);
-        purgeService = AppUtils.find(Constants.PURGE_SERVICE, this);
-        dataService = AppUtils.find(Constants.DATA_SERVICE, this);
-        triggerService = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, this);
         dbDialect = AppUtils.find(Constants.DB_DIALECT, this);
         jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
         jdbcTemplate = AppUtils.find(Constants.JDBC_TEMPLATE, this);
@@ -274,11 +232,11 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public String getSyncUrl() {
-        Node node = nodeService.findIdentity();
+        Node node = getNodeService().findIdentity();
         if (node != null) {
             return node.getSyncUrl();
         } else {
-            return parameterService.getSyncUrl();
+            return getParameterService().getSyncUrl();
         }
     }
 
@@ -287,7 +245,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
      * security reasons (OC4J).
      */
     private void startDefaultServerJMXExport() {
-        if (parameterService.is(ParameterConstants.JMX_LEGACY_BEANS_ENABLED)) {
+        if (getParameterService().is(ParameterConstants.JMX_LEGACY_BEANS_ENABLED)) {
             try {
                 getApplicationContext().getBean(Constants.DEFAULT_JMX_SERVER_EXPORTER);
             } catch (Exception ex) {
@@ -298,7 +256,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public Properties getProperties() {
         Properties p = new Properties();
-        p.putAll(parameterService.getAllParameters());
+        p.putAll(getParameterService().getAllParameters());
         return p;
     }
 
@@ -314,11 +272,11 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public String reloadNode(String nodeId) {
-        return dataService.reloadNode(nodeId);
+        return getDataService().reloadNode(nodeId);
     }
 
     public String sendSQL(String nodeId, String tableName, String sql) {
-        return dataService.sendSQL(nodeId, tableName, sql);
+        return getDataService().sendSQL(nodeId, tableName, sql);
     }
 
     public boolean push() {
@@ -326,11 +284,11 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void syncTriggers() {
-        triggerService.syncTriggers();
+        getTriggerService().syncTriggers();
     }
 
     public NodeStatus getNodeStatus() {
-        return nodeService.getNodeStatus();
+        return getNodeService().getNodeStatus();
     }
 
     public boolean pull() {
@@ -338,25 +296,25 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void purge() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PURGE_JOB))) {
-            purgeService.purge();
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(getParameterService().getString(ParameterConstants.START_PURGE_JOB))) {
+            getPurgeService().purge();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a purge if it is already scheduled.");
         }
     }
 
     protected void setupDatabase(boolean force) {
-        configurationService.autoConfigDatabase(force);
-        if (upgradeService.isUpgradeNecessary()) {
-            if (parameterService.is(ParameterConstants.AUTO_UPGRADE)) {
+        getConfigurationService().autoConfigDatabase(force);
+        if (getUpgradeService().isUpgradeNecessary()) {
+            if (getParameterService().is(ParameterConstants.AUTO_UPGRADE)) {
                 try {
-                    if (upgradeService.isUpgradePossible()) {
-                        upgradeService.upgrade();
+                    if (getUpgradeService().isUpgradePossible()) {
+                        getUpgradeService().upgrade();
                         // rerun the auto configuration to make sure things are
                         // kosher after the upgrade
-                        configurationService.autoConfigDatabase(force);
+                        getConfigurationService().autoConfigDatabase(force);
                     } else {
-                        throw new SymmetricException("SymmetricDSManualUpgradeNeeded", nodeService
+                        throw new SymmetricException("SymmetricDSManualUpgradeNeeded", getNodeService()
                                 .findSymmetricVersion(), Version.version());
                     }
                 } catch (RuntimeException ex) {
@@ -369,34 +327,34 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         }
 
         // lets do this every time init is called.
-        clusterService.initLockTable();
+        getClusterService().initLockTable();
     }
 
     public void validateConfiguration() {
-        Node node = nodeService.findIdentity();
-        if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())) {
+        Node node = getNodeService().findIdentity();
+        if (node == null && StringUtils.isBlank(getParameterService().getRegistrationUrl())) {
             throw new IllegalStateException(
                     String
                             .format(
                                     "Please set the property %s so this node may pull registration or manually insert configuration into the configuration tables.",
                                     ParameterConstants.REGISTRATION_URL));
         } else if (node != null
-                && (!node.getExternalId().equals(parameterService.getExternalId()) || !node.getNodeGroupId().equals(
-                        parameterService.getNodeGroupId()))) {
+                && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node.getNodeGroupId().equals(
+                        getParameterService().getNodeGroupId()))) {
             throw new IllegalStateException(
                     "The configured state does not match recorded database state.  The recorded external id is "
                             + node.getExternalId() + " while the configured external id is "
-                            + parameterService.getExternalId() + ".  The recorded node group id is "
+                            + getParameterService().getExternalId() + ".  The recorded node group id is "
                             + node.getNodeGroupId() + " while the configured node group id is "
-                            + parameterService.getNodeGroupId());
-        } else if (node != null && StringUtils.isBlank(parameterService.getRegistrationUrl())
-                && StringUtils.isBlank(parameterService.getSyncUrl())) {
+                            + getParameterService().getNodeGroupId());
+        } else if (node != null && StringUtils.isBlank(getParameterService().getRegistrationUrl())
+                && StringUtils.isBlank(getParameterService().getSyncUrl())) {
             throw new IllegalStateException(
                     "The sync.url property must be set for the registration server.  Otherwise, registering nodes will not be able to sync with it.");
         }
         
-        long offlineNodeDetectionPeriodSeconds = parameterService.getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES)*60;
-        long heartbeatSeconds = parameterService.getLong(ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
+        long offlineNodeDetectionPeriodSeconds = getParameterService().getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES)*60;
+        long heartbeatSeconds = getParameterService().getLong(ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
         if (offlineNodeDetectionPeriodSeconds > 0 && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
             // Offline node detection is not disabled (-1) and the value is too small (less than the heartbeat)
             throw new IllegalStateException(
@@ -414,19 +372,19 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void heartbeat(boolean force) {
-        dataService.heartbeat(force);
+        getDataService().heartbeat(force);
     }
 
     public void openRegistration(String groupId, String externalId) {
-        registrationService.openRegistration(groupId, externalId);
+        getRegistrationService().openRegistration(groupId, externalId);
     }
 
     public void reOpenRegistration(String nodeId) {
-        registrationService.reOpenRegistration(nodeId);
+        getRegistrationService().reOpenRegistration(nodeId);
     }
 
     public boolean isRegistered() {
-        return nodeService.findIdentity() != null;
+        return getNodeService().findIdentity() != null;
     }
 
     public boolean isStarted() {
@@ -442,39 +400,39 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public IConfigurationService getConfigurationService() {
-        return configurationService;
+        return AppUtils.find(Constants.CONFIG_SERVICE, this);
     }
 
     public IParameterService getParameterService() {
-        return parameterService;
+        return AppUtils.find(Constants.PARAMETER_SERVICE, this);
     }
 
     public INodeService getNodeService() {
-        return nodeService;
+        return AppUtils.find(Constants.NODE_SERVICE, this);
     }
 
     public IRegistrationService getRegistrationService() {
-        return registrationService;
+        return AppUtils.find(Constants.REGISTRATION_SERVICE, this);
     }
 
     public IUpgradeService getUpgradeService() {
-        return upgradeService;
+        return AppUtils.find(Constants.UPGRADE_SERVICE, this);
     }
 
     public IClusterService getClusterService() {
-        return clusterService;
+        return AppUtils.find(Constants.CLUSTER_SERVICE, this);
     }
 
     public IPurgeService getPurgeService() {
-        return purgeService;
+        return AppUtils.find(Constants.PURGE_SERVICE, this);
     }
 
     public ITriggerRouterService getTriggerService() {
-        return triggerService;
+        return AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, this);
     }
 
     public IDataService getDataService() {
-        return dataService;
+        return AppUtils.find(Constants.DATA_SERVICE, this);
     }
 
     public IDbDialect getDbDialect() {
@@ -487,59 +445,60 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     
     
     public IOutgoingBatchService getOutgoingBatchService() {
-    	return outgoingBatchService;
+    	return AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, this);
     }
     
     public IAcknowledgeService getAcknowledgeService() {
-    	return acknowledgeService;
+    	return AppUtils.find(Constants.ACKNOWLEDGE_SERVICE, this);
     }
     
     public IBandwidthService getBandwidthService() {
-    	return bandwidthService;
+    	return AppUtils.find(Constants.BANDWIDTH_SERVICE, this);
     }
     
     public IDataExtractorService getDataExtractorService() {
-    	return dataExtractorService;
+    	return AppUtils.find(Constants.DATAEXTRACTOR_SERVICE, this);
     }
     
     public IDataLoaderService getDataLoaderService() {
-    	return dataLoaderService;
+    	return AppUtils.find(Constants.DATALOADER_SERVICE, this);
     }
     
     public IIncomingBatchService getIncomingBatchService() {
-    	return incomingBatchService;
+    	return AppUtils.find(Constants.INCOMING_BATCH_SERVICE, this);
     }
     
     public INotificationService getNotificationService() {
-    	return notificationService;
+    	// TODO Managed resource should we make this available through getter?
+    	return null;
     }
     
     public IOfflineDetectorService getOfflineDetectorService() {
-    	return offlineDetectorService;
+    	return null;
     }
     
     public IPullService getPullService() {
-    	return pullService;
+    	return AppUtils.find(Constants.PULL_SERVICE, this);
     }
     
     public IPushService getPushService() {
-    	return pushService;
+    	return AppUtils.find(Constants.PUSH_SERVICE, this);
     }
     
     public IRouterService getRouterService() {
-    	return routerService;
+    	return AppUtils.find(Constants.ROUTING_SERVICE, this);
     }
     
     public ISecurityService getSecurityService() {
-    	return securityService;
+    	return AppUtils.find(Constants.SECURITY_SERVICE, this);
     }
     
     public IStatisticService getStatisticService() {
-    	return statisticService;
+    	return AppUtils.find(Constants.STATISTIC_SERVICE, this);
     }
     
     public ITriggerRouterService getTriggerRouterService() {
-    	return triggerRouterService;
+    	return AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, this);
     }
 
 }
