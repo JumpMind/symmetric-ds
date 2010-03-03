@@ -17,8 +17,6 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.INotificationService;
-import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
@@ -200,11 +198,7 @@ public interface ISymmetricEngine {
     
     public IDataLoaderService getDataLoaderService();
     
-    public IIncomingBatchService getIncomingBatchService();
-    
-    public INotificationService getNotificationService();
-    
-    public IOfflineDetectorService getOfflineDetectorService();
+    public IIncomingBatchService getIncomingBatchService();   
     
     public IPullService getPullService();
     

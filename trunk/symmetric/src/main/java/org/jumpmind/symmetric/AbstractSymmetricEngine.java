@@ -32,8 +32,6 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.INotificationService;
-import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
@@ -441,8 +439,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public IJobManager getJobManager() {
         return jobManager;
-    }
-    
+    }    
     
     public IOutgoingBatchService getOutgoingBatchService() {
     	return AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, this);
@@ -466,15 +463,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public IIncomingBatchService getIncomingBatchService() {
     	return AppUtils.find(Constants.INCOMING_BATCH_SERVICE, this);
-    }
-    
-    public INotificationService getNotificationService() {
-    	// TODO Managed resource should we make this available through getter?
-    	return null;
-    }
-    
-    public IOfflineDetectorService getOfflineDetectorService() {
-    	return null;
     }
     
     public IPullService getPullService() {
