@@ -486,7 +486,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
     
     public IRouterService getRouterService() {
-    	return AppUtils.find(Constants.ROUTING_SERVICE, this);
+    	return AppUtils.find(Constants.ROUTER_SERVICE, this);
     }
     
     public ISecurityService getSecurityService() {
