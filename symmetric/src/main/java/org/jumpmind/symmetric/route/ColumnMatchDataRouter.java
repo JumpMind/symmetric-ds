@@ -131,7 +131,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                     if (e.equals && (value.equals(columnValues.get(column)) || 
                             (value.equals(NULL_VALUE) && columnValues.get(column) == null))) {
                         nodeIds = toNodeIds(nodes, nodeIds);
-                    } else if (!e.equals && ((!value.equals(NULL_VALUE) &&!value.equals(columnValues.get(column))) || 
+                    } else if (!e.equals && ((!value.equals(NULL_VALUE) && !value.equals(columnValues.get(column))) || 
                             (value.equals(NULL_VALUE) && columnValues.get(column) != null))) {
                         nodeIds = toNodeIds(nodes, nodeIds);
                     }
