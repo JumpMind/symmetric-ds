@@ -65,7 +65,7 @@
                                             (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)
                                         VALUES('$(targetTableName)', 'I', $(triggerHistoryId),
                                             $(columns), 
-                                            '$(channelName)', $(txIdExpression), sync_node_disabled,
+                                            '$(channelName)', $(txIdExpression), $(sourceNodeExpression),
                                             $(externalSelect),
                                             CURRENT_TIMESTAMP);
                                     END IF;
@@ -90,7 +90,7 @@
                                             $(oldColumns),
                                             '$(channelName)', 
                                             $(txIdExpression), 
-                                            sync_node_disabled,
+                                            $(sourceNodeExpression),
                                             $(externalSelect),                                            
                                             CURRENT_TIMESTAMP);
                                     END IF;
@@ -114,7 +114,7 @@
                                             $(oldColumns),
                                             '$(channelName)', 
                                             $(txIdExpression), 
-                                            sync_node_disabled,
+                                            $(sourceNodeExpression),
                                             $(externalSelect),                                            
                                             CURRENT_TIMESTAMP);
                                     END IF;

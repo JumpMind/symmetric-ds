@@ -1386,4 +1386,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
             return System.currentTimeMillis();
         }
     }
+    
+    public String getSourceNodeExpression() {
+        return null;
+    }
 }
