@@ -230,7 +230,9 @@ public class SqlTemplate {
         ddl = AppUtils.replace("syncOnUpdateCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()),
                 ddl);
         ddl = AppUtils.replace("syncOnDeleteCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
-                ddl);
+                ddl);        
+        ddl = AppUtils.replace("sourceNodeExpression", dialect.getSourceNodeExpression(), ddl);
+        
         String syncTriggersExpression = dialect.getSyncTriggersExpression();
         syncTriggersExpression = AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
                 && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", syncTriggersExpression);

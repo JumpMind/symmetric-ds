@@ -108,6 +108,10 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     public String getSyncTriggersExpression() {
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
+    
+    public String getSourceNodeExpression() {
+        return SYNC_TRIGGERS_DISABLED_NODE_VARIABLE;
+    }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
