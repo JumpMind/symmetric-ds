@@ -21,34 +21,16 @@
 
 package org.jumpmind.symmetric.db.db2;
 
-import java.net.URL;
-
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Trigger;
 
 public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
-
-    static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
-
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
-        try {
-            enableSyncTriggers();
-        } catch (Exception e) {
-            try {
-                log.info("EnvironmentVariablesCreating", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
-                        SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
-                new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), ";").execute();
-            } catch (Exception ex) {
-                log.error("DB2DialectInitializingError", ex);
-            }
-        }
     }
     
     protected boolean createTablesIfNecessary() {
@@ -65,10 +47,6 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
              log.info("DB2ResettingAutoIncrementColumns", tablePrefix + "_data");
         }
         return tablesCreated;
-    }
-
-    private URL getSqlScriptUrl() {
-        return getClass().getResource("/org/jumpmind/symmetric/db/db2.sql");
     }
 
     @Override
@@ -94,25 +72,15 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void disableSyncTriggers(String nodeId) {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
-        if (nodeId != null) {
-            jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
-        }
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
 
     public String getSyncTriggersExpression() {
-        return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
+        return "1=1";
     }
     
-    public String getSourceNodeExpression() {
-        return SYNC_TRIGGERS_DISABLED_NODE_VARIABLE;
-    }
-
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return "null";

@@ -133,4 +133,9 @@
 		</property>
 	</bean>
 
+    <bean id="db2v9Dialect" 
+          class="org.jumpmind.symmetric.db.db2.Db2v9DbDialect" 
+          parent="db2Dialect" 
+          scope="prototype"/>
+    
 </beans>

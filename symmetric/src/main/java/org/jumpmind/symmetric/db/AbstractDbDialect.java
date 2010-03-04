@@ -211,6 +211,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public void init(Platform pf) {
+        log.info("DbDialectInUse", this.getClass().getName());
         this.jdbcTemplate = new JdbcTemplate(pf.getDataSource());
         this.platform = pf;
         this.sqlErrorTranslator = new SQLErrorCodeSQLExceptionTranslator(pf.getDataSource());

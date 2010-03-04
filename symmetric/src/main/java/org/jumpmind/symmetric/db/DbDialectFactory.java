@@ -84,11 +84,16 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         } else if (pf instanceof HsqlDbPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
         } else if (pf instanceof Db2Platform) {
-            String currentDbProductVersion = PlatformFactory.getDatabaseProductVersion(jdbcTemplate.getDataSource());
+            String currentDbProductVersion = PlatformFactory.getDatabaseProductVersion(jdbcTemplate
+                    .getDataSource());
             if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
                 dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
             } else {
-                dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
+                if (PlatformFactory.getDbMajorVersion(jdbcTemplate.getDataSource()) < 9) {
+                    dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
+                } else {
+                    dialect = (AbstractDbDialect) beanFactory.getBean("db2v9Dialect");
+                }
             }
         } else if (pf instanceof FirebirdPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("firebirdDialect");
@@ -97,7 +102,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         }
 
         dialect.init(pf);
-        dialect.setTransactionTemplate((TransactionTemplate) beanFactory.getBean("currentTransactionTemplate"));
+        dialect.setTransactionTemplate((TransactionTemplate) beanFactory
+                .getBean("currentTransactionTemplate"));
         return dialect;
     }
 
@@ -106,7 +112,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         while (!success) {
             try {
                 jdbcTemplate.execute(new ConnectionCallback<Object>() {
-                    public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+                    public Object doInConnection(Connection con) throws SQLException,
+                            DataAccessException {
                         return null;
                     }
                 });
