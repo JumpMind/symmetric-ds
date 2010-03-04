@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.web.SymmetricFilter;
 import org.jumpmind.symmetric.web.SymmetricServlet;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
+import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.security.Constraint;
 import org.mortbay.jetty.security.ConstraintMapping;
@@ -87,6 +88,10 @@ public class SymmetricWebServer implements ApplicationContextAware {
     protected String propertiesFile;
 
     protected String host;
+    
+    protected boolean noNio = false;
+    
+    protected boolean noDirectBuffer = false;
 
     /**
      * This will only be set if the SymmetricWebServer itself is created from a
@@ -105,10 +110,12 @@ public class SymmetricWebServer implements ApplicationContextAware {
         this.maxIdleTime = maxIdleTime;
     }
 
-    public SymmetricWebServer(int maxIdleTime, String propertiesUrl, boolean join) {
+    public SymmetricWebServer(int maxIdleTime, String propertiesUrl, boolean join, boolean noNio, boolean noDirectBuffer) {
         this.propertiesFile = propertiesUrl ;
         this.maxIdleTime = maxIdleTime;
         this.join = join;
+        this.noDirectBuffer = noDirectBuffer;
+        this.noNio = noNio;
     }
 
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
@@ -220,10 +227,17 @@ public class SymmetricWebServer implements ApplicationContextAware {
         String keyStoreFile = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
 
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
-            Connector connector = new SelectChannelConnector();
+            Connector connector = null;
+            if (noNio) {
+              connector = new SocketConnector();                
+            } else {
+              SelectChannelConnector nioConnector = new SelectChannelConnector();
+              connector = nioConnector;
+              nioConnector.setUseDirectBuffers(!noDirectBuffer);
+              nioConnector.setMaxIdleTime(maxIdleTime);
+            }
             connector.setPort(port);
-            connector.setHost(host);
-            ((SelectChannelConnector) connector).setMaxIdleTime(maxIdleTime);
+            connector.setHost(host);            
             connectors.add(connector);
             log.info("WebServerStarting", port);
         }

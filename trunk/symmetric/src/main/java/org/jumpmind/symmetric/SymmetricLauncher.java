@@ -108,6 +108,10 @@ public class SymmetricLauncher {
     private static final String OPTION_START_SECURE_SERVER = "secure-server";
 
     private static final String OPTION_START_MIXED_SERVER = "mixed-server";
+    
+    private static final String OPTION_NO_NIO = "no-nio";
+    
+    private static final String OPTION_NO_DIRECT_BUFFER = "no-directbuffer";
 
     private static final String OPTION_LOAD_BATCH = "load-batch";
 
@@ -136,6 +140,8 @@ public class SymmetricLauncher {
             int securePort = 31417;
             int maxIdleTime = 900000;
             String propertiesFile = null;
+            boolean noNio = false;
+            boolean noDirectBuffer = false;
 
             if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
                 System.setProperty("org.apache.commons.logging.Log", SimpleLog.class.getName());
@@ -167,7 +173,15 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
                 maxIdleTime = new Integer(line.getOptionValue(OPTION_MAX_IDLE_TIME));
             }
+            
+            if (line.hasOption(OPTION_NO_NIO)) {
+                noNio = true;
+            }
 
+            if (line.hasOption(OPTION_NO_DIRECT_BUFFER)) {
+                noDirectBuffer = true;    
+            }
+            
             if (line.hasOption(OPTION_PROPERTIES_GEN)) {
                 generateDefaultProperties(line.getOptionValue(OPTION_PROPERTIES_GEN));
                 System.exit(0);
@@ -282,12 +296,13 @@ public class SymmetricLauncher {
 
             if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER)
                     || line.hasOption(OPTION_START_MIXED_SERVER)) {
+                webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join, noNio, noDirectBuffer);
                 if (line.hasOption(OPTION_START_SERVER)) {
-                    webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join).start(port);
+                    webServer.start(port);
                 } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                    webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join).startSecure(securePort);
+                    webServer.startSecure(securePort);
                 } else if (line.hasOption(OPTION_START_MIXED_SERVER)) {
-                    webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join).startMixed(port, securePort);
+                    webServer.startMixed(port, securePort);
                 }
                 return;
             }
@@ -310,7 +325,6 @@ public class SymmetricLauncher {
             ExceptionUtils.printRootCauseStackTrace(ex, System.err);
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
-            printHelp(options);
             System.exit(-1);
         }
     }
@@ -339,6 +353,8 @@ public class SymmetricLauncher {
         addOption(options, "P", OPTION_PORT_SERVER, true);
         addOption(options, "Q", OPTION_SECURE_PORT_SERVER, true);
         addOption(options, "I", OPTION_MAX_IDLE_TIME, true);
+        addOption(options, "nnio", OPTION_NO_NIO, false);
+        addOption(options, "ndb", OPTION_NO_DIRECT_BUFFER, false);
 
         addOption(options, "c", OPTION_DDL_GEN, true);
         addOption(options, "p", OPTION_PROPERTIES_FILE, true);
