@@ -82,6 +82,19 @@ public class PlatformFactory {
             }
         });
     }
+    
+    public static int getDbMinorVersion(DataSource dataSource) {
+        return new JdbcTemplate(dataSource).execute(new ConnectionCallback<Integer>() {
+            public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
+                DatabaseMetaData metaData = c.getMetaData();
+                try {
+                    return metaData.getDatabaseMinorVersion();
+                } catch (UnsupportedOperationException e) {
+                    return 0;
+                }
+            }
+        });
+    }
 
     private synchronized static void initPlatforms() {
         if (!initialized) {
