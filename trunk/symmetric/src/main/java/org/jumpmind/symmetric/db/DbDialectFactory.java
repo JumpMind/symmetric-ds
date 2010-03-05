@@ -89,7 +89,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
             if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
                 dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
             } else {
-                if (PlatformFactory.getDbMajorVersion(jdbcTemplate.getDataSource()) < 9) {
+                if (PlatformFactory.getDbMajorVersion(jdbcTemplate.getDataSource()) < 9 || (PlatformFactory.getDbMajorVersion(jdbcTemplate.getDataSource()) == 9 && PlatformFactory.getDbMinorVersion(jdbcTemplate.getDataSource()) < 5)) {
                     dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
                 } else {
                     dialect = (AbstractDbDialect) beanFactory.getBean("db2v9Dialect");
