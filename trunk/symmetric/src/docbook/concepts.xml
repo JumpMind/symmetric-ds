@@ -604,8 +604,14 @@ values
             for the Bean Shell scripting language can be found at <ulink url="http://www.beanshell.org/">http://www.beanshell.org</ulink>. 
         </para>
         <para>
-            The router_type for a Bean Shell router is 'bsh'.  The router_expression is a valid Bean Shell script that adds to the 'targetNodes' collection which is bound to the script 
-            evaluation.  The script should add the node_ids that should be routed to 'targetNodes' as Strings.  Also bound to the script evaluation is a list of 'nodes'.  The list of 'nodes' is 
+            The router_type for a Bean Shell router is 'bsh'.  The router_expression is a valid Bean Shell script that:
+            <itemizedlist>
+                <listitem>adds node ids to the 'targetNodes' collection which is bound to the script</listitem>
+                <listitem>returns a new collection of node ids</listitem>
+                <listitem>returns a single node id</listitem>
+                <listitem>returns true to indicate that all nodes should be routed or returns false to indicate that no nodes should be routed</listitem>
+            </itemizedlist>                          
+            Also bound to the script evaluation is a list of 'nodes'.  The list of 'nodes' is 
             a list of eligible Node objects.  The current data column values and the old data column values are bound to the script evaluation as Java object representations of the column data. 
             The columns are bound using the uppercase names of the columns.  Old values are bound to uppercase representations that are prefixed with 'OLD_'. 
         </para>        
@@ -621,7 +627,34 @@ values
     'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);', 
     current_timestamp, current_timestamp);
 ]]></programlisting>
-         </para>
+        </para>
+        <para>
+            The same could also be accomplished by simply returning the node id.  The last line of a bsh script is always the return value.
+            <programlisting>
+<![CDATA[
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-bsh','corp', 'store', 'bsh', 
+    'STORE_ID + "-" + WORKSTATION_NUMBER', 
+    current_timestamp, current_timestamp);
+]]></programlisting>
+         </para>     
+         <para>
+            The following example will synchronize to all nodes if the FLAG column has changed, otherwise
+            no nodes will be synchronized.
+            <programlisting>
+<![CDATA[
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-flag-changed','corp', 'store', 'bsh', 
+    'FLAG != null && !FLAG.equals(OLD_FLAG)', 
+    current_timestamp, current_timestamp);
+]]></programlisting>
+        </para>   
     </section>  
     </section>
     </section>
