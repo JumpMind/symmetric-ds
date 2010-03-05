@@ -17,7 +17,7 @@
     </entry>
     <entry key="registerNodeSql">
       <value>
-        update $[sym.sync.table.prefix]_node set sync_enabled = 1, heartbeat_time = current_time, sync_url = ?, schema_version = ?,
+        update $[sym.sync.table.prefix]_node set sync_enabled = 1, heartbeat_time = current_timestamp, sync_url = ?, schema_version = ?,
         database_type = ?, database_version = ?, symmetric_version = ? where node_id = ?
       </value>
     </entry>
