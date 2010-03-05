@@ -16,7 +16,7 @@
      </l:context>
   </l:l10n>
 </l:i18n>
-    
+        
     
     <!--###################################################
                      HTML Settings
@@ -48,7 +48,7 @@
     </xsl:param>
     
     <!-- Show only Sections up to level 3 in the TOCs -->
-    <xsl:param name="toc.section.depth">2</xsl:param>
+    <xsl:param name="toc.section.depth">3</xsl:param>
  
     <!--###################################################
                          Labels
