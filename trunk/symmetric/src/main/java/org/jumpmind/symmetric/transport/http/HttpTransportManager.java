@@ -111,6 +111,14 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         }
     }
     
+    public int getOutputStreamSize() {
+        return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_PUSH_STREAM_SIZE);
+    }
+    
+    public boolean isOutputStreamEnabled() {
+        return parameterService.is(ParameterConstants.TRANSPORT_HTTP_PUSH_STREAM_ENABLED);
+    }
+    
     public int getHttpTimeOutInMs() {
         return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
@@ -157,7 +165,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
         return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(), getCompressionStrategy(), getCompressionLevel(), 
-                getBasicAuthUsername(), getBasicAuthPassword());
+                getBasicAuthUsername(), getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize());
     }
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {

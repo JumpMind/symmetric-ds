@@ -63,9 +63,14 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     private String basicAuthUsername;
     
     private String basicAuthPassword;
+    
+    private boolean streamOutputEnabled = false;
+    
+    private int streamOutputChunkSize = 30720;
+    
 
     public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression, int compressionStrategy, int compressionLevel,
-            String basicAuthUsername, String basicAuthPassword) {
+            String basicAuthUsername, String basicAuthPassword, boolean streamOutputEnabled, int streamOutputSize) {
         this.url = url;
         this.httpTimeout = httpTimeout;
         this.useCompression = useCompression;
@@ -73,6 +78,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         this.compressionStrategy = compressionStrategy;
         this.basicAuthUsername = basicAuthUsername;
         this.basicAuthPassword = basicAuthPassword;
+        this.streamOutputChunkSize = streamOutputSize;
+        this.streamOutputEnabled = streamOutputEnabled;
     }
 
     public void close() throws IOException {
@@ -126,6 +133,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     public BufferedWriter open() throws IOException {
 
         connection = HttpTransportManager.openConnection(url, basicAuthUsername, basicAuthPassword);
+        if (streamOutputEnabled) {
+            connection.setChunkedStreamingMode(streamOutputChunkSize);
+        }
         connection.setDoInput(true);
         connection.setDoOutput(true);
         connection.setUseCaches(false);
