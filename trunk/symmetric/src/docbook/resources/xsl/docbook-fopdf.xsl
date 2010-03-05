@@ -19,7 +19,6 @@
                 
 <xsl:import href="urn:docbkx:stylesheet"/>
 
-
  
     <xsl:param name="insert.xref.page.number" select="'maybe'"/>
     
@@ -190,7 +189,7 @@
     </xsl:param>
     
     <!-- Show only Sections up to level 3 in the TOCs-->
-    <xsl:param name="toc.section.depth">2</xsl:param>
+    <xsl:param name="toc.section.depth">3</xsl:param>
     
     <!-- Dot and Whitespace as separator in TOC between Label and Title-->
     <xsl:param name="autotoc.label.separator" select="'.  '"/>

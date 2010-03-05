@@ -44,7 +44,7 @@
     </xsl:param>
 
     <!-- Show only Sections up to level 2 in the TOCs -->
-    <xsl:param name="toc.section.depth">2</xsl:param>
+    <xsl:param name="toc.section.depth">3</xsl:param>
     <xsl:param name="generate.section.toc.level" select="0"></xsl:param>
 
     <!--###################################################
