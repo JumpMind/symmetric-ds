@@ -45,6 +45,10 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
     public void buildOutgoingBatches(String nodeId, NodeChannel channel) {
 
     }
+    
+    public int countOutgoingBatchesWithStatus(Status status) {
+        return 0;
+    }
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId) {
         return null;

@@ -64,6 +64,11 @@
         $[sym.sync.table.prefix]_outgoing_batch where status = 'ER' order by batch_id
       </value>
     </entry>
+    <entry key="countOutgoingBatchesSql">
+      <value>
+        select count(*) from $[sym.sync.table.prefix]_outgoing_batch where status = ?
+      </value>
+    </entry>    
 
   </util:map>
 

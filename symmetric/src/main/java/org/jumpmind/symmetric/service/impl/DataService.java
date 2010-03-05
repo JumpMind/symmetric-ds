@@ -52,10 +52,10 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -503,9 +503,8 @@ public class DataService extends AbstractService implements IDataService {
                         me.setSymmetricVersion(Version.version());
                         me.setDatabaseType(dbDialect.getName());
                         me.setDatabaseVersion(dbDialect.getVersion());
-                        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(me);
-                        me.setBatchToSendCount(batches.countBatches(false));
-                        me.setBatchInErrorCount(batches.countBatches(true));
+                        me.setBatchToSendCount(outgoingBatchService.countOutgoingBatchesWithStatus(Status.NE));
+                        me.setBatchInErrorCount(outgoingBatchService.countOutgoingBatchesWithStatus(Status.ER));
                         if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
                             log.info("NodeConfigurationUpdating");
                             me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));

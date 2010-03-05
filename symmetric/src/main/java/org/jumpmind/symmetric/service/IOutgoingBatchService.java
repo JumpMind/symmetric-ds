@@ -26,6 +26,7 @@ import java.util.List;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public interface IOutgoingBatchService {
@@ -53,5 +54,7 @@ public interface IOutgoingBatchService {
     public void insertOutgoingBatch(OutgoingBatch outgoingBatch);
 
     public void insertOutgoingBatch(JdbcTemplate jdbcTemplate, OutgoingBatch outgoingBatch);
+    
+    public int countOutgoingBatchesWithStatus(Status status);
 
 }
