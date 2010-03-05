@@ -88,6 +88,8 @@ final public class ParameterConstants {
 
     public final static String TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED = "http.manual.redirects.enabled";
     public final static String TRANSPORT_HTTP_TIMEOUT = "http.timeout.ms";
+    public final static String TRANSPORT_HTTP_PUSH_STREAM_ENABLED = "http.push.stream.output.enabled";
+    public final static String TRANSPORT_HTTP_PUSH_STREAM_SIZE = "http.push.stream.output.size";
     public final static String TRANSPORT_HTTP_USE_COMPRESSION_CLIENT = "http.compression";
     public final static String TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET = "web.compression.disabled";
     public final static String TRANSPORT_HTTP_COMPRESSION_LEVEL = "compression.level";
