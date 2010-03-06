@@ -83,7 +83,7 @@ public class SymmetricLauncher {
 
     private static final String OPTION_MAX_IDLE_TIME = "max-idle-time";
 
-    private static final String OPTION_DDL_GEN = "generate-config-dll";
+    private static final String OPTION_DDL_GEN = "generate-config-ddl";
 
     private static final String OPTION_TRIGGER_GEN = "generate-triggers";
 
