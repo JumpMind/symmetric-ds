@@ -155,11 +155,11 @@ public class SqlScript {
                     for (String line : script) {
                         lineCount++;
                         line = trimComments(line);
-                        if (line.length() > 0) {
+                        if (line.trim().length() > 0) {
                             if (checkStatementEnds(line)) {
                                 sql.append(" ");
                                 sql.append(line.substring(0, line
-                                        .lastIndexOf(delimiter)));
+                                        .lastIndexOf(delimiter)).trim());
                                 log.debug("Sql", sql);
                                 try {
                                     st.execute(replaceTokens(sql.toString()));
@@ -220,7 +220,7 @@ public class SqlScript {
         if (index >= 0) {
             line = line.substring(0, index);
         }
-        return line.trim();
+        return line;
     }
 
     private boolean checkStatementEnds(String s) {
