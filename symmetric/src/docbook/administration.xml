@@ -43,83 +43,21 @@ where source_table_name = 'price_changes';
             If this behavior is not desired, the feature can be turned off using a parameter.  Custom triggers may be added
             to the <literal>sym_*</literal> tables when the auto syncing feature is disabled.
         </para>
-    </section>    
-    <section id="sync-triggers">
-        <title>Sync Triggers Job</title>
+    </section> 
+    
+     <section id='logging'>
+        <title>Logging Configuration</title>    
         <para>
-            SymmetricDS examines the current configuration, corresponding database triggers,
-            and the underlying tables to determine if database triggers need created or updated.
-            The change activity is recorded on the <xref linkend="table_trigger_hist" xrefstyle="table"/> table with a reason for the
-            change.  The following reasons for a change are possible:
-
-            <itemizedlist>
-                <listitem>
-                    <para>N - New trigger that has not been created before</para>
-                </listitem>
-                <listitem>
-                    <para>S - Schema changes in the table were detected</para>
-                </listitem>
-                <listitem>
-                    <para>C - Configuration changes in Trigger</para>
-                </listitem>
-                <listitem>
-                    <para>T - Trigger was missing</para>
-                </listitem>
-            </itemizedlist>
-
-            A configuration entry in Trigger without any history in Trigger Hist results in a new
-            trigger being created (N).  The Trigger Hist stores a hash of the underlying table, so
-            any alteration to the table causes the trigger to be rebuilt (S).  When the 
-            <literal>last_update_time</literal> is changed on the Trigger entry, the configuration change causes
-            the trigger to be rebuilt (C).  If an entry in Trigger Hist is missing the
-            corresponding database trigger, the trigger is created (T).
+        The standalone SymmetricDS installation uses <ulink url="http://logging.apache.org/log4j/1.2/index.html">Log4J</ulink> for logging.  The configuration file is  <literal>conf/log4j.xml</literal>.
+        The <literal>log4j.xml</literal> file has hints as to what logging can be enabled for useful, finer-grained logging.
         </para>
         <para>
-            The process of examining triggers and rebuilding them is automatically run during startup and
-            each night by the SyncTriggersJob.  The user can also manually run the process at any time 
-            by invoking the <literal>syncTriggers()</literal> method over JMX.  The SyncTriggersJob is enabled by default 
-            to run at 15 minutes past midnight.  If SymmetricDS is being run from a collection of servers
-            (multiple instances of the same Node running against the same database), then locking
-            should be enable to prevent database contention.  The following runtime properties
-            control the behavior of the process.
-            <variablelist>
-                <varlistentry>
-                    <term>
-                        <command>start.synctriggers.job</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Whether the sync triggers job is enabled for this node.
-                            [&#xA0;Default:&#xA0;true&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>job.synctriggers.aftermidnight.minutes</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            If scheduled, the sync triggers job will run nightly. This is how long after midnight
-                            that job will run. [&#xA0;Default:&#xA0;15&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>           
-                <varlistentry>
-                    <term>
-                        <command>cluster.lock.during.sync.triggers</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Indicate if the sync triggers job is clustered and requires a lock before running.
-                            [&#xA0;Default:&#xA0;false&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-            </variablelist>
+        SymmetricDS proxies all of its logging through <ulink url="http://commons.apache.org/logging/">Commons Logging</ulink>.  When deploying to an application server, if Log4J is not 
+        being leveraged, then the general rules for for Commons Logging apply.
         </para>
-    </section>
-    <section id="admin-jmx">
+    </section> 
+    
+     <section id="admin-jmx">
         <title>Java Management Extensions</title>
         <para>
           Monitoring and administrative operations can be performed using Java Management Extensions (JMX).
@@ -155,24 +93,90 @@ where source_table_name = 'price_changes';
           
         </para>
     </section>
-    <section id="registration">
-        <title>Opening Registration</title>
+    
+    
+    
+    <section id="temporary-files">
+        <title>Temporary Files</title>
         <para>
-        Node registration is the act of setting up a new <xref linkend="table_node" xrefstyle="table"/> and
-         <xref linkend="table_node_security" xrefstyle="table"/> so that when the new node is brought online
-         it is allowed to join the system.  Nodes are only allowed to register if rows exist for the
-         node and the <literal>registration_enabled</literal> flag is set to 1.  If the <literal>auto.registration</literal>
-         SymmetricDS property is set to true, then when a node attempts to register, if registration
-         has not already occurred, the node will automatically be registered.
-       </para>
-       <para> 
-        SymmetricDS allows you to have multiple nodes with the same <literal>external_id</literal>.  Out of the box, openRegistration 
-        will open a new registration if a registration already exists for a node with the same external_id.  A new 
-        registration means a new node with a new <literal>node_id</literal> and the same <literal>external_id</literal> will be created.  
-        If you want to re-register the same node you can use the <literal>reOpenRegistration()</literal> JMX
-        method which takes a <literal>node_id</literal> as an argument.
+        SymmetricDS creates temporary extraction and data load files with the CSV payload of a synchronization when
+        the value of the <literal>stream.to.file.threshold.bytes</literal> SymmetricDS property has been reached.  Before reaching the threshold, files 
+        are streamed to/from memory.  The default threshold value is 32,767 bytes. This feature may be turned off by setting the <literal>stream.to.file.enabled</literal> 
+        property to false.
         </para>
+        <para>
+        SymmetricDS creates these temporary files in the directory specified by the <literal>java.io.tmpdir</literal> Java System property.  When  
+        SymmmetricDS starts up, stranded temporary files are aways cleaned up.  Files will only be stranded if the SymmetricDS engine is force killed.
+        </para>
+        <para>
+        The location of the temporary directory may be changed by setting the Java System property passed into the Java program at startup.  For example,
+        <programlisting>
+  -Djava.io.tmpdir=/home/.symmetricds/tmp
+        </programlisting>   
+        </para>
+    </section>   
+    
+    
+    <section id="purge">
+        <title>Database Purging</title>
+        <para>
+            Purging is the act of cleaning up captured data that is no longer needed in SymmetricDS's runtime tables.  
+            Data is purged through
+            delete statements by the <emphasis>Purge Job</emphasis>.  Only data that has been successfully synchronized will be purged.  Purged tables include:
+            <itemizedlist>
+                <listitem>
+                   <xref linkend="table_data" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                    <xref linkend="table_data_event" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                  <xref linkend="table_outgoing_batch" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                    <xref linkend="table_incoming_batch" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                   <xref linkend="table_statistic" xrefstyle="table"/>
+                </listitem>                
+            </itemizedlist>
+            The purge job is enabled by the <literal>start.purge.job</literal> SymmetricDS property.  The job runs periodically according to the 
+            <literal>job.purge.period.time.ms</literal> property.  The default period is to run every ten minutes.  
+        </para>      
+        <para>
+            Two retention period properties
+            indicate how much history SymmetricDS will retain before purging.  The <literal>purge.retention.minutes</literal> property indicates the period
+            of history to keep for synchronization tables.  The default value is 5 days.
+            The <literal>statistic.retention.minutes</literal> property
+            indicates the period of history to keep for statistics.  The default value is also 5 days.            
+        </para>
+        <para>
+            The purge properties should be adjusted according to how much data is flowing through the system and the amount of storage space the database has.
+            For an initial deployment it is recommended that the purge properties be kept at the defaults, since it is often helpful to be able to look at 
+            the captured data in order to triage problems and profile the synchronization patterns.  When scaling up to more nodes, it is recomended that the 
+            purge parameters be scaled back to 24 hours or less.  
+        </para>
+        
     </section>
+    <section id="debugging-issues">
+        <title>Debugging Issues</title>
+    </section>
+    
+    <section id="querying-for-errors">
+        <title>Querying for Errors</title>
+    </section>
+    
+    <section id="fixing-errors">
+        <title>Fixing Errors</title>
+    </section>
+    
+    <section id="measuring-performance">
+        <title>Measuring Performance</title>
+    </section>
+  
+    
+    
+ 
   
     
 </chapter>

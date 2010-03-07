@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="advanced-configuration" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:ns="http://docbook.org/ns/docbook"
+         xmlns:mml="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Configuration</title>
+    <para>
+    This chapter covers both basic and advanced configuration of SymmetricDS.
+    </para>
+    
+    <section id="node-properties">
+    <title>Node Properties</title>
+    <para>
+        To get a SymmetricDS node running, it needs to be given an identity and it needs to know how
+        to connect to the database it will be synchronizing.  A typical way to specify this is to place properties
+        in the <filename>symmetric.properties</filename> file.  When started up, SymmetricDS reads the configuration
+        and state from the database.  If the configuration tables are missing, they are created
+        automatically (auto creation can be disabled).  Basic configuration is described by inserting into the following tables (the complete 
+        data model is defined in <xref linkend="data-model"/>).
+            <itemizedlist>
+                <listitem>
+                    <para><xref linkend="table_node_group" xrefstyle="table"/> - specifies the tiers that exist in a SymmetricDS network</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_node_group_link" xrefstyle="table"/> - links two node groups together for synchronization</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_channel" xrefstyle="table"/> - grouping and priority of synchronizations</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_trigger" xrefstyle="table"/> - specifies tables, channels, and conditions for which changes in the database should be captured</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_router" xrefstyle="table"/> - specifies the routers defined for synchronization, along with other routing details</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_trigger_router" xrefstyle="table"/> - provides mappings of routers and triggers</para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <para>
+        During start up, triggers are verified against the database, and database triggers
+        are installed on tables that require data changes to be captured.  The Route, Pull and Push Jobs
+        begin running to synchronize changes with other nodes.
+      </para>
+        <para>
+            Each node requires properties that allow it to connect to a database and register
+            with a parent node.  To give a node its identity, the following properties are used:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>group.id</command>
+                </term>
+                <listitem>
+                    <para>
+                        The node group that this node is a member of. Synchronization is specified
+                        between node groups, which means you only need to specify it once for
+                        multiple nodes in the same group. 
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>external.id</command>
+                </term>
+                <listitem>
+                    <para>
+                        The external id for this node has meaning to the user and provides
+                        integration into the system where it is deployed. For example, it might be a
+                        retail store number or a region number. The external id can be used in
+                        expressions for conditional and subset data synchronization. Behind the
+                        scenes, each node has a unique sequence number for tracking synchronization
+                        events. That makes it possible to assign the same external id to multiple
+                        nodes, if desired.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>sync.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The URL where this node can be contacted for synchronization.
+                        At startup and during each heartbeat, the node updates its entry in
+                        the database with this URL.  
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            When a new node is first started, it is has no information about synchronizing. It
+            contacts the registration server in order to join the network and receive its
+            configuration. The configuration for all nodes is stored on the registration server, and
+            the URL must be specified in the following property:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>registration.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The URL where this node can connect for registration to receive its
+                        configuration. The registration server is part of SymmetricDS and is enabled
+                        as part of the deployment.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            When deploying to an application server, it is common for database connection pools
+            to be found in the Java naming directory (JNDI).  In this case, set the following property:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>db.jndi.name</command>
+                </term>
+                <listitem>
+                    <para>
+                        The name of the database connection pool to use, which is registered in the JNDI
+                        directory tree of the application server. It is recommended that this DataSource is
+                        NOT transactional, because SymmetricDS will handle its own transactions.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            For a deployment where the database connection pool should be created using a JDBC driver,
+            set the following properties:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>db.driver</command>
+                </term>
+                <listitem>
+                    <para>
+                        The class name of the JDBC driver.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The JDBC URL used to connect to the database.
+                    </para> 
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.user</command>
+                </term>
+                <listitem>
+                    <para>
+                        The database username, which is used to login, create, and update SymmetricDS tables.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.password</command>
+                </term>
+                <listitem>
+                    <para>
+                        The password for the database user.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+       
+      
+    </section>
+    
+       <section id="registration">
+        <title>Opening Registration</title>
+        <para>
+        Node registration is the act of setting up a new <xref linkend="table_node" xrefstyle="table"/> and
+         <xref linkend="table_node_security" xrefstyle="table"/> so that when the new node is brought online
+         it is allowed to join the system.  Nodes are only allowed to register if rows exist for the
+         node and the <literal>registration_enabled</literal> flag is set to 1.  If the <literal>auto.registration</literal>
+         SymmetricDS property is set to true, then when a node attempts to register, if registration
+         has not already occurred, the node will automatically be registered.
+       </para>
+       <para> 
+        SymmetricDS allows you to have multiple nodes with the same <literal>external_id</literal>.  Out of the box, openRegistration 
+        will open a new registration if a registration already exists for a node with the same external_id.  A new 
+        registration means a new node with a new <literal>node_id</literal> and the same <literal>external_id</literal> will be created.  
+        If you want to re-register the same node you can use the <literal>reOpenRegistration()</literal> JMX
+        method which takes a <literal>node_id</literal> as an argument.
+        </para>
+    </section>
+    
+     <section id="initial-load">
+        <title>Initial Load</title>
+     <section id="dead-triggers">
+        <title>Dead Triggers</title>
+        <para>
+            Normally a Trigger is specified to capture data changes to a table and send them to
+            a target Node Group.  A "dead" Trigger is one that does not capture data changes.
+            In other words, the <literal>sync_on_insert</literal>, <literal>sync_on_update</literal>, and <literal>sync_on_delete</literal> properties
+            for the Trigger are all set to false.  However, because the Trigger is specified,
+             it <emphasis>will</emphasis>
+            be included in the initial load of data for target Nodes.
+        </para>
+        <para>
+            A dead Trigger might be used to load a read-only lookup table, for example.  It could also 
+            be used
+            to load a table that needs populated with example or default data.
+            Another use is a recovery load of data for tables that have a single direction
+            of synchronization.  For example, a retail store records sales transaction that
+            synchronize in one direction by trickling back to the central office.
+            If the retail store needs to recover all the sales transactions from the central office,
+            they can be sent
+            are part of an initial load from the central office by setting up dead Triggers
+            that "sync" in that direction.
+        </para>
+        <para>
+            The following SQL statement sets up a non-syncing dead Trigger that sends
+            the <literal>sale_transaction</literal> table to the "store" Node Group from the "corp" Node Group during
+            an initial load.
+            <programlisting>
+<![CDATA[
+insert into sym_trigger (TRIGGER_ID,SOURCE_CATALOG_NAME,
+  SOURCE_SCHEMA_NAME,SOURCE_TABLE_NAME,CHANNEL_ID,
+  SYNC_ON_UPDATE,SYNC_ON_INSERT,SYNC_ON_DELETE,
+  SYNC_ON_INCOMING_BATCH,NAME_FOR_UPDATE_TRIGGER,
+  NAME_FOR_INSERT_TRIGGER,NAME_FOR_DELETE_TRIGGER,
+  SYNC_ON_UPDATE_CONDITION,SYNC_ON_INSERT_CONDITION,
+  SYNC_ON_DELETE_CONDITION,EXTERNAL_SELECT,
+  TX_ID_EXPRESSION,EXCLUDED_COLUMN_NAMES,
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('SALE_TRANSACTION_DEAD',null,null,
+  'SALE_TRANSACTION','transaction',
+  0,0,0,0,null,null,null,null,null,null,null,null,null,
+  current_timestamp,'demo',current_timestamp);
+
+insert into sym_router (ROUTER_ID,TARGET_CATALOG_NAME,TARGET_SCHEMA_NAME,
+  TARGET_TABLE_NAME,SOURCE_NODE_GROUP_ID,TARGET_NODE_GROUP_ID,ROUTER_TYPE,
+  ROUTER_EXPRESSION,SYNC_ON_UPDATE,SYNC_ON_INSERT,SYNC_ON_DELETE,
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('CORP_2_STORE',null,null,null,
+  'corp','store',null,null,1,1,1,
+  current_timestamp,'demo',current_timestamp);
+   
+insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
+  INITIAL_LOAD_SELECT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('SALE_TRANSACTION_DEAD','CORP_2_REGION',100,null,
+   current_timestamp,'demo',current_timestamp);
+   ]]></programlisting>
+        </para>
+    </section>
+    </section>
+    
+    
+    
+  
+    
+     <section id="bi-direction-sync">
+        <title>Bi-Directional Synchronization</title>
+        <para>
+            SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing 
+            synchronization does not process changes during an incoming synchronization on the same node unless the trigger 
+            was created with the <literal>sync_on_incoming_batch</literal> flag set.  If the <literal>sync_on_incoming_batch</literal> flag
+            is set, then update loops are prevented by a feature that is available in most database dialects.  
+            More specifically, during an incoming synchronization the source <literal>node_id</literal> is put into a database session variable that is 
+            available to the database trigger.  Data events are not generated if the target <literal>node_id</literal> 
+            on an outgoing synchronization is equal to the source <literal>node_id</literal>.  
+        </para>     
+        <para>
+            By default, only the columns that changed will be updated in the target system.
+        </para>  
+        <para>
+            More complex conflict resolution strategies can be accomplished by using the 
+            <literal>IDataLoaderFilter</literal> extension point which has access to both 
+            old and new data.
+        </para>         
+    </section>     
+      
+    <section id="multi-tier">
+        <title>Multi-Tiered Synchronization</title>
+        <para>
+            As shown in <xref linkend="node-organization"/>, there may be
+            scenarios where data needs to flow through multiple tiers of nodes that
+            are organized in a tree-like network with each tier requiring a different subset of data.  For example,
+            you may have a system where the lowest tier may by a computer or device located in a store.  Those devices 
+            may connect to a server located physically at that store.  Then the store server may communicate with 
+            a corporate server for example.  In this case, the three tiers would be device, store, and corporate.
+            Each tier is typically represented by a node group.  Each node in 
+            the tier would belong to the node group representing that tier.   
+        </para>
+        <para>
+            A node will always push and pull data to other node groups according to the node group link configuration.
+            A node can only pull and push data to other nodes that are represented <literal>node</literal> table in its database and 
+            having <literal>sync_enabled = 1</literal>.
+            Because of this, a tree-like 
+            hierarchy of nodes can be created by having only a subset of nodes belonging to the same node group represented at the different branches of the tree.  
+        </para>
+        <para>
+            If auto registration is turned <emphasis>off</emphasis>, then this setup must occur manually by opening registration 
+            for the desired nodes at the desired parent node and by configuring each node's <literal>registration.url</literal>
+             to be the parent node's URL.  
+            The parent node is always tracked by the setting of the parent's <literal>node_id</literal> in the <literal>created_at_node_id</literal> column of the new node.  
+            When a node registers and downloads its configuration it is always provided the configuration for nodes 
+            that might register with the node itself based on the Node Group Links defined in the parent node.
+        </para>
+               
+    </section>
+    <section id='registration-redirect'>
+        <title>Registration Redirect</title>    
+        <para>
+            When deploying a multi-tiered system it may be advantageous to have only one registration server, even though the parent node of a registering node
+            could be any of a number of nodes in the system.  In SymmetricDS the parent node is always the node that a child registers with.  The 
+            <xref linkend="table_registration_redirect" xrefstyle="table"/> table allows a single node, usually the root server in the network, to
+            redirect registering nodes to their true parents.  It does so based on a mapping found in the table of the external id (<literal>registrant_external_id</literal>) to the parent's node 
+            id (<literal>registration_node_id</literal>).
+        </para>
+        <para>
+            For example, if it is desired to have a series of regional servers that workstations at retail stores get assigned to based on their <literal>external_id</literal>, the store number, then
+            you might insert into <xref linkend="table_registration_redirect" xrefstyle="table"/> the store number as the <literal>registrant_external_id</literal> and the <literal>node_id</literal> of
+            the assigned region as the <literal>registration_node_id</literal>.  When a workstation at the store registers, the root server send an HTTP redirect to the <literal>sync_url</literal> of the node 
+            that matches the <literal>registration_node_id</literal>. 
+        </para>
+    </section>
+       
+   
+    <section id='jms-publishing'>
+        <title>JMS Publishing</title>    
+        <para>
+            With the proper configuration SymmetricDS can publish XML messages of captured data changes to 
+            JMS during routing or transactionally while data loading synchronized data into a target database.
+            The following explains how to publish to JMS during synchronization to the target database. 
+       </para>
+       <para>     
+            The XmlPublisherDataLoaderFilter is a
+            <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to 
+            publish specific tables as an XML message to a JMS provider.
+            See <xref linkend="extension-points"/> for information on how 
+            to configure an extension point.  If the publish to JMS fails, the batch will be marked in error, 
+            the loaded data for the batch will be rolled back
+            and the batch will be retried during the next synchronization run.            
+        </para>
+        <para>
+        The following is an example extension point configuration that will publish four tables in XML with a root 
+        tag of <emphasis>'sale'</emphasis>.  Each XML message will be grouped by the batch and the column names identified by
+        the groupByColumnNames property which have the same values.
+                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+ 
+    <bean id="publishingFilter" 
+      class="org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter">
+        <property name="xmlTagNameToUseForGroup" value="sale"/>
+        <property name="tableNamesToPublishAsGroup">
+            <list>
+               <value>SALE_TX</value>
+               <value>SALE_LINE_ITEM</value>
+               <value>SALE_TAX</value>
+               <value>SALE_TOTAL</value>
+            </list>            
+        </property>
+        <property name="groupByColumnNames">
+            <list>
+               <value>STORE_ID</value>
+               <value>BUSINESS_DAY</value>
+               <value>WORKSTATION_ID</value>
+               <value>TRANSACTION_ID</value>
+            </list>                      
+        </property>
+        <property name="publisher">
+           <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
+               <property name="jmsTemplate" ref="definedSpringJmsTemplate"/>
+           </bean>
+        </property>        
+    </bean>     
+</beans>]]></programlisting>        
+        </para>
+        <para>
+          The publisher property on the XmlPublisherDataLoaderFilter takes an interface of type IPublisher.  The implementation
+          demonstrated here is an implementation that publishes to JMS using Spring's 
+          <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
+          Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
+        </para>
+        <para>
+          The above configuration will publish XML similiar to the following:
+            <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  id="0012010-01-220031234" nodeid="00001" time="1264187704155">
+  <row entity="SALE_TX" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="CASHIER_ID">010110</data>
+  </row>        
+  <row entity="SALE_LINE_ITEM" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="SKU">9999999</data>  
+    <data key="PRICE">10.00</data>
+    <data key="DESC" xsi:nil="true"/>
+  </row>        
+  <row entity="SALE_LINE_ITEM" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="SKU">9999999</data>  
+    <data key="PRICE">10.00</data>
+    <data key="DESC" xsi:nil="true"/>
+  </row>
+  <row entity="SALE_TAX" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="AMOUNT">1.33</data>  
+  </row>
+  <row entity="SALE_TOTAL" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="AMOUNT">21.33</data>  
+  </row>
+</sale>
+            ]]></programlisting>     
+            To publish JMS messages during routing
+            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router 
+            would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
+            name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
+            to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.                  
+        </para>
+    </section>     
+    
+    
+      <section id="extension-points">
+        <title>Extension Points</title>
+        <para>
+             SymmetricDS may be extended via a plug-in like architecture where extension point interfaces 
+             may be implemented by a custom class and registered with the synchronization engine.  All supported extension 
+             points extend the IExtensionPoint interface.  The currently available extension points are documented in the following sections.  
+        </para>
+        <para>
+             When the synchronization engine starts up, a Spring 
+             post processor searches the Spring ApplicationContext for any registered classes which implement 
+             IExtensionPoint.  An IExtensionPoint designates whether it should be auto registered or not.  If the extension point 
+             is to be auto registered then the post processor registers the known interface with the appropriate service.
+        </para>
+        <para>
+             The INodeGroupExtensionPoint interface may be optionally implemented to designate that auto registered 
+             extension points should only be auto registered with specific node groups.
+             <programlisting><![CDATA[/**
+ * Only apply this extension point to the 'root' node group.
+ */
+ public String[] getNodeGroupIdsToApplyTo() {
+     return new String[] { "root" };
+ }
+]]></programlisting>             
+        </para>
+        <para>
+             SymmetricDS will look for Spring configured extensions in the application Classpath by importing any Spring 
+             XML configuration files found matching the following pattern: <literal>META-INF/services/symmetric-*-ext.xml</literal>.  When packaged in
+             a jar file the <literal>META-INF</literal> directory should be at the root of the jar file.  When packaged in a war file, the <literal>META-INF</literal> directory
+             should be in the <literal>WEB-INF/classes</literal> directory.
+        </para>
+        <section id="parameter-filter">
+            <title>IParameterFilter</title>
+            <para>
+                Parameter values can be specified in code using a parameter filter.  Note that there can be only one parameter
+                filter per engine instance.  The IParameterFilter replaces the deprecated IRuntimeConfig from prior releases.
+                <programlisting><![CDATA[public class MyParameterFilter 
+    implements IParameterFilter, INodeGroupExtensionPoint {
+
+    /**
+     * Only apply this filter to stores
+     */
+    public String[] getNodeGroupIdsToApplyTo() {
+        return new String[] { "store" };
+    }
+
+    public String filterParameter(String key, String value) {
+        // look up a store number from an already existing properties file.
+        if (key.equals(ParameterConstants.EXTERNAL_ID)) {
+            return StoreProperties.getStoreProperties().
+              getProperty(StoreProperties.STORE_NUMBER);
+        } 
+        return value;
+    }
+
+    public boolean isAutoRegister() {
+        return true;
+    }
+
+}]]></programlisting> 
+            </para>
+        </section>        
+        <section id="extensions-data-loader-filter">
+            <title>IDataLoaderFilter</title>         
+            <para>
+                Data can be filtered as it is loaded into the target database.  It can also be
+                filtered when
+                it is extracted from the source database.
+            
+                As data is loaded into the target database, a filter can change the
+                data in a column or save it somewhere else.  It can also specify by the
+                return value of the function call that the data loader should continue on 
+                and load the data (by returning true) or ignore it (by returning false). One 
+                possible use of the filter might be to
+                route credit card data to a secure database and blank it out as it loads 
+                into a less-restricted reporting database.
+            </para>
+            <para>
+                An IDataLoaderContext is passed to each of the callback methods.  A new 
+                context is created for each synchronization.  The context provides methods to 
+                lookup column indexes by column name, get table meta data, and access to 
+                old data if the <literal>sync_column_level</literal> flag is enabled.  The context also provides a means 
+                to share data during a synchronization between different rows of data that are 
+                committed in a  database transaction and are in the same channel.  It does so by 
+                providing a context cache which can be populated by the extension point.
+            </para>  
+            <para>
+                Many times the IDataLoaderFilter will be combined with the IBatchListener.  The 
+                XmlPublisherFilter (in the <literal>org.jumpmind.symmetric.ext</literal> package) is a good example 
+                of using the combination of the two extension points in order to create XML messages 
+                to be published to JMS.
+            </para>          
+            <para>
+                A class implementing the IDataLoaderFilter interface is injected onto the
+                DataLoaderService in order to receive callbacks when data is inserted,
+                updated, or deleted.
+                
+                <programlisting><![CDATA[public MyFilter implements IDataLoaderFilter {
+                
+    public boolean isAutoRegister() {
+        return true;
+    }
+ 
+    public boolean filterInsert(IDataLoaderContext context,
+        String[] columnValues) {
+        return true;
+    }
+    
+    public boolean filterUpdate(IDataLoaderContext context, 
+        String[] columnValues, String[] keyValues) {
+        return true;
+    }
+    
+    public void filterDelete(IDataLoaderContext context, 
+        String[] keyValues) {
+        return true;
+    }
+
+}]]></programlisting>
+            </para>
+            <para>
+                The filter class is specified as a Spring-managed bean.  A custom Spring XML file
+                is specified as follows in a jar at <literal>META-INF/services/symmetric-myfilter-ext.xml</literal>.
+                
+                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+ 
+    <bean id="myFilter" class="com.mydomain.MyFilter"/>
+     
+</beans>]]></programlisting>
+            </para>
+        </section>
+        <section id="extensions-table-column-filter">
+            <title>ITableColumnFilter</title>
+            <para>
+            Implement this extension point to filter out specific columns from
+            use by the dataloader. Only one column filter may be added per target table.
+            </para>
+        </section>
+        <section id="extensions-batch-listener">
+            <title>IBatchListener</title>
+            <para>
+            This extension point is called whenever a batch has completed loading but before
+            the transaction has committed.
+            </para>
+        </section>
+        <section id="extensions-acknowledge-event-listener">
+            <title>IAcknowledgeEventListener</title>
+            <para>
+            Implement this extension point to receive callback events when a batch is acknowledged.  
+            The callback for this listener happens at the point of extraction.
+            </para>
+        </section>                
+        <section id="extensions-reload-listener">
+            <title>IReloadListener</title>
+            <para>
+            Implement this extension point to listen in and take
+            action before or after a reload is requested for a Node.  The callback for this listener
+            happens at the point of extraction.
+            </para>
+        </section>                
+        <section id="extensions-extractor-filter">
+            <title>IExtractorFilter</title>
+            <para>
+            This extension point is called after data has been extracted, but before it has been streamed.  It
+            has the ability to inspect each row of data to take some action and indicate, if necessary, that the
+            row should not be streamed.
+            </para>
+        </section>
+        <section id="extensions-sync-url-extension">
+            <title>ISyncUrlExtension</title>
+            <para>
+             This extension point is used to select an appropriate URL based on
+             the URI provided in the <literal>sync_url</literal> column of <literal>sym_node</literal>.
+            </para>
+            <para>
+             To use this extension point configure the sync_url for a node with the
+             protocol of ext://beanName. The beanName is the name you give the extension
+             point in the extension xml file.
+            </para>
+        </section>        
+        <section id="extensions-node-id-generator">
+            <title>INodeIdGenerator</title>
+            <para>
+             This extension point allows SymmetricDS users to implement their own algorithms for how 
+             node ids and passwords are generated or selected during the registration process.  There may be 
+             only one node generator per SymmetricDS instance.
+            </para>
+        </section>
+        <section id="extensions-trigger-creation-listener">
+            <title>ITriggerCreationListener</title>
+            <para>
+            Implement this extension point to get status callbacks during trigger creation.
+            </para>
+        </section>       
+        <section id="extensions-batch-algorithm">
+            <title>IBatchAlgorithm</title>
+            <para>
+            Implement this extension point and set the name of the Spring bean on the batch_algorithm column of the Channel table to use.
+            This extension point gives fine grained control over how a channel is batched.
+            </para>
+        </section>                   
+        <section id="extensions-data-router">
+            <title>IDataRouter</title>
+            <para>
+            Implement this extension point and set the name of the Spring bean on the router_type column
+            of the Router table to use.  This extension point gives the ability to programatically decide
+            which nodes data should be routed to.
+            </para>
+        </section>  
+        <section id="extensions-heartbeat-listener">
+            <title>IHeartbeatListener</title>
+            <para>
+            Implement this extension point to get callbacks during the heartbeat job.
+            </para>
+        </section>
+        <section id="extensions-offline-client-listener">
+            <title>IOfflineClientListener</title>
+            <para>
+            Implement this extension point to get callbacks for offline events on client nodes.
+            </para>
+        </section>
+        <section id="extensions-offline-server-listener">
+            <title>IOfflineServerListener</title>
+            <para>
+            Implement this extension point to get callbacks for offline events detected on a server node during monitoring of client nodes.
+            </para>
+        </section>
+        <section id="extensions-node-password">
+            <title>INodePasswordFilter</title>
+            <para>
+            Implement this extension point to intercept the saving and rendering of the node password.
+            </para>
+        </section>        
+        <section id="extensions-servlets">
+            <title>IServletExtension</title>
+            <para>
+            Implement this extension point to allow additional Servlets to be registered with SymmetricDS.  This is probably only 
+            useful if SymmetricDS is running in standalone or embedded mode.
+            </para>
+        </section>                      
+    </section>
+    
+    <!--  Jobs? -->
+    <section id="jobs">
+     <title>Jobs</title>
+    <para>
+        The SymmetricDS software allows for outgoing and incoming changes to be synchronized
+        to/from other databases.  The node that initiates a synchronization connection is the client, and the
+        node receiving a connection is the host.  Because synchronization is configurable to
+        push or pull in either direction, the same node can act as either a client or a host
+        in different circumstances.
+    </para>
+    <para>
+        The SymmetricDS software consists of a series of background jobs, managers, Servlets, and services wired together
+        via dependency injection using the <ulink url="http://springframework.org">Spring Framework</ulink>.
+    </para>    
+    <para>
+        <figure>
+            <title>Software Stack</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="images/software-stack.gif" format="GIF" />
+                </imageobject>
+            </mediaobject>
+        </figure>
+    </para>    
+    <para>
+        As a client, the node runs the router job, push job and pull job on a timer thread.  
+        The router job uses services to create batches that are targeted at certain nodes.  
+        The push job uses services to extract and stream data to
+        another node (that is, it pushes data).  The response from a push is a list
+        of batch acknowlegements to indicate that data was loaded.
+        The pull job uses services to load data that is streamed from another node
+        (<emphasis>i.e.</emphasis>, it pulls data).  After loading data, a second connection is made to send a list
+        of batch acknowlegements.
+    </para>
+    <para>
+        As a host, the node waits for incoming connections that pull, push, or acknowledge data changes.
+        The push Servlet uses services to load data that is pushed from a client node.
+        After loading data, it responds with a list of batch acknowledgements.
+        The pull Servlet uses services to extract, and stream data back to the client node.
+        The ack Servlet uses services to update the status of data that was loaded at a client node.  The router
+        job batches and routes data.
+    </para>
+    <para>
+        By default, data is extracted from the source database into memory until a threshold size is reached.
+        If the threshold size is reached, data is streamed to a temporary file in the JVM's default temporary 
+        directory.  Next, the data is streamed to the target node across the transport layer.  The receiving
+        node will cache the data in memory until the threshold size is reached, writing to a temporary file if
+        necessary.  At last, the data is loaded into the target database by the data loader.  This step by step
+        approach allows for extract time, transport time, and load time to all be measured independently.  It 
+        also allows database resources to be used most optimally.
+    </para>    
+    <para>
+        The transport manager handles the incoming and outgoing streams of data between nodes.
+        The default transport is based on a simple implementation over HTTP.  An internal transport
+        is also provided.  It is possible to add other implementations, such as a socket-based transport manager.
+    </para> 
+    <para>
+        Node communication over HTTP is represented in the following figure.
+    </para> 
+    <para>
+        <figure>
+            <title>Node Communication</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="images/seq-node-communication.gif" format="GIF" />
+                </imageobject>
+            </mediaobject>
+        </figure>
+    </para>    
+    <para>
+        The <literal>StandaloneSymmetricEngine</literal> is wrapper API that can be used to directly start the client services only.  The 
+        <literal>SymmetricWebServer</literal> is a wrapper API that can be used to directly start <emphasis>both</emphasis> the
+        client and host services inside a Jetty web container.  The <literal>SymmetricLauncher</literal> provides command line tools to work 
+        with and start SymmetricDS.
+    </para>   
+    <!-- TODO
+    <section id="ch04-components">
+        <title>Software Components</title>
+        <para>
+            <figure>
+                <title>Startup Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="../images/seq-startup.gif" format="GIF" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+        <para>
+            <figure>
+                <title>Client Side Pull Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="../images/seq-pull-client.gif" format="GIF"  />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+        <para>
+            <figure>
+                <title>Host Side Pull Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="../images/seq-pull-host.gif" format="GIF"  />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+        <para>
+            <figure>
+                <title>Client Side Push Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="../images/seq-push-client.gif" format="GIF"  />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+        <para>
+            <figure>
+                <title>Host Side Push Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="../images/seq-push-host.gif" format="GIF"  />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>        
+    </section>
+     -->
+     </section>
+      <section id='controlling-synchronization'>
+        <title>Controlling Synchronization</title>
+        <para>
+        The frequency of data synchronization is controlled by the coordination of a series of asynchronous events.   
+        </para>    
+        <para>
+        After data is captured, the first event that occurs is the routing of the 
+        captured <xref linkend="table_data" xrefstyle="table"/> rows.  Data is routed by the <emphasis>Route Job</emphasis>.  It is a single background task that inserts into
+        <xref linkend="table_data_event" xrefstyle="table"/> and <xref linkend="table_outgoing_batch" xrefstyle="table"/>.  The Route Job determines which nodes
+        data will be sent to, as well as how much data will be batched together for transport.  When the <literal>start.route.job</literal> SymmetricDS property is set to 
+        <literal>true</literal>, the frequency that routing occurs is controlled by the <literal>job.routing.period.time.ms</literal>.  Each time data is routed, the 
+        <xref linkend="table_data_ref" xrefstyle="table"/> table is updated with the id of the last contiguous data row to have been processed.  This is done so the query to find
+        unrouted data is optimal. 
+        </para>
+        <para>
+        After data is routed, it awaits transport to the target nodes.  Transport can occur when a client node is configured to pull data or when the host node is configured to push data.  These
+        events are controlled by the <emphasis>Push</emphasis> and the <emphasis>Pull Jobs</emphasis>.  When the <literal>start.pull.job</literal> SymmetricDS property is set to 
+        <literal>true</literal>, the frequency that data is pulled is controlled by the <literal>job.pull.period.time.ms</literal>.  When the <literal>start.push.job</literal> SymmetricDS property is set to 
+        <literal>true</literal>, the frequency that data is pushed is controlled by the <literal>job.push.period.time.ms</literal>.  Data is extracted by channel from the source database's 
+        <xref linkend="table_data" xrefstyle="table"/> table at an interval controlled by the <literal>extract_period_millis</literal> column on the 
+        <xref linkend="table_channel" xrefstyle="table"/> table.  The <literal>last_extract_time</literal> is 
+        always recorded, by channel, on the <xref linkend="table_node_channel_ctl" xrefstyle="table"/> table for the host node's id.  When the Pull and Push Job run, if the extract period
+        has not passed according to the last extract time, then the channel will be skipped for this run.  If the <literal>extract_period_millis</literal> is set to zero, data extraction will happen every time the jobs run.
+        </para>
+        <para>
+        SymmetricDS also provides the ability to configure windows of time when synchronization is allowed.  This is done using the
+        <xref linkend="table_node_group_channel_window" xrefstyle="table"/> 
+        table.  A list of allowed time windows can be specified for a node group and a channel.  If one or more windows exist, then data will only be extracted and transported if the time
+        of day falls within the window of time specified.  The configured times are always for the target node's local time.  If the <literal>start_time</literal> is greater than the <literal>end_time</literal>, then the window crosses
+        over to the next day.
+        </para>
+        <para>
+        All data loading may be disabled by setting the <literal>dataloader.enable</literal> property to false.  This has the effect of not allowing incoming synchronizations, while allowing outgoing
+        synchronizations.  All data extractions may be disabled by setting the <literal>dataextractor.enable</literal> property to false.  These properties can be controlled by inserting into the 
+        root server's <xref linkend="table_parameter" xrefstyle="table"/> table.  These properties affect every channel with the exception of the 'config' channel.  
+        </para>
+    </section>         
+       
+    <section id="sync-triggers">
+        <title>Sync Triggers Job</title>
+        <para>
+            SymmetricDS examines the current configuration, corresponding database triggers,
+            and the underlying tables to determine if database triggers need created or updated.
+            The change activity is recorded on the <xref linkend="table_trigger_hist" xrefstyle="table"/> table with a reason for the
+            change.  The following reasons for a change are possible:
+
+            <itemizedlist>
+                <listitem>
+                    <para>N - New trigger that has not been created before</para>
+                </listitem>
+                <listitem>
+                    <para>S - Schema changes in the table were detected</para>
+                </listitem>
+                <listitem>
+                    <para>C - Configuration changes in Trigger</para>
+                </listitem>
+                <listitem>
+                    <para>T - Trigger was missing</para>
+                </listitem>
+            </itemizedlist>
+
+            A configuration entry in Trigger without any history in Trigger Hist results in a new
+            trigger being created (N).  The Trigger Hist stores a hash of the underlying table, so
+            any alteration to the table causes the trigger to be rebuilt (S).  When the 
+            <literal>last_update_time</literal> is changed on the Trigger entry, the configuration change causes
+            the trigger to be rebuilt (C).  If an entry in Trigger Hist is missing the
+            corresponding database trigger, the trigger is created (T).
+        </para>
+        <para>
+            The process of examining triggers and rebuilding them is automatically run during startup and
+            each night by the SyncTriggersJob.  The user can also manually run the process at any time 
+            by invoking the <literal>syncTriggers()</literal> method over JMX.  The SyncTriggersJob is enabled by default 
+            to run at 15 minutes past midnight.  If SymmetricDS is being run from a collection of servers
+            (multiple instances of the same Node running against the same database), then locking
+            should be enable to prevent database contention.  The following runtime properties
+            control the behavior of the process.
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <command>start.synctriggers.job</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Whether the sync triggers job is enabled for this node.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.synctriggers.aftermidnight.minutes</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If scheduled, the sync triggers job will run nightly. This is how long after midnight
+                            that job will run. [&#xA0;Default:&#xA0;15&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>           
+                <varlistentry>
+                    <term>
+                        <command>cluster.lock.during.sync.triggers</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Indicate if the sync triggers job is clustered and requires a lock before running.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </para>
+    </section>    
+</chapter>
