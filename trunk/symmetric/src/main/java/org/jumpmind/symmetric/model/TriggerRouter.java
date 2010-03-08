@@ -128,11 +128,11 @@ public class TriggerRouter {
     public boolean isRouted(DataEventType event) {
         switch (event) {
         case INSERT:
-            return router.isSyncOnInsert() && trigger.isSyncOnInsert();
+            return router.isSyncOnInsert();
         case DELETE:
-            return router.isSyncOnDelete() && trigger.isSyncOnDelete();
+            return router.isSyncOnDelete();
         case UPDATE:
-            return router.isSyncOnUpdate() && trigger.isSyncOnUpdate();
+            return router.isSyncOnUpdate();
         default:
             return true;
         }
