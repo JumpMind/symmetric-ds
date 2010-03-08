@@ -155,6 +155,50 @@ GRANT RESOURCE TO SYMMETRIC;
 GRANT CREATE ANY TRIGGER TO SYMMETRIC;
 GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;]]></programlisting>
         </para>
+        <para>
+            Partitioning the <xref linkend="table_data" xrefstyle="table"/> table by channel can help
+            insert, routing and extraction performance on concurrent, high throughput systems.  
+            <xref linkend="table_trigger" xrefstyle="table"/>s should be organized to put data that is 
+            expected to be inserted concurrently on separate <xref linkend="table_channel" xrefstyle="table"/>s.  The following is an example of
+            partitioning.  Note that both the table and the index should be partitioned.  The default
+            value allows for more channels to be added without having to modify the partitions. 
+            <programlisting><![CDATA[
+CREATE TABLE SYM_DATA
+(
+    data_id INTEGER NOT NULL ,
+    table_name VARCHAR2(50) NOT NULL,
+    event_type CHAR(1) NOT NULL,
+    row_data CLOB,
+    pk_data CLOB,
+    old_data CLOB,
+    trigger_hist_id INTEGER NOT NULL,
+    channel_id VARCHAR2(20),
+    transaction_id VARCHAR2(1000),
+    source_node_id VARCHAR2(50),
+    external_data VARCHAR2(50),
+    create_time TIMESTAMP
+) PARTITION BY LIST (channel_id) (  	-- Add list partitioning
+PARTITION P_CONFIG VALUES ('config'),
+PARTITION P_RELOAD VALUES ('reload'),
+PARTITION P_CHANNEL_ONE VALUES ('channel_one'),
+PARTITION P_CHANNEL_TWO VALUES ('channel_two'),
+...
+PARTITION P_CHANNEL_N VALUES ('channel_n'),
+PARTITION P_DEFAULT VALUES (DEFAULT));            
+            ]]></programlisting>
+            <programlisting><![CDATA[
+CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
+( 
+ PARTITION I_CONFIG, 
+ PARTITION I_RELOAD, 
+ PARTITION I_CHANNEL_ONE, 
+ PARTITION I_CHANNEL_TWO,
+ ... 
+ PARTITION I_CHANNEL_N, 
+ PARTITION I_DEFAULT
+);              
+            ]]></programlisting>            
+        </para>        
     </section>
     <section id="ap02-mysql">
         <title>MySQL</title>
