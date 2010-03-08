@@ -177,7 +177,7 @@ CREATE TABLE SYM_DATA
     source_node_id VARCHAR2(50),
     external_data VARCHAR2(50),
     create_time TIMESTAMP
-) PARTITION BY LIST (channel_id) (  	-- Add list partitioning
+) PARTITION BY LIST (channel_id) (  	
 PARTITION P_CONFIG VALUES ('config'),
 PARTITION P_RELOAD VALUES ('reload'),
 PARTITION P_CHANNEL_ONE VALUES ('channel_one'),
