@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+	default-lazy-init="true">
+
+    <!-- 
+      This is an example of how to add and populate a column called STORE_ID
+      on the SALE and SALE_LINE_ITEM table with the external id of the source
+      node.  The STORE_ID column does not exist at the source node.  The filter
+      will only be applied to nodes that have this configuration uncommented
+      out with the node group id of 'root'.
+    
+	<bean class="org.jumpmind.symmetric.map.AddColumnsFilter">
+		<property name="nodeGroupIdsToApplyTo">
+			<list>
+				<value>root</value>
+			</list>
+		</property>
+		<property name="tables">
+			<list>
+				<value>SALE</value>
+				<value>SALE_LINE_ITEM</value>
+			</list>
+		</property>
+		<property name="additionalColumns">
+			<map>
+				<entry key="STORE_ID" value=":EXTERNAL_ID" />
+			</map>
+		</property>
+	</bean>
+	 -->
+	 
+	 <!-- 
+	 This is an example of how to change the names of columns at the target table.
+	<bean class="org.jumpmind.symmetric.map.ChangeColumnsNamesFilter">
+		<property name="nodeGroupIdsToApplyTo">
+			<list>
+				<value>store</value>
+			</list>
+		</property>
+		<property name="tables">
+			<list>
+				<value>STORE_TABLE</value>
+			</list>
+		</property>
+		<property name="columnNameMapping">
+			<map>
+				<entry key="ID_STR_RT" value="STORE_ID" />
+				<entry key="NM_LOC" value="LOCATION_NAME" />
+				<entry key="CO_CNT" value="COUNTRY" />
+			</map>
+		</property>
+	</bean>
+	  -->
+	  
+</beans>
