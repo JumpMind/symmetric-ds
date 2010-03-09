@@ -253,24 +253,24 @@ net stop symmetric</programlisting>
         </para>
         <para>
             To enable the service to run automatically when the system is started:
-            <programlisting>/sbin/chkconfig --add symmetric</programlisting>
+            <programlisting>/sbin/chkconfig --add sym_service</programlisting>
         </para>
         <para>
             To disable the service from running automatically:
-            <programlisting>/sbin/chkconfig --del symmetric</programlisting>
+            <programlisting>/sbin/chkconfig --del sym_service</programlisting>
         </para>
         <para>
             On Suse Linux install the service by calling:
-            <programlisting>/usr/lib/lsb/install_initd</programlisting>
+            <programlisting>/usr/lib/lsb/install_initd sym_service</programlisting>
             Remove the service by calling:
-            <programlisting>/usr/lib/lsb/remove_initd</programlisting>
+            <programlisting>/usr/lib/lsb/remove_initd sym_service</programlisting>
         </para>          
         <para>
             Use the <command>service</command> command to start, stop, and query
             the status of the service: 
-            <programlisting>/sbin/service symmetric start
-/sbin/service symmetric stop
-/sbin/service symmetric status</programlisting>
+            <programlisting>/sbin/service sym_service start
+/sbin/service sym_service stop
+/sbin/service sym_service status</programlisting>
         </para>  
         <para>
             Alternatively, call the init.d script directly:
