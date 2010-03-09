@@ -225,7 +225,7 @@ net stop symmetric</programlisting>
         </para>
     </section>
     <section id="running-service-unix">
-        <title>Running as a Unix Service</title>
+        <title>Running as a Nix Service</title>
         <para>
             SymmetricDS uses the
             <ulink url="http://wrapper.tanukisoftware.org/">Java Service Wrapper</ulink>
@@ -238,13 +238,13 @@ net stop symmetric</programlisting>
         </para>
         <para>
             An init script is provided to work with standard Unix run configuration levels.
-            The <filename class="file">symmetric.init</filename> file follows the
+            The <filename class="file">sym_service.initd</filename> file follows the
             Linux Standard Base specification, which should work on many systems, including
             Fedora and Debian-based distributions.  
             To install the script, copy it into the system init directory:
         </para>
         <para>
-            <programlisting>cp bin/symmetric.init /etc/init.d/symmetric</programlisting>
+            <programlisting>cp bin/sym_service.initd /etc/init.d/sym_service</programlisting>
         </para>
         <para>
             Edit the init script to set the SYM_HOME variable to the directory
@@ -260,12 +260,25 @@ net stop symmetric</programlisting>
             <programlisting>/sbin/chkconfig --del symmetric</programlisting>
         </para>
         <para>
+            On Suse Linux install the service by calling:
+            <programlisting>/usr/lib/lsb/install_initd</programlisting>
+            Remove the service by calling:
+            <programlisting>/usr/lib/lsb/remove_initd</programlisting>
+        </para>          
+        <para>
             Use the <command>service</command> command to start, stop, and query
             the status of the service: 
             <programlisting>/sbin/service symmetric start
 /sbin/service symmetric stop
 /sbin/service symmetric status</programlisting>
-        </para>
+        </para>  
+        <para>
+            Alternatively, call the init.d script directly:
+            <programlisting>/etc/init.d/sym_service start
+/etc/init.d/sym_service stop
+/etc/init.d/sym_service status
+            </programlisting>
+        </para>    
     </section>
         <section id="clustering">
         <title>Clustering</title>
