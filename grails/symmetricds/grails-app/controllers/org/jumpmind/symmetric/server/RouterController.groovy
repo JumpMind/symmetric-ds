@@ -17,6 +17,7 @@ class RouterController {
   }
 
   def list = {
+	session.menu="configuration-routers"
     params.max = Math.min(params.max ? params.max.toInteger() : 10, 100)
     [routerInstanceList: org.jumpmind.symmetric.grails.Router.list(params), routerInstanceTotal: org.jumpmind.symmetric.grails.Router.count()]
   }

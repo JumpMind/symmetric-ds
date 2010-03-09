@@ -7,8 +7,9 @@
   <title><g:message code="default.create.label" args="[entityName]"/></title>
 </head>
 <body>
-<g:render template="/common/createMenu"/>
+
 <div class="body">
+<g:render template="/common/createMenu"/>
   <h1><g:message code="default.create.label" args="[entityName]"/></h1>
   <g:if test="${flash.message}">
     <div class="message">${flash.message}</div>

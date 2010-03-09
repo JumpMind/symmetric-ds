@@ -9,6 +9,7 @@ class NodeGroupController {
   }
 
   def list = {
+	session.menu="configuration-nodeGroups"
     params.max = Math.min(params.max ? params.max.toInteger() : 10, 100)
     [nodeGroupInstanceList: org.jumpmind.symmetric.grails.NodeGroup.list(params), nodeGroupInstanceTotal: org.jumpmind.symmetric.grails.NodeGroup.count()]
   }

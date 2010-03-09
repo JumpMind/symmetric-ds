@@ -10,10 +10,13 @@ class DashboardController {
   def ISymmetricEngine symmetricEngine
 
   def index = {
-    redirect(action: "show", params: params)
+	redirect(action: "show", params: params)
   }
 
   def show = {
+	session.menu="monitor-dashboard"
+	
+	
     [command: createCommand()]
   }
 
