@@ -40,7 +40,8 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.jdbc.core.RowMapper;
 
-public class ParameterService extends AbstractService implements IParameterService, BeanFactoryAware {
+public class ParameterService extends AbstractService implements IParameterService,
+        BeanFactoryAware {
 
     private Map<String, String> parameters;
 
@@ -147,12 +148,12 @@ public class ParameterService extends AbstractService implements IParameterServi
 
         paramValue = paramValue != null ? paramValue.toString() : null;
 
-        int count = jdbcTemplate.update(getSql("updateParameterSql"), new Object[] { paramValue, externalId,
-                nodeGroupId, key });
+        int count = jdbcTemplate.update(getSql("updateParameterSql"), new Object[] { paramValue,
+                externalId, nodeGroupId, key });
 
         if (count == 0) {
-            jdbcTemplate
-                    .update(getSql("insertParameterSql"), new Object[] { externalId, nodeGroupId, key, paramValue });
+            jdbcTemplate.update(getSql("insertParameterSql"), new Object[] { externalId,
+                    nodeGroupId, key, paramValue });
         }
 
         rereadParameters();
@@ -181,7 +182,8 @@ public class ParameterService extends AbstractService implements IParameterServi
     private Map<String, String> rereadDatabaseParameters(Properties p) {
         try {
             Map<String, String> map = rereadDatabaseParameters(ALL, ALL);
-            map.putAll(rereadDatabaseParameters(ALL, p.getProperty(ParameterConstants.NODE_GROUP_ID)));
+            map.putAll(rereadDatabaseParameters(ALL, p
+                    .getProperty(ParameterConstants.NODE_GROUP_ID)));
             map.putAll(rereadDatabaseParameters(p.getProperty(ParameterConstants.EXTERNAL_ID), p
                     .getProperty(ParameterConstants.NODE_GROUP_ID)));
             return map;
@@ -195,12 +197,13 @@ public class ParameterService extends AbstractService implements IParameterServi
 
     private Map<String, String> rereadDatabaseParameters(String externalId, String nodeGroupId) {
         final Map<String, String> map = new HashMap<String, String>();
-        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId }, new RowMapper<Object>() {
-            public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-                map.put(rs.getString(1), rs.getString(2));
-                return null;
-            }
-        });
+        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId },
+                new RowMapper<Object>() {
+                    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        map.put(rs.getString(1), rs.getString(2));
+                        return null;
+                    }
+                });
         return map;
     }
 
@@ -220,7 +223,8 @@ public class ParameterService extends AbstractService implements IParameterServi
     private Map<String, String> getParameters() {
         if (parameters == null
                 || lastTimeParameterWereCached == null
-                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System.currentTimeMillis() - cacheTimeoutInMs))) {
+                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System
+                        .currentTimeMillis() - cacheTimeoutInMs))) {
             lastTimeParameterWereCached = new Date();
             parameters = rereadApplicationParameters();
             cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
@@ -254,15 +258,20 @@ public class ParameterService extends AbstractService implements IParameterServi
         }
         return value;
     }
-    
+
     protected String getWithHostName(String paramKey) {
         String value = getString(paramKey);
         if (!StringUtils.isBlank(value)) {
-            value = AppUtils.replace("hostName", AppUtils.getHostName(), value);
+            if (value.contains("hostName")) {
+                value = AppUtils.replace("hostName", AppUtils.getHostName(), value);
+            }
+            if (value.contains("ipAddress")) {
+                value = AppUtils.replace("ipAddress", AppUtils.getIpAddress(), value);
+            }
         }
         return value;
     }
-    
+
     public String getNodeGroupId() {
         return getString(ParameterConstants.NODE_GROUP_ID);
     }
