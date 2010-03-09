@@ -7,7 +7,7 @@
   <title><g:message code="default.show.label" args="[entityName]"/></title>
 </head>
 <body>
-<div class="body">
+
   <h1><g:message code="default.show.label" args="[entityName]"/></h1>
   <g:if test="${flash.message}">
     <div class="message">${flash.message}</div>
@@ -125,6 +125,6 @@
       </tbody>
     </table>
   </div>
-</div>
+
 </body>
 </html>

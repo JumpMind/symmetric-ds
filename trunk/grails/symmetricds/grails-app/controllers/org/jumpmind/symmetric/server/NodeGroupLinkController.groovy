@@ -11,6 +11,7 @@ class NodeGroupLinkController {
   }
 
   def list = {
+	session.menu="configuration-nodeGroupLink"
     params.max = Math.min(params.max ? params.max.toInteger() : 10, 100)
     [nodeGroupLinkInstanceList: org.jumpmind.symmetric.grails.NodeGroupLink.list(params), nodeGroupLinkInstanceTotal: org.jumpmind.symmetric.grails.NodeGroupLink.count()]
   }

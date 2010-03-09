@@ -11,6 +11,8 @@ class ChannelController {
   }
 
   def list = {
+	session.menu="control-channels"
+	
     params.max = Math.min(params.max ? params.max.toInteger() : 10, 100)
     [channelInstanceList: org.jumpmind.symmetric.grails.Channel.list(params), channelInstanceTotal: org.jumpmind.symmetric.grails.Channel.count()]
   }

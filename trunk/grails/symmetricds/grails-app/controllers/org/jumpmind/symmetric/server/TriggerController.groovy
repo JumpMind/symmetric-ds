@@ -11,6 +11,7 @@ class TriggerController {
   }
 
   def list = {
+	session.menu = "configuration-triggers"
     params.max = Math.min(params.max ? params.max.toInteger() : 10, 100)
     [triggerInstanceList: org.jumpmind.symmetric.grails.Trigger.list(params), triggerInstanceTotal: org.jumpmind.symmetric.grails.Trigger.count()]
   }

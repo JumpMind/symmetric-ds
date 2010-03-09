@@ -1,118 +1,57 @@
-<div id="logo"><a href="http://symmetricds.org"><img src="${resource(dir: 'images', file: 'icon.png')}" alt="SymmetricDS" border="0"/></a></div>
-<div class='navbarBox'>
-
-  <div class="navcontainer1">
-    <h1 class="panelHeader">
-      Monitor
-    </h1>
-    <ul class="navlist">
-      <li>
-        <g:link controller="dashboard" action="show">
-          Dashboard
-        </g:link>
-      </li>
-      <li>
-        <g:link controller="node" action="list">
-          Nodes
-        </g:link>
-      </li>
-      <li>
-        <g:link url="#">
-          Outgoing
-        </g:link>
-      </li>
-      <li>
-        <g:link url="#">
-          Incoming
-        </g:link>
-      </li>
-    </ul>
-  </div>
-</div>
-
-<div class="navbarBox">
-  <div class="navcontainer1">
-    <h1 class="panelHeader">
-      Control
-    </h1>
-    <ul class="navlist">
-      <li>
-        <g:link url="#">
-          Channels
-        </g:link>
-      </li>
-      <li>
-        <g:link url="#">
-          Jobs
-        </g:link>
-      </li>
-      <li>
-        <g:link url="#">
-          Settings
-        </g:link>
-      </li>
-    </ul>
-  </div>
-</div>
-
-<div class="navbarBox">
-  <div class="navcontainer1">
-    <h1 class="panelHeader">
-      Configuration
-    </h1>
-    <ul class="navlist">
-      <li>
-        <g:link controller="channel" action="list">
-          Channels
-        </g:link>
-      </li>
-      <li>
-        <g:link controller="nodeGroup" action="list">
-          Groups
-        </g:link>
-      </li>
-      <li>
-        <g:link controller="nodeGroupLink" action="list">
-          Links
-        </g:link>
-      </li>
-      <li>
-        <g:link controller="router" action="list">
-          Routers
-        </g:link>
-      </li>
-      <li>
-        <g:link controller="trigger" action="list">
-          Triggers
-        </g:link>
-      </li>
-      <li>
-        <g:link url="#">
-          Extensions
-        </g:link>
-      </li>
-    </ul>
-  </div>
-</div>
-
-<div class="navbarBox">
-  <div class="navcontainer1">
-    <h1 class="panelHeader">
-      Utilities
-    </h1>
-    <ul class="navlist">
-      <li>
-        <g:link controller="db">
-          Database Browser
-        </g:link>
-      </li>
-      <li>
-        <g:link url="#">
-          Log File Browser
-        </g:link>
-      </li>
-    </ul>
-  </div>
-
-</div>
+<g:if test="${session.menu?.startsWith('monitor')}">
+<ul class="vertical tabs"> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('dashboard')}">active </g:if>first"> 
+            <g:link controller="dashboard" class="browse-tab"><strong>Dashboard</strong></g:link></a> 
+        </li> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('nodes')}">active</g:if>"> 
+            <g:link controller="node" class="browse-tab"><strong>Nodes</strong></g:link></a> 
+        </li> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('outgoing')}">active</g:if>"> 
+            <a class="browse-tab" id="roadmap-panel-panel" href="" hidefocus><strong>Outgoing</strong></a> 
+        </li> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('incoming')}">active</g:if>"> 
+            <a class="browse-tab" id="changelog-panel-panel" href="" hidefocus><strong>Incoming</strong></a> 
+        </li> 
+</ul> 
+</g:if>
+<g:if test="${session.menu?.startsWith('control')}">
+<ul class="vertical tabs"> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('channels')}">active </g:if>first"> 
+            <g:link controller="channel" class="browse-tab"><strong>Channels</strong></g:link></a> 
+        </li> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('jobs')}">active</g:if>"> 
+            <g:link controller="node" class="browse-tab"><strong>Jobs</strong></g:link></a> 
+        </li> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('settings')}">active</g:if>"> 
+            <a class="browse-tab" id="roadmap-panel-panel" href="" hidefocus><strong>Settings</strong></a> 
+        </li> 
+</ul> 
+</g:if>
+<g:if test="${session.menu?.startsWith('configuration')}">
+<ul class="vertical tabs"> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('nodeGroups')}">active </g:if>first"> 
+            <g:link controller="nodeGroup" class="browse-tab"><strong>Node Groups</strong></g:link></a> 
+        </li> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('nodeGroupLink')}">active</g:if>"> 
+            <g:link controller="nodeGroupLink" class="browse-tab"><strong>Links</strong></g:link></a> 
+        </li> 
+    
+        <li class="<g:if test="${session.menu?.endsWith('routers')}">active</g:if>"> 
+            <g:link controller="router" class="browse-tab"><strong>Routers</strong></g:link></a> 
+        </li> 
+        
+        <li class="<g:if test="${session.menu?.endsWith('triggers')}">active</g:if>"> 
+            <g:link controller="trigger" class="browse-tab"><strong>Triggers</strong></g:link></a> 
+        </li> 
+</ul> 
+</g:if>
 

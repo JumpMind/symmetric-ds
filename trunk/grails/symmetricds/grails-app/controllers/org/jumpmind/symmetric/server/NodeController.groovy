@@ -11,7 +11,9 @@ class NodeController {
   }
 
   def list = {
-    params.max = Integer.MAX_VALUE
+	session.menu="monitor-nodes"
+	
+	params.max = Integer.MAX_VALUE
     def list = Node.list(params).sort {a, b ->
       if (a.createdAtNodeId && a.nodeId == a.createdAtNodeId) {
         return -1
