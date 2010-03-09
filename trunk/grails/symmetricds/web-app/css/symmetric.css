@@ -491,8 +491,9 @@ ul.tabs li.modified strong {
     -moz-border-radius: .4em;
     -webkit-border-radius: .4em;
     border-radius: .4em;
+    padding: 10px;
 }
-.body h2, .body h1 {
+.body h2 {
     font-size: 1.6em;
     margin: 7px 8px 5px;
 }
@@ -503,9 +504,10 @@ ul.tabs li.modified strong {
 div.list table {
     border: 1px solid #d2d2d2;
     border-collapse: collapse;
-    width: 90%;
+    width: 95%;
     margin-left:auto;
     margin-right:auto;
+    padding:0;
     
 }
 
@@ -523,10 +525,28 @@ div.list table thead tr {
     background-color: #e2e2e2;
 }
 
+.body h1 {
+	color: #006DBA;
+font-size: 16px;
+font-weight: normal;
+margin: 0.8em 0px 0.3em;
+}
 
+div.dialog table {
+	width:30%;
+	margin-left:10px;
+	border: thin solid #555;
+}
+
+.prop .name {
+	font-weight:bold;
+	text-align:left;
+}
+	
 
 /*
 
+ACTIONS
 
 */
 .navaction {
@@ -535,10 +555,13 @@ div.list table thead tr {
 }
 
 .navaction .navitem { 
+	background-color:#f7f7f7;
+	display:inline;
     border: thin dotted #555;
     background-repeat:no-repeat;
     width:100px;
     padding:3px;
+    margin-right:20px;
 }
 
 .navaction .navitem a { 
@@ -553,6 +576,64 @@ div.list table thead tr {
 .navcreate { 
     background-image:url('../images/add-icon.png');
 }
+.navedit { 
+    background-image:url('../images/page-edit-icon.png');
+}
+.navdelete { 
+    background-image:url('../images/delete-icon.png');
+}
+.navupdate { 
+    background-image:url('../images/process-icon.png');
+}
+
+/* DASHBOARD LAYOUT */
+#primary {
+	float:left;
+}
+
+#secondary {
+	
+}
+
+.panel {
+	margin: 0px 0px 20px;
+	padding: 0px;
+	position: relative;
+}
+
+.column {
+	display: inline;
+	margin: 5px 8px;
+	width: 47.75%;
+}
+
+
+.panel h3 {
+	background-color: #F0F0F0;
+	border-top: 1px solid #BBB;
+	color: #036;
+	font-size: 1.3em;
+	margin: 0px 0px 0.5em;
+	padding: 2px 3px 2px 6px;
+	font-weight:bold;
+}
+
+.panel-row {
+	padding: 4px 6px;
+    vertical-align: middle;
+}
+
+.stat {
+	float:right;
+	padding: 0px 0.5em;
+}
+
+.alt {
+	background-color: #FAFAFA;
+}
+
+
+
 
 /* MESSAGES AND ERRORS */
 

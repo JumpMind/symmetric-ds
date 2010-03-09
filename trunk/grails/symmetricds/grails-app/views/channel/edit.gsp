@@ -7,8 +7,9 @@
   <title><g:message code="default.edit.label" args="[entityName]"/></title>
 </head>
 <body>
-<g:render template="/common/editMenu" model="[id:channelInstance.channelId]"/>
+
 <div class="body">
+<g:render template="/common/editMenu" model="[id:channelInstance.channelId]"/>
   <h1><g:message code="default.edit.label" args="[entityName]"/></h1>
   <g:if test="${flash.message}">
     <div class="message">${flash.message}</div>
