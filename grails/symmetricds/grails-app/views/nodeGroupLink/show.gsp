@@ -7,8 +7,9 @@
   <title><g:message code="default.show.label" args="[entityName]"/></title>
 </head>
 <body>
-<g:render template="/common/showMenu" model="[id:nodeGroupLinkInstance.PKAsCSV]"/>
+
 <div class="body">
+<g:render template="/common/showMenu" model="[id:nodeGroupLinkInstance.PKAsCSV]"/>
   <h1><g:message code="default.show.label" args="['Link']"/></h1>
   <g:if test="${flash.message}">
     <div class="message">${flash.message}</div>

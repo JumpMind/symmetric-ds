@@ -32,6 +32,7 @@ class NodeGroupController {
   }
 
   def show = {
+	session.menu="configuration-nodeGroups"
     def nodeGroupInstance = org.jumpmind.symmetric.grails.NodeGroup.get(params.id)
     if (!nodeGroupInstance) {
       flash.message = "${message(code: 'default.not.found.message', args: [message(code: 'nodeGroup.label', default: 'NodeGroup'), params.id])}"
