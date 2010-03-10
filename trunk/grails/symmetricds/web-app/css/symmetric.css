@@ -319,6 +319,42 @@ td>p:-moz-last-node,th>p:-moz-last-node {
     text-decoration: none;
 }
 /* 
+    *******************************  OVERVIEW  ******************************* 
+*/
+
+#overview {
+	border-left: thin solid #555;
+	border-right: thin solid #555;
+	border-bottom: thin solid #555;
+	background-color: #FFFFcc;
+	margin-bottom: 20px;
+	margin-top:0;
+	margin-right:auto;
+	margin-left:auto;
+	width:625px;
+	padding:.5em;
+}
+
+#overview .label {
+	font-weight:bold;
+}
+
+#overview .meta {
+    padding-left:20px;
+    padding-right:20px;
+	border-left:thin solid #555;
+}
+
+#overview .meta-first {
+    padding-left:20px;
+    padding-right:20px;
+}
+
+
+
+
+
+/* 
     *******************************  LEFT NAV ******************************* 
 */
 #content {
@@ -327,7 +363,7 @@ td>p:-moz-last-node,th>p:-moz-last-node {
     position: relative;
     width: auto;
     overflow: auto;
-    padding: 1em;
+    padding: 0em 1em 1em;
 }
 
 #content #main-content {
@@ -599,7 +635,7 @@ div.dialog table {
 }
 
 #secondary {
-	
+	float:left;
 }
 
 .panel {
@@ -641,6 +677,44 @@ div.dialog table {
 
 
 
+.metrics {
+    padding: 10px;  
+}
+
+.metrics td {
+    padding: 2px;
+}
+.metrics th {
+    padding: 2px;
+}
+
+.metricsBar {
+    width:300px;
+    
+}
+.metricsBar td {
+    height: 10px;
+    padding:0px;
+}
+
+.metric-OK { 
+	background-color:green;
+}
+.metric-ER {
+	background-color:red;
+}
+.metric-SE {
+	background-color:yellow;
+}
+.metric-NE {
+    background-color:silver;
+}
+.metric-IG {
+    background-color:gray;
+}
+.metric-empty {
+	background-color:white;
+}
 /* 
     *******************************  MESSAGES & ERRORS  ******************************* 
 */

@@ -14,7 +14,10 @@
         <g:render template="/common/topbar"/>
     </div>
 
-    <div id="content"> 
+    <div id="content">
+        <div id="content-top"> 
+        <g:render template="/common/overview"/>
+	    </div> 
         <div id="main-content"> 
         <g:render template="/common/navbar"/>
         <g:layoutBody/>
