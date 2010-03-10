@@ -715,6 +715,15 @@ div.dialog table {
 .metric-empty {
 	background-color:white;
 }
+
+.status-box {
+	border: thin solid gray;
+	width:7px;
+	height:7px;
+	float:left;
+	margin:4px 10px 4px 2px;
+}
+
 /* 
     *******************************  MESSAGES & ERRORS  ******************************* 
 */
@@ -756,4 +765,29 @@ td.errors select {
 
 td.errors input {
     border: 1px solid red;
+}
+
+/* PAGINATION */
+
+.paginateButtons {
+    /*background: #fff url(../images/skin/shadow.jpg) bottom repeat-x;
+    border: 1px solid #ccc;
+    border-top: 0;*/
+    color: #666;
+    font-size: 10px;
+    overflow: hidden;
+    padding: 10px 3px;
+}
+
+.paginateButtons a {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-color: #ccc #aaa #aaa #ccc;
+    color: #666;
+    margin: 0 3px;
+    padding: 2px 6px;
+}
+
+.paginateButtons span {
+    padding: 2px 3px;
 }

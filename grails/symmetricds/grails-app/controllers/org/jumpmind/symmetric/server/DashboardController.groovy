@@ -65,7 +65,8 @@ class DashboardController {
 			println "Creating new row command."
 			batchRow = new OutgoingBatchCommand()
 		}
-		batchRow.nodeId = it[0] == "-1" ? "Not routed" : it[0]
+		batchRow.nodeLabel= it[0] == "-1" ? "Not routed" : it[0]
+		batchRow.nodeId = it[0]
 		batchRow.statusList.add(it[1])
 		batchRow.statusListCount.add(it[2])
 		batchRow.totalBatches += it[2]
@@ -79,6 +80,7 @@ class DashboardController {
 
 class OutgoingBatchCommand {
 	String nodeId
+	String nodeLabel
 	List statusList
 	List statusListCount
 	int totalBatches
