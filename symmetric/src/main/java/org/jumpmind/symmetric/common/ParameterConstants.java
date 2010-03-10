@@ -127,6 +127,7 @@ final public class ParameterConstants {
     public final static String JMX_LINE_FEED = "jmx.line.feed";
     public final static String JMX_LEGACY_BEANS_ENABLED = "jmx.legacy.beans.enabled";
     public final static String JMX_HTTP_CONSOLE_ENABLED = "jmx.http.console.for.embedded.webserver.enabled";
+    public final static String JMX_HTTP_CONSOLE_LOCALHOST_ENABLED = "jmx.http.console.localhost.only.enabled";
 
     public final static String IP_FILTERS = "ip.filters";
     

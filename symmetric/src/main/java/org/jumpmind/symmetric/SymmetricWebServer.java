@@ -263,6 +263,9 @@ public class SymmetricWebServer implements ApplicationContextAware {
             MBeanServer mbeanServer = AppUtils.find(Constants.MBEAN_SERVER, getEngine());
             ObjectName name = getHttpJmxAdaptorName();
             mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
+            if (!parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_LOCALHOST_ENABLED)) {
+                mbeanServer.setAttribute(name, new Attribute("Host", "0.0.0.0"));
+            }
             mbeanServer.setAttribute(name, new Attribute("Port", new Integer(jmxPort)));
             ObjectName processorName = getXslJmxAdaptorName();
             mbeanServer.createMBean(XSLTProcessor.class.getName(), processorName);
