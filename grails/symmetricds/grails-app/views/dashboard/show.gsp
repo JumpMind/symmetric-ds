@@ -12,38 +12,8 @@
     <div class="message">${flash.message}</div>
   </g:if>
   <div id="primary" class="column">
-    <div id="panel-overview" class="panel">
-        <h3>Overview</h3>
-	    <div class="panel-row">
-	       <span class="stat">
-	          <g:if test="${command.started}">
-                <img src="${resource(dir: 'images', file: 'arrow_up.png')}" alt="Yes" border="0"/>
-              </g:if>
-              <g:else>
-                <img src="${resource(dir: 'images', file: 'arrow_down.png')}" alt="No" border="0"/>
-              </g:else>
-	       </span>
-	       <g:message code="symmetric.running.label" default="Running"/>
-	    </div>
-	    <div class="panel-row alt">
-	       <span class="stat"><g:link controller="nodeGroup" action="show" id="${command.nodeGroupId}">${command.nodeGroupId}</g:link></span>
-	       <g:message code="symmetric.node.group.label" default="Group"/>
-	    </div>      
-	    <div class="panel-row">  
-	       <span class="stat"><g:link controller="node" action="show" id="${command.nodeId}">${command.nodeId}</g:link></span>
-	       <g:message code="symmetric.node.id.label" default="Node Id"/>
-	    </div> 
-	    <div class="panel-row alt">  
-           <span class="stat"><g:link controller="node" action="list">${command.numberOfNodes}</g:link></span>
-           <g:message code="symmetric.number.of.nodes.label" default="Number Of Nodes"/>
-        </div>
-        <div class="panel-row">  
-           <span class="stat"><g:link controller="node" action="list">${command.numberOfClients}</g:link></span>
-           <g:message code="symmetric.number.of.clients.label" default="Number Of Clients"/>
-        </div>
-    </div>
     <div id="panel-nodes" class="panel">
-        <h3>Nodes</h3>
+        <h3>Node Instances</h3>
         <div class="panel-row"> 
 	       <div class="list">
 	            <table width="100%">
@@ -60,7 +30,7 @@
 	              </tr>
 	              </thead>
 	              <tbody>
-	              <g:each in="${command.nodeHosts}" status="i" var="nodeHost">
+	              <g:each in="${session.overview?.nodeHosts}" status="i" var="nodeHost">
 	                <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
 	                  <td>
 	                    ${nodeHost?.hostName}
@@ -93,6 +63,46 @@
 	          </div>
 	       </div>
         </div>
+    </div>
+    <div id="secondary" class="column">
+        <div id="panel-overview" class="panel">
+            <h3>My Batches</h3>
+            <div class="panel-row">
+               
+                <table class="metrics">
+                  <thead>
+                    <tr>
+                        <th>Nodes</th>
+                        <th>Metrics</th>
+                        <th>Total Batches</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <g:each in="${batches}" var="b">
+                    <tr>
+                        <td>${b.nodeId}</td>
+                        <td>
+		                      <table class="metricsBar" valign="middle" align="center" cellspacing="0" cellpadding="0" border="0"> 
+		                          <tr>
+		                          <% percentTotal = 0 %>
+		                          <g:each in="${b.statusList}" var="s" status="i">
+		                              <% percent = java.lang.Math.round(b.statusListCount.get(i) / maxBatch * 100)
+		                              title = "${s} - ${percent}% (${b.statusListCount.get(i)} batches)"%>
+		                              <td width="${percent}%" class="metric-${s}"><a href="" title="${title}"><img  alt="${title}" class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></a></td>
+		                              <%percentTotal += percent%>
+                                  </g:each>
+                                  <g:if test="${percentTotal < 100}">
+                                      <td width="${100 - percentTotal}" class="metric-empty"><img class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></td>
+                                  </g:if>
+		                          </tr>
+		                      </table>
+                        </td>
+                        <td style="text-align:center;">${b.totalBatches}</td>
+                    </tr>
+                    </g:each>
+                  </tbody>
+            </div>
+        </div>    
     </div>
 </div>
 </body>
