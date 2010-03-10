@@ -10,7 +10,7 @@
         </li> 
     
         <li class="<g:if test="${session.menu?.endsWith('outgoing')}">active</g:if>"> 
-            <a class="browse-tab" id="roadmap-panel-panel" href="" hidefocus><strong>Outgoing</strong></a> 
+            <g:link controller="outgoingBatch" class="browse-tab"><strong>Outgoing</strong></g:link></a> 
         </li> 
     
         <li class="<g:if test="${session.menu?.endsWith('incoming')}">active</g:if>"> 

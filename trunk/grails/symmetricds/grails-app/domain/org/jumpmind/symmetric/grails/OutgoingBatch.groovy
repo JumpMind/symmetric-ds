@@ -3,8 +3,9 @@ package org.jumpmind.symmetric.grails;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class OutgoingBatch implements Serializable {
-	static transients = [ 'batchInfo', 'nodeBatchId' ]
-	
+	static transients = [ 'batchInfo', 'nodeBatchId']
+
+	                     
 	private @Delegate org.jumpmind.symmetric.model.OutgoingBatch delegate = new org.jumpmind.symmetric.model.OutgoingBatch()
 	
 	static mapping = {
@@ -12,6 +13,9 @@ class OutgoingBatch implements Serializable {
 		table config.symmetric.sync.table.prefix + '_outgoing_batch'
 		version false
 		id name: 'batchId', generator: 'assigned'
+		
+		lastUpdatedTime column: 'LAST_UPDATE_TIME'
+		lastUpdatedHostName column: 'LAST_UPDATE_HOSTNAME'
 		autoTimestamp false
 	}
 
