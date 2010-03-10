@@ -92,7 +92,7 @@ public class CsvExtractor extends CsvExtractor16 {
                 .getTargetSchemaName();
         CsvUtils.write(out, CsvConstants.SCHEMA, ", ", schemaName);
         out.newLine();
-        String catalogName = (router == null || router.getTargetSchemaName() == null) ? "" : router
+        String catalogName = (router == null || router.getTargetCatalogName() == null) ? "" : router
                 .getTargetCatalogName();
         CsvUtils.write(out, CsvConstants.CATALOG, ", ", catalogName);
         out.newLine();
