@@ -409,6 +409,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         try {
             boolean initialized = false;
             for (final OutgoingBatch batch : batches) {
+                batch.resetStats();
                 currentBatch = batch;
                 long ts = System.currentTimeMillis();
                 if (!initialized) {

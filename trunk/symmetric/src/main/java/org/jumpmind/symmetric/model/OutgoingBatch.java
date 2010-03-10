@@ -78,6 +78,15 @@ public class OutgoingBatch implements Serializable {
         this.status = Status.NE;
         this.createTime = new Date();
     }
+    
+    public void resetStats() {
+        this.dataEventCount = 0;
+        this.byteCount = 0;
+        this.filterMillis = 0;
+        this.extractMillis = 0;
+        this.loadMillis = 0;
+        this.networkMillis = 0;
+    }
 
     public void setSentCount(long sentCount) {
         this.sentCount = sentCount;
