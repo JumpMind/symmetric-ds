@@ -245,6 +245,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         final String sql = dbDialect.createInitalLoadSqlFor(node, triggerRouter, tableForSql);
         
+        log.debug("Sql",sql);
+        
         if (!tableForSql.getName().equals(triggerHistory.getSourceTableName())) {
         	// This is to make legacy tables backwards compatible
         	String tableName = triggerHistory.getSourceTableName();
@@ -277,17 +279,24 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                         SimpleRouterContext routingContext = new SimpleRouterContext(node.getNodeId(), jdbcTemplate,
                                 channel);
+                        int dataNotRouted = 0;
                         while (rs.next()) {
                         	
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, triggerHistory2Use
                                     .getSourceTableName(), null, triggerHistory2Use, Constants.CHANNEL_RELOAD, null, null);
                             DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, channel);
-                            if (routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
+                            if (!StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) || 
+                                    routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
                                 dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctxCopy);
                                 if (batch != null) {
                                     batch.incrementDataEventCount();
                                 }
+                            } else {
+                                dataNotRouted++;
                             }
+                        }
+                        if (dataNotRouted > 0) {
+                            log.info("RouterInitialLoadNotRouted",dataNotRouted, triggerRouter.getTrigger().getSourceTableName());
                         }
                         if (newExtractorCreated) {
                             dataExtractor.commit(batch, writer);
