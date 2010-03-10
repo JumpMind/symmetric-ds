@@ -201,6 +201,32 @@
     
      <section id="initial-load">
         <title>Initial Load</title>
+        <para>
+            An initial load is the process of seeding tables at a target node with data from it's parent node.
+            An initial load can not occur until after a node is registered.  An initial load is 
+            requested by setting the <literal>initial_load_enabled</literal> column on <xref linkend="table_node_security" xrefstyle="table"/> to
+            <emphasis>1</emphasis> on the row for the target node in the parent node's database.  The next time the 
+            target node synchronizes, reload batches will be inserted.  At the same time reload batches 
+            are inserted, all previously pending batches for the node are marked as successfully sent.    
+        </para>
+        <para>
+            SymmetricDS recognizes that an initial load has completed when the <literal>initial_load_time</literal> column on the
+            target node is set to a non null value.
+        </para>
+        <para>
+            Reload batches are inserted in order according to the <literal>initial_load_order</literal> column on
+            <xref linkend="table_trigger_router" xrefstyle="table"/>.  Initial load data is always queried from the 
+            source database table.  All data is passed through the configured router to filter out data that 
+            might not be targeted at a node.  
+        </para>
+        <para>    
+            A more efficient way to subset the data for a load is to provide an
+            <literal>initial_load_select</literal> clause on <xref linkend="table_trigger_router" xrefstyle="table"/>.
+            If an <literal>initial_load_select</literal> clause is provided, data will <emphasis>not</emphasis> be passed through the 
+            configured router during initial load.  In cases where custom routing is done using a feature like <xref linkend="relational-router">Relational Routing</xref>,
+            an <literal>initial_load_select</literal> clause will always need to be provided because the router would not
+            function properly with initial load data. 
+        </para>
      <section id="dead-triggers">
         <title>Dead Triggers</title>
         <para>

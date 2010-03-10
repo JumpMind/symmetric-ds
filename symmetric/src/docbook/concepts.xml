@@ -262,24 +262,27 @@ values
         </para>
     </section>
        
-       <section id="triggers-and-routers">
-                <title>Triggers and Routers</title>         
-            <para> SymmetricDS uses database <emphasis>triggers</emphasis> to capture and record changes to data.  After the data is captured,
-            <emphasis>routers</emphasis> choose the nodes that the data will be synchronized to. The default router configuration 
-            is to synchronize data between all nodes in a node group.   Other router configurations can route based on hard coded 
+    <section id="triggers-and-routers">
+        <title>Triggers and Routers</title>         
+        <para> SymmetricDS uses <emphasis>database triggers</emphasis> to capture and record changes to in the
+        <xref linkend="table_data" xrefstyle="table"/> table.  After the data is captured, a background process
+            chooses the nodes that the data will be synchronized to.  This is called routing.  The default <xref linkend="table_router" xrefstyle="table"/> configuration 
+            synchronizes data to all nodes in a target node group.   Other router configurations can route based on hard coded 
             column values or matches between columns and some node attribute like external id.
-            </para>
-            <para> 
-                Triggers can be configured to control whether data changes are captured on inserts, deletes, updates, or
-                any combination thereof. They can also be configured to fire when data has been received from other nodes
-                in order to propagate data to another tier or back to other nodes in the originating tier node group tier.
-           </para>
-           <para> 
-                Database triggers are installed on a system when a router is linked to a trigger definition that has a source node group id 
-                that matches the node group id of the current node.
-           </para>
-         
-            
+        </para>
+        <para>
+           After data has been routed, rows will exist in <xref linkend="table_data_event" xrefstyle="table"/> and
+           <xref linkend="table_outgoing_batch" xrefstyle="table"/>.
+        </para>
+        <para> 
+            Triggers can be configured to control whether data changes are captured on inserts, deletes, updates, or
+            any combination thereof. They can also be configured to fire when data has been received from other nodes
+            in order to propagate data to another tier or back to other nodes in the originating tier node group tier.
+        </para>
+        <para> 
+            Database triggers are installed on a system when a router is linked to a trigger definition, via a <xref linkend="table_trigger_router" xrefstyle="table"/>, that has 
+            a router with a source node group id that matches the node group id of the current node.
+        </para>
             
     <section id="trigger">
         <title>Trigger</title>
@@ -301,8 +304,7 @@ values
         </para>
     </section>
     <section id="router">
-    <title>Router</title>
-    
+    <title>Router</title>    
       <para>
                 Routers provided in the base implementation currently include:
                 <itemizedlist>
@@ -655,7 +657,7 @@ values
 ]]></programlisting>
         </para>   
     </section>  
-    </section>
+    </section>  
     </section>
  
 </chapter>
