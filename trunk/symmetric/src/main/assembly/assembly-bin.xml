@@ -17,6 +17,8 @@
       <outputDirectory>/</outputDirectory>
       <excludes>
         <exclude>bin/sym</exclude>
+        <exclude>bin/sym_service</exclude>
+        <exclude>bin/sym_service.initd</exclude>
       </excludes>      
     </fileSet>
     <fileSet>
