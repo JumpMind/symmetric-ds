@@ -26,6 +26,7 @@ public class TestConstants {
     
     public final static String TEST_CLIENT_EXTERNAL_ID = "00001";
     public static final String TEST_CLIENT_NODE_GROUP = "test-node-group";
+    public static final String TEST_CLIENT_NODE_GROUP_2 = "test-node-group2";
     public final static Node TEST_CLIENT_NODE = new Node(TestConstants.TEST_CLIENT_EXTERNAL_ID, TestConstants.TEST_CLIENT_NODE_GROUP);
     
     public final static String TEST_ROOT_EXTERNAL_ID = "00000";

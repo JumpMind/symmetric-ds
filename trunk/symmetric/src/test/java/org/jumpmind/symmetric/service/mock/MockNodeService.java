@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.service.mock;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -46,6 +47,10 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
+    public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId) {
+        return null;
+    }
+    
     public String findSymmetricVersion() {
         return null;
     }

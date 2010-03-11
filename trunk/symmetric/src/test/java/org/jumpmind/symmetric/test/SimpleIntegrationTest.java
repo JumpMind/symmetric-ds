@@ -301,8 +301,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
     }
 
-    @Test
-    // (timeout = 300000)
+    @Test(timeout = 300000)
     public void testSuspendIgnorePushRemoteBatches() throws ParseException {
 
         // test suspend / ignore with remote database specifying the suspends

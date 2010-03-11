@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,11 +81,13 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public String findIdentityNodeId() {
-        try {
-            return (String) jdbcTemplate.queryForObject(getSql("findMyNodeIdSql"), String.class);
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
-        }
+        Node node = findIdentity();
+        return node != null ? node.getNodeId() : null;
+    }
+    
+    public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId) {
+        return jdbcTemplate.query(String.format("%s%s", getSql("selectNodePrefixSql"),
+                getSql("findEnabledNodesFromNodeGroupSql")), new Object[] { nodeGroupId }, new NodeRowMapper());
     }
 
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {

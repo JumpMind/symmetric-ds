@@ -4,11 +4,13 @@ insert into sym_node_group values ('symmetric','a group representing symmetric c
 insert into sym_node_group values ('test-root-group','a test config');
 insert into sym_node_group values ('test-node-group','a test config');
 insert into sym_node_group values ('test-node-group2','another test config');
+insert into sym_node_group values ('test-node-group3','another test config');
 insert into sym_node_group values ('test-group-for-root-to-pull','another test config');
 insert into sym_node_group values ('unit-test-only','a group used for unit testing');
 insert into sym_node_group_link values ('test-root-group','test-root-group', 'P');
 insert into sym_node_group_link values ('test-root-group','test-node-group2', 'P');
 insert into sym_node_group_link values ('test-root-group','test-node-group', 'W');
+insert into sym_node_group_link values ('test-root-group','test-node-group3', 'W');
 insert into sym_node_group_link values ('test-group-for-root-to-pull','test-root-group', 'W');
 insert into sym_node_group_link values ('test-node-group','test-root-group', 'P');
 insert into sym_node_group_link values ('symmetric','test-root-group', 'P');
@@ -18,6 +20,7 @@ insert into sym_node values ('00001', 'test-node-group', '00001', 1, 'http://loc
 insert into sym_node values ('00002', 'test-node-group', '00002', 0, null, null, '2.0', null, null, current_timestamp, null, 0, 0, '00000');
 insert into sym_node values ('00003', 'test-node-group', '00003', 1, 'http://localhost:8080/', '0', '2.0', 'H2', '4', current_timestamp, null, 0, 0, '00000');
 insert into sym_node values ('00010', 'test-node-group2', '00010', 1, null, null, '2.0', null, null, current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('00030', 'test-node-group3', '00030', 1, null, null, '2.0', null, null, current_timestamp, null, 0, 0, '00000');
 insert into sym_node values ('00011', 'test-node-group2', '00011', 1, null, null, '2.0', null, null, current_timestamp, null, 0, 0, '00000');
 insert into sym_node values ('pull1', 'test-group-for-root-to-pull', 'test', 1, 'http://localhost:8080/sync', '1', '2.0', 'H2', '5.0', current_timestamp, null, 0, 0, '00000');
 insert into sym_node values ('pull2', 'test-group-for-root-to-pull', 'test', 1, null, null, '2.0', null, null, current_timestamp, null, 0, 0, '00000');

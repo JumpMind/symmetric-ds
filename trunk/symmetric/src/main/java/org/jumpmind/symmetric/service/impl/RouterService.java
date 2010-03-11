@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,11 +46,11 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.route.DataToRouteReader;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IRouterContext;
 import org.jumpmind.symmetric.route.RouterContext;
-import org.jumpmind.symmetric.route.DataToRouteReader;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -240,22 +239,14 @@ public class RouterService extends AbstractService implements IRouterService {
             Router router = triggerRouter.getRouter();
             List<NodeGroupLink> links = configurationService.getGroupLinksFor(router
                     .getSourceNodeGroupId(), router.getTargetNodeGroupId());
-            for (NodeGroupLink nodeGroupLink : links) {
-                nodes.addAll(nodeService.findTargetNodesFor(nodeGroupLink.getDataEventAction()));
+            if (links.size() > 0) {
+               nodes.addAll(nodeService.findEnabledNodesFromNodeGroup(router.getTargetNodeGroupId()));           
+            } else {
+               log.error("RouterIllegalNodeGroupLink", router.getRouterId(), router.getSourceNodeGroupId(), router.getTargetNodeGroupId());
             }
-            filterDisabledNodes(nodes);
             context.getAvailableNodes().put(triggerRouter, nodes);
         }
         return nodes;
-    }
-
-    protected void filterDisabledNodes(Set<Node> nodes) {
-        for (Iterator<Node> iterator = nodes.iterator(); iterator.hasNext();) {
-            Node node = iterator.next();
-            if (!node.isSyncEnabled()) {
-                iterator.remove();
-            }
-        }
     }
 
     /**
