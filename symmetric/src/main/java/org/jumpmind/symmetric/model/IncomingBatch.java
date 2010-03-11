@@ -75,7 +75,7 @@ public class IncomingBatch implements Serializable {
     
     private Date createTime;
 
-    private boolean isRetry;
+    private boolean retry;
 
     public IncomingBatch() {
     }
@@ -131,11 +131,11 @@ public class IncomingBatch implements Serializable {
     }
 
     public boolean isRetry() {
-        return isRetry;
+        return retry;
     }
 
     public void setRetry(boolean isRetry) {
-        this.isRetry = isRetry;
+        this.retry = isRetry;
     }
 
     public Date getCreateTime() {
