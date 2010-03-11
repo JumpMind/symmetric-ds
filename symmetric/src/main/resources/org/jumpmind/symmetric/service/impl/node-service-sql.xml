@@ -14,11 +14,6 @@
         select symmetric_version from $[sym.sync.table.prefix]_node where node_id in (select node_id from $[sym.sync.table.prefix]_node_identity)
       </value>
     </entry>  
-    <entry key="findMyNodeIdSql">
-      <value>
-        select node_id from $[sym.sync.table.prefix]_node_identity
-      </value>
-    </entry>  
     <entry key="insertNodeIdentitySql">
       <value>
         insert into $[sym.sync.table.prefix]_node_identity values(?)
@@ -66,8 +61,13 @@
     <entry key="findNodeByExternalIdSql">
       <value>
         where node_group_id = ? and external_id = ? order by node_id
-      </value>
+      </value>      
     </entry>
+    <entry key="findEnabledNodesFromNodeGroupSql">
+      <value>
+        where node_group_id = ? and sync_enabled=1
+      </value>      
+    </entry>    
     <entry key="findNodesCreatedByMeSql">
       <value>
         where created_at_node_id=? and created_at_node_id != node_id

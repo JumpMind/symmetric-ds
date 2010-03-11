@@ -561,9 +561,9 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         getConfigurationService().saveChannel(testChannel, true);
         
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.getRouter().setRouterType("column");
+        trigger1.getRouter().setRouterType("bsh");
         trigger1.getRouter().setRouterExpression(
-                "ROUTING_INT!=:OLD_ROUTING_INT");
+                "!ROUTING_INT.equals(OLD_ROUTING_INT)");
         getTriggerRouterService().saveTriggerRouter(trigger1);
 
         getTriggerRouterService().syncTriggers();
@@ -636,6 +636,42 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         resetBatches();
 
     }    
+    
+    @Test
+    public void testDefaultRouteToTargetNodeGroupOnly() throws Exception {
+
+        TriggerRouter triggerRouter = getTestRoutingTableTrigger(TEST_TABLE_1);
+        triggerRouter.getRouter().setRouterType("default");
+        triggerRouter.getRouter().setRouterExpression(null);
+        getTriggerRouterService().saveTriggerRouter(triggerRouter);
+
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        testChannel.setMaxBatchToSend(1000);
+        testChannel.setMaxBatchSize(50);
+        testChannel.setBatchAlgorithm("default");
+        getConfigurationService().saveChannel(testChannel, true);
+
+        getTriggerRouterService().syncTriggers();
+        
+        resetBatches();
+
+        insert(TEST_TABLE_1, 1, true);
+        
+        getRouterService().routeData();
+        
+        Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
+                .getBatches().size());
+        
+        Node node2 = getNodeService().findNode("00030");
+        
+        Assert.assertNotNull(node2);
+        
+        Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(node2)
+                .getBatches().size());        
+
+        resetBatches();
+
+    }        
     
     @Test
     public void testDataGapExpired() {
@@ -736,6 +772,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
 
     protected void resetBatches() {
+        getRouterService().routeData();
         getJdbcTemplate().update("update sym_outgoing_batch set status='OK' where status != 'OK'");
     }
 

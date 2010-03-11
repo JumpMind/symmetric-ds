@@ -22,6 +22,7 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -51,6 +52,8 @@ public interface INodeService {
      * (recursively).
      */
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId);
+    
+    public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId);
 
     public NodeSecurity findNodeSecurity(String nodeId);
     
