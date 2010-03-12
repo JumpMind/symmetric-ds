@@ -57,12 +57,9 @@ class DashboardController {
 	def batchRow = null
 	results.each {
 		if (it[0] != prevNodeId) {
-			println "New node id in loop " + it[0]
 			if (batchRow != null) {
-				println "Adding previous batchRow to collection."
 				batches.add(batchRow)
 			}
-			println "Creating new row command."
 			batchRow = new OutgoingBatchCommand()
 		}
 		batchRow.nodeLabel= it[0] == "-1" ? "Not routed" : it[0]
@@ -71,7 +68,6 @@ class DashboardController {
 		batchRow.statusListCount.add(it[2])
 		batchRow.totalBatches += it[2]
 		prevNodeId = batchRow.nodeId
-		println "End of loop added node=${it[0]}, status=${it[1]}, statusCount=${it[2]}, totalBatches=${batchRow.totalBatches}"
 	}
 	batches.add(batchRow)
 	return batches
