@@ -10,11 +10,31 @@ class IncomingBatchController {
         redirect(action: "list", params: params)
     }
 
-    def list = {
+    def list = {		
 		session.menu="monitor-incoming"
+				
+		params.max = Math.min(params.max ? params.int('max') : 20, 100)
 		
-        params.max = Math.min(params.max ? params.int('max') : 20, 100)
-        [incomingBatchInstanceList: IncomingBatch.list(params), incomingBatchInstanceTotal: IncomingBatch.count()]
+		def total = 0
+		def list = null
+		
+		if (params.nodeId != null && params.status != null) {
+			list = IncomingBatch.findAllByNodeIdAndStatus(params.nodeId, params.status, params)
+			total = IncomingBatch.findAllByNodeIdAndStatus(params.nodeId, params.status).size()
+		}
+		else if (params.status != null) {
+			list = IncomingBatch.findAllByStatus(params.status, params)
+			total = IncomingBatch.findAllByStatus(params.status).size()
+		}
+		else if (params.nodeId != null) {
+			list = IncomingBatch.findAllByNodeId(params.nodeId, params)
+			total = IncomingBatch.findAllByNodeId(params.nodeId).size()
+		}
+		else {
+			list = IncomingBatch.list(params)
+			total = IncomingBatch.count()
+		}
+		[incomingBatchInstanceList: list, incomingBatchInstanceTotal: total]
     }
 
     def create = {

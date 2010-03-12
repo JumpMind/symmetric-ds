@@ -19,9 +19,9 @@
                     <tbody>
                     
                         <tr class="prop">
-                            <td valign="top" class="name"><g:message code="data.id.label" default="Id" /></td>
+                            <td valign="top" class="name"><g:message code="data.id.label" default="Data Id" /></td>
                             
-                            <td valign="top" class="value">${fieldValue(bean: dataInstance, field: "id")}</td>
+                            <td valign="top" class="value">${dataInstance.dataId}</td>
                             
                         </tr>
                     
@@ -105,7 +105,7 @@
                         <tr class="prop">
                             <td valign="top" class="name"><g:message code="data.triggerHistory.label" default="Trigger History" /></td>
                             
-                            <td valign="top" class="value">${fieldValue(bean: dataInstance, field: "triggerHistory")}</td>
+                            <td valign="top" class="value">${dataInstance.triggerHist?.toHtmlString()}</td>
                             
                         </tr>
                     

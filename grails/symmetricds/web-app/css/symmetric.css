@@ -672,7 +672,7 @@ div.dialog table {
 }
 
 .alt {
-	background-color: #FAFAFA;
+	background-color: #F2F2F2;
 }
 
 
@@ -791,3 +791,27 @@ td.errors input {
 .paginateButtons span {
     padding: 2px 3px;
 }
+
+/* 
+    *******************************  TRIGGER HISTORY  ******************************* 
+*/
+.trigger-history-container {
+	border : thin dashed #555;
+	padding : 2px;
+	margin : 2px;
+
+}
+.trigger-history-element {
+}
+
+.trigger-history-label {
+	float:left;
+	font-weight: bold;
+	width:30%;
+}
+.trigger-history-value {
+	float:left;
+	width:70%;
+	white-space: normal;
+}
+

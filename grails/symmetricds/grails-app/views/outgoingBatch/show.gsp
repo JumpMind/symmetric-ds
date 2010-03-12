@@ -18,16 +18,16 @@
                     <tbody>
                     
                         <tr class="prop">
-                            <td valign="top" class="name"><g:message code="outgoingBatch.id.label" default="Id" /></td>
+                            <td valign="top" class="name"><g:message code="outgoingBatch.id.label" default="Batch Id" /></td>
                             
-                            <td valign="top" class="value">${fieldValue(bean: outgoingBatchInstance, field: "id")}</td>
+                            <td valign="top" class="value">${outgoingBatchInstance.batchId}</td>
                             
                         </tr>
                     
                         <tr class="prop">
                             <td valign="top" class="name"><g:message code="outgoingBatch.nodeId.label" default="Node Id" /></td>
                             
-                            <td valign="top" class="value">${fieldValue(bean: outgoingBatchInstance, field: "nodeId")}</td>
+                            <td valign="top" class="value"><g:link controller="node" action="show" id="${outgoingBatchInstance.nodeId}">${fieldValue(bean: outgoingBatchInstance, field: "nodeId")}</g:link></td>
                             
                         </tr>
                     

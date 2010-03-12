@@ -36,7 +36,7 @@
       <g:each in="${outgoingBatchInstanceList}" status="i" var="outgoingBatchInstance">
         <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
           <td><g:link controller="dataEvent" action="list" params="[batchId:outgoingBatchInstance.batchId]">view</g:link></td>
-          <td><g:link action="show" id="${outgoingBatchInstance.batchId}">${fieldValue(bean: outgoingBatchInstance, field: "batchId")}</g:link></td>
+          <td><g:link action="show" id="${outgoingBatchInstance.batchId}">${outgoingBatchInstance.batchId}</g:link></td>
           <td>${fieldValue(bean: outgoingBatchInstance, field: "nodeId")}</td>
           <td>${fieldValue(bean: outgoingBatchInstance, field: "channelId")}</td>
           <td>${fieldValue(bean: outgoingBatchInstance, field: "status")}<div class="metric-${outgoingBatchInstance.status} status-box"></div></td>

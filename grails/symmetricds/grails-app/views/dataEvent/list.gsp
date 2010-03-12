@@ -28,7 +28,7 @@
                     <tbody>
                     <g:each in="${dataEventInstanceList}" status="i" var="dataEventInstance">
                         <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
-                            <td>${dataEventInstance?.data?.dataId}</td>
+                            <td><g:link controller="data" action="show" id="${dataEventInstance?.data?.dataId}">${dataEventInstance?.data?.dataId}</g:link></td>
                             <td>${dataEventInstance?.data?.tableName}</td>
                             <td>${dataEventInstance?.data?.eventType}</td>
                             <td>${dataEventInstance?.data?.rowData}</td>
