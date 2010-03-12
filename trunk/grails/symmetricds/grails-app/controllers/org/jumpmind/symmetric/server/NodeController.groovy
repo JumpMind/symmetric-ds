@@ -52,6 +52,8 @@ class NodeController {
   }
 
   def show = {
+	session.menu="monitor-nodes"
+	
 	def nodeInstance = Node.findById(params.id)
 	if (!nodeInstance) {
       flash.message = "${message(code: 'default.not.found.message', args: [message(code: 'node.label', default: 'Node'), params.id])}"

@@ -6,10 +6,10 @@
     <span class="meta">
         <span class="label"><g:message code="symmetric.status.label" default="Status"/></span>
         <span class="value"><g:if test="${session.overview?.started}">
-                <img src="${resource(dir: 'images', file: 'arrow_up.png')}" alt="Yes" border="0"/> (<g:message code="symmetric.running.label" default="Running"/>)
+                <g:message code="symmetric.running.label" default="Running"/>
               </g:if>
               <g:else>
-                <img src="${resource(dir: 'images', file: 'arrow_down.png')}" alt="No" border="0"/> (<g:message code="symmetric.running.label" default="Stopped"/>)
+                <g:message code="symmetric.running.label" default="Stopped"/>
               </g:else></span>
     </span>  
     <span class="meta">

@@ -66,7 +66,7 @@
     </div>
     <div id="secondary" class="column">
         <div id="panel-overview" class="panel">
-            <h3>My Batches</h3>
+            <h3>My Outgoing Batches</h3>
             <div class="panel-row">
                 <g:link controller="outgoingBatch" action="list" params="[status:'ER']">All batches in error</g:link>
             </div>
@@ -81,7 +81,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <g:each in="${batches}" var="b">
+                    <g:each in="${outBatches}" var="b">
                     <tr>
                         <td><g:link controller="outgoingBatch" action="list" params="[nodeId:b.nodeId]">${b.nodeLabel}</g:link></td>
                         <td>
@@ -90,7 +90,7 @@
 		                          <% percentTotal = 0 %>
 		                          <g:each in="${b.statusList}" var="s" status="i">
 		                              <% 
-									  percent = java.lang.Math.round(b.statusListCount.get(i) / maxBatch * 100)
+									  percent = java.lang.Math.round(b.statusListCount.get(i) / maxOutBatch * 100)
 		                              title = "${s} - ${percent}% (${b.statusListCount.get(i)} batches)"
 		                              %>
 		                              <td width="${percent}%" class="metric-${s}"><g:link title="${title}" controller="outgoingBatch" action="list" params="[nodeId:b.nodeId,status:s]"><img  alt="${title}" class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></g:link></td>
@@ -106,9 +106,56 @@
                     </tr>
                     </g:each>
                   </tbody>
+                  </table>
+            </div>
+        </div> 
+
+        <div id="panel-overview" class="panel">
+            <h3>My Incoming Batches</h3>
+            <div class="panel-row">
+                <g:link controller="incomingBatch" action="list" params="[status:'ER']">All batches in error</g:link>
+            </div>
+            <div class="panel-row">
+               
+                <table class="metrics">
+                  <thead>
+                    <tr>
+                        <th>Nodes</th>
+                        <th>Metrics</th>
+                        <th>Total Batches</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <g:each in="${inBatches}" var="b">
+                    <tr>
+                        <td><g:link controller="incomingBatch" action="list" params="[nodeId:b.nodeId]">${b.nodeLabel}</g:link></td>
+                        <td>
+                              <table class="metricsBar" valign="middle" align="center" cellspacing="0" cellpadding="0" border="0"> 
+                                  <tr>
+                                  <% percentTotal = 0 %>
+                                  <g:each in="${b.statusList}" var="s" status="i">
+                                      <% 
+                                      percent = java.lang.Math.round(b.statusListCount.get(i) / maxInBatch * 100)
+                                      title = "${s} - ${percent}% (${b.statusListCount.get(i)} batches)"
+                                      %>
+                                      <td width="${percent}%" class="metric-${s}"><g:link title="${title}" controller="incomingBatch" action="list" params="[nodeId:b.nodeId,status:s]"><img  alt="${title}" class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></g:link></td>
+                                      <%percentTotal += percent%>
+                                  </g:each>
+                                  <g:if test="${percentTotal < 100}">
+                                      <td width="${100 - percentTotal}" class="metric-empty"><img class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></td>
+                                  </g:if>
+                                  </tr>
+                              </table>
+                        </td>
+                        <td style="text-align:center;">${b.totalBatches}</td>
+                    </tr>
+                    </g:each>
+                  </tbody>
+                  </table>
             </div>
         </div>    
     </div>
 </div>
+
 </body>
 </html>
