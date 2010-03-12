@@ -21,7 +21,7 @@ package org.jumpmind.symmetric.map;
 
 import java.util.Map;
 
-public interface IColumnFilter {
+public interface IValueFilter {
 
     public String filter (String originalValue, Map<String,Object> contextCache);
     

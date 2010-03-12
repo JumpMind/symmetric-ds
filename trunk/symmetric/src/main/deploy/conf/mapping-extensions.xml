@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
-	default-lazy-init="true">
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.0.xsd"
+	>
 
     <!-- 
       This is an example of how to add and populate a column called STORE_ID
@@ -52,6 +55,20 @@
 			</map>
 		</property>
 	</bean>
-	  -->
-	  
+
+	<lang:bsh id="maskAccountNumberScript" refresh-check-delay="60000" script-source="file:../conf/masked-account-number.bsh"
+		script-interfaces="org.jumpmind.symmetric.map.IValueFilter"  />
+
+	<bean class="org.jumpmind.symmetric.map.ColumnDataFilters">
+		<property name="filters">
+			<list>
+				<bean class="org.jumpmind.symmetric.map.TableColumnValueFilter">
+					<property name="tableName" value="SALE_TENDER_LINE_ITEM" />
+					<property name="columnName" value="ACCOUNT_NUMBER" />
+					<property name="filter" ref="maskAccountNumberScript" />
+				</bean>
+			</list>
+		</property>
+	</bean>	
+	  	  -->
 </beans>
