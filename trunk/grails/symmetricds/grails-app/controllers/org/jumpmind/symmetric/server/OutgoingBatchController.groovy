@@ -13,7 +13,7 @@ class OutgoingBatchController {
 	def list = {
 		session.menu="monitor-outgoing"
 		
-		params.max = 20
+		params.max = Math.min(params.max ? params.int('max') : 20, 100)
 		
 		def total = 0
 		def list = null

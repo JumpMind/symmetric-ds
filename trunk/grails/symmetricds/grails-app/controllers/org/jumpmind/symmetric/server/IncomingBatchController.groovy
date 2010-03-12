@@ -11,7 +11,9 @@ class IncomingBatchController {
     }
 
     def list = {
-        params.max = Math.min(params.max ? params.int('max') : 10, 100)
+		session.menu="monitor-incoming"
+		
+        params.max = Math.min(params.max ? params.int('max') : 20, 100)
         [incomingBatchInstanceList: IncomingBatch.list(params), incomingBatchInstanceTotal: IncomingBatch.count()]
     }
 
