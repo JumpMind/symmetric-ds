@@ -14,7 +14,7 @@
         </li> 
     
         <li class="<g:if test="${session.menu?.endsWith('incoming')}">active</g:if>"> 
-            <a class="browse-tab" id="changelog-panel-panel" href="" hidefocus><strong>Incoming</strong></a> 
+            <g:link controller="incomingBatch" class="browse-tab"><strong>Incoming</strong></g:link></a> 
         </li> 
 </ul> 
 </g:if>
