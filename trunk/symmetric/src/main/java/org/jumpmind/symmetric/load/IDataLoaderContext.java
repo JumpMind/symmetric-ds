@@ -54,6 +54,8 @@ public interface IDataLoaderContext extends ICacheContext {
     public String[] getKeyNames();
 
     public int getColumnIndex(String columnName);
+    
+    public int getKeyIndex(String columnName);
 
     public Table[] getAllTablesProcessed();
 
