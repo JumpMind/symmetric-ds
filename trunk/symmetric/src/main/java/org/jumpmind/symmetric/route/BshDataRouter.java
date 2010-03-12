@@ -26,7 +26,7 @@ public class BshDataRouter extends AbstractDataRouter {
 
     protected IDbDialect dbDialect;
     
-    final static String INTERPRETER_KEY = String.format("%s.Interpreter", BshDataRouter.class.getName());
+    final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
     public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
