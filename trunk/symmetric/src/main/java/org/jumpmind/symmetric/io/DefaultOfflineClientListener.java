@@ -22,15 +22,15 @@ package org.jumpmind.symmetric.io;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.impl.NodeService;
 
 public class DefaultOfflineClientListener implements IOfflineClientListener {
-    protected ILog log = LogFactory.getLog(getClass());
-    protected IParameterService parameterService;
     
-
-    private NodeService nodeService;
+    protected final ILog log = LogFactory.getLog(getClass());
+    protected IParameterService parameterService;
+    protected INodeService nodeService;
 
 
     public void busy(Node remoteNode) {
