@@ -19,8 +19,7 @@
  */
 package org.jumpmind.symmetric.map;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -32,17 +31,15 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
 
     private String[] nodeGroupIdsToApplyTo;
 
-    Map<String, Map<String, IColumnFilter>> filters;
+    List<TableColumnValueFilter> filters;
 
     protected void filterColumnValues(IDataLoaderContext context, String[] columnValues) {
-        Map<String, IColumnFilter> filteredColumns = filters.get(context.getTableName());
-        if (filteredColumns != null) {
-            Set<String> columns = filteredColumns.keySet();
-            if (columns != null) {
-                for (String column : columns) {
-                    int index = context.getColumnIndex(column);
+        if (filters != null) {
+            for (TableColumnValueFilter filteredColumn : filters) {
+                if (filteredColumn.getTableName().equals(context.getTableName())) {
+                    int index = context.getColumnIndex(filteredColumn.getColumnName());
                     if (index >= 0) {
-                        columnValues[index] = filteredColumns.get(column).filter(
+                        columnValues[index] = filteredColumn.getFilter().filter(
                                 columnValues[index], context.getContextCache());
                     }
                 }
@@ -65,7 +62,7 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
         return true;
     }
 
-    public void setFilters(Map<String, Map<String, IColumnFilter>> filters) {
+    public void setFilters(List<TableColumnValueFilter> filters) {
         this.filters = filters;
     }
 

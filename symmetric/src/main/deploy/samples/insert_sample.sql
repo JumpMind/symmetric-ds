@@ -59,6 +59,10 @@ insert into sym_trigger
 (trigger_id,source_table_name,channel_id,last_update_time,create_time)
 values('sale_return_line_item','sale_return_line_item','sale_transaction',current_timestamp,current_timestamp);
 
+insert into sym_trigger 
+(trigger_id,source_table_name,channel_id,last_update_time,create_time)
+values('sale_tender_line_item','sale_tender_line_item','sale_transaction',current_timestamp,current_timestamp);
+
 -- Example of a "dead" trigger, which is used to only sync the table during initial load
 insert into sym_trigger 
 (trigger_id,source_table_name,channel_id, sync_on_insert, sync_on_update, sync_on_delete, last_update_time,create_time)
@@ -97,6 +101,10 @@ values('sale_transaction','store_corp_identity', 200, current_timestamp, current
 insert into sym_trigger_router 
 (trigger_id,router_id,initial_load_order,last_update_time,create_time)
 values('sale_return_line_item','store_corp_identity', 205, current_timestamp, current_timestamp);
+
+insert into sym_trigger_router 
+(trigger_id,router_id,initial_load_order,last_update_time,create_time)
+values('sale_tender_line_item','store_corp_identity', 210, current_timestamp, current_timestamp);
 
 -- Example of a "dead" trigger, which is used to only sync the table during initial load
 insert into sym_trigger_router 

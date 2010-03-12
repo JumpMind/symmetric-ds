@@ -1,0 +1,6 @@
+
+
+ public String filter (String originalValue, Map<String,Object> contextCache) {
+    System.out.println("account_number was " + originalValue);
+    return "XXXXXXXX";
+ }
