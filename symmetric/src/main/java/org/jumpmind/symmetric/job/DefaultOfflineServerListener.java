@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.impl.OutgoingBatchService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
 /**
  * A default implementation of the Offline Server Listener.  
@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.service.impl.OutgoingBatchService;
 public class DefaultOfflineServerListener implements IOfflineServerListener {
 
     protected INodeService nodeService;
-    protected OutgoingBatchService outgoingBatchService;
+    protected IOutgoingBatchService outgoingBatchService;
     protected static final ILog log = LogFactory.getLog(DefaultOfflineServerListener.class);
     
     /**
@@ -60,7 +60,7 @@ public class DefaultOfflineServerListener implements IOfflineServerListener {
         this.nodeService = nodeService;
     }
     
-    public void setOutgoingBatchService(OutgoingBatchService outgoingBatchService) {
+    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
     }
 }
