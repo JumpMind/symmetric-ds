@@ -52,8 +52,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public void init(Platform pf) {
         super.init(pf);
         try {
-            areDatabaseTransactionsPendingSince(System.currentTimeMillis());
-            supportsTransactionViews = true;
+            if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
+                areDatabaseTransactionsPendingSince(System.currentTimeMillis());
+                supportsTransactionViews = true;
+            }
         } catch (Exception ex) {
             log.warn(ex);
         }
