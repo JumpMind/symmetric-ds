@@ -52,6 +52,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 public class ConfigurationService extends AbstractService implements IConfigurationService {
@@ -250,7 +251,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return NodeGroupLinkAction.fromCode(code);
     }
 
-    @Transactional
     public void autoConfigDatabase(boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
             log.info("SymmetricDSDatabaseInitializing");
