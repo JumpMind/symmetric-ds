@@ -55,21 +55,36 @@ http://www.springframework.org/schema/lang http://www.springframework.org/schema
 			</map>
 		</property>
 	</bean>
+    -->
+    
+  
+    <!-- 
+    
+    This is an example of modifying column values as data is loaded at this server.  This 
+    example is compatible with the hands on tutorial in the User Guide.  Uncomment this block
+    and restart the corp SymmetricDS instance. Insert a row for SALE_TENDER_LINE_ITEM on the client 
+    and inspect the data on the corp database after it is sync'd.  While the server is running 
+    you may modify the content of mask-account-number.bsh.  Touch the data at the client or 
+    insert another row to see how your changes to the script affects synchronization.  
+         
+    <lang:bsh id="maskAccountNumberScript" refresh-check-delay="10000" 
+              script-source="file:../samples/mask-account-number.bsh"
+              script-interfaces="org.jumpmind.symmetric.map.IValueFilter" />
 
-	<bean class="org.jumpmind.symmetric.map.ColumnDataFilters">
-		<property name="filters">
-			<list>
-				<bean class="org.jumpmind.symmetric.map.TableColumnValueFilter">
-					<property name="tableName" value="SALE_TENDER_LINE_ITEM" />
-					<property name="columnName" value="ACCOUNT_NUMBER" />
-					<property name="filter">
-					    <lang:bsh refresh-check-delay="10000" 
-					    script-source="file:../conf/masked-account-number.bsh"
-		                script-interfaces="org.jumpmind.symmetric.map.IValueFilter" />
-					</property>
-				</bean>
-			</list>
-		</property>
-	</bean>	
-	  	  -->
+    <bean id="columnFilters" class="org.jumpmind.symmetric.map.ColumnDataFilters">
+        <property name="nodeGroupIdsToApplyTo">
+          <list><value>corp</value></list>
+        </property>
+        <property name="filters">
+            <list>
+                <bean class="org.jumpmind.symmetric.map.TableColumnValueFilter">
+                    <property name="tableName" value="SALE_TENDER_LINE_ITEM" />
+                    <property name="columnName" value="ACCOUNT_NUMBER" />
+                    <property name="filter" ref="maskAccountNumberScript"/>
+                </bean>
+            </list>
+        </property>
+    </bean> 
+     -->
+
 </beans>
