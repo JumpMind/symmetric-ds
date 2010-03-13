@@ -30,6 +30,10 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 
 public class MockRegistrationService implements IRegistrationService {
 
+    public String getRedirectionUrlFor(String externalId) {
+        return null;
+    }
+    
     public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
     }
 

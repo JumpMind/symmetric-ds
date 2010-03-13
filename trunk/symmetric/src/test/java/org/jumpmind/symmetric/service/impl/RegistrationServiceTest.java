@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Before;
@@ -41,7 +42,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
     protected INodeService nodeService;
 
-    protected RegistrationService registrationService;
+    protected IRegistrationService registrationService;
 
     protected IParameterService parameterService;
 

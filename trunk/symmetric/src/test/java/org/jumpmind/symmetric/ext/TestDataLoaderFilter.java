@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.ext;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 
-public class TestDataLoaderFilter implements IDataLoaderFilter {
+public class TestDataLoaderFilter implements IDataLoaderFilter, ITestDataLoaderFilter {
 
     private boolean autoRegister = true;
 
@@ -64,5 +64,8 @@ public class TestDataLoaderFilter implements IDataLoaderFilter {
     public int getNumberOfTimesCalled() {
         return numberOfTimesCalled;
     }
+    
+
 
 }
+
