@@ -7,6 +7,7 @@ public class TableColumnValueFilter {
     private String tableName;
     private String columnName;
     private IValueFilter filter;
+    private boolean enabled = true;    
 
     public String getCatalogName() {
         return catalogName;
@@ -48,4 +49,11 @@ public class TableColumnValueFilter {
         this.filter = filter;
     }
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+    
+    public boolean isEnabled() {
+        return enabled;
+    }
 }

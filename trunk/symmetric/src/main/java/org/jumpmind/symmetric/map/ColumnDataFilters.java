@@ -46,10 +46,12 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
     protected void filterColumnValues(IDataLoaderContext context, String[] columnValues) {
         if (enabled && filters != null) {
             for (TableColumnValueFilter filteredColumn : filters) {
-                if ((ignoreCase && filteredColumn.getTableName().equalsIgnoreCase(
-                        context.getTableName()))
-                        || (!ignoreCase && filteredColumn.getTableName().equals(
-                                context.getTableName()))) {
+                if (filteredColumn.isEnabled() && 
+                        ((ignoreCase && filteredColumn.getTableName().equalsIgnoreCase(
+                          context.getTableName()))
+                        || 
+                        (!ignoreCase && filteredColumn.getTableName().equals(
+                          context.getTableName())))) {
                     String columnName = filteredColumn.getColumnName();
                     int index = context.getColumnIndex(columnName);
                     if (index < 0 && ignoreCase) {
