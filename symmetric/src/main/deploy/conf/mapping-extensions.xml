@@ -66,15 +66,13 @@ http://www.springframework.org/schema/lang http://www.springframework.org/schema
     and inspect the data on the 'corp' database after it is sync'd.  While the server is running 
     you may modify the content of mask-account-number.bsh.  Touch the data at the client or 
     insert another row to see how your changes to the script affects synchronization.  
-         
+
     <lang:bsh id="maskAccountNumberScript" refresh-check-delay="10000" 
               script-source="file:../samples/mask-account-number.bsh"
               script-interfaces="org.jumpmind.symmetric.map.IValueFilter" />
 
     <bean id="columnFilters" class="org.jumpmind.symmetric.map.ColumnDataFilters">
-        <property name="nodeGroupIdsToApplyTo">
-          <list><value>corp</value></list>
-        </property>
+        <property name="nodeGroupIdToApplyTo" value="corp"/>
         <property name="filters">
             <list>
                 <bean class="org.jumpmind.symmetric.map.TableColumnValueFilter">
@@ -85,6 +83,7 @@ http://www.springframework.org/schema/lang http://www.springframework.org/schema
             </list>
         </property>
     </bean> 
-     -->
+     -->         
+
 
 </beans>
