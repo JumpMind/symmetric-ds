@@ -114,6 +114,10 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
     public void setNodeGroupIdsToApplyTo(String[] nodeGroupIdsToApplyTo) {
         this.nodeGroupIdsToApplyTo = nodeGroupIdsToApplyTo;
     }
+    
+    public void setNodeGroupIdToApplyTo(String nodeGroupId) {
+        this.nodeGroupIdsToApplyTo = new String[] { nodeGroupId };
+    }
 
     public void setIgnoreCase(boolean ignoreCase) {
         this.ignoreCase = ignoreCase;
