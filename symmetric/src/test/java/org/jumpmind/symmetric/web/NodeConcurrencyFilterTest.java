@@ -31,8 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.impl.ConfigurationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.junit.Assert;
@@ -195,7 +195,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
     @Test()
     public void testBuildSuspendIgnoreResponseHeaders() throws Exception {
 
-        ConfigurationService configurationService = (ConfigurationService) find(Constants.CONFIG_SERVICE);
+        IConfigurationService configurationService = (IConfigurationService) find(Constants.CONFIG_SERVICE);
 
         String nodeId = "00000";
 

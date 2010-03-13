@@ -29,8 +29,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
-import org.jumpmind.symmetric.ext.NodeGroupTestDataLoaderFilter;
-import org.jumpmind.symmetric.ext.TestDataLoaderFilter;
+import org.jumpmind.symmetric.ext.INodeGroupTestDataLoaderFilter;
+import org.jumpmind.symmetric.ext.ITestDataLoaderFilter;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
 import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -473,14 +473,14 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     @Test
     public void testAutoRegisteredExtensionPoint() {
-        TestDataLoaderFilter registeredFilter = (TestDataLoaderFilter) find("registeredDataFilter");
-        TestDataLoaderFilter unRegisteredFilter = (TestDataLoaderFilter) find(
+        ITestDataLoaderFilter registeredFilter = (ITestDataLoaderFilter) find("registeredDataFilter");
+        ITestDataLoaderFilter unRegisteredFilter = (ITestDataLoaderFilter) find(
                 "unRegisteredDataFilter");
         assertTrue(registeredFilter.getNumberOfTimesCalled() > 0);
         assertTrue(unRegisteredFilter.getNumberOfTimesCalled() == 0);
 
-        NodeGroupTestDataLoaderFilter registeredNodeGroupFilter = (NodeGroupTestDataLoaderFilter) find("registeredNodeGroupTestDataFilter");
-        NodeGroupTestDataLoaderFilter unRegisteredNodeGroupFilter = (NodeGroupTestDataLoaderFilter) find("unRegisteredNodeGroupTestDataFilter");
+        INodeGroupTestDataLoaderFilter registeredNodeGroupFilter = (INodeGroupTestDataLoaderFilter) find("registeredNodeGroupTestDataFilter");
+        INodeGroupTestDataLoaderFilter unRegisteredNodeGroupFilter = (INodeGroupTestDataLoaderFilter) find("unRegisteredNodeGroupTestDataFilter");
         assertTrue(registeredNodeGroupFilter.getNumberOfTimesCalled() > 0);
         assertTrue(unRegisteredNodeGroupFilter.getNumberOfTimesCalled() == 0);
     }

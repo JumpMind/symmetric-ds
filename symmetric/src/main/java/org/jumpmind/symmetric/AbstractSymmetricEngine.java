@@ -20,6 +20,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeStatus;
@@ -196,6 +197,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
             } else {
                 init(ctx);
             }
+            
+            IExtensionPointManager extMgr = (IExtensionPointManager)this.applicationContext.getBean(Constants.EXTENSION_MANAGER);
+            extMgr.register();
         }
     }
 

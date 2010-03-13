@@ -5,7 +5,7 @@
     <import resource="classpath*:META-INF/services/symmetric-*-ext.xml" />
     <import resource="file:../conf/*-extensions.xml" />
 
-    <bean id="pluginProcessor" class="org.jumpmind.symmetric.ext.ExtensionProcessor">
+    <bean id="extensionManager" class="org.jumpmind.symmetric.ext.ExtensionPointManager">
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="dataService" ref="dataService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
@@ -23,7 +23,7 @@
           </list>
         </property>
     </bean>
-
+ 
     <bean id="configChangedDataFilter" class="org.jumpmind.symmetric.load.ConfigurationChangedFilter">
         <property name="parameterService" ref="parameterService" />
         <property name="configurationService" ref="configurationService" />
@@ -44,7 +44,7 @@
         <property name="timeBetweenHeartbeats" value="$[sym.heartbeat.sync.on.push.period.sec]" />
     </bean>
     
-    <bean id="offlineServerListner" class="org.jumpmind.symmetric.job.DefaultOfflineServerListener">
+    <bean id="offlineServerListener" class="org.jumpmind.symmetric.job.DefaultOfflineServerListener">
         <property name="nodeService" ref="nodeService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
     </bean>

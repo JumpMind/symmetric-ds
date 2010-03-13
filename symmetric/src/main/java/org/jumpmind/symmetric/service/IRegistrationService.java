@@ -80,5 +80,7 @@ public interface IRegistrationService {
      * @return a map of nodes to redirect to that is keyed by a list of external_ids that should be redirected.
      */
     public Map<String,String> getRegistrationRedirectMap();
+    
+    public String getRedirectionUrlFor(String externalId);
 
 }

@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.ext;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.INodeGroupDataLoaderFilter;
 
-public class NodeGroupTestDataLoaderFilter implements INodeGroupDataLoaderFilter {
+public class NodeGroupTestDataLoaderFilter implements INodeGroupDataLoaderFilter, INodeGroupTestDataLoaderFilter {
 
     protected int numberOfTimesCalled = 0;
     

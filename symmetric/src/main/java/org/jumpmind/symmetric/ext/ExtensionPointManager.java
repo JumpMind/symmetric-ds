@@ -52,15 +52,14 @@ import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
- * This {@link BeanFactoryPostProcessor} runs after all the Spring configuration
- * files have been read to give the application a chance to do a bit of
- * configuration. This is where the application will register
+ * This manager registers
  * {@link IExtensionPoint}s defined both by SymmetricDS and others found in the
  * {@link ApplicationContext}.
  * <P>
@@ -68,7 +67,7 @@ import org.springframework.context.ApplicationContext;
  * application that matches the following pattern:
  * /META-INF/services/symmetric-*-ext.xml
  */
-public class ExtensionProcessor implements BeanFactoryPostProcessor {
+public class ExtensionPointManager implements IExtensionPointManager, BeanFactoryAware {
 
     final ILog log = LogFactory.getLog(getClass());
 
@@ -93,13 +92,16 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     private ITransportManager transportManager;
 
     private IRouterService routingService;
+    
+    private BeanFactory beanFactory;
 
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+    public void register() throws BeansException {
+        ConfigurableListableBeanFactory cfgBeanFactory = (ConfigurableListableBeanFactory)beanFactory;
         Map<String, IExtensionPoint> extensions = new TreeMap<String, IExtensionPoint>();
-        extensions.putAll(beanFactory.getBeansOfType(IExtensionPoint.class));
-        if (beanFactory.getParentBeanFactory() != null
-                && beanFactory.getParentBeanFactory() instanceof ListableBeanFactory) {
-            extensions.putAll(((ListableBeanFactory) beanFactory.getParentBeanFactory())
+        extensions.putAll(cfgBeanFactory.getBeansOfType(IExtensionPoint.class));
+        if (cfgBeanFactory.getParentBeanFactory() != null
+                && cfgBeanFactory.getParentBeanFactory() instanceof ListableBeanFactory) {
+            extensions.putAll(((ListableBeanFactory) cfgBeanFactory.getParentBeanFactory())
                     .getBeansOfType(IExtensionPoint.class));
         }
         for (String beanName : extensions.keySet()) {
@@ -255,5 +257,9 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     
     public void setOfflineDetectorServices(List<IOfflineDetectorService> offlineDetectorServices) {
         this.offlineDetectorServices = offlineDetectorServices;
+    }
+    
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;        
     }
 }

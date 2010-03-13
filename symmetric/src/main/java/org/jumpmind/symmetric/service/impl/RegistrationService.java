@@ -139,7 +139,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return true;
     }
 
-    protected String getRedirectionUrlFor(String externalId) {
+    public String getRedirectionUrlFor(String externalId) {
         List<String> list = jdbcTemplate.queryForList(getSql("getRegistrationRedirectUrlSql"),
                 new Object[] { externalId }, new int[] { Types.VARCHAR }, String.class);
         if (list.size() > 0) {

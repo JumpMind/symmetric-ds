@@ -85,6 +85,8 @@ final public class Constants {
     public static final String CONFIG_SERVICE = "configurationService";
 
     public static final String TRANSPORT_MANAGER = "transportManager";
+    
+    public static final String EXTENSION_MANAGER = "extensionManager";
 
     public static final String ACKNOWLEDGE_SERVICE = "acknowledgeService";
 
