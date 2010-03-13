@@ -118,6 +118,8 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
                                 registerExtension = true;
                             }
                         }
+                    } else {
+                        registerExtension = true;
                     }
                 } else {
                     registerExtension = true;

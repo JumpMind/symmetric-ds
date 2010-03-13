@@ -21,11 +21,17 @@ package org.jumpmind.symmetric.map;
 
 import java.util.List;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.springframework.scripting.ScriptCompilationException;
 
 public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtensionPoint {
+
+    final ILog log = LogFactory.getLog(getClass());
 
     private boolean autoRegister = true;
 
@@ -33,14 +39,41 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
 
     List<TableColumnValueFilter> filters;
 
+    private boolean ignoreCase = true;
+
     protected void filterColumnValues(IDataLoaderContext context, String[] columnValues) {
         if (filters != null) {
             for (TableColumnValueFilter filteredColumn : filters) {
-                if (filteredColumn.getTableName().equals(context.getTableName())) {
-                    int index = context.getColumnIndex(filteredColumn.getColumnName());
+                if ((ignoreCase && filteredColumn.getTableName().equalsIgnoreCase(
+                        context.getTableName()))
+                        || (!ignoreCase && filteredColumn.getTableName().equals(
+                                context.getTableName()))) {
+                    String columnName = filteredColumn.getColumnName();
+                    int index = context.getColumnIndex(columnName);
+                    if (index < 0 && ignoreCase) {
+                        columnName = columnName.toUpperCase();
+                        index = context.getColumnIndex(columnName);
+                        if (index < 0) {
+                            columnName = columnName.toLowerCase();
+                            index = context.getColumnIndex(columnName);
+                        }
+                    }
                     if (index >= 0) {
-                        columnValues[index] = filteredColumn.getFilter().filter(
-                                columnValues[index], context.getContextCache());
+                        try {
+                            columnValues[index] = filteredColumn.getFilter().filter(
+                                    columnValues[index], context.getContextCache());
+                        } catch (RuntimeException ex) {
+                            // Try to log script errors so they are more readable
+                            Throwable causedBy = ex;
+                            do {
+                                causedBy = ExceptionUtils.getCause(causedBy);
+                                if (causedBy instanceof ScriptCompilationException) {
+                                    log.error("Message", causedBy.getMessage());
+                                    throw new RuntimeException(causedBy.getMessage());
+                                }
+                            } while (causedBy != null);
+                            throw ex;
+                        }
                     }
                 }
             }
@@ -80,5 +113,9 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
 
     public void setNodeGroupIdsToApplyTo(String[] nodeGroupIdsToApplyTo) {
         this.nodeGroupIdsToApplyTo = nodeGroupIdsToApplyTo;
+    }
+
+    public void setIgnoreCase(boolean ignoreCase) {
+        this.ignoreCase = ignoreCase;
     }
 }
