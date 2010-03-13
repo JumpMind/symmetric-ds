@@ -40,9 +40,11 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
     List<TableColumnValueFilter> filters;
 
     private boolean ignoreCase = true;
+    
+    private boolean enabled = true;
 
     protected void filterColumnValues(IDataLoaderContext context, String[] columnValues) {
-        if (filters != null) {
+        if (enabled && filters != null) {
             for (TableColumnValueFilter filteredColumn : filters) {
                 if ((ignoreCase && filteredColumn.getTableName().equalsIgnoreCase(
                         context.getTableName()))
@@ -122,4 +124,9 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
     public void setIgnoreCase(boolean ignoreCase) {
         this.ignoreCase = ignoreCase;
     }
+    
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+        
 }
