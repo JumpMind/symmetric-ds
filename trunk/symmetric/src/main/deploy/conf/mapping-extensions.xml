@@ -60,10 +60,10 @@ http://www.springframework.org/schema/lang http://www.springframework.org/schema
   
     <!-- 
     
-    This is an example of modifying column values as data is loaded at this server.  This 
-    example is compatible with the hands on tutorial in the User Guide.  Uncomment this block
-    and restart the corp SymmetricDS instance. Insert a row for SALE_TENDER_LINE_ITEM on the client 
-    and inspect the data on the corp database after it is sync'd.  While the server is running 
+    This is an example of modifying column values as data is loaded at the 'corp' SymmetricDS instance
+    from the hands on tutorial in the User Guide.  Uncomment this XML configuration block
+    and restart the 'corp' SymmetricDS instance. Insert a row for SALE_TENDER_LINE_ITEM on the client 
+    and inspect the data on the 'corp' database after it is sync'd.  While the server is running 
     you may modify the content of mask-account-number.bsh.  Touch the data at the client or 
     insert another row to see how your changes to the script affects synchronization.  
          
