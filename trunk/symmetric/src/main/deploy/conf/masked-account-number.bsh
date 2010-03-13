@@ -1,6 +1,9 @@
-
+import org.apache.commons.lang.StringUtils
 
  public String filter (String originalValue, Map<String,Object> contextCache) {
     System.out.println("account_number was " + originalValue);
-    return "XXXXXXXX";
+    if (originalValue != null && originalValue.length() > 4) {
+        originalValue = originalValue.substring(originalValue.length()-4, originalValue.length());
+    }
+    return "XXXXXXXXX" + originalValue;
  }

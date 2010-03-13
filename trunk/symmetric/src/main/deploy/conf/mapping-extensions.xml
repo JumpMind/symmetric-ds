@@ -56,16 +56,17 @@ http://www.springframework.org/schema/lang http://www.springframework.org/schema
 		</property>
 	</bean>
 
-	<lang:bsh id="maskAccountNumberScript" refresh-check-delay="60000" script-source="file:../conf/masked-account-number.bsh"
-		script-interfaces="org.jumpmind.symmetric.map.IValueFilter"  />
-
 	<bean class="org.jumpmind.symmetric.map.ColumnDataFilters">
 		<property name="filters">
 			<list>
 				<bean class="org.jumpmind.symmetric.map.TableColumnValueFilter">
 					<property name="tableName" value="SALE_TENDER_LINE_ITEM" />
 					<property name="columnName" value="ACCOUNT_NUMBER" />
-					<property name="filter" ref="maskAccountNumberScript" />
+					<property name="filter">
+					    <lang:bsh refresh-check-delay="10000" 
+					    script-source="file:../conf/masked-account-number.bsh"
+		                script-interfaces="org.jumpmind.symmetric.map.IValueFilter" />
+					</property>
 				</bean>
 			</list>
 		</property>
