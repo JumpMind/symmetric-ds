@@ -1,6 +1,8 @@
 import org.apache.commons.lang.StringUtils;
 import java.util.Map;
 
+System.out.println("Initializing Mask Account Filter");
+
 String filter (String originalValue, Map contextCache) {
     System.out.println("account_number was " + originalValue);
     if (originalValue != null && originalValue.length() > 4) {
