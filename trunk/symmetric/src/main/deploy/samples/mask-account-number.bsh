@@ -3,10 +3,16 @@ import java.util.Map;
 
 System.out.println("Initializing Mask Account Filter");
 
+String mask = "--------";
+
 String filter (String originalValue, Map contextCache) {
     System.out.println("account_number was " + originalValue);
     if (originalValue != null && originalValue.length() > 4) {
         originalValue = originalValue.substring(originalValue.length()-4, originalValue.length());
     }
-    return "XXXXXXXXX" + originalValue;
+    return mask + originalValue;
+}
+
+void setMask(String value) {
+    mask = value;
 }
