@@ -47,6 +47,7 @@ public class AbstractIntegrationTest {
     }
 
     public AbstractIntegrationTest() throws Exception {
+        try {
         if (standalone) {
             String[] databases = TestSetupUtil.lookupDatabasePairs(DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator()
                     .next();
@@ -55,6 +56,11 @@ public class AbstractIntegrationTest {
             standalone = false;
             TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT,
                     databases[0], databases[1]);
+        }
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
         }
     }
 

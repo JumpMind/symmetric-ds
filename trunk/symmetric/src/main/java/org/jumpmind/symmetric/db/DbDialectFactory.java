@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddlutils.PlatformFactory;
 import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
+import org.jumpmind.symmetric.ddlutils.sqlite.SqLitePlatform;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
@@ -81,6 +82,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
             dialect = (AbstractDbDialect) beanFactory.getBean("derbyDialect");
         } else if (pf instanceof H2Platform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("h2Dialect");
+        } else if (pf instanceof SqLitePlatform) {
+            dialect = (AbstractDbDialect) beanFactory.getBean("sqliteDialect");
         } else if (pf instanceof HsqlDbPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
         } else if (pf instanceof Db2Platform) {

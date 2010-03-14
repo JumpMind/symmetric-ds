@@ -51,6 +51,10 @@
         <priority value="ERROR" />
     </category>
 
+  <category name="org.jumpmind.symmetric.db">
+        <priority value="DEBUG" />
+    </category>
+    
     <category name="org.jumpmind.symmetric.db.SqlScript">
         <priority value="ERROR" />
     </category>
