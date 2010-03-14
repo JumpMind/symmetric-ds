@@ -702,6 +702,12 @@
             <version>1.2.128</version>
             <optional>true</optional>
         </dependency>
+          <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.6.16</version>
+            <optional>true</optional>
+        </dependency>
 
     </dependencies>
 

@@ -17,5 +17,7 @@
     <import resource="classpath:/org/jumpmind/symmetric/db/db2.xml" />
     <import resource="classpath:/org/jumpmind/symmetric/db/db2-zseries.xml" />
     <import resource="classpath:/org/jumpmind/symmetric/db/firebird.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/sqlite.xml" />
+    
 
 </beans>
