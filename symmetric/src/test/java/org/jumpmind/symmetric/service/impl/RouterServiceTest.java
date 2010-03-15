@@ -563,7 +563,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.getRouter().setRouterType("bsh");
         trigger1.getRouter().setRouterExpression(
-                "!ROUTING_INT.equals(OLD_ROUTING_INT)");
+                "ROUTING_INT != null && !ROUTING_INT.equals(OLD_ROUTING_INT)");
         getTriggerRouterService().saveTriggerRouter(trigger1);
 
         getTriggerRouterService().syncTriggers();
