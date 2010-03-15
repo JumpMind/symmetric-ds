@@ -48,18 +48,18 @@ public class AbstractIntegrationTest {
 
     public AbstractIntegrationTest() throws Exception {
         try {
-        if (standalone) {
-            String[] databases = TestSetupUtil.lookupDatabasePairs(DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator()
-                    .next();
-            logger.info("Running test in standalone mode with databases " + databases[0] + " and " + databases[1]);
-            init(databases[0],databases[1]);
-            standalone = false;
-            TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT,
-                    databases[0], databases[1]);
-        }
-        }catch (Exception e)
-        {
-            e.printStackTrace();
+            if (standalone) {
+                String[] databases = TestSetupUtil.lookupDatabasePairs(
+                        DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator().next();
+                logger.info("Running test in standalone mode with databases " + databases[0]
+                        + " and " + databases[1]);
+                init(databases[0], databases[1]);
+                standalone = false;
+                TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX,
+                        TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT, databases[0], databases[1]);
+            }
+        } catch (Exception e) {
+            logger.error(e,e);
             throw e;
         }
     }
@@ -101,15 +101,18 @@ public class AbstractIntegrationTest {
 
     @Before
     public void setupTemplates() {
-        rootJdbcTemplate = new JdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE, getRootEngine()));
-        clientJdbcTemplate = new JdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE, getClientEngine()));
+        rootJdbcTemplate = new JdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE,
+                getRootEngine()));
+        clientJdbcTemplate = new JdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE,
+                getClientEngine()));
     }
 
     @AfterClass
     public static void cleanup() throws Exception {
         if (standalone) {
             standalone = false;
-            LogFactory.getLog(AbstractDatabaseTest.class).info("Cleaning up after test in standalone mode");
+            LogFactory.getLog(AbstractDatabaseTest.class).info(
+                    "Cleaning up after test in standalone mode");
             TestSetupUtil.cleanup();
         }
     }
