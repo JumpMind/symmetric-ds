@@ -22,13 +22,11 @@ package org.jumpmind.symmetric.load;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * This extension point is called whenever a batch has completed loading but before
  * the transaction has committed.
  */
-@Transactional
 public interface IBatchListener extends IExtensionPoint {
 
     /**
