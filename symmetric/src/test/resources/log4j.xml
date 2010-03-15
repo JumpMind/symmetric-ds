@@ -61,7 +61,7 @@
     
     <!-- Enable router stats     -->
     <category name="org.jumpmind.symmetric.service.impl.RouterService">
-        <priority value="DEBUG" />
+        <priority value="INFO" />
     </category>
 
 
