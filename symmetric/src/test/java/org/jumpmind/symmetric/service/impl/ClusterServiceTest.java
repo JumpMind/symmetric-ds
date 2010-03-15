@@ -45,27 +45,6 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
         assertEquals(countActivePurgeLocks(), 0, "Could not find the lock in the database.");
     }
 
-    @Test
-    public void testOtherNodeLock() throws Exception {
-        final String ID_ONE = "00020";
-        final String ID_TWO = "00010";
-
-
-        final IClusterService service = (IClusterService) find(Constants.CLUSTER_SERVICE);
-        final String serverId = service.getServerId();
-        service.initLockTable("OTHER", ID_ONE);
-        service.initLockTable("OTHER", ID_TWO);
-        assertTrue(service.lock("OTHER", ID_ONE), "Could not lock for OTHER " + ID_ONE);
-        service.setServerId("anotherServer");
-        assertFalse(service.lock("OTHER", ID_ONE), "Should not have been able to lock for OTHER "
-                + ID_ONE);
-        assertTrue(service.lock("OTHER", ID_TWO), "Could not lock for OTHER " + ID_TWO);
-        service.setServerId(serverId);
-        service.unlock("OTHER", ID_ONE);
-        assertTrue(service.lock("OTHER", ID_ONE), "Could not lock for OTHER " + ID_ONE);
-
-    }
-
     private int countActivePurgeLocks() {
         return getJdbcTemplate().queryForInt(
                 "select count(*) from sym_lock where lock_id=? and lock_action=? and lock_time is not null",
