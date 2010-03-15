@@ -55,19 +55,20 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
- * This manager registers
- * {@link IExtensionPoint}s defined both by SymmetricDS and others found in the
- * {@link ApplicationContext}.
+ * This manager registers {@link IExtensionPoint}s defined both by SymmetricDS
+ * and others found in the {@link ApplicationContext}.
  * <P>
  * SymmetricDS reads in any Spring XML file found in the classpath of the
  * application that matches the following pattern:
  * /META-INF/services/symmetric-*-ext.xml
  */
-public class ExtensionPointManager implements IExtensionPointManager, BeanFactoryAware {
+public class ExtensionPointManager implements IExtensionPointManager, BeanFactoryAware,
+        BeanFactoryPostProcessor {
 
     final ILog log = LogFactory.getLog(getClass());
 
@@ -82,60 +83,73 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
     private INodeService nodeService;
 
     private IAcknowledgeService acknowledgeService;
-    
+
     private List<IOfflineDetectorService> offlineDetectorServices;
 
     private IRegistrationService registrationService;
-    
+
     private ITriggerRouterService triggerRouterService;
 
     private ITransportManager transportManager;
 
     private IRouterService routingService;
-    
+
     private BeanFactory beanFactory;
 
+    private boolean initialized = false;
+    
+    private boolean postProcessEnabled = true;
+
     public void register() throws BeansException {
-        ConfigurableListableBeanFactory cfgBeanFactory = (ConfigurableListableBeanFactory)beanFactory;
-        Map<String, IExtensionPoint> extensions = new TreeMap<String, IExtensionPoint>();
-        extensions.putAll(cfgBeanFactory.getBeansOfType(IExtensionPoint.class));
-        if (cfgBeanFactory.getParentBeanFactory() != null
-                && cfgBeanFactory.getParentBeanFactory() instanceof ListableBeanFactory) {
-            extensions.putAll(((ListableBeanFactory) cfgBeanFactory.getParentBeanFactory())
-                    .getBeansOfType(IExtensionPoint.class));
-        }
-        for (String beanName : extensions.keySet()) {
-            IExtensionPoint ext = extensions.get(beanName);
-            if (ext.isAutoRegister()) {
-                boolean registerExtension = false;
-                if (ext instanceof INodeGroupExtensionPoint) {
-                    String nodeGroupId = parameterService.getNodeGroupId();
-                    INodeGroupExtensionPoint nodeExt = (INodeGroupExtensionPoint) ext;
-                    String[] ids = nodeExt.getNodeGroupIdsToApplyTo();
-                    if (ids != null) {
-                        for (String targetNodeGroupId : ids) {
-                            if (nodeGroupId.equals(targetNodeGroupId)) {
-                                registerExtension = true;
+        this.postProcessEnabled = true;
+        ConfigurableListableBeanFactory cfgBeanFactory = (ConfigurableListableBeanFactory) beanFactory;
+        this.postProcessBeanFactory(cfgBeanFactory);
+    }
+
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory cfgBeanFactory)
+            throws BeansException {
+        if (!initialized && postProcessEnabled) {
+            Map<String, IExtensionPoint> extensions = new TreeMap<String, IExtensionPoint>();
+            extensions.putAll(cfgBeanFactory.getBeansOfType(IExtensionPoint.class));
+            if (cfgBeanFactory.getParentBeanFactory() != null
+                    && cfgBeanFactory.getParentBeanFactory() instanceof ListableBeanFactory) {
+                extensions.putAll(((ListableBeanFactory) cfgBeanFactory.getParentBeanFactory())
+                        .getBeansOfType(IExtensionPoint.class));
+            }
+            for (String beanName : extensions.keySet()) {
+                IExtensionPoint ext = extensions.get(beanName);
+                if (ext.isAutoRegister()) {
+                    boolean registerExtension = false;
+                    if (ext instanceof INodeGroupExtensionPoint) {
+                        String nodeGroupId = parameterService.getNodeGroupId();
+                        INodeGroupExtensionPoint nodeExt = (INodeGroupExtensionPoint) ext;
+                        String[] ids = nodeExt.getNodeGroupIdsToApplyTo();
+                        if (ids != null) {
+                            for (String targetNodeGroupId : ids) {
+                                if (nodeGroupId.equals(targetNodeGroupId)) {
+                                    registerExtension = true;
+                                }
                             }
+                        } else {
+                            registerExtension = true;
                         }
                     } else {
                         registerExtension = true;
                     }
-                } else {
-                    registerExtension = true;
-                }
 
-                if (registerExtension) {
-                    registerExtension(beanName, ext);
+                    if (registerExtension) {
+                        registerExtension(beanName, ext);
+                    }
                 }
             }
+            this.initialized = true;
         }
 
     }
 
     private void registerExtension(String beanName, IExtensionPoint ext) {
 
-        log.debug("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
+        log.info("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
 
         if (ext instanceof ISyncUrlExtension) {
             transportManager.addExtensionSyncUrlHandler(beanName, (ISyncUrlExtension) ext);
@@ -157,9 +171,9 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         if (ext instanceof IBatchListener) {
             dataLoaderService.addBatchListener((IBatchListener) ext);
         }
-        
+
         if (ext instanceof IHeartbeatListener) {
-            dataService.addHeartbeatListener((IHeartbeatListener)ext);
+            dataService.addHeartbeatListener((IHeartbeatListener) ext);
         }
 
         if (ext instanceof IDataLoaderFilter) {
@@ -177,8 +191,9 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
                 }
 
             } else {
-                throw new UnsupportedOperationException("IColumnFilter cannot be auto registered.  Please use "
-                        + ITableColumnFilter.class.getName() + " instead.");
+                throw new UnsupportedOperationException(
+                        "IColumnFilter cannot be auto registered.  Please use "
+                                + ITableColumnFilter.class.getName() + " instead.");
             }
         }
 
@@ -205,15 +220,15 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         if (ext instanceof IBatchAlgorithm) {
             routingService.addBatchAlgorithm(beanName, (IBatchAlgorithm) ext);
         }
-        
+
         if (ext instanceof IOfflineClientListener) {
-            for(IOfflineDetectorService service : offlineDetectorServices) {
-                service.addOfflineListener((IOfflineClientListener)ext);
+            for (IOfflineDetectorService service : offlineDetectorServices) {
+                service.addOfflineListener((IOfflineClientListener) ext);
             }
         }
-        
+
         if (ext instanceof IOfflineServerListener) {
-            nodeService.addOfflineServerListener((IOfflineServerListener)ext);
+            nodeService.addOfflineServerListener((IOfflineServerListener) ext);
         }
     }
 
@@ -252,16 +267,20 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
     public void setRoutingService(IRouterService routingService) {
         this.routingService = routingService;
     }
-    
+
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;
     }
-    
+
     public void setOfflineDetectorServices(List<IOfflineDetectorService> offlineDetectorServices) {
         this.offlineDetectorServices = offlineDetectorServices;
     }
-    
+
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;        
+        this.beanFactory = beanFactory;
+    }
+    
+    public void setPostProcessEnabled(boolean postProcessEnabled) {
+        this.postProcessEnabled = postProcessEnabled;
     }
 }
