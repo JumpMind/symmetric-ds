@@ -33,7 +33,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class AbstractIntegrationTest {
 
-    static final Log logger = LogFactory.getLog(AbstractIntegrationTest.class);
+    protected final Log logger = LogFactory.getLog(getClass());
 
     protected String client;
     protected String root;
@@ -109,7 +109,7 @@ public class AbstractIntegrationTest {
     public static void cleanup() throws Exception {
         if (standalone) {
             standalone = false;
-            logger.info("Cleaning up after test in standalone mode");
+            LogFactory.getLog(AbstractDatabaseTest.class).info("Cleaning up after test in standalone mode");
             TestSetupUtil.cleanup();
         }
     }
