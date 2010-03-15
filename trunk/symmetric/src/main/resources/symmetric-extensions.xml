@@ -6,7 +6,7 @@
     <import resource="file:../conf/*-extensions.xml" />
 
     <bean id="extensionManager" class="org.jumpmind.symmetric.ext.ExtensionPointManager">
-        <property name="postProcessEnabled" value="true"/>
+        <property name="postProcessEnabled" value="false"/>
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="dataService" ref="dataService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
