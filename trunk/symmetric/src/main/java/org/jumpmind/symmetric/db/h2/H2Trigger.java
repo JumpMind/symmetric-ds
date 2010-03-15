@@ -48,5 +48,11 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
             throws SQLException {
         this.init(conn, triggerName, tableName);
     }
+    
+    public void close() throws SQLException {
+    }
+    
+    public void remove() throws SQLException {
+    }
 
 }
