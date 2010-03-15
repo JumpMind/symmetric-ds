@@ -25,16 +25,10 @@ public interface IClusterService {
 
     public void initLockTable();
 
-    public void initLockTable(String action, String lockId);
-
     public boolean lock(String action);
     
-    public boolean lock(String action, String lockId);
-
     public void unlock(String action);
     
-    public void unlock(String action, String lockId);
-
     public void clearAllLocks();
     
     public String getServerId();

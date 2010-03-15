@@ -56,7 +56,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         initLockTable(SYNCTRIGGERS, COMMON_LOCK_ID);
     }
 
-    public void initLockTable(final String action, final String lockId) {
+    protected void initLockTable(final String action, final String lockId) {
         try {
             jdbcTemplate.update(getSql("insertLockSql"), new Object[] { lockId, action });
             log.debug("LockInserted", action);
@@ -80,8 +80,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         unlock(action, COMMON_LOCK_ID);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean lock(final String action, final String id) {
+    protected boolean lock(final String action, final String id) {
         if (isClusteringEnabled()) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -parameterService
                     .getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
@@ -100,8 +99,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         return serverId;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void unlock(final String action, final String id) {
+    protected void unlock(final String action, final String id) {
         if (isClusteringEnabled()) {
             int count = jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { id, action, serverId });
             if (count == 0) {
