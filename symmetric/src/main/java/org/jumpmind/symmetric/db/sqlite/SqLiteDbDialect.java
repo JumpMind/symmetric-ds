@@ -159,15 +159,6 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    /**
-     * According to the documentation (and experience) the jdbc driver for mysql
-     * requires the fetch size to be as follows.
-     */
-    @Override
-    public int getStreamingResultsFetchSize() {
-        return Integer.MIN_VALUE;
-    }
-
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
