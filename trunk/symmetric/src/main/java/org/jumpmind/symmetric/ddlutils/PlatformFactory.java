@@ -9,7 +9,9 @@ import javax.sql.DataSource;
 import org.apache.ddlutils.Platform;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
+import org.jumpmind.symmetric.ddlutils.oracle.OraclePlatform;
 import org.jumpmind.symmetric.ddlutils.sqlite.SqLitePlatform;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -98,9 +100,11 @@ public class PlatformFactory {
         if (!initialized) {
             org.apache.ddlutils.PlatformFactory.registerPlatform(SqLitePlatform.DATABASENAME,
                     SqLitePlatform.class);
-            /*org.apache.ddlutils.PlatformFactory.registerPlatform(OraclePlatform.DATABASENAME, 
+            org.apache.ddlutils.PlatformFactory.registerPlatform(FirebirdPlatform.DATABASENAME,
+                    FirebirdPlatform.class);
+            org.apache.ddlutils.PlatformFactory.registerPlatform(OraclePlatform.DATABASENAME, 
                     OraclePlatform.class);
-            */for (String name : H2Platform.DATABASENAMES) {
+            for (String name : H2Platform.DATABASENAMES) {
                 org.apache.ddlutils.PlatformFactory.registerPlatform(name,
                         H2Platform.class);                
             }
