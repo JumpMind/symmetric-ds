@@ -111,8 +111,9 @@ public class TestSetupUtil {
     }
 
     /**
-     * Unit tests were failing after opening and closing several data connection pools against the same database in
-     * memory. After shutting down the connection pool, it seems to help by shutting down the entire database.
+     * Unit tests were failing after opening and closing several data connection
+     * pools against the same database in memory. After shutting down the
+     * connection pool, it seems to help by shutting down the entire database.
      */
     protected static void closeDerbyAndReloadDriver() throws SQLException {
         try {
@@ -177,6 +178,17 @@ public class TestSetupUtil {
                 logger.error(e, e);
             }
         }
+        File sqlitedb = new File("target/sqlite");
+        if (sqlitedb.exists()) {
+            try {
+                logger.info("Removing sqlite database files");
+                FileUtils.deleteDirectory(sqlitedb);
+
+            } catch (IOException e) {
+                logger.error(e, e);
+            }
+        }
+        sqlitedb.mkdirs();
     }
 
     public static ISymmetricEngine getRootEngine() {
@@ -213,7 +225,7 @@ public class TestSetupUtil {
             dialect.purge();
 
             boolean autocommitDdl = databaseType.equals("postgres") ? true : false;
-            
+
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(autocommitDdl);
 
             String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
@@ -237,9 +249,10 @@ public class TestSetupUtil {
     protected static Database getTestDatabase() throws IOException {
         return new DatabaseIO().read(new InputStreamReader(getResource("/test-tables-ddl.xml").openStream()));
     }
-    
+
     protected static Database getPreviousSymmetricVersionTables() throws IOException {
-        return new DatabaseIO().read(new InputStreamReader(getResource("/test-tables-old-symmetric-ddl.xml").openStream()));
+        return new DatabaseIO().read(new InputStreamReader(getResource("/test-tables-old-symmetric-ddl.xml")
+                .openStream()));
     }
 
     public static File writeTempPropertiesFileFor(String testPrefix, String databaseType, DatabaseRole databaseRole) {
