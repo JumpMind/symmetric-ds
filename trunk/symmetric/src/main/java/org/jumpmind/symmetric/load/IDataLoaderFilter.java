@@ -22,9 +22,7 @@
 package org.jumpmind.symmetric.load;
 
 import org.jumpmind.symmetric.ext.IExtensionPoint;
-import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
 public interface IDataLoaderFilter extends IExtensionPoint {
 
     /**
