@@ -28,7 +28,7 @@
                     <map>
                         <entry key="BASE64_ENCODE">
                             <value>
-                                <![CDATA[CREATE ALIAS IF NOT EXISTS $(functionName) for "org.jumpmind.symmetric.db.h2.H2Functions.encodeBase64";]]>
+                                <![CDATA[CREATE ALIAS IF NOT EXISTS $(functionName) for "org.jumpmind.symmetric.db.EmbeddedDbFunctions.encodeBase64";]]>
                             </value>
                         </entry>
                     </map>
