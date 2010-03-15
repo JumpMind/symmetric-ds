@@ -173,7 +173,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         // Setting system properties is probably not the best way to accomplish
         // this setup. Synchronizing on the class so creating multiple engines
         // is thread safe.
-        synchronized (StandaloneSymmetricEngine.class) {
+        synchronized (this.getClass()) {
             if (overrideProperties != null) {
                 FileOutputStream fos = null;
                 try {
@@ -197,9 +197,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
             } else {
                 init(ctx);
             }
-            
-            IExtensionPointManager extMgr = (IExtensionPointManager)this.applicationContext.getBean(Constants.EXTENSION_MANAGER);
-            extMgr.register();
         }
     }
 
@@ -208,6 +205,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         dbDialect = AppUtils.find(Constants.DB_DIALECT, this);
         jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
         jdbcTemplate = AppUtils.find(Constants.JDBC_TEMPLATE, this);
+        
+        IExtensionPointManager extMgr = (IExtensionPointManager)this.applicationContext.getBean(Constants.EXTENSION_MANAGER);
+        extMgr.register();        
     }
 
     private ApplicationContext createContext(ApplicationContext parentContext) {
