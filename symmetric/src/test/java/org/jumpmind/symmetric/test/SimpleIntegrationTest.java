@@ -34,8 +34,6 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -66,8 +64,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 public class SimpleIntegrationTest extends AbstractIntegrationTest {
-
-    static final Log logger = LogFactory.getLog(SimpleIntegrationTest.class);
 
     public static boolean testFlag = false;
 
@@ -1048,7 +1044,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
     }
 
-    @Test
+    @Test(timeout = 60000)
     public void testTargetTableNameSync() throws Exception {
         logTestRunning();
         Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from TEST_TARGET_TABLE_B"));
@@ -1058,7 +1054,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from TEST_TARGET_TABLE_A"));
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void testMaxRowsBeforeCommit() throws Exception {
         logTestRunning();
         IParameterService clientParameterService = (IParameterService) getClientEngine().getApplicationContext()
@@ -1100,7 +1096,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 oldMaxRowsBeforeCommit);
     }
     
-    @Test
+    @Test(timeout = 30000)
     public void testSyncDisabled() {
         logTestRunning();
         
@@ -1141,7 +1137,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertNotNull(clientNodeAfterPull); 
     }
     
-    @Test
+    @Test(timeout = 30000)
     public void testClientNodeNotRegistered() throws ParseException {
         logTestRunning();
         
