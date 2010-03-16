@@ -18,7 +18,6 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
@@ -115,7 +114,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected Platform platform;
 
-    protected Database cachedModel = new Database();
+    protected DatabaseModel cachedModel = new DatabaseModel();
 
     protected SqlTemplate sqlTemplate;
 
@@ -191,7 +190,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void resetCachedTableModel() {
         synchronized (this.getClass()) {
-            Table[] tables = this.cachedModel.getTables();
+            this.cachedModel.resetTableIndexCache();
+        	Table[] tables = this.cachedModel.getTables();
             if (tables != null) {
                 for (Table table : tables) {
                     this.cachedModel.removeTable(table);
@@ -313,7 +313,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * table metadata directly against information schemas.
      */
     public Table getTable(String catalogName, String schemaName, String tableName, boolean useCache) {
-        Table retTable = cachedModel.findTable(tableName);
+        Table retTable = cachedModel.findTable(catalogName, schemaName, tableName);
         if (retTable == null || !useCache) {
             synchronized (this.getClass()) {
                 try {
