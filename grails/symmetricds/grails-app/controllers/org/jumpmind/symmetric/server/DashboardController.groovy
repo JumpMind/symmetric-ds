@@ -1,5 +1,8 @@
 package org.jumpmind.symmetric.server
 
+
+import java.util.Map;
+
 import org.jumpmind.symmetric.ISymmetricEngine
 
 import org.jumpmind.symmetric.grails.Node
@@ -22,11 +25,13 @@ class DashboardController {
 
 	def outBatches = getOutgoingBatchSummary()
 	def inBatches = getIncomingBatchSummary()
-
+	def myNodeGroups = getMyNodeGroups()
+	
 	[outBatches: outBatches, 
 	 maxOutBatch: outBatches?.max{ it.totalBatches }?.totalBatches,
 	 inBatches : inBatches,
-	 maxInBatch: inBatches?.max{ it.totalBatches }?.totalBatches ]
+	 maxInBatch: inBatches?.max{ it.totalBatches }?.totalBatches,
+	 myNodeGroups : myNodeGroups]
   }
 
   def start = {}
@@ -108,7 +113,88 @@ class DashboardController {
 	}
 	batches.add(batchRow)
 	return batches
+  }
+	
+  def getMyNodeGroups() {
+		def c = Node.createCriteria()
+		def errorList = c.list { 
+			gt("batchInErrorCount", 0)
+			projections { 
+				groupProperty("nodeGroup") 
+				count("nodeId")
+			} 
+		}
+		def c2 = Node.createCriteria()
+		def partialList = c2.list { 
+			eq("batchInErrorCount", 0)
+			gt("batchToSendCount", 0)
+			projections { 
+				groupProperty("nodeGroup") 
+				count("nodeId")
+			} 
+		}
+		def c3 = Node.createCriteria()
+		def okList = c3.list { 
+			eq("batchInErrorCount", 0)
+			eq("batchToSendCount", 0)
+			projections { 
+				groupProperty("nodeGroup") 
+				count("nodeId")
+			} 
+		}
+		
+		Map summary = new HashMap()
+		summary = buildNodeGroupSummary(errorList, summary, "ER")
+		summary = buildNodeGroupSummary(partialList, summary, "PA")
+summary = buildNodeGroupSummary(okList, summary, "OK")
+return summary
+  }
+	
+  	def buildNodeGroupSummary(List statusList, Map summary, String key) {
+		println ""
+		println ""
+		println key
+		println "Status list size " + statusList.size()
+		println "Summary size " + summary.size()
+		
+
+		statusList.each {
+			println "${it[0].description} - ${it[1]}"
+			if (summary.get(it[0].description) == null) {
+				println "No matching desc"
+				summary.put(it[0].description, new HashMap())
+			}
+			
+				def counter = summary.get(it[0].description).get(key)
+				summary.get(it[0].description).put(key, counter == null ? it[1] : counter + it[i])
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+		}
+		
+		summary.each {
+			println "KEY " + it.getKey()
+			it.getValue().each {
+				println "K     " + it.getKey()
+				println "V     " + it.getValue()
+			}
+		}
+		return summary
+	}
 }
+
+
+class NodeGroupCommand {
+	String nodeGroupDescription
+	String nodeGroupId
+	Map status
 }
 
 class BatchCommand {

@@ -39,7 +39,7 @@
           <td><g:link action="show" id="${outgoingBatchInstance.batchId}">${outgoingBatchInstance.batchId}</g:link></td>
           <td>${fieldValue(bean: outgoingBatchInstance, field: "nodeId")}</td>
           <td>${fieldValue(bean: outgoingBatchInstance, field: "channelId")}</td>
-          <td>${fieldValue(bean: outgoingBatchInstance, field: "status")}<div class="metric-${outgoingBatchInstance.status} status-box"></div></td>
+          <td <g:if test="${outgoingBatchInstance?.failedDataId > 0}">title="${outgoingBatchInstance.sqlCode} - ${outgoingBatchInstance.sqlMessage}"</g:if>>${fieldValue(bean: outgoingBatchInstance, field: "status")}<div class="metric-${outgoingBatchInstance.status} status-box"></div></td>
           <td>
             <g:if test="${outgoingBatchInstance?.failedDataId > 0}">
                 <g:link controller="data" action="show" id="${outgoingBatchInstance.failedDataId}">${fieldValue(bean: outgoingBatchInstance, field: "failedDataId")}</g:link></td>
