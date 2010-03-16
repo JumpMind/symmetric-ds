@@ -149,7 +149,11 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
 
     private void registerExtension(String beanName, IExtensionPoint ext) {
 
-        log.info("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
+        if (ext instanceof IBuiltInExtensionPoint) {
+            log.debug("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
+        } else {
+            log.info("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
+        }
 
         if (ext instanceof ISyncUrlExtension) {
             transportManager.addExtensionSyncUrlHandler(beanName, (ISyncUrlExtension) ext);

@@ -23,6 +23,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -33,7 +34,8 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
  * has changed. If it has, it will take the correct action to apply the
  * configuration change to the current node.
  */
-public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchListener {
+public class ConfigurationChangedFilter 
+    implements IDataLoaderFilter, IBatchListener, IBuiltInExtensionPoint {
 
     static final ILog log = LogFactory.getLog(ConfigurationChangedFilter.class);
 

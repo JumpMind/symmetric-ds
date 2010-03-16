@@ -31,11 +31,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.handler.AckResourceHandler;
 
-public class AckServlet extends AbstractTransportResourceServlet<AckResourceHandler> {
+public class AckServlet extends AbstractTransportResourceServlet<AckResourceHandler> implements IBuiltInExtensionPoint {
 
     private static final BatchIdComparator BATCH_ID_COMPARATOR = new BatchIdComparator();
 

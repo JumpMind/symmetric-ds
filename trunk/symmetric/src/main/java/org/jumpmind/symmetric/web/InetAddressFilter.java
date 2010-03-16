@@ -35,12 +35,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.transport.InetAddressResourceHandler;
 
 /**
  * This better be the first filter that executes!
  */
-public class InetAddressFilter extends AbstractTransportFilter<InetAddressResourceHandler> {
+public class InetAddressFilter extends AbstractTransportFilter<InetAddressResourceHandler> 
+    implements IBuiltInExtensionPoint {
+    
     public static final String INET_ADDRESS_FILTERS = "inetAddressFilters";
 
     public static final String INET_ADDRESS_ALLOW_MULICAST = "inetAddressAllowMultcast";

@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.impl.BandwidthService;
@@ -44,8 +45,8 @@ import org.jumpmind.symmetric.transport.ISyncUrlExtension;
  * Valid parameters are constants on this class that start with PARAM_. Any
  * parameter that is a numeral will be designated a possible URL.
  */
-public class HttpBandwidthUrlSelector implements ISyncUrlExtension {
-
+public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExtensionPoint {
+    
     protected ILog log = LogFactory.getLog(getClass());
 
     public static String PARAM_PRELOAD_ONLY = "initialLoadOnly";

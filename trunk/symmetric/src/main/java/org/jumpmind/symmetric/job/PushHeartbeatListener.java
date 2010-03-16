@@ -3,13 +3,14 @@ package org.jumpmind.symmetric.job;
 import java.util.Set;
 
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
-public class PushHeartbeatListener implements IHeartbeatListener {
+public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtensionPoint {
 
     private boolean enabled;
     private IDataService dataService;

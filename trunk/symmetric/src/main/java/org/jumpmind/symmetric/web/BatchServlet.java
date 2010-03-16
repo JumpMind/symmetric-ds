@@ -29,13 +29,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.transport.handler.BatchResourceHandler;
 
 /**
  * Allows for the request of a batch by id.
  */
-public class BatchServlet extends AbstractTransportResourceServlet<BatchResourceHandler> {
-
+public class BatchServlet extends AbstractTransportResourceServlet<BatchResourceHandler> 
+  implements IBuiltInExtensionPoint {
+        
     private static final long serialVersionUID = 1L;
 
     @Override

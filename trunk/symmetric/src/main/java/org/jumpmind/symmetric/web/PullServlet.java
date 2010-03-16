@@ -30,10 +30,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.transport.handler.PullResourceHandler;
 
-public class PullServlet extends AbstractTransportResourceServlet<PullResourceHandler> {
+public class PullServlet extends AbstractTransportResourceServlet<PullResourceHandler> 
+    implements IBuiltInExtensionPoint {
 
     private static final long serialVersionUID = 1L;
 

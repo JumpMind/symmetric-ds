@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
@@ -33,7 +34,8 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
  * @author Jeff Bailey
  *
  */
-public class DefaultOfflineServerListener implements IOfflineServerListener {
+public class DefaultOfflineServerListener implements IOfflineServerListener,
+ IBuiltInExtensionPoint {
 
     protected INodeService nodeService;
     protected IOutgoingBatchService outgoingBatchService;

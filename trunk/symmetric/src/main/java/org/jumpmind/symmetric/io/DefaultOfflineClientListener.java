@@ -21,12 +21,13 @@ package org.jumpmind.symmetric.io;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.impl.NodeService;
 
-public class DefaultOfflineClientListener implements IOfflineClientListener {
+public class DefaultOfflineClientListener implements IOfflineClientListener, IBuiltInExtensionPoint {
     
     protected final ILog log = LogFactory.getLog(getClass());
     protected IParameterService parameterService;

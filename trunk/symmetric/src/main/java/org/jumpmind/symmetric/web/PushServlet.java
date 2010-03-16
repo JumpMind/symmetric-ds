@@ -30,9 +30,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.transport.handler.PushResourceHandler;
 
-public class PushServlet extends AbstractTransportResourceServlet<PushResourceHandler> {
+public class PushServlet extends AbstractTransportResourceServlet<PushResourceHandler> 
+    implements IBuiltInExtensionPoint {
+    
     private static final long serialVersionUID = 1L;
 
     @Override
