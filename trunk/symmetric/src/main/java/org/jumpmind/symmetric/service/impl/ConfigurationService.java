@@ -52,8 +52,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 public class ConfigurationService extends AbstractService implements IConfigurationService {
 
