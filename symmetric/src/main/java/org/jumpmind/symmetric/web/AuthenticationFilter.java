@@ -32,14 +32,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler;
 import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler.AuthenticationStatus;
 
 /**
  * This better be the first filter that executes!
  */
-public class AuthenticationFilter extends AbstractTransportFilter<AuthenticationResourceHandler> {
-
+public class AuthenticationFilter extends AbstractTransportFilter<AuthenticationResourceHandler> 
+  implements IBuiltInExtensionPoint {
     private static final ILog log = LogFactory.getLog(AuthenticationFilter.class);
 
     @Override

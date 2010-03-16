@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.ObjectUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 
 /**
  * 
@@ -60,7 +61,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
  * </pre>
  */
 
-public class ThrottleFilter extends AbstractFilter {
+public class ThrottleFilter extends AbstractFilter implements IBuiltInExtensionPoint {
 
     private final static ILog log = LogFactory.getLog(ThrottleFilter.class);
 

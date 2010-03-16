@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
@@ -41,7 +42,8 @@ import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.Reservation
 /**
  * Configured within symmetric-web.xml
  */
-public class NodeConcurrencyFilter extends AbstractFilter {
+public class NodeConcurrencyFilter extends AbstractFilter 
+  implements IBuiltInExtensionPoint {
 
     private final static ILog log = LogFactory.getLog(NodeConcurrencyFilter.class);
 

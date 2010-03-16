@@ -28,13 +28,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.transport.handler.AlertResourceHandler;
 
 /**
  * This is a place holder for the idea that we could create an RSS feed for
  * alerts.
  */
-public class AlertServlet extends AbstractTransportResourceServlet<AlertResourceHandler> {
+public class AlertServlet extends AbstractTransportResourceServlet<AlertResourceHandler> 
+implements IBuiltInExtensionPoint {
 
     private static final long serialVersionUID = 1L;
     @Override

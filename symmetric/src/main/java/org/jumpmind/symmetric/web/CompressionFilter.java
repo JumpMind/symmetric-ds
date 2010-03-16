@@ -31,6 +31,7 @@ import javax.servlet.ServletResponse;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 
 /**
  * 
@@ -56,7 +57,8 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
  *  &lt;/bean&gt;
  * </pre>
  */
-public class CompressionFilter extends AbstractFilter {
+public class CompressionFilter extends AbstractFilter 
+  implements IBuiltInExtensionPoint {
 
     private static final ILog log = LogFactory.getLog(CompressionFilter.class);
 

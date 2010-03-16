@@ -30,12 +30,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.transport.handler.RegistrationResourceHandler;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 
-public class RegistrationServlet extends AbstractTransportResourceServlet<RegistrationResourceHandler> {
+public class RegistrationServlet extends AbstractTransportResourceServlet<RegistrationResourceHandler> 
+    implements IBuiltInExtensionPoint {
 
     private static final long serialVersionUID = 1L;
 
