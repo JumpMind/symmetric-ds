@@ -4,7 +4,7 @@
         <span class="value"><g:link controller="node" action="show" id="${session.overview?.nodeId}">${session.overview?.nodeId}</g:link></span>
     </span>   
     <span class="meta">
-        <span class="label"><g:message code="symmetric.status.label" default="Status"/></span>
+        <span class="label"><g:message code="symmetric.status.label" default="Heartbeat"/></span>
         <span class="value"><g:if test="${session.overview?.started}">
                 <g:message code="symmetric.running.label" default="Running"/>
               </g:if>

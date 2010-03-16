@@ -15,7 +15,7 @@
             <div class="message">${flash.message}</div>
             </g:if>
             <div class="dialog">
-                <table>
+                <table width="100%">
                     <tbody>
                     
                         <tr class="prop">
@@ -59,19 +59,56 @@
                             <td valign="top" class="value">${fieldValue(bean: dataInstance, field: "sourceNodeId")}</td>
                             
                         </tr>
-                    
+                        
                         <tr class="prop">
-                            <td valign="top" class="name"><g:message code="data.rowData.label" default="Row Data" /></td>
+                            <td valign="top" class="name"><g:message code="data.data.label" default="Data" /></td>
                             
-                            <td valign="top" class="value">${fieldValue(bean: dataInstance, field: "rowData")}</td>
-                            
-                        </tr>
-                    
-                        <tr class="prop">
-                            <td valign="top" class="name"><g:message code="data.oldData.label" default="Old Data" /></td>
-                            
-                            <td valign="top" class="value">${fieldValue(bean: dataInstance, field: "oldData")}</td>
-                            
+                            <td valign="top" class="value">
+                                <div class="data-panel">
+                                    <table>
+                                        <%
+                                        columns = dataInstance.triggerHist?.columnNames.split(",") 
+                                        old = dataInstance.toParsedOldData() 
+                                        rows = dataInstance.toParsedRowData()
+										pk = dataInstance.toParsedPkData()
+                                        %>
+                                        <tr>
+                                            <td colspan="${columns?.size()}" class="data-table-name">${dataInstance.tableName}&nbsp;(${dataInstance.eventType?.encodeAsHTML()})</span></td>
+                                        </tr>
+	                                    <tr class="data-table-columns">
+	                                           <td class="data-column">&nbsp;</td>
+	                                        <g:each in="${columns}" var="c" status="i">
+	                                            <td class="data-coulumn${(i % 2) == 0 ? ' alt' : ''}">${c}</td>
+	                                        </g:each>
+	                                    </tr><tr>
+                                                <td class="data-column">PK</td>
+                                            
+                                            <%pkCounter = 0%>
+                                            <g:each in="${pk}" var="p" status="i">
+                                                <%pkCounter = i%>
+                                                <td class="data-coulumn${(i % 2) == 0 ? ' alt' : ''}">${p}</td>
+                                            </g:each>
+                                            <%pkLength = pk != null ? pk.length : 0%>
+                                            <g:while test="${pkLength < columns.length}">
+                                                <%pkLength++
+												pkCounter++%>
+                                                <td class="data-coulumn${(pkCounter % 2) == 0 ? ' alt' : ''}">&nbsp;</td>
+                                            </g:while>
+                                        </tr><tr>
+                                                <td class="data-column">New</td>
+                                            <g:each in="${rows}" var="r" status="i">
+                                                <td class="data-coulumn${(i % 2) == 0 ? ' alt' : ''}${old == null || rows[i] != old[i] ? ' diff' : ''}">${r}</td>
+                                            </g:each>
+                                        </tr><tr>
+                                                <td class="data-column">Old</td>
+                                            <g:each in="${old}" var="o" status="i">
+                                                <td class="data-coulumn${(i % 2) == 0 ? ' alt' : ''}">${o}</td>
+                                            </g:each>
+                                        </tr>
+	                                </table>
+	                            </div>
+                     
+                            </td>                           
                         </tr>
                     
                         <tr class="prop">
@@ -80,29 +117,9 @@
                             <td valign="top" class="value">${fieldValue(bean: dataInstance, field: "externalData")}</td>
                             
                         </tr>
+
                     
-                        <tr class="prop">
-                            <td valign="top" class="name"><g:message code="data.tableName.label" default="Table Name" /></td>
-                            
-                            <td valign="top" class="value">${fieldValue(bean: dataInstance, field: "tableName")}</td>
-                            
-                        </tr>
-                    
-                        <tr class="prop">
-                            <td valign="top" class="name"><g:message code="data.pkData.label" default="Pk Data" /></td>
-                            
-                            <td valign="top" class="value">${fieldValue(bean: dataInstance, field: "pkData")}</td>
-                            
-                        </tr>
-                    
-                        <tr class="prop">
-                            <td valign="top" class="name"><g:message code="data.eventType.label" default="Event Type" /></td>
-                            
-                            <td valign="top" class="value">${dataInstance?.eventType?.encodeAsHTML()}</td>
-                            
-                        </tr>
-                    
-                        <tr class="prop">
+                       <tr class="prop">
                             <td valign="top" class="name"><g:message code="data.triggerHistory.label" default="Trigger History" /></td>
                             
                             <td valign="top" class="value">${dataInstance.triggerHist?.toHtmlString()}</td>

@@ -17,25 +17,29 @@
     <table>
       <thead>
       <tr>
-        <th>Show Data</th>
         <g:sortableColumn property="batchId" title="${message(code: 'incomingBatch.batchId.label', default: 'Batch Id')}"/>
         <g:sortableColumn property="nodeId" title="${message(code: 'incomingBatch.nodeId.label', default: 'Node Id')}"/>
         <g:sortableColumn property="channelId" title="${message(code: 'incomingBatch.channelId.label', default: 'Channel Id')}"/>
         <g:sortableColumn property="status" title="${message(code: 'incomingBatch.status.label', default: 'Status')}"/>
         <g:sortableColumn property="networkMillis" title="${message(code: 'incomingBatch.networkMillis.label', default: 'Network ms')}"/>
         <g:sortableColumn property="filterMillis" title="${message(code: 'incomingBatch.filterMillis.label', default: 'Filter ms')}"/>
+        <g:sortableColumn property="filterMillis" title="${message(code: 'incomingBatch.databaseMillis.label', default: 'Database ms')}"/>
+        <g:sortableColumn property="filterMillis" title="${message(code: 'incomingBatch.statementCount.label', default: 'Statement Cnt')}"/>
+        <g:sortableColumn property="filterMillis" title="${message(code: 'incomingBatch.fallbackInsertCount.label', default: 'Fallback Insert Cnt')}"/>
       </tr>
       </thead>
       <tbody>
       <g:each in="${incomingBatchInstanceList}" status="i" var="incomingBatchInstance">
         <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
-          <td><g:link controller="dataEvent" action="list" params="[batchId:incomingBatchInstance.batchId]">view</g:link></td>
           <td><g:link action="show" id="${incomingBatchInstance.batchId}">${incomingBatchInstance.batchId}</g:link></td>
           <td>${fieldValue(bean: incomingBatchInstance, field: "nodeId")}</td>
           <td>${fieldValue(bean: incomingBatchInstance, field: "channelId")}</td>
           <td>${fieldValue(bean: incomingBatchInstance, field: "status")}<div class="metric-${incomingBatchInstance.status} status-box"></div></td>
           <td>${fieldValue(bean: incomingBatchInstance, field: "networkMillis")}</td>
           <td>${fieldValue(bean: incomingBatchInstance, field: "filterMillis")}</td>
+          <td>${fieldValue(bean: incomingBatchInstance, field: "databaseMillis")}</td>
+          <td>${fieldValue(bean: incomingBatchInstance, field: "statementCount")}</td>
+          <td>${fieldValue(bean: incomingBatchInstance, field: "fallbackInsertCount")}</td>
         </tr>
       </g:each>
       </tbody>

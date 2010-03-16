@@ -42,7 +42,9 @@ class ChannelController {
   }
 
   def show = {
-    def channelInstance = org.jumpmind.symmetric.grails.Channel.get(params.id)
+	session.menu="control-channels"
+	
+	def channelInstance = org.jumpmind.symmetric.grails.Channel.get(params.id)
     if (!channelInstance) {
       flash.message = "${message(code: 'default.not.found.message', args: [message(code: 'channel.label', default: 'Channel'), params.id])}"
       redirect(action: "list")
