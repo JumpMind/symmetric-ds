@@ -573,7 +573,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         int rowsUpdated = rootJdbcTemplate.update("update test_customer set address=address");
         logger.info("Updated " + rowsUpdated + " customer rows");
         getClientEngine().pull();
-        Assert.assertTrue(clientIncomingBatchCount < clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch"));
+        Assert.assertTrue(clientIncomingBatchCount <= clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch"));
         Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch where status != 'OK'"));
         Assert.assertEquals(0, rootJdbcTemplate.queryForInt("select count(*) from sym_outgoing_batch where status not in ('OK','IG','SK')"));
         Assert.assertEquals(rootJdbcTemplate.queryForInt("select count(*) from test_customer"), clientJdbcTemplate.queryForInt("select count(*) from test_customer"));        
