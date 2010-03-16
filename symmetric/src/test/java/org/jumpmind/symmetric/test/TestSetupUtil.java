@@ -179,7 +179,7 @@ public class TestSetupUtil {
             }
         }
         File sqlitedb = new File("target/sqlite");
-        if (sqlitedb.exists()) {
+        if (sqlitedb.exists() && FileUtils.listFiles(sqlitedb, null, true).size() > 0) {
             try {
                 logger.info("Removing sqlite database files");
                 FileUtils.deleteDirectory(sqlitedb);
