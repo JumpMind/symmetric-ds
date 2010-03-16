@@ -840,7 +840,7 @@ trigger-history-column-name {
     z-index: 2;
     background-color: #FFFFee;
     padding: 1.5em;
-    border: medium double #006DBA;
+    border: medium groove #006DBA;
 }
 
 .data-panel table {
@@ -868,12 +868,8 @@ trigger-history-column-name {
     text-align:center;
     font-size:1.2em;
     margin-top: 10px;
-    margin-bottom: 10px;
-    
+    margin-bottom: 10px;    
 }
 
-.data-table-popup {
-	
-}
 
 

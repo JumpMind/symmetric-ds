@@ -153,7 +153,49 @@
                   </tbody>
                   </table>
             </div>
-        </div>    
+        </div>   
+        <div id="panel-overview" class="panel">
+            <h3>My Node Groups</h3>
+            <div class="panel-row">
+                <table class="metrics">
+                  <thead>
+                    <tr>
+                        <th>Nodes</th>
+                        <th>Metrics</th>
+                        <th>Total Nodes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <g:each in="${myNodeGroups}" var="g">
+                    <%totalNodes = org.jumpmind.symmetric.grails.Node.count() %>
+                    <tr>
+                        <td>${g.key}</td>
+                        <td>
+                              <table class="metricsBar" valign="middle" align="center" cellspacing="0" cellpadding="0" border="0"> 
+                                  <tr>
+                                  <% percentTotal = 0%>
+                                  <g:each in="${g.value}" var="s" status="i">
+                                      <% 
+                                      percent = java.lang.Math.round(s.value / totalNodes * 100)
+                                      title = "${s.key} - ${percent}% (${s.value} nodes)"
+                                      %>
+                                      <td width="${percent}%" class="metric-${s.key}"><img title="${title}" alt="${title}" class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></td>
+                                      <%percentTotal += percent%>
+                                  </g:each>
+                                  <g:if test="${percentTotal < 100}">
+                                      <td width="${100 - percentTotal}" class="metric-empty"><img class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></td>
+                                  </g:if>
+                                  </tr>
+                              </table>
+                        </td>
+                        <td style="text-align:center;"><%=g.value.collect{ it.value }.sum()%></td>
+                    </tr>
+                    </g:each>
+                  </tbody>
+                  </table>
+            </div>
+        </div> 
+         
     </div>
 </div>
 
