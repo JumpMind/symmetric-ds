@@ -8,10 +8,12 @@
     In the previous Chapter we presented a high level introduction to some basic concepts
     in SymmetricDS, some of the high-level features, and a tutorial demonstrating a basic, working
     example of SymmetricDS in action.
-    This chapter will focus on the key considerations one must make when planning a SymmetricDS implementation. 
+    This chapter will focus on the key considerations and decisions one must make when planning a SymmetricDS implementation. 
     As needed, basic concepts will be reviewed or introduced throughout this Chapter.  By the
-    end of the chapter you should be able to proceed forward and implement your planned design.  
-    Implementation of your design is covered in subsequent chapters.
+    end of the chapter you should be able to proceed forward and implement your planned design.  This Chapter
+    will intentionally avoid discussing the underlying database tables that capture the configuration resulting
+    from your analysis and design process.    
+    Implementation of your design, along with discussion of the tables backing each concept, is covered in <xref linkend="configuration" />.
     </para>
     <para>
     When needed, we will rely on an example of a typical use of SymmetricDS in retail situations.  This
@@ -43,6 +45,8 @@
       SymmetricDS instance (a node) responsible for managing the synchronization for that database.
       
       </para>
+
+<!--  MDH : need to discuss node_id and external_id here - decide what they should be -->      
     </section>
     <section id="organizing-nodes">
             <title>Organizing Nodes</title>
@@ -178,6 +182,7 @@
             the flow of data.  In addition, SymmetricDS allows for synchronization to be enabled, suspended, or scheduled by Channels as well.
             The frequency of synchronization can also be controlled at the channel level.
         </para>
+ <!--  MDH "Batching" should probably be discussed here, as there's a decision to be made for each channel -->
         <para>
           Choosing Channels is fairly straightforward and can be changed over time, if needed.  Think about the
           differing "types" of data present in your application, the volume of data in the various types, etc.  What 
@@ -275,7 +280,7 @@
              
        
         <section id="defining-data-changes-trigger-routers">
-          <title>Planning Initial Loads</title>
+          <title>Planning Initial Loads and Dead Triggers</title>
           
           <para>The mapping between Triggers and Routers defines more than just the many-to-many relationship between your Triggers and your Routers.  It also defines
           two aspects of how initial loads occur, so now is a good time to plan how your <emphasis>Initial Loads</emphasis> will work.
@@ -286,550 +291,39 @@
           <para>
           For each Trigger Router you define, you can choose the order in which 
           </para>
-      
+     
+         <para>
+            Occasionally the decision of what data to load initially results in additional triggers.  These triggers, known as <emphasis>Dead Triggers</emphasis>,
+            are configured such that they do not capture any data changes.  In other words, their settings for synchronizing on 
+            updates, inserts, and deletes are all set to false.  However, since the Trigger is specified, it <emphasis>will</emphasis> 
+            be included in the initial load of data for target Nodes.
+        </para>
+        <para>
+           Why might you need a Dead Trigger?
+            A dead Trigger might be used to load a read-only lookup table, for example.  It could also 
+            be used
+            to load a table that needs populated with example or default data.
+            Another use is a recovery load of data for tables that have a single direction
+            of synchronization.  For example, a retail store records sales transaction that
+            synchronize in one direction by trickling back to the central office.
+            If the retail store needs to recover all the sales transactions from the central office,
+            they can be sent
+            are part of an initial load from the central office by setting up dead Triggers
+            that "sync" in that direction.
+        </para>
       </section>
-    </section>
-         
-    <!--  here -->
-    
-    <section >
-            <title>Node</title>
-         
-            <para>
-            In addition to the <xref linkend="table_node" xrefstyle="table"/> table, two other tables play a direct role
-            in defining a node.  The first is <xref linkend="table_node_identity" xrefstyle="table"/>. The <emphasis>only</emphasis> row in this table
-            is inserted in the database when the node first <emphasis>registers</emphasis> with a parent node.  In the case 
-            of a root node, the row is entered by the user.  The row is used by a node instance to determine its node identity.
-            </para>
-            <para>
-            The following SQL statements set up a top-level registration server as a node identified
-            as "00000" in the "corp" node group.
-            
-            <programlisting>
-<![CDATA[insert into SYM_NODE 
-  (node_id, node_group_id, external_id, sync_enabled)
-values
-  ('00000', 'corp', '00000', 1);
-
-insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
-        </para>
-        <para>
-        The second table, <xref linkend="table_node_security" xrefstyle="table"/> has rows
-        created for each <emphasis>child</emphasis> node that registers with the node, assuming auto-registration is enabled.
-        If auto registration is not enabled, you must create a row in <xref linkend="table_node" xrefstyle="table"/> 
-        and <xref linkend="table_node_security" xrefstyle="table"/> for the node to be able to register.  You can also, with this table,
-        manually cause a node to re-register or do a re-initial load by setting the corresponding
-        columns in the table itself.  Registration is discussed in more detail in
-        <xref linkend="registration"/>.
-        </para>
-    </section>
-  
- 
-   
-    <section >
-        <title>Node Group</title>
       
-        <para>
-            The following SQL statements would create node groups for "corp" and "store". 
-
-            <programlisting>
-<![CDATA[insert into SYM_NODE_GROUP 
-  (node_group_id, description)
-values
-  ('store', 'A retail store node');
-
-insert into SYM_NODE_GROUP 
-  (node_group_id, description)
-values
-  ('corp', 'A corporate node');]]></programlisting>
-        </para>
-    </section>
-    <section >
-        <title>Node Group Link</title>
-        
       
-        <para>
-            The following SQL statements links the "corp" and "store" node groups for synchronization.
-            It configures the "store" nodes to push their data changes to the "corp" nodes,
-            and the "corp" nodes to send changes to "store" nodes by waiting for a pull.
-            
-            <programlisting>
-<![CDATA[insert into SYM_NODE_GROUP_LINK
-  (source_node_group, target_node_group, data_event_action)
-values
-  ('store', 'corp', 'P');
-
-insert into SYM_NODE_GROUP_LINK
-  (source_node_group, target_node_group, data_event_action)
-values
-  ('corp', 'store', 'W');]]></programlisting>
-        </para>
     </section>
-   
-    <section >
-        <title>Channel</title>
-
-        <para>
-            The following SQL statements setup channels for a retail store.  An "item" channel includes
-            data for items and their prices, while a "sale_transaction" channel includes data for ringing
-            sales at a register. 
-            
-            <programlisting>
-<![CDATA[insert into SYM_CHANNEL 
-  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
-   extract_period_millis, batch_algorithm, enabled, description)
-values
-  ('item', 10, 1000, 10,  0, 'default', 1, 'Item and pricing data');
-
-insert into SYM_CHANNEL 
-  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
-   extract_period_millis, batch_algorithm, enabled, description)
-values
-  ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 
-   'retail sale transactions from register');]]></programlisting>
-        </para>
-        <para>
-            Batching is the grouping of data, by channel, to be transferred and committed at 
-            the client together.  There are three different out-of-the-box batching algorithms which 
-            may be configured in the batch_algorithm column on channel.  
-         <variablelist>
-            <varlistentry>
-                <term>
-                    <command>default</command>
-                </term>
-                <listitem>
-                    <para>
-                        All changes that happen in a transaction are guaranteed to be batched 
-                        together.  Multiple transactions will be batched and committed together
-                        until there is no more data to be sent or the max_batch_size is reached.
-                    </para>
-                </listitem>
-            </varlistentry>
-            <varlistentry>
-                <term>
-                    <command>transactional</command>
-                </term>
-                <listitem>
-                    <para>
-                        Batches will map directly to database transactions.  If there are many
-                        small database transactions, then there will be many batches.  The max_batch_size
-                        column has no effect.
-                    </para> 
-                </listitem>
-            </varlistentry>
-            <varlistentry>
-                <term>
-                    <command>nontransactional</command>
-                </term>
-                <listitem>
-                    <para>
-                        Multiple transactions will be batched and committed together
-                        until there is no more data to be sent or the max_batch_size is reached.  
-                        The batch will be cut off at the max_batch_size regardless of whether
-                        it is in the middle of a transaction. 
-                    </para>
-                </listitem>
-            </varlistentry>
-        </variablelist>
-        </para>
-    </section>
-       
-    <section >
-        <title>Triggers and Routers</title>         
-        <para> SymmetricDS uses <emphasis>database triggers</emphasis> to capture and record changes to in the
-        <xref linkend="table_data" xrefstyle="table"/> table.  After the data is captured, a background process
-            chooses the nodes that the data will be synchronized to.  This is called routing.  The default <xref linkend="table_router" xrefstyle="table"/> configuration 
-            synchronizes data to all nodes in a target node group.   Other router configurations can route based on hard coded 
-            column values or matches between columns and some node attribute like external id.
-        </para>
-        <para>
-           After data has been routed, rows will exist in <xref linkend="table_data_event" xrefstyle="table"/> and
-           <xref linkend="table_outgoing_batch" xrefstyle="table"/>.
-        </para>
-        <para> 
-            Triggers can be configured to control whether data changes are captured on inserts, deletes, updates, or
-            any combination thereof. They can also be configured to fire when data has been received from other nodes
-            in order to propagate data to another tier or back to other nodes in the originating tier node group tier.
-        </para>
-        <para> 
-            Database triggers are installed on a system when a router is linked to a trigger definition, via a <xref linkend="table_trigger_router" xrefstyle="table"/>, that has 
-            a router with a source node group id that matches the node group id of the current node.
-        </para>
-            
-    <section >
-        <title>Trigger</title>
-        <para>
-            SymmetricDS captures synchronization data using database triggers. Triggers are defined in the 
-              <xref linkend="table_trigger" xrefstyle="table"/> table.  
-            Each record is used by SymmetricDS when generating database triggers.  Database triggers are only generated when a trigger 
-            is associated with a <xref linkend="router" xrefstyle="table"/> whose <literal>source_node_group_id</literal> matches the node group id of the current node.
-        </para>
-        <para>
-            The following SQL statement defines a trigger that will capture data for a table named "item"
-            whenever data is inserted, updated, or deleted. The trigger is assigned to a channel also called 'item'.            
-            <programlisting>
-<![CDATA[insert into SYM_TRIGGER 
-  (trigger_id,source_table_name,channel_id,last_update_time,create_time)
-values
-  ('item', 'item', 'item', current_timestamp, current_timestamp);
-]]></programlisting>
-        </para>
-    </section>
-    <section >
-    <title>Router</title>    
-      <para>
-                Routers provided in the base implementation currently include:
-                <itemizedlist>
-                <listitem>Default Router - a router that sends all data to all nodes that belong to the target node group defined in the router.</listitem>
-                    <listitem>Column Match Router - a router that compares old or new column values to a constant value or the
-                        value of a node's external_id or node_id.</listitem>
-                    <listitem>Sub-select Router - a router that executes a SQL expression against the database to select nodes to
-                        route to. This SQL expression can be passed values of old and new column values.</listitem>
-                    <listitem>Bean Shell Router - a router that executes a BSH expression in order to select nodes to route to.
-                        The BSH expression can use the the old and new column values.</listitem>
-                    <listitem>Xml Publishing Router - a router the publishes data changes directly to a messaging solution instead
-                        of transmitting changes to registered nodes.  This router must be configured manually in XML as an extension point.</listitem>
-                </itemizedlist>
-                The mapping between the set of triggers and set of routers is many-to-many.  This means that one trigger can capture changes and route
-                to multiple locations.  It also means that one router can be defined an associated with many different triggers.
-            </para>
     
+   <section id="planning-registration">
+          <title>Planning for Registering Nodes</title>
+     <para>
+     Our final step in planning an implementation of SymmetricDS involves deciding how a new node is connected to, or <emphasis>registered</emphasis> with a parent node for the first time.
+     </para>
     
-    <section>
-        <title>Default Router</title>
-        <para>
-            The simplest router is a router that sends all the data that is captured by its 
-            associated triggers to all the nodes that belong to the target node group defined
-            in the router.  A router is defined as a row in the <xref linkend="table_router" xrefstyle="table"/> table.
-            It is then linked to triggers in the <xref linkend="table_trigger_router" xrefstyle="table"/> table.  
-        </para>
-        <para>
-            The following SQL statement defines a router that will send data from the 'corp' group to the 'store' group.            
-            <programlisting>
-<![CDATA[insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, 
-    create_time, last_update_time)
-values
-  ('corp-2-store','corp', 'store', current_timestamp, current_timestamp);
-
-]]></programlisting>
-        </para>
-        <para>
-            The following SQL statement maps the 'corp-2-store' router to the item trigger.            
-            <programlisting>
-<![CDATA[insert into SYM_TRIGGER_ROUTER 
-  (trigger_id, router_id, initial_load_order,  create_time, last_update_time)
-values
-  ('item', 'corp-2-store', 1, current_timestamp, current_timestamp);
-
-]]></programlisting>
-        </para>        
-    </section>
-   
-    <section >
-        <title>Column Match Router</title>
-        <para>
-            Sometimes requirements may exist that require data to be routed based on the current value or the old value of a 
-            column in the table that is being routed.  Column routers are configured by setting the <literal>router_type</literal> column on the 
-              <xref linkend="table_router" xrefstyle="table"/> table
-            to <literal>column</literal> and setting the <literal>router_expression</literal> column to an equality expression that represents
-            the expected value of the column.
-        </para>
-        <para>             
-            The first part of the expression is always the column name.  The column name should always be defined in upper case.
-            The upper case column name prefixed by OLD_ can be used for a comparison being done with the old column data value.
-        </para>
-        <para>
-            The second part of the expression can be a constant value, a token that represents another column, or a token
-            that represents some other SymmetricDS concept.  Token values always begin with a colon (:).
-        </para>                  
-        <para>
-            Consider a table that needs to be routed to all nodes in the target group only when a status column is set to 'OK.'  The following 
-            SQL statement will insert a column router to accomplish that.            
-            <programlisting>
-<![CDATA[insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, 
- router_expression, create_time, last_update_time)
-values
-('corp-2-store-ok','corp', 'store', 'column', 
- 'STATUS=OK', current_timestamp, current_timestamp);
-
-]]></programlisting>
-         </para>            
-        <para>
-            Consider a table that needs to be routed to all nodes in the target group only when a status column changes values.  The following 
-            SQL statement will insert a column router to accomplish that.            
-            <programlisting>
-<![CDATA[insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-status','corp', 'store', 'column', 
-    'STATUS!=:OLD_STATUS', current_timestamp, current_timestamp);
-
-]]></programlisting>
-         </para>            
-        <para>
-            Consider a table that needs to be routed to only nodes in the target group whose STORE_ID column matches the external id of a node.  The following 
-            SQL statement will insert a column router to accomplish that.            
-            <programlisting>
-<![CDATA[insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-id','corp', 'store', 'column', 
-    'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
-
-]]></programlisting>
-            Attributes on a <xref linkend="node" xrefstyle="table"/> that can be referenced with tokens include:
-            <itemizedlist>
-                <listitem>NODE_ID</listitem>
-                <listitem>EXTERNAL_ID</listitem>
-                <listitem>NODE_GROUP_ID</listitem>
-            </itemizedlist>
-        </para>   
-        <para>
-            Consider a table that needs to be routed to a redirect node defined by its external id in the <xref linkend="table_registration_redirect" xrefstyle="table"/> table.  The following 
-            SQL statement will insert a column router to accomplish that.            
-            <programlisting>
-<![CDATA[insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-redirect','corp', 'store', 'column', 
-    'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp);
-]]></programlisting>                        
-         </para>
-         <para>
-            More than one column may be configured in a router_expression.  When more than one column is configured, all matches are added to the list of nodes to route to.  The following is
-            an example where the STORE_ID column may contain the STORE_ID to route to or the constant of ALL which indicates that all nodes should receive the update.       
-            <programlisting>
-<![CDATA[insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-multiple-matches','corp', 'store', 'column', 
-   'STORE_ID=ALL
-    STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
-]]></programlisting>                        
-         </para>    
-         <para>
-         The NULL keyword may be used to check if a column is null.  If the column is null, then data will be routed to all nodes who qualify for the update.  This following is an example 
-         where the STORE_ID column is used to route to a set of nodes who have a STORE_ID equal to their EXTERNAL_ID, or to all nodes if the STORE_ID is null.
-          <programlisting>
-<![CDATA[insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-multiple-matches','corp', 'store', 'column', 
-   'STORE_ID=NULL
-    STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
-]]></programlisting>    
-         </para>                    
-    </section>    
-    
-    <section >
-        <title>Lookup Table Router</title>
-        <para>
-            A lookup table may contain the id of the node where data needs to be routed.  This could be an existing table or an ancillary table that is added
-            specifically for the purpose of routing data.  Lookup table routers are configured by setting the <literal>router_type</literal> column on the 
-              <xref linkend="table_router" xrefstyle="table"/> table
-            to <literal>lookuptable</literal> and setting a list of configuration parameters in the <literal>router_expression</literal> column.
-        </para>
-        <para>     
-            Each of the following configuration parameters are required.          
-            <variablelist>
-                <varlistentry>
-                    <term>
-                        <command>LOOKUP_TABLE</command>
-                    </term>
-                    <listitem>
-                        <para>
-                        This is the name of the lookup table.
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>KEY_COLUMN</command>
-                    </term>
-                    <listitem>
-                        <para>
-                        This is the name of the column on the table that is being routed.  It will be used as a key into the lookup table.
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>LOOKUP_KEY_COLUMN</command>
-                    </term>
-                    <listitem>
-                        <para>
-                        This is the name of the column that is the key on the lookup table.
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>EXTERNAL_ID_COLUMN</command>
-                    </term>
-                    <listitem>
-                        <para>
-                        This is the name of the column that contains the external_id of the node to route to on the lookup table.
-                        </para>
-                    </listitem>
-                </varlistentry>                
-            </variablelist>
-        </para>
-        <para>
-            Note that the lookup table will be read into memory and cached for the duration of a routing pass for a single channel.
-        </para>                  
-        <para>
-            Consider a table that needs to be routed to a specific store, but the data in the changing table only contains brand information.  In this case,
-            the STORE table may be used as a lookup table.            
-            <programlisting>
-<![CDATA[insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, 
- router_expression, create_time, last_update_time)
-values
-('corp-2-store-ok','corp', 'store', 'lookuptable', 
- 'LOOKUP_TABLE=STORE
-KEY_COLUMN=BRAND_ID
-LOOKUP_KEY_COLUMN=BRAND_ID
-EXTERNAL_ID_COLUMN=STORE_ID', current_timestamp, current_timestamp);
-
-]]></programlisting>
-         </para>            
-     </section>
-
-    <section >
-        <title>Relational Router</title>
-        <para>
-            Sometimes routing decisions need to be made based on data that is not in the current row being synchronized.  Consider an 
-            example where an Order table and a OrderLineItem table need to be routed to a specific store.  The Order table has a column 
-            named order_id and STORE_ID.  A store node has an external_id that is equal to the STORE_ID on the Order table.  OrderLineItem, 
-            however, only has a foreign key to its Order of order_id.  To route OrderLineItems to the same nodes that the Order will be routed
-            to, we need to reference the master Order record.
-        </para>
-        <para>             
-            There are two possible ways to route the OrderLineItem in SymmetricDS.  One is to configure a 'subselect' router_type on the <xref linkend="table_router" xrefstyle="table"/> table
-            and the other is to configure an external_select on the <xref linkend="table_trigger" xrefstyle="table"/> table. 
-        </para>
-        <para>
-            A 'subselect' is configured with a router_expression that is a SQL select statement which returns a result set of the node_ids that need routed to.  Column tokens can
-            be used in the SQL expression and will be replaced with row column data.  The overhead of using this router type is high because the 'subselect' statement runs for each row 
-            that is routed.  It should not be used for tables that have a lot of rows that are updated.  It also has the disadvantage that if the Order master record is deleted, 
-            then no results would be returned and routing would not happen.  The router_expression is appended to the following
-            SQL statement in order to select the node ids.
-            <programlisting>
-<![CDATA[
-select c.node_id from sym_node c where 
-  c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and 
-]]></programlisting>  
-        </para>                  
-        <para>
-            Consider a table that needs to be routed to all nodes in the target group only when a status column is set to 'OK.'  The following 
-            SQL statement will insert a column router to accomplish that.            
-            <programlisting>
-<![CDATA[insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store','corp', 'store', 'subselect', 
-    'c.external_id in (select STORE_ID from order where order_id=:ORDER_ID)', 
-    current_timestamp, current_timestamp);
-]]></programlisting>
-         </para>            
-        <para>
-            Alternatively, when using an external_select on the <xref linkend="table_trigger" xrefstyle="table"/> table, data is captured in the EXTERNAL_DATA column of the <xref linkend="table_data" xrefstyle="table"/> table at the time a trigger 
-            fires.  The EXTERNAL_DATA can then be used for routing by using a router_type of 'column'.  The advantage of this approach is that it is very unlikely that the master Order table
-            will have been deleted at the time any DML accures on the OrderLineItem table.  It also is a bit more effcient than the 'subselect' approach, although the triggers produced do run 
-            the extra external_select inline with application database updates.  
-        </para>            
-        <para>
-            In the following example, the STORE_ID is captured from the Order table in the EXTERNAL_DATA column.  EXTERNAL_DATA is always available for routing as a virtual column in a 'column'
-            router.  The router is configured to route based on the captured EXTERNAL_DATA to all nodes whose external_id matches.  Note that other supported node attribute token can also be 
-            used for routing.      
-            <programlisting>
-<![CDATA[
-insert into SYM_TRIGGER 
-  (trigger_id,source_table_name,channel_id,external_select,
-    last_update_time,create_time)
-values
-  ('orderlineitem', 'orderlineitem', 'orderlineitem','select STORE_ID 
-    from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
-    current_timestamp, current_timestamp);
-
-insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-ext','corp', 'store', 'column', 
-    'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
-]]></programlisting>
-         </para>            
-    </section>  
-    
-    <section>
-        <title>Scripted Router</title>
-        <para>
-            When more flexibility is needed in the logic to choose the nodes to route to, then the a Bean Shell router may be used.  Bean Shell is a Java-like scripting language.  Documentation 
-            for the Bean Shell scripting language can be found at <ulink url="http://www.beanshell.org/">http://www.beanshell.org</ulink>. 
-        </para>
-        <para>
-            The router_type for a Bean Shell router is 'bsh'.  The router_expression is a valid Bean Shell script that:
-            <itemizedlist>
-                <listitem>adds node ids to the 'targetNodes' collection which is bound to the script</listitem>
-                <listitem>returns a new collection of node ids</listitem>
-                <listitem>returns a single node id</listitem>
-                <listitem>returns true to indicate that all nodes should be routed or returns false to indicate that no nodes should be routed</listitem>
-            </itemizedlist>                          
-            Also bound to the script evaluation is a list of 'nodes'.  The list of 'nodes' is 
-            a list of eligible Node objects.  The current data column values and the old data column values are bound to the script evaluation as Java object representations of the column data. 
-            The columns are bound using the uppercase names of the columns.  Old values are bound to uppercase representations that are prefixed with 'OLD_'. 
-        </para>        
-        <para>
-            In the following example, the node_id is a combination of STORE_ID and WORKSTATION_NUMBER, both of which are columns on the table that is being routed.
-            <programlisting>
-<![CDATA[
-insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-bsh','corp', 'store', 'bsh', 
-    'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);', 
-    current_timestamp, current_timestamp);
-]]></programlisting>
-        </para>
-        <para>
-            The same could also be accomplished by simply returning the node id.  The last line of a bsh script is always the return value.
-            <programlisting>
-<![CDATA[
-insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-bsh','corp', 'store', 'bsh', 
-    'STORE_ID + "-" + WORKSTATION_NUMBER', 
-    current_timestamp, current_timestamp);
-]]></programlisting>
-         </para>     
-         <para>
-            The following example will synchronize to all nodes if the FLAG column has changed, otherwise
-            no nodes will be synchronized.
-            <programlisting>
-<![CDATA[
-insert into SYM_ROUTER 
-  (router_id, source_node_group_id, target_node_group_id, router_type, 
-    router_expression, create_time, last_update_time)
-values
-  ('corp-2-store-flag-changed','corp', 'store', 'bsh', 
-    'FLAG != null && !FLAG.equals(OLD_FLAG)', 
-    current_timestamp, current_timestamp);
-]]></programlisting>
-        </para>   
-    </section>  
-    </section>  
+    <!-- MDH  Need to discuss the decisions to be made about node registration, along with (at a non database-level) how it works 
+     -->
     </section>
  
 </chapter>
