@@ -570,13 +570,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void testUpdateDataWithNoChangesSyncToClient() throws Exception {
         int clientIncomingBatchCount = clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch");
-        int rowsUpdated = rootJdbcTemplate.update("update test_customer set address=address");
-        logger.info("Updated " + rowsUpdated + " customer rows");
+        int rowsUpdated = rootJdbcTemplate.update("update test_sync_column_level set string_value=string_value");
+        logger.info("Updated " + rowsUpdated + " test_sync_column_level rows");
         getClientEngine().pull();
+        Assert.assertTrue(rowsUpdated > 0);
         Assert.assertTrue(clientIncomingBatchCount <= clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch"));
         Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch where status != 'OK'"));
         Assert.assertEquals(0, rootJdbcTemplate.queryForInt("select count(*) from sym_outgoing_batch where status not in ('OK','IG','SK')"));
-        Assert.assertEquals(rootJdbcTemplate.queryForInt("select count(*) from test_customer"), clientJdbcTemplate.queryForInt("select count(*) from test_customer"));        
+        Assert.assertEquals(rootJdbcTemplate.queryForInt("select count(*) from test_sync_column_level"), clientJdbcTemplate.queryForInt("select count(*) from test_sync_column_level"));        
     }
 
     @Test(timeout = 120000)
