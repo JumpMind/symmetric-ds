@@ -8,7 +8,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
 
 class Data implements Serializable {
-	static transients = [ 'triggerHistory', 'eventType']
+	static transients = [ 'triggerHistory', 'eventType', 'htmlRowData', 'htmlOldData']
 	static hasMany = [ dataEvents : DataEvent ]
 	TriggerHistory triggerHist
 	String strEventType
@@ -16,6 +16,8 @@ class Data implements Serializable {
 	private @Delegate org.jumpmind.symmetric.model.Data delegate = new org.jumpmind.symmetric.model.Data()
 
 	static mapping = {
+		triggerHist ignoreNotFound:true
+		
 		def config = ConfigurationHolder.config
 		table config.symmetric.sync.table.prefix + '_data'
 		version false
@@ -32,4 +34,30 @@ class Data implements Serializable {
     public DataEventType getEventType() {
         return DataEventType.getEventType(strEventType)
     }
+	
+	public String getHtmlRowData() {
+		StringBuffer html = new StringBuffer()
+		html.append("\n<div class='data-row-data'>")
+		def columns = toParsedRowData()
+		columns.each {
+			html.append("\n\t<div class='data-row-data-field'>").append(it).append("</div>")
+			
+		}
+		html.append("\n\t<div class='clearie' >&nbsp;</div>")
+		html.append("\n</div>")
+		
+	}
+	
+	public String getHtmlOldData() {
+		StringBuffer html = new StringBuffer()
+		html.append("\n<div class='data-old-data'>")
+		def columns = toParsedOldData()
+		columns.each {
+			html.append("\n\t<div class='data-old-data-field'>").append(it).append("</div>")
+			
+		}
+		html.append("\n\t<div class='clearie' >&nbsp;</div>")
+		html.append("\n</div>")
+		
+	}
 }

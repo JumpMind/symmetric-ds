@@ -4,7 +4,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.jumpmind.symmetric.model.TriggerReBuildReason
 
 class TriggerHistory implements Serializable {
-	static transients = [ 'parsedColumnNames', 'parsedPkColumnNames', 'triggerHistoryId', 'lastTriggerBuildReason']
+	static transients = [ 'parsedColumnNames', 'parsedPkColumnNames', 'triggerHistoryId', 'lastTriggerBuildReason', 'htmlColumnNames']
 	String strLastTriggerBuildReason
 	
 	private @Delegate org.jumpmind.symmetric.model.TriggerHistory delegate = new org.jumpmind.symmetric.model.TriggerHistory()
@@ -45,6 +45,19 @@ class TriggerHistory implements Serializable {
 			.append("\n\t\t<div class='clearie' >&nbsp;</div>")
 			.append("\n\t</div>")	
 		return html.toString()
+	}
+	
+	public String getHtmlColumnNames() {
+		StringBuffer html = new StringBuffer()
+		html.append("\n<div class='trigger-history-column-names'>")
+		def columns = columnNames.split(",")
+		columns.each {
+			html.append("\n\t<div class='trigger-history-column-name'>").append(it).append("</div>")
+			
+		}
+		html.append("\n\t<div class='clearie' >&nbsp;</div>")
+		html.append("\n</div>")
+		
 	}
 	
     public TriggerReBuildReason getLastTriggerBuildReason() {
