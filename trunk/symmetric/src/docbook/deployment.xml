@@ -288,7 +288,7 @@ net stop symmetric</programlisting>
         <para>
         When clustered, a hardware load balancer is typically used
         to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  
-        Also, the <literal>sync.url</literal> (discussed in <xref linkend="basic-configuration"/>)
+        Also, the <literal>sync.url</literal> (discussed in <xref linkend="configuration-node-properties"/>)
         SymmetricDS property should be set to the URL of the load balancer.  
         </para>
         <para>
