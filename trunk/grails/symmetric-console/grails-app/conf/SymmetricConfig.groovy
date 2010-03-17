@@ -72,7 +72,7 @@ environments {
   }
   development {
     symmetric {
-      auto.startup = true
+      auto.startup = false
       external.id = 'root'
       sync.url = 'http://localhost:8080/symmetric' + syncPath
       group.id = 'root'
