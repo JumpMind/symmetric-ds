@@ -284,7 +284,7 @@
           
           <para>The mapping between Triggers and Routers defines more than just the many-to-many relationship between your Triggers and your Routers.  It also defines
           how initial loads can occur, so now is a good time to plan how your <emphasis>Initial Loads</emphasis> will work.
-          SymmetricDS provides the ability to "load" or "seed" a nodes database with specific sets of data from its parent load.  This concept is known as an <emphasis>Initial Load</emphasis> of
+          SymmetricDS provides the ability to "load" or "seed" a nodes database with specific sets of data from its parent node.  This concept is known as an <emphasis>Initial Load</emphasis> of
           data and is used to start off most synchronization scenarios .  Using our retail example, consider a new store being opened.  Initially, you would like to pre-populate
           the stores' database with all the item, pricing, and tax data for that specific store.  This is achieved through an initial load.  
           </para>
