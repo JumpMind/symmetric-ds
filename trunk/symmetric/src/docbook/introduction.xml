@@ -5,8 +5,7 @@
     
         <para>This User Guide will introduce both basic and advanced concepts in the configuration
             of SymmetricDS. By the end of this chapter, you will have a better understanding of SymmetricDS' capabilities, and
-            many of its basic concepts. This chapter also includes a hands-on, step-by-step, tutorial meant to demonstrate some of
-            the potential uses of SymmetricDS.</para>
+            many of its basic concepts.</para>
         <section id="definition">
             <title>What is SymmetricDS?</title>
             <para> SymmetricDS is an asynchronous data replication software package that supports multiple subscribers and
@@ -55,6 +54,8 @@
                 <listitem>
                     <para> Synchronizing some data in one direction, and other data in both directions.</para>
                 </listitem>
+
+                
                 <listitem>
                     <para> Filtering out sensitive data and re-routing it to a protected database.</para>
                 </listitem>
