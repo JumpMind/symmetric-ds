@@ -11,7 +11,6 @@
     <xref linkend="planning" />, introduced numerous concepts and the analysis and design needed to create an implementation of SymmetricDS.
     This chapter re-visits each analysis step and documents how to turn a SymmetricDS design into reality through configuration of
     the various SymmetricDS tables.  In addition, several advanced configuration options, not presented previously, will also be covered.
-    Note that the entire SymmetricDS Data Model appears in <xref linkend="data-mode" />.
      </para>
     
     <section id="configuration-node-properties">
@@ -257,7 +256,7 @@ values
     <section id="configuration-channel">
         <title>Channel</title>
         <para>
-            By categorizing data into channels and assigning them to <xref linkend="trigger" xrefstyle="table"/>s, the user gains more control and visibility into
+            By categorizing data into channels and assigning them to <xref linkend="table_trigger" xrefstyle="table"/>s, the user gains more control and visibility into
             the flow of data.  In addition, SymmetricDS allows for synchronization to be enabled, suspended, or scheduled by channels as well. 
             The frequency of synchronization and order that data gets synchronized is also controlled at the channel level.
         </para>
@@ -335,7 +334,7 @@ values
             SymmetricDS captures synchronization data using database triggers. SymmetricDS' Triggers are defined in the 
               <xref linkend="table_trigger" xrefstyle="table"/> table.  
             Each record is used by SymmetricDS when generating database triggers.  Database triggers are only generated when a trigger 
-            is associated with a <xref linkend="router" xrefstyle="table"/> whose <literal>source_node_group_id</literal> matches the node group id of the current node.
+            is associated with a <xref linkend="table_router" xrefstyle="table"/> whose <literal>source_node_group_id</literal> matches the node group id of the current node.
         </para>
         <para>
             The following SQL statement defines a trigger that will capture data for a table named "item"
