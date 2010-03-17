@@ -285,13 +285,13 @@
           <para>The mapping between Triggers and Routers defines more than just the many-to-many relationship between your Triggers and your Routers.  It also defines
           how initial loads can occur, so now is a good time to plan how your <emphasis>Initial Loads</emphasis> will work.
           SymmetricDS provides the ability to "load" or "seed" a nodes database with specific sets of data from its parent node.  This concept is known as an <emphasis>Initial Load</emphasis> of
-          data and is used to start off most synchronization scenarios .  Using our retail example, consider a new store being opened.  Initially, you would like to pre-populate
-          the stores' database with all the item, pricing, and tax data for that specific store.  This is achieved through an initial load.  
+          data and is used to start off most synchronization scenarios.  Using our retail example, consider a new store being opened.  Initially, you would like to pre-populate
+          a store database with all the item, pricing, and tax data for that specific store.  This is achieved through an initial load.  
           </para>
           <para>When a node connects and data is extracted, after it is registered and if an initial load was requested, each table that is configured to synchronize to the target node
-          group will be given a reload event in the order defined by the end user.  A SQL select statement is run against each table to get the data load that will be streamed to the target node.  
-          The selected data is filtered through the configured router.  If the data set is going to be large, then SQL criteria can be provided to pair down the data that is selected out 
-          of the database.
+          group will be given a reload event in the order defined by the end user.  A SQL statement is run against each table to get the data load that will be streamed to the target node.  
+          The selected data is filtered through the configured router for the table being loaded.  If the data set is going to be large, then SQL criteria can optionally be provided to pair 
+          down the data that is selected out of the database.
           </para>                    
       </section>
       <section id="planning-registration">
@@ -300,9 +300,11 @@
           Our final step in planning an implementation of SymmetricDS involves deciding how a new node is connected to, or <emphasis>registered</emphasis> with a parent node for the first time.
           </para>
           <para>
+          The following are some options on ways you might register nodes:
               <itemizedlist>
-                <listitem>The tutorial uses the command line utility to register each individual node.  This is one option.</listitem>
-                <listitem>Registering a node involves inserting into two tables.  A script can be written to directly register nodes by directly inserting into the database.</listitem>
+                <listitem>The tutorial uses the command line utility to register each individual node.</listitem>
+                <listitem>A JMX interface provides the same interface that the command line utility does.  JMX can be invoked programatically or via a web console.</listitem>
+                <listitem>Both the utility and the JMX method register a node by inserting into two tables.  A script can be written to directly register nodes by directly inserting into the database.</listitem>
                 <listitem>SymmetricDS can be configured to auto register nodes.  This means that any node that asks for a registration will be given one.</listitem>                
                </itemizedlist>
           </para>
