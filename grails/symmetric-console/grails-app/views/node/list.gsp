@@ -42,7 +42,10 @@
         <th>${message(code: 'node.timezoneOffset.label', default: 'Timezone')}</th>
 
         <th>${message(code: 'node.heartbeatTime.label', default: 'Heartbeat')}</th>
-
+        
+        <th>${message(code: 'node.batchStatus.label', default: 'Batch Status')}</th>
+        
+        
       </tr>
       </thead>
       <tbody>
@@ -64,7 +67,9 @@
         <td>${fieldValue(bean: nodeInstance, field: "timezoneOffset")}</td>
 
         <td>${fieldValue(bean: nodeInstance, field: "heartbeatTime")}</td>
-
+        
+        <td><div class="metric-${nodeInstance.batchStatus} status-box"></div></td>
+        
         </tr>
       </g:each>
       </tbody>

@@ -146,45 +146,17 @@ class DashboardController {
 		Map summary = new HashMap()
 		summary = buildNodeGroupSummary(errorList, summary, "ER")
 		summary = buildNodeGroupSummary(partialList, summary, "PA")
-summary = buildNodeGroupSummary(okList, summary, "OK")
-return summary
+		summary = buildNodeGroupSummary(okList, summary, "OK")
+		return summary
   }
 	
   	def buildNodeGroupSummary(List statusList, Map summary, String key) {
-		println ""
-		println ""
-		println key
-		println "Status list size " + statusList.size()
-		println "Summary size " + summary.size()
-		
-
 		statusList.each {
-			println "${it[0].description} - ${it[1]}"
 			if (summary.get(it[0].description) == null) {
-				println "No matching desc"
 				summary.put(it[0].description, new HashMap())
 			}
-			
-				def counter = summary.get(it[0].description).get(key)
-				summary.get(it[0].description).put(key, counter == null ? it[1] : counter + it[i])
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-		}
-		
-		summary.each {
-			println "KEY " + it.getKey()
-			it.getValue().each {
-				println "K     " + it.getKey()
-				println "V     " + it.getValue()
-			}
+			def counter = summary.get(it[0].description).get(key)
+			summary.get(it[0].description).put(key, counter == null ? it[1] : counter + it[i])
 		}
 		return summary
 	}
