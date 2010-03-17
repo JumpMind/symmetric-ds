@@ -751,6 +751,11 @@ values
             an <literal>initial_load_select</literal> clause will always need to be provided because the router would not
             function properly with initial load data. 
         </para>
+        <important>
+            <para>
+            When providing an <literal>initial_load_select</literal> be sure to test out the criteria against production data in a query browser.  Do an explain plan to make sure you are properly using indexes.
+            </para>
+        </important>            
      <section id="configuration-dead-triggers">
         <title>Dead Triggers</title>
            <para>
