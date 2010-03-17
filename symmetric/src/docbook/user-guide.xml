@@ -54,9 +54,11 @@
     </preface>
 
     <xi:include href="introduction.xml" />
+    <xi:include href="tutorial.xml" />
     <xi:include href="planning.xml" />
     <xi:include href="configuration.xml" />
     <xi:include href="deployment.xml" />
+    <xi:include href="extensions.xml" />
     <xi:include href="administration.xml" />
     <xi:include href="symmetric-schema.xml" />
     <xi:include href="parameters.xml" />

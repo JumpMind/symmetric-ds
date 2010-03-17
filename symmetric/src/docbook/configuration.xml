@@ -753,14 +753,28 @@ values
         </para>
      <section id="configuration-dead-triggers">
         <title>Dead Triggers</title>
-        <para>
-            Normally a Trigger is specified to capture data changes to a table and send them to
-            a target Node Group.  A "dead" Trigger is one that does not capture data changes.
+           <para>
+            Occasionally the decision of what data to load initially results in additional triggers.  These triggers, known as <emphasis>Dead Triggers</emphasis>,
+            are configured such that they do not capture any data changes.  
+            A "dead" Trigger is one that does not capture data changes.
             In other words, the <literal>sync_on_insert</literal>, <literal>sync_on_update</literal>, and <literal>sync_on_delete</literal> properties
-            for the Trigger are all set to false.  However, because the Trigger is specified,
-             it <emphasis>will</emphasis>
+            for the Trigger are all set to false.  However, since the Trigger is specified, it <emphasis>will</emphasis> 
             be included in the initial load of data for target Nodes.
         </para>
+        <para>
+           Why might you need a Dead Trigger?
+            A dead Trigger might be used to load a read-only lookup table, for example.  It could also 
+            be used
+            to load a table that needs populated with example or default data.
+            Another use is a recovery load of data for tables that have a single direction
+            of synchronization.  For example, a retail store records sales transaction that
+            synchronize in one direction by trickling back to the central office.
+            If the retail store needs to recover all the sales transactions from the central office,
+            they can be sent
+            are part of an initial load from the central office by setting up dead Triggers
+            that "sync" in that direction.
+        </para>
+     
         <para>
             The following SQL statement sets up a non-syncing dead Trigger that sends
             the <literal>sale_transaction</literal> table to the "store" Node Group from the "corp" Node Group during
