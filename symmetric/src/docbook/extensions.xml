@@ -68,7 +68,7 @@
 }]]></programlisting> 
             </para>
         </section>        
-        <section id="configuration-extensions-data-loader-filter">
+        <section id="extensions-data-loader-filter">
             <title>IDataLoaderFilter</title>         
             <para>
                 Data can be filtered as it is loaded into the target database.  It can also be
@@ -144,28 +144,28 @@
 </beans>]]></programlisting>
             </para>
         </section>
-        <section id="configuration-extensions-table-column-filter">
+        <section id="extensions-table-column-filter">
             <title>ITableColumnFilter</title>
             <para>
             Implement this extension point to filter out specific columns from
             use by the dataloader. Only one column filter may be added per target table.
             </para>
         </section>
-        <section id="configuration-extensions-batch-listener">
+        <section id="extensions-batch-listener">
             <title>IBatchListener</title>
             <para>
             This extension point is called whenever a batch has completed loading but before
             the transaction has committed.
             </para>
         </section>
-        <section id="configuration-extensions-acknowledge-event-listener">
+        <section id="extensions-acknowledge-event-listener">
             <title>IAcknowledgeEventListener</title>
             <para>
             Implement this extension point to receive callback events when a batch is acknowledged.  
             The callback for this listener happens at the point of extraction.
             </para>
         </section>                
-        <section id="configuration-extensions-reload-listener">
+        <section id="extensions-reload-listener">
             <title>IReloadListener</title>
             <para>
             Implement this extension point to listen in and take
@@ -173,7 +173,7 @@
             happens at the point of extraction.
             </para>
         </section>                
-        <section id="configuration-extensions-extractor-filter">
+        <section id="extensions-extractor-filter">
             <title>IExtractorFilter</title>
             <para>
             This extension point is called after data has been extracted, but before it has been streamed.  It
@@ -181,7 +181,7 @@
             row should not be streamed.
             </para>
         </section>
-        <section id="configuration-extensions-sync-url-extension">
+        <section id="extensions-sync-url-extension">
             <title>ISyncUrlExtension</title>
             <para>
              This extension point is used to select an appropriate URL based on
@@ -193,7 +193,7 @@
              point in the extension xml file.
             </para>
         </section>        
-        <section id="configuration-extensions-node-id-generator">
+        <section id="extensions-node-id-generator">
             <title>INodeIdGenerator</title>
             <para>
              This extension point allows SymmetricDS users to implement their own algorithms for how 
@@ -201,20 +201,20 @@
              only one node generator per SymmetricDS instance.
             </para>
         </section>
-        <section id="configuration-extensions-trigger-creation-listener">
+        <section id="extensions-trigger-creation-listener">
             <title>ITriggerCreationListener</title>
             <para>
             Implement this extension point to get status callbacks during trigger creation.
             </para>
         </section>       
-        <section id="configuration-extensions-batch-algorithm">
+        <section id="extensions-batch-algorithm">
             <title>IBatchAlgorithm</title>
             <para>
             Implement this extension point and set the name of the Spring bean on the batch_algorithm column of the Channel table to use.
             This extension point gives fine grained control over how a channel is batched.
             </para>
         </section>                   
-        <section id="configuration-extensions-data-router">
+        <section id="extensions-data-router">
             <title>IDataRouter</title>
             <para>
             Implement this extension point and set the name of the Spring bean on the router_type column
@@ -222,31 +222,31 @@
             which nodes data should be routed to.
             </para>
         </section>  
-        <section id="configuration-extensions-heartbeat-listener">
+        <section id="extensions-heartbeat-listener">
             <title>IHeartbeatListener</title>
             <para>
             Implement this extension point to get callbacks during the heartbeat job.
             </para>
         </section>
-        <section id="configuration-extensions-offline-client-listener">
+        <section id="extensions-offline-client-listener">
             <title>IOfflineClientListener</title>
             <para>
             Implement this extension point to get callbacks for offline events on client nodes.
             </para>
         </section>
-        <section id="configuration-extensions-offline-server-listener">
+        <section id="extensions-offline-server-listener">
             <title>IOfflineServerListener</title>
             <para>
             Implement this extension point to get callbacks for offline events detected on a server node during monitoring of client nodes.
             </para>
         </section>
-        <section id="configuration-extensions-node-password">
+        <section id="extensions-node-password">
             <title>INodePasswordFilter</title>
             <para>
             Implement this extension point to intercept the saving and rendering of the node password.
             </para>
         </section>        
-        <section id="configuration-extensions-servlets">
+        <section id="extensions-servlets">
             <title>IServletExtension</title>
             <para>
             Implement this extension point to allow additional Servlets to be registered with SymmetricDS.  This is probably only 
