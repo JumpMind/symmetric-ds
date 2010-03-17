@@ -152,11 +152,11 @@ class DashboardController {
 	
   	def buildNodeGroupSummary(List statusList, Map summary, String key) {
 		statusList.each {
-			if (summary.get(it[0].description) == null) {
-				summary.put(it[0].description, new HashMap())
+			if (summary.get(it[0].nodeGroupId) == null) {
+				summary.put(it[0].nodeGroupId, new HashMap())
 			}
-			def counter = summary.get(it[0].description).get(key)
-			summary.get(it[0].description).put(key, counter == null ? it[1] : counter + it[i])
+			def counter = summary.get(it[0].nodeGroupId).get(key)
+			summary.get(it[0].nodeGroupId).put(key, counter == null ? it[1] : counter + it[i])
 		}
 		return summary
 	}

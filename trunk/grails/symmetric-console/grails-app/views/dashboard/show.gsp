@@ -169,7 +169,7 @@
                     <g:each in="${myNodeGroups}" var="g">
                     <%totalNodesByGroup = g.value.collect{ it.value }.sum()%>
                     <tr>
-                        <td>${g.key}</td>
+                        <td>${org.jumpmind.symmetric.grails.NodeGroup.get(g.key).description}</td>
                         <td>
                               <table class="metricsBar" valign="middle" align="center" cellspacing="0" cellpadding="0" border="0"> 
                                   <tr>
@@ -179,7 +179,7 @@
                                       percent = java.lang.Math.round(s.value / totalNodesByGroup * 100)
                                       title = "${s.key} - ${percent}% (${s.value} nodes)"
                                       %>
-                                      <td width="${percent}%" class="metric-${s.key}"><img title="${title}" alt="${title}" class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></td>
+                                      <td width="${percent}%" class="metric-${s.key}"><g:link title="${title}" controller="node" action="list" params="[nodeGroupId:g.key,batchStatus:s.key]"><img title="${title}" alt="${title}" class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></g:link></td>
                                       <%percentTotal += percent%>
                                   </g:each>
                                   <g:if test="${percentTotal < 100}">
