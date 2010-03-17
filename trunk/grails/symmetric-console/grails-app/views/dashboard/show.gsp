@@ -167,7 +167,7 @@
                   </thead>
                   <tbody>
                     <g:each in="${myNodeGroups}" var="g">
-                    <%totalNodes = org.jumpmind.symmetric.grails.Node.count() %>
+                    <%totalNodesByGroup = g.value.collect{ it.value }.sum()%>
                     <tr>
                         <td>${g.key}</td>
                         <td>
@@ -176,7 +176,7 @@
                                   <% percentTotal = 0%>
                                   <g:each in="${g.value}" var="s" status="i">
                                       <% 
-                                      percent = java.lang.Math.round(s.value / totalNodes * 100)
+                                      percent = java.lang.Math.round(s.value / totalNodesByGroup * 100)
                                       title = "${s.key} - ${percent}% (${s.value} nodes)"
                                       %>
                                       <td width="${percent}%" class="metric-${s.key}"><img title="${title}" alt="${title}" class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></td>
