@@ -881,122 +881,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
     </section>
        
    
-    <section id='jms-publishing'>
-        <title>JMS Publishing</title>    
-        <para>
-            With the proper configuration SymmetricDS can publish XML messages of captured data changes to 
-            JMS during routing or transactionally while data loading synchronized data into a target database.
-            The following explains how to publish to JMS during synchronization to the target database. 
-       </para>
-       <para>     
-            The XmlPublisherDataLoaderFilter is a
-            <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to 
-            publish specific tables as an XML message to a JMS provider.
-            See <xref linkend="extensions"/> for information on how 
-            to configure an extension point.  If the publish to JMS fails, the batch will be marked in error, 
-            the loaded data for the batch will be rolled back
-            and the batch will be retried during the next synchronization run.            
-        </para>
-        <para>
-        The following is an example extension point configuration that will publish four tables in XML with a root 
-        tag of <emphasis>'sale'</emphasis>.  Each XML message will be grouped by the batch and the column names identified by
-        the groupByColumnNames property which have the same values.
-                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans 
-           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-           http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
- 
-    <bean id="configuration-publishingFilter" 
-      class="org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter">
-        <property name="xmlTagNameToUseForGroup" value="sale"/>
-        <property name="tableNamesToPublishAsGroup">
-            <list>
-               <value>SALE_TX</value>
-               <value>SALE_LINE_ITEM</value>
-               <value>SALE_TAX</value>
-               <value>SALE_TOTAL</value>
-            </list>            
-        </property>
-        <property name="groupByColumnNames">
-            <list>
-               <value>STORE_ID</value>
-               <value>BUSINESS_DAY</value>
-               <value>WORKSTATION_ID</value>
-               <value>TRANSACTION_ID</value>
-            </list>                      
-        </property>
-        <property name="publisher">
-           <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
-               <property name="jmsTemplate" ref="definedSpringJmsTemplate"/>
-           </bean>
-        </property>        
-    </bean>     
-</beans>]]></programlisting>        
-        </para>
-        <para>
-          The publisher property on the XmlPublisherDataLoaderFilter takes an interface of type IPublisher.  The implementation
-          demonstrated here is an implementation that publishes to JMS using Spring's 
-          <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
-          Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
-        </para>
-        <para>
-          The above configuration will publish XML similiar to the following:
-            <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  id="0012010-01-220031234" nodeid="00001" time="1264187704155">
-  <row entity="SALE_TX" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="CASHIER_ID">010110</data>
-  </row>        
-  <row entity="SALE_LINE_ITEM" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="SKU">9999999</data>  
-    <data key="PRICE">10.00</data>
-    <data key="DESC" xsi:nil="true"/>
-  </row>        
-  <row entity="SALE_LINE_ITEM" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="SKU">9999999</data>  
-    <data key="PRICE">10.00</data>
-    <data key="DESC" xsi:nil="true"/>
-  </row>
-  <row entity="SALE_TAX" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="AMOUNT">1.33</data>  
-  </row>
-  <row entity="SALE_TOTAL" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="AMOUNT">21.33</data>  
-  </row>
-</sale>
-            ]]></programlisting>     
-            To publish JMS messages during routing
-            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router 
-            would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
-            name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
-            to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.                  
-        </para>
-    </section>     
-    
+   
         
     <!--  Jobs? -->
     <section id="configuration-jobs">
@@ -1241,5 +1126,121 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                 </varlistentry>
             </variablelist>
         </para>
-    </section>    
+    </section> 
+     <section id='jms-publishing'>
+        <title>JMS Publishing</title>    
+        <para>
+            With the proper configuration SymmetricDS can publish XML messages of captured data changes to 
+            JMS during routing or transactionally while data loading synchronized data into a target database.
+            The following explains how to publish to JMS during synchronization to the target database. 
+       </para>
+       <para>     
+            The XmlPublisherDataLoaderFilter is a
+            <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to 
+            publish specific tables as an XML message to a JMS provider.
+            See <xref linkend="extensions"/> for information on how 
+            to configure an extension point.  If the publish to JMS fails, the batch will be marked in error, 
+            the loaded data for the batch will be rolled back
+            and the batch will be retried during the next synchronization run.            
+        </para>
+        <para>
+        The following is an example extension point configuration that will publish four tables in XML with a root 
+        tag of <emphasis>'sale'</emphasis>.  Each XML message will be grouped by the batch and the column names identified by
+        the groupByColumnNames property which have the same values.
+                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+ 
+    <bean id="configuration-publishingFilter" 
+      class="org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter">
+        <property name="xmlTagNameToUseForGroup" value="sale"/>
+        <property name="tableNamesToPublishAsGroup">
+            <list>
+               <value>SALE_TX</value>
+               <value>SALE_LINE_ITEM</value>
+               <value>SALE_TAX</value>
+               <value>SALE_TOTAL</value>
+            </list>            
+        </property>
+        <property name="groupByColumnNames">
+            <list>
+               <value>STORE_ID</value>
+               <value>BUSINESS_DAY</value>
+               <value>WORKSTATION_ID</value>
+               <value>TRANSACTION_ID</value>
+            </list>                      
+        </property>
+        <property name="publisher">
+           <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
+               <property name="jmsTemplate" ref="definedSpringJmsTemplate"/>
+           </bean>
+        </property>        
+    </bean>     
+</beans>]]></programlisting>        
+        </para>
+        <para>
+          The publisher property on the XmlPublisherDataLoaderFilter takes an interface of type IPublisher.  The implementation
+          demonstrated here is an implementation that publishes to JMS using Spring's 
+          <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
+          Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
+        </para>
+        <para>
+          The above configuration will publish XML similiar to the following:
+            <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  id="0012010-01-220031234" nodeid="00001" time="1264187704155">
+  <row entity="SALE_TX" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="CASHIER_ID">010110</data>
+  </row>        
+  <row entity="SALE_LINE_ITEM" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="SKU">9999999</data>  
+    <data key="PRICE">10.00</data>
+    <data key="DESC" xsi:nil="true"/>
+  </row>        
+  <row entity="SALE_LINE_ITEM" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="SKU">9999999</data>  
+    <data key="PRICE">10.00</data>
+    <data key="DESC" xsi:nil="true"/>
+  </row>
+  <row entity="SALE_TAX" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="AMOUNT">1.33</data>  
+  </row>
+  <row entity="SALE_TOTAL" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="AMOUNT">21.33</data>  
+  </row>
+</sale>
+            ]]></programlisting>     
+            To publish JMS messages during routing
+            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router 
+            would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
+            name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
+            to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.                  
+        </para>
+    </section>     
+       
 </chapter>
