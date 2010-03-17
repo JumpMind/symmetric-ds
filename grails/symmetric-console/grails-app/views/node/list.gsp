@@ -50,7 +50,7 @@
       </thead>
       <tbody>
       <g:each in="${nodeInstanceList}" status="i" var="nodeInstance">
-        <g:if test="${nodeInstance.nodeId != nodeInstance.createdAtNodeId && nodeInstance.createdAtNodeId}">
+        <g:if test="${nodeInstance.nodeId != nodeInstance.createdAtNodeId && nodeInstance.createdAtNodeId && !params.nodeGroupId}">
           <tr id="${nodeInstance.nodeId}" class="child-of-${nodeInstance.createdAtNodeId}"></g:if>
         <g:else>
           <tr id="${nodeInstance.nodeId}"></g:else>

@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.server
 
 import org.jumpmind.symmetric.grails.Node
+import org.jumpmind.symmetric.grails.NodeGroup
 
 class NodeController {
 
@@ -14,7 +15,24 @@ class NodeController {
 	session.menu="monitor-nodes"
 	
 	params.max = Integer.MAX_VALUE
-    def list = Node.list(params).sort {a, b ->
+    def list = Node.list(params)
+
+    if (params?.nodeGroupId && params?.batchStatus) {
+		if (params.batchStatus == "OK") {
+			list = Node.findAll("from Node as n where n.nodeGroup = ? and n.batchInErrorCount = ? " +
+					"and n.batchToSendCount = ? order by n.nodeId", [NodeGroup.get(params.nodeGroupId), 0, 0], params)
+		} else if (params.batchStatus == "PT") {
+			list = Node.findAll("from Node as n where n.nodeGroup = ? and n.batchInErrorCount = ? " +
+					"and n.batchToSendCount > ? order by n.nodeId", [NodeGroup.get(params.nodeGroupId), 0, 0], params)
+		}
+		else if (params.batchStatus == "ER") {
+			list = Node.findAllByNodeGroupAndBatchInErrorCountGreaterThan(NodeGroup.get(params.nodeGroupId), 0, params)
+		}
+	}
+	else if (params?.nodeGroupId) {
+		list = Node.findAllByNodeGroup(NodeGroup.get(params.nodeGroupId), params)
+	}
+	list?.sort {a, b ->
       if (a.createdAtNodeId && a.nodeId == a.createdAtNodeId) {
         return -1
       } else if (b.createdAtNodeId && b.nodeId == b.createdAtNodeId) {
@@ -31,7 +49,7 @@ class NodeController {
         return a.nodeId.compareTo(b.nodeId)
       }
     }
-    [nodeInstanceList: list, nodeInstanceTotal: Node.count()]
+	[nodeInstanceList: list, nodeInstanceTotal: list.size()]
   }
 
   def create = {
