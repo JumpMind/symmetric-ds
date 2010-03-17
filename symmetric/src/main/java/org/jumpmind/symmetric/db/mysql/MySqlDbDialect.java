@@ -22,7 +22,9 @@ package org.jumpmind.symmetric.db.mysql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -186,4 +188,15 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return "`";
     }
 
+    @Override
+	protected Integer overrideJdbcTypeForColumn(Map values) {
+    	String typeName = (String)values.get("TYPE_NAME");
+    	if("YEAR".equals(typeName)) {
+    		// it is safe to map a YEAR to INTEGER
+    		return Types.INTEGER;
+    	} else {
+    		return super.overrideJdbcTypeForColumn(values);
+    	}
+	}
+    
 }
