@@ -58,11 +58,11 @@
             SymmetricDS can publish data changes from a node as well using JMS.
     </para>             
                 
-            <para>Our retail example, as shown in <xref linkend="three-tier-store-server" xrefstyle="table"/>, represents a tree hierarchy with a single central office node connected
+            <para>Our retail example, as shown in <xref linkend="figure-two-tier" xrefstyle="select: label"/>, represents a tree hierarchy with a single central office node connected
             by lines to one or more children nodes (the POS workstations). Information flows from the central office node to an individual register
-            and vice versa, but never flows between registers. See <xref linkend="two-tier" xrefstyle="select: label"/>  for a diagram representing this example.</para>
+            and vice versa, but never flows between registers. </para>
             <para>
-                <figure id="two-tier">
+                <figure id="figure-two-tier">
                     <title>Two Tiered Retail Store Deployment Example</title>
                     <mediaobject>
                         <imageobject>
@@ -74,14 +74,14 @@
             <para>More complex organization can also be used. Consider, for example, if the same retail example is expanded to include 
               store <emphasis>servers</emphasis> in each
               store to perform tasks such as opening the store for the day, reconciling registers, assigning employees, etc. 
-              One approach to this new configuration would be to create a three-tier hierarchy (see  <xref linkend="three-tier-store-server" xrefstyle="select: label"/>).
+              One approach to this new configuration would be to create a three-tier hierarchy (see  <xref linkend="figure-three-tier-store-server" xrefstyle="select: label"/>).
               The highest tier, the centralized database, 
               connects with each store server's database. The store servers, in turn, communicate with the 
               individual point-of-sale workstations at the store. In this way data from each register could be accumulated at
               the store server, then sent on to the central office.  Similarly, data from the central office can be staged in the 
               store server and then sent on to each register, filtering the register's data based on which register it is.</para>                        
              <para>
-                <figure id="three-tier-store-server">
+                <figure id="figure-three-tier-store-server">
                     <title>Three Tiered, In-Store Server, Retail Store Deployment Example</title>
                     <mediaobject>
                         <imageobject>
@@ -90,13 +90,13 @@
                     </mediaobject>
                 </figure>
             </para>    
-        <para>One final example, show in <xref linkend="three-tier-regional" xrefstyle="select: label"/>, again extending our original two-tier retail use case, would be to organize stores by "region" in the world.  
+        <para>One final example, show in <xref linkend="figure-three-tier-regional" xrefstyle="select: label"/>, again extending our original two-tier retail use case, would be to organize stores by "region" in the world.  
         This three tier architecture would introduce new regional servers (and corresponding regional databases)
         which would consolidate information specific to stores the regional server is responsible for.  The tiers in this case are
         therefore the central office server, regional servers, and individual store registers.         
         </para>
           <para>
-                <figure id="three-tier-regional">
+                <figure id="figure-three-tier-regional">
                     <title>Three Tiered, Regional Server, Retail Store Deployment Example</title>
                     <mediaobject>
                         <imageobject>

@@ -5,11 +5,11 @@
     <para>Now that several of the features of SymmetricDS have been discussed, a quick working example of SymmetricDS is in order. 
         This section contains a hands-on tutorial that demonstrates how to synchronize a sample database between two running
         instances of SymmetricDS. This example models a retail business that has a central office database (called "root") and
-        multiple retail store databases (called "client").  For the tutorial, we will have only one "client", as shown in the figure below.
+        multiple retail store databases (called "client").  For the tutorial, we will have only one "client", as shown in <xref linkend="figure-tutorial" xrefstyle="select: label"/>.
         </para>
         
         <para>
-                <figure>
+                <figure id="figure-two-tier">
                     <title>Simplified Two Tiered Retail Store Tutorial Example</title>
                     <mediaobject>
                         <imageobject>
