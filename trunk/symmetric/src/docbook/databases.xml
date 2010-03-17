@@ -314,8 +314,22 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
         <para>
             Currently, the DB2 Dialect for SymmetricDS does not provide support for transactional synchronization.
             Large objects (LOB) are supported, but are limited to 16,336 bytes in size.
-            The current features in the DB2 Dialect have been tested using DB2 9.5 on Linux and Windows operating systems.
-        </para>        
+            The current features in the DB2 Dialect have been tested using DB2 9.5 on Linux and Windows operating systems.  
+        </para> 
+        <para>
+            There is currently a bug with the retrieval of auto increment columns with the DB2 9.5 JDBC drivers that causes
+            some of the SymmetricDS configuration tables to be rebuilt when auto.config.database=true.  The DB2 9.7 JDBC drivers
+            seem to have fixed the issue.  They may be used with the 9.5 database.
+        </para>       
+        <para>
+            A system temporary tablespace with too small of a page size may cause the following trigger build errors:
+            <programlisting><![CDATA[
+SQL1424N Too many references to transition variables and transition table
+columns or the row length for these references is too long. Reason
+code="2". LINE NUMBER=1. SQLSTATE=54040            
+            ]]></programlisting>
+            Simply create a system temporary tablespace that has a bigger page size.  A page size of 8k will probably suffice.
+        </para>
     </section>      
     <section id="ap02-firebird">
         <title>Firebird</title>
