@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="advanced-configuration" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.0" xml:id="configuration" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
@@ -210,7 +210,7 @@ insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         and <xref linkend="table_node_security" xrefstyle="table"/> for the node to be able to register.  You can also, with this table,
         manually cause a node to re-register or do a re-initial load by setting the corresponding
         columns in the table itself.  Registration is discussed in more detail in
-        <xref linkend="registration"/>.
+        <xref linkend="configuration-registration"/>.
         </para>
     </section>
    
@@ -453,7 +453,7 @@ values
     'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 
 ]]></programlisting>
-            Attributes on a <xref linkend="node" xrefstyle="table"/> that can be referenced with tokens include:
+            Attributes on a <xref linkend="table_node" xrefstyle="table"/> that can be referenced with tokens include:
             <itemizedlist>
                 <listitem>NODE_ID</listitem>
                 <listitem>EXTERNAL_ID</listitem>
@@ -747,7 +747,7 @@ values
             A more efficient way to subset the data for a load is to provide an
             <literal>initial_load_select</literal> clause on <xref linkend="table_trigger_router" xrefstyle="table"/>.
             If an <literal>initial_load_select</literal> clause is provided, data will <emphasis>not</emphasis> be passed through the 
-            configured router during initial load.  In cases where custom routing is done using a feature like <xref linkend="relational-router">Relational Routing</xref>,
+            configured router during initial load.  In cases where custom routing is done using a feature like <xref linkend="configuration-relational-router">Relational Routing</xref>,
             an <literal>initial_load_select</literal> clause will always need to be provided because the router would not
             function properly with initial load data. 
         </para>
@@ -892,7 +892,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
             The XmlPublisherDataLoaderFilter is a
             <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to 
             publish specific tables as an XML message to a JMS provider.
-            See <xref linkend="extension-points"/> for information on how 
+            See <xref linkend="extensions"/> for information on how 
             to configure an extension point.  If the publish to JMS fails, the batch will be marked in error, 
             the loaded data for the batch will be rolled back
             and the batch will be retried during the next synchronization run.            

@@ -104,7 +104,7 @@
                 order, the item updates would delay the inventory updates even though the data is unrelated. By assigning changes to the item
                 tables to an <emphasis>item</emphasis> channel and inventory tables' changes to an <emphasis>inventory</emphasis> channel, the changes are
                 processed independently so inventory can get through despite the large amount of item data.</para>  Channels are discussed
-                in more detail in <xref linkend="channel"/>.
+                in more detail in <xref linkend="choosing-channels"/>.
         </section>
         <section id="transactions">
             <title>Transaction Awareness</title>
@@ -255,7 +255,7 @@
                 new extension point called the data router. Data routers are configured in the router table with a <literal>router_type</literal> and
                 a <literal>router_expression</literal>. Several different routers have been provided to serve the majority of users' routing
                 needs, but the framework is in place for a SymmetricDS programmer to develop domain- or application-specific
-                routers.  See <xref linkend="router" /> for a complete list of provided routers.
+                routers.  See <xref linkend="configuration-router" /> for a complete list of provided routers.
             </para>
           
             <para>Since the routing and capturing of data are now performed with two separate mechanisms, the two concepts have
