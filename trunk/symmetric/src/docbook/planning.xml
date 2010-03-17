@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="concepts" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.0" xml:id="planning" xmlns="http://docbook.org/ns/docbook"
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
@@ -280,7 +280,7 @@
              
        
         <section id="defining-data-changes-trigger-routers">
-          <title>Planning Initial Loads and Dead Triggers</title>
+          <title>Planning Initial Loads</title>
           
           <para>The mapping between Triggers and Routers defines more than just the many-to-many relationship between your Triggers and your Routers.  It also defines
           two aspects of how initial loads occur, so now is a good time to plan how your <emphasis>Initial Loads</emphasis> will work.
@@ -293,25 +293,7 @@
   <!--  MDH need content here -->
           </para>
      
-         <para>
-            Occasionally the decision of what data to load initially results in additional triggers.  These triggers, known as <emphasis>Dead Triggers</emphasis>,
-            are configured such that they do not capture any data changes.  In other words, their settings for synchronizing on 
-            updates, inserts, and deletes are all set to false.  However, since the Trigger is specified, it <emphasis>will</emphasis> 
-            be included in the initial load of data for target Nodes.
-        </para>
-        <para>
-           Why might you need a Dead Trigger?
-            A dead Trigger might be used to load a read-only lookup table, for example.  It could also 
-            be used
-            to load a table that needs populated with example or default data.
-            Another use is a recovery load of data for tables that have a single direction
-            of synchronization.  For example, a retail store records sales transaction that
-            synchronize in one direction by trickling back to the central office.
-            If the retail store needs to recover all the sales transactions from the central office,
-            they can be sent
-            are part of an initial load from the central office by setting up dead Triggers
-            that "sync" in that direction.
-        </para>
+      
       </section>
       
       

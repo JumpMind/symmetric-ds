@@ -2,8 +2,7 @@
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Introduction</title>
-    <section id="overview">
-        <title>Overview</title>
+    
         <para>This User Guide will introduce both basic and advanced concepts in the configuration
             of SymmetricDS. By the end of this chapter, you will have a better understanding of SymmetricDS' capabilities, and
             many of its basic concepts. This chapter also includes a hands-on, step-by-step, tutorial meant to demonstrate some of
@@ -178,7 +177,7 @@
                 used to send data. The data payload can be any SQL statement. The event is processed and acknowledged just like
                 any other event type.</para>
         </section>
-    </section>
+    
      </section>
     <section id="requirements">
         <title>System Requirements</title>
@@ -286,6 +285,4 @@
                 statistics, have been moved over to the batch tables themselves. The statistics in the batch tables now always represent the
                 latest synchronization attempt.</para>
         </section>
-            
-    <xi:include href="tutorial.xml" />
 </chapter>
