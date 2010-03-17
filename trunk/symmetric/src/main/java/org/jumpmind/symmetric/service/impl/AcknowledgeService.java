@@ -77,6 +77,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     outgoingBatch.setSqlCode(batch.getSqlCode());
                     outgoingBatch.setSqlState(batch.getSqlState());
                     outgoingBatch.setSqlMessage(batch.getSqlMessage());
+                    log.error("AckReceivedError", outgoingBatch.getNodeId(), outgoingBatch.getBatchId());
                 }
 
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
