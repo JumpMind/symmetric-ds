@@ -288,11 +288,8 @@
           data and is very, very useful for most applications.  Using our retail example, consider a new store being opened.  Initially, you would to pre-populate
           the stores' database with all the item, pricing, and tax data for that particular store.  This is achieved through an initial load.  
           </para>
-          <para>
-          For each Trigger Router you define, you can choose the order in which 
-  <!--  MDH need content here -->
-          </para>
      
+  <!--  MDH need content here -->
       
       </section>
       
