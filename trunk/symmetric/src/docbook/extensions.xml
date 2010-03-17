@@ -37,7 +37,7 @@
              a jar file the <literal>META-INF</literal> directory should be at the root of the jar file.  When packaged in a war file, the <literal>META-INF</literal> directory
              should be in the <literal>WEB-INF/classes</literal> directory.
         </para>
-        <section id="configuration-parameter-filter">
+        <section id="extensions-parameter-filter">
             <title>IParameterFilter</title>
             <para>
                 Parameter values can be specified in code using a parameter filter.  Note that there can be only one parameter
