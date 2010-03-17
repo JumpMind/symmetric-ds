@@ -8,7 +8,7 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Configuration</title>
     <para>
-    <xref linkend="planning" />, introduced numerous concepts and the analysis and design needed to create an implementation of SymmetricDS.
+    <xref linkend="planning" xrefstyle="select: label"/> introduced numerous concepts and the analysis and design needed to create an implementation of SymmetricDS.
     This chapter re-visits each analysis step and documents how to turn a SymmetricDS design into reality through configuration of
     the various SymmetricDS tables.  In addition, several advanced configuration options, not presented previously, will also be covered.
      </para>
