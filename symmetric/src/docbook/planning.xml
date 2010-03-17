@@ -294,6 +294,8 @@
           down the data that is selected out of the database.
           </para>                    
       </section>
+      
+    </section>
       <section id="planning-registration">
           <title>Planning for Registering Nodes</title>
           <para>
@@ -310,7 +312,6 @@
           </para>
     </section>
 
-    </section>
     
  
 </chapter>
