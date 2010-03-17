@@ -897,16 +897,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         The SymmetricDS software consists of a series of background jobs, managers, Servlets, and services wired together
         via dependency injection using the <ulink url="http://springframework.org">Spring Framework</ulink>.
     </para>    
-    <para>
-        <figure>
-            <title>Software Stack</title>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/software-stack.gif" format="GIF" />
-                </imageobject>
-            </mediaobject>
-        </figure>
-    </para>    
+     
     <para>
         As a client, the node runs the router job, push job and pull job on a timer thread.  
         The router job uses services to create batches that are targeted at certain nodes.  
