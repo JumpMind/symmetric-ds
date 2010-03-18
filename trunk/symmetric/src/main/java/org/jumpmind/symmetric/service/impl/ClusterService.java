@@ -55,6 +55,10 @@ public class ClusterService extends AbstractService implements IClusterService {
         initLockTable(PURGE_STATISTICS, COMMON_LOCK_ID);
         initLockTable(SYNCTRIGGERS, COMMON_LOCK_ID);
     }
+    
+    public void initLockTable(final String action) {
+        initLockTable(action, COMMON_LOCK_ID);
+    }
 
     protected void initLockTable(final String action, final String lockId) {
         try {
