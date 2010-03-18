@@ -39,7 +39,7 @@ class DashboardController {
   def stop = {}
 
   def createCommand() {
-    def nodeId = NodeIdentity.findAll()?.get(0).nodeId
+    def nodeId = NodeIdentity.find("from NodeIdentity")?.nodeId
     new DashboardCommand(
             started: symmetricEngine.started || symmetricEngine.starting,
             nodeGroupId: symmetricEngine.parameterService.nodeGroupId,
