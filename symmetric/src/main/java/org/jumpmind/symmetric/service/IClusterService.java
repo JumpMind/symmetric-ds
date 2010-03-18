@@ -24,6 +24,8 @@ package org.jumpmind.symmetric.service;
 public interface IClusterService {
 
     public void initLockTable();
+    
+    public void initLockTable(final String action);
 
     public boolean lock(String action);
     
