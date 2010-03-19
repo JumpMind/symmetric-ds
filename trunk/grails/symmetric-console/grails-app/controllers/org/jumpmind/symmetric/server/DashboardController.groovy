@@ -45,8 +45,8 @@ class DashboardController {
             nodeGroupId: symmetricEngine.parameterService.nodeGroupId,
             nodeId: nodeId,
             numberOfNodes: Node.count(),
-            numberOfClients: Node.countByCreatedAtNodeId(nodeId),
-            nodeHosts: NodeHost.findByNodeId(nodeId)
+            numberOfClients: nodeId ? Node.countByCreatedAtNodeId(nodeId) : 0,
+            nodeHosts: nodeId ? NodeHost.findByNodeId(nodeId) : []
 
     )
   }
@@ -79,7 +79,9 @@ class DashboardController {
 		batchRow.totalBatches += it[2]
 		prevNodeId = batchRow.nodeId
 	}
-	batches.add(batchRow)
+	if (batchRow) {
+	    batches.add(batchRow)
+	}
 	return batches
   }
 	
@@ -111,7 +113,9 @@ class DashboardController {
 		batchRow.totalBatches += it[2]
 		prevNodeId = batchRow.nodeId
 	}
-	batches.add(batchRow)
+	if (batchRow) {
+	    batches.add(batchRow)
+	}
 	return batches
   }
 	
