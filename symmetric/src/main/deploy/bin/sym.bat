@@ -1,11 +1,11 @@
 @echo off
 
 set PRGDIR=%~dp0
-set LIBDIR=%PRGDIR%\..
-set CONFDIR=%PRGDIR%\conf
+set HOMEDIR=%PRGDIR%\..
+set CONFDIR=%HOMEDIR%\conf
 set CLASSPATH=.
 
-for %%i in ("%LIBDIR%\lib\*.jar") do call "%PRGDIR%\cpappend.bat" %%i
+for %%i in ("%HOMEDIR%\lib\*.jar") do call "%PRGDIR%\cpappend.bat" %%i
 
 rem echo CLASSPATH=%CLASSPATH%
 
