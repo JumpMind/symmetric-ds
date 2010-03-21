@@ -302,26 +302,32 @@ public class NodeManagementService {
     @ManagedOperation(description = "Send a SQL event to a node.")
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "nodeId", description = "The node id to sent the event to."),
+            @ManagedOperationParameter(name = "catalogName", description = "The catalog name to reload. Can be null."),
+            @ManagedOperationParameter(name = "schemaName", description = "The schema name to reload. Can be null."),                        
             @ManagedOperationParameter(name = "tableName", description = "The table name the SQL is for."),
             @ManagedOperationParameter(name = "sql", description = "The SQL statement to send.") })
-    public String sendSQL(String nodeId, String tableName, String sql) {
-        return dataService.sendSQL(nodeId, tableName, sql);
+    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql) {
+        return dataService.sendSQL(nodeId, catalogName, schemaName, tableName, sql);
     }
 
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
+        @ManagedOperationParameter(name = "catalogName", description = "The catalog name to reload. Can be null."),
+        @ManagedOperationParameter(name = "schemaName", description = "The schema name to reload. Can be null."),                    
             @ManagedOperationParameter(name = "tableName", description = "The table name to reload.") })
-    public String reloadTable(String nodeId, String tableName) {
-        return dataService.reloadTable(nodeId, tableName);
+    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName) {
+        return dataService.reloadTable(nodeId, catalogName, schemaName, tableName);
     }
 
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
+            @ManagedOperationParameter(name = "catalogName", description = "The catalog name to reload. Can be null."),
+            @ManagedOperationParameter(name = "schemaName", description = "The schema name to reload. Can be null."),            
             @ManagedOperationParameter(name = "tableName", description = "The table name to reload."),
             @ManagedOperationParameter(name = "overrideInitialLoadSelect", description = "Override initial load select where-clause.") })
-    public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
-        return dataService.reloadTable(nodeId, tableName, overrideInitialLoadSelect);
+    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect) {
+        return dataService.reloadTable(nodeId, catalogName, schemaName, tableName, overrideInitialLoadSelect);
     }
 
     @ManagedOperation(description = "Write a range of batches to a file in SymmetricDS Data Format.")

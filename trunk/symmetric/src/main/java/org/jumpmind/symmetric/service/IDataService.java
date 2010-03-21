@@ -22,13 +22,13 @@ public interface IDataService {
     public String reloadNode(String nodeId);
 
     @Transactional
-    public String reloadTable(String nodeId, String tableName);
+    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName);
 
     @Transactional
-    public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect);
+    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect);
 
     @Transactional
-    public String sendSQL(String nodeId, String tableName, String sql);
+    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
 
     @Transactional
     public void insertReloadEvent(Node targetNode);
@@ -81,9 +81,9 @@ public interface IDataService {
 
     public Date findCreateTimeOfEvent(long dataId);
 
-    public Data createData(String tableName, boolean isReload);
+    public Data createData(String catalogName, String schemaName, String tableName, boolean isReload);
 
-    public Data createData(String tableName, String whereClause, boolean isReload);
+    public Data createData(String catalogName, String schemaName, String tableName, String whereClause, boolean isReload);
 
     public Map<String, String> getRowDataAsMap(Data data);
 

@@ -271,7 +271,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private void insertNodeSecurityUpdate(Node node, boolean isReload) {
-        Data data = createData(tablePrefix + "_node_security", " t.node_id = '" + node.getNodeId() + "'", isReload);
+        Data data = createData(null, null, tablePrefix + "_node_security", " t.node_id = '" + node.getNodeId() + "'", isReload);
         if (data != null) {
             insertDataAndDataEventAndOutgoingBatch(data, node.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
         }
@@ -284,7 +284,7 @@ public class DataService extends AbstractService implements IDataService {
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
-    public String sendSQL(String nodeId, String tableName, String sql) {
+    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql) {
         Node sourceNode = nodeService.findIdentity();
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
@@ -292,7 +292,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter trigger = triggerRouterService.findTriggerRouterForCurrentNode(tableName);
+        TriggerRouter trigger = triggerRouterService.getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, true);
         if (trigger == null) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
@@ -303,11 +303,11 @@ public class DataService extends AbstractService implements IDataService {
         return "Successfully create SQL event for node " + targetNode.getNodeId();
     }
 
-    public String reloadTable(String nodeId, String tableName) {
-        return reloadTable(nodeId, tableName, null);
+    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName) {
+        return reloadTable(nodeId, catalogName, schemaName, tableName, null);
     }
 
-    public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
+    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect) {
         Node sourceNode = nodeService.findIdentity();
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
@@ -315,7 +315,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter triggerRouter = triggerRouterService.findTriggerRouterForCurrentNode(tableName);
+        TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, true);
         if (triggerRouter == null) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
@@ -345,7 +345,7 @@ public class DataService extends AbstractService implements IDataService {
         List<NodeGroupLink> links = configurationService.getGroupLinksFor(parameterService.getNodeGroupId());
         for (NodeGroupLink nodeGroupLink : links) {
             if (nodeGroupLink.getDataEventAction() == NodeGroupLinkAction.P) {
-                TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForTableForCurrentNode(tableName, false);
+                TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForTableForCurrentNode(null, null, tableName, false);
                 if (triggerRouter != null) {
                     Data data = createData(triggerRouter.getTrigger(), String.format(" t.node_id = '%s'", node.getNodeId()), false);
                     if (data != null) {
@@ -358,13 +358,13 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public Data createData(String tableName, boolean isReload) {
-        return createData(tableName, null, isReload);
+    public Data createData(String catalogName, String schemaName, String tableName, boolean isReload) {
+        return createData(catalogName, schemaName, tableName, null, isReload);
     }
 
-    public Data createData(String tableName, String whereClause, boolean isReload) {
+    public Data createData(String catalogName, String schemaName, String tableName, String whereClause, boolean isReload) {
         Data data = null;
-        TriggerRouter trigger = triggerRouterService.getTriggerRouterForTableForCurrentNode(tableName, false);
+        TriggerRouter trigger = triggerRouterService.getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, false);
         if (trigger != null) {
             data = createData(trigger.getTrigger(), whereClause, isReload);
         }

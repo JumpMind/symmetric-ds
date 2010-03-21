@@ -38,32 +38,26 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class MockDataService implements IDataService {
 
+    public void addHeartbeatListener(IHeartbeatListener listener) {
+
+    }
+
     public void addReloadListener(IReloadListener listener) {
 
     }
-    
+
     public int countDataInRange(long firstDataId, long secondDataId) {
+
         return 0;
     }
 
-    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId,
-            String routerId) {
-
-    }
-
-    public void sendScript(String nodeId, String script) {
-
-    }
-
-    public void addHeartbeatListener(IHeartbeatListener listener) {
-    }
-
-    public Data createData(String tableName, boolean isReload) {
+    public Data createData(String catalogName, String schemaName, String tableName, boolean isReload) {
 
         return null;
     }
 
-    public Data createData(String tableName, String whereClause, boolean isReload) {
+    public Data createData(String catalogName, String schemaName, String tableName,
+            String whereClause, boolean isReload) {
 
         return null;
     }
@@ -96,7 +90,12 @@ public class MockDataService implements IDataService {
         return 0;
     }
 
-    public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId,
+            List<Node> nodes, String routerId) {
+
+    }
+
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId) {
 
     }
 
@@ -104,12 +103,12 @@ public class MockDataService implements IDataService {
 
     }
 
-    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes,
-            String routerId) {
+    public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
 
     }
 
-    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId) {
+    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId,
+            String routerId) {
 
     }
 
@@ -151,17 +150,19 @@ public class MockDataService implements IDataService {
         return null;
     }
 
-    public String reloadTable(String nodeId, String tableName) {
+    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName) {
 
         return null;
     }
 
-    public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
+    public String reloadTable(String nodeId, String catalogName, String schemaName,
+            String tableName, String overrideInitialLoadSelect) {
 
         return null;
     }
 
     public boolean removeReloadListener(IReloadListener listener) {
+
         return false;
     }
 
@@ -169,9 +170,14 @@ public class MockDataService implements IDataService {
 
     }
 
-    public String sendSQL(String nodeId, String tableName, String sql) {
+    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
+            String sql) {
 
         return null;
+    }
+
+    public void sendScript(String nodeId, String script) {
+
     }
 
     public void setReloadListeners(List<IReloadListener> listeners) {
