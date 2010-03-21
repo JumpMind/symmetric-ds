@@ -353,18 +353,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 targetNodeGroupId, Constants.CHANNEL_CONFIG }, new TriggerRouterMapper());
     }
 
-    public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId,
-            String targetNodeGroupId, String channel) {
-        List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(
-                getTriggerRouterSqlPrefix() + getSql("selectTriggerTargetSql"), new Object[] {
-                        table, targetNodeGroupId, channel, sourceNodeGroupId },
-                new TriggerRouterMapper());
-        if (configs.size() > 0) {
-            return configs.get(0);
-        } else {
-            return null;
-        }
-    }
+//    public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId,
+//            String targetNodeGroupId, String channel) {
+//        List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(
+//                getTriggerRouterSqlPrefix() + getSql("selectTriggerTargetSql"), new Object[] {
+//                        table, targetNodeGroupId, channel, sourceNodeGroupId },
+//                new TriggerRouterMapper());
+//        if (configs.size() > 0) {
+//            return configs.get(0);
+//        } else {
+//            return null;
+//        }
+//    }
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId) {
         List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(
