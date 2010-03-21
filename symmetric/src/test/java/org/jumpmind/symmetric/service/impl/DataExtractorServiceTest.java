@@ -74,7 +74,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         BufferedWriter writer = mockTransport.open();
         JdbcTemplate template = getJdbcTemplate();
         template.update("delete from " + TriggerRouterServiceTest.TEST_TRIGGERS_TABLE);
-        TriggerRouter trigger = getTriggerRouterService().findTriggerRouterForCurrentNode(TriggerRouterServiceTest.TEST_TRIGGERS_TABLE);
+        TriggerRouter trigger = getTriggerRouterService().getTriggerRouterForTableForCurrentNode(null, null, TriggerRouterServiceTest.TEST_TRIGGERS_TABLE, false);
         OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId());
         outgoingBatchService.insertOutgoingBatch(batch);
         DataExtractorContext ctx = new DataExtractorContext();

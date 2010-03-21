@@ -740,7 +740,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
-        TriggerRouter trigger = getTriggerRouterService().findTriggerRouterForCurrentNode(tableName);
+        TriggerRouter trigger = getTriggerRouterService().getTriggerRouterForTableForCurrentNode(null, null, tableName, true);
         if (trigger == null) {
             trigger = new TriggerRouter();
             trigger.getTrigger().setSourceTableName(tableName);

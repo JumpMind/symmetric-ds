@@ -262,11 +262,6 @@
         where trigger_id=? and router_id=?
       </value>
     </entry>     
-    <entry key="selectTriggerSql">
-      <value>
-        where t.source_table_name = ? and r.source_node_group_id = ?
-      </value>
-    </entry>
     <entry key="selectTriggerTargetSql">
       <value>
         where t.source_table_name = ? and r.target_node_group_id = ? and t.channel_id = ? and r.source_node_group_id = ?

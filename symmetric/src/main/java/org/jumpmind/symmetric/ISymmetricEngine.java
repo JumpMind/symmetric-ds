@@ -69,7 +69,7 @@ public interface ISymmetricEngine {
      */
     public String reloadNode(String nodeId);
 
-    public String sendSQL(String nodeId, String tableName, String sql);
+    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
 
     /**
      * Will perform a push the same way the {@link PushJob} would have.

@@ -209,24 +209,44 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private String getTriggerRouterSqlPrefix() {
         return getSql("selectTriggerRouterPrefixSql");
     }
-
-    public TriggerRouter findTriggerRouterForCurrentNode(String table) {
-        String nodeGroupId = parameterService.getNodeGroupId();
-        List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(
-                getTriggerRouterSqlPrefix() + getSql("selectTriggerSql"), new Object[] { table,
-                    nodeGroupId }, new TriggerRouterMapper());
-        if (configs.size() > 0) {
-            return configs.get(0);
-        } else {
-            List<TriggerRouter> triggers = getAllTriggerRoutersForCurrentNode(nodeGroupId);
-            for (TriggerRouter trigger : triggers) {
-                if (trigger.getTrigger().getSourceTableName().equalsIgnoreCase(table)) {
-                    return trigger;
+    
+    public TriggerRouter getTriggerRouterForTableForCurrentNode(String catalogName, String schemaName, String tableName, boolean refreshCache) {
+        TriggerRoutersCache cache = getTriggerRoutersCacheForCurrentNode(refreshCache);
+        Collection<List<TriggerRouter>> triggerRouters = cache.triggerRoutersByTriggerId.values();
+        for (List<TriggerRouter> list : triggerRouters) {
+            for (TriggerRouter triggerRouter : list) {
+                if (isMatch(catalogName, schemaName, tableName, triggerRouter.getTrigger())) {
+                    return triggerRouter;
                 }
             }
         }
         return null;
     }
+    
+    protected boolean isMatch(String catalogName, String schemaName, String tableName,
+            Trigger trigger) {
+        if (!StringUtils.isBlank(tableName) && !tableName.equals(trigger.getSourceTableName())) {
+            return false;
+        } else if (StringUtils.isBlank(tableName)
+                && !StringUtils.isBlank(trigger.getSourceTableName())) {
+            return false;
+        } else if (!StringUtils.isBlank(catalogName)
+                && !catalogName.equals(trigger.getSourceCatalogName())) {
+            return false;
+        } else if (StringUtils.isBlank(catalogName)
+                && !StringUtils.isBlank(trigger.getSourceCatalogName())) {
+            return false;
+        } else if (!StringUtils.isBlank(schemaName)
+                && !schemaName.equals(trigger.getSourceSchemaName())) {
+            return false;
+        } else if (StringUtils.isBlank(schemaName)
+                && !StringUtils.isBlank(trigger.getSourceSchemaName())) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 
     /**
      * Create a list of {@link TriggerRouter} for the SymmetricDS tables that
@@ -288,19 +308,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean refreshCache) {
         return getTriggerRoutersCacheForCurrentNode(refreshCache).triggerRoutersByTriggerId;
     }
-    
-    public TriggerRouter getTriggerRouterForTableForCurrentNode(String tableName, boolean refreshCache) {
-        TriggerRoutersCache cache = getTriggerRoutersCacheForCurrentNode(refreshCache);
-        Collection<List<TriggerRouter>> triggerRouters = cache.triggerRoutersByTriggerId.values();
-        for (List<TriggerRouter> list : triggerRouters) {
-            for (TriggerRouter triggerRouter : list) {
-                if (triggerRouter.getTrigger().getSourceTableName().equals(tableName)) {
-                    return triggerRouter;
-                }
-            }
-        }
-        return null;
-    }
 
     protected TriggerRoutersCache getTriggerRoutersCacheForCurrentNode(
             boolean refreshCache) {
@@ -352,19 +359,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 + getSql("activeTriggersForReloadSql"), new Object[] { sourceNodeGroupId,
                 targetNodeGroupId, Constants.CHANNEL_CONFIG }, new TriggerRouterMapper());
     }
-
-//    public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId,
-//            String targetNodeGroupId, String channel) {
-//        List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(
-//                getTriggerRouterSqlPrefix() + getSql("selectTriggerTargetSql"), new Object[] {
-//                        table, targetNodeGroupId, channel, sourceNodeGroupId },
-//                new TriggerRouterMapper());
-//        if (configs.size() > 0) {
-//            return configs.get(0);
-//        } else {
-//            return null;
-//        }
-//    }
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId) {
         List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(
