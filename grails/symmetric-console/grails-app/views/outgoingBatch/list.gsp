@@ -17,7 +17,6 @@
     <table>
       <thead>
       <tr>
-        <th>Show Data</th>
         <g:sortableColumn property="batchId" title="${message(code: 'outgoingBatch.batchId.label', default: 'Batch Id')}"/>
         <g:sortableColumn property="nodeId" title="${message(code: 'outgoingBatch.nodeId.label', default: 'Node Id')}"/>
         <g:sortableColumn property="channelId" title="${message(code: 'outgoingBatch.channelId.label', default: 'Channel Id')}"/>
@@ -35,16 +34,15 @@
       <tbody>
       <g:each in="${outgoingBatchInstanceList}" status="i" var="outgoingBatchInstance">
         <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
-          <td><g:link controller="dataEvent" action="list" params="[batchId:outgoingBatchInstance.batchId]">view</g:link></td>
           <td><g:link action="show" id="${outgoingBatchInstance.batchId}">${outgoingBatchInstance.batchId}</g:link></td>
-          <td>${fieldValue(bean: outgoingBatchInstance, field: "nodeId")}</td>
-          <td>${fieldValue(bean: outgoingBatchInstance, field: "channelId")}</td>
+          <td><g:link controller="node">${fieldValue(bean: outgoingBatchInstance, field: "nodeId")}</g:link></td>
+          <td><g:link controller="channel" action="show" id="${outgoingBatchInstance.channelId}">${fieldValue(bean: outgoingBatchInstance, field: "channelId")}</g:link></td>
           <td <g:if test="${outgoingBatchInstance?.failedDataId > 0}">title="${outgoingBatchInstance.sqlCode} - ${outgoingBatchInstance.sqlMessage}"</g:if>>${fieldValue(bean: outgoingBatchInstance, field: "status")}<div class="metric-${outgoingBatchInstance.status} status-box"></div></td>
           <td>
             <g:if test="${outgoingBatchInstance?.failedDataId > 0}">
                 <g:link controller="data" action="show" id="${outgoingBatchInstance.failedDataId}">${fieldValue(bean: outgoingBatchInstance, field: "failedDataId")}</g:link></td>
             </g:if>
-          <td>${fieldValue(bean: outgoingBatchInstance, field: "dataEventCount")}</td>
+          <td><g:link controller="dataEvent" action="list" params="[batchId:outgoingBatchInstance.batchId]">${fieldValue(bean: outgoingBatchInstance, field: "dataEventCount")}</g:link></td>
           <td>${fieldValue(bean: outgoingBatchInstance, field: "routerMillis")}</td>
           <td>${fieldValue(bean: outgoingBatchInstance, field: "networkMillis")}</td>
           <td>${fieldValue(bean: outgoingBatchInstance, field: "filterMillis")}</td>

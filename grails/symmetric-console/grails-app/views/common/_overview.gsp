@@ -5,12 +5,7 @@
     </span>   
     <span class="meta">
         <span class="label"><g:message code="symmetric.status.label" default="Heartbeat"/></span>
-        <span class="value"><g:if test="${session.overview?.started}">
-                <g:message code="symmetric.running.label" default="Running"/>
-              </g:if>
-              <g:else>
-                <g:message code="symmetric.running.label" default="Stopped"/>
-              </g:else></span>
+        <span class="value">${session.overview?.heartbeat}</span>
     </span>  
     <span class="meta">
         <span class="label"><g:message code="symmetric.node.group.label" default="Group"/></span>
