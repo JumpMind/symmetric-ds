@@ -157,7 +157,9 @@ public class SqlScript {
                         line = trimComments(line);
                         if (line.trim().length() > 0) {
                             if (checkStatementEnds(line)) {
-                                sql.append(" ");
+                                if (sql.length() > 0) {
+                                    sql.append("\n");
+                                }
                                 sql.append(line.substring(0, line
                                         .lastIndexOf(delimiter)).trim());
                                 log.debug("Sql", sql);
@@ -186,7 +188,7 @@ public class SqlScript {
                                 }
                                 sql.setLength(0);
                             } else {
-                                sql.append(" ");
+                                sql.append("\n");
                                 sql.append(line);
                             }
                         }
