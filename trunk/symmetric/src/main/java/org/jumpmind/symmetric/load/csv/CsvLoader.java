@@ -257,19 +257,18 @@ public class CsvLoader implements IDataLoader {
 
         if (continueToLoad) {
             boolean enableFallbackUpdate = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
-            Object savepoint = null;
             try {
                 stats.startTimer();
-                if (enableFallbackUpdate) {
-                    savepoint = dbDialect.createSavepointForFallback();
+                if (enableFallbackUpdate && dbDialect.requiresSavepointForFallback()) {
+                    if (context.getTableTemplate().count(context, parseKeys(tokens, 1)) > 0) {
+                	throw new DataIntegrityViolationException("Row already exists");
+                    }
                 }
                 rows = context.getTableTemplate().insert(context, columnValues);
-                dbDialect.releaseSavepoint(savepoint);
             } catch (DataIntegrityViolationException e) {
                 // TODO: modify sql-error-codes.xml for unique constraint vs
                 // foreign key
                 if (enableFallbackUpdate) {
-                    dbDialect.rollbackToSavepoint(savepoint);
                     if (log.isDebugEnabled()) {
                         log.debug("LoaderInsertingFailedUpdating", context.getTableName(), ArrayUtils.toString(tokens));
                     }
@@ -286,7 +285,7 @@ public class CsvLoader implements IDataLoader {
                 }
             } finally {
                 stats.incrementDatabaseMillis(stats.endTimer());
-            }
+            }           
         }
         return rows;
     }

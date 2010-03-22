@@ -56,24 +56,34 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public boolean acquireIncomingBatch(IncomingBatch batch) {
         boolean okayToProcess = true;
         if (batch.isPersistable()) {
-            Object savepoint = dbDialect.createSavepointForFallback();
-
-            try {
-                insertIncomingBatch(batch);
-                dbDialect.releaseSavepoint(savepoint);
-            } catch (DataIntegrityViolationException e) {
-                dbDialect.rollbackToSavepoint(savepoint);
-                batch.setRetry(true);
-                IncomingBatch existingBatch = findIncomingBatch(batch.getBatchId(), batch.getNodeId());
-                if (existingBatch.getStatus() == Status.ER
-                        || !parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED)) {
-                    okayToProcess = true;
-                    log.warn("BatchRetrying", batch.getNodeBatchId());
+            IncomingBatch existingBatch = null;
+            
+            if (dbDialect.requiresSavepointForFallback()) {
+                existingBatch = findIncomingBatch(batch.getBatchId(), batch.getNodeId());
+                if (existingBatch == null) {
+                    insertIncomingBatch(batch);    
                 } else {
-                    okayToProcess = false;
-                    batch.setSkipCount(existingBatch.getSkipCount() + 1);
-                    log.warn("BatchSkipping", batch.getNodeBatchId());
+                    batch.setRetry(true);   
                 }
+            } else {
+                try {
+                    insertIncomingBatch(batch);
+                } catch (DataIntegrityViolationException e) {
+                    batch.setRetry(true);
+                    existingBatch = findIncomingBatch(batch.getBatchId(), batch.getNodeId());
+                }
+            }
+
+            if (batch.isRetry()) {
+                if (existingBatch.getStatus() == Status.ER
+			|| !parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED)) {
+		    okayToProcess = true;
+		    log.warn("BatchRetrying", batch.getNodeBatchId());
+		} else {
+		    okayToProcess = false;
+		    batch.setSkipCount(existingBatch.getSkipCount() + 1);
+		    log.warn("BatchSkipping", batch.getNodeBatchId());
+		}                
             }
         }
         return okayToProcess;

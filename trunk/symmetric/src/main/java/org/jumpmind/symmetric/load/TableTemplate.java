@@ -249,6 +249,17 @@ public class TableTemplate {
         return execute(ctx, st, keyValues, keyMetaData);
     }
 
+    public int count(IDataLoaderContext ctx, String[] keyValues) {
+        StatementBuilder st = getStatementBuilder(ctx, DmlType.COUNT);
+        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), keyValues, keyMetaData);
+        if (columnFilters != null) {
+            for (IColumnFilter columnFilter : columnFilters) {
+                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(), objectValues);
+            }
+        }
+        return jdbcTemplate.queryForInt(st.getSql(), objectValues, st.getTypes());
+    }
+
     private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type) {
         StatementBuilder st = statementMap.get(type);
         if (st == null) {

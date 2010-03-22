@@ -33,7 +33,7 @@ import org.apache.ddlutils.model.Column;
 
 public class StatementBuilder {
     public enum DmlType {
-        INSERT, UPDATE, DELETE, UPDATE_NO_KEYS
+        INSERT, UPDATE, DELETE, UPDATE_NO_KEYS, COUNT
     };
 
     protected DmlType dmlType;
@@ -59,6 +59,9 @@ public class StatementBuilder {
             types = buildTypes(keys, columns, isDateOverrideToTimestamp);
         } else if (type == DmlType.DELETE) {
             sql = buildDeleteSql(tableName, keys);
+            types = buildTypes(keys, isDateOverrideToTimestamp);
+        } else if (type == DmlType.COUNT) {
+            sql = buildCountSql(tableName, keys);
             types = buildTypes(keys, isDateOverrideToTimestamp);
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
@@ -148,6 +151,12 @@ public class StatementBuilder {
 
     public String buildDeleteSql(String tableName, Column[] keyColumns) {
         StringBuilder sql = new StringBuilder("delete from ").append(tableName).append(" where ");
+        appendColumnEquals(sql, keyColumns, " and ");
+        return sql.toString();
+    }
+
+    public String buildCountSql(String tableName, Column[] keyColumns) {
+        StringBuilder sql = new StringBuilder("select count(*) from ").append(tableName).append(" where ");
         appendColumnEquals(sql, keyColumns, " and ");
         return sql.toString();
     }
