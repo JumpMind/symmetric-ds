@@ -42,7 +42,7 @@
     <entry key="updateStrandedBatches">
       <value>
          update $[sym.sync.table.prefix]_outgoing_batch set status='OK' where node_id not
-           in (select node_id from sym_node where sync_enabled=1) and status != 'OK'
+           in (select node_id from $[sym.sync.table.prefix]_node where sync_enabled=1) and status != 'OK'
       </value>
     </entry>
     <entry key="deleteStrandedData">
