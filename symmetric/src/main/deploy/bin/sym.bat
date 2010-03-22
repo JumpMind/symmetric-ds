@@ -1,7 +1,7 @@
 @echo off
 
 set PRGDIR=%~dp0
-set HOMEDIR=%PRGDIR%\..
+set HOMEDIR=%PRGDIR%..
 set CONFDIR=%HOMEDIR%\conf
 set CLASSPATH=.
 
