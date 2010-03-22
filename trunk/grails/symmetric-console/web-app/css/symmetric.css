@@ -714,6 +714,9 @@ div.dialog {
 .metric-IG {
     background-color:gray;
 }
+.metric-PA {
+    background-color:yellow;
+}
 .metric-empty {
 	background-color:white;
 }

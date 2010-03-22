@@ -1,3 +1,6 @@
+<ofchart:resources/>
+<g:javascript library="prototype"/>  
+  
 <html>
 <head>
   <title><g:layoutTitle default="SymmetricDS"/></title>
@@ -7,6 +10,8 @@
   <g:layoutHead/>
   <g:javascript library="application"/>
   <g:javascript library="symmetric"/>
+  <g:javascript library="jquery"/><!-- here we use the Grails jQuery plugin -->
+
 </head>
 <body>
 <div id="page">

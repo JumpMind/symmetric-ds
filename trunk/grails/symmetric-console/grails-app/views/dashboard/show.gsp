@@ -62,8 +62,22 @@
 	            </table>
 	          </div>
 	       </div>
+	       
+        </div>
+
+        <div id="panel-throughput" class="panel">
+            <h3>Throughput</h3>
+            <div class="panel-row"> 
+            <g:form action="show">
+		        <g:select name="interval" from="${intervals}" value="${params.interval}" optionKey="value" optionValue="key"/>
+		        <g:submitButton name="submit" value="Select Interval"/>
+		      </g:form>
+		      <%def throughputLink = createLink(action:'throughput') + "?interval=" + params.interval%>
+              <ofchart:chart name="demo-chart" url="${throughputLink}" width="600" height="400"/>
+            </div>
         </div>
     </div>
+        
     <div id="secondary" class="column">
         <div id="panel-overview" class="panel">
             <h3>My Outgoing Batches</h3>
@@ -81,6 +95,7 @@
                     </tr>
                   </thead>
                   <tbody>
+                 
                     <g:each in="${outBatches}" var="b">
                     <tr>
                         <td><g:link controller="outgoingBatch" action="list" params="[nodeId:b.nodeId]">${b.nodeLabel}</g:link></td>
@@ -93,7 +108,7 @@
 									  percent = java.lang.Math.round(b.statusListCount.get(i) / maxOutBatch * 100)
 		                              title = "${s} - ${percent}% (${b.statusListCount.get(i)} batches)"
 		                              %>
-		                              <td width="${percent}%" class="metric-${s}"><g:link title="${title}" controller="outgoingBatch" action="list" params="[nodeId:b.nodeId,status:s]"><img  alt="${title}" class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></g:link></td>
+		                              <g:if test="${percent > 0}"><td width="${percent}%" class="metric-${s}"><g:link title="${title}" controller="outgoingBatch" action="list" params="[nodeId:b.nodeId,status:s]"><img  alt="${title}" class="hideOnPrint" src="../images/bar.gif" height="10" width="100%" border="0"/></g:link></g:if></td>
 		                              <%percentTotal += percent%>
                                   </g:each>
                                   <g:if test="${percentTotal < 100}">
