@@ -20,20 +20,33 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataService;
 
 public class HeartbeatJob extends AbstractJob {
 
     private IDataService dataService;
 
+    private IClusterService clusterService;
+
     @Override
     public void doJob() throws Exception {
-        printDatabaseStats();
-        dataService.heartbeat(false);
+        if (clusterService.lock(ClusterConstants.HEARTBEAT)) {
+            try {
+                dataService.heartbeat(false);
+            } finally {
+                clusterService.unlock(ClusterConstants.HEARTBEAT);
+            }
+        }
     }
 
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
+    }
+
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
     }
 
 }

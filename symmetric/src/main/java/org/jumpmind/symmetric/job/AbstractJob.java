@@ -25,7 +25,6 @@ import java.util.TimerTask;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -109,13 +108,6 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
             log.debug("JobRescheduling", beanName, parameterService.getLong(rescheduleDelayParameter));
         } else if (needsRescheduled) {
             log.warn("Did not reschedule because the engine was not set.");
-        }
-    }
-
-    protected void printDatabaseStats() {
-        if (dataSource instanceof BasicDataSource) {
-            final BasicDataSource ds = (BasicDataSource) dataSource;
-            log.debug("DatabaseStats", ds.getNumActive());
         }
     }
 
