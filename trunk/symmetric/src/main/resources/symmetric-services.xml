@@ -108,7 +108,6 @@
     <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService" scope="singleton" parent="abstractService">
         <property name="sql" ref="dataServiceSql" />
         <property name="triggerRouterService" ref="triggerRouterService" />
-        <property name="clusterService" ref="clusterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="purgeService" ref="purgeService" />

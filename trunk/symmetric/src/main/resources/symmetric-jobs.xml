@@ -168,6 +168,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                         <bean class="org.jumpmind.symmetric.job.HeartbeatJob">
                             <property name="requiresRegistration" value="false"/>
                             <property name="dataService" ref="dataService" />
+                            <property name="clusterService" ref="clusterService" />
                             <property name="dataSource" ref="dataSource"/>
                             <property name="parameterService" ref="parameterService" />
                             <property name="jobManager" ref="jobManager"/>
