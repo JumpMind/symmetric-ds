@@ -11,7 +11,7 @@
     <entry key="selectOutgoingBatchRangeSql">
       <value>
         select min(batch_id), max(batch_id) from $[sym.sync.table.prefix]_outgoing_batch where
-        create_time &lt; ? and status in ('OK','IG')
+        create_time &lt; ? and status in ('OK','IG') and batch_id &lt; (select max(batch_id) from $[sym.sync.table.prefix]_outgoing_batch)
       </value>
     </entry>
     <entry key="deleteOutgoingBatchSql">
@@ -36,7 +36,7 @@
     </entry>    
     <entry key="selectDataRangeSql">
       <value>
-        select min(data_id), max(data_id) from $[sym.sync.table.prefix]_data
+         select min(data_id), max(data_id) from $[sym.sync.table.prefix]_data where data_id &lt; (select max(data_id) from $[sym.sync.table.prefix]_data)
       </value>
     </entry>
     <entry key="updateStrandedBatches">
