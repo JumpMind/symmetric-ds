@@ -243,4 +243,5 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public void setSelectTransactionsSql(String selectTransactionSql) {
         this.selectTransactionsSql = selectTransactionSql;
     }
+    
 }

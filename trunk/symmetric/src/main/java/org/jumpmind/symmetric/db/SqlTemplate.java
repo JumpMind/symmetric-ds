@@ -228,8 +228,10 @@ public class SqlTemplate {
         ddl = AppUtils.replace("syncOnInsertCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()),
                 ddl);
         ddl = AppUtils.replace("syncOnUpdateCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()),
-                ddl);
+                ddl);        
         ddl = AppUtils.replace("syncOnDeleteCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
+                ddl);                
+        ddl = AppUtils.replace("dataHasChangedCondition", dialect.preProcessTriggerSqlClause(dialect.getDataHasChangedCondition()),
                 ddl);        
         ddl = AppUtils.replace("sourceNodeExpression", dialect.getSourceNodeExpression(), ddl);
         

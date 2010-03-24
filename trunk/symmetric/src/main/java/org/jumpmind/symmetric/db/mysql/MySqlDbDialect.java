@@ -189,7 +189,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-	protected Integer overrideJdbcTypeForColumn(Map values) {
+	protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
     	String typeName = (String)values.get("TYPE_NAME");
     	if("YEAR".equals(typeName)) {
     		// it is safe to map a YEAR to INTEGER
@@ -198,5 +198,9 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     		return super.overrideJdbcTypeForColumn(values);
     	}
 	}
-    
+
+    @Override
+    protected String getDbSpecificDataHasChangedCondition() {
+        return "var_row_data != var_old_data";
+    }
 }
