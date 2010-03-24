@@ -522,8 +522,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected Integer overrideJdbcTypeForColumn(Map values) {
+    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
         return null;
     }
 
@@ -1390,5 +1389,17 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     public String getSourceNodeExpression() {
         return null;
+    }
+    
+    final public String getDataHasChangedCondition() {
+        if (parameterService.is(ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY)) {
+            return getDbSpecificDataHasChangedCondition();
+        } else {
+            return "1=1";
+        }
+    }
+    
+    protected String getDbSpecificDataHasChangedCondition() {
+        return "1=1";
     }
 }
