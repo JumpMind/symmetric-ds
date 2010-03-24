@@ -257,10 +257,14 @@ public class CsvLoader implements IDataLoader {
 
         if (continueToLoad) {
             boolean enableFallbackUpdate = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
+            boolean enableFallbackSavepoint = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_SAVEPOINT);
+            Object savepoint = null;
             try {
                 stats.startTimer();
                 if (enableFallbackUpdate && dbDialect.requiresSavepointForFallback()) {
-                    if (context.getTableTemplate().count(context, parseKeys(tokens, 1)) > 0) {
+                    if (enableFallbackSavepoint) {
+                	savepoint = dbDialect.createSavepointForFallback();
+                    } else if (context.getTableTemplate().count(context, parseKeys(tokens, 1)) > 0) {
                 	throw new DataIntegrityViolationException("Row already exists");
                     }
                 }
@@ -269,6 +273,7 @@ public class CsvLoader implements IDataLoader {
                 // TODO: modify sql-error-codes.xml for unique constraint vs
                 // foreign key
                 if (enableFallbackUpdate) {
+                    dbDialect.rollbackToSavepoint(savepoint);
                     if (log.isDebugEnabled()) {
                         log.debug("LoaderInsertingFailedUpdating", context.getTableName(), ArrayUtils.toString(tokens));
                     }
