@@ -3,6 +3,7 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
     <import resource="classpath*:META-INF/services/symmetric-*-ext.xml" />
+    <import resource="classpath*:/conf/*-extensions.xml" />    
     <import resource="file:../conf/*-extensions.xml" />
 
     <bean id="extensionManager" class="org.jumpmind.symmetric.ext.ExtensionPointManager">
