@@ -12,11 +12,11 @@
         <property name="assembler" ref="assembler" />
         <property name="beans">
             <map>
-                <entry key=":name=Node" value-ref="nodeManagementService" />
-                <entry key=":name=Incoming" value-ref="incomingManagementService" />
-                <entry key=":name=Outgoing" value-ref="outgoingManagementService" />
-                <entry key=":name=Parameters" value-ref="parameterManagementService" />
-                <entry key=":name=Notifications" value-ref="notificationService" />
+                <entry key="$[sym.engine.name]:name=Node" value-ref="nodeManagementService" />
+                <entry key="$[sym.engine.name]:name=Incoming" value-ref="incomingManagementService" />
+                <entry key="$[sym.engine.name]:name=Outgoing" value-ref="outgoingManagementService" />
+                <entry key="$[sym.engine.name]:name=Parameters" value-ref="parameterManagementService" />
+                <entry key="$[sym.engine.name]:name=Notifications" value-ref="notificationService" />
             </map>
         </property>
         <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
