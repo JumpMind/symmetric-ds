@@ -340,9 +340,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRouterCacheByNodeGroupId.get(myNodeGroupId);
     }
 
-    public Router getRouterByIdForCurrentNode(String routerId, boolean refreshCache) {
+    /**
+     * @see ITriggerRouterService#getActiveRouterByIdForCurrentNode(String, boolean)
+     */
+    public Router getActiveRouterByIdForCurrentNode(String routerId, boolean refreshCache) {
         return getTriggerRoutersCacheForCurrentNode(refreshCache).routersByRouterId
                 .get(routerId);
+    }
+    
+    public Router getRouterById(String routerId) {
+        try {
+            return jdbcTemplate.queryForObject(getSql("selectRouterSql"), new RouterMapper(), routerId);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
     }
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId) {
@@ -841,6 +852,31 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             return hist;
         }
     }
+    
+    class RouterMapper implements RowMapper<Router> {        
+        public Router mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Router router = new Router();
+            router.setSyncOnInsert(rs.getBoolean("r_sync_on_insert"));
+            router.setSyncOnUpdate(rs.getBoolean("r_sync_on_update"));
+            router.setSyncOnDelete(rs.getBoolean("r_sync_on_delete"));
+            router.setTargetCatalogName(rs.getString("target_catalog_name"));
+            router.setSourceNodeGroupId(rs.getString("source_node_group_id"));
+            router.setTargetSchemaName(rs.getString("target_schema_name"));
+            router.setTargetTableName(rs.getString("target_table_name"));
+            router.setTargetNodeGroupId(rs.getString("target_node_group_id"));
+
+            String condition = rs.getString("router_expression");
+            if (!StringUtils.isBlank(condition)) {
+                router.setRouterExpression(condition);
+            }
+            router.setRouterType(rs.getString("router_type"));
+            router.setRouterId(rs.getString("router_id"));
+            router.setCreateTime(rs.getTimestamp("r_create_time"));
+            router.setLastUpdateTime(rs.getTimestamp("r_last_update_time"));
+            router.setLastUpdateBy(rs.getString("r_last_update_by"));
+            return router;
+        }
+    }
 
     class TriggerRouterMapper implements RowMapper<TriggerRouter> {
         public TriggerRouter mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
@@ -882,26 +918,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trig.getTrigger().setCreateTime(rs.getTimestamp("t_create_time"));
             trig.getTrigger().setLastUpdateTime(rs.getTimestamp("t_last_update_time"));
             trig.getTrigger().setLastUpdateBy(rs.getString("t_last_update_by"));
-
-            trig.getRouter().setSyncOnInsert(rs.getBoolean("r_sync_on_insert"));
-            trig.getRouter().setSyncOnUpdate(rs.getBoolean("r_sync_on_update"));
-            trig.getRouter().setSyncOnDelete(rs.getBoolean("r_sync_on_delete"));
-            trig.getRouter().setTargetCatalogName(rs.getString("target_catalog_name"));
-            trig.getRouter().setSourceNodeGroupId(rs.getString("source_node_group_id"));
-            trig.getRouter().setTargetSchemaName(rs.getString("target_schema_name"));
-            trig.getRouter().setTargetTableName(rs.getString("target_table_name"));
-            trig.getRouter().setTargetNodeGroupId(rs.getString("target_node_group_id"));
             trig.getTrigger().setExcludedColumnNames(rs.getString("excluded_column_names"));
 
-            condition = rs.getString("router_expression");
-            if (!StringUtils.isBlank(condition)) {
-                trig.getRouter().setRouterExpression(condition);
-            }
-            trig.getRouter().setRouterType(rs.getString("router_type"));
-            trig.getRouter().setRouterId(rs.getString("router_id"));
-            trig.getRouter().setCreateTime(rs.getTimestamp("r_create_time"));
-            trig.getRouter().setLastUpdateTime(rs.getTimestamp("r_last_update_time"));
-            trig.getRouter().setLastUpdateBy(rs.getString("r_last_update_by"));
+            RouterMapper mapper = new RouterMapper();
+            trig.setRouter(mapper.mapRow(rs, arg1));
 
             trig.setCreateTime(rs.getTimestamp("create_time"));
             trig.setLastUpdateTime(rs.getTimestamp("last_update_time"));

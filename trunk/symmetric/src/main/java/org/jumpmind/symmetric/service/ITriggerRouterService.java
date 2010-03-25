@@ -47,7 +47,14 @@ public interface ITriggerRouterService {
 
     public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(boolean refreshCache);
 
-    public Router getRouterByIdForCurrentNode(String routerId, boolean refreshCache);
+    /**
+     * Get router that is currently in use by a trigger router at the node that is hosting this call.
+     * @param routerId The router_id to retrieve
+     * @param refreshCache Whether to force the router to be re-retrieved from the database
+     */
+    public Router getActiveRouterByIdForCurrentNode(String routerId, boolean refreshCache);
+    
+    public Router getRouterById(String routerId);
     
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
 
