@@ -139,6 +139,18 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     private int getTriggerHistTableRowCount() {
         return getJdbcTemplate().queryForInt("select count(*) from sym_trigger_hist");
     }
+    
+    @Test
+    public void testGetRouterById() throws Exception {
+        Router router = getTriggerRouterService().getRouterById("3000");
+        Assert.assertNotNull(router);
+        Assert.assertEquals("3000", router.getRouterId());
+        Assert.assertEquals("test-root-group", router.getSourceNodeGroupId());
+        Assert.assertEquals("test-node-group2", router.getTargetNodeGroupId());
+
+        router = getTriggerRouterService().getRouterById("666");
+        Assert.assertNull(router);
+    }
 
     @Test
     public void validateTestTableTriggers() throws Exception {
