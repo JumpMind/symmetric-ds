@@ -71,7 +71,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testDisabledChannel() {
-        NodeChannel nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        NodeChannel nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID, false);
         nodeChannel.setEnabled(false);
         getConfigurationService().saveChannel(nodeChannel.getChannel(), true);
 
@@ -104,7 +104,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
         NodeChannel nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, true);
         Calendar currentTime = Calendar.getInstance();
         Calendar hourAgo = (Calendar) currentTime.clone();
         hourAgo.add(Calendar.HOUR_OF_DAY, -1);
@@ -114,7 +114,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
         getConfigurationService().saveNodeChannel(nodeChannel, true);
         nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, true);
         Assert.assertEquals(formatter.format(hourAgo.getTime()), formatter.format(nodeChannel.getLastExtractedTime()));
 
         int updateCount = updateNodeChannelLastExtractTimeManually(halfHourAgo.getTime(), nodeChannel.getNodeId(),
@@ -123,14 +123,14 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(1, updateCount);
 
         nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, true);
 
         Assert.assertEquals(formatter.format(halfHourAgo.getTime()), formatter.format(nodeChannel
                 .getLastExtractedTime()));
 
         getConfigurationService().reloadChannels();
         nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, true);
         Assert.assertEquals(formatter.format(halfHourAgo.getTime()), formatter.format(nodeChannel
                 .getLastExtractedTime()));
 
@@ -151,21 +151,21 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         cleanSlate("sym_data_event", "sym_data", "sym_outgoing_batch", "sym_node_channel_ctl");
 
         NodeChannel nodeChannelTest = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         nodeChannelTest.setExtractPeriodMillis(channelTestExtractPeriod);
 
         getConfigurationService().saveChannel(nodeChannelTest, false);
 
         NodeChannel nodeChannelOther = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID_OTHER,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         nodeChannelOther.setExtractPeriodMillis(channelOtherExtractPeriod);
         getConfigurationService().saveChannel(nodeChannelOther, false);
 
         nodeChannelTest = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
 
         nodeChannelOther = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID_OTHER,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
 
         Assert.assertEquals(channelTestExtractPeriod, nodeChannelTest.getExtractPeriodMillis());
         Assert.assertEquals(channelOtherExtractPeriod, nodeChannelOther.getExtractPeriodMillis());

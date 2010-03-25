@@ -129,7 +129,7 @@ public class RouterService extends AbstractService implements IRouterService {
      * reason is to reduce the number of connections we are required to have.
      */
     protected int routeDataForEachChannel(DataRef ref, Node sourceNode) {
-        final List<NodeChannel> channels = configurationService.getNodeChannels();
+        final List<NodeChannel> channels = configurationService.getNodeChannels(false);
         int dataCount = 0;
         for (NodeChannel nodeChannel : channels) {
             if (!nodeChannel.isSuspendEnabled()) {

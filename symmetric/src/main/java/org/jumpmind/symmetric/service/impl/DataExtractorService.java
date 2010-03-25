@@ -261,7 +261,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     OutgoingBatch batch = ctx.getBatch();
                     Table table = dbDialect.getTable(triggerRouter.getTrigger(), true);
-                    NodeChannel channel = batch != null ? configurationService.getNodeChannel(batch.getChannelId())
+                    NodeChannel channel = batch != null ? configurationService.getNodeChannel(batch.getChannelId(), false)
                             : new NodeChannel(Constants.CHANNEL_RELOAD);
                     Set<Node> oneNodeSet = new HashSet<Node>();
                     oneNodeSet.add(node);
