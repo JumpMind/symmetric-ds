@@ -55,13 +55,13 @@ public interface IConfigurationService {
 
     public NodeGroupLinkAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId);
 
-    public List<NodeChannel> getNodeChannels();
+    public List<NodeChannel> getNodeChannels(boolean refreshExtractMillis);
 
-    public List<NodeChannel> getNodeChannels(String nodeId);
+    public List<NodeChannel> getNodeChannels(String nodeId, boolean refreshExtractMillis);
 
-    public NodeChannel getNodeChannel(String channelId);
+    public NodeChannel getNodeChannel(String channelId, boolean refreshExtractMillis);
 
-    public NodeChannel getNodeChannel(String channelId, String nodeId);
+    public NodeChannel getNodeChannel(String channelId, String nodeId, boolean refreshExtractMillis);
 
     public void reloadChannels();
     

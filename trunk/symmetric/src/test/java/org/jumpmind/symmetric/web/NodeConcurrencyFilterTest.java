@@ -202,7 +202,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         NodeConcurrencyFilter filter = (NodeConcurrencyFilter) find(Constants.NODE_CONCURRENCY_FILTER);
         MockHttpServletResponse resp = new MockHttpServletResponse();
 
-        List<NodeChannel> ncs = configurationService.getNodeChannels(nodeId);
+        List<NodeChannel> ncs = configurationService.getNodeChannels(nodeId, false);
 
         ncs.get(0).setSuspendEnabled(false);
         ncs.get(0).setIgnoreEnabled(false);
@@ -223,7 +223,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
         // Next, set some with "suspend" and some with "ignore"
 
-        ncs = configurationService.getNodeChannels(nodeId);
+        ncs = configurationService.getNodeChannels(nodeId, false);
 
         ncs.get(0).setSuspendEnabled(true);
         ncs.get(1).setIgnoreEnabled(true);
