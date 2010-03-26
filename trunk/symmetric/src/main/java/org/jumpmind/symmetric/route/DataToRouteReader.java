@@ -49,8 +49,10 @@ public class DataToRouteReader implements Runnable {
     private boolean reading = true;
 
     private int maxQueueSize;
+    
+    private int queryTimeout;
 
-    public DataToRouteReader(DataSource dataSource, int maxQueueSize, Map<String, String> sql,
+    public DataToRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize, Map<String, String> sql,
             int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService) {
         this.maxQueueSize = maxQueueSize;
         this.dataSource = dataSource;
@@ -59,6 +61,7 @@ public class DataToRouteReader implements Runnable {
         this.context = context;
         this.fetchSize = fetchSize;
         this.dataRef = dataRef;
+        this.queryTimeout = queryTimeout;
         this.dataService = dataService;
     }
 
@@ -92,6 +95,7 @@ public class DataToRouteReader implements Runnable {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);
         jdbcTemplate.execute(new ConnectionCallback<Integer>() {
             public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
+                
                 int dataCount = 0;
                 PreparedStatement ps = null;
                 ResultSet rs = null;
@@ -99,6 +103,7 @@ public class DataToRouteReader implements Runnable {
                     String channelId = context.getChannel().getChannelId();
                     ps = c.prepareStatement(getSql(context.getChannel().getChannel()),
                             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                    ps.setQueryTimeout(queryTimeout);
                     ps.setFetchSize(fetchSize);
                     ps.setString(1, channelId);
                     ps.setLong(2, dataRef.getRefDataId());
