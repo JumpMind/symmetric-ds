@@ -707,7 +707,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         deleteAll(TEST_TABLE_1);
 
         RouterContext context = new RouterContext(TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getDataSource());
-        DataToRouteReader reader = new DataToRouteReader(getDataSource(), 1000, 
+        DataToRouteReader reader = new DataToRouteReader(getDataSource(), 1000, 1000, 
                 ((AbstractService)getRouterService()).getSql(), 1000, context, getDataService().getDataRef(), getDataService());
         
         reader.run();

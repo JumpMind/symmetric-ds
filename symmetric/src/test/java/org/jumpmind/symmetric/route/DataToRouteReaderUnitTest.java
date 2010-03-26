@@ -22,7 +22,7 @@ public class DataToRouteReaderUnitTest {
     
     @Test
     public void testOldDataReplacement() {
-        DataToRouteReader reader = new DataToRouteReader(null, 1, routerServiceSql, 1000, null, null, null);
+        DataToRouteReader reader = new DataToRouteReader(null, -1, 1, routerServiceSql, 1000, null, null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(channel).contains("old_data"));
         Assert.assertFalse(reader.getSql(channel).contains(BLANK));
@@ -33,7 +33,7 @@ public class DataToRouteReaderUnitTest {
     
     @Test
     public void testRowDataReplacement() {
-        DataToRouteReader reader = new DataToRouteReader(null, 1, routerServiceSql, 1000, null, null, null);
+        DataToRouteReader reader = new DataToRouteReader(null, -1, 1, routerServiceSql, 1000, null, null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(channel).contains("row_data"));
         Assert.assertFalse(reader.getSql(channel).contains(BLANK));
@@ -44,7 +44,7 @@ public class DataToRouteReaderUnitTest {
     
     @Test
     public void testOldAndRowDataReplacement() {
-        DataToRouteReader reader = new DataToRouteReader(null, 1, routerServiceSql, 1000, null, null, null);
+        DataToRouteReader reader = new DataToRouteReader(null, -1, 1, routerServiceSql, 1000, null, null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(channel).contains("row_data"));
         Assert.assertTrue(reader.getSql(channel).contains("old_data"));
