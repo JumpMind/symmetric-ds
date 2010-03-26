@@ -250,9 +250,10 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
         getDataService().insertDataAndDataEventAndOutgoingBatch(data,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, router.getRouter().getRouterId());
         int dataId = getJdbcTemplate().queryForInt("select max(data_id) from sym_data");
-        getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00003",
+        data.setDataId(dataId);
+        getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00003", DataEventType.INSERT,
                 router.getRouter().getRouterId());
-        getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00010",
+        getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00010", DataEventType.INSERT,
                 router.getRouter().getRouterId());
         getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
     }

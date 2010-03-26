@@ -110,8 +110,25 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
-                        ps.setString(4, outgoingBatch.getLastUpdatedHostName());
-                        ps.setTimestamp(5, new Timestamp(outgoingBatch.getLastUpdatedTime().getTime()));
+                        ps.setLong(4, outgoingBatch.getByteCount());
+                        ps.setLong(5, outgoingBatch.getSentCount());
+                        ps.setLong(6, outgoingBatch.getDataEventCount());
+                        ps.setLong(7, outgoingBatch.getReloadEventCount()); 
+                        ps.setLong(8, outgoingBatch.getInsertEventCount());
+                        ps.setLong(9, outgoingBatch.getUpdateEventCount());
+                        ps.setLong(10, outgoingBatch.getDeleteEventCount());
+                        ps.setLong(11, outgoingBatch.getOtherEventCount());
+                        ps.setLong(12, outgoingBatch.getRouterMillis());
+                        ps.setLong(13, outgoingBatch.getNetworkMillis()); 
+                        ps.setLong(14, outgoingBatch.getFilterMillis());
+                        ps.setLong(15, outgoingBatch.getLoadMillis());
+                        ps.setLong(16, outgoingBatch.getExtractMillis()); 
+                        ps.setString(17, outgoingBatch.getSqlState());
+                        ps.setLong(18, outgoingBatch.getSqlCode());
+                        ps.setString(19, StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000));
+                        ps.setLong(20, outgoingBatch.getFailedDataId());
+                        ps.setString(21, outgoingBatch.getLastUpdatedHostName());
+                        ps.setTimestamp(22, new Timestamp(outgoingBatch.getLastUpdatedTime().getTime()));
                         return null;
                     }
                 });
