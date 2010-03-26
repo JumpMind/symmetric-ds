@@ -219,6 +219,11 @@
         <column name="byte_count" type="INTEGER"  description="The number of bytes that were sent as part of this batch." />
         <column name="sent_count" type="INTEGER"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
         <column name="data_event_count" type="INTEGER"  description="The number of data_events that are part of this batch." />
+        <column name="reload_event_count" type="INTEGER"  description="The number of reload events that are part of this batch." />
+        <column name="insert_event_count" type="INTEGER"  description="The number of insert events that are part of this batch." />
+        <column name="update_event_count" type="INTEGER"  description="The number of update events that are part of this batch." />
+        <column name="delete_event_count" type="INTEGER"  description="The number of delete events that are part of this batch." />
+        <column name="other_event_count" type="INTEGER"  description="The number of other event types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
         <column name="router_millis" type="INTEGER"  description="The number of milliseconds spent creating this batch." />
         <column name="network_millis" type="INTEGER"  description="The number of milliseconds spent transfering this batch across the network." />
         <column name="filter_millis" type="INTEGER"  description="The number of milliseconds spent in filters processing data." />

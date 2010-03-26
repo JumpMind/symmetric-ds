@@ -342,6 +342,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
                 context.getBatchesByNodes().put(nodeId, batch);
             }
+            batch.incrementEventCount(dataMetaData.getData().getEventType());
             batch.incrementDataEventCount();
             dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData()
                     .getDataId(), batch.getBatchId(), triggerRouter.getRouter().getRouterId());
