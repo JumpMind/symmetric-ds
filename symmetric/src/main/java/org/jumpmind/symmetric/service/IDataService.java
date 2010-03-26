@@ -9,6 +9,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -56,7 +57,7 @@ public interface IDataService {
 
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId);
     
-    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, String routerId);
+    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, DataEventType eventType, String routerId);
 
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId);
 
