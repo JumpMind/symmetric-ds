@@ -54,6 +54,16 @@ public class OutgoingBatch implements Serializable {
     private long sentCount;
 
     private long dataEventCount;
+    
+    private long reloadEventCount;
+    
+    private long insertEventCount;
+    
+    private long updateEventCount;
+    
+    private long deleteEventCount;
+    
+    private long otherEventCount;
 
     private long failedDataId;
 
@@ -143,7 +153,67 @@ public class OutgoingBatch implements Serializable {
     public long getRouterMillis() {
         return routerMillis;
     }
+    
+    public void setUpdateEventCount(long updateEventCount) {
+        this.updateEventCount = updateEventCount;
+    }
+    
+    public long getUpdateEventCount() {
+        return updateEventCount;
+    }
 
+    public void setDeleteEventCount(long deleteEventCount) {
+        this.deleteEventCount = deleteEventCount;
+    }
+    
+    public long getDeleteEventCount() {
+        return deleteEventCount;
+    }
+    
+    public void incrementEventCount(DataEventType type) {
+        switch (type) {
+        case RELOAD:
+            reloadEventCount++;
+            break;
+        case INSERT:
+            insertEventCount++;
+            break;
+        case UPDATE:
+            updateEventCount++;
+            break;
+        case DELETE:
+            deleteEventCount++;
+            break;
+        default:
+            otherEventCount++;
+            break;
+        }
+    }
+    
+    public void setInsertEventCount(long insertEventCount) {
+        this.insertEventCount = insertEventCount;
+    }
+    
+    public long getInsertEventCount() {
+        return insertEventCount;
+    }
+    
+    public void setOtherEventCount(long otherEventCount) {
+        this.otherEventCount = otherEventCount;
+    }
+    
+    public long getOtherEventCount() {
+        return otherEventCount;
+    }
+    
+    public void setReloadEventCount(long reloadEventCount) {
+        this.reloadEventCount = reloadEventCount;
+    }
+    
+    public long getReloadEventCount() {
+        return reloadEventCount;
+    }
+    
     public void setRouterMillis(long routerMillis) {
         this.routerMillis = routerMillis;
     }
