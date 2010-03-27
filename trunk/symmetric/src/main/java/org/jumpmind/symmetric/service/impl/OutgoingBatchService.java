@@ -81,7 +81,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void updateOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
-        template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.isLoadFlag(),
+        template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.isLoadFlag() ? 1 : 0,
                 outgoingBatch.getByteCount(), outgoingBatch.getSentCount(), outgoingBatch.getDataEventCount(),
                 outgoingBatch.getReloadEventCount(), outgoingBatch.getInsertEventCount(), outgoingBatch.getUpdateEventCount(),
                 outgoingBatch.getDeleteEventCount(), outgoingBatch.getOtherEventCount(),
@@ -89,7 +89,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(), outgoingBatch.getSqlState(),
                 outgoingBatch.getSqlCode(), StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000),
                 outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
-                outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() }, new int[] { Types.CHAR, Types.BOOLEAN,
+                outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() }, new int[] { Types.CHAR, Types.INTEGER,
                 Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
                 Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
                 Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.INTEGER,
@@ -108,7 +108,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
-                        ps.setBoolean(4, outgoingBatch.isLoadFlag());
+                        ps.setInt(4, outgoingBatch.isLoadFlag() ? 1 : 0);
                         ps.setLong(5, outgoingBatch.getReloadEventCount()); 
                         ps.setLong(6, outgoingBatch.getOtherEventCount());
                         ps.setString(7, outgoingBatch.getLastUpdatedHostName());
