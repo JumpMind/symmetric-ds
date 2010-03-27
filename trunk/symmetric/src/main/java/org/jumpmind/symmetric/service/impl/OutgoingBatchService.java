@@ -82,7 +82,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void updateOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
-        template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.isLoadFlag() ? '1' : '0',
+        template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.isLoadFlag() ? "1" : "0",
                 outgoingBatch.getByteCount(), outgoingBatch.getSentCount(), outgoingBatch.getDataEventCount(),
                 outgoingBatch.getReloadEventCount(), outgoingBatch.getInsertEventCount(), outgoingBatch.getUpdateEventCount(),
                 outgoingBatch.getDeleteEventCount(), outgoingBatch.getOtherEventCount(),
