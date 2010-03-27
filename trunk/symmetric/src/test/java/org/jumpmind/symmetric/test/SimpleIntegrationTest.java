@@ -166,10 +166,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         Assert.assertTrue(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
                 .isInitialLoadEnabled());
-
-        while (!rootOutgoingBatchService.isInitialLoadComplete(nodeId)) {
+        do {
             getClientEngine().pull();
-        }
+        } while (!rootOutgoingBatchService.isInitialLoadComplete(nodeId));
+
 
         Assert.assertFalse(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
                 .isInitialLoadEnabled());

@@ -10,7 +10,7 @@
   <util:map id="outgoingBatchServiceSql">
     <entry key="initialLoadStatusSql">
       <value>
-        select status from $[sym.sync.table.prefix]_outgoing_batch where node_id=? and load_flag='1'
+        select status from $[sym.sync.table.prefix]_outgoing_batch where node_id=? and load_flag=?
       </value>
     </entry>
     <entry key="unsentBatchesForNodeIdChannelIdSql">
