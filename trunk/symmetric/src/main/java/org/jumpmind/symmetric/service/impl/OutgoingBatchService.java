@@ -184,7 +184,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
 
         List<String> statuses = (List<String>) jdbcTemplate.queryForList(getSql("initialLoadStatusSql"), new Object[] {
-                nodeId,"1" }, String.class);
+                nodeId, 1 }, String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
