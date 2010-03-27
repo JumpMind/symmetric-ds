@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -102,7 +101,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public void insertOutgoingBatch(JdbcTemplate jdbcTemplate, final OutgoingBatch outgoingBatch) {
-        outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
         long batchId = dbDialect.insertWithGeneratedKey(jdbcTemplate, getSql("insertOutgoingBatchSql"),
                 SequenceIdentifier.OUTGOING_BATCH, new PreparedStatementCallback<Object>() {
@@ -111,25 +109,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
                         ps.setString(4, outgoingBatch.isLoadFlag() ? "1" : "0");
-                        ps.setLong(5, outgoingBatch.getByteCount());
-                        ps.setLong(6, outgoingBatch.getSentCount());
-                        ps.setLong(7, outgoingBatch.getDataEventCount());
-                        ps.setLong(8, outgoingBatch.getReloadEventCount()); 
-                        ps.setLong(9, outgoingBatch.getInsertEventCount());
-                        ps.setLong(10, outgoingBatch.getUpdateEventCount());
-                        ps.setLong(11, outgoingBatch.getDeleteEventCount());
-                        ps.setLong(12, outgoingBatch.getOtherEventCount());
-                        ps.setLong(13, outgoingBatch.getRouterMillis());
-                        ps.setLong(14, outgoingBatch.getNetworkMillis()); 
-                        ps.setLong(15, outgoingBatch.getFilterMillis());
-                        ps.setLong(16, outgoingBatch.getLoadMillis());
-                        ps.setLong(17, outgoingBatch.getExtractMillis()); 
-                        ps.setString(18, outgoingBatch.getSqlState());
-                        ps.setLong(19, outgoingBatch.getSqlCode());
-                        ps.setString(20, StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000));
-                        ps.setLong(21, outgoingBatch.getFailedDataId());
-                        ps.setString(22, outgoingBatch.getLastUpdatedHostName());
-                        ps.setTimestamp(23, new Timestamp(outgoingBatch.getLastUpdatedTime().getTime()));
+                        ps.setLong(5, outgoingBatch.getReloadEventCount()); 
+                        ps.setLong(6, outgoingBatch.getOtherEventCount());
+                        ps.setString(7, outgoingBatch.getLastUpdatedHostName());
                         return null;
                     }
                 });
