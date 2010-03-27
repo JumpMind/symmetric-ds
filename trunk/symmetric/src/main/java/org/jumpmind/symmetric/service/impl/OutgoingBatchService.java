@@ -110,7 +110,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
-                        ps.setInt(4, outgoingBatch.isLoadFlag() ? 1 : 0);
+                        ps.setString(4, outgoingBatch.isLoadFlag() ? "1" : "0");
                         ps.setLong(5, outgoingBatch.getByteCount());
                         ps.setLong(6, outgoingBatch.getSentCount());
                         ps.setLong(7, outgoingBatch.getDataEventCount());
