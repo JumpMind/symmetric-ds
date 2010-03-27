@@ -84,7 +84,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
                 null);
         data.setDataId(1);
         getDataService().insertDataAndDataEventAndOutgoingBatch(data,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID, router.getRouter().getRouterId());
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, router.getRouter().getRouterId(), false);
         getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
     }
 
@@ -113,7 +113,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
                 null);
         data.setDataId(1);
         getDataService().insertDataAndDataEventAndOutgoingBatch(data,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID, router.getRouter().getRouterId());
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, router.getRouter().getRouterId(), false);
         getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
         getJdbcTemplate().update("update sym_outgoing_batch set status=?",
                 new Object[] { Status.IG.name() });
@@ -248,13 +248,13 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
                 null);
         data.setDataId(1);
         getDataService().insertDataAndDataEventAndOutgoingBatch(data,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID, router.getRouter().getRouterId());
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, router.getRouter().getRouterId(), false);
         int dataId = getJdbcTemplate().queryForInt("select max(data_id) from sym_data");
         data.setDataId(dataId);
         getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00003", DataEventType.INSERT,
-                router.getRouter().getRouterId());
+                router.getRouter().getRouterId(), false);
         getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00010", DataEventType.INSERT,
-                router.getRouter().getRouterId());
+                router.getRouter().getRouterId(), false);
         getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
     }
 
@@ -269,10 +269,10 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
                 null);
         data.setDataId(1);
         getDataService().insertDataAndDataEventAndOutgoingBatch(data, "00002",
-                router.getRouter().getRouterId());
+                router.getRouter().getRouterId(), false);
         data.setDataId(2);
         getDataService().insertDataAndDataEventAndOutgoingBatch(data, "00002",
-                router.getRouter().getRouterId());        
+                router.getRouter().getRouterId(), false);        
     }
 
     private void assertCounts(int count) {

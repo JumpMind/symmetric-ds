@@ -38,6 +38,8 @@ public class OutgoingBatch implements Serializable {
     private String channelId;
 
     private Status status = Status.NE;
+    
+    private boolean loadFlag;
 
     private long routerMillis;
 
@@ -98,6 +100,14 @@ public class OutgoingBatch implements Serializable {
         this.networkMillis = 0;
     }
 
+    public void setLoadFlag(boolean loadFlag) {
+        this.loadFlag = loadFlag;
+    }
+    
+    public boolean isLoadFlag() {
+        return loadFlag;
+    }
+    
     public void setSentCount(long sentCount) {
         this.sentCount = sentCount;
     }

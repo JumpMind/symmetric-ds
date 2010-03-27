@@ -258,7 +258,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         TriggerHistory history = new TriggerHistory();
         history.setTriggerHistoryId(triggerHistoryId);
         Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", history, channelId, null, null);
-        dataService.insertDataAndDataEventAndOutgoingBatch(data, nodeId, "");
+        dataService.insertDataAndDataEventAndOutgoingBatch(data, nodeId, "", false);
     }
 
     protected int getBatchSize(final long batchId) {

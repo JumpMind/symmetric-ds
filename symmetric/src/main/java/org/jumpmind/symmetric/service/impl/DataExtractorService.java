@@ -262,7 +262,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     OutgoingBatch batch = ctx.getBatch();
                     Table table = dbDialect.getTable(triggerRouter.getTrigger(), true);
                     NodeChannel channel = batch != null ? configurationService.getNodeChannel(batch.getChannelId(), false)
-                            : new NodeChannel(Constants.CHANNEL_RELOAD);
+                            : new NodeChannel(triggerRouter.getTrigger().getChannelId());
                     Set<Node> oneNodeSet = new HashSet<Node>();
                     oneNodeSet.add(node);
                     PreparedStatement st = null;
@@ -284,7 +284,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         while (rs.next()) {
                         	
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, triggerHistory2Use
-                                    .getSourceTableName(), null, triggerHistory2Use, Constants.CHANNEL_RELOAD, null, null);
+                                    .getSourceTableName(), null, triggerHistory2Use, triggerRouter.getTrigger().getChannelId(), null, null);
                             DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, channel);
                             if (!StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) || 
                                     routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
