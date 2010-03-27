@@ -278,7 +278,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql) {
-        return getDataService().sendSQL(nodeId, catalogName, schemaName, tableName, sql);
+        return getDataService().sendSQL(nodeId, catalogName, schemaName, tableName, sql, false);
     }
 
     public boolean push() {

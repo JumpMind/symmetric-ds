@@ -216,6 +216,7 @@
         <column name="node_id" type="VARCHAR" size="50"  description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
         <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be newly created (NE), sent to a Node (SE), acknowledged as successful (OK), and error (ER)." />
+        <column name="load_flag" type="CHAR" size="1" required="true" default="0" description="A flag that indicates that this batch is part of an initial load." />               
         <column name="byte_count" type="INTEGER" required="true" default="0"  description="The number of bytes that were sent as part of this batch." />
         <column name="sent_count" type="INTEGER"  required="true" default="0"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
         <column name="data_event_count" type="INTEGER" required="true" default="0"  description="The number of data_events that are part of this batch." />

@@ -29,19 +29,16 @@ public interface IDataService {
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect);
 
     @Transactional
-    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
+    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql, boolean isLoad);
 
     @Transactional
     public void insertReloadEvent(Node targetNode);
 
     @Transactional
     public void insertReloadEvent(final Node targetNode, final TriggerRouter trigger);
-
-    @Transactional
-    public void insertResendConfigEvent(final Node targetNode);
     
     @Transactional
-    public void sendScript(String nodeId, String script);
+    public void sendScript(String nodeId, String script, boolean isLoad);
 
     /**
      * Update {@link Node} information for this node and call {@link IHeartbeatListener}s.
@@ -57,19 +54,19 @@ public interface IDataService {
 
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId);
     
-    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, DataEventType eventType, String routerId);
+    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, DataEventType eventType, String routerId, boolean isLoad);
 
-    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId);
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId, boolean isLoad);
 
-    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId);
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad);
 
-    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter);
+    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, boolean isLoad);
 
-    public void insertSqlEvent(Node targetNode, Trigger trigger, String sql);
+    public void insertSqlEvent(Node targetNode, Trigger trigger, String sql, boolean isLoad);
 
-    public void insertSqlEvent(final Node targetNode, String sql);
+    public void insertSqlEvent(final Node targetNode, String sql, boolean isLoad);
 
-    public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, String xml);
+    public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, String xml, boolean isLoad);
     
     /**
      * Count the number of data ids in a range

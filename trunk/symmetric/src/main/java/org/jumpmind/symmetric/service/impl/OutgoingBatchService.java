@@ -82,7 +82,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void updateOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
-        template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(),
+        template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.isLoadFlag() ? '1' : '0',
                 outgoingBatch.getByteCount(), outgoingBatch.getSentCount(), outgoingBatch.getDataEventCount(),
                 outgoingBatch.getReloadEventCount(), outgoingBatch.getInsertEventCount(), outgoingBatch.getUpdateEventCount(),
                 outgoingBatch.getDeleteEventCount(), outgoingBatch.getOtherEventCount(),
@@ -90,7 +90,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(), outgoingBatch.getSqlState(),
                 outgoingBatch.getSqlCode(), StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000),
                 outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
-                outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() }, new int[] { Types.CHAR,
+                outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() }, new int[] { Types.CHAR, Types.CHAR,
                 Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
                 Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
                 Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.INTEGER,
@@ -110,25 +110,26 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
-                        ps.setLong(4, outgoingBatch.getByteCount());
-                        ps.setLong(5, outgoingBatch.getSentCount());
-                        ps.setLong(6, outgoingBatch.getDataEventCount());
-                        ps.setLong(7, outgoingBatch.getReloadEventCount()); 
-                        ps.setLong(8, outgoingBatch.getInsertEventCount());
-                        ps.setLong(9, outgoingBatch.getUpdateEventCount());
-                        ps.setLong(10, outgoingBatch.getDeleteEventCount());
-                        ps.setLong(11, outgoingBatch.getOtherEventCount());
-                        ps.setLong(12, outgoingBatch.getRouterMillis());
-                        ps.setLong(13, outgoingBatch.getNetworkMillis()); 
-                        ps.setLong(14, outgoingBatch.getFilterMillis());
-                        ps.setLong(15, outgoingBatch.getLoadMillis());
-                        ps.setLong(16, outgoingBatch.getExtractMillis()); 
-                        ps.setString(17, outgoingBatch.getSqlState());
-                        ps.setLong(18, outgoingBatch.getSqlCode());
-                        ps.setString(19, StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000));
-                        ps.setLong(20, outgoingBatch.getFailedDataId());
-                        ps.setString(21, outgoingBatch.getLastUpdatedHostName());
-                        ps.setTimestamp(22, new Timestamp(outgoingBatch.getLastUpdatedTime().getTime()));
+                        ps.setInt(4, outgoingBatch.isLoadFlag() ? 1 : 0);
+                        ps.setLong(5, outgoingBatch.getByteCount());
+                        ps.setLong(6, outgoingBatch.getSentCount());
+                        ps.setLong(7, outgoingBatch.getDataEventCount());
+                        ps.setLong(8, outgoingBatch.getReloadEventCount()); 
+                        ps.setLong(9, outgoingBatch.getInsertEventCount());
+                        ps.setLong(10, outgoingBatch.getUpdateEventCount());
+                        ps.setLong(11, outgoingBatch.getDeleteEventCount());
+                        ps.setLong(12, outgoingBatch.getOtherEventCount());
+                        ps.setLong(13, outgoingBatch.getRouterMillis());
+                        ps.setLong(14, outgoingBatch.getNetworkMillis()); 
+                        ps.setLong(15, outgoingBatch.getFilterMillis());
+                        ps.setLong(16, outgoingBatch.getLoadMillis());
+                        ps.setLong(17, outgoingBatch.getExtractMillis()); 
+                        ps.setString(18, outgoingBatch.getSqlState());
+                        ps.setLong(19, outgoingBatch.getSqlCode());
+                        ps.setString(20, StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000));
+                        ps.setLong(21, outgoingBatch.getFailedDataId());
+                        ps.setString(22, outgoingBatch.getLastUpdatedHostName());
+                        ps.setTimestamp(23, new Timestamp(outgoingBatch.getLastUpdatedTime().getTime()));
                         return null;
                     }
                 });
@@ -201,7 +202,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
 
         List<String> statuses = (List<String>) jdbcTemplate.queryForList(getSql("initialLoadStatusSql"), new Object[] {
-                nodeId, Constants.CHANNEL_RELOAD }, String.class);
+                nodeId }, String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
@@ -260,6 +261,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             batch.setLastUpdatedTime(rs.getTimestamp(22));
             batch.setCreateTime(rs.getTimestamp(22));
             batch.setBatchId(rs.getLong(24));
+            batch.setLoadFlag(rs.getBoolean(25));
             return batch;
         }
     }

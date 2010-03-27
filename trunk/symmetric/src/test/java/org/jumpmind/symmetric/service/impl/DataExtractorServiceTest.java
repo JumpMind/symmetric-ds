@@ -120,6 +120,6 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     private void createDataEvent(TriggerHistory hist, String channelId, DataEventType type, String nodeId) {
         Data data = new Data(hist.getSourceTableName(), type, "r.o.w., dat-a", "p-k d.a.t.a", hist, TestConstants.TEST_CHANNEL_ID, null, null);
-        dataService.insertDataAndDataEventAndOutgoingBatch(data, nodeId, Constants.UNKNOWN_ROUTER_ID);
+        dataService.insertDataAndDataEventAndOutgoingBatch(data, nodeId, Constants.UNKNOWN_ROUTER_ID, false);
     }
 }

@@ -901,7 +901,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 getRootEngine());
         testFlag = false;
         String scriptData = "org.jumpmind.symmetric.test.SimpleIntegrationTest.testFlag=true;";
-        rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData);
+        rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
         getClientEngine().pull();
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         Assert.assertEquals(0, batches.countBatches(true));
@@ -916,7 +916,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 getRootEngine());
         testFlag = false;
         String scriptData = "org.jumpmind.symmetric.test.SimpleIntegrationTest.nonExistentFlag=true;";
-        rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData);
+        rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
         getClientEngine().pull();
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         Assert.assertEquals(1, batches.countBatches(true));

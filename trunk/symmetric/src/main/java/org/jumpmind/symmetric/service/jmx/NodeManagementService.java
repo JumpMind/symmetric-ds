@@ -307,7 +307,7 @@ public class NodeManagementService {
             @ManagedOperationParameter(name = "tableName", description = "The table name the SQL is for."),
             @ManagedOperationParameter(name = "sql", description = "The SQL statement to send.") })
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql) {
-        return dataService.sendSQL(nodeId, catalogName, schemaName, tableName, sql);
+        return dataService.sendSQL(nodeId, catalogName, schemaName, tableName, sql, false);
     }
 
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")
