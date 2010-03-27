@@ -216,23 +216,23 @@
         <column name="node_id" type="VARCHAR" size="50"  description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
         <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be newly created (NE), sent to a Node (SE), acknowledged as successful (OK), and error (ER)." />
-        <column name="byte_count" type="INTEGER"  description="The number of bytes that were sent as part of this batch." />
-        <column name="sent_count" type="INTEGER"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
-        <column name="data_event_count" type="INTEGER"  description="The number of data_events that are part of this batch." />
-        <column name="reload_event_count" type="INTEGER"  description="The number of reload events that are part of this batch." />
-        <column name="insert_event_count" type="INTEGER"  description="The number of insert events that are part of this batch." />
-        <column name="update_event_count" type="INTEGER"  description="The number of update events that are part of this batch." />
-        <column name="delete_event_count" type="INTEGER"  description="The number of delete events that are part of this batch." />
-        <column name="other_event_count" type="INTEGER"  description="The number of other event types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
-        <column name="router_millis" type="INTEGER"  description="The number of milliseconds spent creating this batch." />
-        <column name="network_millis" type="INTEGER"  description="The number of milliseconds spent transfering this batch across the network." />
-        <column name="filter_millis" type="INTEGER"  description="The number of milliseconds spent in filters processing data." />
-        <column name="load_millis" type="INTEGER"  description="The number of milliseconds spent loading the data into the target database." />
-        <column name="extract_millis" type="INTEGER"  description="The number of milliseconds spent extracting the data out of the source database." />
+        <column name="byte_count" type="INTEGER" required="true" default="0"  description="The number of bytes that were sent as part of this batch." />
+        <column name="sent_count" type="INTEGER"  required="true" default="0"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
+        <column name="data_event_count" type="INTEGER" required="true" default="0"  description="The number of data_events that are part of this batch." />
+        <column name="reload_event_count" type="INTEGER" required="true" default="0"  description="The number of reload events that are part of this batch." />
+        <column name="insert_event_count" type="INTEGER" required="true" default="0" description="The number of insert events that are part of this batch." />
+        <column name="update_event_count" type="INTEGER" required="true" default="0" description="The number of update events that are part of this batch." />
+        <column name="delete_event_count" type="INTEGER" required="true" default="0" description="The number of delete events that are part of this batch." />
+        <column name="other_event_count" type="INTEGER" required="true" default="0" description="The number of other event types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
+        <column name="router_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent creating this batch." />
+        <column name="network_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
+        <column name="filter_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
+        <column name="load_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
+        <column name="extract_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent extracting the data out of the source database." />
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
-        <column name="sql_code" type="INTEGER"  description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
+        <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="VARCHAR" size="1000"  description="For a status of error (ER), this is the error message that describes the error." />
-        <column name="failed_data_id" type="INTEGER"  description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
+        <column name="failed_data_id" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
         <column name="last_update_hostname" type="VARCHAR" size="50"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
@@ -243,18 +243,18 @@
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The node_id of the source of the batch being loaded." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel_id of the batch being loaded." />
         <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be successfully loaded (OK) or error (ER)." />
-        <column name="network_millis" type="INTEGER"  description="The number of milliseconds spent transfering this batch across the network." />
-        <column name="filter_millis" type="INTEGER"  description="The number of milliseconds spent in filters processing data." />
-        <column name="database_millis" type="INTEGER"  description="The number of milliseconds spent loading the data into the target database." />
-        <column name="failed_row_number" type="INTEGER"  description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
-        <column name="byte_count" type="INTEGER"  description="The number of bytes that were sent as part of this batch." />
-        <column name="statement_count" type="INTEGER"  description="The number of statements run to load this batch." />
-        <column name="fallback_insert_count" type="INTEGER"  description="The number of times an update was turned into an insert because the data was not already in the target database." />
-        <column name="fallback_update_count" type="INTEGER"  description="The number of times an insert was turned into an update because a data row already existed in the target database." />
-        <column name="missing_delete_count" type="INTEGER"  description="THe number of times a delete did not effect the database because the row was already deleted." />
-        <column name="skip_count" type="INTEGER"  description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch" />
+        <column name="network_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
+        <column name="filter_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
+        <column name="database_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
+        <column name="failed_row_number" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
+        <column name="byte_count" type="INTEGER" required="true" default="0" description="The number of bytes that were sent as part of this batch." />
+        <column name="statement_count" type="INTEGER" required="true" default="0" description="The number of statements run to load this batch." />
+        <column name="fallback_insert_count" type="INTEGER" required="true" default="0" description="The number of times an update was turned into an insert because the data was not already in the target database." />
+        <column name="fallback_update_count" type="INTEGER" required="true" default="0" description="The number of times an insert was turned into an update because a data row already existed in the target database." />
+        <column name="missing_delete_count" type="INTEGER" required="true" default="0" description="THe number of times a delete did not effect the database because the row was already deleted." />
+        <column name="skip_count" type="INTEGER" required="true" default="0" description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch" />
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
-        <column name="sql_code" type="INTEGER"  description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
+        <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="VARCHAR" size="1000"  description="For a status of error (ER), this is the error message that describes the error." />
         <column name="last_update_hostname" type="VARCHAR" size="50"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
