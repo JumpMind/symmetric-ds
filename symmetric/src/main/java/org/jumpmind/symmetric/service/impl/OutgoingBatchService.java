@@ -81,7 +81,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void updateOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
-        template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.isLoadFlag() ? "1" : "0",
+        template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.isLoadFlag(),
                 outgoingBatch.getByteCount(), outgoingBatch.getSentCount(), outgoingBatch.getDataEventCount(),
                 outgoingBatch.getReloadEventCount(), outgoingBatch.getInsertEventCount(), outgoingBatch.getUpdateEventCount(),
                 outgoingBatch.getDeleteEventCount(), outgoingBatch.getOtherEventCount(),
@@ -89,7 +89,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(), outgoingBatch.getSqlState(),
                 outgoingBatch.getSqlCode(), StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000),
                 outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
-                outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() }, new int[] { Types.CHAR, Types.CHAR,
+                outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() }, new int[] { Types.CHAR, Types.BOOLEAN,
                 Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
                 Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
                 Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.INTEGER,
@@ -108,7 +108,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
-                        ps.setString(4, outgoingBatch.isLoadFlag() ? "1" : "0");
+                        ps.setBoolean(4, outgoingBatch.isLoadFlag());
                         ps.setLong(5, outgoingBatch.getReloadEventCount()); 
                         ps.setLong(6, outgoingBatch.getOtherEventCount());
                         ps.setString(7, outgoingBatch.getLastUpdatedHostName());
@@ -184,7 +184,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
 
         List<String> statuses = (List<String>) jdbcTemplate.queryForList(getSql("initialLoadStatusSql"), new Object[] {
-                nodeId }, String.class);
+                nodeId,"1" }, String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
