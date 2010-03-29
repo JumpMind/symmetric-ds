@@ -745,6 +745,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
                     if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                         Statement stmt = con.createStatement();
+                        stmt.setQueryTimeout(jdbcTemplate.getQueryTimeout());
                         try {
                             log.debug("Sql", triggerSql);
                             stmt.executeUpdate(triggerSql);
