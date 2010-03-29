@@ -270,6 +270,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     try {
                         st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
                                 java.sql.ResultSet.CONCUR_READ_ONLY);
+                        st.setQueryTimeout(jdbcTemplate.getQueryTimeout());
                         st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                         rs = st.executeQuery();
                         final DataExtractorContext ctxCopy = ctx == null ? clonableContext.copy(dataExtractor) : ctx;
@@ -493,6 +494,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 PreparedStatement ps = conn.prepareStatement(getSql("selectEventDataToExtractSql"),
                         ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
                 ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                 ps.setString(1, batch.getNodeId());
                 ps.setLong(2, batch.getBatchId());

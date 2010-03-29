@@ -50,8 +50,18 @@ public class DataToRouteReader implements Runnable {
 
     private int maxQueueSize;
 
+    private static final int DEFAULT_QUERY_TIMEOUT = 600000;
+
+    private int queryTimeout = DEFAULT_QUERY_TIMEOUT;
+    
+
     public DataToRouteReader(DataSource dataSource, int maxQueueSize, Map<String, String> sql,
             int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService) {
+        this(dataSource, maxQueueSize, sql, fetchSize, context, dataRef, dataService, DEFAULT_QUERY_TIMEOUT);    
+    }
+    
+    public DataToRouteReader(DataSource dataSource, int maxQueueSize, Map<String, String> sql,
+            int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService, int queryTimeout) {
         this.maxQueueSize = maxQueueSize;
         this.dataSource = dataSource;
         this.dataQueue = new LinkedBlockingQueue<Data>(maxQueueSize);
@@ -60,6 +70,7 @@ public class DataToRouteReader implements Runnable {
         this.fetchSize = fetchSize;
         this.dataRef = dataRef;
         this.dataService = dataService;
+        this.queryTimeout = queryTimeout;
     }
 
     public Data take() {
@@ -99,6 +110,7 @@ public class DataToRouteReader implements Runnable {
                     String channelId = context.getChannel().getChannelId();
                     ps = c.prepareStatement(getSql(context.getChannel().getChannel()),
                             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                    ps.setQueryTimeout(queryTimeout);
                     ps.setFetchSize(fetchSize);
                     ps.setString(1, channelId);
                     ps.setLong(2, dataRef.getRefDataId());

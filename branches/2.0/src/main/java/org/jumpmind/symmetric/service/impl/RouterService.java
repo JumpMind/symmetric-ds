@@ -264,7 +264,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
         DataToRouteReader reader = new DataToRouteReader(dataSource, dbDialect
                 .getRouterDataPeekAheadCount(), getSql(), dbDialect.getStreamingResultsFetchSize(),
-                context, ref, dataService);
+                context, ref, dataService, jdbcTemplate.getQueryTimeout());
         readThread.execute(reader);
         Data data = null;
         int dataCount = 0;
