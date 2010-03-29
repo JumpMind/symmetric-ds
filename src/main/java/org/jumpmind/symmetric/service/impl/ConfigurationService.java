@@ -157,8 +157,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         boolean loaded = false;
         long channelCacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS);
+        List<NodeChannel> nodeChannels = nodeChannelCache != null ? nodeChannelCache.get(nodeId) : null;
         if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
-                || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null) {
+                || nodeChannels == null) {
             synchronized (this) {
                 if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
                         || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null) {
@@ -167,66 +168,66 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         nodeChannelCache = new HashMap<String, List<NodeChannel>>();
                         nodeChannelCacheTime = System.currentTimeMillis();
                     }
-                    nodeChannelCache.put(nodeId, jdbcTemplate.query(getSql("selectChannelsSql"),
+                    nodeChannels = jdbcTemplate.query(getSql("selectChannelsSql"),
                             new Object[] { nodeId }, new RowMapper() {
-                                public Object mapRow(java.sql.ResultSet rs, int arg1)
-                                        throws SQLException {
-                                    NodeChannel nodeChannel = new NodeChannel();
-                                    nodeChannel.setChannelId(rs.getString(1));
-                                    // note that 2 is intentionally missing
-                                    // here.
-                                    nodeChannel.setNodeId(nodeId);
-                                    nodeChannel.setIgnoreEnabled(isSet(rs.getObject(3)));
-                                    nodeChannel.setSuspendEnabled(isSet(rs.getObject(4)));
-                                    nodeChannel.setProcessingOrder(rs.getInt(5));
-                                    nodeChannel.setMaxBatchSize(rs.getInt(6));
-                                    nodeChannel.setEnabled(rs.getBoolean(7));
-                                    nodeChannel.setMaxBatchToSend(rs.getInt(8));
-                                    nodeChannel.setMaxDataToRoute(rs.getInt(9));
-                                    nodeChannel.setUseOldDataToRoute(rs.getBoolean(10));
-                                    nodeChannel.setUseRowDataToRoute(rs.getBoolean(11));
-                                    nodeChannel.setBatchAlgorithm(rs.getString(12));
-                                    nodeChannel.setLastExtractedTime(rs.getTimestamp(13));
-                                    nodeChannel.setExtractPeriodMillis(rs.getLong(14));
+                        public Object mapRow(java.sql.ResultSet rs, int arg1)
+                                throws SQLException {
+                            NodeChannel nodeChannel = new NodeChannel();
+                            nodeChannel.setChannelId(rs.getString(1));
+                            // note that 2 is intentionally missing
+                            // here.
+                            nodeChannel.setNodeId(nodeId);
+                            nodeChannel.setIgnoreEnabled(isSet(rs.getObject(3)));
+                            nodeChannel.setSuspendEnabled(isSet(rs.getObject(4)));
+                            nodeChannel.setProcessingOrder(rs.getInt(5));
+                            nodeChannel.setMaxBatchSize(rs.getInt(6));
+                            nodeChannel.setEnabled(rs.getBoolean(7));
+                            nodeChannel.setMaxBatchToSend(rs.getInt(8));
+                            nodeChannel.setMaxDataToRoute(rs.getInt(9));
+                            nodeChannel.setUseOldDataToRoute(rs.getBoolean(10));
+                            nodeChannel.setUseRowDataToRoute(rs.getBoolean(11));
+                            nodeChannel.setBatchAlgorithm(rs.getString(12));
+                            nodeChannel.setLastExtractedTime(rs.getTimestamp(13));
+                            nodeChannel.setExtractPeriodMillis(rs.getLong(14));
 
-                                    return nodeChannel;
-                                };
-                            }));
+                            return nodeChannel;
+                        };
+                    });
+                    nodeChannelCache.put(nodeId, nodeChannels);
                     loaded = true;
                 }
             }
         }
 
         if (!loaded) {
+                // need to read last extracted time from database regardless of
+                // whether we used the cache or not.
+                // locate the nodes in the cache, and update it.
+                final Map<String, NodeChannel> nodeChannelsMap = new HashMap<String, NodeChannel>();
 
-            // need to read last extracted time from database regardless of
-            // whether we used the cache or not.
-            // locate the nodes in the cache, and update it.
+                for (NodeChannel nc : nodeChannels) {
+                    nodeChannelsMap.put(nc.getChannelId(), nc);
+                }
 
-            List<NodeChannel> nodeChannels = nodeChannelCache.get(nodeId);
-            final Map<String, NodeChannel> nodeChannelsMap = new HashMap<String, NodeChannel>();
+                jdbcTemplate.query(getSql("selectNodeChannelControlLastExtractTimeSql"),
+                        new Object[] { nodeId }, new ResultSetExtractor() {
+                            public Object extractData(ResultSet rs) throws SQLException,
+                                    DataAccessException {
+                                if (rs.next()) {
+                                    String channelId = rs.getString(1);
+                                    Date extractTime = rs.getTimestamp(2);
+                                    nodeChannelsMap.get(channelId)
+                                            .setLastExtractedTime(extractTime);
+                                }
+                                return null;
+                            };
+                        });
 
-            for (NodeChannel nc : nodeChannels) {
-                nodeChannelsMap.put(nc.getChannelId(), nc);
-            }
-
-            jdbcTemplate.query(getSql("selectNodeChannelControlLastExtractTimeSql"),
-                    new Object[] { nodeId }, new ResultSetExtractor() {
-                        public Object extractData(ResultSet rs) throws SQLException,
-                                DataAccessException {
-                            if (rs.next()) {
-                                String channelId = rs.getString(1);
-                                Date extractTime = rs.getTimestamp(2);
-                                nodeChannelsMap.get(channelId).setLastExtractedTime(extractTime);
-                            }
-                            return null;
-                        };
-                    });
         }
 
-        return nodeChannelCache.get(nodeId);
+        return nodeChannels;
     }
-
+    
     public void reloadChannels() {
         synchronized (this) {
             nodeChannelCache = null;
