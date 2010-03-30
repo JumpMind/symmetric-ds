@@ -46,7 +46,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
+    String selectTriggerSql;
+    
     String selectTransactionsSql;
+   
 
     @Override
     public void init(Platform pf) {
@@ -105,8 +108,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                 try {
                     // a trigger of the same name must already exist on a table
                     log.warn("TriggerAlreadyExists", jdbcTemplate.queryForMap(
-                            "select * from user_triggers where trigger_name like upper(?)",
-                            new Object[] { hist.getTriggerNameForDmlType(dml) }));
+                            "select * " + selectTriggerSql,
+                            new Object[] { hist.getTriggerNameForDmlType(dml), hist.getSourceTableName() }));
                 } catch (DataAccessException e) {
                 }
             }
@@ -170,7 +173,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             String triggerName) {
         return jdbcTemplate
                 .queryForInt(
-                        "select count(*) from user_triggers where trigger_name like upper(?) and table_name like upper(?)",
+                        "select count(*) " + selectTriggerSql,
                         new Object[] { triggerName, tableName }) > 0;
     }
 
@@ -244,4 +247,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         this.selectTransactionsSql = selectTransactionSql;
     }
     
+    public void setSelectTriggerSql(String selectTriggerSql) {
+        this.selectTriggerSql = selectTriggerSql;
+    }
 }

@@ -13,6 +13,7 @@
         <property name="defaultSchema" value="$[sym.db.default.schema]" />
         <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
         <property name="selectTransactionsSql" value="select min(start_time) from gv$transaction"/>
+        <property name="selectTriggerSql" value="from ALL_TRIGGERS where owner in (SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual) and trigger_name like upper(?) and table_name like upper(?)"/>
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 
