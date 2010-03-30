@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.map.ListOrderedMap;
@@ -1074,50 +1073,55 @@ abstract public class AbstractDbDialect implements IDbDialect {
             Object objectValue = value;
             Column column = orderedMetaData[i];
 
-            if (column != null) {
-                int type = column.getTypeCode();
-                if ((value == null || (isEmptyStringNulled() && value.equals("")))
-                        && column.isRequired() && column.isOfTextType()) {
-                    objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
-                }
-                if (value != null) {
-                    if (type == Types.DATE && !isDateOverrideToTimestamp()) {
-                        objectValue = new Date(getTime(value, TIMESTAMP_PATTERNS));
-                    } else if (type == Types.TIMESTAMP
-                            || (type == Types.DATE && isDateOverrideToTimestamp())) {
-                        objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
-                    } else if (type == Types.CHAR && isCharSpacePadded()) {
-                        objectValue = StringUtils.rightPad(value.toString(), column.getSizeAsInt(),
-                                ' ');
-                    } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
-                        objectValue = Integer.valueOf(value);
-                    } else if (type == Types.NUMERIC || type == Types.DECIMAL
-                            || type == Types.FLOAT || type == Types.DOUBLE) {
-                        // The number will have either one period or one comma
-                        // for the decimal point, but we need a period
-                        objectValue = new BigDecimal(value.replace(',', '.'));
-                    } else if (type == Types.BOOLEAN) {
-                        objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-                    } else if (type == Types.BLOB || type == Types.LONGVARBINARY
-                            || type == Types.BINARY || type == Types.VARBINARY) {
-                        if (encoding == BinaryEncoding.NONE) {
-                            objectValue = value.getBytes();
-                        } else if (encoding == BinaryEncoding.BASE64) {
-                            objectValue = Base64.decodeBase64(value.getBytes());
-                        } else if (encoding == BinaryEncoding.HEX) {
-                            try {
-                                objectValue = Hex.decodeHex(value.toCharArray());
-                            } catch (DecoderException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    } else if (type == Types.TIME) {
-                        objectValue = new Time(getTime(value, TIME_PATTERNS));
+            try {
+                if (column != null) {
+                    int type = column.getTypeCode();
+                    if ((value == null || (isEmptyStringNulled() && value.equals("")))
+                            && column.isRequired() && column.isOfTextType()) {
+                        objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                     }
+                    if (value != null) {
+                        if (type == Types.DATE && !isDateOverrideToTimestamp()) {
+                            objectValue = new Date(getTime(value, TIMESTAMP_PATTERNS));
+                        } else if (type == Types.TIMESTAMP
+                                || (type == Types.DATE && isDateOverrideToTimestamp())) {
+                            objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
+                        } else if (type == Types.CHAR && isCharSpacePadded()) {
+                            objectValue = StringUtils.rightPad(value.toString(), column
+                                    .getSizeAsInt(), ' ');
+                        } else if (type == Types.INTEGER || type == Types.SMALLINT
+                                || type == Types.BIT) {
+                            objectValue = Integer.valueOf(value);
+                        } else if (type == Types.NUMERIC || type == Types.DECIMAL
+                                || type == Types.FLOAT || type == Types.DOUBLE) {
+                            // The number will have either one period or one
+                            // comma
+                            // for the decimal point, but we need a period
+                            objectValue = new BigDecimal(value.replace(',', '.'));
+                        } else if (type == Types.BOOLEAN) {
+                            objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
+                        } else if (type == Types.BLOB || type == Types.LONGVARBINARY
+                                || type == Types.BINARY || type == Types.VARBINARY) {
+                            if (encoding == BinaryEncoding.NONE) {
+                                objectValue = value.getBytes();
+                            } else if (encoding == BinaryEncoding.BASE64) {
+                                objectValue = Base64.decodeBase64(value.getBytes());
+                            } else if (encoding == BinaryEncoding.HEX) {
+                                objectValue = Hex.decodeHex(value.toCharArray());
+                            }
+                        } else if (type == Types.TIME) {
+                            objectValue = new Time(getTime(value, TIME_PATTERNS));
+                        }
+                    }
+                    list.add(objectValue);
                 }
-                list.add(objectValue);
+            } catch (Exception ex) {
+                logger.error("DbDialectTroubleConvertingColumnValue", value, column.getName(),
+                        column.getType());
+                throw new RuntimeException(ex);
             }
         }
+        
         return list.toArray();
     }
 
