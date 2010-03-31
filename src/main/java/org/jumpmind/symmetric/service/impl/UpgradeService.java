@@ -50,7 +50,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
     public boolean isUpgradePossible() {
         String symmetricVersion = nodeService.findSymmetricVersion();        
         if (!StringUtils.isBlank(symmetricVersion) && !symmetricVersion.equals("development")) {
-            return !(Version.parseVersion(symmetricVersion)[0] > 1);
+            return Version.parseVersion(symmetricVersion)[0] > 1;
         } else {
             return true;
         }
