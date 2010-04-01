@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
@@ -18,6 +19,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -73,20 +75,22 @@ public class DataToRouteReader implements Runnable {
         this.queryTimeout = queryTimeout;
     }
 
-    public Data take() {
-        Data data;
-        try {
-            data = dataQueue.take();
-        } catch (InterruptedException e) {
-            log.error(e);
-            return null;
-        }
-        if (data instanceof EOD) {
-            return null;
-        } else {
-            return data;
-        }
-    }
+	public Data take() {
+		Data data = null;
+		do {
+			try {
+				data = dataQueue.poll(60, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.warn(e);
+			}
+		} while (data == null);
+
+		if (data instanceof EOD) {
+			return null;
+		} else {
+			return data;
+		}
+	}
     
     protected String getSql (Channel channel) {
         String select = sql.get("selectDataToBatchSql");
@@ -138,9 +142,7 @@ public class DataToRouteReader implements Runnable {
                         ts = System.currentTimeMillis();
                         
                         if (toRead == 0) {
-                            for (Data data : memQueue) {
-                                dataQueue.put(data);
-                            }
+                        	copyToQueue(memQueue);
                             toRead = maxQueueSize - dataQueue.size();
                             memQueue = new ArrayList<Data>(toRead);
                         } else {
@@ -153,28 +155,33 @@ public class DataToRouteReader implements Runnable {
                         ts = System.currentTimeMillis();
                     }
 
-                    for (Data data : memQueue) {
-                        dataQueue.put(data);
-                    }
+                    copyToQueue(memQueue);
 
                     return dataCount;
-                } catch (InterruptedException ex) {
-                    log.error(ex);
-                    throw new RuntimeException(ex);
                 } finally {
                     JdbcUtils.closeResultSet(rs);
                     JdbcUtils.closeStatement(ps);
                     reading = false;
-                    try {
-                        dataQueue.put(new EOD());
-                    } catch (InterruptedException ex) {
-                        log.error(ex);
-                    }
+                    boolean done = false;
+                    do {
+                    	done = dataQueue.offer(new EOD());
+                    } while (!done);
                     rs = null;
                     ps = null;
                 }
             }
         });
+    }
+    
+    protected void copyToQueue(List<Data> memQueue) {
+        while (memQueue.size() > 0) {
+        	Data d = memQueue.get(0);
+            if (dataQueue.offer(d)) {
+            	memQueue.remove(0);
+            } else {
+            	AppUtils.sleep(50);
+            }
+        }
     }
 
     public boolean isReading() {
