@@ -174,7 +174,7 @@ public class DataToRouteReader implements Runnable {
     }
     
     protected void copyToQueue(List<Data> memQueue) {
-        while (memQueue.size() > 0) {
+        while (memQueue.size() > 0 && reading) {
         	Data d = memQueue.get(0);
             if (dataQueue.offer(d)) {
             	memQueue.remove(0);
