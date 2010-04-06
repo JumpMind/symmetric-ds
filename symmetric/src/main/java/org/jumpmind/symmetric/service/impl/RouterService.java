@@ -132,7 +132,7 @@ public class RouterService extends AbstractService implements IRouterService {
         final List<NodeChannel> channels = configurationService.getNodeChannels(false);
         int dataCount = 0;
         for (NodeChannel nodeChannel : channels) {
-            if (!nodeChannel.isSuspendEnabled()) {
+            if (!nodeChannel.isSuspendEnabled() && nodeChannel.isEnabled()) {
                 dataCount += routeDataForChannel(ref, nodeChannel, sourceNode);
             }
         }
