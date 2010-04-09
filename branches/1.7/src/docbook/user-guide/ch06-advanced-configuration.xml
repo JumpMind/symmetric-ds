@@ -102,9 +102,6 @@ values
     <section id="ch06-purge">
         <title>Database Purging</title>
     </section>
-    <section id="ch06-clustering">
-        <title>Clustering</title>
-    </section>    
     <section id="ch06-extensions">
         <title>Extension Points</title>
         <para>

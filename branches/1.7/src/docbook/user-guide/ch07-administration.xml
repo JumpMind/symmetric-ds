@@ -183,7 +183,7 @@ where source_node_group_id = 'client';
         <title>Statistics</title>
         <para></para>
     </section>
-    <section id="ch07clustering">
+    <section id="ch07-clustering">
         <title>Clustering</title>
         <para>
         A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  A node might be clustered to provide load balancing and failover, for example.
@@ -194,8 +194,16 @@ where source_node_group_id = 'client';
         Also, the <literal>sync.url</literal> SymmetricDS property should be set to the URL of the load balancer.  
         </para>
         <para>
-        If the cluster will be running any of the SymmetricDS jobs, then the <literal>cluster.lock.enabled</literal> property should be set to <literal>true</literal>. 
-        By setting this property to true, SymmetricDS will use a row in the SYM_LOCK table as a semaphore to make sure that only one instance at a time
+        If the cluster will be running any of the SymmetricDS jobs, then the following properties should be set to <literal>true</literal>.
+        
+        <programlisting>
+cluster.lock.during.purge=true
+cluster.lock.during.pull=true
+cluster.lock.during.push=true
+cluster.lock.during.heartbeat=true
+cluster.lock.during.sync.triggers=true</programlisting>
+
+        By setting these properties to true, SymmetricDS will use a row in the SYM_LOCK table as a semaphore to make sure that only one instance at a time
         runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
         when the job is finished running.  Another instance of SymmetricDS cannot acquire a lock until the locking instance (according to the server id) releases the lock.  If an 
         instance is terminated while the lock is still held, an instance with the same server id is allowed to re-acquire the lock.  If the locking instance remains down, the lock can be 
