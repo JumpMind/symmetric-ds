@@ -183,6 +183,33 @@ where source_node_group_id = 'client';
         <title>Statistics</title>
         <para></para>
     </section>
+    <section id="ch07clustering">
+        <title>Clustering</title>
+        <para>
+        A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  A node might be clustered to provide load balancing and failover, for example.
+        </para>
+        <para>
+        When clustered, a hardware load balancer is typically used
+        to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  
+        Also, the <literal>sync.url</literal> SymmetricDS property should be set to the URL of the load balancer.  
+        </para>
+        <para>
+        If the cluster will be running any of the SymmetricDS jobs, then the <literal>cluster.lock.enabled</literal> property should be set to <literal>true</literal>. 
+        By setting this property to true, SymmetricDS will use a row in the SYM_LOCK table as a semaphore to make sure that only one instance at a time
+        runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
+        when the job is finished running.  Another instance of SymmetricDS cannot acquire a lock until the locking instance (according to the server id) releases the lock.  If an 
+        instance is terminated while the lock is still held, an instance with the same server id is allowed to re-acquire the lock.  If the locking instance remains down, the lock can be 
+        broken after a period of time, specified by the <literal>cluster.lock.timeout.ms</literal> property, has expired.  Note that if the job is still running and the lock
+        expires, two jobs could be running at the same time which could cause database deadlocks. 
+        </para>
+        <para>
+        By default, the locking server id is the hostname of the server.  If two clustered instances are running on the same server, then the <literal>cluster.server.id</literal> property 
+        may be set to indicate the name that the instance should use for its server id.
+        </para>
+        <para>
+        When deploying SymmetricDS to an application server like Tomcat or JBoss, no special session clustering needs to be configured for the application server.  
+        </para>
+    </section>   
     <section id="ch07-running-service-windows">
         <title>Running as a Windows Service</title>
         <para>
