@@ -989,8 +989,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         int id = 1;
         String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
-        Object[] values = new Object[] { id, "moredata", getDate("2008-01-02 03:04:05"),
-                getDate("2008-02-01 05:03:04"), 600, new BigDecimal("34.10") };
+        Object[] values = new Object[] { id, "moredata", getDate("2007-01-02 03:04:05"),
+                getDate("2007-02-01 05:03:04"), 600, new BigDecimal("34.10") };
 
         // Null out columns, change each column and sync one at a time
         clientJdbcTemplate.update(nullSyncColumnLevelSql, new Object[] { id });
