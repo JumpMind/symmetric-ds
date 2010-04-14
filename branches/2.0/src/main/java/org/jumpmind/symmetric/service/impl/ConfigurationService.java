@@ -162,7 +162,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 || nodeChannels == null) {
             synchronized (this) {
                 if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
-                        || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null) {
+                        || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null || nodeChannels == null) {
                     if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
                             || nodeChannelCache == null) {
                         nodeChannelCache = new HashMap<String, List<NodeChannel>>();
