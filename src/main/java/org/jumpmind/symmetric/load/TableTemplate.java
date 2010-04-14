@@ -147,9 +147,12 @@ public class TableTemplate {
             ArrayList<Column> changedColumnMetaList = new ArrayList<Column>();
             for (int i = 0; i < columnValues.length; i++) {
                 if (! StringUtils.equals(columnValues[i], oldData[i])) {
-                    changedColumnNameList.add(columnNames[i]);
-                    changedColumnMetaList.add(allMetaData.get(columnNames[i].trim().toUpperCase()));
-                    changedColumnValueList.add(columnValues[i]);
+                    Column column = allMetaData.get(columnNames[i].trim().toUpperCase());
+                    if (column != null) {
+                        changedColumnNameList.add(columnNames[i]);
+                        changedColumnMetaList.add(column);
+                        changedColumnValueList.add(columnValues[i]);
+                    }
                 }
             }
             if (changedColumnNameList.size() > 0) {
