@@ -152,7 +152,7 @@ public class TableTemplate {
                         changedColumnNameList.add(columnNames[i]);
                         changedColumnMetaList.add(column);
                         changedColumnValueList.add(columnValues[i]);
-                    }
+                    } 
                 }
             }
             if (changedColumnNameList.size() > 0) {
@@ -161,6 +161,9 @@ public class TableTemplate {
                 columnValues = (String[]) changedColumnValueList.toArray(new String[0]);
                 Column[] changedColumnMetaData = (Column[]) changedColumnMetaList.toArray(new Column[0]);
                 metaData = (Column[]) ArrayUtils.addAll(changedColumnMetaData, keyMetaData);
+            } else {
+                // There was no change to apply
+                return 1;
             }
             oldData = null;
         } else if (dontIncludeKeysInUpdateStatement) {
