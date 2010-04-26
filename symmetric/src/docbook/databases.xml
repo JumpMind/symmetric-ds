@@ -146,6 +146,10 @@ alter sequence SEQ_SYM_TRIGGER_TRIGGER_ID cache 1000 order;]]></programlisting>
             While BLOBs are supported on Oracle, the LONG data type is not.  LONG columns cannot be accessed from triggers.
         </para>
         <para>
+            Note that while Oracle supports multiple triggers of the same type to be defined, the order
+            in which the triggers occur appears to be arbitrary.
+        </para>
+        <para>
             The SymmetricDS user generally needs privileges for connecting and creating 
             tables (including indexes), triggers, sequences, and procedures (including packages and functions).
             The following is an example of the needed grant statements:
