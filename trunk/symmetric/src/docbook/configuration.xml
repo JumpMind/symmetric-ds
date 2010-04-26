@@ -346,6 +346,16 @@ values
   ('item', 'item', 'item', current_timestamp, current_timestamp);
 ]]></programlisting>
         </para>
+        
+        <warning>
+        <para>
+            Note that many databases allow for multiple triggers of the same type to be defined.  
+            Each database defines the order in which the triggers fire differently.  If you have
+            additional triggers beyond those SymmetricDS installs on your table, please consult
+            your database documentation to determine if there will be issues with
+            the ordering of the triggers.
+        </para>
+    </warning>
     </section>
     <section id="configuration-router">
     <title>Router</title>    
