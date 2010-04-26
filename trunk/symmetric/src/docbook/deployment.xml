@@ -135,7 +135,8 @@
             </para>
             <para>
                 The <literal>web.base.servlet.path</literal> property in <filename>symmetric.properties</filename> can be set if the SymmetricServlet needs to
-                coexist with other Servlets.
+                coexist with other Servlets.  By default, the value is blank.  If you set it to, say, <literal>web.base.servlet.path=sync</literal> for exmaple,
+                <literal>registration.url</literal> would be <literal>http://server:port/sync</literal>.
             </para>            
         </section>
         <section id="deployment-options-standalone">
