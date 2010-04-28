@@ -23,6 +23,7 @@ package org.jumpmind.symmetric;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -81,7 +82,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
 
     protected void createConfigureAndStartEngine(ApplicationContext ctx) {
         if (this.engine == null) {
-            this.engine = new StandaloneSymmetricEngine(ctx, true);
+            this.engine = new StandaloneSymmetricEngine(ctx, ctx.containsBean(Constants.PROPERTIES) ? false : true);
         }
         engine.start();
     }
