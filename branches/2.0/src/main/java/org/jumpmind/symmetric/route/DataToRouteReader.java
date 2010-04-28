@@ -75,22 +75,20 @@ public class DataToRouteReader implements Runnable {
         this.queryTimeout = queryTimeout;
     }
 
-	public Data take() {
-		Data data = null;
-		do {
-			try {
-				data = dataQueue.poll(60, TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				log.warn(e);
-			}
-		} while (data == null);
+    public Data take() {
+        Data data = null;
+        try {
+            data = dataQueue.poll(120, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            log.warn(e);
+        }
 
-		if (data instanceof EOD) {
-			return null;
-		} else {
-			return data;
-		}
-	}
+        if (data instanceof EOD) {
+            return null;
+        } else {
+            return data;
+        }
+    }
     
     protected String getSql (Channel channel) {
         String select = sql.get("selectDataToBatchSql");
