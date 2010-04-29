@@ -305,6 +305,12 @@
                     <additionalClasspathElement>
                         ${user.home}/.symmetricds/lib/jaybird-full-2.1.6.jar
                         </additionalClasspathElement>
+                    <additionalClasspathElement>
+                        ${user.home}/.symmetricds/lib/ifxjdbc.jar
+                        </additionalClasspathElement>
+                    <additionalClasspathElement>
+                        ${user.home}/.symmetricds/lib/ifxlang.jar
+                        </additionalClasspathElement>
                 </additionalClasspathElements>
                 <includes>
                     <include>**/*TestSuite.java</include>
