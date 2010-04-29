@@ -263,7 +263,7 @@ public class RouterService extends AbstractService implements IRouterService {
     protected int selectDataAndRoute(DataRef ref, RouterContext context) throws SQLException {
 
         DataToRouteReader reader = new DataToRouteReader(dataSource, jdbcTemplate.getQueryTimeout(), dbDialect
-                .getRouterDataPeekAheadCount(), getSql(), dbDialect.getStreamingResultsFetchSize(),
+                .getRouterDataPeekAheadCount(), this, dbDialect.getStreamingResultsFetchSize(),
                 context, ref, dataService);
         readThread.execute(reader);
         Data data = null;
