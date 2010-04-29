@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +18,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.ISqlProvider;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -38,7 +38,7 @@ public class DataToRouteReader implements Runnable {
 
     protected BlockingQueue<Data> dataQueue;
 
-    private Map<String, String> sql;
+    private ISqlProvider sqlProvider;
 
     private DataSource dataSource;
 
@@ -53,13 +53,14 @@ public class DataToRouteReader implements Runnable {
     private int maxQueueSize;
     
     private int queryTimeout;
+      
 
-    public DataToRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize, Map<String, String> sql,
+    public DataToRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize, ISqlProvider sqlProvider,
             int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService) {
         this.maxQueueSize = maxQueueSize;
         this.dataSource = dataSource;
         this.dataQueue = new LinkedBlockingQueue<Data>(maxQueueSize);
-        this.sql = sql;
+        this.sqlProvider = sqlProvider;
         this.context = context;
         this.fetchSize = fetchSize;
         this.dataRef = dataRef;
@@ -83,7 +84,7 @@ public class DataToRouteReader implements Runnable {
     }
     
     protected String getSql (Channel channel) {
-        String select = sql.get("selectDataToBatchSql");
+        String select = sqlProvider.getSql("selectDataToBatchSql");
         if (!channel.isUseOldDataToRoute()) {
             select = select.replace("d.old_data", "''");
         }

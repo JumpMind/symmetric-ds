@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IRouterContext;
 
 
-public interface IRouterService {
+public interface IRouterService extends ISqlProvider {
 
     public void routeData();
     

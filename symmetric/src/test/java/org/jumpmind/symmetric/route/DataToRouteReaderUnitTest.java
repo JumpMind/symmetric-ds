@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.service.ISqlProvider;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +23,7 @@ public class DataToRouteReaderUnitTest {
     
     @Test
     public void testOldDataReplacement() {
-        DataToRouteReader reader = new DataToRouteReader(null, -1, 1, routerServiceSql, 1000, null, null, null);
+        DataToRouteReader reader = new DataToRouteReader(null, -1, 1, getSqlProvider(), 1000, null, null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(channel).contains("old_data"));
         Assert.assertFalse(reader.getSql(channel).contains(BLANK));
@@ -33,7 +34,7 @@ public class DataToRouteReaderUnitTest {
     
     @Test
     public void testRowDataReplacement() {
-        DataToRouteReader reader = new DataToRouteReader(null, -1, 1, routerServiceSql, 1000, null, null, null);
+        DataToRouteReader reader = new DataToRouteReader(null, -1, 1, getSqlProvider(), 1000, null, null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(channel).contains("row_data"));
         Assert.assertFalse(reader.getSql(channel).contains(BLANK));
@@ -44,7 +45,7 @@ public class DataToRouteReaderUnitTest {
     
     @Test
     public void testOldAndRowDataReplacement() {
-        DataToRouteReader reader = new DataToRouteReader(null, -1, 1, routerServiceSql, 1000, null, null, null);
+        DataToRouteReader reader = new DataToRouteReader(null, -1, 1, getSqlProvider(), 1000, null, null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(channel).contains("row_data"));
         Assert.assertTrue(reader.getSql(channel).contains("old_data"));
@@ -55,5 +56,14 @@ public class DataToRouteReaderUnitTest {
         Assert.assertFalse(reader.getSql(channel).contains("old_data"));
         Assert.assertTrue(reader.getSql(channel).contains(BLANK));
     }  
+    
+    private ISqlProvider getSqlProvider() {
+        return new ISqlProvider() {
+            
+            public String getSql(String key) {
+                return routerServiceSql.get(key);
+            }
+        };
+    }
 
 }

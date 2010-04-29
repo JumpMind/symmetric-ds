@@ -32,11 +32,12 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
+import org.jumpmind.symmetric.service.ISqlProvider;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
-abstract class AbstractService implements IService {
+abstract class AbstractService implements IService, ISqlProvider {
 
     protected ILog log = LogFactory.getLog(getClass());
 
@@ -83,10 +84,6 @@ abstract class AbstractService implements IService {
 
     public String getSql(String key) {
         return sql.get(key);
-    }
-    
-    public Map<String,String> getSql() {
-        return this.sql;
     }
 
     public void setTablePrefix(String tablePrefix) {
