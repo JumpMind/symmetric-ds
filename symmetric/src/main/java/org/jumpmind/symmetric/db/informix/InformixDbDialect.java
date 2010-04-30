@@ -20,8 +20,10 @@
 package org.jumpmind.symmetric.db.informix;
 
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Trigger;
 
 public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
@@ -35,6 +37,11 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    @Override
+    public IColumnFilter getDatabaseColumnFilter() {
+        return new AutoIncrementColumnFilter();
+    }
+    
     @Override
     protected void createRequiredFunctions() {
     }
@@ -81,7 +88,7 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getDefaultSchema() {
-	return (String) jdbcTemplate.queryForObject("select user from sysmaster:sysdual", String.class);
+	return (String) jdbcTemplate.queryForObject("select trim(user) from sysmaster:sysdual", String.class);
     }
 
     @Override
