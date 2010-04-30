@@ -21,12 +21,12 @@
                 </property>
                 <property name="stringColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName), '\', '\\'), '"', '\"') || '"' end ||','|| ]]>
+                        <![CDATA[rtrim(case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName), '\', '\\'), '"', '\"') || '"' end) ||','|| ]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName), '\', '\\'), '"', '\"') || '"' end ||','|| ]]>
+                        <![CDATA[rtrim(case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName), '\', '\\'), '"', '\"') || '"' end) ||','|| ]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
