@@ -26,20 +26,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IColumnFilter;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
@@ -76,54 +72,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public IColumnFilter getDatabaseColumnFilter() {
-        return new IColumnFilter() {
-            int[] indexesToRemove = null;
-
-            public String[] filterColumnsNames(IDataLoaderContext ctx, DmlType dml, Table table, String[] columnNames) {
-                ArrayList<String> columns = new ArrayList<String>();
-                CollectionUtils.addAll(columns, columnNames);
-                if (dml == DmlType.UPDATE) {
-                    Column[] autoIncrementColumns = table.getAutoIncrementColumns();
-                    indexesToRemove = new int[autoIncrementColumns.length];
-                    int i = 0;
-                    for (Column column : autoIncrementColumns) {
-                        String name = column.getName();
-                        int index = columns.indexOf(name);
-
-                        if (index < 0) {
-                            name = name.toLowerCase();
-                            index = columns.indexOf(name);
-                        }
-                        if (index < 0) {
-                            name = name.toUpperCase();
-                            index = columns.indexOf(name);
-                        }
-                        indexesToRemove[i++] = index;
-                        columns.remove(name);
-                    }
-                }
-                return columns.toArray(new String[columns.size()]);
-            }
-
-            public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table, Object[] columnValues) {
-                if (dml == DmlType.UPDATE && indexesToRemove != null) {
-                    ArrayList<Object> values = new ArrayList<Object>();
-                    CollectionUtils.addAll(values, columnValues);
-                    for (int index : indexesToRemove) {
-                        if (index >= 0) {
-                            values.remove(index);
-                        }
-                    }
-                    return values.toArray(new Object[values.size()]);
-                }
-                return columnValues;
-            }
-
-            public boolean isAutoRegister() {
-                return false;
-            }
-
-        };
+        return new AutoIncrementColumnFilter();
     }
 
     @Override
