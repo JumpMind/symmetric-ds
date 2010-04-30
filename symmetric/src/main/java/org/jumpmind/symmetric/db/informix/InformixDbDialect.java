@@ -33,17 +33,8 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     @Override
-    public boolean supportsTransactionId() {
-        return false;
-    }
-
-    @Override
     public IColumnFilter getDatabaseColumnFilter() {
         return new AutoIncrementColumnFilter();
-    }
-    
-    @Override
-    protected void createRequiredFunctions() {
     }
     
     @Override
@@ -53,13 +44,25 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void disableSyncTriggers(String nodeId) {
+        jdbcTemplate.queryForList("select " + tablePrefix
+		+ "_triggers_set_disabled('t'), " + tablePrefix
+		+ "_node_set_disabled(?) from sysmaster:sysdual",
+		new Object[] { nodeId });
     }
 
     public void enableSyncTriggers() {
+        jdbcTemplate.queryForList("select " + tablePrefix
+		+ "_triggers_set_disabled('f'), " + tablePrefix
+		+ "_node_set_disabled(null) from sysmaster:sysdual");
     }
 
     public String getSyncTriggersExpression() {
-        return "1=1";
+	return "$(defaultSchema)" + tablePrefix + "_triggers_disabled()";
+    }
+
+    @Override
+    public boolean supportsTransactionId() {
+        return false;
     }
 
     @Override
