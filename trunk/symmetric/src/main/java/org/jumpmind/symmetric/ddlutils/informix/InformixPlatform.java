@@ -28,6 +28,9 @@ public class InformixPlatform extends PlatformImplBase implements Platform {
         info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.TINYINT);
         info.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.DOUBLE);
         
+        info.setDefaultSize(Types.VARCHAR, 255);
+        info.setDefaultSize(Types.CHAR, 255);
+        
         setSqlBuilder(new InformixBuilder(this));
         setModelReader(new InformixModelReader(this));
     }
