@@ -16,8 +16,54 @@
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 <property name="functionInstalledSql">
                     <value>
-                        <![CDATA[select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())]]>
+                        <![CDATA[select count(*) from sysmaster:sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)]]>
                     </value>
+                </property>
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="triggers_disabled">
+                            <value>
+                                <![CDATA[ 
+                                create function $(defaultSchema)$(functionName)() returning boolean;
+                                   define global symmetric_triggers_disabled boolean default 'f';
+                                   return symmetric_triggers_disabled;
+                                end function;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="triggers_set_disabled">
+                            <value>
+                                <![CDATA[ 
+                                create function $(defaultSchema)$(functionName)(is_disabled boolean) returning boolean;
+                                   define global symmetric_triggers_disabled boolean default 'f';
+                                   let symmetric_triggers_disabled = is_disabled;
+                                   return symmetric_triggers_disabled;
+                                end function;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="node_disabled">
+                            <value>
+                                <![CDATA[
+                                create function $(defaultSchema)$(functionName)() returning varchar(50);
+                                   define global symmetric_node_disabled varchar(50) default null;
+                                   return symmetric_node_disabled;
+                                end function;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="node_set_disabled">
+                            <value>
+                                <![CDATA[
+                                create function $(defaultSchema)$(functionName)(node_id varchar(50)) returning integer;
+                                   define global symmetric_node_disabled varchar(50) default null;
+                                   let symmetric_node_disabled = node_id;
+                                   return 1;
+                                end function;
+                                ]]>
+                            </value>
+                        </entry>
+                    </map>
                 </property>
                 <property name="stringColumnTemplate">
                     <value>
@@ -68,7 +114,7 @@
                                   $(columns),          
                                   '$(channelName)',          
                                   $(txIdExpression),
-                                  null,
+                                  $(defaultSchema)$(prefixName)_node_disabled(),
                                   $(externalSelect),     
                                   CURRENT
                                 ));
@@ -91,7 +137,7 @@
                                   $(oldColumns),
                                   '$(channelName)',  
                                   $(txIdExpression),
-                                  null,   
+                                  $(defaultSchema)$(prefixName)_node_disabled(),   
                                   $(externalSelect),                                          
                                   CURRENT
                                 ));
@@ -113,7 +159,7 @@
                                   $(oldColumns),
                                   '$(channelName)',  
                                   $(txIdExpression),
-                                  null, 
+                                  $(defaultSchema)$(prefixName)_node_disabled(), 
                                   $(externalSelect),      
                                   CURRENT
                                 ));
