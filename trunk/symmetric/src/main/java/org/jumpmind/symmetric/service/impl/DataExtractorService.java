@@ -289,9 +289,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (!StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) || 
                                     routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
                                 dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctxCopy);
-                                if (batch != null) {
-                                    batch.incrementDataEventCount();
-                                }
                             } else {
                                 dataNotRouted++;
                             }
@@ -324,6 +321,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node);
+        
         if (batches != null && batches.getBatches() != null && batches.getBatches().size() > 0) {
 
             ChannelMap suspendIgnoreChannelsList = targetTransport.getSuspendIgnoreChannelLists(configurationService);

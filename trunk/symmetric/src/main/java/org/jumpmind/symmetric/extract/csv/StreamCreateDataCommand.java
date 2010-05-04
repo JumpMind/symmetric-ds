@@ -13,6 +13,7 @@ public class StreamCreateDataCommand extends AbstractStreamDataCommand {
     public void execute(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
         CsvUtils.write(writer, CsvConstants.CREATE, DELIMITER, data.getRowData());
         writer.newLine();
+        context.incrementDataEventCount();
     }
     
     public boolean isTriggerHistoryRequired() {
