@@ -20,16 +20,19 @@ public class InformixPlatform extends PlatformImplBase implements Platform {
         info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
         info.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);
         info.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
-        info.addNativeTypeMapping(Types.TIME, "DATETIME YEAR TO FRACTION", Types.TIME);
+        info.addNativeTypeMapping(Types.TIME, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
         info.addNativeTypeMapping(Types.BINARY, "BYTE", Types.BINARY);
         info.addNativeTypeMapping(Types.VARBINARY, "BYTE", Types.BINARY);
 
-        info.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BIT);
-        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.TINYINT);
+        info.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BOOLEAN);
+        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         info.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.DOUBLE);
         
         info.setDefaultSize(Types.VARCHAR, 255);
         info.setDefaultSize(Types.CHAR, 255);
+        
+        info.setAlterTableForDropUsed(true);
+        info.setSystemIndicesReturned(true);
         
         setSqlBuilder(new InformixBuilder(this));
         setModelReader(new InformixModelReader(this));
