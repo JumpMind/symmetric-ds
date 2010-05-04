@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.sql.DataSource;
@@ -98,6 +99,15 @@ public class AppUtils {
             String sourceString) {
         return StringUtils
                 .replace(sourceString, "$(" + prop + ")", replaceWith);
+    }
+
+    public static String replaceTokens(String original, Map<String, String> replacementTokens) {
+        if (replacementTokens != null) {
+            for (Object key : replacementTokens.keySet()) {
+                original = original.replaceAll(key.toString(), replacementTokens.get(key));
+            }
+        }
+        return original;
     }
 
     /**
