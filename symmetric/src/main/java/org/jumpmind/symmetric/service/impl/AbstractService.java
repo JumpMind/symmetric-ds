@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.jumpmind.symmetric.service.ISqlProvider;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -83,7 +84,8 @@ abstract class AbstractService implements IService, ISqlProvider {
     }
 
     public String getSql(String key) {
-        return sql.get(key);
+        String sqlString = sql.get(key);
+        return AppUtils.replaceTokens(sqlString, dbDialect.getSqlScriptReplacementTokens());
     }
 
     public void setTablePrefix(String tablePrefix) {
