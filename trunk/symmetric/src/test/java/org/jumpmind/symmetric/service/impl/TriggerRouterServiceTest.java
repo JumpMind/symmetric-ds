@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -160,6 +161,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         String csvString = getNextDataRow();
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
+        // Informix captures decimal differently
+        csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
         assertTrue(match, "The full string we pulled from the database was " + csvString
                 + " however, we expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
@@ -180,6 +183,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         String csvString = csvStrings.get(0);
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
+        // Informix captures decimal differently
+        csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
         assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
                 + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
@@ -187,17 +192,12 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testExcludedColumnsFunctionality() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();
-
-        // need to wait for a second to make sure enough time has passed so the
-        // update of the config table will have a greater timestamp than the
-        // audit table.
-        Thread.sleep(1000);
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         assertEquals(
                 1,
                 jdbcTemplate
-                        .update("update sym_trigger set excluded_column_names='BOOLEAN_VALUE', last_update_time=current_timestamp "
-                                + TEST_TRIGGER_WHERE_CLAUSE));
+                        .update("update sym_trigger set excluded_column_names='BOOLEAN_VALUE', last_update_time=? "
+                                + TEST_TRIGGER_WHERE_CLAUSE, new Object[] { new Date(System.currentTimeMillis() + 60000)}));
 
         service.syncTriggers();
 
@@ -211,6 +211,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         String csvString = getNextDataRow();
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
+        // Informix captures decimal differently
+        csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
         assertTrue(match, "Received " + csvString + ", Expected the string to end with "
                 + EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -226,6 +228,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         String csvString = getNextDataRow();
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
+        // Informix captures decimal differently
+        csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
         assertTrue(match, "Received " + csvString + ", Expected the string to end with "
                 + EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -353,7 +357,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     private String getNextDataRow() {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        return (String) jdbcTemplate.queryForObject(
+        return jdbcTemplate.queryForObject(
                 "select row_data from sym_data where data_id = (select max(data_id) from sym_data)", String.class);
 
     }
