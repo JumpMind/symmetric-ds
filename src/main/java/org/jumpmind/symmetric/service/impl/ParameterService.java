@@ -84,6 +84,7 @@ public class ParameterService extends AbstractService implements IParameterServi
     public boolean is(String key, boolean defaultVal) {
         String val = getString(key);
         if (val != null) {
+            val = val.trim();
             if (val.equals("1")) {
                 return true;
             } else {
