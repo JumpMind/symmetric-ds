@@ -35,6 +35,7 @@ import javax.sql.DataSource;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -124,16 +125,6 @@ public class SqlScript {
         }
     }
 
-    protected String replaceTokens(String original) {
-        if (this.replacementTokens != null) {
-            for (Object key : this.replacementTokens.keySet()) {
-                original = original.replaceAll("\\%" + key + "\\%",
-                        this.replacementTokens.get((String) key));
-            }
-        }
-        return original;
-    }
-
     public void execute() {
         execute(false);    
     }
@@ -164,7 +155,7 @@ public class SqlScript {
                                         .lastIndexOf(delimiter)).trim());
                                 log.debug("Sql", sql);
                                 try {
-                                    st.execute(replaceTokens(sql.toString()));
+                                    st.execute(AppUtils.replaceTokens(sql.toString(), replacementTokens));
                                     count++;
                                     if (count % commitRate == 0) {
                                         connection.commit();

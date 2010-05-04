@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.db;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.ddlutils.Platform;
@@ -265,4 +266,6 @@ public interface IDbDialect {
      * This is a SQL clause that compares the old data to the new data in a trigger.
      */
     public String getDataHasChangedCondition();
+    
+    public Map<String, String> getSqlScriptReplacementTokens();
 }

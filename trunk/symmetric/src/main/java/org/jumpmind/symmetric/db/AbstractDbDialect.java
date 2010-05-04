@@ -77,6 +77,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -1382,9 +1383,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public long getDatabaseTime() {
         try {
-            return jdbcTemplate.queryForObject(
-                    "select current_timestamp from " + tablePrefix + "_node_identity",
-                    java.util.Date.class).getTime();
+            String sql = "select current_timestamp from " + tablePrefix + "_node_identity";
+            sql = AppUtils.replaceTokens(sql, getSqlScriptReplacementTokens());
+            return jdbcTemplate.queryForObject(sql, java.util.Date.class).getTime();
 
         } catch (Exception ex) {
             log.error(ex);
@@ -1406,5 +1407,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     protected String getDbSpecificDataHasChangedCondition() {
         return "1=1";
+    }
+
+    public Map<String, String> getSqlScriptReplacementTokens() {
+        return null;
     }
 }
