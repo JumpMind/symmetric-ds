@@ -16,7 +16,7 @@
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 <property name="functionInstalledSql">
                     <value>
-                        <![CDATA[select count(*) from sysmaster:sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)]]>
+                        <![CDATA[select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)]]>
                     </value>
                 </property>
                 <property name="functionTemplatesToInstall">
@@ -72,12 +72,12 @@
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[rtrim(case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName), '\', '\\'), '"', '\"') || '"' end) ||','|| ]]>
+                        <![CDATA['' ||','|| ]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || hex($(tableAlias).$(columnName)) || '"' end ||','|| ]]>
+                        <![CDATA['' ||','|| ]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
