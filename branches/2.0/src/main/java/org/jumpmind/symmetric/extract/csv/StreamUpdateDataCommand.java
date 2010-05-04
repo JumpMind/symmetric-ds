@@ -34,6 +34,7 @@ class StreamUpdateDataCommand extends AbstractStreamDataCommand {
     public void execute(BufferedWriter out, Data data, String routerId, DataExtractorContext context) throws IOException {
         CsvUtils.write(out, CsvConstants.UPDATE, DELIMITER, data.getRowData(), DELIMITER, data.getPkData());
         out.newLine();
+        context.incrementDataEventCount();
     }
     
     public boolean isTriggerHistoryRequired() {

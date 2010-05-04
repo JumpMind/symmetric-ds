@@ -67,5 +67,11 @@ public class DataExtractorContext implements Cloneable {
     public IDataExtractor getDataExtractor() {
         return dataExtractor;
     }
+    
+    public void incrementDataEventCount() {
+        if (batch != null) {
+            batch.incrementDataEventCount();
+        }
+    }
 
 }
