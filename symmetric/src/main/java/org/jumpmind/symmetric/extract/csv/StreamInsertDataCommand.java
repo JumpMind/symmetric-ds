@@ -34,6 +34,7 @@ class StreamInsertDataCommand extends AbstractStreamDataCommand {
     public void execute(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
         CsvUtils.write(writer, CsvConstants.INSERT, DELIMITER, data.getRowData());
         writer.newLine();
+        context.incrementDataEventCount();
     }
     
     public boolean isTriggerHistoryRequired() {
