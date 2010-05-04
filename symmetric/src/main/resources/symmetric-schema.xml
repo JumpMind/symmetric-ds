@@ -8,7 +8,7 @@
         <column name="node_group_id" type="VARCHAR" size="50" required="true" description="The node group that this node belongs to, such as 'store'." />
         <column name="external_id" type="VARCHAR" size="50" required="true" description="A domain-specific identifier for context within the local system. For example, the retail store number. "/>
         <column name="sync_enabled" type="BOOLEANINT" size="1" default="0" description="Indicates whether this node should be sent synchronization. Disabled nodes are ignored by the triggers, so no entries are made in data_event for the node."/>
-        <column name="sync_url" type="VARCHAR" size="2000" description="The URL to contact the node for synchronization." />
+        <column name="sync_url" type="VARCHAR" size="255" description="The URL to contact the node for synchronization." />
         <column name="schema_version" type="VARCHAR" size="50" description="The version of the database schema this node manages. Useful for specifying synchronization by version. "/>
         <column name="symmetric_version" type="VARCHAR" size="50"  description="The version of SymmetricDS running at this node." />
         <column name="database_type" type="VARCHAR" size="50"  description="The database product name at this node as reported by JDBC."  />
@@ -36,7 +36,7 @@
     
     <table name="node_group" description="A category of Nodes that synchronizes data with one or more NodeGroups. A common use of NodeGroup is to describe a level in a hierarchy of data synchronization.">
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node group, usually named something meaningful, like 'store' or 'warehouse'."/>
-        <column name="description" type="VARCHAR" size="1000" description="A description of this node group."/>
+        <column name="description" type="VARCHAR" size="255" description="A description of this node group."/>
     </table>
 
     <table name="node_group_link" description="A source node_group sends its data updates to a target NodeGroup using a pull, push, or custom technique.">
@@ -77,7 +77,7 @@
         <column name="use_old_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the old data during routing."/>
         <column name="use_row_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the row data during routing."/>
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>
-        <column name="description" type="VARCHAR" size="1000" description="Description on the type of data carried in this channel."/>
+        <column name="description" type="VARCHAR" size="255" description="Description on the type of data carried in this channel."/>
     </table>
 
     <table name="node_channel_ctl" description="Used to ignore or suspend a channel. A channel that is ignored will have its data_events batched and they will immediately be marked as 'OK' without sending them. A channel that is suspended is skipped when batching data_events.">
@@ -113,7 +113,7 @@
         <column name="sync_on_insert_condition" type="LONGVARCHAR"  description="Specify a condition for the insert trigger firing using an expression specific to the database." />
         <column name="sync_on_delete_condition" type="LONGVARCHAR"  description="Specify a condition for the delete trigger firing using an expression specific to the database." />
         <column name="external_select" type="LONGVARCHAR"  description="Specify a SQL select statement that returns a single result.  It will be used in the generated database trigger to populate the EXTERNAL_DATA field on the data table." />
-        <column name="tx_id_expression" type="VARCHAR" size="500"  description="Override the default expression for the transaction identifier that groups the data changes that were committed together." />
+        <column name="tx_id_expression" type="LONGVARCHAR"  description="Override the default expression for the transaction identifier that groups the data changes that were committed together." />
         <column name="excluded_column_names" type="LONGVARCHAR"  description="Specify a comma-delimited list of columns that should not be synchronized from this table." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
@@ -151,7 +151,7 @@
         <column name="external_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Target the parameter at a specific external id. To target all nodes, use the value of 'ALL.'" />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Target the parameter at a specific node group id. To target all groups, use the value of 'ALL.'"/>
         <column name="param_key" type="VARCHAR" size="100" required="true" primaryKey="true" description="The name of the parameter."/>
-        <column name="param_value" type="VARCHAR" size="1000" description="The value of the parameter." />
+        <column name="param_value" type="LONGVARCHAR" description="The value of the parameter." />
     </table>
 
     <table name="registration_redirect" description="Provides a way for a centralized registration server to redirect registering nodes to their prospective parent node in a multi-tiered deployment." >
@@ -186,7 +186,7 @@
         <column name="old_data" type="LONGVARCHAR"  description="The captured data values prior to the update.  The column values are stored in CSV format." />
         <column name="trigger_hist_id" type="INTEGER" required="true"  description="The foreign key to the trigger_hist entry that contains the primary key and column names for the table being synchronized." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this data belongs to, such as 'prices'" />
-        <column name="transaction_id" type="VARCHAR" size="1000"  description="An optional transaction identifier that links multiple data changes together as the same transaction." />
+        <column name="transaction_id" type="VARCHAR" size="255"  description="An optional transaction identifier that links multiple data changes together as the same transaction." />
         <column name="source_node_id" type="VARCHAR" size="50"  description="If this data was capture" />
         <column name="external_data" type="VARCHAR" size="50"  description="A field that can be populated by a trigger that uses the EXTERNAL_SELECT" />        
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
@@ -232,7 +232,7 @@
         <column name="extract_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent extracting the data out of the source database." />
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
-        <column name="sql_message" type="VARCHAR" size="1000"  description="For a status of error (ER), this is the error message that describes the error." />
+        <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />
         <column name="failed_data_id" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
         <column name="last_update_hostname" type="VARCHAR" size="50"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
@@ -256,7 +256,7 @@
         <column name="skip_count" type="INTEGER" required="true" default="0" description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch" />
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
-        <column name="sql_message" type="VARCHAR" size="1000"  description="For a status of error (ER), this is the error message that describes the error." />
+        <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />
         <column name="last_update_hostname" type="VARCHAR" size="50"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
