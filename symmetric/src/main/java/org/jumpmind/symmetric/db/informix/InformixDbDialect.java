@@ -19,6 +19,7 @@
  */
 package org.jumpmind.symmetric.db.informix;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -31,6 +32,8 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 
     private String identifierQuoteString = "";
     
+    private Map<String, String> sqlScriptReplacementTokens;
+    
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
 	Map<String, String> env = System.getenv();
@@ -38,6 +41,8 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 	if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
 	    identifierQuoteString = "\"";
 	}
+	sqlScriptReplacementTokens = new HashMap<String, String>();
+	sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
 
     @Override
@@ -124,5 +129,10 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public String getIdentifierQuoteString() {
 	return identifierQuoteString;
+    }
+    
+    @Override
+    public Map<String, String> getSqlScriptReplacementTokens() {
+	return sqlScriptReplacementTokens;
     }
 }
