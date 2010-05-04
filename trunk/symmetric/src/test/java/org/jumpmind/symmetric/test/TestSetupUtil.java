@@ -137,8 +137,9 @@ public class TestSetupUtil {
                     + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath());
             dropAndCreateDatabaseTables(rootDb, rootServer.getEngine());
             rootServer.getEngine().setup();
-            new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), (DataSource) rootServer.getEngine()
-                    .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
+            DataSource ds = (DataSource) rootServer.getEngine().getApplicationContext().getBean(Constants.DATA_SOURCE);
+            IDbDialect dialect = (IDbDialect) rootServer.getEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+            new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), ds, true, SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens()).execute();
             rootServer.setJoin(false);
             rootServer.start(TEST_PORT);
         }
