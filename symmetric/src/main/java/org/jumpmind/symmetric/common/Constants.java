@@ -146,21 +146,21 @@ final public class Constants {
     
     public static final String JOB_MANAGER = "jobManager";
 
-    public static final String PUSH_JOB_TIMER = "pushJobTimer";
+    public static final String PUSH_JOB_TIMER = "job.push";
 
-    public static final String PULL_JOB_TIMER = "pullJobTimer";
+    public static final String PULL_JOB_TIMER = "job.pull";
     
-    public static final String ROUTE_JOB_TIMER = "routingJobTimer";
+    public static final String ROUTE_JOB_TIMER = "job.routing";
 
-    public static final String PURGE_JOB_TIMER = "purgeJobTimer";
+    public static final String PURGE_JOB_TIMER = "job.purge";
 
-    public static final String HEARTBEAT_JOB_TIMER = "heartbeatJobTimer";
+    public static final String HEARTBEAT_JOB_TIMER = "job.heartbeat";
 
-    public static final String SYNC_TRIGGERS_JOB_TIMER = "syncTriggersJobTimer";
+    public static final String SYNC_TRIGGERS_JOB_TIMER = "job.synctriggers";
 
-    public static final String STATISTIC_FLUSH_JOB_TIMER = "statisticFlushJobTimer";
+    public static final String STATISTIC_FLUSH_JOB_TIMER = "job.stat.flush";
     
-    public static final String WATCHDOG_JOB_TIMER = "watchdogJobTimer";
+    public static final String WATCHDOG_JOB_TIMER = "job.watchdog";
 
     public static final String DATA_EXTRACTOR = "dataExtractor";
 

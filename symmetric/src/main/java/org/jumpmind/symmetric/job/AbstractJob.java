@@ -20,34 +20,22 @@
 
 package org.jumpmind.symmetric.job;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.StandaloneSymmetricEngine;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 
-abstract public class AbstractJob extends TimerTask implements BeanFactoryAware, BeanNameAware {
+abstract public class AbstractJob implements Runnable, BeanNameAware {
 
     DataSource dataSource;
 
     protected final ILog log = LogFactory.getLog(getClass());
-
-    private boolean needsRescheduled;
-
-    private String rescheduleDelayParameter;
-
-    private BeanFactory beanFactory;
 
     protected IParameterService parameterService;
 
@@ -55,31 +43,23 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     private boolean requiresRegistration = true;
 
-    private ISymmetricEngine engine;
+    private IRegistrationService registrationService;
 
-    protected boolean rescheduleImmediately = false;
-
-    private IJobManager jobManager;
-
-    @Override
-    public boolean cancel() {
-        log.info("JobCancelled", beanName);
-        return super.cancel();
+    
+    public String getName() {
+        return beanName;
     }
-
-    @Override
+    
     public void run() {
         try {
-            if (engine == null) {
-                engine = StandaloneSymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME));
-            }
+            ISymmetricEngine engine = StandaloneSymmetricEngine.findEngineByName(parameterService
+                    .getString(ParameterConstants.ENGINE_NAME));
 
             if (engine == null) {
                 log.info("SymmetricEngineMissing", beanName);
             } else if (engine.isStarted()) {
-                IRegistrationService service = (IRegistrationService) beanFactory
-                        .getBean(Constants.REGISTRATION_SERVICE);
-                if (!requiresRegistration || (requiresRegistration && service.isRegisteredWithServer())) {
+                if (!requiresRegistration
+                        || (requiresRegistration && registrationService.isRegisteredWithServer())) {
                     doJob();
                 } else {
                     log.warn("SymmetricEngineNotRegistered");
@@ -89,31 +69,10 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
             }
         } catch (final Throwable ex) {
             log.error(ex);
-        } finally {
-            reschedule();
         }
     }
 
     abstract void doJob() throws Exception;
-
-    protected void reschedule() {
-        if (needsRescheduled && engine != null && (engine.isStarted() || engine.isStarting())) {
-            final String timerName = getClass().getName().substring(getClass().getName().lastIndexOf(".") + 1)
-                    .toLowerCase();
-            final Timer timer = new Timer(timerName);
-            timer.schedule((TimerTask) beanFactory.getBean(beanName), rescheduleImmediately ? 0 : parameterService
-                    .getLong(rescheduleDelayParameter));
-            jobManager.addTimer(timerName, timer);
-            rescheduleImmediately = false;
-            log.debug("JobRescheduling", beanName, parameterService.getLong(rescheduleDelayParameter));
-        } else if (needsRescheduled) {
-            log.warn("Did not reschedule because the engine was not set.");
-        }
-    }
-
-    public void setBeanFactory(final BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
-    }
 
     public void setBeanName(final String beanName) {
         this.beanName = beanName;
@@ -121,18 +80,6 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     public void setDataSource(final DataSource dataSource) {
         this.dataSource = dataSource;
-    }
-
-    public boolean isNeedsRescheduled() {
-        return needsRescheduled;
-    }
-
-    public void setNeedsRescheduled(boolean needsRescheduled) {
-        this.needsRescheduled = needsRescheduled;
-    }
-
-    public void setRescheduleDelayParameter(String rescheduleDelay) {
-        this.rescheduleDelayParameter = rescheduleDelay;
     }
 
     public void setParameterService(IParameterService parameterService) {
@@ -143,8 +90,8 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
         this.requiresRegistration = requiresRegistration;
     }
 
-    public void setJobManager(IJobManager jobManager) {
-        this.jobManager = jobManager;
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
     }
 
 }
