@@ -84,8 +84,11 @@ abstract class AbstractService implements IService, ISqlProvider {
     }
 
     public String getSql(String key) {
-        String sqlString = sql.get(key);
-        return AppUtils.replaceTokens(sqlString, dbDialect.getSqlScriptReplacementTokens());
+	String sqlString = sql.get(key);
+	if (dbDialect != null) {
+	    sqlString = AppUtils.replaceTokens(sqlString, dbDialect.getSqlScriptReplacementTokens());
+	}
+        return sqlString;
     }
 
     public void setTablePrefix(String tablePrefix) {
