@@ -253,4 +253,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
+    public boolean needsToSelectLobData() {
+        return true;
+    }
+
 }

@@ -146,9 +146,11 @@ public class TableTemplate {
             ArrayList<String> changedColumnValueList = new ArrayList<String>();
             ArrayList<Column> changedColumnMetaList = new ArrayList<Column>();
             for (int i = 0; i < columnValues.length; i++) {
-                if (! StringUtils.equals(columnValues[i], oldData[i])) {
-                    Column column = allMetaData.get(columnNames[i].trim().toUpperCase());
-                    if (column != null) {
+                Column column = allMetaData.get(columnNames[i].trim().toUpperCase());
+                if (column != null) {
+                    if (!StringUtils.equals(columnValues[i], oldData[i])
+                            || (dbDialect.needsToSelectLobData() && dbDialect.isLob(column
+                                    .getTypeCode()))) {
                         changedColumnNameList.add(columnNames[i]);
                         changedColumnMetaList.add(column);
                         changedColumnValueList.add(columnValues[i]);
