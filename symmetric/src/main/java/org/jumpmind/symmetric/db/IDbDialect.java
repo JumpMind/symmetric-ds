@@ -263,6 +263,13 @@ public interface IDbDialect {
     public LobHandler getLobHandler();
     
     /**
+     * Returns true if the trigger select lob data back from the original table.
+     */
+    public boolean needsToSelectLobData();
+    
+    public boolean isLob(int type);
+    
+    /**
      * This is a SQL clause that compares the old data to the new data in a trigger.
      */
     public String getDataHasChangedCondition();

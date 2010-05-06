@@ -100,6 +100,7 @@
                         </entry>
                     </map>
                 </property>
+                <property name="emptyColumnTemplate" value="''||','||"/>        
                 <property name="stringColumnTemplate" >
                     <value>
                         <![CDATA[$[sym.sync.table.prefix]_escape($(tableAlias)."$(columnName)") ||','||]]>

@@ -244,7 +244,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     }
 
-    @Test(timeout = 120000)
+    @Test//(timeout = 120000)
     public void testEmptyNullLob() {
         final String queryNotes = "select notes from test_customer where customer_id = 300";
         final String queryIcon = "select icon from test_customer where customer_id = 300";
@@ -265,7 +265,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             byte[] bytes = (byte[]) clientJdbcTemplate.queryForObject(queryIcon, byte[].class);
             Assert.assertTrue("Expected empty BLOB", bytes != null && bytes.length == 0);
         }
-        
+
+        args = new Object[] { "test", "test".getBytes() };
+        argTypes = new int[] { Types.CLOB, blobType };
+        rootJdbcTemplate.update("update test_customer set notes = ?, icon = ? where customer_id = 300", new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect().getLobHandler()));
+        getClientEngine().pull();
+
         // Test null large object
         args = new Object[] { null, null };
         argTypes = new int[] { Types.CLOB, blobType };

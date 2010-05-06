@@ -1412,4 +1412,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public Map<String, String> getSqlScriptReplacementTokens() {
         return null;
     }
+    
+    public boolean needsToSelectLobData() {
+        return false;
+    }
+    
+    public boolean isLob(int type) {
+        return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY
+                || type == Types.VARBINARY || type == Types.LONGVARBINARY ||
+                // SQL-Server ntext binary type
+                type == -10;
+    }
 }

@@ -132,5 +132,9 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     public void truncateTable(String tableName) {
         jdbcTemplate.update("delete from " + tableName);
     }
-    
+
+    public boolean needsToSelectLobData() {
+        return true;
+    }
+
 }
