@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IUpgradeService;
@@ -41,7 +42,14 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
         String symmetricVersion = nodeService.findSymmetricVersion();
         if (!StringUtils.isBlank(symmetricVersion) && !symmetricVersion.equals("development")) {
             if (Version.isOlderVersion(symmetricVersion)) {
-                isUpgradeNecessary = true;
+                String nodeId = nodeService.findIdentityNodeId();
+                if (nodeId != null) {
+                    int[] fromVersion = Version.parseVersion(symmetricVersion);
+                    isUpgradeNecessary = doUpgradeTasksExist(nodeId, fromVersion);
+                    if (!isUpgradeNecessary && !parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE)) {
+                        log.warn("UpgradeWarning", ParameterConstants.AUTO_CONFIGURE_DATABASE);
+                    }
+                }                
             }
         }
         return isUpgradeNecessary;
@@ -71,6 +79,12 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
         } else {
             log.warn("NodeUpgradeFailed");
         }
+    }
+    
+    protected boolean doUpgradeTasksExist(String nodeId, int[] fromVersion) {
+        String majorMinorVersion = fromVersion[0] + "." + fromVersion[1];
+        List<IUpgradeTask> upgradeTaskList = upgradeTaskMap.get(majorMinorVersion);
+        return upgradeTaskList != null && upgradeTaskList.size() > 0;
     }
 
     private void runUpgrade(String nodeId, int[] fromVersion) {
