@@ -149,8 +149,8 @@ public class TableTemplate {
                 Column column = allMetaData.get(columnNames[i].trim().toUpperCase());
                 if (column != null) {
                     if (!StringUtils.equals(columnValues[i], oldData[i])
-                            || (dbDialect.needsToSelectLobData() && dbDialect.isLob(column
-                                    .getTypeCode()))) {
+                            || (dbDialect.isLob(column.getTypeCode()) && 
+                                (dbDialect.needsToSelectLobData() || StringUtils.isBlank(oldData[i])))) {
                         changedColumnNameList.add(columnNames[i]);
                         changedColumnMetaList.add(column);
                         changedColumnValueList.add(columnValues[i]);
