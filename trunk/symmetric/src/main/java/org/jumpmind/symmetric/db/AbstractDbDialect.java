@@ -30,7 +30,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
@@ -69,7 +68,10 @@ import org.apache.ddlutils.platform.SqlBuilder;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
+import org.jumpmind.symmetric.ddlutils.JdbcModelReaderSupport;
+import org.jumpmind.symmetric.ddlutils.informix.InformixModelReader;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
@@ -82,7 +84,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.core.StatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.lob.LobHandler;
@@ -465,7 +466,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     (String) it.next(), true).setPrimaryKey(true))
                 ;
 
-            if (this instanceof MsSqlDbDialect) {
+            if (this instanceof InformixDbDialect) {
+                InformixModelReader reader = (InformixModelReader) platform.getModelReader();
+                reader.removeSystemIndices(metaData, table);
+            }
+
+            if (this instanceof MsSqlDbDialect || this instanceof InformixDbDialect) {
                 determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
             }
         }
@@ -551,38 +557,19 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return column;
     }
 
-    protected void determineAutoIncrementFromResultSetMetaData(Table table,
+    protected void determineAutoIncrementFromResultSetMetaData(final Table table,
             final Column columnsToCheck[]) throws SQLException {
-        StringBuilder query;
-        if (columnsToCheck == null || columnsToCheck.length == 0) {
-            return;
-        }
-        query = new StringBuilder();
-        query.append("SELECT ");
-        for (int idx = 0; idx < columnsToCheck.length; idx++) {
-            if (idx > 0)
-                query.append(",");
-            query.append("t.").append("\"").append(columnsToCheck[idx].getName()).append("\"");
-        }
-
-        query.append(" FROM ");
-        if (table.getCatalog() != null && !table.getCatalog().trim().equals("")) {
-            query.append("\"").append(table.getCatalog()).append("\".");
-        }
-        if (table.getSchema() != null && !table.getSchema().trim().equals("")) {
-            query.append("\"").append(table.getSchema()).append("\".");
-        }
-        query.append("\"").append(table.getName()).append("\" t WHERE 1 = 0");
-
-        final String finalQuery = query.toString();
-        jdbcTemplate.execute(new StatementCallback<Object>() {
-            public Object doInStatement(Statement stmt) throws SQLException, DataAccessException {
-                ResultSet rs = stmt.executeQuery(finalQuery);
-                ResultSetMetaData rsMetaData = rs.getMetaData();
-                for (int idx = 0; idx < columnsToCheck.length; idx++)
-                    if (rsMetaData.isAutoIncrement(idx + 1))
-                        columnsToCheck[idx].setAutoIncrement(true);
-                return null;
+	final JdbcModelReaderSupport reader = new JdbcModelReaderSupport(platform);
+	final String catalogSeparator;
+	if (this instanceof InformixDbDialect) {
+	    catalogSeparator = ":";
+	} else {
+	    catalogSeparator = ".";
+	}
+	jdbcTemplate.execute(new ConnectionCallback<Object>() {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+        	reader.determineAutoIncrementFromResultSetMetaData(conn, table, table.getColumns(), catalogSeparator);
+        	return null;
             }
         });
     }
@@ -643,6 +630,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
     @SuppressWarnings("unchecked")
     protected Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
+	if (this instanceof InformixDbDialect) {
+            InformixModelReader reader = (InformixModelReader) platform.getModelReader();
+            return reader.readIndices(metaData, tableName);
+	}
+	
         Map indices = new ListOrderedMap();
         ResultSet indexData = null;
 
