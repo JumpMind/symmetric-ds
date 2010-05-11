@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
@@ -94,8 +93,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private ITriggerRouterService triggerRouterService;
 
     private INodeService nodeService;
-
-    private IDbDialect dbDialect;
 
     private BeanFactory beanFactory;
 
@@ -522,10 +519,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void setContext(DataExtractorContext context) {
         this.clonableContext = context;
-    }
-
-    public void setDbDialect(IDbDialect dialect) {
-        this.dbDialect = dialect;
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {
