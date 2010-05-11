@@ -26,9 +26,11 @@ public class OracleModelReader extends Oracle10ModelReader {
     @SuppressWarnings("unchecked")
     protected Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
-        // Oracle has a bug in the DatabaseMetaData#getIndexInfo method which fails when
-        // delimited identifiers are being used
-        // Therefore, we're rather accessing the user_indexes table which contains the same info
+        // Oracle bug 4999817 causes a table analyze to execute in response to a call to 
+	// DatabaseMetaData#getIndexInfo.
+	// The bug is fixed in driver version 10.2.0.4.  The bug is present in at least
+	// driver versions 10.2.0.1.0, 10.1.0.2.0, and 9.2.0.5.
+	// To avoid this bug, we will access user_indexes view.
         // This also allows us to filter system-generated indices which are identified by either
         // having GENERATED='Y' in the query result, or by their index names being equal to the
         // name of the primary key of the table
