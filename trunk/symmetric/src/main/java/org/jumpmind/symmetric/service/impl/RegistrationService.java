@@ -36,7 +36,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
@@ -70,8 +69,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private ITransportManager transportManager;
 
     private RandomTimeSlot randomTimeSlot;
-
-    private IDbDialect dbDialect;
 
     private INodePasswordFilter nodePasswordFilter;
 
@@ -313,10 +310,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public void setTransportManager(ITransportManager transportManager) {
         this.transportManager = transportManager;
-    }
-
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
     }
 
     public void setRandomTimeSlot(RandomTimeSlot randomTimeSlot) {
