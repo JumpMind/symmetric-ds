@@ -126,6 +126,16 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                     </row>                                    
+                    <row>
+                        <entry>Informix</entry>
+                        <entry>11</entry>
+                        <entry>N</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>N</entry>
+                        <entry>N</entry>
+                    </row>                                    
                 </tbody>
             </tgroup>
         </table>
@@ -386,5 +396,46 @@ code="2". LINE NUMBER=1. SQLSTATE=54040
           </itemizedlist>
         </para>
     </section>      
-
+    <section id="ap02-informix">
+        <title>Informix</title>
+        <para>
+            The Informix Dialect was tested against Informix Dynamic Server 11.50, but older versions
+            may also work.  Make sure your database has logging enabled, which enables transaction
+            support.  Enable logging when creating the database, like this:
+            <programlisting><![CDATA[
+CREATE DATABASE MYDB WITH LOG;
+            ]]></programlisting>
+            
+            Or enable logging on an existing database, like this:
+            <programlisting><![CDATA[
+ondblog mydb unbuf log
+ontape -s -L 0
+            ]]></programlisting>
+        </para>
+        <para>
+            The following features are not yet implemented:
+        </para>
+        <para>
+          <itemizedlist spacing="compact">
+              <listitem>
+                  <para>
+                      Syncing of Binary and Character Large Objects (LOB) is disabled.
+                  </para>
+              </listitem>
+              <listitem>
+                  <para>
+                      There is no transaction ID recorded on data captured, so it is possible for data
+                      to be committed within different transactions on the target database.
+                      If transaction synchronization is required, either specify a custom transaction ID 
+                      or configure the synchronization so data is always sent in a single batch.
+                      A custom transaction ID can be specified with the tx_id_expression on  
+                      <xref linkend="table_trigger" xrefstyle="table"/>.
+                      The batch size is controlled with the max_batch_size on                        
+                      <xref linkend="table_channel" xrefstyle="table"/>.
+                      The pull and push jobs have runtime properties to control their interval.
+                  </para>
+              </listitem>
+          </itemizedlist>
+        </para>
+    </section>
 </appendix>
