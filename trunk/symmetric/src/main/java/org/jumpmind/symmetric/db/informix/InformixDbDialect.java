@@ -33,9 +33,8 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
     private String identifierQuoteString = "";
     
     private Map<String, String> sqlScriptReplacementTokens;
-    
-    @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
+
+    public InformixDbDialect() {
 	Map<String, String> env = System.getenv();
 	String clientIdentifierMode = env.get("DELIMIDENT");
 	if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
@@ -43,6 +42,9 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 	}
 	sqlScriptReplacementTokens = new HashMap<String, String>();
 	sqlScriptReplacementTokens.put("current_timestamp", "current");
+    }
+    
+    protected void initTablesAndFunctionsForSpecificDialect() {
     }
 
     @Override
