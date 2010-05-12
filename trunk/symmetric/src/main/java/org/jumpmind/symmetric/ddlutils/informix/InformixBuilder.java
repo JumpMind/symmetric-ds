@@ -7,6 +7,7 @@ import org.apache.ddlutils.alteration.PrimaryKeyChange;
 import org.apache.ddlutils.alteration.RemovePrimaryKeyChange;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
+import org.apache.ddlutils.model.ForeignKey;
 import org.apache.ddlutils.model.Table;
 import org.apache.ddlutils.platform.SqlBuilder;
 
@@ -46,6 +47,23 @@ public class InformixBuilder extends SqlBuilder {
 	}
     }
 
+    protected void writeExternalForeignKeyCreateStmt(Database database, Table table, ForeignKey key) throws IOException {
+        if (key.getForeignTableName() == null) {
+            _log.warn("Foreign key table is null for key " + key);
+        } else {
+            writeTableAlterStmt(table);
+            print("ADD CONSTRAINT FOREIGN KEY (");
+            writeLocalReferences(key);
+            print(") REFERENCES ");
+            printIdentifier(getTableName(database.findTable(key.getForeignTableName())));
+            print(" (");
+            writeForeignReferences(key);
+            print(") CONSTRAINT ");
+            printIdentifier(getForeignKeyName(table, key));
+            printEndOfStatement();
+        }
+    }
+    
     protected void processChange(Database currentModel, Database desiredModel, RemovePrimaryKeyChange change)
 	    throws IOException {
 	print("ALTER TABLE ");
