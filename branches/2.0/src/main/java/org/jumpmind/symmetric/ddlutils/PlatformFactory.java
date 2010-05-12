@@ -11,6 +11,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
+import org.jumpmind.symmetric.ddlutils.mssql.MsSqlPlatform;
 import org.jumpmind.symmetric.ddlutils.oracle.OraclePlatform;
 import org.jumpmind.symmetric.ddlutils.sqlite.SqLitePlatform;
 import org.springframework.dao.DataAccessException;
@@ -108,6 +109,9 @@ public class PlatformFactory {
                 org.apache.ddlutils.PlatformFactory.registerPlatform(name,
                         H2Platform.class);                
             }
+            org.apache.ddlutils.PlatformFactory.registerPlatform(MsSqlPlatform.DATABASENAME, 
+        	    MsSqlPlatform.class);
+
             initialized = true;
         }
     }
