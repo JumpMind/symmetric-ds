@@ -44,7 +44,7 @@
         <column name="tran_id" type="INTEGER" required="true" primaryKey="true" />
         <column name="tender_type" type="VARCHAR" required="true" />
         <column name="tender_amount" type="DECIMAL" size="10,2" required="true" />
-         <column name="account_number" type="VARCHAR" size="1000" required="true" />
+         <column name="account_number" type="VARCHAR" size="255" required="true" />
         <foreign-key name="fk_tndr_tran_id" foreignTable="sale_transaction">
             <reference local="tran_id" foreign="tran_id" />
         </foreign-key>
