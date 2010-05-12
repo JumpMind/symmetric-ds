@@ -400,7 +400,13 @@ code="2". LINE NUMBER=1. SQLSTATE=54040
         <title>Informix</title>
         <para>
             The Informix Dialect was tested against Informix Dynamic Server 11.50, but older versions
-            may also work.  Make sure your database has logging enabled, which enables transaction
+            may also work.  You need to download the Informix JDBC Driver (from the 
+            <ulink url="http://www-01.ibm.com/software/data/informix/downloads.html">IBM Download Site</ulink>)
+            and put the <filename>ifxjdbc.jar</filename> and <filename>ifxlang.jar</filename> files
+            in the SymmetricDS <filename>lib</filename> folder.
+        </para>
+        <para>    
+            Make sure your database has logging enabled, which enables transaction
             support.  Enable logging when creating the database, like this:
             <programlisting><![CDATA[
 CREATE DATABASE MYDB WITH LOG;
