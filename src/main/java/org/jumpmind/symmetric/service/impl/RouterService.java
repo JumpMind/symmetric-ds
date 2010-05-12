@@ -268,23 +268,26 @@ public class RouterService extends AbstractService implements IRouterService {
         readThread.execute(reader);
         Data data = null;
         int dataCount = 0;
-        do {
-            data = reader.take();
-            if (data != null) {
-                dataCount++;
-                routeData(data, context);
-                if (context.isNeedsCommitted()) {
-                    completeBatchesAndCommit(context);
-                    long maxDataToRoute = context.getChannel().getMaxDataToRoute();
-                    if (maxDataToRoute > 0 && dataCount > maxDataToRoute) {
-                        reader.setReading(false);
-                        log.info("RoutedMaxNumberData", dataCount, context.getChannel()
-                                .getChannelId());
-                        break;
+        try {
+            do {
+                data = reader.take();
+                if (data != null) {
+                    dataCount++;
+                    routeData(data, context);
+                    if (context.isNeedsCommitted()) {
+                        completeBatchesAndCommit(context);
+                        long maxDataToRoute = context.getChannel().getMaxDataToRoute();
+                        if (maxDataToRoute > 0 && dataCount > maxDataToRoute) {
+                            log.info("RoutedMaxNumberData", dataCount, context.getChannel()
+                                    .getChannelId());
+                            break;
+                        }
                     }
                 }
-            }
-        } while (data != null);
+            } while (data != null);
+        } finally {
+            reader.setReading(false);
+        }
 
         return dataCount;
 
