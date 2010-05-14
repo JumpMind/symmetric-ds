@@ -86,7 +86,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     private Map<String, IBatchAlgorithm> batchAlgorithms;
 
-    transient ExecutorService readThread = Executors.newSingleThreadExecutor();
+    transient ExecutorService readThread = null;
 
     public boolean shouldDataBeRouted(IRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad) {
@@ -98,6 +98,22 @@ public class RouterService extends AbstractService implements IRouterService {
             }
         }
         return false;
+    }
+    
+    protected synchronized ExecutorService getReadService() {
+        if (readThread == null) {
+            readThread = Executors.newSingleThreadExecutor();
+        }
+        return readThread;
+    }
+    
+    public void stop() {
+        log.info("RouterShuttingDown");
+        try {
+            getReadService().shutdown();
+        } catch (Exception ex) {
+            log.error(ex);
+        }
     }
 
     /**
@@ -266,7 +282,7 @@ public class RouterService extends AbstractService implements IRouterService {
         DataToRouteReader reader = new DataToRouteReader(dataSource,
                 jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
                 dbDialect.getStreamingResultsFetchSize(), context, ref, dataService);
-        readThread.execute(reader);
+        getReadService().execute(reader);
         Data data = null;
         int dataCount = 0;
         try {

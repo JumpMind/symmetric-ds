@@ -145,6 +145,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     public synchronized void stop() {
         log.info("SymmetricDSClosing", getParameterService().getExternalId(), Version.version(), dbDialect.getName());
         jobManager.stopJobs();
+        getRouterService().stop();
         removeMeFromMap(registeredEnginesByName);
         removeMeFromMap(registeredEnginesByUrl);
         DataSource ds = jdbcTemplate.getDataSource();

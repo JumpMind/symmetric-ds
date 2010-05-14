@@ -37,4 +37,6 @@ public interface IRouterService extends ISqlProvider {
     public void addDataRouter(String name, IDataRouter dataRouter);
     
     public void addBatchAlgorithm(String name, IBatchAlgorithm algorithm);
+    
+    public void stop ();
 }
