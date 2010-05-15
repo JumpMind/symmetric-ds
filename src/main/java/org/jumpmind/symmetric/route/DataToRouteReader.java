@@ -78,7 +78,7 @@ public class DataToRouteReader implements Runnable {
     public Data take() {
         Data data = null;
         try {
-            data = dataQueue.poll(120, TimeUnit.SECONDS);
+            data = dataQueue.poll(queryTimeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             log.warn(e);
         }
