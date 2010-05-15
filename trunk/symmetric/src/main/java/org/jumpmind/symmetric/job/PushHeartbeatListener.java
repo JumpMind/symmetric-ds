@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.job;
 
+import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.common.Constants;
@@ -22,14 +23,25 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
         if (enabled) {
             // don't send new heart beat events if we haven't sent
             // the last ones ...
-            if (!nodeService.isRegistrationServer()
-                    && !outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, me.getNodeId())) {
+            if (!nodeService.isRegistrationServer() && !isUnsentDataPresentOnConfigChannel()) {
                 dataService.insertHeartbeatEvent(me, false);
                 for (Node node : children) {
                     dataService.insertHeartbeatEvent(node, false);
                 }
             }
         }
+    }
+    
+    protected boolean isUnsentDataPresentOnConfigChannel() {
+        boolean isUnsentDataOnChannel = false;
+        List<Node> nodes = nodeService.findNodesToPushTo();
+        if (nodes != null) {
+            for (Node node : nodes) {
+                isUnsentDataOnChannel |= outgoingBatchService.isUnsentDataOnChannelForNode(
+                        Constants.CHANNEL_CONFIG, node.getNodeId());
+            }
+        }
+        return isUnsentDataOnChannel;
     }
     
     public long getTimeBetweenHeartbeatsInSeconds() {
