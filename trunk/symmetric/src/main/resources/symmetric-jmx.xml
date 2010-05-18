@@ -16,6 +16,10 @@
                 <entry key="$[sym.engine.name]:name=Incoming" value-ref="incomingManagementService" />
                 <entry key="$[sym.engine.name]:name=Outgoing" value-ref="outgoingManagementService" />
                 <entry key="$[sym.engine.name]:name=Parameters" value-ref="parameterManagementService" />
+                <entry key="$[sym.engine.name]:name=RouterJob" value-ref="job.routing" />
+                <entry key="$[sym.engine.name]:name=PullJob" value-ref="job.pull" />
+                <entry key="$[sym.engine.name]:name=PushJob" value-ref="job.push" />
+                <entry key="$[sym.engine.name]:name=PurgeJob" value-ref="job.purge" />                
                 <entry key="$[sym.engine.name]:name=Notifications" value-ref="notificationService" />
             </map>
         </property>

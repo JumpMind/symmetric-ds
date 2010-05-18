@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
-import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 
 public class JobManager implements IJobManager {
@@ -45,7 +45,7 @@ public class JobManager implements IJobManager {
 
     private IParameterService parameterService;
 
-    private TaskScheduler taskScheduler;
+    private ThreadPoolTaskScheduler taskScheduler;
 
     private RandomTimeSlot randomTimeSlot;
 
@@ -56,12 +56,16 @@ public class JobManager implements IJobManager {
             String cronExpression = parameterService.getString(name + ".cron", null);
             if (!StringUtils.isBlank(cronExpression)) {
                 startedJobs.put(name, taskScheduler.schedule(job, new CronTrigger(cronExpression)));
+                job.setStarted(true);
+                job.setCronExpression(cronExpression);
             } else {
                 int period = parameterService.getInt(name + ".period.time.ms", -1);
                 int startDelay = randomTimeSlot.getRandomValueSeededByDomainId();
                 if (period > 0) {
                     startedJobs.put(name, taskScheduler.scheduleWithFixedDelay(job, new Date(System.currentTimeMillis()
                             + startDelay), period));
+                    job.setStarted(true);
+                    job.setTimeBetweenRunsInMs(period);
                 } else {
                     log.error("JobFailedToSchedule", name);
                 }
@@ -70,7 +74,7 @@ public class JobManager implements IJobManager {
             log.error("JobFailedToFind", name);
         }
     }
-
+    
     private AbstractJob getJob(String name) {
         for (AbstractJob job : jobs) {
             if (job.getName().equals(name)) {
@@ -79,7 +83,7 @@ public class JobManager implements IJobManager {
         }
         return null;
     }
-
+    
     /**
      * Start the jobs if they are configured to be started in
      * symmetric.properties
@@ -135,14 +139,15 @@ public class JobManager implements IJobManager {
             } else {
                 log.warn("JobFailedToCancel", jobName);
             }
-        }
+        }        
+        taskScheduler.destroy();
     }
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
 
-    public void setTaskScheduler(TaskScheduler taskScheduler) {
+    public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
         this.taskScheduler = taskScheduler;
     }
 
