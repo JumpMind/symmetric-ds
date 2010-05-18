@@ -52,7 +52,7 @@ public class DataToRouteReader implements Runnable {
 
     private int maxQueueSize;
 
-    private static final int DEFAULT_QUERY_TIMEOUT = 600000;
+    private static final int DEFAULT_QUERY_TIMEOUT = 300;
 
     private int queryTimeout = DEFAULT_QUERY_TIMEOUT;
     
@@ -78,7 +78,7 @@ public class DataToRouteReader implements Runnable {
     public Data take() {
         Data data = null;
         try {
-            data = dataQueue.poll(queryTimeout, TimeUnit.MILLISECONDS);
+            data = dataQueue.poll(queryTimeout, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.warn(e);
         }

@@ -52,8 +52,9 @@ public class DataToRouteReader implements Runnable {
 
     private int maxQueueSize;
     
-    private int queryTimeout;
-      
+    private static final int DEFAULT_QUERY_TIMEOUT = 300;
+
+    private int queryTimeout = DEFAULT_QUERY_TIMEOUT;      
 
     public DataToRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize, ISqlProvider sqlProvider,
             int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService) {
@@ -71,7 +72,7 @@ public class DataToRouteReader implements Runnable {
     public Data take() {
         Data data = null;
         try {
-            data = dataQueue.poll(queryTimeout, TimeUnit.MILLISECONDS);
+            data = dataQueue.poll(queryTimeout, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.warn(e);
         }
