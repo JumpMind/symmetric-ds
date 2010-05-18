@@ -37,16 +37,15 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="registrationService" ref="registrationService" />
     </bean>
 
-    <bean id="job.routing" parent="job.abstract" class="org.jumpmind.symmetric.job.RouterJob"
-        scope="prototype">
+    <bean id="job.routing" parent="job.abstract" class="org.jumpmind.symmetric.job.RouterJob">
         <property name="routingService" ref="routingService" />
     </bean>
 
-    <bean id="job.push" parent="job.abstract" class="org.jumpmind.symmetric.job.PushJob" scope="prototype">
+    <bean id="job.push" parent="job.abstract" class="org.jumpmind.symmetric.job.PushJob">
         <property name="pushService" ref="pushService" />
     </bean>
 
-    <bean id="job.pull" parent="job.abstract" class="org.jumpmind.symmetric.job.PullJob" scope="prototype">
+    <bean id="job.pull" parent="job.abstract" class="org.jumpmind.symmetric.job.PullJob">
         <property name="requiresRegistration" value="false" />
         <property name="pullService" ref="pullService" />
         <property name="nodeService" ref="nodeService" />
