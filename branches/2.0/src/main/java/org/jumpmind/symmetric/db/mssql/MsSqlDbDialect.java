@@ -53,7 +53,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
  * implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
  */
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
-    
+
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
     }
@@ -62,50 +62,58 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     protected Integer overrideJdbcTypeForColumn(Map values) {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.startsWith("TEXT")) {
-            return Types.CLOB;          
+            return Types.CLOB;
         } else {
             return super.overrideJdbcTypeForColumn(values);
         }
-    }    
+    }
 
     @Override
     public IColumnFilter getDatabaseColumnFilter() {
         return new IColumnFilter() {
             int[] indexesToRemove = null;
 
-            public String[] filterColumnsNames(IDataLoaderContext ctx, DmlType dml, Table table, String[] columnNames) {
-                ArrayList<String> columns = new ArrayList<String>();
-                CollectionUtils.addAll(columns, columnNames);
+            public String[] filterColumnsNames(IDataLoaderContext ctx, DmlType dml, Table table,
+                    String[] columnNames) {
+                indexesToRemove = null;
                 if (dml == DmlType.UPDATE) {
                     Column[] autoIncrementColumns = table.getAutoIncrementColumns();
-                    indexesToRemove = new int[autoIncrementColumns.length];
-                    int i = 0;
-                    for (Column column : autoIncrementColumns) {
-                        String name = column.getName();
-                        int index = columns.indexOf(name);
+                    if (autoIncrementColumns != null && autoIncrementColumns.length > 0) {
+                        ArrayList<String> columns = new ArrayList<String>();
+                        CollectionUtils.addAll(columns, columnNames);
+                        indexesToRemove = new int[autoIncrementColumns.length];
+                        int i = 0;
+                        for (Column column : autoIncrementColumns) {
+                            String name = column.getName();
+                            int index = columns.indexOf(name);
 
-                        if (index < 0) {
-                            name = name.toLowerCase();
-                            index = columns.indexOf(name);
+                            if (index < 0) {
+                                name = name.toLowerCase();
+                                index = columns.indexOf(name);
+                            }
+                            if (index < 0) {
+                                name = name.toUpperCase();
+                                index = columns.indexOf(name);
+                            }
+
+                            indexesToRemove[i++] = index;
+                            columns.remove(name);
                         }
-                        if (index < 0) {
-                            name = name.toUpperCase();
-                            index = columns.indexOf(name);
-                        }
-                        indexesToRemove[i++] = index;
-                        columns.remove(name);
+                        columnNames = columns.toArray(new String[columns.size()]);
                     }
                 }
-                return columns.toArray(new String[columns.size()]);
+                return columnNames;
+
             }
 
-            public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table, Object[] columnValues) {
+            public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table,
+                    Object[] columnValues) {
                 if (dml == DmlType.UPDATE && indexesToRemove != null) {
                     ArrayList<Object> values = new ArrayList<Object>();
                     CollectionUtils.addAll(values, columnValues);
@@ -134,7 +142,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             jdbcTemplate.execute(new ConnectionCallback<Object>() {
-                public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+                public Object doInConnection(Connection con) throws SQLException,
+                        DataAccessException {
                     String previousCatalog = con.getCatalog();
                     Statement stmt = null;
                     try {
@@ -161,7 +170,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
+    protected String switchCatalogForTriggerInstall(String catalog, Connection c)
+            throws SQLException {
         if (catalog != null) {
             String previousCatalog = c.getCatalog();
             c.setCatalog(catalog);
@@ -191,8 +201,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName,
-            final String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema,
+            String tableName, final String triggerName) {
         return jdbcTemplate.execute(new ConnectionCallback<Boolean>() {
             public Boolean doInConnection(Connection con) throws SQLException, DataAccessException {
                 String previousCatalog = con.getCatalog();
@@ -223,8 +233,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         if (nodeId == null) {
             nodeId = "";
         }
-        jdbcTemplate.update("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId + "' as varbinary(128));"
-                + "SET context_info @CI;");
+        jdbcTemplate.update("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId
+                + "' as varbinary(128));" + "SET context_info @CI;");
     }
 
     public void enableSyncTriggers() {
@@ -232,11 +242,12 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultCatalog)dbo."+tablePrefix+"_triggers_disabled() = 0";
+        return "$(defaultCatalog)dbo." + tablePrefix + "_triggers_disabled() = 0";
     }
 
     @Override
-    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
+            Trigger trigger) {
         return "@TransactionId";
     }
 
@@ -294,7 +305,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public String getDefaultSchema() {
         if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
+            this.defaultSchema = (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()",
+                    String.class);
         }
         return this.defaultSchema;
     }
