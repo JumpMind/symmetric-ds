@@ -31,110 +31,115 @@ import org.jumpmind.symmetric.model.Trigger;
 public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 
     private String identifierQuoteString = "";
-    
+
     private Map<String, String> sqlScriptReplacementTokens;
 
     public InformixDbDialect() {
-	Map<String, String> env = System.getenv();
-	String clientIdentifierMode = env.get("DELIMIDENT");
-	if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
-	    identifierQuoteString = "\"";
-	}
-	sqlScriptReplacementTokens = new HashMap<String, String>();
-	sqlScriptReplacementTokens.put("current_timestamp", "current");
+        Map<String, String> env = System.getenv();
+        String clientIdentifierMode = env.get("DELIMIDENT");
+        if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
+            identifierQuoteString = "\"";
+        }
+        sqlScriptReplacementTokens = new HashMap<String, String>();
+        sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
-    
+
     protected void initTablesAndFunctionsForSpecificDialect() {
     }
 
     @Override
-    public IColumnFilter getDatabaseColumnFilter() {
-	return new AutoIncrementColumnFilter();
+    public IColumnFilter newDatabaseColumnFilter() {
+        return new AutoIncrementColumnFilter();
     }
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
-	    String triggerName) {
-	return jdbcTemplate.queryForInt("select count(*) from systriggers where lower(trigname) = ?",
-		new Object[] { triggerName.toLowerCase() }) > 0;
+            String triggerName) {
+        return jdbcTemplate.queryForInt(
+                "select count(*) from systriggers where lower(trigname) = ?",
+                new Object[] { triggerName.toLowerCase() }) > 0;
     }
 
     public void disableSyncTriggers(String nodeId) {
-	jdbcTemplate.queryForList("select " + tablePrefix + "_triggers_set_disabled('t'), " + tablePrefix
-		+ "_node_set_disabled(?) from sysmaster:sysdual", new Object[] { nodeId });
+        jdbcTemplate.queryForList("select " + tablePrefix + "_triggers_set_disabled('t'), "
+                + tablePrefix + "_node_set_disabled(?) from sysmaster:sysdual",
+                new Object[] { nodeId });
     }
 
     public void enableSyncTriggers() {
-	jdbcTemplate.queryForList("select " + tablePrefix + "_triggers_set_disabled('f'), " + tablePrefix
-		+ "_node_set_disabled(null) from sysmaster:sysdual");
+        jdbcTemplate.queryForList("select " + tablePrefix + "_triggers_set_disabled('f'), "
+                + tablePrefix + "_node_set_disabled(null) from sysmaster:sysdual");
     }
 
     public String getSyncTriggersExpression() {
-	return "not $(defaultSchema)" + tablePrefix + "_triggers_disabled()";
+        return "not $(defaultSchema)" + tablePrefix + "_triggers_disabled()";
     }
 
     @Override
     public boolean supportsTransactionId() {
-	// TODO: write a user-defined routine in C that calls mi_get_transaction_id() 
-	return false;
+        // TODO: write a user-defined routine in C that calls
+        // mi_get_transaction_id()
+        return false;
     }
 
     @Override
     public boolean isTransactionIdOverrideSupported() {
-	return false;
+        return false;
     }
 
     @Override
-    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-	return "null";
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
+            Trigger trigger) {
+        return "null";
     }
 
     @Override
     public boolean isBlobSyncSupported() {
-	return false;
+        return false;
     }
 
     @Override
     public boolean isClobSyncSupported() {
-	return false;
+        return false;
     }
 
     @Override
     public boolean allowsNullForIdentityColumn() {
-	return false;
+        return false;
     }
 
     public boolean isCharSpacePadded() {
-	return true;
+        return true;
     }
 
     public boolean isCharSpaceTrimmed() {
-	return false;
+        return false;
     }
 
     public boolean isEmptyStringNulled() {
-	return false;
+        return false;
     }
 
     public void purge() {
     }
 
     public String getDefaultCatalog() {
-	return null;
+        return null;
     }
 
     @Override
     public String getDefaultSchema() {
-	return jdbcTemplate.queryForObject("select trim(user) from sysmaster:sysdual", String.class);
+        return jdbcTemplate
+                .queryForObject("select trim(user) from sysmaster:sysdual", String.class);
     }
 
     @Override
     public String getIdentifierQuoteString() {
-	return identifierQuoteString;
+        return identifierQuoteString;
     }
-    
+
     @Override
     public Map<String, String> getSqlScriptReplacementTokens() {
-	return sqlScriptReplacementTokens;
+        return sqlScriptReplacementTokens;
     }
 }

@@ -30,7 +30,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.util.ArgTypePreparedStatementSetter;
@@ -45,7 +44,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public class TableTemplate {
 
-
     private JdbcTemplate jdbcTemplate;
 
     private IDbDialect dbDialect;
@@ -53,7 +51,7 @@ public class TableTemplate {
     private Table table;
 
     private String schema;
-    
+
     private String catalog;
 
     private String tableName;
@@ -61,38 +59,24 @@ public class TableTemplate {
     private String[] keyNames;
 
     private String[] columnNames;
-    
+
     private String[] oldData;
 
     private Map<String, Column> allMetaData;
 
-    private Column[] keyMetaData;
-
-    private Column[] columnMetaData;
-
-    private Column[] columnKeyMetaData;
-
-    private Column[] noKeyColumnPlusKeyMetaData;
-
     private HashMap<DmlType, StatementBuilder> statementMap;
-
-    private int[] keyIndexesToRemoveOnUpdate;
 
     private List<IColumnFilter> columnFilters = new ArrayList<IColumnFilter>();
 
     private boolean dontIncludeKeysInUpdateStatement = false;
 
-    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName,  List<IColumnFilter> columnFilters,
-            boolean dontIncludeKeysInUpdateStatement) {
-        this(jdbcTemplate, dbDialect, tableName, columnFilters, dontIncludeKeysInUpdateStatement, null, null);
-    }
-    
-    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName,  List<IColumnFilter> columnFilters,
-            boolean dontIncludeKeysInUpdateStatement, String schema, String catalog) {
+    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName,
+            List<IColumnFilter> columnFilters, boolean dontIncludeKeysInUpdateStatement,
+            String schema, String catalog) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
         this.tableName = tableName;
-        this.schema = StringUtils.isBlank(schema) ?dbDialect.getDefaultSchema() : schema;
+        this.schema = StringUtils.isBlank(schema) ? dbDialect.getDefaultSchema() : schema;
         this.catalog = StringUtils.isBlank(catalog) ? null : catalog;
         this.setupColumnFilters(columnFilters, dbDialect);
         this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
@@ -103,9 +87,6 @@ public class TableTemplate {
         table = dbDialect.getTable(catalog, schema, tableName, useCache);
         allMetaData = new HashMap<String, Column>();
         statementMap = new HashMap<DmlType, StatementBuilder>();
-        keyMetaData = null;
-        columnMetaData = null;
-        columnKeyMetaData = null;
 
         if (table != null) {
             for (Column column : table.getColumns()) {
@@ -114,14 +95,15 @@ public class TableTemplate {
         }
     }
 
-    private void setupColumnFilters( List<IColumnFilter> pluginFilters, IDbDialect dbDialect) {
+    private void setupColumnFilters(List<IColumnFilter> pluginFilters, IDbDialect dbDialect) {
         if (pluginFilters != null) {
             for (IColumnFilter columnFilter : pluginFilters) {
-                this.columnFilters.add(columnFilter);   
-            }            
+                this.columnFilters.add(columnFilter);
+            }
         }
-        if (dbDialect.getDatabaseColumnFilter() != null) {
-            this.columnFilters.add(dbDialect.getDatabaseColumnFilter());
+        IColumnFilter filter = dbDialect.newDatabaseColumnFilter();
+        if (filter != null) {
+            this.columnFilters.add(filter);
         }
     }
 
@@ -135,22 +117,19 @@ public class TableTemplate {
 
     public int insert(IDataLoaderContext ctx, String[] columnValues) {
         StatementBuilder st = getStatementBuilder(ctx, DmlType.INSERT);
-        return execute(ctx, st, columnValues, columnMetaData);
+        return execute(ctx, st, columnValues);
     }
 
     public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues) {
-        StatementBuilder st = null;
-        Column[] metaData = null;
-        if (oldData != null) {
+        try {
+            StatementBuilder st = null;
             ArrayList<String> changedColumnNameList = new ArrayList<String>();
             ArrayList<String> changedColumnValueList = new ArrayList<String>();
             ArrayList<Column> changedColumnMetaList = new ArrayList<Column>();
             for (int i = 0; i < columnValues.length; i++) {
                 Column column = allMetaData.get(columnNames[i].trim().toUpperCase());
                 if (column != null) {
-                    if (!StringUtils.equals(columnValues[i], oldData[i])
-                            || (dbDialect.isLob(column.getTypeCode()) && 
-                                (dbDialect.needsToSelectLobData() || StringUtils.isBlank(oldData[i])))) {
+                    if (doesColumnNeedUpdated(ctx, i, column, keyValues, columnValues)) {
                         changedColumnNameList.add(columnNames[i]);
                         changedColumnMetaList.add(column);
                         changedColumnValueList.add(columnValues[i]);
@@ -158,111 +137,66 @@ public class TableTemplate {
                 }
             }
             if (changedColumnNameList.size() > 0) {
-                String[] changedColumnNames = changedColumnNameList.toArray(new String[0]);
-                st = createStatementBuilder(ctx, DmlType.UPDATE, changedColumnNames);
-                columnValues = (String[]) changedColumnValueList.toArray(new String[0]);
-                Column[] changedColumnMetaData = (Column[]) changedColumnMetaList.toArray(new Column[0]);
-                metaData = (Column[]) ArrayUtils.addAll(changedColumnMetaData, keyMetaData);
+                st = createStatementBuilder(ctx, DmlType.UPDATE, changedColumnNameList
+                        .toArray(new String[changedColumnNameList.size()]));
+                columnValues = (String[]) changedColumnValueList
+                        .toArray(new String[changedColumnValueList.size()]);
+                String[] values = (String[]) ArrayUtils.addAll(columnValues, keyValues);
+                return execute(ctx, st, values);
             } else {
                 // There was no change to apply
                 return 1;
             }
+        } finally {
             oldData = null;
-        } else if (dontIncludeKeysInUpdateStatement) {
-            String[] values = removeKeysFromColumnValuesIfSame(ctx, keyValues, columnValues);
-            if (values != null) {
-                columnValues = values;
-                st = getStatementBuilder(ctx, DmlType.UPDATE_NO_KEYS);
-                metaData = noKeyColumnPlusKeyMetaData;
-            }
         }
 
-        if (st == null) {
-            st = getStatementBuilder(ctx, DmlType.UPDATE);
-            metaData = columnKeyMetaData;
-        }
-        String[] values = (String[]) ArrayUtils.addAll(columnValues, keyValues);
-        return execute(ctx, st, values, metaData);
     }
 
-    /**
-     * This is in support of creating update statements that don't use the keys
-     * in the set portion of the update statement.
-     * </p>
-     * In oracle (and maybe not only in oracle) if there is no index on child table 
-     * on FK column and update is performing on PK on master table, table lock is acquired 
-     * on child table. Table lock is taken not in exclusive mode, but lock contentions 
-     * is possible. 
-     * @see ParameterConstants#DATA_LOADER_NO_KEYS_IN_UPDATE
-     */
-    private String[] removeKeysFromColumnValuesIfSame(IDataLoaderContext ctx, String[] keyValues, String[] columnValues) {
-        if (keyIndexesToRemoveOnUpdate == null) {
-            String[] colNames = ctx.getColumnNames();
-            String[] keyNames = ctx.getKeyNames();
-            String[] noKeyColNames = new String[colNames.length - keyNames.length];
-            if (noKeyColNames.length > 0) {
-                keyIndexesToRemoveOnUpdate = new int[keyNames.length];
-                int indexToRemoveIndex = 0;
-                int indexOfNoKeyColNames = 0;
-                for (int index = 0; index < colNames.length; index++) {
-                    if (ArrayUtils.contains(keyNames, colNames[index])) {
-                        keyIndexesToRemoveOnUpdate[indexToRemoveIndex++] = index;
-                    } else {
-                        noKeyColNames[indexOfNoKeyColNames++] = colNames[index];
-                    }
-                }
-            } else {
-                keyIndexesToRemoveOnUpdate = new int[0];
-            }
-            noKeyColumnPlusKeyMetaData = getColumnMetaData((String[]) ArrayUtils.addAll(noKeyColNames, keyNames));
-
+    protected boolean doesColumnNeedUpdated(IDataLoaderContext ctx, int columnIndex, Column column,
+            String[] keyValues, String[] columnValues) {
+        boolean needsUpdated = true;
+        if (oldData != null) {
+            needsUpdated = !StringUtils.equals(columnValues[columnIndex], oldData[columnIndex])
+                    || (dbDialect.isLob(column.getTypeCode()) && (dbDialect.needsToSelectLobData() || StringUtils
+                            .isBlank(oldData[columnIndex])));
+        } else if (dontIncludeKeysInUpdateStatement) {
+            // This is in support of creating update statements that don't use
+            // the keys in the set portion of the update statement. </p> In
+            // oracle (and maybe not only in oracle) if there is no index on
+            // child table on FK column and update is performing on PK on master
+            // table, table lock is acquired on child table. Table lock is taken
+            // not in exclusive mode, but lock contentions is possible.
+            //             
+            // @see ParameterConstants#DATA_LOADER_NO_KEYS_IN_UPDATE
+            needsUpdated = !column.isPrimaryKey()
+                    || !StringUtils.equals(columnValues[columnIndex], getKeyValue(ctx, column, keyValues));
         }
+        return needsUpdated;
+    }
 
-        if (keyIndexesToRemoveOnUpdate.length > 0) {
-            if (noKeyColumnPlusKeyMetaData == null) {
-                String[] noKeys = new String[columnValues.length - keyValues.length];
-                int noKeysIndex = 0;
-                for (int index = 0; index < columnValues.length; index++) {
-                    if (!ArrayUtils.contains(keyIndexesToRemoveOnUpdate, index)) {
-                        noKeys[noKeysIndex++] = columnValues[index];
-                    }
-                }
-                return noKeys;
-            }
-
-            boolean keyChanged = false;
-            for (int index = 0; index < keyIndexesToRemoveOnUpdate.length; index++) {
-                if (!StringUtils.equals(keyValues[index], columnValues[index])) {
-                    keyChanged = true;
-                }
-            }
-
-            if (!keyChanged) {
-                String[] noKeys = new String[columnValues.length - keyValues.length];
-                int noKeysIndex = 0;
-                for (int index = 0; index < columnValues.length; index++) {
-                    if (!ArrayUtils.contains(keyIndexesToRemoveOnUpdate, index)) {
-                        noKeys[noKeysIndex++] = columnValues[index];
-                    }
-                }
-                return noKeys;
-
-            }
+    protected String getKeyValue(IDataLoaderContext ctx, Column column, String[] keyValues) {
+        int index = ctx.getKeyIndex(column.getName());
+        if (index >= 0 && keyValues != null && keyValues.length > index) {
+            return keyValues[index];
+        } else {
+            return null;
         }
-        return null;
     }
 
     public int delete(IDataLoaderContext ctx, String[] keyValues) {
         StatementBuilder st = getStatementBuilder(ctx, DmlType.DELETE);
-        return execute(ctx, st, keyValues, keyMetaData);
+        return execute(ctx, st, keyValues);
     }
 
     public int count(IDataLoaderContext ctx, String[] keyValues) {
         StatementBuilder st = getStatementBuilder(ctx, DmlType.COUNT);
-        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), keyValues, keyMetaData);
+        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), keyValues,
+                st.getKeys());
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
-                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(), objectValues);
+                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(),
+                        objectValues);
             }
         }
         return jdbcTemplate.queryForInt(st.getSql(), objectValues, st.getTypes());
@@ -281,17 +215,9 @@ public class TableTemplate {
             String[] filteredColumnNames) {
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
-                filteredColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(), filteredColumnNames);
+                filteredColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(),
+                        filteredColumnNames);
             }
-        }
-        if (keyMetaData == null) {
-            keyMetaData = getColumnMetaData(keyNames);
-        }
-        if (columnMetaData == null) {
-            columnMetaData = getColumnMetaData(columnNames);
-        }
-        if (columnKeyMetaData == null) {
-            columnKeyMetaData = (Column[]) ArrayUtils.addAll(columnMetaData, keyMetaData);
         }
 
         String tableName = table.getName();
@@ -301,26 +227,30 @@ public class TableTemplate {
         if (!StringUtils.isBlank(catalog)) {
             tableName = catalog + "." + tableName;
         }
-        return new StatementBuilder(type, tableName, keyMetaData, getColumnMetaData(filteredColumnNames), dbDialect
-            .isDateOverrideToTimestamp(), dbDialect.getIdentifierQuoteString());
+        return new StatementBuilder(type, tableName, getColumnMetaData(keyNames),
+                getColumnMetaData(filteredColumnNames), dbDialect.isDateOverrideToTimestamp(),
+                dbDialect.getIdentifierQuoteString());
     }
-    
-    public Object[] getObjectValues(IDataLoaderContext ctx, String[] values) {
-        return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, columnMetaData == null ? getColumnMetaData(columnNames) : columnMetaData);
-    }
-    
-    public Object[] getObjectKeyValues(IDataLoaderContext ctx, String[] values) {
-        return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, keyMetaData == null ? getColumnMetaData(keyNames) : keyMetaData);
-    }        
 
-    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData) {        
-        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, metaData);
+    public Object[] getObjectValues(IDataLoaderContext ctx, String[] values) {
+        return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, getColumnMetaData(columnNames));
+    }
+
+    public Object[] getObjectKeyValues(IDataLoaderContext ctx, String[] values) {
+        return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, getColumnMetaData(keyNames));
+    }
+
+    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values) {
+        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, st
+                .getMetaData());
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
-                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(), objectValues);
+                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(),
+                        objectValues);
             }
         }
-        return jdbcTemplate.update(st.getSql(), new ArgTypePreparedStatementSetter(objectValues, st.getTypes(), dbDialect.getLobHandler()));
+        return jdbcTemplate.update(st.getSql(), new ArgTypePreparedStatementSetter(objectValues, st
+                .getTypes(), dbDialect.getLobHandler()));
     }
 
     public void setKeyNames(String[] keyNames) {
@@ -339,9 +269,6 @@ public class TableTemplate {
 
     private void clear() {
         statementMap.clear();
-        keyMetaData = null;
-        columnMetaData = null;
-        columnKeyMetaData = null;
         oldData = null;
     }
 
@@ -364,9 +291,9 @@ public class TableTemplate {
     public Table getTable() {
         return table;
     }
-    
+
     public String[] getOldData() {
         return oldData;
-    }    
+    }
 
 }

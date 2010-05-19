@@ -71,7 +71,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }    
 
     @Override
-    public IColumnFilter getDatabaseColumnFilter() {
+    public IColumnFilter newDatabaseColumnFilter() {
         return new AutoIncrementColumnFilter();
     }
 

@@ -152,7 +152,7 @@ public interface IDbDialect {
 
     public void releaseSavepoint(Object savepoint);
 
-    public IColumnFilter getDatabaseColumnFilter();
+    public IColumnFilter newDatabaseColumnFilter();
 
     /**
      * Implement this if the database has some type of cleanup functionality

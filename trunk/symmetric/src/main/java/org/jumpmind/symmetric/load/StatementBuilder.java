@@ -41,11 +41,23 @@ public class StatementBuilder {
     protected String sql;
 
     protected int[] types;
-    
+
     protected String quote;
+
+    protected Column[] keys;
+
+    protected Column[] columns;
+
+    protected Column[] columnKeyMetaData;
+
+    protected Column[] noKeyColumnPlusKeyMetaData;
+
+    protected int[] keyIndexesToRemoveOnUpdate;
 
     public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
             boolean isDateOverrideToTimestamp, String identifierQuoteString) {
+        this.keys = keys;
+        this.columns = columns;
         quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(tableName, columns);
@@ -156,14 +168,16 @@ public class StatementBuilder {
     }
 
     public String buildCountSql(String tableName, Column[] keyColumns) {
-        StringBuilder sql = new StringBuilder("select count(*) from ").append(tableName).append(" where ");
+        StringBuilder sql = new StringBuilder("select count(*) from ").append(tableName).append(
+                " where ");
         appendColumnEquals(sql, keyColumns, " and ");
         return sql.toString();
     }
 
     public void appendColumnEquals(StringBuilder sql, String[] names, String separator) {
         for (int i = 0; i < names.length; i++) {
-            sql.append(quote).append(names[i]).append(quote).append(" = ?").append(i + 1 < names.length ? separator : "");
+            sql.append(quote).append(names[i]).append(quote).append(" = ?").append(
+                    i + 1 < names.length ? separator : "");
         }
     }
 
@@ -181,7 +195,8 @@ public class StatementBuilder {
 
     public void appendColumns(StringBuilder sql, String[] names) {
         for (int i = 0; i < names.length; i++) {
-            sql.append(quote).append(names[i]).append(quote).append(i + 1 < names.length ? "," : "");
+            sql.append(quote).append(names[i]).append(quote)
+                    .append(i + 1 < names.length ? "," : "");
         }
     }
 
@@ -215,4 +230,30 @@ public class StatementBuilder {
     public int[] getTypes() {
         return types;
     }
+
+    public Column[] getColumns() {
+        return columns;
+    }
+
+    public Column[] getColumnKeyMetaData() {
+        return (Column[]) ArrayUtils.addAll(columns, keys);
+    }
+
+    public Column[] getMetaData() {
+        switch (dmlType) {
+        case UPDATE:
+        case UPDATE_NO_KEYS:
+            return getColumnKeyMetaData();
+        case INSERT:
+            return getColumns();
+        case DELETE:
+            return getKeys();
+        }
+        return null;
+    }
+
+    public Column[] getKeys() {
+        return keys;
+    }
+
 }
