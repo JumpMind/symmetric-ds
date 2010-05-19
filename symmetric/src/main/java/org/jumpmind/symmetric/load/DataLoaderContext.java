@@ -227,6 +227,7 @@ public class DataLoaderContext implements IDataLoaderContext {
     }
 
     public Object[] getObjectValues(String[] values) {
+        
         return tableTemplate.getObjectValues(this, values);
     }
 

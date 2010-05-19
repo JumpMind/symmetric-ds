@@ -175,7 +175,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return ts.toString();
     }
 
-    public IColumnFilter getDatabaseColumnFilter() {
+    public IColumnFilter newDatabaseColumnFilter() {
         return null;
     }
 
