@@ -243,6 +243,33 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
 
     }
+    
+    @Test //(timeout = 120000)
+    public void syncToClientMultipleUpdates() {
+        
+        logTestRunning();
+        // test pulling no data
+        getClientEngine().pull();
+        
+        final int NEW_ZIP = 44444;
+        final String NEW_NAME = "JoJo Duh Doh";
+
+        // now change some data that should be sync'd
+        rootJdbcTemplate.update("update test_customer set zip=? where customer_id=?", new Object[] { NEW_ZIP, 100 });
+        rootJdbcTemplate.update("update test_customer set name=? where customer_id=?", new Object[] { NEW_NAME, 100 });
+
+        boolean didPullData = getClientEngine().pull();
+        
+        Assert.assertTrue(didPullData);
+        
+        Map<String, Object> results = clientJdbcTemplate.queryForMap("select zip, name from test_customer where customer_id=?", new Object[] {100});
+
+        Assert.assertEquals(NEW_ZIP, results.get("ZIP"));
+        Assert.assertEquals(NEW_NAME, results.get("NAME"));        
+        
+    }
+    
+    
 
     @Test(timeout = 120000)
     public void testEmptyNullLob() {
