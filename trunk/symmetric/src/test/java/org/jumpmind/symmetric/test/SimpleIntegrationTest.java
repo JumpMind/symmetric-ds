@@ -244,7 +244,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     }
     
-    @Test //(timeout = 120000)
+    @Test (timeout = 120000)
     public void syncToClientMultipleUpdates() {
         
         logTestRunning();
@@ -264,7 +264,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         
         Map<String, Object> results = clientJdbcTemplate.queryForMap("select zip, name from test_customer where customer_id=?", new Object[] {100});
 
-        Assert.assertEquals(NEW_ZIP, results.get("ZIP"));
+        Object zip = results.get("ZIP");
+        Assert.assertEquals(NEW_ZIP, zip instanceof Number ? ((Number)zip).intValue() : zip);
         Assert.assertEquals(NEW_NAME, results.get("NAME"));        
         
     }
