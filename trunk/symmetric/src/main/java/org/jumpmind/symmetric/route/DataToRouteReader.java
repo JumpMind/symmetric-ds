@@ -156,8 +156,9 @@ public class DataToRouteReader implements Runnable {
                     reading = false;
                     boolean done = false;
                     do {
-                    	done = dataQueue.offer(new EOD());
-                    } while (!done);
+                        done = dataQueue.offer(new EOD());
+                        AppUtils.sleep(50);
+                    } while (!done && reading);
                     rs = null;
                     ps = null;
                 }
