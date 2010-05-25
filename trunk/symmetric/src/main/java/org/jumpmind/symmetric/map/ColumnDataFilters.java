@@ -64,7 +64,7 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
                     }
                     if (index >= 0) {
                         try {
-                            columnValues[index] = filteredColumn.getFilter().filter(
+                            columnValues[index] = filteredColumn.getFilter().filter(filteredColumn.getTableName(), filteredColumn.getColumnName(),
                                     columnValues[index], context.getContextCache());
                         } catch (RuntimeException ex) {
                             // Try to log script errors so they are more readable

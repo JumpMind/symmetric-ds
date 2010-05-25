@@ -13,7 +13,7 @@ void init() {
     }
 }
 
-String filter (String originalValue, Map contextCache) {
+String filter (String tableName, String columnName, String originalValue, Map contextCache) {
     if (enabled) {
         System.out.println("account_number was " + originalValue);
         if (originalValue != null && originalValue.length() > 4) {
