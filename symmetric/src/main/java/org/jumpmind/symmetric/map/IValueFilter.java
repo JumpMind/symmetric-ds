@@ -23,6 +23,6 @@ import java.util.Map;
 
 public interface IValueFilter {
 
-    public String filter (String originalValue, Map<String,Object> contextCache);
+    public String filter (String tableName, String columnName, String originalValue, Map<String,Object> contextCache);
     
 }
