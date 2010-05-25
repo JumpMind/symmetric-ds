@@ -219,7 +219,10 @@ public class RouterService extends AbstractService implements IRouterService {
                                     }  else if (isDataGapExpired(dataId)) {
                                         log.info("RouterSkippingDataIdsGapExpired", lastDataId, dataId);
                                         lastDataId = dataId;
-                                    }                                    
+                                    } else {
+                                        // detected a gap!
+                                        break;                                        
+                                    }
                                 } else {
                                     // detected a gap!
                                     break;
