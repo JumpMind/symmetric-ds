@@ -76,17 +76,24 @@ public class SimpleRouterContext implements IRouterContext {
         return val;
     }
 
-    public void logStats(ILog log, boolean infoLevel) {
+    public void logStats(ILog log, int dataCount, long totalTimeInMs) {
+        boolean infoLevel = totalTimeInMs > 30000;
         Set<String> keys = contextCache.keySet();
         for (String key : keys) {
             if (key.startsWith("Stat.")) {
+                String keyString = key.substring(key.indexOf(".") + 1);
                 if (infoLevel) {
-                    log.info("RouterStats", channel.getChannelId(), key.substring(key.indexOf(".") + 1), contextCache.get(key));                    
+                    log.info("RouterStats", channel.getChannelId(), keyString, contextCache.get(key));                    
                 } else {
-                    log.debug("RouterStats", channel.getChannelId(), key.substring(key.indexOf(".") + 1), contextCache.get(key));                    
-                }
-               
+                    log.debug("RouterStats", channel.getChannelId(), keyString, contextCache.get(key));                    
+                }               
             }
+        }
+        
+        if (infoLevel) {
+            log.info("RouterTimeForChannel", totalTimeInMs, dataCount, channel.getChannelId());
+        } else {
+            log.debug("RouterTimeForChannel", totalTimeInMs,  dataCount, channel.getChannelId());
         }
     }
 }

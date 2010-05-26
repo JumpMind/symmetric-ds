@@ -159,9 +159,11 @@ public class RouterService extends AbstractService implements IRouterService {
             final Node sourceNode) {
         RouterContext context = null;
         long ts = System.currentTimeMillis();
+        int dataCount = -1;
         try {
             context = new RouterContext(sourceNode.getNodeId(), nodeChannel, dataSource);
-            return selectDataAndRoute(ref, context);
+            dataCount = selectDataAndRoute(ref, context);
+            return dataCount;
         } catch (Exception ex) {
             if (context != null) {
                 context.rollback();
@@ -174,7 +176,7 @@ public class RouterService extends AbstractService implements IRouterService {
             } catch (SQLException e) {
                 log.error(e);
             } finally {
-                context.logStats(log, System.currentTimeMillis() - ts > 30000);
+                context.logStats(log, dataCount, System.currentTimeMillis() - ts);
                 context.cleanup();
             }
         }
