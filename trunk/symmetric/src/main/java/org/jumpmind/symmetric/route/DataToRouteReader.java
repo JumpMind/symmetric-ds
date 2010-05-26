@@ -147,20 +147,35 @@ public class DataToRouteReader implements Runnable {
                         ts = System.currentTimeMillis();
                     }
 
+                    ts = System.currentTimeMillis();
+                    
                     copyToQueue(memQueue);
 
+                    context.incrementStat(System.currentTimeMillis() - ts,
+                            RouterContext.STAT_ENQUEUE_DATA_MS);                   
+                    
                     return dataCount;
+                    
                 } finally {
+                    
                     JdbcUtils.closeResultSet(rs);
                     JdbcUtils.closeStatement(ps);
-                    reading = false;
+                    rs = null;
+                    ps = null;
+                    
+                    long ts = System.currentTimeMillis();
+                    
                     boolean done = false;
                     do {
                         done = dataQueue.offer(new EOD());
                         AppUtils.sleep(50);
                     } while (!done && reading);
-                    rs = null;
-                    ps = null;
+                    
+                    context.incrementStat(System.currentTimeMillis() - ts,
+                            RouterContext.STAT_ENQUEUE_EOD_MS);
+
+                    reading = false;
+
                 }
             }
         });

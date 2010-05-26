@@ -55,15 +55,16 @@ public class DataToRouteReader implements Runnable {
     private static final int DEFAULT_QUERY_TIMEOUT = 300;
 
     private int queryTimeout = DEFAULT_QUERY_TIMEOUT;
-    
 
     public DataToRouteReader(DataSource dataSource, int maxQueueSize, Map<String, String> sql,
             int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService) {
-        this(dataSource, maxQueueSize, sql, fetchSize, context, dataRef, dataService, DEFAULT_QUERY_TIMEOUT);    
+        this(dataSource, maxQueueSize, sql, fetchSize, context, dataRef, dataService,
+                DEFAULT_QUERY_TIMEOUT);
     }
-    
+
     public DataToRouteReader(DataSource dataSource, int maxQueueSize, Map<String, String> sql,
-            int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService, int queryTimeout) {
+            int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService,
+            int queryTimeout) {
         this.maxQueueSize = maxQueueSize;
         this.dataSource = dataSource;
         this.dataQueue = new LinkedBlockingQueue<Data>(maxQueueSize);
@@ -89,8 +90,8 @@ public class DataToRouteReader implements Runnable {
             return data;
         }
     }
-    
-    protected String getSql (Channel channel) {
+
+    protected String getSql(Channel channel) {
         String select = sql.get("selectDataToBatchSql");
         if (!channel.isUseOldDataToRoute()) {
             select = select.replace("d.old_data", "''");
@@ -127,7 +128,7 @@ public class DataToRouteReader implements Runnable {
                     List<Data> memQueue = new ArrayList<Data>(toRead);
                     long ts = System.currentTimeMillis();
                     while (rs.next() && reading) {
-                        
+
                         if (rs.getString(13) == null) {
                             Data data = dataService.readData(rs);
                             context.setLastDataIdForTransactionId(data);
@@ -138,9 +139,9 @@ public class DataToRouteReader implements Runnable {
                                 RouterContext.STAT_READ_DATA_MS);
 
                         ts = System.currentTimeMillis();
-                        
+
                         if (toRead == 0) {
-                        	copyToQueue(memQueue);
+                            copyToQueue(memQueue);
                             toRead = maxQueueSize - dataQueue.size();
                             memQueue = new ArrayList<Data>(toRead);
                         } else {
@@ -149,36 +150,51 @@ public class DataToRouteReader implements Runnable {
 
                         context.incrementStat(System.currentTimeMillis() - ts,
                                 RouterContext.STAT_ENQUEUE_DATA_MS);
-                        
+
                         ts = System.currentTimeMillis();
                     }
 
+                    ts = System.currentTimeMillis();
+                    
                     copyToQueue(memQueue);
 
+                    context.incrementStat(System.currentTimeMillis() - ts,
+                            RouterContext.STAT_ENQUEUE_DATA_MS);                   
+                    
                     return dataCount;
+                    
                 } finally {
+                    
                     JdbcUtils.closeResultSet(rs);
                     JdbcUtils.closeStatement(ps);
-                    reading = false;
-                    boolean done = false;
-                    do {
-                    	done = dataQueue.offer(new EOD());
-                    	AppUtils.sleep(50);
-                    } while (!done && reading);
                     rs = null;
                     ps = null;
+                    
+                    long ts = System.currentTimeMillis();
+                    
+                    boolean done = false;
+                    do {
+                        done = dataQueue.offer(new EOD());
+                        AppUtils.sleep(50);
+                    } while (!done && reading);
+                    
+                    context.incrementStat(System.currentTimeMillis() - ts,
+                            RouterContext.STAT_ENQUEUE_EOD_MS);
+
+                    reading = false;
+
                 }
             }
         });
     }
-    
+
     protected void copyToQueue(List<Data> memQueue) {
         while (memQueue.size() > 0 && reading) {
-        	Data d = memQueue.get(0);
+            Data d = memQueue.get(0);
             if (dataQueue.offer(d)) {
-            	memQueue.remove(0);
+                memQueue.remove(0);
             } else {
-            	AppUtils.sleep(50);
+                AppUtils.sleep(50);
             }
         }
     }
