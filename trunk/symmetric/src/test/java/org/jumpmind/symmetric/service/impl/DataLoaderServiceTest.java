@@ -24,11 +24,14 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import junit.framework.Assert;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.ext.INodeGroupTestDataLoaderFilter;
 import org.jumpmind.symmetric.ext.ITestDataLoaderFilter;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
@@ -222,7 +225,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         String thirdId = getNextId();
         insertValues[0] = thirdId;
         insertValues[2] = "This is a very long string that will fail upon insert into the database.";
-        insertValues[9] = "123456789.00";
+        insertValues[9] = getDbDialect() instanceof InformixDbDialect ? "123456789.00" : "10.00";
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
 
@@ -235,7 +238,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         assertNotNull(batch);
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
         assertEquals(batch.getFailedRowNumber(), 3l, "Wrong failed row number. " + printDatabase());
-        assertEquals(batch.getByteCount(), 402l, "Wrong byte count. " + printDatabase());
+        Assert.assertTrue("Wrong byte count. " + printDatabase(), batch.getByteCount() == 402l || batch.getByteCount() == 395l);
         assertEquals(batch.getStatementCount(), 3l, "Wrong statement count. " + printDatabase());
         assertEquals(batch.getFallbackInsertCount(), 0l, "Wrong fallback insert count. " + printDatabase());
         assertEquals(batch.getFallbackUpdateCount(), 1l, "Wrong fallback update count. " + printDatabase());
