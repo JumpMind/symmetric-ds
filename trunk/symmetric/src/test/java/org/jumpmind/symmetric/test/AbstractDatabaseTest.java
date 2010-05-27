@@ -41,7 +41,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
-public class AbstractDatabaseTest {
+public class AbstractDatabaseTest extends AbstractTest {
 
     protected Log logger = LogFactory.getLog(getClass());
 
@@ -51,6 +51,11 @@ public class AbstractDatabaseTest {
    
     public void init(String database) {
         this.database = database;
+    }
+    
+    @Override
+    protected String printDatabases() {
+        return getDatabase();
     }
 
     public AbstractDatabaseTest() throws Exception {

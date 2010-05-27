@@ -35,7 +35,6 @@ import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.ext.INodeGroupTestDataLoaderFilter;
 import org.jumpmind.symmetric.ext.ITestDataLoaderFilter;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
-import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -52,13 +51,6 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     public DataLoaderServiceTest() throws Exception {
         super();
-    }
-
-    protected Level setLoggingLevelForTest(Level level) {
-        Level old = Logger.getLogger(DataLoaderService.class).getLevel();
-        Logger.getLogger(DataLoaderService.class).setLevel(level);
-        Logger.getLogger(CsvLoader.class).setLevel(level);
-        return old;
     }
 
     @Test

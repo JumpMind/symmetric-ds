@@ -85,7 +85,6 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -118,8 +117,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected DatabaseModel cachedModel = new DatabaseModel();
 
     protected SqlTemplate sqlTemplate;
-
-    protected SQLErrorCodeSQLExceptionTranslator sqlErrorTranslator;
 
     private Map<Integer, String> _defaultSizes;
 
@@ -215,7 +212,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         log.info("DbDialectInUse", this.getClass().getName());
         this.jdbcTemplate = new JdbcTemplate(pf.getDataSource());
         this.platform = pf;
-        this.sqlErrorTranslator = new SQLErrorCodeSQLExceptionTranslator(pf.getDataSource());
         this.identifierQuoteString = "\"";
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
@@ -1278,10 +1274,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void setSqlTemplate(SqlTemplate sqlTemplate) {
         this.sqlTemplate = sqlTemplate;
-    }
-
-    public SQLErrorCodeSQLExceptionTranslator getSqlErrorTranslator() {
-        return sqlErrorTranslator;
     }
 
     public void setTablePrefix(String tablePrefix) {
