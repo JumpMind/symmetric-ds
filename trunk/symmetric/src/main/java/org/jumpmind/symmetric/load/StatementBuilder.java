@@ -48,16 +48,13 @@ public class StatementBuilder {
 
     protected Column[] columns;
 
-    protected Column[] columnKeyMetaData;
-
-    protected Column[] noKeyColumnPlusKeyMetaData;
-
-    protected int[] keyIndexesToRemoveOnUpdate;
+    protected Column[] preFilteredColumns;
 
     public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
-            boolean isDateOverrideToTimestamp, String identifierQuoteString) {
+            Column[] preFilteredColumns, boolean isDateOverrideToTimestamp, String identifierQuoteString) {
         this.keys = keys;
         this.columns = columns;
+        this.preFilteredColumns = preFilteredColumns;
         quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(tableName, columns);
@@ -235,15 +232,19 @@ public class StatementBuilder {
         return columns;
     }
 
-    public Column[] getColumnKeyMetaData() {
-        return (Column[]) ArrayUtils.addAll(columns, keys);
+    public Column[] getColumnKeyMetaData(boolean prefiltered) {
+        if (prefiltered) {
+            return (Column[]) ArrayUtils.addAll(preFilteredColumns, keys);
+        } else {
+            return (Column[]) ArrayUtils.addAll(columns, keys);
+        }
     }
 
-    public Column[] getMetaData() {
+    public Column[] getMetaData(boolean prefiltered) {
         switch (dmlType) {
         case UPDATE:
         case UPDATE_NO_KEYS:
-            return getColumnKeyMetaData();
+            return getColumnKeyMetaData(prefiltered);
         case INSERT:
             return getColumns();
         case DELETE:
@@ -256,4 +257,7 @@ public class StatementBuilder {
         return keys;
     }
 
+    public Column[] getPreFilteredColumns() {
+        return preFilteredColumns;
+    }
 }

@@ -212,11 +212,12 @@ public class TableTemplate {
     }
 
     private StatementBuilder createStatementBuilder(IDataLoaderContext ctx, DmlType type,
-            String[] filteredColumnNames) {
+            String[] statementColumnNames) {        
+        String[] preFilteredColumnNames = statementColumnNames;
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
-                filteredColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(),
-                        filteredColumnNames);
+                statementColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(),
+                        statementColumnNames);
             }
         }
 
@@ -228,7 +229,9 @@ public class TableTemplate {
             tableName = catalog + "." + tableName;
         }
         return new StatementBuilder(type, tableName, getColumnMetaData(keyNames),
-                getColumnMetaData(filteredColumnNames), dbDialect.isDateOverrideToTimestamp(),
+                getColumnMetaData(statementColumnNames), 
+                getColumnMetaData(preFilteredColumnNames),
+                dbDialect.isDateOverrideToTimestamp(),
                 dbDialect.getIdentifierQuoteString());
     }
 
@@ -242,7 +245,7 @@ public class TableTemplate {
 
     private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values) {
         Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, st
-                .getMetaData());
+                .getMetaData(true));
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
                 objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(),
