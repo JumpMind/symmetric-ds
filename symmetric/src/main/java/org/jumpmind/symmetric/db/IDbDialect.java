@@ -37,7 +37,6 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public interface IDbDialect {
@@ -160,8 +159,6 @@ public interface IDbDialect {
      * Oracle's 'purge recyclebin'
      */
     public void purge();
-
-    public SQLErrorCodeSQLExceptionTranslator getSqlErrorTranslator();
 
     public void disableSyncTriggers();
 

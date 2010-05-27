@@ -31,7 +31,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class AbstractIntegrationTest {
+public class AbstractIntegrationTest extends AbstractTest {
 
     protected final Log logger = LogFactory.getLog(getClass());
 
@@ -63,10 +63,10 @@ public class AbstractIntegrationTest {
             throw e;
         }
     }
-
-    protected void logTestRunning() {
-        logger.info("Running " + new Exception().getStackTrace()[1].getMethodName() + ". "
-                + printRootAndClientDatabases());
+    
+    @Override
+    protected String printDatabases() {
+        return printRootAndClientDatabases();
     }
 
     protected ISymmetricEngine getRootEngine() {

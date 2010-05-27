@@ -35,6 +35,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.ddlutils.model.Table;
+import org.apache.log4j.Level;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -940,6 +941,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void testSyncShellCommandError() throws Exception {
         logTestRunning();
+        Level old = setLoggingLevelForTest(Level.OFF);
         IDataService rootDataService = AppUtils.find(Constants.DATA_SERVICE, getRootEngine());
         IOutgoingBatchService rootOutgoingBatchService = AppUtils.find(Constants.OUTGOING_BATCH_SERVICE,
                 getRootEngine());
@@ -951,6 +953,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertEquals(1, batches.countBatches(true));
         Assert.assertFalse(testFlag);
         rootOutgoingBatchService.markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
+        setLoggingLevelForTest(old);
     }
 
     /**
