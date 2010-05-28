@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.ddlutils.Platform;
+import org.apache.ddlutils.platform.mssql.MSSqlPlatform;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
@@ -46,6 +47,11 @@ public class PlatformFactory {
             pf = org.apache.ddlutils.PlatformFactory.createNewPlatformInstance(dataSource);
         } else {
             pf.setDataSource(dataSource);
+        }
+        
+        if (pf instanceof MSSqlPlatform && !pf.isDelimitedIdentifierModeOn()) {
+            log.info("PlatformTurningOnDelimitedIdentifierMode");
+            pf.setDelimitedIdentifierModeOn(true);
         }
         
         log.info("PlatformInUse", pf.getClass().getName());
