@@ -555,17 +555,18 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected void determineAutoIncrementFromResultSetMetaData(final Table table,
             final Column columnsToCheck[]) throws SQLException {
-	final JdbcModelReaderSupport reader = new JdbcModelReaderSupport(platform);
-	final String catalogSeparator;
-	if (this instanceof InformixDbDialect) {
-	    catalogSeparator = ":";
-	} else {
-	    catalogSeparator = ".";
-	}
-	jdbcTemplate.execute(new ConnectionCallback<Object>() {
+        final JdbcModelReaderSupport reader = new JdbcModelReaderSupport(platform);
+        final String catalogSeparator;
+        if (this instanceof InformixDbDialect) {
+            catalogSeparator = ":";
+        } else {
+            catalogSeparator = ".";
+        }
+        jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-        	reader.determineAutoIncrementFromResultSetMetaData(conn, table, table.getColumns(), catalogSeparator);
-        	return null;
+                reader.determineAutoIncrementFromResultSetMetaData(conn, table, table.getColumns(),
+                        catalogSeparator);
+                return null;
             }
         });
     }

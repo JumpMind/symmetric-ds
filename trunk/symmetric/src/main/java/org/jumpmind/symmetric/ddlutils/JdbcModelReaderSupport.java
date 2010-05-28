@@ -31,6 +31,7 @@ public class JdbcModelReaderSupport extends JdbcModelReader {
     /**
      * Read a single table from database
      */
+    @SuppressWarnings("unchecked")
     public Table readTable(Connection conn, String catalogName, String schemaName,
             String tableName, boolean caseSensitive) throws SQLException {
         Table retTable = null;
@@ -45,7 +46,6 @@ public class JdbcModelReaderSupport extends JdbcModelReader {
         try {
             tableData = metaData.getTables(tableName);
             while (tableData != null && tableData.next()) {
-                @SuppressWarnings("rawtypes")
                 Map values = readColumns(tableData, getColumnsForTable());
                 Table table = readTable(metaData, values);
                 if (doesMatch(table, catalogName, schemaName, tableName, caseSensitive)) {
