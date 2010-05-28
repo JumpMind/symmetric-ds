@@ -12,6 +12,7 @@ import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
 import org.apache.ddlutils.platform.JdbcModelReader;
+import org.apache.log4j.Logger;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
@@ -113,6 +114,7 @@ public class JdbcModelReaderSupport extends JdbcModelReader {
         }
         appendIdentifier(query, table.getName()).append(" t WHERE 1 = 0");
 
+        Logger.getLogger("TEMPORARY").error(query);
         Statement stmt = null;
         try {
             stmt = conn.createStatement();
@@ -133,10 +135,12 @@ public class JdbcModelReaderSupport extends JdbcModelReader {
 
     public StringBuilder appendIdentifier(StringBuilder query, String identifier) {
         if (getPlatform().isDelimitedIdentifierModeOn()) {
+            Logger.getLogger("TEMPORARY").error("Appending " + getPlatformInfo().getDelimiterToken() + identifier);
             query.append(getPlatformInfo().getDelimiterToken());
         }
         query.append(identifier);
         if (getPlatform().isDelimitedIdentifierModeOn()) {
+            Logger.getLogger("TEMPORARY").error("Appending " + getPlatformInfo().getDelimiterToken());
             query.append(getPlatformInfo().getDelimiterToken());
         }
         return query;
