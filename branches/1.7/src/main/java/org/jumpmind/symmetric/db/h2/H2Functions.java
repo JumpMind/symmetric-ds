@@ -21,17 +21,12 @@ package org.jumpmind.symmetric.db.h2;
 
 import java.sql.Connection;
 
-import org.h2.engine.Session;
-import org.h2.jdbc.JdbcConnection;
 import org.jumpmind.symmetric.db.EmbeddedDbFunctions;
 
 public class H2Functions extends EmbeddedDbFunctions {
 
     public static String getTransactionId(Connection c) {
-        JdbcConnection con = (JdbcConnection) c;
-        Session session = (Session) con.getSession();
-        return String.format("'%s-%s-%s'", session.getId(), session
-                .getFirstUncommittedLog(), session.getFirstUncommittedPos());
+        return "";
     }
 
 }

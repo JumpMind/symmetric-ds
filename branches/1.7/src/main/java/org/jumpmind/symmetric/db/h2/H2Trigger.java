@@ -34,11 +34,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.h2.util.ByteUtils;
 import org.h2.util.IOUtils;
 
 public class H2Trigger implements org.h2.api.Trigger {
 
+    protected static final char[] HEX = "0123456789abcdef".toCharArray();
     protected static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
     static final String KEY_CONDITION_SQL = "CONDITION_SQL";
     static final String KEY_INSERT_DATA_SQL = "INSERT_DATA_SQL";
@@ -149,7 +149,7 @@ public class H2Trigger implements org.h2.api.Trigger {
         } else if (value instanceof ByteArrayInputStream || value instanceof BufferedInputStream) {
             out.append("'");
             try {
-                value = ByteUtils.convertBytesToString(IOUtils.readBytesAndClose((InputStream) value, -1));
+                value = convertBytesToString(IOUtils.readBytesAndClose((InputStream) value, -1));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -189,4 +189,24 @@ public class H2Trigger implements org.h2.api.Trigger {
         }
     }
 
+    public static String convertBytesToString(byte[] paramArrayOfByte) {
+        return convertBytesToString(paramArrayOfByte, paramArrayOfByte.length);
+    }
+
+    public static String convertBytesToString(byte[] paramArrayOfByte, int paramInt) {
+        char[] arrayOfChar1 = new char[paramInt + paramInt];
+        char[] arrayOfChar2 = HEX;
+        for (int i = 0; i < paramInt; ++i) {
+            int j = paramArrayOfByte[i] & 0xFF;
+            arrayOfChar1[(i + i)] = arrayOfChar2[(j >> 4)];
+            arrayOfChar1[(i + i + 1)] = arrayOfChar2[(j & 0xF)];
+        }
+        return new String(arrayOfChar1);
+    }
+
+    public void close() throws SQLException {
+    }
+    
+    public void remove() throws SQLException {
+    }
 }
