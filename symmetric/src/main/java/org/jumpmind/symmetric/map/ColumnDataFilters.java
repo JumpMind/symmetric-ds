@@ -40,45 +40,52 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
     List<TableColumnValueFilter> filters;
 
     private boolean ignoreCase = true;
-    
+
     private boolean enabled = true;
 
     protected void filterColumnValues(IDataLoaderContext context, String[] columnValues) {
         if (enabled && filters != null) {
             for (TableColumnValueFilter filteredColumn : filters) {
-                if (filteredColumn.isEnabled() && 
-                        ((ignoreCase && filteredColumn.getTableName().equalsIgnoreCase(
-                          context.getTableName()))
-                        || 
-                        (!ignoreCase && filteredColumn.getTableName().equals(
-                          context.getTableName())))) {
-                    String columnName = filteredColumn.getColumnName();
-                    int index = context.getColumnIndex(columnName);
-                    if (index < 0 && ignoreCase) {
-                        columnName = columnName.toUpperCase();
-                        index = context.getColumnIndex(columnName);
-                        if (index < 0) {
-                            columnName = columnName.toLowerCase();
+                try {
+                    if (filteredColumn.isEnabled()
+                            && ((ignoreCase && filteredColumn.getTableName().equalsIgnoreCase(
+                                    context.getTableName())) || (!ignoreCase && filteredColumn
+                                    .getTableName().equals(context.getTableName())))) {
+                        String columnName = filteredColumn.getColumnName();
+                        int index = context.getColumnIndex(columnName);
+                        if (index < 0 && ignoreCase) {
+                            columnName = columnName.toUpperCase();
                             index = context.getColumnIndex(columnName);
+                            if (index < 0) {
+                                columnName = columnName.toLowerCase();
+                                index = context.getColumnIndex(columnName);
+                            }
+                        }
+                        if (index >= 0) {
+                            try {
+                                columnValues[index] = filteredColumn.getFilter().filter(
+                                        filteredColumn.getTableName(),
+                                        filteredColumn.getColumnName(), columnValues[index],
+                                        context.getContextCache());
+                            } catch (RuntimeException ex) {
+                                // Try to log script errors so they are more
+                                // readable
+                                Throwable causedBy = ex;
+                                do {
+                                    causedBy = ExceptionUtils.getCause(causedBy);
+                                    if (causedBy instanceof ScriptCompilationException) {
+                                        log.error("Message", causedBy.getMessage());
+                                        throw new RuntimeException(causedBy.getMessage());
+                                    }
+                                } while (causedBy != null);
+                                throw ex;
+                            }
                         }
                     }
-                    if (index >= 0) {
-                        try {
-                            columnValues[index] = filteredColumn.getFilter().filter(filteredColumn.getTableName(), filteredColumn.getColumnName(),
-                                    columnValues[index], context.getContextCache());
-                        } catch (RuntimeException ex) {
-                            // Try to log script errors so they are more readable
-                            Throwable causedBy = ex;
-                            do {
-                                causedBy = ExceptionUtils.getCause(causedBy);
-                                if (causedBy instanceof ScriptCompilationException) {
-                                    log.error("Message", causedBy.getMessage());
-                                    throw new RuntimeException(causedBy.getMessage());
-                                }
-                            } while (causedBy != null);
-                            throw ex;
-                        }
-                    }
+                } catch (RuntimeException ex) {
+                    log.error("ColumnDataFilterError", filteredColumn.getColumnName(),
+                            filteredColumn.getTableName());
+                    throw ex;
                 }
             }
         }
@@ -118,7 +125,7 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
     public void setNodeGroupIdsToApplyTo(String[] nodeGroupIdsToApplyTo) {
         this.nodeGroupIdsToApplyTo = nodeGroupIdsToApplyTo;
     }
-    
+
     public void setNodeGroupIdToApplyTo(String nodeGroupId) {
         this.nodeGroupIdsToApplyTo = new String[] { nodeGroupId };
     }
@@ -126,9 +133,9 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
     public void setIgnoreCase(boolean ignoreCase) {
         this.ignoreCase = ignoreCase;
     }
-    
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-        
+
 }
