@@ -263,7 +263,7 @@
             <artifactId>maven-eclipse-plugin</artifactId>
             <configuration>
                 <downloadSources>true</downloadSources>
-                <downloadJavadocs>true</downloadJavadocs>
+                <downloadJavadocs>false</downloadJavadocs>
             </configuration>
         </plugin>
         <plugin>
@@ -705,7 +705,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.2.135</version>
+            <version>1.2.132</version>
             <optional>true</optional>
         </dependency>
           <dependency>
