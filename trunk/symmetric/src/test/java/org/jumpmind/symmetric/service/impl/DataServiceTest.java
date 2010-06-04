@@ -7,6 +7,7 @@ import junit.framework.Assert;
 
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Test;
@@ -17,6 +18,12 @@ public class DataServiceTest extends AbstractDatabaseTest {
         super();
     }
 
+    @Test
+    public void verifyProxyInterface() {
+        IDataService service = getSymmetricEngine().getDataService();
+        Assert.assertNotSame(DataLoaderService.class, service.getClass());
+    }
+    
     @Test
     public void testGetHeartbeatListeners() throws Exception {
         DataService ds = new DataService();
