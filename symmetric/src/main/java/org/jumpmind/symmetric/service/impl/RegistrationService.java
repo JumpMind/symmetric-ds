@@ -51,7 +51,6 @@ import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @see IRegistrationService
@@ -158,7 +157,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
     /**
      * @see IRegistrationService#markNodeAsRegistered(Node)
      */
-    @Transactional
     public void markNodeAsRegistered(String nodeId) {
         jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { nodeId });
     }

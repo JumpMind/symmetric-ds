@@ -15,35 +15,28 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface IDataService {
 
-    @Transactional
+    
     public String reloadNode(String nodeId);
 
-    @Transactional
+    
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName);
 
-    @Transactional
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect);
 
-    @Transactional
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql, boolean isLoad);
 
-    @Transactional
     public void insertReloadEvent(Node targetNode);
 
-    @Transactional
     public void insertReloadEvent(final Node targetNode, final TriggerRouter trigger);
     
-    @Transactional
     public void sendScript(String nodeId, String script, boolean isLoad);
 
     /**
      * Update {@link Node} information for this node and call {@link IHeartbeatListener}s.
      */
-    @Transactional
     public void heartbeat(boolean force);
 
     public void insertHeartbeatEvent(Node node, boolean isReload);

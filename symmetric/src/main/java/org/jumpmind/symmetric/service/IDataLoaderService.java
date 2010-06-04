@@ -36,17 +36,13 @@ import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface IDataLoaderService {
-
-    @Transactional
+    
     public boolean loadData(Node remote, Node local) throws IOException;
 
-    @Transactional
     public boolean loadData(IIncomingTransport reader) throws IOException;
 
-    @Transactional
     public void loadData(InputStream in, OutputStream out) throws IOException;
 
     /**
@@ -58,7 +54,6 @@ public interface IDataLoaderService {
      *                supported data loader today is the {@link CsvLoader})
      * @throws IOException
      */
-    @Transactional
     public IDataLoaderStatistics loadDataBatch(String batchData) throws IOException;
 
     public void addDataLoaderFilter(IDataLoaderFilter filter);

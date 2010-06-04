@@ -55,7 +55,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -67,8 +66,7 @@ import org.springframework.context.ApplicationContext;
  * application that matches the following pattern:
  * /META-INF/services/symmetric-*-ext.xml
  */
-public class ExtensionPointManager implements IExtensionPointManager, BeanFactoryAware,
-        BeanFactoryPostProcessor {
+public class ExtensionPointManager implements IExtensionPointManager, BeanFactoryAware {
 
     final ILog log = LogFactory.getLog(getClass());
 
@@ -97,18 +95,10 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
     private BeanFactory beanFactory;
 
     private boolean initialized = false;
-    
-    private boolean postProcessEnabled = true;
 
     public void register() throws BeansException {
-        this.postProcessEnabled = true;
         ConfigurableListableBeanFactory cfgBeanFactory = (ConfigurableListableBeanFactory) beanFactory;
-        this.postProcessBeanFactory(cfgBeanFactory);
-    }
-
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory cfgBeanFactory)
-            throws BeansException {
-        if (!initialized && postProcessEnabled) {
+        if (!initialized) {
             Map<String, IExtensionPoint> extensions = new TreeMap<String, IExtensionPoint>();
             extensions.putAll(cfgBeanFactory.getBeansOfType(IExtensionPoint.class));
             if (cfgBeanFactory.getParentBeanFactory() != null
@@ -284,7 +274,4 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         this.beanFactory = beanFactory;
     }
     
-    public void setPostProcessEnabled(boolean postProcessEnabled) {
-        this.postProcessEnabled = postProcessEnabled;
-    }
 }
