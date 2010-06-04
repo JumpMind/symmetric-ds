@@ -37,7 +37,6 @@ import org.jumpmind.symmetric.ext.ITestDataLoaderFilter;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
@@ -52,12 +51,6 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     public DataLoaderServiceTest() throws Exception {
         super();
-    }
-
-    @Test
-    public void verifyProxyInterface() {
-        IDataLoaderService service = getSymmetricEngine().getDataLoaderService();
-        Assert.assertNotSame(DataLoaderService.class, service.getClass());
     }
     
     @Test
