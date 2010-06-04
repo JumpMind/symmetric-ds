@@ -27,7 +27,6 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -1072,7 +1071,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     }
                     if (value != null) {
                         if (type == Types.DATE && !isDateOverrideToTimestamp()) {
-                            objectValue = new Date(getTime(value, TIMESTAMP_PATTERNS));
+                            objectValue = getDate(value, TIMESTAMP_PATTERNS);
                         } else if (type == Types.TIMESTAMP
                                 || (type == Types.DATE && isDateOverrideToTimestamp())) {
                             objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
@@ -1114,13 +1113,17 @@ abstract public class AbstractDbDialect implements IDbDialect {
         
         return list.toArray();
     }
-
-    private long getTime(String value, String[] pattern) {
+    
+    final private java.util.Date getDate(String value, String[] pattern) {
         try {
-            return DateUtils.parseDate(value, pattern).getTime();
+            return DateUtils.parseDate(value, pattern);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    final private long getTime(String value, String[] pattern) {
+        return getDate(value, pattern).getTime();
     }
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
