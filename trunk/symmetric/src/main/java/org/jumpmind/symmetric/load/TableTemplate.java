@@ -111,12 +111,12 @@ public class TableTemplate {
         return tableName;
     }
 
-    public boolean isIgnoreThisTable() {
+    final public boolean isIgnoreThisTable() {
         return table == null;
     }
 
     public int insert(IDataLoaderContext ctx, String[] columnValues) {
-        StatementBuilder st = getStatementBuilder(ctx, DmlType.INSERT);
+        StatementBuilder st = getStatementBuilder(ctx, DmlType.INSERT, columnNames);
         return execute(ctx, st, columnValues);
     }
 
@@ -137,7 +137,7 @@ public class TableTemplate {
                 }
             }
             if (changedColumnNameList.size() > 0) {
-                st = createStatementBuilder(ctx, DmlType.UPDATE, changedColumnNameList
+                st = getStatementBuilder(ctx, DmlType.UPDATE, changedColumnNameList
                         .toArray(new String[changedColumnNameList.size()]));
                 columnValues = (String[]) changedColumnValueList
                         .toArray(new String[changedColumnValueList.size()]);
@@ -153,7 +153,7 @@ public class TableTemplate {
 
     }
 
-    protected boolean doesColumnNeedUpdated(IDataLoaderContext ctx, int columnIndex, Column column,
+    final private boolean doesColumnNeedUpdated(IDataLoaderContext ctx, int columnIndex, Column column,
             String[] keyValues, String[] columnValues) {
         boolean needsUpdated = true;
         if (oldData != null) {
@@ -185,12 +185,12 @@ public class TableTemplate {
     }
 
     public int delete(IDataLoaderContext ctx, String[] keyValues) {
-        StatementBuilder st = getStatementBuilder(ctx, DmlType.DELETE);
+        StatementBuilder st = getStatementBuilder(ctx, DmlType.DELETE, columnNames);
         return execute(ctx, st, keyValues);
     }
 
     public int count(IDataLoaderContext ctx, String[] keyValues) {
-        StatementBuilder st = getStatementBuilder(ctx, DmlType.COUNT);
+        StatementBuilder st = getStatementBuilder(ctx, DmlType.COUNT, columnNames);
         Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), keyValues,
                 st.getKeys());
         if (columnFilters != null) {
@@ -202,37 +202,35 @@ public class TableTemplate {
         return jdbcTemplate.queryForInt(st.getSql(), objectValues, st.getTypes());
     }
 
-    private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type) {
+    final private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type,
+            String[] statementColumnNames) {
         StatementBuilder st = statementMap.get(type);
         if (st == null) {
-            st = createStatementBuilder(ctx, type, columnNames);
-            statementMap.put(type, st);
-        }
-        return st;
-    }
+            String[] preFilteredColumnNames = statementColumnNames;
+            if (columnFilters != null) {
+                for (IColumnFilter columnFilter : columnFilters) {
+                    statementColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(),
+                            statementColumnNames);
+                }
+            }
 
-    private StatementBuilder createStatementBuilder(IDataLoaderContext ctx, DmlType type,
-            String[] statementColumnNames) {        
-        String[] preFilteredColumnNames = statementColumnNames;
-        if (columnFilters != null) {
-            for (IColumnFilter columnFilter : columnFilters) {
-                statementColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(),
-                        statementColumnNames);
+            String tableName = table.getName();
+            if (!StringUtils.isBlank(schema)) {
+                tableName = schema + "." + tableName;
+            }
+            if (!StringUtils.isBlank(catalog)) {
+                tableName = catalog + "." + tableName;
+            }
+            st = new StatementBuilder(type, tableName, getColumnMetaData(keyNames),
+                    getColumnMetaData(statementColumnNames),
+                    getColumnMetaData(preFilteredColumnNames), dbDialect
+                            .isDateOverrideToTimestamp(), dbDialect.getIdentifierQuoteString());
+
+            if (type != DmlType.UPDATE) {
+                statementMap.put(type, st);
             }
         }
-
-        String tableName = table.getName();
-        if (!StringUtils.isBlank(schema)) {
-            tableName = schema + "." + tableName;
-        }
-        if (!StringUtils.isBlank(catalog)) {
-            tableName = catalog + "." + tableName;
-        }
-        return new StatementBuilder(type, tableName, getColumnMetaData(keyNames),
-                getColumnMetaData(statementColumnNames), 
-                getColumnMetaData(preFilteredColumnNames),
-                dbDialect.isDateOverrideToTimestamp(),
-                dbDialect.getIdentifierQuoteString());
+        return st;
     }
 
     public Object[] getObjectValues(IDataLoaderContext ctx, String[] values) {
@@ -243,7 +241,7 @@ public class TableTemplate {
         return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, getColumnMetaData(keyNames));
     }
 
-    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values) {
+    final private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values) {
         Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, st
                 .getMetaData(true));
         if (columnFilters != null) {
@@ -270,12 +268,12 @@ public class TableTemplate {
         this.oldData = oldData;
     }
 
-    private void clear() {
+    final private void clear() {
         statementMap.clear();
         oldData = null;
     }
 
-    private Column[] getColumnMetaData(String[] names) {
+    final private Column[] getColumnMetaData(String[] names) {
         Column[] columns = new Column[names.length];
         for (int i = 0; i < names.length; i++) {
             columns[i] = allMetaData.get(names[i].trim().toUpperCase());
