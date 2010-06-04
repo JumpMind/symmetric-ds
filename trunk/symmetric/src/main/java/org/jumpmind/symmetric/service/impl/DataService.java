@@ -68,6 +68,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.csvreader.CsvWriter;
 
@@ -89,10 +90,12 @@ public class DataService extends AbstractService implements IDataService {
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
 
+    @Transactional
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter) {
         insertReloadEvent(targetNode, triggerRouter, null);
     }
 
+    @Transactional
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter,
             final String overrideInitialLoadSelect) {
         TriggerHistory history = lookupTriggerHistory(triggerRouter.getTrigger());
@@ -214,6 +217,7 @@ public class DataService extends AbstractService implements IDataService {
         insertDataEvent(new DataEvent(dataId, outgoingBatch.getBatchId(), routerId));
     }
 
+    @Transactional
     public String reloadNode(String nodeId) {
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
@@ -286,6 +290,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    @Transactional
     public void sendScript(String nodeId, String script, boolean isLoad) {
         Node targetNode = nodeService.findNode(nodeId);
         Data data = new Data(Constants.NA, DataEventType.BSH, CsvUtils.escapeCsvData(script), null,
@@ -294,6 +299,7 @@ public class DataService extends AbstractService implements IDataService {
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
 
+    @Transactional
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
             String sql, boolean isLoad) {
         Node sourceNode = nodeService.findIdentity();
@@ -316,10 +322,12 @@ public class DataService extends AbstractService implements IDataService {
         return "Successfully create SQL event for node " + targetNode.getNodeId();
     }
 
+    @Transactional
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName) {
         return reloadTable(nodeId, catalogName, schemaName, tableName, null);
     }
 
+    @Transactional
     public String reloadTable(String nodeId, String catalogName, String schemaName,
             String tableName, String overrideInitialLoadSelect) {
         Node sourceNode = nodeService.findIdentity();
@@ -516,6 +524,7 @@ public class DataService extends AbstractService implements IDataService {
     /**
      * @see IDataService#heartbeat()
      */
+    @Transactional
     public void heartbeat(boolean force) {
         List<IHeartbeatListener> listeners = getHeartbeatListeners(force);
         if (listeners.size() > 0) {
