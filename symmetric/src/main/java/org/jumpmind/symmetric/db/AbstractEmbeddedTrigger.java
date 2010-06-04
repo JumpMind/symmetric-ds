@@ -105,6 +105,11 @@ abstract public class AbstractEmbeddedTrigger {
             stmt.close();
         } catch (SQLException ex) {
             System.err.println("This sql failed: " + sql);
+            Throwable rootException = ex;
+            while (rootException.getCause() != null && !rootException.getCause().equals(ex)) {
+                rootException = ex.getCause();
+            }
+            rootException.printStackTrace();
             throw ex;
         }
     }
