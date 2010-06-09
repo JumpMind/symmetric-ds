@@ -186,7 +186,7 @@ public class RouterService extends AbstractService implements IRouterService {
         // reselect the DataRef just in case somebody updated it manually during routing
         final DataRef ref = dataService.getDataRef();
         long ts = System.currentTimeMillis();
-        final boolean noTransactionInProgress = dbDialect.supportsTransactionViews() && !dbDialect.areDatabaseTransactionsPendingSince(databaseTimeAtRoutingStart);
+        final boolean noTransactionInProgress = dbDialect.supportsTransactionViews() && !dbDialect.areDatabaseTransactionsPendingSince(dbDialect.getDatabaseTime());
         long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"),
                 new Object[] { ref.getRefDataId() }, new int[] { Types.INTEGER },
                 new ResultSetExtractor<Long>() {
