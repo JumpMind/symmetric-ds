@@ -238,8 +238,8 @@
             <url>http://download.java.net/maven/glassfish</url>
         </repository>
         <repository>
-            <id>springsource maven repo</id>
-            <url>http://maven.springframework.org/milestone</url>
+            <id>xerial repo</id>
+            <url>http://www.xerial.org/maven/repository/artifact</url>
         </repository>
     </repositories>
 
@@ -711,7 +711,7 @@
           <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.6.16</version>
+            <version>3.6.20.1</version>
             <optional>true</optional>
         </dependency>
 
