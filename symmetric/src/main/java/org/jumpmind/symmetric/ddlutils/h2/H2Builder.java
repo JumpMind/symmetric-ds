@@ -88,12 +88,12 @@ public class H2Builder extends SqlBuilder {
     @SuppressWarnings("unchecked")
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             CreationParameters params, Collection changes) throws IOException {
+
         // Only drop columns that are not part of a primary key
         for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = (TableChange) changeIt.next();
-
             if ((change instanceof RemoveColumnChange) && ((RemoveColumnChange) change).getColumn().isPrimaryKey()) {
-                return;
+                changeIt.remove();
             }
         }
 
