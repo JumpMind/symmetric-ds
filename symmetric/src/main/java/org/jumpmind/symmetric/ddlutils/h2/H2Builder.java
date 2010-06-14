@@ -34,6 +34,7 @@ import java.util.ListIterator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.alteration.AddColumnChange;
+import org.apache.ddlutils.alteration.ColumnAutoIncrementChange;
 import org.apache.ddlutils.alteration.ColumnChange;
 import org.apache.ddlutils.alteration.ColumnDataTypeChange;
 import org.apache.ddlutils.alteration.ColumnRequiredChange;
@@ -125,11 +126,10 @@ public class H2Builder extends SqlBuilder {
                 processChange(currentModel, desiredModel, removeColumnChange);
                 changeIt.remove();
             }
-        }
-
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = (TableChange) changeIt.next();
-            if (change instanceof ColumnChange) {
+            else if (change instanceof ColumnAutoIncrementChange) {
+                processAlterColumn(currentModel, change);              
+                changeIt.remove();
+            } else if (change instanceof ColumnChange) {
                 boolean needsAlter = true;
                 if (change instanceof ColumnDataTypeChange) {
                     ColumnDataTypeChange dataTypeChange = (ColumnDataTypeChange) change;
@@ -156,33 +156,47 @@ public class H2Builder extends SqlBuilder {
                     }
                 }
                 if (needsAlter) {
-                    processAlterColumn(currentModel, (ColumnChange) change);
+                    processAlterColumn(currentModel, change);
                 }
                 changeIt.remove();
             }
         }
 
     }
+    
+    @Override
+    protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException {
+        print("AUTO_INCREMENT");
+    }
 
-    protected void processAlterColumn(Database currentModel, ColumnChange columnChange) throws IOException {
-        columnChange.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(columnChange.getChangedTable()));
-        printIndent();
-        print("ALTER COLUMN ");
-        if (columnChange instanceof ColumnRequiredChange) {
-            ColumnRequiredChange columnRequiredChange = (ColumnRequiredChange)columnChange;
-            printlnIdentifier(getColumnName(columnChange.getChangedColumn())); 
-            printIndent();
-            if (columnRequiredChange.getChangedColumn().isRequired()) {
-                print(" SET NOT NULL ");
-            } else {
-                print(" SET NULL ");
-            }
-        } else {
-          writeColumn(columnChange.getChangedTable(), columnChange.getChangedColumn());
+    protected void processAlterColumn(Database currentModel, TableChange change) throws IOException {
+        Column column = null;
+        if (change instanceof ColumnChange) {
+            column = ((ColumnChange) change).getChangedColumn();
+        } else if (change instanceof ColumnAutoIncrementChange) {
+            column = ((ColumnAutoIncrementChange) change).getColumn();
         }
-        printEndOfStatement();
+
+        if (column != null) {
+            change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
+            print("ALTER TABLE ");
+            printlnIdentifier(getTableName(change.getChangedTable()));
+            printIndent();
+            print("ALTER COLUMN ");
+            if (change instanceof ColumnRequiredChange) {
+                ColumnRequiredChange columnRequiredChange = (ColumnRequiredChange) change;
+                printlnIdentifier(getColumnName(column));
+                printIndent();
+                if (columnRequiredChange.getChangedColumn().isRequired()) {
+                    print(" SET NOT NULL ");
+                } else {
+                    print(" SET NULL ");
+                }
+            } else {
+                writeColumn(change.getChangedTable(), column);
+            }
+            printEndOfStatement();
+        }
     }
 
     /**
@@ -254,7 +268,7 @@ public class H2Builder extends SqlBuilder {
             print(" DEFAULT ");
             writeColumnDefaultValue(table, column);
         }
-    }
+    }    
 
     @Override
     protected void printDefaultValue(Object defaultValue, int typeCode) throws IOException {
