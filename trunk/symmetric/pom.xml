@@ -242,6 +242,10 @@
             <id>xerial repo</id>
             <url>http://www.xerial.org/maven/repository/artifact</url>
         </repository>
+        <repository>
+            <id>snapshot</id>
+            <url>http://snapshots.repository.codehaus.org</url>
+        </repository>        
     </repositories>
 
     <build>
