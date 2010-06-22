@@ -6,10 +6,10 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.platform.mssql.MSSqlPlatform;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.platform.mssql.MSSqlPlatform;
 import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
 import org.jumpmind.symmetric.ddlutils.informix.InformixPlatform;
@@ -41,10 +41,10 @@ public class PlatformFactory {
             productString = "DB2v8";
         }
 
-        Platform pf = org.apache.ddlutils.PlatformFactory.createNewPlatformInstance(productString);
+        Platform pf = org.jumpmind.symmetric.ddl.PlatformFactory.createNewPlatformInstance(productString);
 
         if (pf == null) {
-            pf = org.apache.ddlutils.PlatformFactory.createNewPlatformInstance(dataSource);
+            pf = org.jumpmind.symmetric.ddl.PlatformFactory.createNewPlatformInstance(dataSource);
         } else {
             pf.setDataSource(dataSource);
         }
@@ -105,16 +105,16 @@ public class PlatformFactory {
 
     private synchronized static void initPlatforms() {
         if (!initialized) {
-            org.apache.ddlutils.PlatformFactory.registerPlatform(InformixPlatform.DATABASENAME,
+            org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(InformixPlatform.DATABASENAME,
         	    InformixPlatform.class);
-            org.apache.ddlutils.PlatformFactory.registerPlatform(SqLitePlatform.DATABASENAME,
+            org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(SqLitePlatform.DATABASENAME,
                     SqLitePlatform.class);
-            org.apache.ddlutils.PlatformFactory.registerPlatform(FirebirdPlatform.DATABASENAME,
+            org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(FirebirdPlatform.DATABASENAME,
                     FirebirdPlatform.class);
-            org.apache.ddlutils.PlatformFactory.registerPlatform(OraclePlatform.DATABASENAME, 
+            org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(OraclePlatform.DATABASENAME, 
                     OraclePlatform.class);
             for (String name : H2Platform.DATABASENAMES) {
-                org.apache.ddlutils.PlatformFactory.registerPlatform(name,
+                org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(name,
                         H2Platform.class);                
             }
             initialized = true;

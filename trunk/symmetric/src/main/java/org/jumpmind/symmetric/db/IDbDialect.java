@@ -24,11 +24,11 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.model.Column;
-import org.apache.ddlutils.model.Database;
-import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.Database;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;

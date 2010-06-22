@@ -1,6 +1,6 @@
 package org.jumpmind.symmetric.ddlutils.oracle;
 
-import org.apache.ddlutils.platform.oracle.Oracle10Platform;
+import org.jumpmind.symmetric.ddl.platform.oracle.Oracle10Platform;
 
 public class OraclePlatform extends Oracle10Platform {
 

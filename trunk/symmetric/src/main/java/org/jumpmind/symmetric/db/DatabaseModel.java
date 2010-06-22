@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.db;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.ddl.model.Table;
 
 /**
  * Adds Catalog & Schema aware finder for ddlutils Database class.
@@ -14,7 +14,7 @@ import org.apache.ddlutils.model.Table;
  * @author Lari Hotari
  * 
  */
-public class DatabaseModel extends org.apache.ddlutils.model.Database {
+public class DatabaseModel extends org.jumpmind.symmetric.ddl.model.Database {
 
     private static final long serialVersionUID = 1L;
     private Map<String, Integer> tableIndexCache = new HashMap<String, Integer>();
