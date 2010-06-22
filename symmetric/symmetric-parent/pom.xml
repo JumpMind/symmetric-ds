@@ -544,7 +544,7 @@
 
     <modules>
         <module>../symmetric-ddl</module>
-        <module>../symmetric</module>
+        <module>../symmetric-ds</module>
     </modules>
 
 </project>
