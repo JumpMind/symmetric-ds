@@ -5,7 +5,7 @@
     <artifactId>symmetric</artifactId>
     <packaging>jar</packaging>
     <version>2.1.0-SNAPSHOT</version>
-    <name>SymmetricDS Library</name>
+    <name>SymmetricDS</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
 
@@ -14,17 +14,13 @@
         web-enabled, and database-agnostic. SymmetricDS was first built to replicate changes between 'retail store'
         databases and ad centralized 'corporate' database.
     </description>
+    
+    <parent>
+        <groupId>org.jumpmind.symmetric</groupId>
+        <artifactId>symmetric-parent</artifactId>
+        <version>2.1.0-SNAPSHOT</version>
+    </parent>    
 
-    <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-2.0.beta.15</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-2.0.beta.15</developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-2.0.beta.15</url>
-    </scm>
-
-    <issueManagement>
-        <system>JIRA</system>
-        <url>http://jira.codehaus.org/BrowseProject.jspa?id=11906</url>
-    </issueManagement>
     <licenses>
         <license>
             <name>LGPL</name>
@@ -32,216 +28,14 @@
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
-    <mailingLists>
-        <mailingList>
-            <name>SymmetricDS Development Mailing list</name>
-            <subscribe>http://lists.sourceforge.net/mailman/listinfo/symmetricds-development
-            </subscribe>
-            <unsubscribe>http://lists.sourceforge.net/mailman/listinfo/symmetricds-development
-            </unsubscribe>
-            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=
-            </archive>
-            <post>symmetricds-development@lists.sourceforge.net</post>
-        </mailingList>
-        <mailingList>
-            <name>SymmetricDS User Mailing list</name>
-            <subscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users
-            </subscribe>
-            <unsubscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users
-            </unsubscribe>
-            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=
-            </archive>
-            <post>symmetricds-users@lists.sourceforge.net</post>
-        </mailingList>
-    </mailingLists>
-    <developers>
-        <developer>
-            <id>chenson42</id>
-            <name>Chris Henson</name>
-            <email>chenson42@users.sourceforge.net</email>
-            <url><![CDATA[http://www.linkedin.com/profile?trk=tab_pro&key=17076974&viewProfile=]]>
-            </url>
-            <organization>JumpMind, Inc.</organization>
-            <organizationUrl>http://jumpmind.com/</organizationUrl>
-            <roles>
-                <role>developer</role>
-                <role>architect</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
-        <developer>
-            <id>erilong</id>
-            <name>Eric Long</name>
-            <email>erilong@users.sourceforge.net</email>
-            <url>http://alstongrove.com/</url>
-            <organization>JumpMind, Inc.</organization>
-            <organizationUrl>http://jumpmind.com/</organizationUrl>
-            <roles>
-                <role>developer</role>
-                <role>architect</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
-        <developer>
-            <id>eegeek</id>
-            <name>Mark Hanes</name>
-            <email>eegeek@users.sourceforge.net</email>
-            <organization>JumpMind, Inc.</organization>
-            <organizationUrl>http://jumpmind.com/</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
-        <developer>
-            <id>eweimer</id>
-            <name>Eric Weimer</name>
-            <email>eweimer@users.sourceforge.net</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
-        <developer>
-            <id>knaas</id>
-            <name>Keith Naas</name>
-            <email>knaas@users.sourceforge.net</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-            <url>http://www.linkedin.com/in/keithnaas</url>
-            <organization>30xi</organization>
-            <organizationUrl>http://30xi.com</organizationUrl>
-        </developer>
-        <developer>
-            <id>mmahawar</id>
-            <name>Manisha Mahawar</name>
-            <email>mmahawar@users.sourceforge.net</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
-    </developers>
-    <contributors>
-        <contributor>
-            <name>Andrew Wilcox</name>
-            <email>andrewbwilcox@users.sourceforge.net</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </contributor>
-        <contributor>
-            <name>Megha Shetty</name>
-            <email>megha_s@users.sourceforge.net</email>
-            <organization>Big Lots</organization>
-            <organizationUrl>http://www.biglots.com/</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </contributor>
-        <contributor>
-            <name>Jon Krajewski</name>
-            <email>jkrajewski@users.sourceforge.net</email>
-            <roles>
-                <role>designer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </contributor>
-        <contributor>
-            <name>Dave Michels</name>
-            <email>dmichels2@users.sourceforge.net</email>
-            <organization>Leading Edje</organization>
-            <organizationUrl>http://leadingedje.com/</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </contributor>
-        <contributor>
-            <name>Kunal Bajaj</name>
-            <email>kbajaj01@users.sourceforge.net</email>
-            <organization>Big Lots</organization>
-            <organizationUrl>http://www.biglots.com/</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </contributor>
-        <contributor>
-            <name>Phil Marzullo</name>
-            <email>pmarzullo64@users.sourceforge.net</email>
-            <organization>Abercrombie &amp; Fitch</organization>
-            <organizationUrl>http://www.abercrombie.com/</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </contributor>
-        <contributor>
-            <name>Yasmany Cubela Medina</name>
-            <email>bitgandtter@users.sourceforge.net</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </contributor>
-        <contributor>
-            <name>Hiro Rahandomal Gangwani</name>
-            <email>hiro.gangwani@tcs.com</email>
-            <url>http://www.linkedin.com/pub/hiro-gangwani/8/954/67a</url>
-            <organization>Tata Consultancy Services Ltd</organization>
-            <organizationUrl>http://www.tcs.com</organizationUrl>
-            <roles>
-                <role>designer</role>
-                <role>tester</role>
-            </roles>
-            <timezone>+4.5</timezone>
-        </contributor>
-    </contributors>
-
-    <distributionManagement>
-        <site>
-            <id>dav.codehaus.org</id>
-            <url>dav:https://dav.codehaus.org/symmetricds/</url>
-        </site>
-        <!-- use the following if you're not using a snapshot version. -->
-        <repository>
-            <id>dav.codehaus.org</id>
-            <name>SymmetricDS Repo</name>
-            <url>dav:https://dav.codehaus.org/repository/symmetricds/
-            </url>
-        </repository>
-        <!-- use the following if you ARE using a snapshot version. -->
-        <snapshotRepository>
-            <id>dav.codehaus.org</id>
-            <name>SymmetricDS Repo</name>
-            <url>dav:https://dav.codehaus.org/snapshots.repository/symmetricds/
-            </url>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
-    </distributionManagement>
 
     <properties>
-        <springframework.version>3.0.2.RELEASE</springframework.version>
-        <derby.version>10.5.3.0_1</derby.version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide/2.x</docbook.target>
         <docbook.build>${basedir}/target/docbook</docbook.build>
     </properties>
 
     <repositories>
-        <repository>
-            <id>java.net</id>
-            <url>http://download.java.net/maven/glassfish</url>
-        </repository>
-        <repository>
-            <id>xerial repo</id>
-            <url>http://www.xerial.org/maven/repository/artifact</url>
-        </repository>
         <repository>
             <id>snapshot</id>
             <url>http://snapshots.repository.codehaus.org</url>
@@ -261,21 +55,6 @@
                             <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-eclipse-plugin</artifactId>
-                <configuration>
-                    <downloadSources>true</downloadSources>
-                    <downloadJavadocs>false</downloadJavadocs>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                    <optimize>true</optimize>
                 </configuration>
             </plugin>
             <plugin>
@@ -321,19 +100,6 @@
                         <include>**/*UnitTest.java</include>
                     </includes>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -454,242 +220,163 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>1.2.15</version>
             <optional>true</optional>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.jmx</groupId>
-                    <artifactId>jmxri</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jdmk</groupId>
-                    <artifactId>jmxtools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.jms</groupId>
-                    <artifactId>jms</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- Spring Framework -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>${springframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${springframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-            <version>${springframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>${springframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jms</artifactId>
-            <version>${springframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${springframework.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>jsr250-api</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-ddl</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>stax</groupId>
-                    <artifactId>stax-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- J2EE -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.jms</groupId>
             <artifactId>jms-api</artifactId>
-            <version>1.1-rev-1</version>
             <optional>true</optional>
         </dependency>
         <!-- Commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-io</artifactId>
-            <version>1.3.2</version>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <version>3.2</version>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>2.3</version>
         </dependency>
         <dependency>
             <groupId>commons-math</groupId>
             <artifactId>commons-math</artifactId>
-            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
-            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.3</version>
         </dependency>
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
-            <version>1.2.1</version>
-            <exclusions>
-                <exclusion>
-                    <!-- not needed -->
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <!-- not needed -->
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>
-            <version>2.1_3</version>
         </dependency>
         <dependency>
             <groupId>org.beanshell</groupId>
             <artifactId>bsh</artifactId>
-            <version>2.0b4</version>
         </dependency>
         <!-- Should the jetty stuff be split to another project: symmetric-jetty? -->
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
             <artifactId>jetty</artifactId>
-            <version>6.1.22</version>
             <optional>true</optional>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.mortbay.jetty</groupId>
-                    <artifactId>servlet-api-2.5</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- Include so log4j works w/ jetty -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jcl</artifactId>
-            <version>1.0.1</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>mx4j</groupId>
             <artifactId>mx4j-tools</artifactId>
-            <version>3.0.1</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>rome</groupId>
             <artifactId>rome</artifactId>
-            <version>0.9</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>jdom</groupId>
-                    <artifactId>jdom</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
-            <version>1.1</version>
         </dependency>
         <!-- Databases -->
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
-            <version>${derby.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derbytools</artifactId>
-            <version>${derby.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.6</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>8.2-504.jdbc3</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jtds</groupId>
             <artifactId>jtds</artifactId>
-            <version>1.2.4</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>1.8.0.10</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.2.137</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.6.20.1</version>
             <optional>true</optional>
         </dependency>
 
