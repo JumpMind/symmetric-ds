@@ -6,6 +6,28 @@
     <version>2.1.0-SNAPSHOT</version>
     <name>Symmetric Build</name>
 
+    <distributionManagement>
+        <site>
+            <id>dav.codehaus.org</id>
+            <url>dav:https://dav.codehaus.org/symmetricds/</url>
+        </site>
+        <!-- use the following if you're not using a snapshot version. -->
+        <repository>
+            <id>dav.codehaus.org</id>
+            <name>SymmetricDS Repo</name>
+            <url>dav:https://dav.codehaus.org/repository/symmetricds/
+            </url>
+        </repository>
+        <!-- use the following if you ARE using a snapshot version. -->
+        <snapshotRepository>
+            <id>dav.codehaus.org</id>
+            <name>SymmetricDS Repo</name>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/symmetricds/
+            </url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
+    
     <build>
         <extensions>
          <extension>
