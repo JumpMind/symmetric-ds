@@ -281,6 +281,11 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.jumpmind.symmetric</groupId>
+                <artifactId>symmetric-ds</artifactId>
+                <version>${version.symmetric}</version>
+            </dependency>            
+            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.7</version>
@@ -545,6 +550,7 @@
     <modules>
         <module>../symmetric-ddl</module>
         <module>../symmetric-ds</module>
+        <module>../symmetric-web</module>
     </modules>
 
 </project>
