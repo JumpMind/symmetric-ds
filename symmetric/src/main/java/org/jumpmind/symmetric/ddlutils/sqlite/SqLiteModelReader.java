@@ -25,17 +25,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.model.Column;
-import org.apache.ddlutils.model.ForeignKey;
-import org.apache.ddlutils.model.Index;
-import org.apache.ddlutils.model.Table;
-import org.apache.ddlutils.model.TypeMap;
-import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
-import org.apache.ddlutils.platform.JdbcModelReader;
-import org.apache.ddlutils.platform.MetaDataColumnDescriptor;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.ForeignKey;
+import org.jumpmind.symmetric.ddl.model.Index;
+import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ddl.model.TypeMap;
+import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
+import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
+import org.jumpmind.symmetric.ddl.platform.MetaDataColumnDescriptor;
 
 /**
  * Reads a database model from a SQLite database.

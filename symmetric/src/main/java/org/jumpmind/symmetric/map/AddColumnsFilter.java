@@ -22,8 +22,8 @@ package org.jumpmind.symmetric.map;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.TokenConstants;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.ITableColumnFilter;

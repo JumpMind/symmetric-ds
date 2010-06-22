@@ -19,7 +19,7 @@
  */
 package org.jumpmind.symmetric.db;
 
-import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;

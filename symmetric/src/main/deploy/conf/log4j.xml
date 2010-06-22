@@ -52,7 +52,7 @@
         <priority value="ERROR" />
     </category>
 
-    <category name="org.apache.ddlutils.platform.derby">
+    <category name="org.jumpmind.symmetric.ddl.platform.derby">
         <priority value="ERROR" />
     </category>
 

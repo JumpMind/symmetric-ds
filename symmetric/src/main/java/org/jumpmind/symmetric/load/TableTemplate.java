@@ -28,9 +28,9 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.ddlutils.model.Column;
-import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.util.ArgTypePreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;

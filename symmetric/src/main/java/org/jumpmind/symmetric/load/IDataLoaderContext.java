@@ -21,8 +21,8 @@
 
 package org.jumpmind.symmetric.load;
 
-import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.BinaryEncoding;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.model.Node;
 

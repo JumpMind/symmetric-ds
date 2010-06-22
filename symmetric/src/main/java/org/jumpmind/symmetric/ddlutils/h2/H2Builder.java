@@ -32,23 +32,23 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.alteration.AddColumnChange;
-import org.apache.ddlutils.alteration.ColumnAutoIncrementChange;
-import org.apache.ddlutils.alteration.ColumnChange;
-import org.apache.ddlutils.alteration.ColumnDataTypeChange;
-import org.apache.ddlutils.alteration.ColumnRequiredChange;
-import org.apache.ddlutils.alteration.ColumnSizeChange;
-import org.apache.ddlutils.alteration.RemoveColumnChange;
-import org.apache.ddlutils.alteration.TableChange;
-import org.apache.ddlutils.model.Column;
-import org.apache.ddlutils.model.Database;
-import org.apache.ddlutils.model.Index;
-import org.apache.ddlutils.model.ModelException;
-import org.apache.ddlutils.model.Table;
-import org.apache.ddlutils.model.TypeMap;
-import org.apache.ddlutils.platform.CreationParameters;
-import org.apache.ddlutils.platform.SqlBuilder;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.alteration.AddColumnChange;
+import org.jumpmind.symmetric.ddl.alteration.ColumnAutoIncrementChange;
+import org.jumpmind.symmetric.ddl.alteration.ColumnChange;
+import org.jumpmind.symmetric.ddl.alteration.ColumnDataTypeChange;
+import org.jumpmind.symmetric.ddl.alteration.ColumnRequiredChange;
+import org.jumpmind.symmetric.ddl.alteration.ColumnSizeChange;
+import org.jumpmind.symmetric.ddl.alteration.RemoveColumnChange;
+import org.jumpmind.symmetric.ddl.alteration.TableChange;
+import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.Database;
+import org.jumpmind.symmetric.ddl.model.Index;
+import org.jumpmind.symmetric.ddl.model.ModelException;
+import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ddl.model.TypeMap;
+import org.jumpmind.symmetric.ddl.platform.CreationParameters;
+import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
 /**
  * The SQL Builder for the H2 database. From patch <a

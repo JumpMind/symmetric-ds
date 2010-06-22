@@ -27,14 +27,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.map.ListOrderedMap;
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 
 /**
  * The Jdbc Model Reader for Firebird (with bug fixes).
  */
 @SuppressWarnings("unchecked")
-public class FirebirdModelReader extends org.apache.ddlutils.platform.firebird.FirebirdModelReader
+public class FirebirdModelReader extends org.jumpmind.symmetric.ddl.platform.firebird.FirebirdModelReader
 {
     /**
      * Creates a new model reader for Firebird databases.

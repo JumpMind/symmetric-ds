@@ -19,7 +19,7 @@
  */
 package org.jumpmind.symmetric.model;
 
-import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.ddl.model.Table;
 
 public class DataMetaData {
 

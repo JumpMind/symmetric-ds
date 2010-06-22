@@ -5,12 +5,12 @@ import java.sql.DriverManager;
 
 import junit.framework.Assert;
 
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.PlatformFactory;
-import org.apache.ddlutils.model.Column;
-import org.apache.ddlutils.model.Database;
-import org.apache.ddlutils.model.Table;
 import org.h2.Driver;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.PlatformFactory;
+import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.Database;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
 import org.junit.Test;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;

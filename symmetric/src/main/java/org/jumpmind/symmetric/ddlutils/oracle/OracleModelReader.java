@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.collections.map.ListOrderedMap;
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
-import org.apache.ddlutils.platform.oracle.Oracle10ModelReader;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
+import org.jumpmind.symmetric.ddl.platform.oracle.Oracle10ModelReader;
 
 public class OracleModelReader extends Oracle10ModelReader {
 

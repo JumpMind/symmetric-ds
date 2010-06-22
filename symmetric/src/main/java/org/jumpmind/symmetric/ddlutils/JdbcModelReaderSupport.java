@@ -7,11 +7,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
 
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.model.Column;
-import org.apache.ddlutils.model.Table;
-import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
-import org.apache.ddlutils.platform.JdbcModelReader;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
+import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**

@@ -2,14 +2,14 @@ package org.jumpmind.symmetric.ddlutils.informix;
 
 import java.io.IOException;
 
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.alteration.PrimaryKeyChange;
-import org.apache.ddlutils.alteration.RemovePrimaryKeyChange;
-import org.apache.ddlutils.model.Column;
-import org.apache.ddlutils.model.Database;
-import org.apache.ddlutils.model.ForeignKey;
-import org.apache.ddlutils.model.Table;
-import org.apache.ddlutils.platform.SqlBuilder;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.alteration.PrimaryKeyChange;
+import org.jumpmind.symmetric.ddl.alteration.RemovePrimaryKeyChange;
+import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.Database;
+import org.jumpmind.symmetric.ddl.model.ForeignKey;
+import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
 public class InformixBuilder extends SqlBuilder {
 

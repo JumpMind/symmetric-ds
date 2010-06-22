@@ -34,11 +34,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.io.DatabaseIO;
-import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.SqlScript;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.io.DatabaseIO;
+import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;

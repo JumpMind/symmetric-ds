@@ -21,9 +21,9 @@ package org.jumpmind.symmetric.ddlutils.sqlite;
 
 import java.sql.Types;
 
-import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.PlatformInfo;
-import org.apache.ddlutils.platform.PlatformImplBase;
+import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.PlatformInfo;
+import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
 /**
  * The platform implementation for the SQLite database.

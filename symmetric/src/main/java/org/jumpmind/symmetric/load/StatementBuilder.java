@@ -29,7 +29,7 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.ddlutils.model.Column;
+import org.jumpmind.symmetric.ddl.model.Column;
 
 public class StatementBuilder {
     public enum DmlType {
