@@ -14,9 +14,9 @@
     </properties>
 
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric-ddl</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric-ddl</developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric-ddl</url>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric</connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric</developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric</url>
     </scm>
 
     <distributionManagement>
