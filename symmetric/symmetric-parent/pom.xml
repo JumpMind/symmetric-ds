@@ -240,6 +240,7 @@
                 <configuration>
                     <downloadSources>true</downloadSources>
                     <downloadJavadocs>false</downloadJavadocs>
+                    <wtpversion>1.5</wtpversion>
                 </configuration>
             </plugin>
             <plugin>
