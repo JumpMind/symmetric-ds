@@ -122,12 +122,11 @@ public class RouterService extends AbstractService implements IRouterService {
     synchronized public void routeData() {
         if (clusterService.lock(ClusterConstants.ROUTE)) {
             try {
-                long databaseTimeAtRoutingStart = dbDialect.getDatabaseTime();
                 long ts = System.currentTimeMillis();
                 Node sourceNode = nodeService.findIdentity();
                 DataRef ref = dataService.getDataRef();
                 int dataCount = routeDataForEachChannel(ref, sourceNode);
-                findAndSaveNextDataId(databaseTimeAtRoutingStart);
+                findAndSaveNextDataId();
                 ts = System.currentTimeMillis() - ts;
                 if (dataCount > 0 || ts > 30000) {
                     log.info("RoutedDataInTime", dataCount, ts);
@@ -198,7 +197,7 @@ public class RouterService extends AbstractService implements IRouterService {
         context.setNeedsCommitted(false);
     }
 
-    protected void findAndSaveNextDataId(final long databaseTimeAtRoutingStart) {
+    protected void findAndSaveNextDataId() {
         // reselect the DataRef just in case somebody updated it manually during routing
         final DataRef ref = dataService.getDataRef();
         long ts = System.currentTimeMillis();
