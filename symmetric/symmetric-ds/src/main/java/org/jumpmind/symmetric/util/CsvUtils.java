@@ -11,9 +11,9 @@ import java.io.Reader;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.csv.CsvReader;
+import org.jumpmind.symmetric.csv.CsvWriter;
 
-import com.csvreader.CsvReader;
-import com.csvreader.CsvWriter;
 
 public class CsvUtils {
 

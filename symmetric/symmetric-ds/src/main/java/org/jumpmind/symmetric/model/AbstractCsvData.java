@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.util.CsvUtils;
 
-import com.csvreader.CsvReader;
 
 abstract class AbstractCsvData {
 

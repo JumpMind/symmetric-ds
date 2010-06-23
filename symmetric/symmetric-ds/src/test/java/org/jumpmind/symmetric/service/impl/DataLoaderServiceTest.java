@@ -31,6 +31,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.ext.INodeGroupTestDataLoaderFilter;
 import org.jumpmind.symmetric.ext.ITestDataLoaderFilter;
@@ -42,7 +43,6 @@ import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.junit.Test;
 
-import com.csvreader.CsvWriter;
 
 public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 

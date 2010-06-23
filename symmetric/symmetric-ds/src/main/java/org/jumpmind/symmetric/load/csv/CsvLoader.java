@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.DataLoaderStatistics;
@@ -53,7 +54,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import bsh.EvalError;
 import bsh.Interpreter;
 
-import com.csvreader.CsvReader;
 
 public class CsvLoader implements IDataLoader {
 
