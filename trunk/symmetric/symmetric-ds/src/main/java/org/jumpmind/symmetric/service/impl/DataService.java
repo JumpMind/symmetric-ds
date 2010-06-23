@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
@@ -70,7 +71,6 @@ import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.csvreader.CsvWriter;
 
 public class DataService extends AbstractService implements IDataService {
 

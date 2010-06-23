@@ -30,6 +30,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
@@ -41,7 +42,6 @@ import org.jumpmind.symmetric.transport.TransportUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.csvreader.CsvWriter;
 
 public class DataLoaderTest extends AbstractDataLoaderTest {
 

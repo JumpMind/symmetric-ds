@@ -38,6 +38,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
@@ -48,7 +49,6 @@ import org.jumpmind.symmetric.transport.mock.MockTransportManager;
 import org.junit.Assert;
 import org.springframework.dao.EmptyResultDataAccessException;
 
-import com.csvreader.CsvWriter;
 
 public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
