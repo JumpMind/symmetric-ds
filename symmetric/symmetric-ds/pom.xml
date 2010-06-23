@@ -205,18 +205,14 @@
     </reporting>
 
     <dependencies>
-        <!--
-            Stolen from
-            http://viewvc.jboss.org/cgi-bin/viewvc.cgi/seam/trunk/build/parent.pom.xml?revision=7344&view=markup
-            Recommendations for dependency scope * optional - this library is needed only if you use
-            a feature of the module which requires it. You can use the module without needing this
-            library on the classpath. A library should only be marked non-optional if it is used by
-            > 95% of users of the module OR won't break the user's application if included and not
-            needed/another implementation is used. * provided - this is something that is part of
-            the Java EE 5 specification. If it is included in the archive, things will break.
-            Candidates include JSF, Servlet API, JSP API, EL, JPA API.
-        -->
-
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-csv</artifactId>
+        </dependency>    
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-ddl</artifactId>
+        </dependency>        
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -256,10 +252,6 @@
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>jsr250-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jumpmind.symmetric</groupId>
-            <artifactId>symmetric-ddl</artifactId>
         </dependency>
         <!-- J2EE -->
         <dependency>

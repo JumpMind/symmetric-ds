@@ -32,7 +32,6 @@
     </properties>
 
     <build>
-        <finalName>symmetric-ddl</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
