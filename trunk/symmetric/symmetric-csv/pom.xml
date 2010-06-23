@@ -5,7 +5,7 @@
 	<artifactId>symmetric-csv</artifactId>
 	<packaging>jar</packaging>
 	<version>2.1.0-SNAPSHOT</version>
-	<name>SymmetricCSV</name>
+	<name>csv</name>
 	<inceptionYear>2010</inceptionYear>
 
 	<description>
