@@ -18,7 +18,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-package com.csvreader;
+package org.jumpmind.symmetric.csv;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -101,7 +101,7 @@ public class CsvReader {
     public static final int ESCAPE_MODE_BACKSLASH = 2;
 
     /**
-     * Creates a {@link com.csvreader.CsvReader CsvReader} object using a file
+     * Creates a {@link org.jumpmind.symmetric.csv.CsvReader CsvReader} object using a file
      * as the data source.
      * 
      * @param fileName
@@ -133,7 +133,7 @@ public class CsvReader {
     }
 
     /**
-     * Creates a {@link com.csvreader.CsvReader CsvReader} object using a file
+     * Creates a {@link org.jumpmind.symmetric.csv.CsvReader CsvReader} object using a file
      * as the data source.&nbsp;Uses ISO-8859-1 as the
      * {@link java.nio.charset.Charset Charset}.
      * 
@@ -147,7 +147,7 @@ public class CsvReader {
     }
 
     /**
-     * Creates a {@link com.csvreader.CsvReader CsvReader} object using a file
+     * Creates a {@link org.jumpmind.symmetric.csv.CsvReader CsvReader} object using a file
      * as the data source.&nbsp;Uses a comma as the column delimiter and
      * ISO-8859-1 as the {@link java.nio.charset.Charset Charset}.
      * 
@@ -159,7 +159,7 @@ public class CsvReader {
     }
 
     /**
-     * Constructs a {@link com.csvreader.CsvReader CsvReader} object using a
+     * Constructs a {@link org.jumpmind.symmetric.csv.CsvReader CsvReader} object using a
      * {@link java.io.Reader Reader} object as the data source.
      * 
      * @param inputStream
@@ -180,7 +180,7 @@ public class CsvReader {
     }
 
     /**
-     * Constructs a {@link com.csvreader.CsvReader CsvReader} object using a
+     * Constructs a {@link org.jumpmind.symmetric.csv.CsvReader CsvReader} object using a
      * {@link java.io.Reader Reader} object as the data source.&nbsp;Uses a
      * comma as the column delimiter.
      * 
@@ -192,7 +192,7 @@ public class CsvReader {
     }
 
     /**
-     * Constructs a {@link com.csvreader.CsvReader CsvReader} object using an
+     * Constructs a {@link org.jumpmind.symmetric.csv.CsvReader CsvReader} object using an
      * {@link java.io.InputStream InputStream} object as the data source.
      * 
      * @param inputStream
@@ -208,7 +208,7 @@ public class CsvReader {
     }
 
     /**
-     * Constructs a {@link com.csvreader.CsvReader CsvReader} object using an
+     * Constructs a {@link org.jumpmind.symmetric.csv.CsvReader CsvReader} object using an
      * {@link java.io.InputStream InputStream} object as the data
      * source.&nbsp;Uses a comma as the column delimiter.
      * 
@@ -456,10 +456,10 @@ public class CsvReader {
 
     /**
      * Gets the count of headers read in by a previous call to
-     * {@link com.csvreader.CsvReader#readHeaders readHeaders()}.
+     * {@link org.jumpmind.symmetric.csv.CsvReader#readHeaders readHeaders()}.
      * 
      * @return The count of headers read in by a previous call to
-     *         {@link com.csvreader.CsvReader#readHeaders readHeaders()}.
+     *         {@link org.jumpmind.symmetric.csv.CsvReader#readHeaders readHeaders()}.
      */
     public int getHeaderCount() {
         return headersHolder.Length;
@@ -549,13 +549,13 @@ public class CsvReader {
     }
 
     /**
-     * Creates a {@link com.csvreader.CsvReader CsvReader} object using a string
+     * Creates a {@link org.jumpmind.symmetric.csv.CsvReader CsvReader} object using a string
      * of data as the source.&nbsp;Uses ISO-8859-1 as the
      * {@link java.nio.charset.Charset Charset}.
      * 
      * @param data
      *                The String of data to use as the source.
-     * @return A {@link com.csvreader.CsvReader CsvReader} object using the
+     * @return A {@link org.jumpmind.symmetric.csv.CsvReader CsvReader} object using the
      *         String of data as the source.
      */
     public static CsvReader parse(String data) {
@@ -1410,7 +1410,7 @@ public class CsvReader {
     /**
      * Skips the next record of data by parsing each column.&nbsp;Does not
      * increment
-     * {@link com.csvreader.CsvReader#getCurrentRecord getCurrentRecord()}.
+     * {@link org.jumpmind.symmetric.csv.CsvReader#getCurrentRecord getCurrentRecord()}.
      * 
      * @return Whether another record was successfully skipped or not.
      * @exception IOException
