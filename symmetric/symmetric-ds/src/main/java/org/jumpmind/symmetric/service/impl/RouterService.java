@@ -246,7 +246,7 @@ public class RouterService extends AbstractService implements IRouterService {
         long gapTimoutInMs = parameterService
                 .getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
         Date createTime = dataService.findCreateTimeOfEvent(dataId);
-        if (System.currentTimeMillis() - createTime.getTime() > gapTimoutInMs) {
+        if (createTime != null && System.currentTimeMillis() - createTime.getTime() > gapTimoutInMs) {
             return true;
         } else {
             return false;
