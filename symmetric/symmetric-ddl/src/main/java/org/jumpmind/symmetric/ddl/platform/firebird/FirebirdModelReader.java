@@ -82,39 +82,41 @@ public class FirebirdModelReader extends JdbcModelReader
     protected Collection readColumns(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
         ResultSet columnData = null;
-
         try
         {
             List columns = new ArrayList();
 
             if (getPlatform().isDelimitedIdentifierModeOn())
-        	{
-        		// Jaybird has a problem when delimited identifiers are used as
-        		// it is not able to find the columns for the table
-        		// So we have to filter manually below
-        		columnData = metaData.getColumns(getDefaultTablePattern(), getDefaultColumnPattern());
+            {
+                // Jaybird has a problem when delimited identifiers are used as
+                // it is not able to find the columns for the table
+                // So we have to filter manually below
+                columnData = metaData.getColumns(getDefaultTablePattern(), getDefaultColumnPattern());
 
-        		while (columnData.next())
+                while (columnData.next())
                 {
                     Map values = readColumns(columnData, getColumnsForColumn());
 
                     if (tableName.equals(values.get("TABLE_NAME")))
                     {
-                    	columns.add(readColumn(metaData, values));
+                        columns.add(readColumn(metaData, values));
                     }
                 }
-        	}
-        	else
-        	{
-        		columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
+            }
+            else
+            {
+                columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
 
-        		while (columnData.next())
+                while (columnData.next())
                 {
                     Map values = readColumns(columnData, getColumnsForColumn());
 
-                    columns.add(readColumn(metaData, values));
+                    if (tableName.equals(values.get("TABLE_NAME")))
+                    {
+                        columns.add(readColumn(metaData, values));
+                    }
                 }
-        	}
+            }
 
             return columns;
         }
@@ -204,30 +206,33 @@ public class FirebirdModelReader extends JdbcModelReader
         try
         {
             if (getPlatform().isDelimitedIdentifierModeOn())
-        	{
-        		// Jaybird has a problem when delimited identifiers are used as
-        		// it is not able to find the primary key info for the table
-        		// So we have to filter manually below
-	            pkData = metaData.getPrimaryKeys(getDefaultTablePattern());
-	            while (pkData.next())
-	            {
-	                Map values = readColumns(pkData, getColumnsForPK());
-	
+            {
+                // Jaybird has a problem when delimited identifiers are used as
+                // it is not able to find the primary key info for the table
+                // So we have to filter manually below
+                pkData = metaData.getPrimaryKeys(getDefaultTablePattern());
+                while (pkData.next())
+                {
+                    Map values = readColumns(pkData, getColumnsForPK());
+    
                     if (tableName.equals(values.get("TABLE_NAME")))
                     {
-                    	pks.add(readPrimaryKeyName(metaData, values));
+                        pks.add(readPrimaryKeyName(metaData, values));
                     }
-	            }
-        	}
+                }
+            }
             else
             {
-	            pkData = metaData.getPrimaryKeys(tableName);
-	            while (pkData.next())
-	            {
-	                Map values = readColumns(pkData, getColumnsForPK());
-	
-	                pks.add(readPrimaryKeyName(metaData, values));
-	            }
+                pkData = metaData.getPrimaryKeys(tableName);
+                while (pkData.next())
+                {
+                    Map values = readColumns(pkData, getColumnsForPK());
+    
+                    if (tableName.equals(values.get("TABLE_NAME")))
+                    {
+                        pks.add(readPrimaryKeyName(metaData, values));
+                    }
+                }
             }
         }
         finally
@@ -251,30 +256,33 @@ public class FirebirdModelReader extends JdbcModelReader
         try
         {
             if (getPlatform().isDelimitedIdentifierModeOn())
-        	{
-        		// Jaybird has a problem when delimited identifiers are used as
-        		// it is not able to find the foreign key info for the table
-        		// So we have to filter manually below
-	            fkData = metaData.getForeignKeys(getDefaultTablePattern());
-	            while (fkData.next())
-	            {
-	                Map values = readColumns(fkData, getColumnsForFK());
-	
+            {
+                // Jaybird has a problem when delimited identifiers are used as
+                // it is not able to find the foreign key info for the table
+                // So we have to filter manually below
+                fkData = metaData.getForeignKeys(getDefaultTablePattern());
+                while (fkData.next())
+                {
+                    Map values = readColumns(fkData, getColumnsForFK());
+    
                     if (tableName.equals(values.get("FKTABLE_NAME")))
                     {
-                    	readForeignKey(metaData, values, fks);
+                        readForeignKey(metaData, values, fks);
                     }
-	            }
-        	}
+                }
+            }
             else
             {
-	            fkData = metaData.getForeignKeys(tableName);
-	            while (fkData.next())
-	            {
-	                Map values = readColumns(fkData, getColumnsForFK());
-	
-	                readForeignKey(metaData, values, fks);
-	            }
+                fkData = metaData.getForeignKeys(tableName);
+                while (fkData.next())
+                {
+                    Map values = readColumns(fkData, getColumnsForFK());
+    
+                    if (tableName.equals(values.get("FKTABLE_NAME")))
+                    {
+                        readForeignKey(metaData, values, fks);
+                    }
+                }
             }
         }
         finally
