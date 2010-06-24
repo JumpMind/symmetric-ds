@@ -10,7 +10,6 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.platform.mssql.MSSqlPlatform;
-import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
 import org.jumpmind.symmetric.ddlutils.informix.InformixPlatform;
 import org.jumpmind.symmetric.ddlutils.oracle.OraclePlatform;
@@ -109,8 +108,6 @@ public class PlatformFactory {
         	    InformixPlatform.class);
             org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(SqLitePlatform.DATABASENAME,
                     SqLitePlatform.class);
-            org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(FirebirdPlatform.DATABASENAME,
-                    FirebirdPlatform.class);
             org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(OraclePlatform.DATABASENAME, 
                     OraclePlatform.class);
             for (String name : H2Platform.DATABASENAMES) {
