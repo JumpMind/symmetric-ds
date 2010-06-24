@@ -132,7 +132,7 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <configuration>
                     <siteDirectory>${basedir}/src/site</siteDirectory>
-                    <templateFile>src/site/site.vm</templateFile>
+                    <templateFile>${basedir}/src/site/site.vm</templateFile>
                 </configuration>
             </plugin>
             <plugin>
@@ -494,7 +494,7 @@
                                             </fileset>
                                         </copy>
                                         <delete file="${docbook.build}/symmetric-schema.xml" />
-                                        <delete file="${basedir}/torque/report.symmetric.doc.generation" />
+                                        <delete file="${basedir}/torque/report.symmetric-ds.doc.generation" />
                                         <delete file="${basedir}/target/torque/sqldbmap.properties" />
                                         <delete file="${basedir}/target/torque/context.doc.properties" />
                                     </postProcess>
