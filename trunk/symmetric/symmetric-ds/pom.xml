@@ -41,6 +41,13 @@
             <url>http://snapshots.repository.codehaus.org</url>
         </repository>        
     </repositories>
+    
+    <distributionManagement>
+        <site>
+            <id>dav.codehaus.org</id>
+            <url>dav:https://dav.codehaus.org/symmetricds/</url>
+        </site>
+    </distributionManagement>    
 
     <build>
         <plugins>
