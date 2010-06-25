@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.ddl.platform.db2.Db2v8Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
+import org.jumpmind.symmetric.ddl.platform.hsqldb2.HsqlDb2Platform;
 import org.jumpmind.symmetric.ddl.platform.informix.InformixPlatform;
 import org.jumpmind.symmetric.ddl.platform.interbase.InterbasePlatform;
 import org.jumpmind.symmetric.ddl.platform.maxdb.MaxDbPlatform;
@@ -193,6 +194,7 @@ public class PlatformFactory
         addPlatform(_platforms, DerbyPlatform.DATABASENAME,       DerbyPlatform.class);
         addPlatform(_platforms, FirebirdPlatform.DATABASENAME,    FirebirdPlatform.class);
         addPlatform(_platforms, HsqlDbPlatform.DATABASENAME,      HsqlDbPlatform.class);
+        addPlatform(_platforms, HsqlDb2Platform.DATABASENAME,     HsqlDb2Platform.class);
         addPlatform(_platforms, InterbasePlatform.DATABASENAME,   InterbasePlatform.class);
         addPlatform(_platforms, MaxDbPlatform.DATABASENAME,       MaxDbPlatform.class);
         addPlatform(_platforms, MckoiPlatform.DATABASENAME,       MckoiPlatform.class);

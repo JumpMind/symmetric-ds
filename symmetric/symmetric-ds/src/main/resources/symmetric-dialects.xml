@@ -14,6 +14,7 @@
     <import resource="classpath:/org/jumpmind/symmetric/db/derby.xml" />
 	<import resource="classpath:/org/jumpmind/symmetric/db/h2.xml" />
     <import resource="classpath:/org/jumpmind/symmetric/db/hsqldb.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/hsqldb2.xml" />
     <import resource="classpath:/org/jumpmind/symmetric/db/db2.xml" />
     <import resource="classpath:/org/jumpmind/symmetric/db/db2-zseries.xml" />
     <import resource="classpath:/org/jumpmind/symmetric/db/firebird.xml" />
