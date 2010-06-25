@@ -56,19 +56,19 @@ import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
 public class PlatformFactory
 {
     /** The database name -> platform map. */
-    private static Map _platforms = null;
+    private static Map<String,Class<Platform>> _platforms = null;
 
     /**
      * Returns the platform map.
      * 
      * @return The platform list
      */
-    private static synchronized Map getPlatforms()
+    private static synchronized Map<String,Class<Platform>> getPlatforms()
     {
         if (_platforms == null)
         {
             // lazy initialization
-            _platforms = new HashMap();
+            _platforms = new HashMap<String,Class<Platform>>();
             registerPlatforms();
         }
         return _platforms;
@@ -83,7 +83,7 @@ public class PlatformFactory
      */
     public static synchronized Platform createNewPlatformInstance(String databaseName) throws DdlUtilsException
     {
-        Class platformClass = (Class)getPlatforms().get(databaseName.toLowerCase());
+        Class<Platform> platformClass = getPlatforms().get(databaseName.toLowerCase());
 
         try
         {
