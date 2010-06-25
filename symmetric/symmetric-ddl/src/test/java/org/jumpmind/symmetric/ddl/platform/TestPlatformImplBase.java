@@ -19,15 +19,7 @@ package org.jumpmind.symmetric.ddl.platform;
  * under the License.
  */
 
-import java.util.Map;
-
-import org.apache.commons.beanutils.DynaBean;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
-import org.jumpmind.symmetric.ddl.dynabean.SqlDynaBean;
-import org.jumpmind.symmetric.ddl.dynabean.SqlDynaClass;
-import org.jumpmind.symmetric.ddl.model.Database;
-import org.jumpmind.symmetric.ddl.model.Table;
-import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
 /**
  * Tests the {@link org.jumpmind.symmetric.ddl.PlatformImplBase} (abstract) class.
@@ -61,23 +53,4 @@ public class TestPlatformImplBase extends TestPlatformBase
         return null;
     }
 
-    /**
-     * Test the toColumnValues method.
-     */
-    public void testToColumnValues()
-    {
-        Database         database = parseDatabaseFromString(TESTED_MODEL);
-        PlatformImplBase platform = new TestPlatform();
-        Table            table    = database.getTable(0);
-        SqlDynaClass     clz      = SqlDynaClass.newInstance(table);
-        DynaBean         db       = new SqlDynaBean(SqlDynaClass.newInstance(table));
-
-        db.set("name", "name");
-
-        Map map = platform.toColumnValues(clz.getSqlDynaProperties(), db);
-
-        assertEquals("name",
-                     map.get("name"));
-        assertTrue(map.containsKey("id"));
-    }
 }

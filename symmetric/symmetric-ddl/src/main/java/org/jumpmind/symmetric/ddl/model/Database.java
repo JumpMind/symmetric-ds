@@ -26,12 +26,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.apache.commons.beanutils.DynaBean;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.jumpmind.symmetric.ddl.dynabean.DynaClassCache;
-import org.jumpmind.symmetric.ddl.dynabean.SqlDynaClass;
-import org.jumpmind.symmetric.ddl.dynabean.SqlDynaException;
 
 /**
  * Represents the database model, ie. the tables in the database. It also
@@ -53,8 +49,6 @@ public class Database implements Serializable, Cloneable
     private String _version;
     /** The tables. */
     private ArrayList _tables = new ArrayList();
-    /** The dyna class cache for this model. */
-    private transient DynaClassCache _dynaClassCache = null;
 
     /**
      * Adds all tables from the other database to this database.
@@ -445,79 +439,6 @@ public class Database implements Serializable, Cloneable
             }
         }
         return null;
-    }
-
-    /**
-     * Returns the dyna class cache. If none is available yet, a new one will be created.
-     * 
-     * @return The dyna class cache
-     */
-    private DynaClassCache getDynaClassCache()
-    {
-        if (_dynaClassCache == null)
-        {
-            _dynaClassCache = new DynaClassCache();
-        }
-        return _dynaClassCache;
-    }
-
-    /**
-     * Resets the dyna class cache. This should be done for instance when a column
-     * has been added or removed to a table.
-     */
-    public void resetDynaClassCache()
-    {
-        _dynaClassCache = null;
-    }
-    
-    /**
-     * Returns the {@link org.jumpmind.symmetric.ddl.dynabean.SqlDynaClass} for the given table name. If the it does not
-     * exist yet, a new one will be created based on the Table definition.
-     * 
-     * @param tableName The name of the table to create the bean for
-     * @return The <code>SqlDynaClass</code> for the indicated table or <code>null</code>
-     *         if the model contains no such table
-     */
-    public SqlDynaClass getDynaClassFor(String tableName)
-    {
-        Table table = findTable(tableName);
-
-        return table != null ? getDynaClassCache().getDynaClass(table) : null;
-    }
-
-    /**
-     * Returns the {@link org.jumpmind.symmetric.ddl.dynabean.SqlDynaClass} for the given dyna bean.
-     * 
-     * @param bean The dyna bean
-     * @return The <code>SqlDynaClass</code> for the given bean
-     */
-    public SqlDynaClass getDynaClassFor(DynaBean bean)
-    {
-        return getDynaClassCache().getDynaClass(bean);
-    }
-
-    /**
-     * Creates a new dyna bean for the given table.
-     * 
-     * @param table The table to create the bean for
-     * @return The new dyna bean
-     */
-    public DynaBean createDynaBeanFor(Table table) throws SqlDynaException
-    {
-        return getDynaClassCache().createNewInstance(table);
-    }
-
-    /**
-     * Convenience method that combines {@link #createDynaBeanFor(Table)} and
-     * {@link #findTable(String, boolean)}.
-     * 
-     * @param tableName     The name of the table to create the bean for
-     * @param caseSensitive Whether case matters for the names
-     * @return The new dyna bean
-     */
-    public DynaBean createDynaBeanFor(String tableName, boolean caseSensitive) throws SqlDynaException
-    {
-        return getDynaClassCache().createNewInstance(findTable(tableName, caseSensitive));
     }
 
     /**

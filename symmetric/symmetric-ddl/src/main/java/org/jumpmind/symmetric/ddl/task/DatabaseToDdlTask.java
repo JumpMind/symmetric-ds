@@ -120,26 +120,6 @@ public class DatabaseToDdlTask extends DatabaseTaskBase
     }
 
     /**
-     * Adds the "write data into database"-command.
-     * 
-     * @param command The command
-     */
-    public void addWriteDataToDatabase(WriteDataToDatabaseCommand command)
-    {
-        addCommand(command);
-    }
-
-    /**
-     * Adds the "write data into file"-command.
-     * 
-     * @param command The command
-     */
-    public void addWriteDataToFile(WriteDataToFileCommand command)
-    {
-        addCommand(command);
-    }
-
-    /**
      * Returns the table types to recognize.
      * 
      * @return The table types

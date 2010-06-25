@@ -28,13 +28,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 import org.jumpmind.symmetric.ddl.DatabaseOperationException;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
-import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
@@ -224,43 +220,6 @@ public class SybasePlatform extends PlatformImplBase
 			super.setStatementParameterValue(statement, sqlIndex, typeCode, value);
 		}
 	}
-
-	/**
-     * {@inheritDoc}
-     */
-	public List fetch(Database model, String sql, Collection parameters, Table[] queryHints, int start, int end) throws DatabaseOperationException
-	{
-		setTextSize(MAX_TEXT_SIZE);
-		return super.fetch(model, sql, parameters, queryHints, start, end);
-	}
-
-    /**
-     * {@inheritDoc}
-     */
-	public List fetch(Database model, String sql, Table[] queryHints, int start, int end) throws DatabaseOperationException
-	{
-		setTextSize(MAX_TEXT_SIZE);
-		return super.fetch(model, sql, queryHints, start, end);
-	}
-
-    /**
-     * {@inheritDoc}
-     */
-	public Iterator query(Database model, String sql, Collection parameters, Table[] queryHints) throws DatabaseOperationException
-	{
-		setTextSize(MAX_TEXT_SIZE);
-		return super.query(model, sql, parameters, queryHints);
-	}
-
-    /**
-     * {@inheritDoc}
-     */
-	public Iterator query(Database model, String sql, Table[] queryHints) throws DatabaseOperationException
-	{
-		setTextSize(MAX_TEXT_SIZE);
-		return super.query(model, sql, queryHints);
-	}
-
 
     /**
      * Determines whether we need to use identity override mode for the given table.
