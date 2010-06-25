@@ -171,26 +171,6 @@ public class DdlToDatabaseTask extends DatabaseTaskBase
     }
 
     /**
-     * Adds the "write data to database"-command.
-     * 
-     * @param command The command
-     */
-    public void addWriteDataToDatabase(WriteDataToDatabaseCommand command)
-    {
-        addCommand(command);
-    }
-
-    /**
-     * Adds the "write data to file"-command.
-     * 
-     * @param command The command
-     */
-    public void addWriteDataToFile(WriteDataToFileCommand command)
-    {
-        addCommand(command);
-    }
-
-    /**
      * {@inheritDoc}
      */
     protected Database readModel()

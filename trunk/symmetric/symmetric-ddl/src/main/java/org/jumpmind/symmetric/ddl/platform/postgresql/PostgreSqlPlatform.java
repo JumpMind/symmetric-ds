@@ -21,17 +21,14 @@ package org.jumpmind.symmetric.ddl.platform.postgresql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.beanutils.DynaBean;
 import org.jumpmind.symmetric.ddl.DatabaseOperationException;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
-import org.jumpmind.symmetric.ddl.dynabean.SqlDynaProperty;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
 /**
@@ -211,33 +208,4 @@ public class PostgreSqlPlatform extends PlatformImplBase
         createOrDropDatabase(jdbcDriverClassName, connectionUrl, username, password, null, false);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected void setObject(PreparedStatement statement, int sqlIndex, DynaBean dynaBean, SqlDynaProperty property) throws SQLException
-    {
-        int     typeCode = property.getColumn().getTypeCode();
-        Object  value    = dynaBean.get(property.getName());
-
-        // PostgreSQL doesn't like setNull for BYTEA columns
-        if (value == null)
-        {
-            switch (typeCode)
-            {
-                case Types.BINARY:
-                case Types.VARBINARY:
-                case Types.LONGVARBINARY:
-                case Types.BLOB:
-                    statement.setBytes(sqlIndex, null);
-                    break;
-                default:
-                    statement.setNull(sqlIndex, typeCode);
-                    break;
-            }
-        }
-        else
-        {
-            super.setObject(statement, sqlIndex, dynaBean, property);
-        }
-    }
 }
