@@ -5,13 +5,9 @@
 
     <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d %-5p [%c{2}] [%t] %m%n" />
+            <param name="ConversionPattern" value="%d %-5p [%c] [%t] %m%n" />
         </layout>
     </appender>
-
-    <category name="org">
-        <priority value="WARN" />
-    </category>
 
     <category name="org.jumpmind">
         <priority value="INFO" />
@@ -50,10 +46,6 @@
     <category name="org.jumpmind.symmetric.ddl.platform.derby">
         <priority value="ERROR" />
     </category>
-
-  <category name="org.jumpmind.symmetric.db">
-        <priority value="INFO" />
-    </category>
     
     <category name="org.jumpmind.symmetric.db.SqlScript">
         <priority value="ERROR" />
@@ -69,10 +61,10 @@
     <category name="org.jumpmind.symmetric.util.CsvUtils"> 
         <priority value="DEBUG"/> 
      </category>
-    -->
+    -->    
 
     <root>
-        <priority value="INFO" />
+        <priority value="WARN" />
         <appender-ref ref="CONSOLE" />
     </root>
 

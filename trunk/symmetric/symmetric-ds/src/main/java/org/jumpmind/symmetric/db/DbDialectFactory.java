@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.ddl.platform.db2.Db2Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
+import org.jumpmind.symmetric.ddl.platform.hsqldb2.HsqlDb2Platform;
 import org.jumpmind.symmetric.ddl.platform.informix.InformixPlatform;
 import org.jumpmind.symmetric.ddl.platform.mssql.MSSqlPlatform;
 import org.jumpmind.symmetric.ddl.platform.mysql.MySqlPlatform;
@@ -87,6 +88,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
             dialect = (AbstractDbDialect) beanFactory.getBean("sqliteDialect");
         } else if (pf instanceof HsqlDbPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
+        } else if (pf instanceof HsqlDb2Platform) {
+            dialect = (AbstractDbDialect) beanFactory.getBean("hsqldb2Dialect");            
         } else if (pf instanceof InformixPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("informixDialect");
         } else if (pf instanceof Db2Platform) {
