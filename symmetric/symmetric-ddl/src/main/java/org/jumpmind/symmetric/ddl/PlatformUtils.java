@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.sql.DataSource;
 
@@ -125,9 +126,9 @@ public class PlatformUtils
     public static final String JDBC_SUBPROTOCOL_JTDS_SYBASE               = "jtds:sybase";
 
     /** Maps the sub-protocl part of a jdbc connection url to a OJB platform name. */
-    private HashMap jdbcSubProtocolToPlatform = new HashMap();
+    private HashMap<String,String> jdbcSubProtocolToPlatform = new HashMap<String,String>();
     /** Maps the jdbc driver name to a OJB platform name. */
-    private HashMap jdbcDriverToPlatform      = new HashMap();
+    private HashMap<String,String> jdbcDriverToPlatform      = new HashMap<String,String>();
 
     /**
      * Creates a new instance.
@@ -292,9 +293,9 @@ public class PlatformUtils
         {
             return null;
         }
-        for (Iterator it = jdbcSubProtocolToPlatform.entrySet().iterator(); it.hasNext();)
+        for (Iterator<Entry<String,String>> it = jdbcSubProtocolToPlatform.entrySet().iterator(); it.hasNext();)
         {
-            Map.Entry entry          = (Map.Entry)it.next();
+            Map.Entry<String,String> entry          = (Map.Entry<String,String>)it.next();
             String    curSubProtocol = "jdbc:" + (String)entry.getKey() + ":";
 
             if (jdbcConnectionUrl.startsWith(curSubProtocol))
