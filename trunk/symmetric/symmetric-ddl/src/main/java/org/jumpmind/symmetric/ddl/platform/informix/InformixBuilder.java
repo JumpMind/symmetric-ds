@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.ddlutils.informix;
+package org.jumpmind.symmetric.ddl.platform.informix;
 
 import java.io.IOException;
 

@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.ddl;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.ddl.platform.axion.AxionPlatform;
@@ -30,6 +31,7 @@ import org.jumpmind.symmetric.ddl.platform.db2.Db2v8Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
+import org.jumpmind.symmetric.ddl.platform.informix.InformixPlatform;
 import org.jumpmind.symmetric.ddl.platform.interbase.InterbasePlatform;
 import org.jumpmind.symmetric.ddl.platform.maxdb.MaxDbPlatform;
 import org.jumpmind.symmetric.ddl.platform.mckoi.MckoiPlatform;
@@ -183,6 +185,7 @@ public class PlatformFactory
      */
     private static void registerPlatforms()
     {
+        addPlatform(_platforms, InformixPlatform.DATABASENAME,    InformixPlatform.class);
         addPlatform(_platforms, AxionPlatform.DATABASENAME,       AxionPlatform.class);
         addPlatform(_platforms, CloudscapePlatform.DATABASENAME,  CloudscapePlatform.class);
         addPlatform(_platforms, Db2Platform.DATABASENAME,         Db2Platform.class);
