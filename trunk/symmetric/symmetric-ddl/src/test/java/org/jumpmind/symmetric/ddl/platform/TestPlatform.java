@@ -1,7 +1,5 @@
 package org.jumpmind.symmetric.ddl.platform;
 
-import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
-import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

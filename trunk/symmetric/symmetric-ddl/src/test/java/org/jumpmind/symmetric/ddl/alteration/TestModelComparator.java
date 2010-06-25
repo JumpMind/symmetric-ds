@@ -24,24 +24,6 @@ import java.util.List;
 
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.TestBase;
-import org.jumpmind.symmetric.ddl.alteration.AddColumnChange;
-import org.jumpmind.symmetric.ddl.alteration.AddForeignKeyChange;
-import org.jumpmind.symmetric.ddl.alteration.AddIndexChange;
-import org.jumpmind.symmetric.ddl.alteration.AddPrimaryKeyChange;
-import org.jumpmind.symmetric.ddl.alteration.AddTableChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnAutoIncrementChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnDataTypeChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnDefaultValueChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnOrderChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnRequiredChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnSizeChange;
-import org.jumpmind.symmetric.ddl.alteration.ModelComparator;
-import org.jumpmind.symmetric.ddl.alteration.PrimaryKeyChange;
-import org.jumpmind.symmetric.ddl.alteration.RemoveColumnChange;
-import org.jumpmind.symmetric.ddl.alteration.RemoveForeignKeyChange;
-import org.jumpmind.symmetric.ddl.alteration.RemoveIndexChange;
-import org.jumpmind.symmetric.ddl.alteration.RemovePrimaryKeyChange;
-import org.jumpmind.symmetric.ddl.alteration.RemoveTableChange;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
 

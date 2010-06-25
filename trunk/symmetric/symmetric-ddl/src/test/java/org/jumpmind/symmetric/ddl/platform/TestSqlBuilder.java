@@ -25,7 +25,6 @@ import java.util.Map;
 import org.jumpmind.symmetric.ddl.TestBase;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
-import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
 /**
  * Test the base SqlBuilder class.

@@ -20,6 +20,7 @@ package org.jumpmind.symmetric.ddl.platform.oracle;
  */
 
 import java.sql.Types;
+import java.util.Map;
 
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;

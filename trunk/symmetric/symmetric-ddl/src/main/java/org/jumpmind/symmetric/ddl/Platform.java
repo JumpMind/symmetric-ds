@@ -20,14 +20,10 @@ package org.jumpmind.symmetric.ddl;
  */
 
 import java.sql.Connection;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.beanutils.DynaBean;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.CreationParameters;

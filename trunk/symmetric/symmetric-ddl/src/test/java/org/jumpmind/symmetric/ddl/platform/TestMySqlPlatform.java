@@ -21,7 +21,6 @@ package org.jumpmind.symmetric.ddl.platform;
 
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
 import org.jumpmind.symmetric.ddl.model.Database;
-import org.jumpmind.symmetric.ddl.platform.CreationParameters;
 import org.jumpmind.symmetric.ddl.platform.mysql.MySqlPlatform;
 
 /**
