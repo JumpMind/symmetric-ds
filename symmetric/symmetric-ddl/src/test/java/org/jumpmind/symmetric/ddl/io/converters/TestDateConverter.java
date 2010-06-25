@@ -23,9 +23,6 @@ import java.sql.Date;
 import java.sql.Types;
 import java.util.Calendar;
 
-import org.jumpmind.symmetric.ddl.io.converters.ConversionException;
-import org.jumpmind.symmetric.ddl.io.converters.DateConverter;
-
 import junit.framework.TestCase;
 
 /**

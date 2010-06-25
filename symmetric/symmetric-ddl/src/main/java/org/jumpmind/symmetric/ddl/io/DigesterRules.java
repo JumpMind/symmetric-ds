@@ -20,6 +20,7 @@ package org.jumpmind.symmetric.ddl.io;
  */
 
 import java.util.List;
+
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.RulesBase;
 
