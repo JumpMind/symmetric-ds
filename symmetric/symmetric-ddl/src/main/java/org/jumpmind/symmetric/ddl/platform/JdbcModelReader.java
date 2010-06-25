@@ -1010,75 +1010,78 @@ public class JdbcModelReader
         }
         return values;
     }
+    
+    protected void determineAutoIncrementFromResultSetMetaData(Table table,
+            final Column columnsToCheck[]) throws SQLException {
+        determineAutoIncrementFromResultSetMetaData(getConnection(), table, columnsToCheck);
+    }
+    
+    protected void determineAutoIncrementFromResultSetMetaData(Connection conn, Table table,
+            final Column columnsToCheck[]) throws SQLException {
+        determineAutoIncrementFromResultSetMetaData(conn, table, columnsToCheck, ".");
+    }    
 
     /**
      * Helper method that determines the auto increment status for the given columns via the
      * {@link ResultSetMetaData#isAutoIncrement(int)} method.
      * 
-     * @param table          The table
+     * Fix problems following problems: 1) identifiers that use keywords 2)
+     * different catalog and schema 3) different catalog separator character
+     *      * @param table          The table
      * @param columnsToCheck The columns to check (e.g. the primary key columns)
      */
-    protected void determineAutoIncrementFromResultSetMetaData(Table table, Column[] columnsToCheck) throws SQLException
-    {
-        if (columnsToCheck == null || columnsToCheck.length == 0)
-        {
+    protected void determineAutoIncrementFromResultSetMetaData(Connection conn, Table table,
+            final Column columnsToCheck[], String catalogSeparator) throws SQLException {
+        if (columnsToCheck == null || columnsToCheck.length == 0) {
             return;
         }
-        StringBuffer query = new StringBuffer();
-    
+        StringBuilder query = new StringBuilder();
         query.append("SELECT ");
-        for (int idx = 0; idx < columnsToCheck.length; idx++)
-        {
-            if (idx > 0)
-            {
+        for (int idx = 0; idx < columnsToCheck.length; idx++) {
+            if (idx > 0) {
                 query.append(",");
             }
-            if (getPlatform().isDelimitedIdentifierModeOn())
-            {
-                query.append(getPlatformInfo().getDelimiterToken());
-            }
-            query.append(columnsToCheck[idx].getName());
-            if (getPlatform().isDelimitedIdentifierModeOn())
-            {
-                query.append(getPlatformInfo().getDelimiterToken());
-            }
+            query.append("t.");
+            appendIdentifier(query, columnsToCheck[idx].getName());
         }
         query.append(" FROM ");
-        if (getPlatform().isDelimitedIdentifierModeOn())
-        {
-            query.append(getPlatformInfo().getDelimiterToken());
+
+        if (table.getCatalog() != null && !table.getCatalog().trim().equals("")) {
+            appendIdentifier(query, table.getCatalog());
+            query.append(catalogSeparator);
         }
-        query.append(table.getName());
-        if (getPlatform().isDelimitedIdentifierModeOn())
-        {
-            query.append(getPlatformInfo().getDelimiterToken());
+        if (table.getSchema() != null && !table.getSchema().trim().equals("")) {
+            appendIdentifier(query, table.getSchema()).append(".");
         }
-        query.append(" WHERE 1 = 0");
-        
+        appendIdentifier(query, table.getName()).append(" t WHERE 1 = 0");
+
         Statement stmt = null;
-
-        try
-        {
-            stmt = getConnection().createStatement();
-
-            ResultSet         rs         = stmt.executeQuery(query.toString());
+        try {
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query.toString());
             ResultSetMetaData rsMetaData = rs.getMetaData();
-        
-            for (int idx = 0; idx < columnsToCheck.length; idx++)
-            {
-                if (rsMetaData.isAutoIncrement(idx + 1))
-                {
+
+            for (int idx = 0; idx < columnsToCheck.length; idx++) {
+                if (rsMetaData.isAutoIncrement(idx + 1)) {
                     columnsToCheck[idx].setAutoIncrement(true);
                 }
             }
-        }
-        finally
-        {
-            if (stmt != null)
-            {
+        } finally {
+            if (stmt != null) {
                 stmt.close();
             }
         }
+    }
+
+    public StringBuilder appendIdentifier(StringBuilder query, String identifier) {
+        if (getPlatform().isDelimitedIdentifierModeOn()) {
+            query.append(getPlatformInfo().getDelimiterToken());
+        }
+        query.append(identifier);
+        if (getPlatform().isDelimitedIdentifierModeOn()) {
+            query.append(getPlatformInfo().getDelimiterToken());
+        }
+        return query;
     }
 
     /**

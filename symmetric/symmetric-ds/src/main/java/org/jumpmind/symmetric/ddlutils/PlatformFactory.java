@@ -11,7 +11,6 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.platform.mssql.MSSqlPlatform;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
-import org.jumpmind.symmetric.ddlutils.informix.InformixPlatform;
 import org.jumpmind.symmetric.ddlutils.oracle.OraclePlatform;
 import org.jumpmind.symmetric.ddlutils.sqlite.SqLitePlatform;
 import org.springframework.dao.DataAccessException;
@@ -104,8 +103,6 @@ public class PlatformFactory {
 
     private synchronized static void initPlatforms() {
         if (!initialized) {
-            org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(InformixPlatform.DATABASENAME,
-        	    InformixPlatform.class);
             org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(SqLitePlatform.DATABASENAME,
                     SqLitePlatform.class);
             org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(OraclePlatform.DATABASENAME, 
