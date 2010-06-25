@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -78,7 +79,7 @@ public class SimpleRouterContext implements IRouterContext {
 
     public void logStats(ILog log, int dataCount, long totalTimeInMs) {
         boolean infoLevel = totalTimeInMs > 30000;
-        Set<String> keys = contextCache.keySet();
+        Set<String> keys = new HashSet<String>(contextCache.keySet());
         for (String key : keys) {
             if (key.startsWith("Stat.")) {
                 String keyString = key.substring(key.indexOf(".") + 1);
