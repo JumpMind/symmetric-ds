@@ -56,19 +56,19 @@ import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
 public class PlatformFactory
 {
     /** The database name -> platform map. */
-    private static Map<String,Class<Platform>> _platforms = null;
+    private static Map<String,Class<? extends Platform>> _platforms = null;
 
     /**
      * Returns the platform map.
      * 
      * @return The platform list
      */
-    private static synchronized Map<String,Class<Platform>> getPlatforms()
+    private static synchronized Map<String,Class<? extends Platform>> getPlatforms()
     {
         if (_platforms == null)
         {
             // lazy initialization
-            _platforms = new HashMap<String,Class<Platform>>();
+            _platforms = new HashMap<String,Class<? extends Platform>>();
             registerPlatforms();
         }
         return _platforms;
@@ -83,7 +83,7 @@ public class PlatformFactory
      */
     public static synchronized Platform createNewPlatformInstance(String databaseName) throws DdlUtilsException
     {
-        Class<Platform> platformClass = getPlatforms().get(databaseName.toLowerCase());
+        Class<? extends Platform> platformClass = getPlatforms().get(databaseName.toLowerCase());
 
         try
         {
@@ -175,7 +175,7 @@ public class PlatformFactory
      * @param platformName  The platform name
      * @param platformClass The platform class which must implement the {@link Platform} interface
      */
-    public static synchronized void registerPlatform(String platformName, Class platformClass)
+    public static synchronized void registerPlatform(String platformName, Class<? extends Platform> platformClass)
     {
         addPlatform(getPlatforms(), platformName, platformClass);
     }
@@ -215,7 +215,7 @@ public class PlatformFactory
      * @param platformName  The platform name
      * @param platformClass The platform class which must implement the {@link Platform} interface
      */
-    private static synchronized void addPlatform(Map platformMap, String platformName, Class platformClass)
+    private static synchronized void addPlatform(Map<String,Class<? extends Platform>> platformMap, String platformName, Class<? extends Platform> platformClass)
     {
         if (!Platform.class.isAssignableFrom(platformClass))
         {
