@@ -23,15 +23,15 @@ public class InformixModelReader extends JdbcModelReader {
         setDefaultSchemaPattern(null);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
+    protected Table readTable(DatabaseMetaDataWrapper metaData, Map<String,Object>  values) throws SQLException {
         Table table = super.readTable(metaData, values);
-        determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
+        if (table != null) {
+            determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
+        }
         return table;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
