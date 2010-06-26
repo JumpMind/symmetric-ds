@@ -152,7 +152,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return getNodeChannels(nodeService.findIdentityNodeId(), refreshExtractMillis);
     }
 
-    @SuppressWarnings("unchecked")
     public List<NodeChannel> getNodeChannels(final String nodeId, boolean refreshExtractMillis) {
         boolean loaded = false;
         long channelCacheTimeoutInMs = parameterService
@@ -169,8 +168,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         nodeChannelCacheTime = System.currentTimeMillis();
                     }
                     nodeChannels = jdbcTemplate.query(getSql("selectChannelsSql"),
-                            new Object[] { nodeId }, new RowMapper() {
-                        public Object mapRow(java.sql.ResultSet rs, int arg1)
+                            new Object[] { nodeId }, new RowMapper<NodeChannel>() {
+                        public NodeChannel mapRow(java.sql.ResultSet rs, int arg1)
                                 throws SQLException {
                             NodeChannel nodeChannel = new NodeChannel();
                             nodeChannel.setChannelId(rs.getString(1));
@@ -210,7 +209,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 }
 
                 jdbcTemplate.query(getSql("selectNodeChannelControlLastExtractTimeSql"),
-                        new Object[] { nodeId }, new ResultSetExtractor() {
+                        new Object[] { nodeId }, new ResultSetExtractor<Object>() {
                             public Object extractData(ResultSet rs) throws SQLException,
                                     DataAccessException {
                                 if (rs.next()) {
