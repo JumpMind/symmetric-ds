@@ -1013,13 +1013,9 @@ public class JdbcModelReader
     
     protected void determineAutoIncrementFromResultSetMetaData(Table table,
             final Column columnsToCheck[]) throws SQLException {
-        determineAutoIncrementFromResultSetMetaData(getConnection(), table, columnsToCheck);
+        determineAutoIncrementFromResultSetMetaData(table, columnsToCheck, ".");
     }
     
-    protected void determineAutoIncrementFromResultSetMetaData(Connection conn, Table table,
-            final Column columnsToCheck[]) throws SQLException {
-        determineAutoIncrementFromResultSetMetaData(conn, table, columnsToCheck, ".");
-    }    
 
     /**
      * Helper method that determines the auto increment status for the given columns via the
@@ -1030,7 +1026,7 @@ public class JdbcModelReader
      *      * @param table          The table
      * @param columnsToCheck The columns to check (e.g. the primary key columns)
      */
-    protected void determineAutoIncrementFromResultSetMetaData(Connection conn, Table table,
+    protected void determineAutoIncrementFromResultSetMetaData(Table table,
             final Column columnsToCheck[], String catalogSeparator) throws SQLException {
         if (columnsToCheck == null || columnsToCheck.length == 0) {
             return;
@@ -1057,7 +1053,7 @@ public class JdbcModelReader
 
         Statement stmt = null;
         try {
-            stmt = conn.createStatement();
+            stmt = getConnection().createStatement();
             ResultSet rs = stmt.executeQuery(query.toString());
             ResultSetMetaData rsMetaData = rs.getMetaData();
 

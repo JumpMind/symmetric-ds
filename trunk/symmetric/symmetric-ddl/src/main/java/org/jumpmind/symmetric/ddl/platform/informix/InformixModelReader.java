@@ -27,7 +27,7 @@ public class InformixModelReader extends JdbcModelReader {
     protected Table readTable(DatabaseMetaDataWrapper metaData, Map<String,Object>  values) throws SQLException {
         Table table = super.readTable(metaData, values);
         if (table != null) {
-            determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
+            determineAutoIncrementFromResultSetMetaData(table, table.getColumns(), ":");
         }
         return table;
     }
