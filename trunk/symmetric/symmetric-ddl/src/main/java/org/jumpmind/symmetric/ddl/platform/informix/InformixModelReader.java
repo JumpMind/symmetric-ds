@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.ForeignKey;
 import org.jumpmind.symmetric.ddl.model.Index;
 import org.jumpmind.symmetric.ddl.model.Table;
@@ -27,9 +28,15 @@ public class InformixModelReader extends JdbcModelReader {
     protected Table readTable(DatabaseMetaDataWrapper metaData, Map<String,Object>  values) throws SQLException {
         Table table = super.readTable(metaData, values);
         if (table != null) {
-            determineAutoIncrementFromResultSetMetaData(table, table.getColumns(), ":");
+            determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
         }
         return table;
+    }
+    
+    @Override
+    protected void determineAutoIncrementFromResultSetMetaData(Table table, Column[] columnsToCheck)
+            throws SQLException {
+        determineAutoIncrementFromResultSetMetaData(getConnection(), table, columnsToCheck, ":");
     }
 
     @Override

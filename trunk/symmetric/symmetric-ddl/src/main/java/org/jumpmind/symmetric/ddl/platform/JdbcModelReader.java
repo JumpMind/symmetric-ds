@@ -855,7 +855,7 @@ public class JdbcModelReader
      */
     protected Collection<String> readForeignKeys(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
-        Map fks = new ListOrderedMap();
+        Map       fks    = new ListOrderedMap();
         ResultSet fkData = null;
 
         try
@@ -864,7 +864,7 @@ public class JdbcModelReader
 
             while (fkData.next())
             {
-                Map<String,Object> values = readColumns(fkData, getColumnsForFK());
+                Map values = readColumns(fkData, getColumnsForFK());
 
                 readForeignKey(metaData, values, fks);
             }
@@ -1013,9 +1013,13 @@ public class JdbcModelReader
     
     protected void determineAutoIncrementFromResultSetMetaData(Table table,
             final Column columnsToCheck[]) throws SQLException {
-        determineAutoIncrementFromResultSetMetaData(table, columnsToCheck, ".");
+        determineAutoIncrementFromResultSetMetaData(getConnection(), table, columnsToCheck);
     }
     
+    protected void determineAutoIncrementFromResultSetMetaData(Connection conn, Table table,
+            final Column columnsToCheck[]) throws SQLException {
+        determineAutoIncrementFromResultSetMetaData(conn, table, columnsToCheck, ".");
+    }    
 
     /**
      * Helper method that determines the auto increment status for the given columns via the
@@ -1026,7 +1030,7 @@ public class JdbcModelReader
      *      * @param table          The table
      * @param columnsToCheck The columns to check (e.g. the primary key columns)
      */
-    protected void determineAutoIncrementFromResultSetMetaData(Table table,
+    public void determineAutoIncrementFromResultSetMetaData(Connection conn, Table table,
             final Column columnsToCheck[], String catalogSeparator) throws SQLException {
         if (columnsToCheck == null || columnsToCheck.length == 0) {
             return;
@@ -1053,7 +1057,7 @@ public class JdbcModelReader
 
         Statement stmt = null;
         try {
-            stmt = getConnection().createStatement();
+            stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query.toString());
             ResultSetMetaData rsMetaData = rs.getMetaData();
 
