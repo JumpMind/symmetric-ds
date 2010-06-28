@@ -20,7 +20,7 @@
 package org.jumpmind.symmetric.db.hsqldb2;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.AbstractEmbeddedDbDialect;
+import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ddl.Platform;
@@ -28,30 +28,23 @@ import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
-public class HsqlDb2Dialect extends AbstractEmbeddedDbDialect implements IDbDialect {
+public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
 
     public static String DUAL_TABLE = "DUAL";
 
     private boolean enforceStrictSize = true;
-   
+
+    boolean dualTableCreated = false;
+
     @Override
     public void init(Platform pf) {
         super.init(pf);
-        jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
-        jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
-        jdbcTemplate.update("SET PROPERTY \"sql.enforce_strict_size\" " + enforceStrictSize);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                jdbcTemplate.update("SHUTDOWN");
-            }
-        });
-        createDummyDualTable();        
+        createDummyDualTable();
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
-            String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName,
+            String tableName, String triggerName) {
         boolean exists = (jdbcTemplate.queryForInt(
                 "select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
                 new Object[] { triggerName }) > 0)
@@ -66,18 +59,21 @@ public class HsqlDb2Dialect extends AbstractEmbeddedDbDialect implements IDbDial
      * old and new columns values to bump SQL expressions up against.
      */
     private void createDummyDualTable() {
-        Table table = getTable(null, null, DUAL_TABLE, false);
-        if (table == null) {
-            jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR(1))");
-            jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
-            jdbcTemplate.update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
+        if (!dualTableCreated) {
+            Table table = getTable(null, null, DUAL_TABLE, false);
+            if (table == null) {
+                jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR(1))");
+                jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
+                jdbcTemplate.update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
+            }
+            dualTableCreated = true;
         }
 
     }
 
     @Override
-    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
-            String tableName, TriggerHistory oldHistory) {
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
+            String triggerName, String tableName, TriggerHistory oldHistory) {
         final String dropSql = String.format("DROP TRIGGER %s", triggerName);
         logSql(dropSql, sqlBuffer);
 
@@ -116,7 +112,7 @@ public class HsqlDb2Dialect extends AbstractEmbeddedDbDialect implements IDbDial
 
     public void disableSyncTriggers(String nodeId) {
         jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('sync_prevented','1')");
-        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('node_value','"+nodeId+"')");
+        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('node_value','" + nodeId + "')");
     }
 
     public void enableSyncTriggers() {
@@ -132,7 +128,8 @@ public class HsqlDb2Dialect extends AbstractEmbeddedDbDialect implements IDbDial
      * An expression which the java trigger can string replace
      */
     @Override
-    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
+            Trigger trigger) {
         // TODO Get I use a temporary table and a randomly generated GUID?
         return "null";
     }
@@ -144,9 +141,9 @@ public class HsqlDb2Dialect extends AbstractEmbeddedDbDialect implements IDbDial
 
     @Override
     public BinaryEncoding getBinaryEncoding() {
-        return BinaryEncoding.BASE64;
-    }
-
+        return BinaryEncoding.HEX;
+    }    
+    
     public boolean isCharSpacePadded() {
         return enforceStrictSize;
     }
@@ -177,6 +174,18 @@ public class HsqlDb2Dialect extends AbstractEmbeddedDbDialect implements IDbDial
     @Override
     public void truncateTable(String tableName) {
         jdbcTemplate.update("delete from " + tableName);
+    }
+
+    public void purge() {
+    }
+
+    public String getDefaultCatalog() {
+        return (String) jdbcTemplate.queryForObject("select value from INFORMATION_SCHEMA.SYSTEM_SESSIONINFO where key='CURRENT SCHEMA'",
+                String.class);
+    }
+
+    @Override
+    protected void initTablesAndFunctionsForSpecificDialect() {
     }
 
 }
