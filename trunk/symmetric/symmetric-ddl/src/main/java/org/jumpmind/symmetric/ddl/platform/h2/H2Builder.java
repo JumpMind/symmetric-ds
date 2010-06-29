@@ -56,7 +56,6 @@ import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  * 
  * @author knaas@users.sourceforge.net
- * @version $Revision: 518485 $
  */
 public class H2Builder extends SqlBuilder {
 
@@ -86,13 +85,12 @@ public class H2Builder extends SqlBuilder {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            CreationParameters params, Collection changes) throws IOException {
+            CreationParameters params, Collection<TableChange> changes) throws IOException {
 
         // Only drop columns that are not part of a primary key
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = (TableChange) changeIt.next();
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
             if ((change instanceof RemoveColumnChange) && ((RemoveColumnChange) change).getColumn().isPrimaryKey()) {
                 changeIt.remove();
             }
@@ -103,24 +101,24 @@ public class H2Builder extends SqlBuilder {
         // thus we first gather all add column changes and then execute them
         // Since we get them in target table column order, we can simply
         // iterate backwards
-        ArrayList addColumnChanges = new ArrayList();
+        ArrayList<AddColumnChange> addColumnChanges = new ArrayList<AddColumnChange>();
 
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = (TableChange) changeIt.next();
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
             if (change instanceof AddColumnChange) {
-                addColumnChanges.add(change);
+                addColumnChanges.add((AddColumnChange)change);
                 changeIt.remove();
             }
         }
 
-        for (ListIterator changeIt = addColumnChanges.listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
+        for (ListIterator<AddColumnChange> changeIt = addColumnChanges.listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
             AddColumnChange addColumnChange = (AddColumnChange) changeIt.previous();
             processChange(currentModel, desiredModel, addColumnChange);
             changeIt.remove();
         }
 
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = (TableChange) changeIt.next();
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
             if (change instanceof RemoveColumnChange) {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
                 processChange(currentModel, desiredModel, removeColumnChange);
