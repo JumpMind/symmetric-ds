@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.ddlutils.h2;
+package org.jumpmind.symmetric.ddl.platform.h2;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.ForeignKey;
@@ -43,8 +41,6 @@ import org.jumpmind.symmetric.ddl.platform.MetaDataColumnDescriptor;
  */
 public class H2ModelReader extends JdbcModelReader {
 
-    final ILog logger = LogFactory.getLog(getClass());
-
     /**
      * Creates a new model reader for H2 databases.
      * 
@@ -58,8 +54,7 @@ public class H2ModelReader extends JdbcModelReader {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
         if (values.get("CHARACTER_MAXIMUM_LENGTH") != null) {
             column.setSize(values.get("CHARACTER_MAXIMUM_LENGTH").toString());
@@ -76,10 +71,9 @@ public class H2ModelReader extends JdbcModelReader {
         return column;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected List initColumnsForColumn() {
-        List result = new ArrayList();
+    protected List<MetaDataColumnDescriptor> initColumnsForColumn() {
+        List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
         result.add(new MetaDataColumnDescriptor("COLUMN_DEF", 12));
         result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", 12));
         result.add(new MetaDataColumnDescriptor("TABLE_NAME", 12));

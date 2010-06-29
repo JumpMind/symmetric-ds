@@ -738,7 +738,7 @@ public class JdbcModelReader
      * @param tableName The name of the table
      * @return The columns
      */
-    protected Collection readColumns(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
+    protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
         ResultSet columnData = null;
 
@@ -746,11 +746,11 @@ public class JdbcModelReader
         {
             columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
 
-            List columns = new ArrayList();
+            List<Column> columns = new ArrayList<Column>();
 
             while (columnData.next())
             {
-                Map values = readColumns(columnData, getColumnsForColumn());
+                Map<String,Object> values = readColumns(columnData, getColumnsForColumn());
 
                 columns.add(readColumn(metaData, values));
             }
@@ -772,7 +772,7 @@ public class JdbcModelReader
      * @param values   The column meta data values as defined by {@link #getColumnsForColumn()}
      * @return The column
      */
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException
     {
         Column column = new Column();
 

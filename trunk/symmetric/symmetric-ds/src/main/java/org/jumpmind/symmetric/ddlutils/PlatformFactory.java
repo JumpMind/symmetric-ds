@@ -10,7 +10,6 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.platform.mssql.MSSqlPlatform;
-import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
 import org.jumpmind.symmetric.ddlutils.oracle.OraclePlatform;
 import org.jumpmind.symmetric.ddlutils.sqlite.SqLitePlatform;
 import org.springframework.dao.DataAccessException;
@@ -107,10 +106,6 @@ public class PlatformFactory {
                     SqLitePlatform.class);
             org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(OraclePlatform.DATABASENAME, 
                     OraclePlatform.class);
-            for (String name : H2Platform.DATABASENAMES) {
-                org.jumpmind.symmetric.ddl.PlatformFactory.registerPlatform(name,
-                        H2Platform.class);                
-            }
             initialized = true;
         }
     }
