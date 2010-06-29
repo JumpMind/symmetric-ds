@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.ddlutils.h2;
+package org.jumpmind.symmetric.ddl.platform.h2;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

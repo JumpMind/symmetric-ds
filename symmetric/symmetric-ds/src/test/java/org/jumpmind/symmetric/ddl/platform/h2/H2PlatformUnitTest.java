@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.db.h2;
+package org.jumpmind.symmetric.ddl.platform.h2;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,7 +11,6 @@ import org.jumpmind.symmetric.ddl.PlatformFactory;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
-import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
 import org.junit.Test;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;

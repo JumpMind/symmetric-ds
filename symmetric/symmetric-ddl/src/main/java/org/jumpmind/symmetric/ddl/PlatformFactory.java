@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.ddl.platform.db2.Db2Platform;
 import org.jumpmind.symmetric.ddl.platform.db2.Db2v8Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
+import org.jumpmind.symmetric.ddl.platform.h2.H2Platform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb2.HsqlDb2Platform;
 import org.jumpmind.symmetric.ddl.platform.informix.InformixPlatform;
@@ -186,6 +187,10 @@ public class PlatformFactory
      */
     private static void registerPlatforms()
     {
+        for (String name : H2Platform.DATABASENAMES) {
+            addPlatform(_platforms, name,
+                    H2Platform.class);                
+        }
         addPlatform(_platforms, InformixPlatform.DATABASENAME,    InformixPlatform.class);
         addPlatform(_platforms, AxionPlatform.DATABASENAME,       AxionPlatform.class);
         addPlatform(_platforms, CloudscapePlatform.DATABASENAME,  CloudscapePlatform.class);
