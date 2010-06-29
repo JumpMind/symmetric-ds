@@ -537,7 +537,7 @@ public abstract class SqlBuilder
      */
     protected void processChanges(Database           currentModel,
                                   Database           desiredModel,
-                                  List               changes,
+                                  List<TableChange>               changes,
                                   CreationParameters params) throws IOException
     {
         CallbackClosure callbackClosure = new CallbackClosure(this,
@@ -725,7 +725,7 @@ public abstract class SqlBuilder
     protected void processTableStructureChanges(Database           currentModel,
                                                 Database           desiredModel,
                                                 CreationParameters params,
-                                                Collection         changes) throws IOException
+                                                Collection<TableChange>         changes) throws IOException
     {
         ListOrderedMap changesPerTable = new ListOrderedMap();
         ListOrderedMap unchangedFKs    = new ListOrderedMap();
@@ -734,9 +734,9 @@ public abstract class SqlBuilder
         // we first sort the changes for the tables
         // however since the changes might contain source or target tables
         // we use the names rather than the table objects
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();)
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();)
         {
-            TableChange change = (TableChange)changeIt.next();
+            TableChange change = changeIt.next();
             String      name   = change.getChangedTable().getName();
 
             if (!caseSensitive)
@@ -744,11 +744,11 @@ public abstract class SqlBuilder
                 name = name.toUpperCase();
             }
 
-            List changesForTable = (ArrayList)changesPerTable.get(name);
+            List<TableChange> changesForTable = (List<TableChange>)changesPerTable.get(name);
 
             if (changesForTable == null)
             {
-                changesForTable = new ArrayList();
+                changesForTable = new ArrayList<TableChange>();
                 changesPerTable.put(name, changesForTable);
                 unchangedFKs.put(name, getUnchangedForeignKeys(currentModel, desiredModel, name));
             }
