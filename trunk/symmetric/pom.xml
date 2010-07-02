@@ -48,6 +48,7 @@
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+                    <goals>deploy</goals>
                 </configuration>
             </plugin>
         </plugins>
