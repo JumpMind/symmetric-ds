@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.ddlutils.sqlite;
+package org.jumpmind.symmetric.ddl.platform.sqlite;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

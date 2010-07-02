@@ -45,6 +45,7 @@ import org.jumpmind.symmetric.ddl.platform.oracle.Oracle8Platform;
 import org.jumpmind.symmetric.ddl.platform.oracle.Oracle9Platform;
 import org.jumpmind.symmetric.ddl.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.symmetric.ddl.platform.sapdb.SapDbPlatform;
+import org.jumpmind.symmetric.ddl.platform.sqlite.SqLitePlatform;
 import org.jumpmind.symmetric.ddl.platform.sybase.SybaseASE15Platform;
 import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
 
@@ -191,6 +192,7 @@ public class PlatformFactory
             addPlatform(_platforms, name,
                     H2Platform.class);                
         }
+        addPlatform(_platforms, SqLitePlatform.DATABASENAME,      SqLitePlatform.class);
         addPlatform(_platforms, InformixPlatform.DATABASENAME,    InformixPlatform.class);
         addPlatform(_platforms, AxionPlatform.DATABASENAME,       AxionPlatform.class);
         addPlatform(_platforms, CloudscapePlatform.DATABASENAME,  CloudscapePlatform.class);
