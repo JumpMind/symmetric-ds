@@ -30,8 +30,16 @@ public interface IDataLoaderContext extends ICacheContext {
 
     public long getBatchId();
 
+    /**
+     * 
+     * @return Source Node Id
+     */
     public String getNodeId();
     
+    /**
+     * 
+     * @return Source Node object
+     */
     public Node getNode();
 
     public String getSchemaName();
