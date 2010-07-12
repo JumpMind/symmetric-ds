@@ -243,10 +243,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                try {
+                try {                    
                     PreparedStatement st = null;
                     ResultSet rs = null;
+                    boolean autoCommitFlag = conn.getAutoCommit(); 
                     try {
+                        conn.setAutoCommit(false); 
                         st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
                                 java.sql.ResultSet.CONCUR_READ_ONLY);
                         st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
@@ -264,6 +266,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.commit(batch, writer);
                         }
                     } finally {
+                        conn.setAutoCommit(autoCommitFlag); 
                         JdbcUtils.closeResultSet(rs);
                         JdbcUtils.closeStatement(st);
                     }
