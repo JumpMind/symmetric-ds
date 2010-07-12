@@ -204,7 +204,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test(timeout = 120000)
     public void syncToClient() {
         logTestRunning();
@@ -233,9 +232,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
 
         if (getRootDbDialect().isBlobSyncSupported()) {
-            byte[] data = (byte[]) clientJdbcTemplate.queryForObject(
-                    "select icon from test_customer where customer_id=101", new RowMapper() {
-                        public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+            byte[] data = clientJdbcTemplate.queryForObject(
+                    "select icon from test_customer where customer_id=101", new RowMapper<byte[]>() {
+                        public byte[] mapRow(ResultSet rs, int rowNum) throws SQLException {
                             return rs.getBytes(1);
                         }
                     });
@@ -772,14 +771,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    @SuppressWarnings("unchecked")
     public void syncUpdateCondition() {
         logTestRunning();
         rootJdbcTemplate.update(updateOrderHeaderStatusSql, new Object[] { "C", "1" });
         getClientEngine().pull();
-        List list = clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "1" });
+        List<Map<String, Object>>  list = clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "1" });
         assertEquals(list.size(), 1, "The order record should exist.");
-        Map map = (Map) list.get(0);
+        Map<String,Object> map = list.get(0);
         assertEquals(map.get("status"), "C", "Status should be complete");
         // TODO: make sure event did not fire
     }
@@ -810,7 +808,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootConfigService.reloadChannels();
     }
 
-    // @Test(timeout = 120000)
+    @Test(timeout = 120000)
     public void syncUpdateWithEmptyKey() {
         if (getClientDbDialect().isEmptyStringNulled()) {
             return;
@@ -977,7 +975,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "Table was not deleted from");
     }
 
-    @SuppressWarnings("unchecked")
     @Test(timeout = 120000)
     public void testReservedColumnNames() {
         logTestRunning();
@@ -1010,9 +1007,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update(updateKeyWordSql.replaceAll("\"", rquote), new Object[] { "y", "b", 1 });
         getClientEngine().pull();
 
-        List rowList = clientJdbcTemplate.queryForList(selectKeyWordSql.replaceAll("\"", cquote), new Object[] { 1 });
+        List<Map<String, Object>>  rowList = clientJdbcTemplate.queryForList(selectKeyWordSql.replaceAll("\"", cquote), new Object[] { 1 });
         Assert.assertTrue(rowList.size() > 0);
-        Map columnMap = (Map) rowList.get(0);
+        Map<String,Object> columnMap = rowList.get(0);
         assertEquals(columnMap.get("key word"), "y", "Wrong key word value in table");
         assertEquals(columnMap.get("case"), "b", "Wrong case value in table");
     }
