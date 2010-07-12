@@ -404,10 +404,9 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean isRegistrationServer() {
-        return StringUtils.isBlank(parameterService.getRegistrationUrl());
+        return StringUtils.isBlank(parameterService.getRegistrationUrl()) || parameterService.getRegistrationUrl().equals(parameterService.getSyncUrl());
     }
 
-    @SuppressWarnings("unchecked")
     public NodeStatus getNodeStatus() {
         long ts = System.currentTimeMillis();
         try {
@@ -416,8 +415,8 @@ public class NodeService extends AbstractService implements INodeService {
                 Date initialLoadTime;
             }
 
-            List<DataLoadStatus> results = jdbcTemplate.query(getSql("getDataLoadStatusSql"), new RowMapper() {
-                public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+            List<DataLoadStatus> results = jdbcTemplate.query(getSql("getDataLoadStatusSql"), new RowMapper<DataLoadStatus>() {
+                public DataLoadStatus mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
                     DataLoadStatus status = new DataLoadStatus();
                     status.initialLoadEnabled = rs.getInt(1);
                     status.initialLoadTime = rs.getTimestamp(2);
