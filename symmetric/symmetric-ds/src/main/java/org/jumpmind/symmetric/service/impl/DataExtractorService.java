@@ -262,9 +262,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             : new NodeChannel(triggerRouter.getTrigger().getChannelId());
                     Set<Node> oneNodeSet = new HashSet<Node>();
                     oneNodeSet.add(node);
+                    
+                    boolean autoCommitFlag = conn.getAutoCommit(); 
                     PreparedStatement st = null;
                     ResultSet rs = null;
                     try {
+                        
+                        conn.setAutoCommit(false); 
+                        
                         st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
                                 java.sql.ResultSet.CONCUR_READ_ONLY);
                         st.setQueryTimeout(jdbcTemplate.getQueryTimeout());
@@ -297,6 +302,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.commit(batch, writer);
                         }
                     } finally {
+                        conn.setAutoCommit(autoCommitFlag); 
                         JdbcUtils.closeResultSet(rs);
                         JdbcUtils.closeStatement(st);
                     }
