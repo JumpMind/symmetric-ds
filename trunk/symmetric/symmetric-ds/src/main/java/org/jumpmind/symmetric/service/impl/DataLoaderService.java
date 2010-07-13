@@ -107,15 +107,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         boolean wasWorkDone = false;
         try {
             NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
-            Map<String, String> requestProperties = new HashMap<String, String>();
-            ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists();
-            requestProperties.put(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
-            requestProperties.put(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
+            if (security != null) {
+                Map<String, String> requestProperties = new HashMap<String, String>();
+                ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists();
+                requestProperties.put(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
+                requestProperties.put(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
 
-            List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local, security.getNodePassword(), requestProperties, parameterService.getRegistrationUrl()));
-            if (list.size() > 0) {
-                sendAck(remote, local, list);
-                wasWorkDone = true;
+                List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local, security.getNodePassword(), requestProperties, parameterService.getRegistrationUrl()));
+                if (list.size() > 0) {
+                    sendAck(remote, local, list);
+                    wasWorkDone = true;
+                }
+            } else {
+                log.error("NodeSecurityMissing", local.getNodeId());
             }
         } catch (RegistrationRequiredException e) {
             log.warn("RegistrationLost");
