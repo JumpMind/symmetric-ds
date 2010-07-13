@@ -65,24 +65,30 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     synchronized public boolean pushData() {
         boolean pushedData = false;
         boolean inError = false;
-        if (nodeService.findIdentityNodeId() != null) {
-            if (clusterService.lock(ClusterConstants.PUSH)) {
+        Node identity = nodeService.findIdentity();
+        if (identity != null) {            
+            if (clusterService.lock(ClusterConstants.PUSH)) {                
                 try {
-                    List<Node> nodes = nodeService.findNodesToPushTo();
-                    if (nodes != null && nodes.size() > 0) {
-                        for (Node node : nodes) {
-                            log.debug("DataPushing", node);
-                            PushStatus status = pushToNode(node);
-                            if (status == PushStatus.PUSHED) {
-                                pushedData = true;
-                                log.info("DataPushed", node);
-                            } else if (status == PushStatus.ERROR) {
-                                inError = true;
-                                log.warn("DataPushingFailed");
+                    NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
+                    if (identitySecurity != null) {
+                        List<Node> nodes = nodeService.findNodesToPushTo();
+                        if (nodes != null && nodes.size() > 0) {
+                            for (Node node : nodes) {
+                                log.debug("DataPushing", node);
+                                PushStatus status = pushToNode(node, identity, identitySecurity);
+                                if (status == PushStatus.PUSHED) {
+                                    pushedData = true;
+                                    log.info("DataPushed", node);
+                                } else if (status == PushStatus.ERROR) {
+                                    inError = true;
+                                    log.warn("DataPushingFailed");
+                                }
+                                log.debug("DataPushingCompleted", node);
+
                             }
-                            log.debug("DataPushingCompleted", node);
-    
                         }
+                    } else {
+                        log.error("NodeSecurityMissing", identity.getNodeId());
                     }
                 } finally {
                     clusterService.unlock(ClusterConstants.PUSH);
@@ -94,7 +100,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         return pushedData && !inError;
     }
 
-    private PushStatus pushToNode(Node remote) {
+    private PushStatus pushToNode(Node remote, Node identity, NodeSecurity identitySecurity) {
         PushStatus status = PushStatus.ERROR;
         IOutgoingWithResponseTransport transport = null;
         try {
@@ -105,8 +111,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 }
             }
 
-            NodeSecurity localNodeSecurity = nodeService.findNodeSecurity(nodeService.findIdentityNodeId()); 
-            transport = transportManager.getPushTransport(remote, nodeService.findIdentity(), localNodeSecurity.getNodePassword(), parameterService.getRegistrationUrl());
+            transport = transportManager.getPushTransport(remote, identity, identitySecurity.getNodePassword(), parameterService.getRegistrationUrl());
 
             if (extractor.extract(remote, transport)) {
                 log.info("DataSent", remote);

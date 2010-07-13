@@ -23,6 +23,7 @@ public class SqlScriptUnitTest {
     }
     
     private SingleConnectionDataSource getDataSource() throws Exception {
+        Class.forName("org.h2.Driver");
         Connection c = DriverManager.getConnection("jdbc:h2:mem:sqlscript");
         return new SingleConnectionDataSource(c, true);
     }
