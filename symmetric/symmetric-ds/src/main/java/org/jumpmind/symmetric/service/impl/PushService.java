@@ -66,13 +66,14 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         boolean pushedData = false;
         boolean inError = false;
         Node identity = nodeService.findIdentity();
-        if (identity != null) {            
-            if (clusterService.lock(ClusterConstants.PUSH)) {                
+        if (identity != null) {
+            if (clusterService.lock(ClusterConstants.PUSH)) {
                 try {
-                    NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
-                    if (identitySecurity != null) {
-                        List<Node> nodes = nodeService.findNodesToPushTo();
-                        if (nodes != null && nodes.size() > 0) {
+                    NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
+                            .getNodeId());
+                    List<Node> nodes = nodeService.findNodesToPushTo();
+                    if (nodes != null && nodes.size() > 0) {
+                        if (identitySecurity != null) {
                             for (Node node : nodes) {
                                 log.debug("DataPushing", node);
                                 PushStatus status = pushToNode(node, identity, identitySecurity);
@@ -84,11 +85,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                     log.warn("DataPushingFailed");
                                 }
                                 log.debug("DataPushingCompleted", node);
-
                             }
+                        } else {
+                            log.error("NodeSecurityMissing", identity.getNodeId());
                         }
-                    } else {
-                        log.error("NodeSecurityMissing", identity.getNodeId());
                     }
                 } finally {
                     clusterService.unlock(ClusterConstants.PUSH);
@@ -96,7 +96,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             } else {
                 log.info("DataPushingFailedLock");
             }
-        } 
+        }
         return pushedData && !inError;
     }
 
@@ -111,7 +111,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 }
             }
 
-            transport = transportManager.getPushTransport(remote, identity, identitySecurity.getNodePassword(), parameterService.getRegistrationUrl());
+            transport = transportManager.getPushTransport(remote, identity, identitySecurity
+                    .getNodePassword(), parameterService.getRegistrationUrl());
 
             if (extractor.extract(remote, transport)) {
                 log.info("DataSent", remote);
@@ -126,12 +127,14 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     log.error("DataAckReadingFailed");
                 }
 
-                List<BatchInfo> batches = transportManager.readAcknowledgement(ackString, ackExtendedString);
+                List<BatchInfo> batches = transportManager.readAcknowledgement(ackString,
+                        ackExtendedString);
 
                 status = PushStatus.PUSHED;
 
                 for (BatchInfo batchInfo : batches) {
-                    log.debug("DataAckSaving", batchInfo.getBatchId(), (batchInfo.isOk() ? "OK" : "error"));
+                    log.debug("DataAckSaving", batchInfo.getBatchId(), (batchInfo.isOk() ? "OK"
+                            : "error"));
                     if (!batchInfo.isOk()) {
                         status = PushStatus.ERROR;
                     }
@@ -141,9 +144,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             } else {
                 status = PushStatus.NOTHING_TO_PUSH;
             }
-        } catch (ConnectException ex) {            
-            log.warn("TransportFailedConnectionUnavailable", (remote.getSyncUrl() == null ? parameterService
-                    .getRegistrationUrl() : remote.getSyncUrl()));
+        } catch (ConnectException ex) {
+            log.warn("TransportFailedConnectionUnavailable",
+                    (remote.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remote
+                            .getSyncUrl()));
             fireOffline(ex, remote);
         } catch (ConnectionRejectedException ex) {
             log.warn("TransportFailedConnectionBusy");
