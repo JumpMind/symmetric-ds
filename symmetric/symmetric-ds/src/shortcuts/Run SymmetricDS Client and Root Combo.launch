@@ -12,5 +12,5 @@
 <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.jumpmind.symmetric.test.RunTestEngines"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="symmetric"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="symmetric-ds"/>
 </launchConfiguration>

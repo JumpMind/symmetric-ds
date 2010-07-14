@@ -30,6 +30,19 @@ import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jetty.http.security.Constraint;
+import org.eclipse.jetty.http.security.Password;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.bio.SocketConnector;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ssl.SslSocketConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
@@ -39,17 +52,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.SymmetricFilter;
 import org.jumpmind.symmetric.web.SymmetricServlet;
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.nio.SelectChannelConnector;
-import org.mortbay.jetty.security.Constraint;
-import org.mortbay.jetty.security.ConstraintMapping;
-import org.mortbay.jetty.security.HashUserRealm;
-import org.mortbay.jetty.security.SecurityHandler;
-import org.mortbay.jetty.security.SslSocketConnector;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -165,7 +167,8 @@ public class SymmetricWebServer implements ApplicationContextAware {
         server = new Server();
         server.setConnectors(getConnectors(port, securePort, mode));
 
-        Context webContext = new Context(server, webHome, Context.NO_SESSIONS);
+        ServletContextHandler webContext = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+        webContext.setContextPath(webHome);
 
         if (this.contextListener == null) {
             this.contextListener = new SymmetricEngineContextLoaderListener();
@@ -179,9 +182,10 @@ public class SymmetricWebServer implements ApplicationContextAware {
         servletHolder.setInitOrder(0);
         webContext.addServlet(servletHolder, "/*");
         
-        setupBasicAuthIfNeeded(webContext);
+        setupBasicAuthIfNeeded(server);
 
-        server.addHandler(webContext);
+        server.setHandler(webContext);
+
         server.start();
 
         if (createJmxServer) {
@@ -196,10 +200,12 @@ public class SymmetricWebServer implements ApplicationContextAware {
         return this;
     }
 
-    protected void setupBasicAuthIfNeeded(Context webContext) {
+    protected void setupBasicAuthIfNeeded(Server server) {
         String basicAuthUsername = getEngine().getParameterService().getString(ParameterConstants.EMBEDDED_WEBSERVER_BASIC_AUTH_USERNAME);
         if (StringUtils.isNotBlank(basicAuthUsername) ) {
             String basicAuthPassword = getEngine().getParameterService().getString(ParameterConstants.EMBEDDED_WEBSERVER_BASIC_AUTH_PASSWORD);
+
+            ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
 
             Constraint constraint = new Constraint();
             constraint.setName(Constraint.__BASIC_AUTH);;
@@ -209,16 +215,16 @@ public class SymmetricWebServer implements ApplicationContextAware {
             ConstraintMapping cm = new ConstraintMapping();
             cm.setConstraint(constraint);
             cm.setPathSpec("/*");
+            sh.addConstraintMapping(cm);
     
-            SecurityHandler sh = new SecurityHandler();
+            sh.setAuthenticator(new BasicAuthenticator());
             
-            HashUserRealm realm = new HashUserRealm();
-            realm.put(basicAuthUsername, basicAuthPassword);
-            realm.addUserToRole(basicAuthUsername, SecurityConstants.EMBEDDED_WEBSERVER_DEFAULT_ROLE);
-            sh.setUserRealm(realm);
+            HashLoginService loginService = new HashLoginService();
+            loginService.putUser(basicAuthUsername, new Password(basicAuthPassword), null);
+            sh.setLoginService(loginService);
+
+            server.setHandler(sh);
             
-            sh.setConstraintMappings(new ConstraintMapping[]{cm});
-            webContext.addHandler(sh);
         }
     }
 
