@@ -20,5 +20,10 @@
 package org.jumpmind.symmetric.test;
 
 public enum DatabaseRole {
-    CLIENT, ROOT
+    
+    CLIENT, ROOT;
+    
+    public String getName() {
+        return name().toLowerCase();
+    }
 }

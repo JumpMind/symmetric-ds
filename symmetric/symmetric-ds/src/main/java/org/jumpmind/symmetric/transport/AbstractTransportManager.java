@@ -139,7 +139,7 @@ abstract public class AbstractTransportManager {
         return readAcknowledgement(parameters);
     }
 
-    public static List<BatchInfo> readAcknowledgement(Map<String, Object> parameters) {
+    public static List<BatchInfo> readAcknowledgement(Map<String, ? extends Object> parameters) {
         List<BatchInfo> batches = new ArrayList<BatchInfo>();
         for (String parameterName : parameters.keySet()) {
             if (parameterName.startsWith(WebConstants.ACK_BATCH_NAME)) {
@@ -151,7 +151,7 @@ abstract public class AbstractTransportManager {
         return batches;
     }
 
-    private static BatchInfo getBatchInfo(Map<String, Object> parameters, long batchId) {
+    private static BatchInfo getBatchInfo(Map<String, ? extends Object> parameters, long batchId) {
         BatchInfo batchInfo = new BatchInfo(batchId);
         batchInfo.setNodeId(getParam(parameters, WebConstants.ACK_NODE_ID + batchId));
         batchInfo.setNetworkMillis(getParamAsNum(parameters, WebConstants.ACK_NETWORK_MILLIS + batchId));
@@ -182,16 +182,16 @@ abstract public class AbstractTransportManager {
         return parameters;
     }
 
-    private static long getParamAsNum(Map<String, Object> parameters, String parameterName) {
+    private static long getParamAsNum(Map<String, ? extends  Object> parameters, String parameterName) {
         return NumberUtils.toLong(getParam(parameters, parameterName));
     }
 
-    private static String getParam(Map<String, Object> parameters, String parameterName, String defaultValue) {
+    private static String getParam(Map<String, ? extends  Object> parameters, String parameterName, String defaultValue) {
         String value = getParam(parameters, parameterName);
         return value == null ? defaultValue : value;
     }
 
-    private static String getParam(Map<String, Object> parameters, String parameterName) {
+    private static String getParam(Map<String,  ? extends Object> parameters, String parameterName) {
         Object value = parameters.get(parameterName);
         if (value instanceof String[]) {
             String[] arrayValue = (String[]) value;

@@ -134,7 +134,7 @@ public class AppUtils {
      * name.
      * 
      * @see Constants
-     */
+     */    
     @SuppressWarnings("unchecked")
     public static <T> T find(String name, ISymmetricEngine engine) {
         return (T) engine.getApplicationContext().getBean(name);
@@ -143,9 +143,8 @@ public class AppUtils {
     /**
      * @see #find(String, StandaloneSymmetricEngine)
      */
-    @SuppressWarnings("unchecked")
     public static <T> T find(String name, SymmetricWebServer server) {
-        return (T) server.getEngine().getApplicationContext().getBean(name);
+        return find(name, server.getEngine());
     }
 
     /**
@@ -220,5 +219,9 @@ public class AppUtils {
             }
         }
     }
+    
+    public static boolean isSystemPropertySet(String propName, boolean defaultValue) {
+        return "true".equalsIgnoreCase(System.getProperty(propName, Boolean.toString(defaultValue)));
+    }    
 
 }

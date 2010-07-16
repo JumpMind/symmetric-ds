@@ -40,6 +40,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * <p/>
  * Developers have the option to subclass off of this listener and override the
  * createConfigureAndStartEngine() method.
+ * 
+ * @deprecated
  */
 public class SymmetricEngineContextLoaderListener extends ContextLoaderListener {
 

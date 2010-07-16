@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class AbstractIntegrationTest extends AbstractTest {
@@ -47,17 +48,13 @@ public class AbstractIntegrationTest extends AbstractTest {
     }
 
     public AbstractIntegrationTest() throws Exception {
-        try {
+        try {            
             if (standalone) {
                 String[] databases = TestSetupUtil.lookupDatabasePairs(
-                        DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator().next();
-                logger.info("Running test in standalone mode with databases " + databases[0]
-                        + " and " + databases[1]);
+                        DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator().next();            
                 init(databases[0], databases[1]);
-                standalone = false;
-                TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX,
-                        TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT, databases[0], databases[1]);
             }
+            
         } catch (Exception e) {
             logger.error(e,e);
             throw e;
@@ -97,20 +94,29 @@ public class AbstractIntegrationTest extends AbstractTest {
     @SuppressWarnings("unchecked")
     protected <T> T findOnRoot(String name) {
         return (T) AppUtils.find(name, getRootEngine());
-    }
-
+    }        
+    
     @Before
     public void setupTemplates() {
         rootJdbcTemplate = new JdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE,
                 getRootEngine()));
         clientJdbcTemplate = new JdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE,
-                getClientEngine()));
+                getClientEngine()));        
+    }
+    
+    @BeforeClass
+    public static void standaloneSetup() throws Exception {
+        if (standalone) {
+            String[] databases = TestSetupUtil.lookupDatabasePairs(
+                    DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator().next();            
+            TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX,
+                    TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT, databases[0], databases[1]);
+        }
     }
 
     @AfterClass
     public static void cleanup() throws Exception {
         if (standalone) {
-            standalone = false;
             LogFactory.getLog(AbstractDatabaseTest.class).info(
                     "Cleaning up after test in standalone mode");
             TestSetupUtil.cleanup();

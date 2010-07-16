@@ -5,21 +5,13 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     version="2.5">
 
     <display-name>SymmetricDS</display-name>
+    
     <description>
     </description>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:symmetric.xml</param-value>
-    </context-param>
-
-    <listener>
-        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-    </listener>
-
-    <context-param>
-        <param-name>log4jConfigLocation</param-name>
-        <param-value>WEB-INF/log4j.xml</param-value>
+        <param-value>classpath:symmetric-engine.xml</param-value>
     </context-param>
 
     <filter>
@@ -33,18 +25,18 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </filter-mapping>
 
     <listener>
-        <listener-class>org.jumpmind.symmetric.SymmetricEngineContextLoaderListener</listener-class>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
     <servlet>
         <servlet-name>SymmetricServlet</servlet-name>
         <servlet-class>org.jumpmind.symmetric.web.SymmetricServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>1</load-on-startup>        
     </servlet>
 
     <servlet-mapping>
         <servlet-name>SymmetricServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/*</url-pattern>        
     </servlet-mapping>
 
 </web-app>
