@@ -17,7 +17,6 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package org.jumpmind.symmetric.common;
 
 final public class ParameterConstants {
@@ -129,9 +128,6 @@ final public class ParameterConstants {
     public final static String PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS = "job.purge.max.num.data.events.to.delete.in.tx";
 
     public final static String JMX_LINE_FEED = "jmx.line.feed";
-    public final static String JMX_LEGACY_BEANS_ENABLED = "jmx.legacy.beans.enabled";
-    public final static String JMX_HTTP_CONSOLE_ENABLED = "jmx.http.console.for.embedded.webserver.enabled";
-    public final static String JMX_HTTP_CONSOLE_LOCALHOST_ENABLED = "jmx.http.console.localhost.only.enabled";
 
     public final static String IP_FILTERS = "ip.filters";
     
@@ -140,6 +136,4 @@ final public class ParameterConstants {
     public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
     public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC ="heartbeat.sync.on.push.period.sec";
     
-    public final static String EMBEDDED_WEBSERVER_BASIC_AUTH_USERNAME = "embedded.webserver.basic.auth.username";
-    public final static String EMBEDDED_WEBSERVER_BASIC_AUTH_PASSWORD = "embedded.webserver.basic.auth.password";
 }

@@ -121,7 +121,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                 setup();
                 validateConfiguration();
                 registerEngine();
-                startDefaultServerJMXExport();
                 Node node = getNodeService().findIdentity();
                 if (node != null) {
                     log.info("RegisteredNodeStarting", node.getNodeGroupId(), node.getNodeId(), node.getExternalId());
@@ -189,10 +188,15 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                     IOUtils.closeQuietly(fos);
                 }
             }
-            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
-                    : overridePropertiesResource1);
-            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2 == null ? ""
-                    : overridePropertiesResource2);
+            
+            if (!StringUtils.isBlank(overridePropertiesResource1)) {
+                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1);
+            }
+            
+            if (!StringUtils.isBlank(overridePropertiesResource2)) {
+                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2);
+            }
+            
             if (isParentContext || ctx == null) {
                 init(createContext(ctx));
             } else {
@@ -240,20 +244,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
             return node.getSyncUrl();
         } else {
             return getParameterService().getSyncUrl();
-        }
-    }
-
-    /**
-     * This is done dynamically because some application servers do not allow the default MBeanServer to be accessed for
-     * security reasons (OC4J).
-     */
-    private void startDefaultServerJMXExport() {
-        if (getParameterService().is(ParameterConstants.JMX_LEGACY_BEANS_ENABLED)) {
-            try {
-                getApplicationContext().getBean(Constants.DEFAULT_JMX_SERVER_EXPORTER);
-            } catch (Exception ex) {
-                log.warn("JMXBeansRegisterError ", ex.getMessage());
-            }
         }
     }
 

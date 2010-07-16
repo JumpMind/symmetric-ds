@@ -60,7 +60,8 @@ public class PushServlet extends AbstractTransportResourceServlet<PushResourceHa
 
         // Not sure if this is necessary, but it's been here and it hasn't hurt
         // anything ...
-        outputStream.flush();
+        //outputStream.flush();
+        resp.flushBuffer();
         log.debug("DataPushingCompleted", nodeId);
     }
 }

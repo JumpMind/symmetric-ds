@@ -133,15 +133,22 @@ public class TestSetupUtil {
         removeEmbededdedDatabases();
 
         if (rootDb != null) {
-            rootServer = new SymmetricWebServer("file:"
-                    + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath());
-            dropAndCreateDatabaseTables(rootDb, rootServer.getEngine());
-            rootServer.getEngine().setup();
-            DataSource ds = (DataSource) rootServer.getEngine().getApplicationContext().getBean(Constants.DATA_SOURCE);
-            IDbDialect dialect = (IDbDialect) rootServer.getEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+            // Temporary engine used for test database setup
+            ISymmetricEngine setupEngine = new StandaloneSymmetricEngine("file:"
+                    + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath(), null);            
+            dropAndCreateDatabaseTables(rootDb, setupEngine);
+            setupEngine.setup();
+            
+            DataSource ds = (DataSource) setupEngine.getApplicationContext().getBean(Constants.DATA_SOURCE);
+            IDbDialect dialect = (IDbDialect) setupEngine.getApplicationContext().getBean(Constants.DB_DIALECT);
             new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), ds, true, SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens()).execute();
+            setupEngine.stop();
+            
+            rootServer = new SymmetricWebServer("file:"
+                    + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath(), "src/main/deploy/web");
             rootServer.setJoin(false);
             rootServer.start(TEST_PORT);
+            
         }
 
         if (clientDb != null) {
@@ -192,12 +199,16 @@ public class TestSetupUtil {
         sqlitedb.mkdirs();
     }
 
-    public static ISymmetricEngine getRootEngine() {
-        return rootServer.getEngine();
-    }
-
     public static ISymmetricEngine getClientEngine() {
         return clientEngine;
+    }
+    
+    public static SymmetricWebServer getRootServer() {
+        return rootServer;
+    }   
+    
+    public static ISymmetricEngine getRootEngine() {
+        return rootServer.getEngine();
     }
 
     public static boolean isConnectionValid(Properties properties) throws Exception {
@@ -285,7 +296,7 @@ public class TestSetupUtil {
                 newProperties.setProperty(ParameterConstants.SYNC_URL, databaseRole == DatabaseRole.CLIENT ? "" : ("http://localhost:" + TEST_PORT + "/sync"));
                 newProperties.setProperty(ParameterConstants.REGISTRATION_URL,
                         databaseRole == DatabaseRole.CLIENT ? "http://localhost:" + TEST_PORT + "/sync" : "");
-                newProperties.setProperty(ParameterConstants.ENGINE_NAME, databaseRole.name().toLowerCase());
+                newProperties.setProperty(ParameterConstants.ENGINE_NAME, databaseRole.getName());
 
                 File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
                 FileOutputStream os = new FileOutputStream(propertiesFile);

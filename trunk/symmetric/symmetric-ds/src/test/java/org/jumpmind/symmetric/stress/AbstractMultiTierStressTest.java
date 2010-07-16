@@ -45,7 +45,6 @@ abstract public class AbstractMultiTierStressTest {
 
     @Test(timeout = 120000)
     public void validateHomeServerStartup() {
-        Assert.assertTrue(homeServer.getEngine().isStarted());
         INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE,
                 homeServer);
         Node node = nodeService.findIdentity();

@@ -47,10 +47,8 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
         AckResourceHandler ackService = getTransportResourceHandler();
         log.debug("DataAckReading", req.getParameterMap());
         // TODO: fix this; the servlets need to participate in the transport API

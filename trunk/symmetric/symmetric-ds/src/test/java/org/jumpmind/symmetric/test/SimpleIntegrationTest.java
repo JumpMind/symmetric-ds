@@ -704,8 +704,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     private boolean turnOnNoKeysInUpdateParameter(boolean newValue) {
         IParameterService clientParameterService = (IParameterService) getClientEngine().getApplicationContext()
                 .getBean(Constants.PARAMETER_SERVICE);
-        IParameterService rootParameterService = (IParameterService) getRootEngine().getApplicationContext().getBean(
-                Constants.PARAMETER_SERVICE);
+        IParameterService rootParameterService = (IParameterService) AppUtils.find(Constants.PARAMETER_SERVICE, getRootEngine());
         Assert.assertEquals(clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE),
                 rootParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
         boolean oldValue = clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
@@ -785,7 +784,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void ignoreNodeChannel() {
         logTestRunning();
-        INodeService rootNodeService = (INodeService) getRootEngine().getApplicationContext().getBean("nodeService");
+        INodeService rootNodeService = (INodeService) AppUtils.find(Constants.NODE_SERVICE, getRootEngine());
         IConfigurationService rootConfigService = (IConfigurationService) getRootEngine().getApplicationContext()
                 .getBean("configurationService");
         rootNodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,

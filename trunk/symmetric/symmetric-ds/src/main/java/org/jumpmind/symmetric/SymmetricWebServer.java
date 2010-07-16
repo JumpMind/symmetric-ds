@@ -19,12 +19,14 @@
  */
 package org.jumpmind.symmetric;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 
 import javax.management.Attribute;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.servlet.ServletContext;
 
 import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
@@ -41,28 +43,26 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.jumpmind.symmetric.web.SymmetricFilter;
-import org.jumpmind.symmetric.web.SymmetricServlet;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
  * 
  * @see SymmetricLauncher#main(String[])
  */
-public class SymmetricWebServer implements ApplicationContextAware {
+public class SymmetricWebServer {
 
     protected static final ILog log = LogFactory.getLog(SymmetricWebServer.class);
+    
+    protected static final String DEFAULT_WEBAPP_DIR = "../web";
 
     /**
      * The type of HTTP connection to create for this SymmetricDS web server
@@ -71,9 +71,9 @@ public class SymmetricWebServer implements ApplicationContextAware {
         HTTP, HTTPS, MIXED;
     }
 
-    protected SymmetricEngineContextLoaderListener contextListener;
-
-    protected Server server;
+    private Server server;
+    
+    private WebAppContext webapp;
 
     protected boolean join = true;
 
@@ -86,34 +86,35 @@ public class SymmetricWebServer implements ApplicationContextAware {
     protected int httpPort = -1;
 
     protected int httpsPort = -1;
+    
+    protected String basicAuthUsername = null;
+    
+    protected String basicAuthPassword = null;
 
-    protected String propertiesFile;
+    protected String propertiesFile = null;
 
-    protected String host;
+    protected String host = null;
     
     protected boolean noNio = false;
     
     protected boolean noDirectBuffer = false;
-
-    /**
-     * This will only be set if the SymmetricWebServer itself is created from a
-     * Spring context.
-     */
-    protected ApplicationContext parentContext;
+    
+    protected String webAppDir = DEFAULT_WEBAPP_DIR;    
 
     public SymmetricWebServer() {
     }
-
+    
     public SymmetricWebServer(String propertiesUrl) {
-        this.propertiesFile = propertiesUrl ;
+        this(propertiesUrl, DEFAULT_WEBAPP_DIR);
     }
 
-    public SymmetricWebServer(int maxIdleTime) {
-        this.maxIdleTime = maxIdleTime;
+    public SymmetricWebServer(String propertiesUrl, String webappDir) {
+        this.propertiesFile = propertiesUrl ;
+        this.webAppDir = webappDir;
     }
 
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl, boolean join, boolean noNio, boolean noDirectBuffer) {
-        this.propertiesFile = propertiesUrl ;
+        this(propertiesUrl, DEFAULT_WEBAPP_DIR);
         this.maxIdleTime = maxIdleTime;
         this.join = join;
         this.noDirectBuffer = noDirectBuffer;
@@ -121,30 +122,22 @@ public class SymmetricWebServer implements ApplicationContextAware {
     }
 
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
-        this.propertiesFile = propertiesUrl ;
+        this(propertiesUrl, DEFAULT_WEBAPP_DIR);
         this.maxIdleTime = maxIdleTime;
     }
 
-    public void start(int port, String propertiesUrl) throws Exception {
+    public SymmetricWebServer start(int port, String propertiesUrl) throws Exception {
         this.propertiesFile = propertiesUrl ;
-        start(port);
+        return start(port);
     }
 
-    public ISymmetricEngine getEngine() {
-        if (contextListener == null) {
-            contextListener = new SymmetricEngineContextLoaderListener(new StandaloneSymmetricEngine(parentContext, true,
-                    propertiesFile));
-        }
-        return contextListener.getEngine();
-    }
-
-    public void start() throws Exception {
+    public SymmetricWebServer start() throws Exception {
         if (httpPort > 0 && httpsPort > 0) {
-            startMixed(httpPort, httpsPort);
+            return startMixed(httpPort, httpsPort);
         } else if (httpPort > 0) {
-            start(httpPort);
+            return start(httpPort);
         } else if (httpsPort > 0) {
-            startSecure(httpsPort);
+            return startSecure(httpsPort);
         } else {
             throw new IllegalStateException("Either an http or https port needs to be set before starting the server.");
         }
@@ -163,29 +156,27 @@ public class SymmetricWebServer implements ApplicationContextAware {
     }
 
     public SymmetricWebServer start(int port, int securePort, Mode mode) throws Exception {
-        getEngine();
         server = new Server();
+
         server.setConnectors(getConnectors(port, securePort, mode));
-
-        ServletContextHandler webContext = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        webContext.setContextPath(webHome);
-
-        if (this.contextListener == null) {
-            this.contextListener = new SymmetricEngineContextLoaderListener();
-        }
-
-        webContext.addEventListener(this.contextListener);
-
-        webContext.addFilter(SymmetricFilter.class, "/*", 0);
-
-        ServletHolder servletHolder = new ServletHolder(SymmetricServlet.class);
-        servletHolder.setInitOrder(0);
-        webContext.addServlet(servletHolder, "/*");
-        
         setupBasicAuthIfNeeded(server);
 
-        server.setHandler(webContext);
+        // Configure JMX for Jetty
+//        MBeanContainer mbContainer=new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+//        server.getContainer().addEventListener(mbContainer);
+//        server.addBean(mbContainer);
+//        mbContainer.addBean(Log.getLog());
+        
+        webapp = new WebAppContext();
+        webapp.setContextPath(webHome);
+        webapp.setWar(webAppDir);
+        
+        server.setHandler(webapp);
 
+        if (!StringUtils.isBlank(propertiesFile)) {
+            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);    
+        }
+        
         server.start();
 
         if (createJmxServer) {
@@ -199,12 +190,23 @@ public class SymmetricWebServer implements ApplicationContextAware {
 
         return this;
     }
+    
+    protected ServletContext getServletContext() {
+        return webapp != null ? webapp.getServletContext() : null;
+    }
+    
+    public ISymmetricEngine getEngine() {
+        ISymmetricEngine engine = null;
+        ServletContext servletContext = getServletContext();
+        if (servletContext != null) {
+           ApplicationContext appContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+           engine = appContext.getBean(ISymmetricEngine.class);
+        }
+        return engine;
+    }
 
     protected void setupBasicAuthIfNeeded(Server server) {
-        String basicAuthUsername = getEngine().getParameterService().getString(ParameterConstants.EMBEDDED_WEBSERVER_BASIC_AUTH_USERNAME);
         if (StringUtils.isNotBlank(basicAuthUsername) ) {
-            String basicAuthPassword = getEngine().getParameterService().getString(ParameterConstants.EMBEDDED_WEBSERVER_BASIC_AUTH_PASSWORD);
-
             ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
 
             Constraint constraint = new Constraint();
@@ -215,7 +217,8 @@ public class SymmetricWebServer implements ApplicationContextAware {
             ConstraintMapping cm = new ConstraintMapping();
             cm.setConstraint(constraint);
             cm.setPathSpec("/*");
-            sh.addConstraintMapping(cm);
+            sh.setConstraintMappings(new ConstraintMapping[] {cm});
+            //sh.addConstraintMapping(cm);
     
             sh.setAuthenticator(new BasicAuthenticator());
             
@@ -237,14 +240,14 @@ public class SymmetricWebServer implements ApplicationContextAware {
             if (noNio) {
               connector = new SocketConnector();                
             } else {
-              SelectChannelConnector nioConnector = new SelectChannelConnector();
-              connector = nioConnector;
+              SelectChannelConnector nioConnector = new SelectChannelConnector();              
               nioConnector.setUseDirectBuffers(!noDirectBuffer);
-              nioConnector.setMaxIdleTime(maxIdleTime);
+              connector = nioConnector;
             }
             connector.setPort(port);
-            connector.setHost(host);            
-            connectors.add(connector);
+            connector.setHost(host);
+            connector.setMaxIdleTime(maxIdleTime);            
+            connectors.add(connector);  
             log.info("WebServerStarting", port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
@@ -263,13 +266,12 @@ public class SymmetricWebServer implements ApplicationContextAware {
     }
 
     protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
-        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getEngine());
-        if (parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_ENABLED)) {
+        if (AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_ENABLED, true)) {
             log.info("JMXConsoleStarting", jmxPort);
-            MBeanServer mbeanServer = AppUtils.find(Constants.MBEAN_SERVER, getEngine());
+            MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             ObjectName name = getHttpJmxAdaptorName();
             mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
-            if (!parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_LOCALHOST_ENABLED)) {
+            if (!AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_LOCALHOST_ENABLED, true)) {
                 mbeanServer.setAttribute(name, new Attribute("Host", "0.0.0.0"));
             }
             mbeanServer.setAttribute(name, new Attribute("Port", new Integer(jmxPort)));
@@ -289,10 +291,9 @@ public class SymmetricWebServer implements ApplicationContextAware {
     }
 
     protected void removeHttpJmxAdaptor() {
-        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getEngine());
-        if (parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_ENABLED)) {
+        if (AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_ENABLED, true)) {
             try {
-                MBeanServer mbeanServer = AppUtils.find(Constants.MBEAN_SERVER, getEngine());
+                MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
                 mbeanServer.unregisterMBean(getHttpJmxAdaptorName());
                 mbeanServer.unregisterMBean(getXslJmxAdaptorName());
             } catch (Exception e) {
@@ -308,21 +309,6 @@ public class SymmetricWebServer implements ApplicationContextAware {
             }
             server.stop();
         }
-    }
-
-    public SymmetricEngineContextLoaderListener getContextListener() {
-        return contextListener;
-    }
-
-    /**
-     * Before starting the web server, you have the option of overriding the
-     * default context listener.
-     * 
-     * @param contextListener
-     *            Usually an overridden instance
-     */
-    public void setContextListener(SymmetricEngineContextLoaderListener contextListener) {
-        this.contextListener = contextListener;
     }
 
     public static void main(String[] args) throws Exception {
@@ -361,18 +347,31 @@ public class SymmetricWebServer implements ApplicationContextAware {
         this.propertiesFile = propertiesFile;
     }
 
-    /**
-     * @see ApplicationContextAware
-     */
-    public void setApplicationContext(ApplicationContext context) {
-        this.parentContext = context;
-    }
-
     public void setCreateJmxServer(boolean createJmxServer) {
         this.createJmxServer = createJmxServer;
     }
 
     public void setHost(String host) {
         this.host = host;
+    }
+    
+    public void setBasicAuthPassword(String basicAuthPassword) {
+        this.basicAuthPassword = basicAuthPassword;
+    }
+
+    public void setBasicAuthUsername(String basicAuthUsername) {
+        this.basicAuthUsername = basicAuthUsername;
+    }
+    
+    public void setWebAppDir(String webAppDir) {
+        this.webAppDir = webAppDir;
+    }
+    
+    public void setNoNio(boolean noNio) {
+        this.noNio = noNio;
+    }
+    
+    public void setNoDirectBuffer(boolean noDirectBuffer) {
+        this.noDirectBuffer = noDirectBuffer;
     }
 }
