@@ -143,8 +143,9 @@ public class AppUtils {
     /**
      * @see #find(String, StandaloneSymmetricEngine)
      */
+    @SuppressWarnings("unchecked")
     public static <T> T find(String name, SymmetricWebServer server) {
-        return find(name, server.getEngine());
+        return (T)find(name, server.getEngine());
     }
 
     /**
