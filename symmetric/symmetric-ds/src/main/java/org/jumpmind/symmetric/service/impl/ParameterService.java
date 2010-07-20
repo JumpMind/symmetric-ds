@@ -278,7 +278,11 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public String getRegistrationUrl() {
-        return getString(ParameterConstants.REGISTRATION_URL);
+        String url = getString(ParameterConstants.REGISTRATION_URL);
+        if (url != null) {
+            url = url.trim();
+        }
+        return url; 
     }
 
 }
