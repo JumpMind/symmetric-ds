@@ -60,6 +60,12 @@
         Enable this to see extract output <category name="org.jumpmind.symmetric.util.CsvUtils"> <priority value="DEBUG"
         /> </category>
     -->
+    
+    <!-- Enable this to see debug messages in JMS publishing extensions
+    <category name="org.jumpmind.symmetric.integrate">
+        <priority value="DEBUG" />
+    </category>        
+     -->
 
     <!-- Change the "CONSOLE" to "ROLLING" to log to a file instead -->
     <root>
