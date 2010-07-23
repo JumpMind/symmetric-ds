@@ -145,7 +145,7 @@
           t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by, 
           r.target_catalog_name,r.source_node_group_id,r.target_schema_name,r.target_table_name,r.target_node_group_id,r.router_expression,
           r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r_last_update_time,r.last_update_by as r_last_update_by,
-          tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order, tr.initial_load_select 
+          tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order, tr.initial_load_select, tr.ping_back_enabled 
         from $[sym.sync.table.prefix]_trigger_router tr 
           inner join $[sym.sync.table.prefix]_trigger t on tr.trigger_id=t.trigger_id 
           inner join $[sym.sync.table.prefix]_router r on tr.router_id=r.router_id 
@@ -251,14 +251,14 @@
     <entry key="insertTriggerRouterSql">
       <value>
         insert into $[sym.sync.table.prefix]_trigger_router
-        (initial_load_order,initial_load_select,create_time,last_update_by,last_update_time,trigger_id,router_id)
-        values(?,?,?,?,?,?,?)
+        (initial_load_order,initial_load_select,ping_back_enabled,create_time,last_update_by,last_update_time,trigger_id,router_id)
+        values(?,?,?,?,?,?,?,?)
       </value>
     </entry>
     <entry key="updateTriggerRouterSql">
       <value>
         update $[sym.sync.table.prefix]_trigger_router
-         set initial_load_order=?,initial_load_select=?,last_update_by=?,last_update_time=?
+         set initial_load_order=?,initial_load_select=?,ping_back_enabled=?,last_update_by=?,last_update_time=?
         where trigger_id=? and router_id=?
       </value>
     </entry>     

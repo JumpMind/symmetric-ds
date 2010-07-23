@@ -432,19 +432,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         triggerRouter.setLastUpdateTime(new Date());
         if (0 == jdbcTemplate.update(getSql("updateTriggerRouterSql"),
                 new Object[] { triggerRouter.getInitialLoadOrder(),
-                        triggerRouter.getInitialLoadSelect(), triggerRouter.getLastUpdateBy(),
+                        triggerRouter.getInitialLoadSelect(), 
+                        triggerRouter.isPingBackEnabled() ? 1 : 0, 
+                        triggerRouter.getLastUpdateBy(),
                         triggerRouter.getLastUpdateTime(),
                         triggerRouter.getTrigger().getTriggerId(),
                         triggerRouter.getRouter().getRouterId() },
-                new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+                new int[] { Types.INTEGER, Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
                         Types.VARCHAR, Types.VARCHAR })) {
             triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
             jdbcTemplate.update(getSql("insertTriggerRouterSql"), new Object[] {
                     triggerRouter.getInitialLoadOrder(), triggerRouter.getInitialLoadSelect(),
+                    triggerRouter.isPingBackEnabled() ? 1 : 0,
                     triggerRouter.getCreateTime(), triggerRouter.getLastUpdateBy(),
                     triggerRouter.getLastUpdateTime(), triggerRouter.getTrigger().getTriggerId(),
                     triggerRouter.getRouter().getRouterId() }, new int[] { Types.INTEGER,
-                    Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                    Types.VARCHAR, Types.SMALLINT, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
                     Types.VARCHAR });
         }
     }
@@ -928,6 +931,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trig.setLastUpdateBy(rs.getString("last_update_by"));
             trig.setInitialLoadOrder(rs.getInt("initial_load_order"));
             trig.setInitialLoadSelect(rs.getString("initial_load_select"));
+            trig.setPingBackEnabled(rs.getBoolean("ping_back_enabled"));
 
             return trig;
         }

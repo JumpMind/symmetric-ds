@@ -334,7 +334,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     context.incrementStat(System.currentTimeMillis() - ts,
                             RouterContext.STAT_DATA_ROUTER_MS);
 
-                    if (data.getSourceNodeId() != null && nodeIds != null) {
+                    if (!triggerRouter.isPingBackEnabled() && data.getSourceNodeId() != null && nodeIds != null) {
                         nodeIds.remove(data.getSourceNodeId());
                     }
                 }
