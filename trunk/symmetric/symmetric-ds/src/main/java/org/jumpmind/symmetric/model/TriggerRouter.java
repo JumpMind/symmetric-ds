@@ -54,6 +54,8 @@ public class TriggerRouter {
     private Date lastUpdateTime;
 
     private String lastUpdateBy;
+    
+    private boolean pingBackEnabled = false;
 
     public TriggerRouter() {
         trigger = new Trigger();
@@ -182,5 +184,13 @@ public class TriggerRouter {
             tableName = catalog + "." + tableName;
         }
         return tableName;
+    }
+    
+    public void setPingBackEnabled(boolean pingBackEnabled) {
+        this.pingBackEnabled = pingBackEnabled;
+    }
+    
+    public boolean isPingBackEnabled() {
+        return pingBackEnabled;
     }
 }
