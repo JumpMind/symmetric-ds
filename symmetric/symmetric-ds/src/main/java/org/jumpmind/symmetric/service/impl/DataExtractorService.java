@@ -493,14 +493,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch) {
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                PreparedStatement ps = conn.prepareStatement(getSql("selectEventDataToExtractSql"),
-                        ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-                ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                ps.setString(1, batch.getNodeId());
-                ps.setLong(2, batch.getBatchId());
-                ResultSet rs = ps.executeQuery();
+                ResultSet rs = null;
+                PreparedStatement ps = null;
+                boolean autoCommitFlag = conn.getAutoCommit();
                 try {
+                    conn.setAutoCommit(false);
+                    ps = conn.prepareStatement(getSql("selectEventDataToExtractSql"),
+                            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                    ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+                    ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                    ps.setString(1, batch.getNodeId());
+                    ps.setLong(2, batch.getBatchId());
+                    rs = ps.executeQuery();
                     while (rs.next()) {
                         try {
                             handler.dataExtracted(dataService.readData(rs), rs.getString(13));
@@ -511,6 +515,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
                 } finally {
+                    conn.setAutoCommit(autoCommitFlag);
                     JdbcUtils.closeResultSet(rs);
                     JdbcUtils.closeStatement(ps);
                 }
