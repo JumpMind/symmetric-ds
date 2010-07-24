@@ -35,8 +35,8 @@ abstract public class AbstractEmbeddedDbDialect extends AbstractDbDialect implem
      * When returning the raw SQL for use as SQL it needs to be un-escaped.
      */
     @Override
-    public String createInitalLoadSqlFor(Node node, TriggerRouter trigger, Table table) {
-        String sql = super.createInitalLoadSqlFor(node, trigger, table);
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table) {
+        String sql = super.createInitialLoadSqlFor(node, trigger, table);
         sql = sql.replace("''", "'");
         return sql;
     }

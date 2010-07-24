@@ -240,7 +240,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         Table tableForSql = dbDialect.getTable(triggerRouter.getTrigger().getSourceCatalogName(), triggerRouter.getTrigger().getSourceSchemaName(),
         		dataExtractor.getLegacyTableName(triggerRouter.getTrigger().getSourceTableName()), true);
         
-        final String sql = dbDialect.createInitalLoadSqlFor(node, triggerRouter, tableForSql);
+        final String sql = dbDialect.createInitialLoadSqlFor(node, triggerRouter, tableForSql);
         
         log.debug("Sql",sql);
         

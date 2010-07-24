@@ -107,7 +107,7 @@ public interface IDbDialect {
 
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
-    public String createInitalLoadSqlFor(Node node, TriggerRouter trigger, Table  table);
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table);
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter);
 
