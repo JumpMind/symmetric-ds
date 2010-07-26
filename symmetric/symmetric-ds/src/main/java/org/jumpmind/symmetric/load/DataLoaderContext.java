@@ -36,7 +36,9 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     static final ILog log = LogFactory.getLog(DataLoaderContext.class);
 
-    private String nodeId;
+    private String sourceNodeId;
+    
+    private String targetNodeId;
 
     private String tableName;
     
@@ -60,7 +62,9 @@ public class DataLoaderContext implements IDataLoaderContext {
     
     private INodeService nodeService;
     
-    private transient Node node;
+    private transient Node sourceNode;
+    
+    private transient Node targetNode;
 
     public DataLoaderContext(INodeService nodeService) {
         this();
@@ -72,12 +76,25 @@ public class DataLoaderContext implements IDataLoaderContext {
     }
     
     public Node getNode() {
-        if (node == null) {
-            this.node = nodeService != null && nodeId != null ? nodeService.findNode(this.nodeId) : null; 
-        }
-        return this.node;        
+          return getSourceNode();
     }
-
+    
+    public Node getSourceNode()
+    {
+        if (sourceNode == null) {
+            this.sourceNode = nodeService != null && sourceNodeId != null ? nodeService.findNode(this.sourceNodeId) : null; 
+        }
+        return this.sourceNode;      
+    }
+    
+    public Node getTargetNode()
+    {
+        if (targetNode == null) {
+            this.targetNode = nodeService != null && targetNodeId != null ? nodeService.findIdentity() : null; 
+        }
+        return this.targetNode;      
+    }
+    
     public TableTemplate getTableTemplate() {
         return tableTemplate;
     }
@@ -126,14 +143,36 @@ public class DataLoaderContext implements IDataLoaderContext {
         isSkipping = false;
     }
 
+    public String getSourceNodeId() {
+        return sourceNodeId;
+    }
+    
     public String getNodeId() {
-        return nodeId;
+        return getSourceNodeId();
     }
 
-    public void setNodeId(String nodeId) {        
-        this.nodeId = nodeId;
-        this.node = null;
+
+    public void setSourceNodeId(String sourceNodeId) {        
+        this.sourceNodeId = sourceNodeId;
+        this.sourceNode = null;
     }
+    
+    public void setNodeId(String sourceNodeId)
+    {
+        setSourceNodeId(sourceNodeId);
+    }
+    
+    
+    public String getTargetNodeId() {
+        return targetNodeId;
+    }
+    
+    
+    public void setTargetNodeId(String targetNodeId) {        
+        this.targetNodeId = targetNodeId;
+        this.targetNode = null;
+    }
+    
     
     public void setCatalogName(String catalogName) {
         this.catalogName = catalogName;

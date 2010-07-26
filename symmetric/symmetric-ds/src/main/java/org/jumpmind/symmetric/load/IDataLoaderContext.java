@@ -21,8 +21,8 @@
 
 package org.jumpmind.symmetric.load;
 
-import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.model.Node;
 
@@ -31,16 +31,37 @@ public interface IDataLoaderContext extends ICacheContext {
     public long getBatchId();
 
     /**
-     * 
-     * @return Source Node Id
+     * Synonym for getSourceNodeId()
+     * @return Returns the node id on which the data was extracted; i.e., the source node id
      */
     public String getNodeId();
     
     /**
-     * 
-     * @return Source Node object
+     * @return Returns the node id on which the data was extracted; i.e., the source node id
+     */
+    public String getSourceNodeId();
+    
+    /**
+     * @return Returns the node id on which the data is being loaded; i.e., the target node id
+     */
+    public String getTargetNodeId();
+    
+    /**
+     * Synonym for getSourceNode()
+     * @return Returns the node on which the data was extracted; i.e., the source node
      */
     public Node getNode();
+    
+    /**
+     * 
+     * @return Returns the node on which the data was extracted; i.e., the source node
+     */
+    public Node getSourceNode();
+    
+    /**   
+     * @return Returns the node on which the data is being loaded; i.e., the target node
+     */
+    public Node getTargetNode();
 
     public String getSchemaName();
 
