@@ -31,35 +31,43 @@ public interface IDataLoaderContext extends ICacheContext {
     public long getBatchId();
 
     /**
-     * Synonym for getSourceNodeId()
-     * @return Returns the node id on which the data was extracted; i.e., the source node id
+     * Returns the node id on which the data was extracted; i.e., the source node id.
+     * @return source node id
+     * @deprecated Replaced by getSourceNodeId
+     * @see #getSourceNodeId()
      */
     public String getNodeId();
     
     /**
-     * @return Returns the node id on which the data was extracted; i.e., the source node id
+     *  Returns the node id on which the data was extracted; i.e., the source node id
+     * @return source node id
      */
     public String getSourceNodeId();
     
     /**
-     * @return Returns the node id on which the data is being loaded; i.e., the target node id
+     * Returns the node id on which the data is being loaded; i.e., the target node id
+     * @return target node id
      */
     public String getTargetNodeId();
     
     /**
-     * Synonym for getSourceNode()
-     * @return Returns the node on which the data was extracted; i.e., the source node
+     *Returns the node on which the data was extracted; i.e., the source node
+     * @return source node 
+     * @deprecated Replaced by getSourceNode
+     * @see #getSourceNode()
+     * 
      */
     public Node getNode();
     
     /**
-     * 
-     * @return Returns the node on which the data was extracted; i.e., the source node
+     * Returns the node on which the data was extracted; i.e., the source node
+     * @return source node
      */
     public Node getSourceNode();
     
-    /**   
-     * @return Returns the node on which the data is being loaded; i.e., the target node
+    /**
+     * Returns the node on which the data is being loaded; i.e., the target node
+     * @return target node 
      */
     public Node getTargetNode();
 
