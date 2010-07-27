@@ -13,7 +13,7 @@ then
    PRGDIR="."
 fi
 LIBDIR=$PRGDIR/../lib
-LOG4JXML="file:$PRGDIR/../conf/log4j.xml"
+LOG4JXML="$PRGDIR/../conf/log4j.xml"
 RUNJAVA=java
 
 if [ -n "log4j.xml" -a -f "log4j.xml" ]
