@@ -99,7 +99,7 @@ public class TestSetupUtil {
 
     public static void cleanup() throws Exception {
         if (clientEngine != null) {
-            clientEngine.stop();
+            clientEngine.destroy();
             clientEngine = null;
         }
         if (rootServer != null) {
