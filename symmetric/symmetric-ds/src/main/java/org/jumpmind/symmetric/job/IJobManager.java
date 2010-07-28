@@ -26,4 +26,6 @@ public interface IJobManager {
     
     public void stopJobs();
     
+    public void destroy();
+    
 }

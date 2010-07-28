@@ -107,13 +107,18 @@ public class RouterService extends AbstractService implements IRouterService {
         return readThread;
     }
     
-    public void stop() {
-        log.info("RouterShuttingDown");
+    public synchronized void stop() {
         try {
+            log.info("RouterShuttingDown");
             getReadService().shutdown();
+            readThread = null;
         } catch (Exception ex) {
             log.error(ex);
         }
+    }
+    
+    public synchronized void destroy() {
+
     }
 
     /**

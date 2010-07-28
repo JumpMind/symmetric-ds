@@ -61,8 +61,9 @@ public interface ISymmetricEngine {
 
     /**
      * Must be called to start SymmetricDS.
+     * @return true if successfully started
      */
-    public void start();
+    public boolean start();
 
     /**
      * Queue up an initial load or a reload to a node.
@@ -109,10 +110,10 @@ public interface ISymmetricEngine {
     public void purge();
 
     /**
-     * Simply check and make sure that this node is all configured properly for
-     * operation.
+     * Will check to see if this instance of SymmetricDS is configured with the
+     * required properties for a node to operate.
      */
-    public void validateConfiguration();
+    public boolean isConfigured();
 
     /**
      * Push a copy of the node onto the push queue so the SymmetricDS node
@@ -152,12 +153,6 @@ public interface ISymmetricEngine {
      */
 
     public boolean isStarting();
-
-    /**
-     * Will check to see if this instance of SymmetricDS is configured with the
-     * required properties for a node to operate.
-     */
-    public boolean isConfigured();
 
     /**
      * Expose access to the Spring context. This is for advanced use only.

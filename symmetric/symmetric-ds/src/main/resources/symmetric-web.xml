@@ -78,7 +78,7 @@
             <list>
                 <value>$[sym.web.base.servlet.path]/pull/*</value>
                 <value>$[sym.web.base.servlet.path]/push/*</value>
-                <value>$[sym.web.base.servlet.path]/ack/*</value>
+                <value>$[sym.web.base.servlet.path]/	/*</value>
             </list>
         </property>
         <property name="transportResourceHandler"
