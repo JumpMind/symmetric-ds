@@ -24,7 +24,7 @@
         <property name="join" value="false" />
     </bean>
     
-        <bean id="region02Server" class="org.jumpmind.symmetric.SymmetricWebServer" init-method="start">
+     <bean id="region02Server" class="org.jumpmind.symmetric.SymmetricWebServer" init-method="start">
         <property name="httpPort" value="51415" />
         <property name="webAppDir" value="src/main/deploy/web"/>
         <property name="propertiesFile" value="classpath:/multi-tier-test-region.2.properties" />
