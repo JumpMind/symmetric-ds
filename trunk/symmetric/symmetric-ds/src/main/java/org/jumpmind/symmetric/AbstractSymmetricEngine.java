@@ -246,9 +246,12 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
      * @see #findEngineByUrl(String)
      */
     private void registerEngine() {
-        ISymmetricEngine alreadyRegister = registeredEnginesByUrl.get(getSyncUrl());
+        String url = getSyncUrl();
+        ISymmetricEngine alreadyRegister = registeredEnginesByUrl.get(url);
         if (alreadyRegister == null || alreadyRegister.equals(this)) {
-            registeredEnginesByUrl.put(getSyncUrl(), this);
+            if (url != null) {
+                registeredEnginesByUrl.put(url, this);
+            }
         } else {
             throw new IllegalStateException("Could not register engine.  There was already an engine registered under the url: " + getSyncUrl());
         }

@@ -33,6 +33,8 @@ import org.springframework.context.ApplicationContext;
 public interface ISymmetricEngine {
 
     public void stop();
+    
+    public void destroy();
 
     /**
      * @return the URL that represents this engine
