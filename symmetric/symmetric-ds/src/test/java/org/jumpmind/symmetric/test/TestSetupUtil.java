@@ -142,7 +142,7 @@ public class TestSetupUtil {
             DataSource ds = (DataSource) setupEngine.getApplicationContext().getBean(Constants.DATA_SOURCE);
             IDbDialect dialect = (IDbDialect) setupEngine.getApplicationContext().getBean(Constants.DB_DIALECT);
             new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), ds, true, SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens()).execute();
-            setupEngine.stop();
+            setupEngine.destroy();
             
             rootServer = new SymmetricWebServer("file:"
                     + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath(), "src/main/deploy/web");
