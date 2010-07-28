@@ -140,6 +140,10 @@ public class JobManager implements IJobManager {
                 log.warn("JobFailedToCancel", jobName);
             }
         }        
+    }
+    
+    public synchronized void destroy () {
+        stopJobs();
         taskScheduler.destroy();
     }
 

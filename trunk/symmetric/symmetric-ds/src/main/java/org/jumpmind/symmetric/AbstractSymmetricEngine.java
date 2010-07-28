@@ -1,4 +1,4 @@
-    package org.jumpmind.symmetric;
+package org.jumpmind.symmetric;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,9 +17,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;
@@ -106,38 +108,41 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         }
     }
 
-    public boolean isConfigured() {
-        return getParameterService() != null && !StringUtils.isBlank(getParameterService().getNodeGroupId())
-                && !StringUtils.isBlank(getParameterService().getExternalId())
-                && !StringUtils.isBlank(getParameterService().getSyncUrl());
-    }
+    public synchronized boolean start() {
 
-    public synchronized void start() {
-        if (!starting && !started) {
-            try {
-                starting = true;
-                AppUtils.cleanupTempFiles();
-                getParameterService().rereadParameters();
-                setup();
-                validateConfiguration();
-                registerEngine();
-                Node node = getNodeService().findIdentity();
-                if (node != null) {
-                    log.info("RegisteredNodeStarting", node.getNodeGroupId(), node.getNodeId(), node.getExternalId());
-                } else {
-                    log.info("UnregisteredNodeStarting", getParameterService().getNodeGroupId(), getParameterService()
-                            .getExternalId());
+        setup();
+        
+        if (isConfigured()) {
+            if (!starting && !started) {
+                try {
+                    starting = true;
+                    Node node = getNodeService().findIdentity();
+                    if (node != null) {
+                        log.info("RegisteredNodeStarting", node.getNodeGroupId(), node.getNodeId(),
+                                node.getExternalId());
+                    } else {
+                        log.info("UnregisteredNodeStarting",
+                                getParameterService().getNodeGroupId(), getParameterService()
+                                        .getExternalId());
+                    }
+                    getTriggerService().syncTriggers();
+                    heartbeat(false);
+                    jobManager.startJobs();
+                    log.info("SymmetricDSStarted", getParameterService().getString(
+                            ParameterConstants.ENGINE_NAME), getParameterService().getExternalId(),
+                            Version.version(), dbDialect.getName(), dbDialect.getVersion());
+                    started = true;
+                } finally {
+                    starting = false;
                 }
-                getTriggerService().syncTriggers();
-                heartbeat(false);
-                jobManager.startJobs();
-                log
-                        .info("SymmetricDSStarted", getParameterService().getString(ParameterConstants.ENGINE_NAME), getParameterService().getExternalId(), Version.version(), dbDialect
-                                .getName(), dbDialect.getVersion());
-                started = true;
-            } finally {
-                starting = false;
+                
+                return true;
+            } else {
+                return false;
             }
+        } else {
+            log.warn("SymmetricDSNotStarted");
+            return false;
         }
     }
 
@@ -145,6 +150,14 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         log.info("SymmetricDSClosing", getParameterService().getExternalId(), Version.version(), dbDialect.getName());
         jobManager.stopJobs();
         getRouterService().stop();
+        started = false;
+        starting = false;
+    }
+    
+    public synchronized void destroy() {
+        stop();
+        jobManager.destroy();
+        getRouterService().destroy();
         removeMeFromMap(registeredEnginesByName);
         removeMeFromMap(registeredEnginesByUrl);
         DataSource ds = jdbcTemplate.getDataSource();
@@ -155,11 +168,10 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                 log.error(ex);
             }
         }
+
         applicationContext = null;
         jdbcTemplate = null;
-        dbDialect = null;
-        started = false;
-        starting = false;
+        dbDialect = null;        
     }
 
     /**
@@ -234,8 +246,21 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
      * @see #findEngineByUrl(String)
      */
     private void registerEngine() {
-        registeredEnginesByUrl.put(getSyncUrl(), this);
-        registeredEnginesByName.put(getEngineName(), this);
+        ISymmetricEngine alreadyRegister = registeredEnginesByUrl.get(getSyncUrl());
+        if (alreadyRegister == null || alreadyRegister.equals(this)) {
+            registeredEnginesByUrl.put(getSyncUrl(), this);
+        } else {
+            throw new IllegalStateException("Could not register engine.  There was already an engine registered under the url: " + getSyncUrl());
+        }
+        
+        alreadyRegister = registeredEnginesByName.get(getEngineName());
+        if (alreadyRegister == null || alreadyRegister.equals(this)) {
+            registeredEnginesByName.put(getEngineName(), this);
+        } else {
+            throw new IllegalStateException("Could not register engine.  There was already an engine registered under the name: " + getEngineName());
+        }
+        
+        
     }
 
     public String getSyncUrl() {
@@ -258,10 +283,13 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized void setup() {
+        AppUtils.cleanupTempFiles();
+        getParameterService().rereadParameters();
         if (!setup) {
             setupDatabase(false);
             setup = true;
         }
+        registerEngine();
     }
 
     public String reloadNode(String nodeId) {
@@ -323,38 +351,42 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         getClusterService().initLockTable();
     }
 
-    public void validateConfiguration() {
-        Node node = getNodeService().findIdentity();
+    public boolean isConfigured() {
+        boolean configurationValid = false;
+        IDbDialect dbDialect = getDbDialect();
+        Table symNodeTable = dbDialect.getTable(dbDialect.getDefaultCatalog(), dbDialect.getDefaultSchema(), TableConstants.getTableName(dbDialect.getTablePrefix(), TableConstants.SYM_NODE), false);
+        Node node = symNodeTable != null ? getNodeService().findIdentity() : null;
+        long offlineNodeDetectionPeriodSeconds = getParameterService().getLong(
+                ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES) * 60;
+        long heartbeatSeconds = getParameterService().getLong(
+                ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
+        
         if (node == null && StringUtils.isBlank(getParameterService().getRegistrationUrl())) {
-            throw new IllegalStateException(
-                    String
-                            .format(
-                                    "Please set the property %s so this node may pull registration or manually insert configuration into the configuration tables.",
-                                    ParameterConstants.REGISTRATION_URL));
+            log.warn("ValidationSetRegistrationUrl", ParameterConstants.REGISTRATION_URL);
+            
         } else if (node != null
-                && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node.getNodeGroupId().equals(
-                        getParameterService().getNodeGroupId()))) {
-            throw new IllegalStateException(
-                    "The configured state does not match recorded database state.  The recorded external id is "
-                            + node.getExternalId() + " while the configured external id is "
-                            + getParameterService().getExternalId() + ".  The recorded node group id is "
-                            + node.getNodeGroupId() + " while the configured node group id is "
-                            + getParameterService().getNodeGroupId());
+                && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node
+                        .getNodeGroupId().equals(getParameterService().getNodeGroupId()))) {
+            log.warn("ValidationComparePropertiesToDatabase", node.getExternalId(),
+                    getParameterService().getExternalId(), node.getNodeGroupId(),
+                    getParameterService().getNodeGroupId());
+            
         } else if (node != null && StringUtils.isBlank(getParameterService().getRegistrationUrl())
                 && StringUtils.isBlank(getParameterService().getSyncUrl())) {
-            throw new IllegalStateException(
-                    "The sync.url property must be set for the registration server.  Otherwise, registering nodes will not be able to sync with it.");
+            log.warn("ValidationMakeSureSyncUrlIsSet");
+            
+        } else if (offlineNodeDetectionPeriodSeconds > 0
+                && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
+            // Offline node detection is not disabled (-1) and the value is too
+            // small (less than the heartbeat)
+            log.warn("ValidationOfflineSettings",
+                    ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES,
+                    ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
+            
+        } else {
+            configurationValid = true;
         }
         
-        long offlineNodeDetectionPeriodSeconds = getParameterService().getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES)*60;
-        long heartbeatSeconds = getParameterService().getLong(ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
-        if (offlineNodeDetectionPeriodSeconds > 0 && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
-            // Offline node detection is not disabled (-1) and the value is too small (less than the heartbeat)
-            throw new IllegalStateException(
-                "The " + ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES + " property must be a longer period of time than the " +
-                ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC + " property.  Otherwise, nodes will be taken offline before the heartbeat job has a chance to run.");
-        }
-
         
         // TODO Add more validation checks to make sure that the system is
         // configured correctly
@@ -362,6 +394,8 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         // TODO Add method to configuration service to validate triggers and
         // call from here.
         // Make sure there are not duplicate trigger rows with the same name
+        
+        return configurationValid;
     }
 
     public void heartbeat(boolean force) {

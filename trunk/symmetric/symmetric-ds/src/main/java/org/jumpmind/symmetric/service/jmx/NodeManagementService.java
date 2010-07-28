@@ -31,8 +31,12 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -59,6 +63,8 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for a node")
 public class NodeManagementService {
+    
+    final ILog log = LogFactory.getLog(getClass());
 
     private IPurgeService purgeService;
 
@@ -92,10 +98,47 @@ public class NodeManagementService {
         this.statisticManager = statisticManager;
     }
 
+    @ManagedAttribute(description = "Checks if SymmetricDS has been started.")
+    public boolean isStarted() {
+        ISymmetricEngine engine = getEngine();
+        if (engine != null) {
+            return engine.isStarted();
+        } else {
+            return false;
+        }
+    }
+    
+    @ManagedOperation(description = "Start the SymmetricDS engine")
+    public boolean start() {
+        try {
+            ISymmetricEngine engine = getEngine();
+            if (engine != null) {
+                return engine.start();
+            } else {
+                return false;
+            }
+        } catch (Exception ex) {
+            log.error(ex);
+            return false;
+        }
+    }
+
+    @ManagedOperation(description = "Stop the SymmetricDS engine")
+    public void stop() {
+        try {
+            ISymmetricEngine engine = getEngine();
+            if (engine != null) {
+                engine.stop();
+            }
+        } catch (Exception ex) {
+            log.error(ex);
+        }
+    }
+    
     @ManagedOperation(description = "Run the purge process")
     public void purge() {
         purgeService.purge();
-    }
+    }        
     
     @ManagedOperation(description = "Force the channel settings to be read from the database")
     public void clearChannelCache() {
@@ -106,7 +149,11 @@ public class NodeManagementService {
     public void syncTriggers() {
         triggerRouterService.syncTriggers();
     }
-
+    
+    protected ISymmetricEngine getEngine() {
+        return AbstractSymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME));
+    }
+    
     @ManagedAttribute(description = "Get the number of current connections allowed to this "
             + "instance of the node via HTTP.  If this value is 20, then 20 concurrent push"
             + " clients and 20 concurrent pull clients will be allowed")

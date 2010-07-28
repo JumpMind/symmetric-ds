@@ -69,7 +69,11 @@ public class Statistic {
     }
 
     public long getLifetimeCount() {
-        return lifeTimeCount.get(name);
+        if (lifeTimeCount.containsKey(name)) {
+            return lifeTimeCount.get(name);
+        } else {
+            return 0l;
+        }
     }
 
     public BigDecimal getLifetimeAverageValue() {

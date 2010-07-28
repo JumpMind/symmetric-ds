@@ -39,4 +39,6 @@ public interface IRouterService extends ISqlProvider {
     public void addBatchAlgorithm(String name, IBatchAlgorithm algorithm);
     
     public void stop ();
+    
+    public void destroy();
 }
