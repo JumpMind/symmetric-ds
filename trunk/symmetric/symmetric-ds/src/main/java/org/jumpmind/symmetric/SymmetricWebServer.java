@@ -34,6 +34,7 @@ import mx4j.tools.adaptor.http.XSLTProcessor;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.http.security.Constraint;
 import org.eclipse.jetty.http.security.Password;
+import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
@@ -43,6 +44,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
+import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.SecurityConstants;
@@ -162,10 +164,10 @@ public class SymmetricWebServer {
         setupBasicAuthIfNeeded(server);
 
         // Configure JMX for Jetty
-//        MBeanContainer mbContainer=new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-//        server.getContainer().addEventListener(mbContainer);
-//        server.addBean(mbContainer);
-//        mbContainer.addBean(Log.getLog());
+        MBeanContainer mbContainer=new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+        server.getContainer().addEventListener(mbContainer);
+        server.addBean(mbContainer);
+        mbContainer.addBean(Log.getLog());
         
         webapp = new WebAppContext();
         webapp.setContextPath(webHome);
