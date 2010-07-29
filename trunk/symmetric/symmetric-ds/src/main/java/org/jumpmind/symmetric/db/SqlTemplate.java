@@ -150,7 +150,7 @@ public class SqlTemplate {
 
         Column[] columns = metaData.getPrimaryKeyColumns();
         String columnsText = buildColumnString(dialect, dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
-                "", columns, dialect, DataEventType.INSERT, false).columnString;
+                "", columns, dialect, DataEventType.INSERT, false).toString();
         sql = AppUtils.replace("columns", columnsText, sql);
 
         sql = AppUtils.replace("tableName", trig.getSourceTableName(), sql);
@@ -246,10 +246,10 @@ public class SqlTemplate {
 
         Column[] columns = trigger.orderColumnsForTable(metaData);
         ColumnString columnString = buildColumnString(dialect, ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns, dialect, dml, false);
-        ddl = AppUtils.replace("columns", columnString.columnString, ddl);
+        ddl = AppUtils.replace("columns", columnString.toString(), ddl);
         ddl = AppUtils.replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
                 ddl);
-        ddl = AppUtils.replace("oldColumns", buildColumnString(dialect, ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml, true).columnString, ddl);
+        ddl = AppUtils.replace("oldColumns", buildColumnString(dialect, ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml, true).toString(), ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
@@ -260,7 +260,7 @@ public class SqlTemplate {
                         + "." : "")), ddl);
 
         columns = metaData.getPrimaryKeyColumns();
-        ddl = AppUtils.replace("oldKeys", buildColumnString(dialect, ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml, true).columnString, ddl);
+        ddl = AppUtils.replace("oldKeys", buildColumnString(dialect, ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml, true).toString(), ddl);
         ddl = AppUtils.replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
         ddl = AppUtils.replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
         ddl = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue : newTriggerValue, columns), ddl);
@@ -736,6 +736,10 @@ public class SqlTemplate {
         ColumnString(String columnExpression, boolean isBlobClob) {
             this.columnString = columnExpression;
             this.isBlobClob = isBlobClob;
+        }
+        
+        public String toString() {
+            return StringUtils.isBlank(columnString) ? "null" : columnString;
         }
 
     }
