@@ -1347,7 +1347,17 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public void truncateTable(String tableName) {
-        jdbcTemplate.update("truncate table " + tableName);
+        boolean success = false;
+        int tryCount = 5;
+        while (!success && tryCount > 0) {
+            try {
+                jdbcTemplate.update("truncate table " + tableName);
+                success = true;
+            } catch (DataAccessException ex) {
+                logger.warn(ex);
+                AppUtils.sleep(5000);
+            }
+        }
     }
 
     /**
