@@ -1356,6 +1356,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             } catch (DataAccessException ex) {
                 logger.warn(ex);
                 AppUtils.sleep(5000);
+                tryCount--;
             }
         }
     }
