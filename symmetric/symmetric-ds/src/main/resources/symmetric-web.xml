@@ -122,6 +122,11 @@
         <property name="disabled" value="true" />
     </bean>
 
+    <bean id="pingServlet"
+        class="org.jumpmind.symmetric.web.PingServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/ping/*" />
+    </bean>
+
     <bean id="pullServlet"
         class="org.jumpmind.symmetric.web.PullServlet">
         <property name="uriPattern" value="$[sym.web.base.servlet.path]/pull/*" />
