@@ -32,8 +32,7 @@ public class CsvUtils {
         String[] tokens = null;
         if (csvData != null) {
             InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(csvData.getBytes()));
-            CsvReader csvReader = new CsvReader(reader);
-            csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
+            CsvReader csvReader = getCsvReader(reader);
             try {
                 if (csvReader.readRecord()) {
                     tokens = csvReader.getValues();
