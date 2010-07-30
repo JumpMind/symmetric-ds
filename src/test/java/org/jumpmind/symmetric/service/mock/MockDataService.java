@@ -50,6 +50,10 @@ public class MockDataService implements IDataService {
             String routerId) {
 
     }
+    
+    public Date findCreateTimeOfData(long dataId) {
+        return null;
+    }
 
     public void sendScript(String nodeId, String script) {
 
