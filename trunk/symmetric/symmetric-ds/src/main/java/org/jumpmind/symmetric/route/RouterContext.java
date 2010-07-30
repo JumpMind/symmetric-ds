@@ -43,6 +43,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     public static final String STAT_INSERT_DATA_EVENTS_MS = "insert.data.events.ms";
     public static final String STAT_DATA_ROUTER_MS = "data.router.ms";
     public static final String STAT_READ_DATA_MS = "read.data.ms";
+    public static final String STAT_REREAD_DATA_MS = "already.read.data.ms";
     public static final String STAT_ENQUEUE_DATA_MS = "enqueue.data.ms";
     public static final String STAT_ENQUEUE_EOD_MS = "enqueue.eod.data.ms";
 
