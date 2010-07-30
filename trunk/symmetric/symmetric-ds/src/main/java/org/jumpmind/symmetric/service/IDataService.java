@@ -71,6 +71,8 @@ public interface IDataService {
     public DataRef getDataRef();
 
     public Date findCreateTimeOfEvent(long dataId);
+    
+    public Date findCreateTimeOfData(long dataId);
 
     public Data createData(String catalogName, String schemaName, String tableName, boolean isReload);
 

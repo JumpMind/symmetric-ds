@@ -48,6 +48,10 @@ public class MockDataService implements IDataService {
         
         
     }
+    
+    public Date findCreateTimeOfData(long dataId) {
+        return null;
+    }
 
     public int countDataInRange(long firstDataId, long secondDataId) {
         

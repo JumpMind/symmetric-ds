@@ -29,6 +29,11 @@
         select max(create_time) from $[sym.sync.table.prefix]_data_event where data_id=?
       </value>
     </entry>    
+    <entry key="findDataCreateTimeSql">
+      <value>
+        select create_time from $[sym.sync.table.prefix]_data where data_id=?
+      </value>
+    </entry>     
     <entry key="updateDataRefSql">
       <value>
        update $[sym.sync.table.prefix]_data_ref set ref_data_id=?, ref_time=?
