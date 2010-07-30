@@ -128,11 +128,14 @@ public class DataToRouteReader implements Runnable {
                                 Data data = dataService.readData(rs);
                                 context.setLastDataIdForTransactionId(data);
                                 memQueue.add(data);
-                                dataCount++;
+                                dataCount++;                                
+                                context.incrementStat(System.currentTimeMillis() - ts,
+                                        RouterContext.STAT_READ_DATA_MS);
+                            } else {
+                                context.incrementStat(System.currentTimeMillis() - ts,
+                                        RouterContext.STAT_REREAD_DATA_MS);                                
                             }
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    RouterContext.STAT_READ_DATA_MS);
-
+                            
                             ts = System.currentTimeMillis();
 
                             if (toRead == 0) {
