@@ -198,9 +198,11 @@ public class RouterService extends AbstractService implements IRouterService {
                                 lastDataId = dataId;
                             } else {
                                 if (dataService.countDataInRange(lastDataId, dataId) == 0) {
-                                    if (dbDialect.supportsTransactionViews() && !dbDialect.areDatabaseTransactionsPendingSince(dataService.findCreateTimeOfData(dataId).getTime())) {
-                                        log.info("RouterSkippingDataIdsNoTransactions", lastDataId, dataId);
-                                        lastDataId = dataId;
+                                    if (dbDialect.supportsTransactionViews()) {
+                                        if (!dbDialect.areDatabaseTransactionsPendingSince(dataService.findCreateTimeOfData(dataId).getTime())) {
+                                            log.info("RouterSkippingDataIdsNoTransactions", lastDataId, dataId);
+                                            lastDataId = dataId;
+                                        }
                                     }  else if (isDataGapExpired(dataId)) {
                                         log.info("RouterSkippingDataIdsGapExpired", lastDataId, dataId);
                                         lastDataId = dataId;
