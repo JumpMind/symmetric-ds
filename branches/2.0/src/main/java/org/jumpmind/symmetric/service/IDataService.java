@@ -80,6 +80,8 @@ public interface IDataService {
     public DataRef getDataRef();
 
     public Date findCreateTimeOfEvent(long dataId);
+    
+    public Date findCreateTimeOfData(long dataId);
 
     public Data createData(String tableName, boolean isReload);
 

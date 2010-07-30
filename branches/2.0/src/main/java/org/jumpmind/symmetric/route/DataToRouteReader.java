@@ -103,89 +103,99 @@ public class DataToRouteReader implements Runnable {
     }
 
     public void run() {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);
-        jdbcTemplate.execute(new ConnectionCallback<Integer>() {
-            public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
-                int dataCount = 0;
-                PreparedStatement ps = null;
-                ResultSet rs = null;
-                try {
-                    String channelId = context.getChannel().getChannelId();
-                    ps = c.prepareStatement(getSql(context.getChannel().getChannel()),
-                            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                    ps.setQueryTimeout(queryTimeout);
-                    ps.setFetchSize(fetchSize);
-                    ps.setString(1, channelId);
-                    ps.setLong(2, dataRef.getRefDataId());
-                    long executeTimeInMs = System.currentTimeMillis();
-                    rs = ps.executeQuery();
-                    executeTimeInMs = System.currentTimeMillis() - executeTimeInMs;
-                    if (executeTimeInMs > 30000) {
-                        log.warn("RoutedDataSelectedInTime", executeTimeInMs, channelId);
-                    }
-
-                    int toRead = maxQueueSize - dataQueue.size();
-                    List<Data> memQueue = new ArrayList<Data>(toRead);
-                    long ts = System.currentTimeMillis();
-                    while (rs.next() && reading) {
-
-                        if (rs.getString(13) == null) {
-                            Data data = dataService.readData(rs);
-                            context.setLastDataIdForTransactionId(data);
-                            memQueue.add(data);
-                            dataCount++;
+        try {
+            JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);
+            jdbcTemplate.execute(new ConnectionCallback<Integer>() {
+                public Integer doInConnection(Connection c) throws SQLException,
+                        DataAccessException {
+                    int dataCount = 0;
+                    PreparedStatement ps = null;
+                    ResultSet rs = null;
+                    try {
+                        String channelId = context.getChannel().getChannelId();
+                        ps = c.prepareStatement(getSql(context.getChannel().getChannel()),
+                                ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                        ps.setQueryTimeout(queryTimeout);
+                        ps.setFetchSize(fetchSize);
+                        ps.setString(1, channelId);
+                        ps.setLong(2, dataRef.getRefDataId());
+                        long executeTimeInMs = System.currentTimeMillis();
+                        rs = ps.executeQuery();
+                        executeTimeInMs = System.currentTimeMillis() - executeTimeInMs;
+                        if (executeTimeInMs > 30000) {
+                            log.warn("RoutedDataSelectedInTime", executeTimeInMs, channelId);
                         }
-                        context.incrementStat(System.currentTimeMillis() - ts,
-                                RouterContext.STAT_READ_DATA_MS);
+
+                        int toRead = maxQueueSize - dataQueue.size();
+                        List<Data> memQueue = new ArrayList<Data>(toRead);
+                        long ts = System.currentTimeMillis();
+                        while (rs.next() && reading) {
+                            context.incrementStat(System.currentTimeMillis() - ts,
+                                    RouterContext.STAT_READ_RESULT_WAIT_TIME_MS);
+                            
+                            if (rs.getString(13) == null) {
+                                Data data = dataService.readData(rs);
+                                context.setLastDataIdForTransactionId(data);
+                                memQueue.add(data);
+                                dataCount++;
+                                context.incrementStat(System.currentTimeMillis() - ts,
+                                        RouterContext.STAT_READ_DATA_MS);
+                            } else {
+                                context.incrementStat(System.currentTimeMillis() - ts,
+                                        RouterContext.STAT_REREAD_DATA_MS);                                
+                            }
+
+                            ts = System.currentTimeMillis();
+
+                            if (toRead == 0) {
+                                copyToQueue(memQueue);
+                                toRead = maxQueueSize - dataQueue.size();
+                                memQueue = new ArrayList<Data>(toRead);
+                            } else {
+                                toRead--;
+                            }
+
+                            context.incrementStat(System.currentTimeMillis() - ts,
+                                    RouterContext.STAT_ENQUEUE_DATA_MS);
+
+                            ts = System.currentTimeMillis();
+                        }
 
                         ts = System.currentTimeMillis();
 
-                        if (toRead == 0) {
-                            copyToQueue(memQueue);
-                            toRead = maxQueueSize - dataQueue.size();
-                            memQueue = new ArrayList<Data>(toRead);
-                        } else {
-                            toRead--;
-                        }
+                        copyToQueue(memQueue);
 
                         context.incrementStat(System.currentTimeMillis() - ts,
                                 RouterContext.STAT_ENQUEUE_DATA_MS);
 
-                        ts = System.currentTimeMillis();
+                        return dataCount;
+
+                    } finally {
+
+                        JdbcUtils.closeResultSet(rs);
+                        JdbcUtils.closeStatement(ps);
+                        rs = null;
+                        ps = null;
+
+                        long ts = System.currentTimeMillis();
+
+                        boolean done = false;
+                        do {
+                            done = dataQueue.offer(new EOD());
+                            AppUtils.sleep(50);
+                        } while (!done && reading);
+
+                        context.incrementStat(System.currentTimeMillis() - ts,
+                                RouterContext.STAT_ENQUEUE_EOD_MS);
+
+                        reading = false;
+
                     }
-
-                    ts = System.currentTimeMillis();
-                    
-                    copyToQueue(memQueue);
-
-                    context.incrementStat(System.currentTimeMillis() - ts,
-                            RouterContext.STAT_ENQUEUE_DATA_MS);                   
-                    
-                    return dataCount;
-                    
-                } finally {
-                    
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(ps);
-                    rs = null;
-                    ps = null;
-                    
-                    long ts = System.currentTimeMillis();
-                    
-                    boolean done = false;
-                    do {
-                        done = dataQueue.offer(new EOD());
-                        AppUtils.sleep(50);
-                    } while (!done && reading);
-                    
-                    context.incrementStat(System.currentTimeMillis() - ts,
-                            RouterContext.STAT_ENQUEUE_EOD_MS);
-
-                    reading = false;
-
                 }
-            }
-        });
+            });
+        } catch (Throwable ex) {
+            log.error(ex);
+        }
     }
 
     protected void copyToQueue(List<Data> memQueue) {
