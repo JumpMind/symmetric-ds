@@ -457,6 +457,11 @@ public class DataService extends AbstractService implements IDataService {
         return (Date) jdbcTemplate.queryForObject(getSql("findDataEventCreateTimeSql"),
                 new Object[] { dataId }, new int[] { Types.INTEGER }, Date.class);
     }
+    
+    public Date findCreateTimeOfData(long dataId) {        
+        return (Date) jdbcTemplate.queryForObject(getSql("findDataCreateTimeSql"), new Object[] { dataId },
+                new int[] { Types.INTEGER }, Date.class);
+    }    
 
     public Map<String, String> getRowDataAsMap(Data data) {
         Map<String, String> map = new HashMap<String, String>();
