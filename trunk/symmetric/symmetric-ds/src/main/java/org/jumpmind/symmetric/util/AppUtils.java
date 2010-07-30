@@ -41,6 +41,8 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
 public class AppUtils {
+    
+    private static String UNKNOWN = "unknown";
 
     private static ILog log = LogFactory.getLog(AppUtils.class);
     
@@ -76,21 +78,25 @@ public class AppUtils {
     }
 
     public static String getHostName() {
-        String hostName = System.getProperty("host.name", "unknown");
-        try {
-            hostName = InetAddress.getLocalHost().getHostName();
-        } catch (Exception ex) {
-            log.warn(ex);
+        String hostName = System.getProperty("host.name", UNKNOWN);
+        if (UNKNOWN.equals(hostName)) {
+            try {
+                hostName = InetAddress.getLocalHost().getHostName();
+            } catch (Exception ex) {
+                log.warn(ex);
+            }
         }
         return hostName;
     }
 
     public static String getIpAddress() {
-        String ipAddress = System.getProperty("ip.address", "unknown");
-        try {
-            ipAddress = InetAddress.getLocalHost().getHostAddress();
-        } catch (Exception ex) {
-            log.warn(ex);
+        String ipAddress = System.getProperty("ip.address", UNKNOWN);
+        if (UNKNOWN.equals(ipAddress)) {
+            try {
+                ipAddress = InetAddress.getLocalHost().getHostAddress();
+            } catch (Exception ex) {
+                log.warn(ex);
+            }
         }
         return ipAddress;
     }
