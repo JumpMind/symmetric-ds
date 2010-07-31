@@ -19,12 +19,9 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +31,6 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -43,12 +39,13 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
-import org.jumpmind.symmetric.route.DataToRouteReader;
+import org.jumpmind.symmetric.route.DataToRouteReaderFactory;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
+import org.jumpmind.symmetric.route.IDataToRouteReader;
 import org.jumpmind.symmetric.route.IRouterContext;
 import org.jumpmind.symmetric.route.RouterContext;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -59,8 +56,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ResultSetExtractor;
 
 /**
  * This service is responsible for routing data to specific nodes and managing
@@ -85,6 +80,8 @@ public class RouterService extends AbstractService implements IRouterService {
     private Map<String, IDataRouter> routers;
 
     private Map<String, IBatchAlgorithm> batchAlgorithms;
+    
+    private DataToRouteReaderFactory dataToRouteReaderFactory;
 
     transient ExecutorService readThread = null;
 
@@ -131,7 +128,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 Node sourceNode = nodeService.findIdentity();
                 DataRef ref = dataService.getDataRef();
                 int dataCount = routeDataForEachChannel(ref, sourceNode);
-                findAndSaveNextDataId();
+                dataToRouteReaderFactory.getGapDetector().detectAndRecordUnprocessedDataIds();
                 ts = System.currentTimeMillis() - ts;
                 if (dataCount > 0 || ts > 30000) {
                     log.info("RoutedDataInTime", dataCount, ts);
@@ -202,64 +199,6 @@ public class RouterService extends AbstractService implements IRouterService {
         context.setNeedsCommitted(false);
     }
 
-    protected void findAndSaveNextDataId() {
-        // reselect the DataRef just in case somebody updated it manually during
-        // routing
-        final DataRef ref = dataService.getDataRef();
-        long ts = System.currentTimeMillis();
-        long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"),
-                new Object[] { ref.getRefDataId() }, new int[] { Types.INTEGER },
-                new ResultSetExtractor<Long>() {
-                    public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
-                        long lastDataId = ref.getRefDataId();
-                        while (rs.next()) {
-                            long dataId = rs.getLong(1);
-                            if (lastDataId == -1 || lastDataId + 1 == dataId
-                                    || lastDataId == dataId) {
-                                lastDataId = dataId;
-                            } else {
-                                if (dataService.countDataInRange(lastDataId, dataId) == 0) {
-                                    if (dbDialect.supportsTransactionViews()) {
-                                        if (!dbDialect.areDatabaseTransactionsPendingSince(dataService.findCreateTimeOfData(dataId).getTime())) {
-                                            log.info("RouterSkippingDataIdsNoTransactions", lastDataId, dataId);
-                                            lastDataId = dataId;
-                                        }
-                                    } else if (isDataGapExpired(dataId)) {
-                                        log.info("RouterSkippingDataIdsGapExpired", lastDataId,
-                                                dataId);
-                                        lastDataId = dataId;
-                                    } else {
-                                        break;
-                                    }
-                                } else {
-                                    // detected a gap!
-                                    break;
-                                }
-                            }
-                        }
-                        return lastDataId;
-                    }
-                });
-        long updateTimeInMs = System.currentTimeMillis() - ts;
-        if (updateTimeInMs > 10000) {
-            log.info("RoutedDataRefUpdateTime", updateTimeInMs);
-        }
-        if (ref.getRefDataId() != lastDataId) {
-            dataService.saveDataRef(new DataRef(lastDataId, new Date()));
-        }
-    }
-
-    protected boolean isDataGapExpired(long dataId) {
-        long gapTimoutInMs = parameterService
-                .getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
-        Date createTime = dataService.findCreateTimeOfEvent(dataId);
-        if (createTime != null && System.currentTimeMillis() - createTime.getTime() > gapTimoutInMs) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     protected Set<Node> findAvailableNodes(TriggerRouter triggerRouter, RouterContext context) {
         Set<Node> nodes = context.getAvailableNodes().get(triggerRouter);
         if (nodes == null) {
@@ -288,11 +227,8 @@ public class RouterService extends AbstractService implements IRouterService {
      * @param context
      *            The current context of the routing process
      */
-    protected int selectDataAndRoute(DataRef ref, RouterContext context) throws SQLException {
-
-        DataToRouteReader reader = new DataToRouteReader(dataSource,
-                jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                dbDialect.getStreamingResultsFetchSize(), context, ref, dataService);
+    protected int selectDataAndRoute(DataRef dataRef, RouterContext context) throws SQLException {
+        IDataToRouteReader reader = dataToRouteReaderFactory.getDataToRouteReader(context, dataRef);
         getReadService().execute(reader);
         Data data = null;
         int dataCount = 0;
@@ -451,5 +387,9 @@ public class RouterService extends AbstractService implements IRouterService {
 
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;
+    }
+    
+    public void setDataToRouteReaderFactory(DataToRouteReaderFactory dataToRouteReaderFactory) {
+        this.dataToRouteReaderFactory = dataToRouteReaderFactory;
     }
 }

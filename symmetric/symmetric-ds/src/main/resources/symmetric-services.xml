@@ -85,6 +85,16 @@
         <property name="configurationService" ref="configurationService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="clusterService" ref="clusterService" />
+        <property name="dataToRouteReaderFactory">
+        <bean class="org.jumpmind.symmetric.route.DataToRouteReaderFactory">
+            <property name="dataService" ref="dataService"/>
+            <property name="dbDialect" ref="dbDialect"/>
+            <property name="jdbcTemplate" ref="jdbcTemplate"/>
+            <property name="sql" ref="routerServiceSql"/>
+            <property name="type" value="${routing.data.reader.type}"/>
+            <property name="parameterService" ref="parameterService"/>
+        </bean>
+        </property>
     </bean>    
 
     <bean id="outgoingBatchService" class="org.jumpmind.symmetric.service.impl.OutgoingBatchService" scope="singleton" parent="abstractService">
