@@ -15,7 +15,7 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.route.DataToRouteReader;
+import org.jumpmind.symmetric.route.DataRefRouteReader;
 import org.jumpmind.symmetric.route.RouterContext;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
@@ -707,7 +707,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         deleteAll(TEST_TABLE_1);
 
         RouterContext context = new RouterContext(TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getDataSource());
-        DataToRouteReader reader = new DataToRouteReader(getDataSource(), 1000, 1000, 
+        DataRefRouteReader reader = new DataRefRouteReader(getDataSource(), 1000, 1000, 
                 ((AbstractService)getRouterService()), 1000, context, getDataService().getDataRef(), getDataService());
         
         reader.run();

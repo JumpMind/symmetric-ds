@@ -30,9 +30,9 @@ import org.springframework.jdbc.support.JdbcUtils;
  * reads ahead and tries to keep a blocking queue populated for other threads to
  * process.
  */
-public class DataToRouteReader implements Runnable {
+public class DataRefRouteReader implements IDataToRouteReader {
 
-    final static ILog log = LogFactory.getLog(DataToRouteReader.class);
+    final static ILog log = LogFactory.getLog(DataRefRouteReader.class);
 
     private int fetchSize;
 
@@ -56,7 +56,7 @@ public class DataToRouteReader implements Runnable {
 
     private int queryTimeout = DEFAULT_QUERY_TIMEOUT;      
 
-    public DataToRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize, ISqlProvider sqlProvider,
+    public DataRefRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize, ISqlProvider sqlProvider,
             int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService) {
         this.maxQueueSize = maxQueueSize;
         this.dataSource = dataSource;
@@ -69,6 +69,9 @@ public class DataToRouteReader implements Runnable {
         this.dataService = dataService;
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.route.IDataToRouteReader#take()
+     */
     public Data take() {
         Data data = null;
         try {
@@ -95,6 +98,9 @@ public class DataToRouteReader implements Runnable {
         return select;
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.route.IDataToRouteReader#run()
+     */
     public void run() {
         try {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);
@@ -200,12 +206,18 @@ public class DataToRouteReader implements Runnable {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.route.IDataToRouteReader#isReading()
+     */
     public boolean isReading() {
         return reading;
     }
     
     
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.route.IDataToRouteReader#setReading(boolean)
+     */
     public void setReading(boolean reading) {
         this.reading = reading;
     }
