@@ -91,7 +91,7 @@
             <property name="dbDialect" ref="dbDialect"/>
             <property name="jdbcTemplate" ref="jdbcTemplate"/>
             <property name="sql" ref="routerServiceSql"/>
-            <property name="type" value="${routing.data.reader.type}"/>
+            <property name="type" value="$[sym.routing.data.reader.type]"/>
             <property name="parameterService" ref="parameterService"/>
         </bean>
         </property>
