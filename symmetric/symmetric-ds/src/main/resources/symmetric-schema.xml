@@ -238,6 +238,11 @@
         <column name="last_update_hostname" type="VARCHAR" size="50"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
+        <index name="idx_ob_node_chanl_status">
+            <index-column name="node_id" />
+            <index-column name="channel_id" />
+            <index-column name="status" />
+        </index>                        
     </table>
     
     <table name="incoming_batch" description="The incoming_batch is used for tracking the status of loading an outgoing_batch from another node. Data is loaded and commited at the batch level. The status of the incoming_batch is either successful (OK) or error (ER). ">
