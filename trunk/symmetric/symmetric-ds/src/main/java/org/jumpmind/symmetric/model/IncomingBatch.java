@@ -82,7 +82,7 @@ public class IncomingBatch implements Serializable {
 
     public IncomingBatch(IDataLoaderContext context) {
         batchId = context.getBatchId();
-        nodeId = context.getNodeId();
+        nodeId = context.getSourceNodeId();
         channelId = context.getChannelId();
         status = Status.OK;
     }
