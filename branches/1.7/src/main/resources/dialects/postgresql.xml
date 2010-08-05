@@ -106,7 +106,7 @@
                 </property>
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.MS') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>
