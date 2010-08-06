@@ -1333,7 +1333,7 @@ public class CsvReader {
         isQualified[columnsCount] = startedWithQualifier;
 
         currentValue = "";
-
+        startedWithQualifier=false;
         columnsCount++;
     }
 
