@@ -266,6 +266,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.commit(batch, writer);
                         }
                     } finally {
+                        conn.commit();
                         conn.setAutoCommit(autoCommitFlag); 
                         JdbcUtils.closeResultSet(rs);
                         JdbcUtils.closeStatement(st);
@@ -433,6 +434,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
                 } finally {
+                    conn.commit();
                     conn.setAutoCommit(autoCommitFlag);
                     JdbcUtils.closeResultSet(rs);
                     JdbcUtils.closeStatement(ps);
