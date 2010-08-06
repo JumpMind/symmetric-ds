@@ -38,6 +38,7 @@
         <property name="dataService" ref="dataService" />
         <property name="clusterService" ref="clusterService" />
         <property name="registrationService" ref="registrationService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="dataSource" ref="dataSource" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="nodeService" ref="nodeService" />
