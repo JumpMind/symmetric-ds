@@ -289,15 +289,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<TriggerRouter> virtualConfigTriggers = getConfigurationTablesTriggerRoutersForCurrentNode(sourceNodeGroupId);
         for (TriggerRouter trigger : virtualConfigTriggers) {
             if (trigger.getRouter().getSourceNodeGroupId().equalsIgnoreCase(sourceNodeGroupId)
-                    && !doesTriggerExistInList(configuredInDatabase, trigger)) {
+                    && !doesTriggerRouterExistInList(configuredInDatabase, trigger)) {
                 configuredInDatabase.add(trigger);
             }
         }
     }
-
-    protected boolean doesTriggerExistInList(List<TriggerRouter> triggers, TriggerRouter trigger) {
-        for (TriggerRouter checkMe : triggers) {
-            if (checkMe.getTrigger().isSame(trigger.getTrigger())) {
+    
+    protected boolean doesTriggerRouterExistInList(List<TriggerRouter> triggerRouters,
+            TriggerRouter triggerRouter) {
+        for (TriggerRouter checkMe : triggerRouters) {
+            if (checkMe.isSame(triggerRouter)) {
                 return true;
             }
         }

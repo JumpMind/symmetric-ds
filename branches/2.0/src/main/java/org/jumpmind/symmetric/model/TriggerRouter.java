@@ -183,4 +183,13 @@ public class TriggerRouter {
         }
         return tableName;
     }
+    
+    public boolean isSame(TriggerRouter triggerRouter) {
+        return (this.trigger == null && triggerRouter.trigger == null)
+                || (this.trigger != null && triggerRouter.trigger != null && this.trigger
+                        .isSame(triggerRouter.trigger))
+                && (this.router == null && triggerRouter.router == null)
+                || (this.router != null && triggerRouter.router != null && this.router
+                        .equals(triggerRouter.router));
+    }
 }
