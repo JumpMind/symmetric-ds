@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
-import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -45,6 +44,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.DataToRouteReaderFactory;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
+import org.jumpmind.symmetric.route.IDataToRouteGapDetector;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
 import org.jumpmind.symmetric.route.IRouterContext;
 import org.jumpmind.symmetric.route.RouterContext;
@@ -56,6 +56,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * This service is responsible for routing data to specific nodes and managing
@@ -125,10 +126,10 @@ public class RouterService extends AbstractService implements IRouterService {
         if (clusterService.lock(ClusterConstants.ROUTE)) {
             try {
                 long ts = System.currentTimeMillis();
-                Node sourceNode = nodeService.findIdentity();
-                DataRef ref = dataService.getDataRef();
-                int dataCount = routeDataForEachChannel(ref, sourceNode);
-                dataToRouteReaderFactory.getGapDetector().detectAndRecordUnprocessedDataIds();
+                IDataToRouteGapDetector gapDetector = dataToRouteReaderFactory.getDataToRouteGapDetector();
+                gapDetector.beforeRouting();
+                int dataCount = routeDataForEachChannel();
+                gapDetector.afterRouting();
                 ts = System.currentTimeMillis() - ts;
                 if (dataCount > 0 || ts > 30000) {
                     log.info("RoutedDataInTime", dataCount, ts);
@@ -145,25 +146,26 @@ public class RouterService extends AbstractService implements IRouterService {
      * thread pool here and waiting for all channels to be processed. The other
      * reason is to reduce the number of connections we are required to have.
      */
-    protected int routeDataForEachChannel(DataRef ref, Node sourceNode) {
+    protected int routeDataForEachChannel() {
+        Node sourceNode = nodeService.findIdentity();
         final List<NodeChannel> channels = configurationService.getNodeChannels(false);
         int dataCount = 0;
         for (NodeChannel nodeChannel : channels) {
             if (!nodeChannel.isSuspendEnabled() && nodeChannel.isEnabled()) {
-                dataCount += routeDataForChannel(ref, nodeChannel, sourceNode);
+                dataCount += routeDataForChannel(nodeChannel, sourceNode);
             }
         }
         return dataCount;
     }
 
-    protected int routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel,
+    protected int routeDataForChannel(final NodeChannel nodeChannel,
             final Node sourceNode) {
         RouterContext context = null;
         long ts = System.currentTimeMillis();
         int dataCount = -1;
         try {
             context = new RouterContext(sourceNode.getNodeId(), nodeChannel, dataSource);
-            dataCount = selectDataAndRoute(ref, context);
+            dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (Exception ex) {
             if (context != null) {
@@ -227,8 +229,8 @@ public class RouterService extends AbstractService implements IRouterService {
      * @param context
      *            The current context of the routing process
      */
-    protected int selectDataAndRoute(DataRef dataRef, RouterContext context) throws SQLException {
-        IDataToRouteReader reader = dataToRouteReaderFactory.getDataToRouteReader(context, dataRef);
+    protected int selectDataAndRoute(RouterContext context) throws SQLException {
+        IDataToRouteReader reader = dataToRouteReaderFactory.getDataToRouteReader(context);
         getReadService().execute(reader);
         Data data = null;
         int dataCount = 0;
@@ -312,8 +314,12 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             batch.incrementEventCount(dataMetaData.getData().getEventType());
             batch.incrementDataEventCount();
-            dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData()
+            try {
+                dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData()
                     .getDataId(), batch.getBatchId(), triggerRouter.getRouter().getRouterId());
+            } catch (DataIntegrityViolationException ex) {
+                log.warn("RoutedDataIntegrityError", dataMetaData.getData().getDataId());
+            }
             if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
                     batch, dataMetaData, context)) {
                 context.setNeedsCommitted(true);

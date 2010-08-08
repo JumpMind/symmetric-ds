@@ -48,6 +48,7 @@ import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -443,6 +444,39 @@ public class DataService extends AbstractService implements IDataService {
             return new DataRef(-1, new Date());
         }
     }
+    
+    public List<DataGap> findDataGapsByStatus(DataGap.STATUS status) {
+        return getSimpleTemplate().query(getSql("findDataGapsByStatusSql"),
+                new RowMapper<DataGap>() {
+                    public DataGap mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        return new DataGap(rs.getLong(1), rs.getLong(2), rs.getTimestamp(3));
+                    }
+                }, status.name());
+    }
+    
+    public List<DataGap> findDataGaps() {
+        List<DataGap> gaps = findDataGapsByStatus(DataGap.STATUS.GP);
+        if (gaps.size() == 0) {
+            gaps = new ArrayList<DataGap>(1);
+            gaps.add(new DataGap(0, DataGap.OPEN_END_ID));
+        }
+        return gaps;
+
+    }
+
+    public void insertDataGap(DataGap gap) {
+        jdbcTemplate.update(getSql("insertDataGapSql"), new Object[] { DataGap.STATUS.GP.name(),
+                AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
+                Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER });
+    }
+
+    public void updateDataGap(DataGap gap, DataGap.STATUS status) {
+        jdbcTemplate.update(
+                getSql("updateDataGapSql"),
+                new Object[] { status.name(), AppUtils.getHostName(), gap.getStartId(),
+                        gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
+                        Types.INTEGER });
+    }
 
     public void saveDataRef(DataRef dataRef) {
         if (0 >= jdbcTemplate.update(getSql("updateDataRefSql"), new Object[] {
@@ -611,22 +645,6 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public void setTriggerRouterService(ITriggerRouterService triggerService) {
-        this.triggerRouterService = triggerService;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setPurgeService(IPurgeService purgeService) {
-        this.purgeService = purgeService;
-    }
-
-    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
-        this.outgoingBatchService = outgoingBatchService;
-    }
-
     public Data readData(ResultSet results) throws SQLException {
         Data data = new Data();
         data.setDataId(results.getLong(1));
@@ -645,6 +663,23 @@ public class DataService extends AbstractService implements IDataService {
         // TODO Be careful add more columns. Callers might not be expecting
         // them.
         return data;
+    }
+
+
+    public void setTriggerRouterService(ITriggerRouterService triggerService) {
+        this.triggerRouterService = triggerService;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+
+    public void setPurgeService(IPurgeService purgeService) {
+        this.purgeService = purgeService;
+    }
+
+    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
+        this.outgoingBatchService = outgoingBatchService;
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {

@@ -30,29 +30,34 @@ import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.model.DataGap.STATUS;
 import org.jumpmind.symmetric.service.IDataService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class MockDataService implements IDataService {
 
     public void addHeartbeatListener(IHeartbeatListener listener) {
-        
-        
+                
     }
 
     public void addReloadListener(IReloadListener listener) {
-        
-        
+                
     }
     
     public Date findCreateTimeOfData(long dataId) {
         return null;
     }
 
+    
+    public List<DataGap> findDataGapsByStatus(STATUS status) {
+        return null;
+    }
+    
     public int countDataInRange(long firstDataId, long secondDataId) {
         
         return 0;
@@ -78,137 +83,123 @@ public class MockDataService implements IDataService {
         
         return null;
     }
+    
+    public List<DataGap> findDataGaps() {
+        return null;
+    }
 
     public Map<String, String> getRowDataAsMap(Data data) {
-        
         return null;
     }
 
     public void heartbeat(boolean force) {
-        
         
     }
 
     public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, String xml,
             boolean isLoad) {
         
-        
     }
 
     public long insertData(Data data) {
-        
         return 0;
     }
 
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId,
             List<Node> nodes, String routerId, boolean isLoad) {
         
-        
     }
 
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId,
             boolean isLoad) {
         
-        
     }
 
     public void insertDataEvent(long dataId, long batchId, String routerId) {
         
-        
     }
 
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
-        
         
     }
 
     public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId,
             DataEventType eventType, String routerId, boolean isLoad) {
         
-        
     }
 
     public void insertHeartbeatEvent(Node node, boolean isReload) {
-        
         
     }
 
     public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter, boolean isLoad) {
         
-        
     }
 
     public void insertReloadEvent(Node targetNode) {
-        
         
     }
 
     public void insertReloadEvent(Node targetNode, TriggerRouter trigger) {
         
-        
     }
 
     public void insertSqlEvent(Node targetNode, Trigger trigger, String sql, boolean isLoad) {
-        
         
     }
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad) {
         
-        
     }
 
     public Data readData(ResultSet results) throws SQLException {
-        
         return null;
     }
 
     public String reloadNode(String nodeId) {
-        
         return null;
     }
 
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName) {
-        
         return null;
     }
 
     public String reloadTable(String nodeId, String catalogName, String schemaName,
             String tableName, String overrideInitialLoadSelect) {
-        
         return null;
     }
 
     public boolean removeReloadListener(IReloadListener listener) {
-        
         return false;
     }
 
     public void saveDataRef(DataRef dataRef) {
         
-        
     }
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
             String sql, boolean isLoad) {
-        
         return null;
     }
 
     public void sendScript(String nodeId, String script, boolean isLoad) {
         
-        
     }
 
     public void setReloadListeners(List<IReloadListener> listeners) {
-        
         
     }
 
     public void setRowDataFromMap(Data data, Map<String, String> map) {
         
-        
     }
 
 
+    public void insertDataGap(DataGap gap) {
+        
+    }
+    
+    public void updateDataGap(DataGap gap, STATUS status) {
+        
+    }
 }
