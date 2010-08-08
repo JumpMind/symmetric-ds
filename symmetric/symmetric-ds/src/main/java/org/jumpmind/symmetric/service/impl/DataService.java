@@ -67,6 +67,7 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
@@ -488,14 +489,22 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public Date findCreateTimeOfEvent(long dataId) {
-        return (Date) jdbcTemplate.queryForObject(getSql("findDataEventCreateTimeSql"),
-                new Object[] { dataId }, new int[] { Types.INTEGER }, Date.class);
+        try {
+            return (Date) jdbcTemplate.queryForObject(getSql("findDataEventCreateTimeSql"),
+                    new Object[] { dataId }, new int[] { Types.INTEGER }, Date.class);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
     }
-    
-    public Date findCreateTimeOfData(long dataId) {        
-        return (Date) jdbcTemplate.queryForObject(getSql("findDataCreateTimeSql"), new Object[] { dataId },
-                new int[] { Types.INTEGER }, Date.class);
-    }    
+
+    public Date findCreateTimeOfData(long dataId) {
+        try {
+            return (Date) jdbcTemplate.queryForObject(getSql("findDataCreateTimeSql"),
+                    new Object[] { dataId }, new int[] { Types.INTEGER }, Date.class);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
+    }  
 
     public Map<String, String> getRowDataAsMap(Data data) {
         Map<String, String> map = new HashMap<String, String>();

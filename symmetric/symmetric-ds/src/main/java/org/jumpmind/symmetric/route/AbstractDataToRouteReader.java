@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Channel;
@@ -147,7 +148,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     ts = System.currentTimeMillis();
                     while (rs.next() && reading) {
 
-                        if (rs.getString(13) == null) {
+                        if (StringUtils.isBlank(rs.getString(13))) {
                             Data data = dataService.readData(rs);
                             context.setLastDataIdForTransactionId(data);
                             memQueue.add(data);
