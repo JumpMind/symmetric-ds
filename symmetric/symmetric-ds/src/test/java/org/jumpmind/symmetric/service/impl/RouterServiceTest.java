@@ -681,6 +681,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         insertGaps(2, 1, 2);
         
         getRouterService().routeData();
+        getRouterService().routeData();
         
         Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
                 .getBatches().size());       
@@ -691,6 +692,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         DataGap gap = gaps.get(0);
         Assert.assertEquals(0, gap.getEndId()-gap.getStartId());
         
+        getRouterService().routeData();
         getRouterService().routeData();
         
         gaps = getDataService().findDataGaps();
@@ -718,6 +720,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         getJdbcTemplate().update("update sym_data set create_time=?", time.getTime());
         
         getRouterService().routeData();
+        getRouterService().routeData();
         
         gaps = getDataService().findDataGaps();
         Assert.assertEquals("Gap should have expired", 1, gaps.size());
@@ -729,10 +732,12 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         setUpDefaultTriggerRouterForTable1();
 
         resetGaps();
+        
         resetBatches();
         
         insertGaps(5, 3, 100);
         
+        getRouterService().routeData();
         getRouterService().routeData();
         
         Assert.assertEquals(10, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
@@ -744,6 +749,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         resetBatches();
         
+        getRouterService().routeData();
         getRouterService().routeData();
         
         Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
@@ -766,6 +772,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         
         getJdbcTemplate().update("delete from sym_data_gap");
         
+        getRouterService().routeData();
         getRouterService().routeData();
 
         Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
