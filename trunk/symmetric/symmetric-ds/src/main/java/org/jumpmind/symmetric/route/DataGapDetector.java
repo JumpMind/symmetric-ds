@@ -60,11 +60,13 @@ public class DataGapDetector implements IDataToRouteGapDetector {
         this.sqlProvider = sqlProvider;
     }
     
-    public void beforeRouting() {
-        afterRouting();        
+    public void afterRouting() {
     }
 
-    public void afterRouting() {
+    /**
+     * Always make sure sym_data_gap is up to date to make sure that we don't dual route data.
+     */
+    public void beforeRouting() {        
         long ts = System.currentTimeMillis();
         List<DataGap> gaps = dataService.findDataGaps();
         long lastDataId = -1;
