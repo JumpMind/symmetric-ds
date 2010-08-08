@@ -20,7 +20,7 @@
     <entry key="selectDataUsingGapsSql">
       <value><![CDATA[
         select d.data_id, d.table_name, d.event_type, d.row_data, d.pk_data, d.old_data,
-        d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, null from $[sym.sync.table.prefix]_data d 
+        d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, '' from $[sym.sync.table.prefix]_data d 
          where d.channel_id=? and $(gap.clause) order by d.data_id asc
       ]]></value>
     </entry>      
