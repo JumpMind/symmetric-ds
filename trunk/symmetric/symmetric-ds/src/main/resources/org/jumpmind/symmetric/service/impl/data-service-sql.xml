@@ -48,7 +48,22 @@
       <value>
        select ref_data_id, ref_time from $[sym.sync.table.prefix]_data_ref
       </value>
-    </entry>   
+    </entry>
+    <entry key="findDataGapsByStatusSql">
+      <value>
+       select start_id, end_id, create_time from $[sym.sync.table.prefix]_data_gap where status=? order by start_id asc
+      </value>
+    </entry>
+    <entry key="insertDataGapSql">
+      <value>
+       insert into $[sym.sync.table.prefix]_data_gap (status, last_update_hostname, start_id, end_id, last_update_time, create_time) values(?, ?, ?, ?, current_timestamp, current_timestamp)
+      </value>
+    </entry>          
+    <entry key="updateDataGapSql">
+      <value>
+       update $[sym.sync.table.prefix]_data_gap set status=?, last_update_hostname=?, last_update_time=current_timestamp where start_id=? and end_id=?
+      </value>
+    </entry>                        
   </util:map>
 
 </beans>

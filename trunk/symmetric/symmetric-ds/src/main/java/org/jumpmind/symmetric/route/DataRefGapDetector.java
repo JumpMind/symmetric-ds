@@ -58,8 +58,11 @@ public class DataRefGapDetector implements IDataToRouteGapDetector {
         this.dbDialect = dbDialect;
         this.sqlProvider = sqlProvider;
     }
+    
+    public void beforeRouting() {
+    }
 
-    public void detectAndRecordUnprocessedDataIds() {
+    public void afterRouting() {
         // reselect the DataRef just in case somebody updated it manually during
         // routing
         final DataRef ref = dataService.getDataRef();
@@ -99,7 +102,7 @@ public class DataRefGapDetector implements IDataToRouteGapDetector {
                 });
         long updateTimeInMs = System.currentTimeMillis() - ts;
         if (updateTimeInMs > 10000) {
-            log.info("RoutedDataRefUpdateTime", updateTimeInMs);
+            log.info("RoutedGapDetectionTime", updateTimeInMs);
         }
         if (ref.getRefDataId() != lastDataId) {
             dataService.saveDataRef(new DataRef(lastDataId, new Date()));

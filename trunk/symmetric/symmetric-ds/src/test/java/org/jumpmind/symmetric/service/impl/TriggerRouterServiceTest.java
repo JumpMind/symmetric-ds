@@ -280,7 +280,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()
                     .size());
             
-            getJdbcTemplate().execute(new ConnectionCallback() {
+            getJdbcTemplate().execute(new ConnectionCallback<Object>() {
                 public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                     conn.setAutoCommit(false);
                     PreparedStatement ps = conn.prepareStatement(INSERT_POSTGRES_BINARY_TYPE_1);

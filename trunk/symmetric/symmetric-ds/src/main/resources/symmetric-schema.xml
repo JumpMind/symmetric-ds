@@ -64,7 +64,54 @@
         <column name="heartbeat_time" type="TIMESTAMP"  description="The last timestamp when the node sent a heartbeat, which is attempted every ten minutes by default." />
         <column name="last_restart_time" type="TIMESTAMP" required="true"  description="Timestamp when this instance was last restarted." />        
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-    </table>    
+    </table>
+    
+    <table name="node_job_stats" description="">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
+        <column name="job_name" type="VARCHAR" size="50" required="true" primaryKey="true" description="" />
+        <column name="job_start_time" type="TIMESTAMP" required="true" primaryKey="true" description="" />
+        <column name="job_end_time" type="TIMESTAMP" description="" />
+        <column name="processed_count" type="BIGINT" default="0" description="" />
+        <column name="unprocessed_count" type="BIGINT" default="0" description="" />        
+        <column name="error_count" type="BIGINT" default="0" description="" />
+    </table>
+
+    <table name="node_periodic_stats" description="">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
+        <column name="period_start_time" type="TIMESTAMP" required="true" primaryKey="true" description="" />
+        <column name="period_end_time" type="TIMESTAMP" required="true"  description="" />
+        <column name="restart_occurred" type="BOOLEANINT" size="0" required="true" description="" />
+        <column name="node_clients_enabled_count" type="INTEGER" description="" />      
+        <column name="node_clients_online_count" type="INTEGER" description="Node clients that have communicated with this node during the last period" />
+        <column name="node_clients_disabled_count" type="INTEGER" description="" />
+        <column name="node_clients_reloaded_count" type="INTEGER" description="" />
+        <column name="job_route_avg_dur_ms" type="BIGINT" default="0" description="" />
+        <column name="job_push_avg_dur_ms" type="BIGINT" default="0" description="" />
+        <column name="job_pull_avg_dur_ms" type="BIGINT" default="0" description="" />
+        <column name="job_purge_avg_dur_ms" type="BIGINT" default="0" description="" />
+        <column name="http_server_pull_count" type="BIGINT" default="0" description="" />
+        <column name="http_server_push_count" type="BIGINT" default="0" description="" />
+        <column name="http_server_pull_rejects" type="BIGINT" default="0" description="" />
+        <column name="http_server_push_rejects" type="BIGINT" default="0" description="" />  
+        <column name="http_client_pull_count" type="BIGINT" default="0" description="" />
+        <column name="http_client_push_count" type="BIGINT" default="0" description="" />
+        <column name="http_client_pull_rejects" type="BIGINT" default="0" description="" />
+        <column name="http_client_push_rejects" type="BIGINT" default="0" description="" />
+        <column name="rows_routed_count" type="BIGINT" default="0" description="" />
+        <column name="rows_loaded_count" type="BIGINT" default="0" description="" />              
+        <column name="rows_extracted_count" type="BIGINT" default="0" description="" />
+        <column name="batch_outgoing_db_errors" type="BIGINT" default="0" description="" />
+        <column name="batch_outgoing_network_errors" type="BIGINT" default="0" description="" />
+        <column name="batch_incoming_db_errors" type="BIGINT" default="0" description="" />
+        <column name="batch_incoming_network_errors" type="BIGINT" default="0" description="" />
+        <column name="purged_data_rows" type="BIGINT" default="0" description="" />
+        <column name="purged_data_event_rows" type="BIGINT" default="0" description="" />
+        <column name="purged_batch_outgoing_rows" type="BIGINT" default="0" description="" />
+        <column name="purged_batch_incoming_rows" type="BIGINT" default="0" description="" />
+        <column name="triggers_created_count" type="INTEGER" description="" />
+        <column name="triggers_rebuilt_count" type="INTEGER" description="" />
+        <column name="triggers_removed_count" type="INTEGER" description="" />      
+    </table>
 
     <table name="channel" description="This table represents a category of data that can be synchronized independently of other channels. Channels allow control over the type of data flowing and prevents one type of synchronization from contending with another.">
         <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true" description="A unique identifer, usually named something meaningful, like 'sales' or 'inventory'."/>
@@ -202,6 +249,18 @@
         <column name="ref_time" type="TIMESTAMP"  description="The time when the ref_data_id was recorded. It is used as the base time to calculate timeouts for gaps in the data_ids." />
     </table>
     
+    <table name="data_gap" description="Table that tracks gaps in the data table so that they may be processed efficiently, if data shows up.">
+        <column name="start_id" type="INTEGER" required="true" primaryKey="true"  description="" />
+        <column name="end_id" type="INTEGER" required="true" primaryKey="true"  description="" />
+        <column name="status" type="CHAR" size="2"  description="" />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />    
+        <index name="idx_dg_status">
+            <index-column name="status"/>
+        </index>
+     </table>    
+    
     <table name="data_event" description="Represents routing of a data row to one or more nodes. Entries in data_event are created by database triggers. ">
         <column name="data_id" type="INTEGER" required="true" primaryKey="true"  description="Id of the data to be routed." />
         <column name="batch_id" type="INTEGER" required="true" primaryKey="true" default="-1"  description="The node_id of the node that is to receive the data." />
@@ -235,14 +294,14 @@
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />
         <column name="failed_data_id" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
-        <column name="last_update_hostname" type="VARCHAR" size="50"  description="The host name of the process that last did work on this batch." />
+        <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_ob_node_chanl_status">
             <index-column name="node_id" />
             <index-column name="channel_id" />
             <index-column name="status" />
-        </index>                        
+        </index>                
     </table>
     
     <table name="incoming_batch" description="The incoming_batch is used for tracking the status of loading an outgoing_batch from another node. Data is loaded and commited at the batch level. The status of the incoming_batch is either successful (OK) or error (ER). ">
@@ -263,14 +322,14 @@
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />
-        <column name="last_update_hostname" type="VARCHAR" size="50"  description="The host name of the process that last did work on this batch." />
+        <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
     
     <table name="statistic" description="Record statistics for the attached SymmetricDS process.">
         <column name="node_id" type="VARCHAR" size="50"  description="" />
-        <column name="host_name" type="VARCHAR" size="50"  description="" />
+        <column name="host_name" type="VARCHAR" size="255"  description="" />
         <column name="statistic_name" type="VARCHAR" size="50"  description="" />
         <column name="statistic_total" type="DECIMAL" size="18"  description="" />
         <column name="statistic_count" type="BIGINT"  description="" />
@@ -299,7 +358,7 @@
     <table name="lock" description="Contains semaphores that are set when processes run, so that only one server can run a process at a time.  Enable this feature by using the cluster.lock.during.xxxx parameters.">
         <column name="lock_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="An id for the process that is running.  Many times this will be a value of 'common.'  It can also be a specfic node_id."/>
         <column name="lock_action" type="VARCHAR" size="50" required="true" primaryKey="true" description="The process that needs a lock."/>
-        <column name="locking_server_id" type="VARCHAR" size="100" description="The name of the server that currently has a lock.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
+        <column name="locking_server_id" type="VARCHAR" size="255" description="The name of the server that currently has a lock.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
         <column name="lock_time" type="TIMESTAMP" description="The time a lock is aquired.  Use the cluster.lock.timeout.ms to specify a lock timeout period." />
     </table>
 </database>

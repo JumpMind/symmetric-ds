@@ -159,6 +159,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         long purgeUpToId = minMax[1];
         long ts = System.currentTimeMillis();
         int totalCount = 0;
+        int totalDeleteStmts = 0;
         String tableName = deleteSql.trim().split("\\s")[2];
         log.info("DataPurgeTableStarting", tableName);
 
@@ -169,6 +170,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         parameterSource.addValue(PARAM_CUTOFF_TIME, new Timestamp(retentionTime.getTime()));
 
         while (minId <= purgeUpToId) {
+            totalDeleteStmts++;
             long maxId = minId + maxNumtoPurgeinTx;
             if (maxId > purgeUpToId) {
                 maxId = purgeUpToId;
@@ -180,7 +182,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
             totalCount += getSimpleTemplate().update(deleteSql, parameterSource);
 
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                log.info("DataPurgeTableRunning", totalCount, tableName);
+                log.info("DataPurgeTableRunning", totalCount, tableName, totalDeleteStmts);
                 ts = System.currentTimeMillis();
             }
             minId = maxId + 1;
@@ -206,12 +208,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
         }
     }
 
-    @SuppressWarnings( { "unchecked" })
     private void purgeIncomingBatch(final Calendar time) {
         log.info("DataPurgeIncomingRange");
         List<NodeBatchRange> nodeBatchRangeList = jdbcTemplate.query(getSql("selectIncomingBatchRangeSql"),
-                new Object[] { time.getTime() }, new RowMapper() {
-                    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+                new Object[] { time.getTime() }, new RowMapper<NodeBatchRange>() {
+                    public NodeBatchRange mapRow(ResultSet rs, int rowNum) throws SQLException {
                         return new NodeBatchRange(rs.getString(1), rs.getLong(2), rs.getLong(3));
                     }
                 });
@@ -221,36 +222,32 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private void purgeByNodeBatchRangeList(String deleteSql, List<NodeBatchRange> nodeBatchRangeList) {
         long ts = System.currentTimeMillis();
         int totalCount = 0;
+        int totalDeleteStmts = 0;
         String tableName = deleteSql.trim().split("\\s")[2];
         log.info("DataPurgeTableStarting", tableName);
 
         for (NodeBatchRange nodeBatchRange : nodeBatchRangeList) {
-            totalCount += purgeByNodeBatchRange(deleteSql, nodeBatchRange);
+            int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
+            long minBatchId = nodeBatchRange.getMinBatchId();
+            long purgeUpToBatchId = nodeBatchRange.getMaxBatchId();
+
+            while (minBatchId <= purgeUpToBatchId) {
+                totalDeleteStmts++;
+                long maxBatchId = minBatchId + maxNumOfDataIdsToPurgeInTx;
+                if (maxBatchId > purgeUpToBatchId) {
+                    maxBatchId = purgeUpToBatchId;
+                }
+                totalCount += jdbcTemplate.update(deleteSql, new Object[] { minBatchId, maxBatchId,
+                        nodeBatchRange.getNodeId() });
+                minBatchId = maxBatchId + 1;
+            }
+            
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                log.info("DataPurgeTableRunning", totalCount, tableName);
+                log.info("DataPurgeTableRunning", totalCount, tableName, totalDeleteStmts);
                 ts = System.currentTimeMillis();
             }
         }
         log.info("DataPurgeTableCompleted", totalCount, tableName);
-    }
-
-    private int purgeByNodeBatchRange(String deleteSql, NodeBatchRange nodeBatchRange) {
-        int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
-        long minBatchId = nodeBatchRange.getMinBatchId();
-        long purgeUpToBatchId = nodeBatchRange.getMaxBatchId();
-        int totalCount = 0;
-
-        while (minBatchId <= purgeUpToBatchId) {
-            long maxBatchId = minBatchId + maxNumOfDataIdsToPurgeInTx;
-            if (maxBatchId > purgeUpToBatchId) {
-                maxBatchId = purgeUpToBatchId;
-            }
-            totalCount += jdbcTemplate.update(deleteSql, new Object[] { minBatchId, maxBatchId,
-                    nodeBatchRange.getNodeId() });
-            minBatchId = maxBatchId + 1;
-        }
-
-        return totalCount;
     }
 
     class NodeBatchRange {

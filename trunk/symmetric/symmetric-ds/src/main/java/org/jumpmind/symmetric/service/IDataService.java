@@ -10,6 +10,7 @@ import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -69,6 +70,10 @@ public interface IDataService {
     public void saveDataRef(DataRef dataRef);
 
     public DataRef getDataRef();
+    
+    public List<DataGap> findDataGapsByStatus(DataGap.STATUS status);
+    
+    public List<DataGap> findDataGaps();
 
     public Date findCreateTimeOfEvent(long dataId);
     
@@ -91,5 +96,9 @@ public interface IDataService {
     public boolean removeReloadListener(IReloadListener listener);
 
     public Data readData(ResultSet results) throws SQLException;
+    
+    public void insertDataGap(DataGap gap);
+    
+    public void updateDataGap(DataGap gap, DataGap.STATUS status);
 
 }

@@ -1,4 +1,5 @@
 drop table sym_data_ref;
+drop table sym_data_gap;
 drop table sym_node_channel_ctl;
 drop table sym_node_group_channel_window;
 drop table sym_data_event;

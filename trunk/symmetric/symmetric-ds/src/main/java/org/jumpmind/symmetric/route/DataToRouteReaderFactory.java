@@ -21,8 +21,8 @@ package org.jumpmind.symmetric.route;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ISqlProvider;
@@ -30,42 +30,46 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class DataToRouteReaderFactory implements ISqlProvider {
 
-    private String type;
-
     private JdbcTemplate jdbcTemplate;
 
     private IDbDialect dbDialect;
 
     private IDataService dataService;
-    
+
     private IParameterService parameterService;
 
     private Map<String, String> sql;
 
-    public IDataToRouteReader getDataToRouteReader(RouterContext context, DataRef dataRef) {
+    public IDataToRouteReader getDataToRouteReader(RouterContext context) {
+        String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
         if (type == null || type.equals("ref")) {
             return new DataRefRouteReader(jdbcTemplate.getDataSource(),
                     jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                    dbDialect.getStreamingResultsFetchSize(), context, dataRef, dataService);
+                    dbDialect.getStreamingResultsFetchSize(), context, dataService);
+        } else if (type == null || type.equals("gap")) {
+            return new DataGapRouteReader(jdbcTemplate.getDataSource(),
+                    jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
+                    dbDialect.getStreamingResultsFetchSize(), context, dataService);
         } else {
-            throw unsupportedType();
+            throw unsupportedType(type);
         }
-    }
-    
-    public IDataToRouteGapDetector getGapDetector() {
-        if (type == null || type.equals("ref")) {
-            return new DataRefGapDetector(dataService, parameterService, jdbcTemplate, dbDialect, this);
-        } else {
-            throw unsupportedType();
-        }
-    }
-    
-    private RuntimeException unsupportedType() {
-        return new UnsupportedOperationException("The data to route type of '" + type + "' is not supported");
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public IDataToRouteGapDetector getDataToRouteGapDetector() {
+        String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
+        if (type == null || type.equals("ref")) {
+            return new DataRefGapDetector(dataService, parameterService, jdbcTemplate, dbDialect,
+                    this);
+        } else if (type == null || type.equals("gap")) {
+            return new DataGapDetector(dataService, parameterService, jdbcTemplate, dbDialect, this);
+        } else {
+            throw unsupportedType(type);
+        }
+    }
+
+    private RuntimeException unsupportedType(String type) {
+        return new UnsupportedOperationException("The data to route type of '" + type
+                + "' is not supported");
     }
 
     public void setDataService(IDataService dataService) {
@@ -87,7 +91,7 @@ public class DataToRouteReaderFactory implements ISqlProvider {
     public void setSql(Map<String, String> sql) {
         this.sql = sql;
     }
-    
+
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }

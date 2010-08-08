@@ -529,7 +529,7 @@ if (filters == null) {
         public LoadStatus doInTransaction(TransactionStatus txStatus) {
             try {
                 boolean done = true;
-                dbDialect.disableSyncTriggers(dataLoader.getContext().getNodeId());
+                dbDialect.disableSyncTriggers(dataLoader.getContext().getSourceNodeId());
                 if (this.loadStatus == LoadStatus.CONTINUE || incomingBatchService.acquireIncomingBatch(batch)) {
                     done = dataLoader.load();
                 } else {

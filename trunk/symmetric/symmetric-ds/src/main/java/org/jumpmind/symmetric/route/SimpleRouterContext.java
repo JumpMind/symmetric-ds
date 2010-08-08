@@ -87,7 +87,7 @@ public class SimpleRouterContext implements IRouterContext {
         contextCache.put(KEY, val);
     }
 
-    public long getStat(String name) {
+    synchronized public long getStat(String name) {
         final String KEY = getStatKey(name);
         Long val = (Long) contextCache.get(KEY);
         if (val == null) {
@@ -96,7 +96,7 @@ public class SimpleRouterContext implements IRouterContext {
         return val;
     }
 
-    public void logStats(ILog log, int dataCount, long totalTimeInMs) {
+    synchronized public void logStats(ILog log, int dataCount, long totalTimeInMs) {
         boolean infoLevel = totalTimeInMs > 30000;
         Set<String> keys = new HashSet<String>(contextCache.keySet());
         for (String key : keys) {

@@ -21,6 +21,8 @@ package org.jumpmind.symmetric.route;
 
 public interface IDataToRouteGapDetector {
 
-    public void detectAndRecordUnprocessedDataIds();
+    public void beforeRouting();
+    
+    public void afterRouting();
     
 }
