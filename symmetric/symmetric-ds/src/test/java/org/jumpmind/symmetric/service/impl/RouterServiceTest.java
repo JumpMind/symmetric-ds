@@ -42,7 +42,6 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
     public RouterServiceTest() throws Exception {
     }
-    
 
     @Test
     public void testMultiChannelRoutingToEveryone() {
@@ -673,94 +672,95 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     
     @Test
     public void testGapRouting() {
-        
-        setUpDefaultTriggerRouterForTable1();
-        
-        resetBatches();
-        
-        insertGaps(2, 1, 2);
-        
-        getRouterService().routeData();
-        getRouterService().routeData();
-        
-        Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
-                .getBatches().size());       
-        
-        List<DataGap> gaps = getDataService().findDataGaps();
-        
-        Assert.assertEquals(2, gaps.size());
-        DataGap gap = gaps.get(0);
-        Assert.assertEquals(0, gap.getEndId()-gap.getStartId());
-        
-        getRouterService().routeData();
-        getRouterService().routeData();
-        
-        gaps = getDataService().findDataGaps();
-        Assert.assertEquals(2, gaps.size());
-        gap = gaps.get(0);
-        Assert.assertEquals(0, gap.getEndId()-gap.getStartId());
-        
+        if (getDbDialect().canGapsOccurInCapturedDataIds()) {
+            setUpDefaultTriggerRouterForTable1();
+
+            resetBatches();
+
+            insertGaps(2, 1, 2);
+
+            getRouterService().routeData();
+            getRouterService().routeData();
+
+            Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
+                    .getBatches().size());
+
+            List<DataGap> gaps = getDataService().findDataGaps();
+
+            Assert.assertEquals(2, gaps.size());
+            DataGap gap = gaps.get(0);
+            Assert.assertEquals(0, gap.getEndId() - gap.getStartId());
+
+            getRouterService().routeData();
+            getRouterService().routeData();
+
+            gaps = getDataService().findDataGaps();
+            Assert.assertEquals(2, gaps.size());
+            gap = gaps.get(0);
+            Assert.assertEquals(0, gap.getEndId() - gap.getStartId());
+        }
     }
-    
+
     @Test
     public void testDataGapExpired() {
-        
-        resetGaps();
-        
-        testGapRouting();
+        if (getDbDialect().canGapsOccurInCapturedDataIds()) {
+            resetGaps();
 
-        List<DataGap> gaps = getDataService().findDataGaps();
-        
-        Assert.assertEquals(2, gaps.size());
-        DataGap gap = gaps.get(0);
-        Assert.assertEquals(0, gap.getEndId()-gap.getStartId());
+            testGapRouting();
 
-        Calendar time = Calendar.getInstance();
-        time.add(Calendar.DATE, -10);
-        getJdbcTemplate().update("update sym_data set create_time=?", time.getTime());
-        
-        getRouterService().routeData();
-        getRouterService().routeData();
-        
-        gaps = getDataService().findDataGaps();
-        Assert.assertEquals("Gap should have expired", 1, gaps.size());
-        
+            List<DataGap> gaps = getDataService().findDataGaps();
+
+            Assert.assertEquals(2, gaps.size());
+            DataGap gap = gaps.get(0);
+            Assert.assertEquals(0, gap.getEndId() - gap.getStartId());
+
+            Calendar time = Calendar.getInstance();
+            time.add(Calendar.DATE, -10);
+            getJdbcTemplate().update("update sym_data set create_time=?", time.getTime());
+
+            getRouterService().routeData();
+            getRouterService().routeData();
+
+            gaps = getDataService().findDataGaps();
+            Assert.assertEquals("Gap should have expired", 1, gaps.size());
+        }
     }
-    
-    @Test 
+
+    @Test
     public void testLotsOfGaps() {
-        setUpDefaultTriggerRouterForTable1();
+        if (getDbDialect().canGapsOccurInCapturedDataIds()) {
+            setUpDefaultTriggerRouterForTable1();
 
-        resetGaps();
-        
-        resetBatches();
-        
-        insertGaps(5, 3, 100);
-        
-        getRouterService().routeData();
-        getRouterService().routeData();
-        
-        Assert.assertEquals(10, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
-                .getBatches().size());       
-        
-        List<DataGap> gaps = getDataService().findDataGaps();
-        
-        Assert.assertEquals(100, gaps.size());
+            resetGaps();
 
-        resetBatches();
-        
-        getRouterService().routeData();
-        getRouterService().routeData();
-        
-        Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
-                .getBatches().size());       
-        
-        gaps = getDataService().findDataGaps();
-        
-        Assert.assertEquals(100, gaps.size());
-        
-        resetGaps();
-        
+            resetBatches();
+
+            insertGaps(5, 3, 100);
+
+            getRouterService().routeData();
+            getRouterService().routeData();
+
+            Assert.assertEquals(10, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
+                    .getBatches().size());
+
+            List<DataGap> gaps = getDataService().findDataGaps();
+
+            Assert.assertEquals(100, gaps.size());
+
+            resetBatches();
+
+            getRouterService().routeData();
+            getRouterService().routeData();
+
+            Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
+                    .getBatches().size());
+
+            gaps = getDataService().findDataGaps();
+
+            Assert.assertEquals(100, gaps.size());
+
+            resetGaps();
+        }
     }
     
     @Test

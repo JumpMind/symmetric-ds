@@ -272,4 +272,9 @@ public interface IDbDialect {
     public String getDataHasChangedCondition();
     
     public Map<String, String> getSqlScriptReplacementTokens();
+    
+    /**
+     * Indicates whether captured data can contain gaps.
+     */
+    public boolean canGapsOccurInCapturedDataIds();
 }

@@ -1422,4 +1422,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 // SQL-Server ntext binary type
                 type == -10;
     }
+    
+    public boolean canGapsOccurInCapturedDataIds() {
+        return true;
+    }
 }

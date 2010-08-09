@@ -179,4 +179,9 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
         jdbcTemplate.update("delete from " + tableName);
     }
 
+    @Override
+    public boolean canGapsOccurInCapturedDataIds() {
+        return false;
+    }
+
 }
