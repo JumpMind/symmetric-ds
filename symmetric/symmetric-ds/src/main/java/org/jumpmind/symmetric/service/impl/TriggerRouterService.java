@@ -184,8 +184,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 .get(tableName));
 
         Trigger trigger = triggerRouter.getTrigger();
-        trigger.setTriggerId(Integer.toString(Math.abs(tableName.hashCode()
-                + targetGroupId.hashCode())));
+        trigger.setTriggerId(Integer.toString(Math.abs(tableName.hashCode())));
         trigger.setSyncOnDelete(syncChanges && autoSyncConfig);
         trigger.setSyncOnInsert(syncChanges && autoSyncConfig);
         trigger.setSyncOnUpdate(syncChanges && autoSyncConfig);
