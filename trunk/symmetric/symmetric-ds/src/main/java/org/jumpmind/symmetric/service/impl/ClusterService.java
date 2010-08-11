@@ -26,9 +26,11 @@ import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_INCOMING;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_OUTGOING;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_STATISTICS;
+import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_DATA_GAPS;
 import static org.jumpmind.symmetric.service.ClusterConstants.PUSH;
 import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
 import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
+
 
 import java.util.Calendar;
 import java.util.Date;
@@ -54,6 +56,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         initLockTable(PURGE_OUTGOING, COMMON_LOCK_ID);
         initLockTable(PURGE_STATISTICS, COMMON_LOCK_ID);
         initLockTable(SYNCTRIGGERS, COMMON_LOCK_ID);
+        initLockTable(PURGE_DATA_GAPS, COMMON_LOCK_ID);
     }
     
     public void initLockTable(final String action) {

@@ -73,6 +73,8 @@ final public class ParameterConstants {
     public final static String ROUTING_PEEK_AHEAD_WINDOW = "routing.peek.ahead.window.after.max.size";
     public final static String ROUTING_STALE_DATA_ID_GAP_TIME = "routing.stale.dataid.gap.time.ms";
     public final static String ROUTING_DATA_READER_TYPE = "routing.data.reader.type";
+    public final static String ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES = "routing.data.reader.type.gap.retention.period.minutes";
+    
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
     public final static String DATA_LOADER_ENABLED = "dataloader.enable";
     public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "num.of.ack.retries";
