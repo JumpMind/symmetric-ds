@@ -232,7 +232,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public void insertReloadEvent(Node targetNode) {
+    public void insertReloadEvents(Node targetNode) {
         Node sourceNode = nodeService.findIdentity();
         if (reloadListeners != null) {
             for (IReloadListener listener : reloadListeners) {

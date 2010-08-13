@@ -107,7 +107,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(remote.getNodeId());
             if (nodeSecurity != null) {
                 if (nodeSecurity.isInitialLoadEnabled()) {
-                    dataService.insertReloadEvent(remote);
+                    dataService.insertReloadEvents(remote);
                 }
             }
 
