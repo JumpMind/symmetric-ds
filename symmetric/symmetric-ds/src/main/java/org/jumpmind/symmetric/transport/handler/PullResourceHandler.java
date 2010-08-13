@@ -60,7 +60,7 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
                 registrationService.registerNode(nodeService.findNode(nodeId), outputStream, false);
             } else {
                 if (nodeSecurity.isInitialLoadEnabled()) {
-                    dataService.insertReloadEvent(nodeService.findNode(nodeId));
+                    dataService.insertReloadEvents(nodeService.findNode(nodeId));
                 }
                 IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, map);
                 dataExtractorService.extract(nodeService.findNode(nodeId), outgoingTransport);

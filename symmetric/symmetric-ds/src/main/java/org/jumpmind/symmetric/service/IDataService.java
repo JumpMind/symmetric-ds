@@ -29,7 +29,7 @@ public interface IDataService {
 
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql, boolean isLoad);
 
-    public void insertReloadEvent(Node targetNode);
+    public void insertReloadEvents(Node targetNode);
 
     public void insertReloadEvent(final Node targetNode, final TriggerRouter trigger);
     

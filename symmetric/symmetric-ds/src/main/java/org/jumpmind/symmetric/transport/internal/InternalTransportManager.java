@@ -83,7 +83,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                 INodeService nodeService = (INodeService) factory.getBean(Constants.NODE_SERVICE);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
                 if (security.isInitialLoadEnabled()) {
-                    ((IDataService) factory.getBean(Constants.DATA_SERVICE)).insertReloadEvent(local);
+                    ((IDataService) factory.getBean(Constants.DATA_SERVICE)).insertReloadEvents(local);
                 }
                 IDataExtractorService extractor = (IDataExtractorService) factory
                         .getBean(Constants.DATAEXTRACTOR_SERVICE);
