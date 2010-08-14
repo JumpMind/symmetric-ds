@@ -34,6 +34,7 @@ public class BatchResourceHandler extends AbstractTransportResourceHandler {
     public boolean write(String batchId, OutputStream os) throws IOException {
         IOutgoingTransport transport = createOutgoingTransport(os);
         boolean foundBatch = dataExtractorService.extractBatchRange(transport, batchId, batchId);
+        transport.close();
         return foundBatch;
     }
 
