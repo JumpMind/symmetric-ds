@@ -383,10 +383,6 @@
             <artifactId>sqlite-jdbc</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jrobin</groupId>
-            <artifactId>jrobin</artifactId>
-        </dependency> 
     </dependencies>
 
     <profiles>
