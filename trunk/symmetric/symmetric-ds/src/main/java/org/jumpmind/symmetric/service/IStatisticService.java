@@ -19,23 +19,11 @@
  */
 package org.jumpmind.symmetric.service;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import org.jumpmind.symmetric.statistic.ChannelStats;
 
-import org.jumpmind.symmetric.statistic.Statistic;
-import org.jumpmind.symmetric.statistic.StatisticAlertThresholds;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface IStatisticService {
 
-    @Transactional
-    public void save(Collection<Statistic> stats, Date captureEndTime);
-
-    public List<StatisticAlertThresholds> getAlertThresholds();
-
-    @Transactional
-    public void saveStatisticAlertThresholds(StatisticAlertThresholds threshold);
-
-    public boolean removeStatisticAlertThresholds(String statisticName);
+    public void save(ChannelStats stats);
+    
 }

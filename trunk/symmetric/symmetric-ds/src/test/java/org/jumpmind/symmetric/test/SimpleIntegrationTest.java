@@ -54,7 +54,6 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.ArgTypePreparedStatementSetter;
@@ -1107,8 +1106,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         int oldCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
         IStatisticManager statisticManager = AppUtils.find(Constants.STATISTIC_MANAGER, getClientEngine());
         statisticManager.flush();
-        Assert.assertEquals(0, statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED)
-                .getCount());
         rootJdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 con.setAutoCommit(false);
@@ -1131,9 +1128,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         } while (getClientEngine().pull());
         int newCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
         Assert.assertEquals(50, newCount - oldCount);
-        Assert.assertEquals(8, statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED)
-                .getCount());
-        statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED);
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
                 oldMaxRowsBeforeCommit);
     }

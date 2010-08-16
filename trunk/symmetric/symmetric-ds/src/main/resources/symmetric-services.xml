@@ -13,6 +13,7 @@
         <property name="statisticService" ref="statisticService" />
         <property name="nodeService" ref="nodeService" />
         <property name="notificationService" ref="notificationService" />
+        <property name="configurationService" ref="configurationService" />
         <property name="parameterService" ref="parameterService" />
     </bean>
 
@@ -111,6 +112,7 @@
         <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="configurationService" ref="configurationService" />
+        <property name="statisticManager" ref="statisticManager" />
         <property name="context" ref="extractorContext" />
     </bean>
 

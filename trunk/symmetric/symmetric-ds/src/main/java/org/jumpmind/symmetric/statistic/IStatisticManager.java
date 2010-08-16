@@ -19,8 +19,24 @@
  */
 package org.jumpmind.symmetric.statistic;
 
-public interface IStatisticManager {
-    public Statistic getStatistic(String name);
-
+public interface IStatisticManager {    
     public void flush();
+
+    public void incrementDataLoadedErrors(String channelId, long count);
+
+    public void incrementDataBytesLoaded(String channelId, long count);
+
+    public void incrementDataBytesTransmitted(String channelId, long count);
+
+    public void incrementDataEventInserted(String channelId, long count);
+
+    public void incrementDataExtractedErrors(String channelId, long count);
+
+    public void incrementDataBytesExtracted(String channelId, long count);
+
+    public void incrementDataUnRouted(String channelId, long count);
+
+    public void incrementDataRouted(String channelId, long count);
+    
+    public void incrementDataTransmittedErrors(String channelId, long count);
 }

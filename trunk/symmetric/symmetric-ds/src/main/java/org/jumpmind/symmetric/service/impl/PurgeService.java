@@ -62,11 +62,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
             retentionCutoff = Calendar.getInstance();
             retentionCutoff.add(Calendar.MINUTE, -parameterService
-                    .getInt(ParameterConstants.STATISTIC_RETENTION_MINUTES));
-            purgeStatistic(retentionCutoff);
-            
-            retentionCutoff = Calendar.getInstance();
-            retentionCutoff.add(Calendar.MINUTE, -parameterService
                     .getInt(ParameterConstants.ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES));
             purgeDataGaps(retentionCutoff);
             
@@ -94,27 +89,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
         } catch (Exception ex) {
             log.error(ex);
         } 
-    }
-
-    private void purgeStatistic(Calendar retentionCutoff) {
-        try {
-            if (clusterService.lock(ClusterConstants.PURGE_STATISTICS)) {
-                try {
-                    log.info("DataPurgeStatsRunning");
-                    int count = jdbcTemplate.update(getSql("deleteFromStatisticSql"), new Object[] { retentionCutoff
-                            .getTime() });
-                    log.info("DataPurgeStatsRun", count);
-                } finally {
-                    clusterService.unlock(ClusterConstants.PURGE_STATISTICS);
-                    log.info("DataPurgeStatsCompleted");
-                }
-
-            } else {
-                log.warn("DataPurgeStatsRunningFailedLock");
-            }
-        } catch (Exception ex) {
-            log.error(ex);
-        }
     }
 
     private void purgeOutgoing(Calendar retentionCutoff) {
