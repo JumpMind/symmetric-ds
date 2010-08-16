@@ -50,10 +50,9 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticNameConstants;
+import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
-import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -232,21 +231,6 @@ public class NodeManagementService {
             + " (wihch can be useful for maintainance")
     public void setNumOfNodeConnectionsPerInstance(int value) {
         parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS, value);
-    }
-
-    @ManagedAttribute(description = "This is a count of nodes who connected to push or pull data and were rejected because the server was too busy")
-    public long getNumOfNodesWhoConnectedAndWereRejectedForInstanceLifetime() {
-        return statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_TOO_BUSY_COUNT).getLifetimeCount();
-    }
-
-    @ManagedAttribute(description = "This is a count of the number of reservations that were handled by this instance")
-    public long getNumOfNodesWhoConnectedForInstanceLifetime() {
-        return statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_RESERVATION_REQUESTED).getLifetimeCount();
-    }
-
-    @ManagedAttribute(description = "This is a count of the number of reservations that handed out by this instance")
-    public long getNumOfNodesWhoReservedConnectionsForInstanceLifetime() {
-        return statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_CONNECTION_RESERVED).getLifetimeCount();
     }
 
     @ManagedAttribute(description = "The group this node belongs to")

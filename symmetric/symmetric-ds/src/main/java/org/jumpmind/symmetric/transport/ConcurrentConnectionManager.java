@@ -8,13 +8,12 @@ import java.util.Set;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 
 public class ConcurrentConnectionManager implements IConcurrentConnectionManager {
 
-    private IParameterService parameterService;
+    protected IParameterService parameterService;
 
-    private IStatisticManager statisticManager;
+    protected IStatisticManager statisticManager;
 
     protected Map<String, Map<String, Reservation>> activeReservationsByNodeByPool = new HashMap<String, Map<String, Reservation>>();
 
@@ -83,12 +82,8 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             reservations.put(nodeId, new Reservation(nodeId, reservationRequest == ReservationType.SOFT ? System
                     .currentTimeMillis()
                     + timeout : Long.MAX_VALUE));
-            statisticManager.getStatistic(
-                    reservationRequest == ReservationType.HARD ? StatisticNameConstants.NODE_CONCURRENCY_RESERVATION_REQUESTED
-                            : StatisticNameConstants.NODE_CONCURRENCY_CONNECTION_RESERVED).increment();
             return true;
         } else {
-            statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_TOO_BUSY_COUNT).increment();
             return false;
         }
     }
@@ -100,7 +95,6 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             for (String nodeId : keys) {
                 Reservation reservation = reservations.get(nodeId);
                 if (reservation.timeToLiveInMs < currentTime) {
-                    statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_RESERVATION_TIMEOUT_COUNT).increment();
                     reservations.remove(nodeId);
                 }                
             }

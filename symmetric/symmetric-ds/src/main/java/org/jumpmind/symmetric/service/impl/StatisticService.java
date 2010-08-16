@@ -19,57 +19,23 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
+import org.hsqldb.Types;
 import org.jumpmind.symmetric.service.IStatisticService;
-import org.jumpmind.symmetric.statistic.Statistic;
-import org.jumpmind.symmetric.statistic.StatisticAlertThresholds;
-import org.jumpmind.symmetric.util.AppUtils;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.jumpmind.symmetric.statistic.ChannelStats;
 
 public class StatisticService extends AbstractService implements IStatisticService {
 
-    public void save(Collection<Statistic> stats, Date captureEndTime) {
-        if (stats != null) {
-            for (Statistic statistic : stats) {
-                jdbcTemplate.update(getSql("insertStatisticSql"), new Object[] { statistic.getNodeId(),
-                        AppUtils.getServerId(), statistic.getName(), statistic.getCaptureStartTimeMs(),
-                        captureEndTime, statistic.getTotal(), statistic.getCount() });
-            }
-        }
-    }
-
-    public List<StatisticAlertThresholds> getAlertThresholds() {
-        return getSimpleTemplate().query(getSql("getAlertThresholdsSql"),
-                new RowMapper<StatisticAlertThresholds>() {
-                    public StatisticAlertThresholds mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        return new StatisticAlertThresholds(rs.getString("statistic_name"), rs
-                                .getBigDecimal("threshold_total_max"), rs.getLong("threshold_count_max"), rs
-                                .getBigDecimal("threshold_total_min"), rs.getLong("threshold_count_min"), rs
-                                .getBigDecimal("threshold_avg_max"), rs.getBigDecimal("threshold_avg_min"));
-                    }
-                });
-    }
-
-    public void saveStatisticAlertThresholds(StatisticAlertThresholds threshold) {
-        SimpleJdbcTemplate template = getSimpleTemplate();
-        int updated = template.update(getSql("updateAlertThresholdsSql"), threshold.getThresholdTotalMax(), threshold
-                .getThresholdCountMax(), threshold.getThresholdAvgMax(), threshold.getThresholdTotalMin(), threshold
-                .getThresholdCountMin(), threshold.getThresholdAvgMin(), threshold.getStatisticName());
-        if (updated == 0) {
-            template.update(getSql("insertAlertThresholdsSql"), threshold.getStatisticName(), threshold
-                    .getThresholdTotalMax(), threshold.getThresholdCountMax(), threshold.getThresholdAvgMax(),
-                    threshold.getThresholdTotalMin(), threshold.getThresholdCountMin(), threshold
-                            .getThresholdAvgMin());
-        }
-    }
-
-    public boolean removeStatisticAlertThresholds(String statisticName) {
-        return 1 == getSimpleTemplate().update(getSql("deleteAlertThresholdsSql"), statisticName);
+    public void save(ChannelStats stats) {
+        jdbcTemplate.update(
+                getSql("insertChannelStatsSql"),
+                new Object[] { stats.getNodeId(), stats.getHostName(), stats.getChannelId(),
+                        stats.getStartTime(), stats.getEndTime(), stats.getDataRouted(),
+                        stats.getDataUnRouted(), stats.getDataEventInserted(),
+                        stats.getDataBytesExtracted(), stats.getDataExtractedErrors(),
+                        stats.getDataBytesTransmitted(), stats.getDataTransmittedErrors(),
+                        stats.getDataBytesLoaded(), stats.getDataLoadedErrors() }, new int[] {
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+                        Types.TIMESTAMP, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT });
     }
 }

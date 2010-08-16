@@ -35,8 +35,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.Constants;
@@ -60,7 +60,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -226,17 +225,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (RegistrationRequiredException ex) {
             throw ex;
         } catch (ConnectException ex) {
-            statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
             throw ex;
         } catch (UnknownHostException ex) {
             log.warn("TransportFailedUnknownHost", ex.getMessage());
-            statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
             throw ex;
         } catch (RegistrationNotOpenException ex) {
             log.warn("RegistrationFailed");
         } catch (ConnectionRejectedException ex) {
             log.warn("TransportFailedConnectionBusy");
-            statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_REJECTED_COUNT).increment();
             throw ex;
         } catch (AuthenticationException ex) {
             log.warn("AuthenticationFailed");
@@ -249,21 +245,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 list.add(batch);
             }
             if (dataLoader != null && batch != null) {
+                statisticManager.incrementDataLoadedErrors(batch.getChannelId(), 1);
                 if (e instanceof IOException || e instanceof TransportException) {
                     log.warn("BatchLoadingFailed", batch.getNodeBatchId(), e.getMessage());
                     batch.setSqlMessage(e.getMessage());
-                    statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_ERROR_COUNT).increment();
                 } else {
                     log.error("BatchLoadingFailed", e, batch.getNodeBatchId(), e.getMessage());
                     SQLException se = unwrapSqlException(e);
-                    if (se != null) {
-                        statisticManager.getStatistic(StatisticNameConstants.INCOMING_DATABASE_ERROR_COUNT).increment();
+                    if (se != null) {                        
                         batch.setSqlState(se.getSQLState());
                         batch.setSqlCode(se.getErrorCode());
                         batch.setSqlMessage(se.getMessage());
                     } else {
                         batch.setSqlMessage(e.getMessage());
-                        statisticManager.getStatistic(StatisticNameConstants.INCOMING_OTHER_ERROR_COUNT).increment();
                     }
                 }
                 batch.setValues(dataLoader.getStatistics(), false);
@@ -313,14 +307,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private void recordStatistics(List<IncomingBatch> list) {
         if (list != null) {
-            statisticManager.getStatistic(StatisticNameConstants.INCOMING_BATCH_COUNT).add(list.size());
             for (IncomingBatch incomingBatch : list) {
-                statisticManager.getStatistic(StatisticNameConstants.INCOMING_MS_PER_ROW).add(
-                        incomingBatch.getDatabaseMillis(), incomingBatch.getStatementCount());
-                statisticManager.getStatistic(StatisticNameConstants.INCOMING_BATCH_COUNT).increment();
-                if (org.jumpmind.symmetric.model.IncomingBatch.Status.SK.equals(incomingBatch.getStatus())) {
-                    statisticManager.getStatistic(StatisticNameConstants.INCOMING_SKIP_BATCH_COUNT).increment();
-                }
+                statisticManager.incrementDataBytesLoaded(incomingBatch.getChannelId(), incomingBatch.getStatementCount());
             }
         }
     }
@@ -440,11 +428,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void addColumnFilter(String tableName, IColumnFilter filter) {
-List<IColumnFilter> filters = this.columnFilters.get(tableName);
-if (filters == null) {
-    filters = new ArrayList<IColumnFilter>();
-    this.columnFilters.put(tableName, filters);
-}
+        List<IColumnFilter> filters = this.columnFilters.get(tableName);
+        if (filters == null) {
+            filters = new ArrayList<IColumnFilter>();
+            this.columnFilters.put(tableName, filters);
+        }
         filters.add(filter);
     }
     
@@ -503,7 +491,6 @@ if (filters == null) {
                 newTransactionTemplate.execute(loadDelegate);
                 loadStatus = loadDelegate.getLoadStatus();
                 if (loadStatus == LoadStatus.CONTINUE) {
-                    statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).increment();
                     // Chances are if SymmetricDS is configured to commit early in a batch we want to give other threads
                     // a chance to do work and access the database.
                     AppUtils.sleep(5);

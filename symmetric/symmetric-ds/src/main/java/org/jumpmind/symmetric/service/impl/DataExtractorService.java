@@ -66,6 +66,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
@@ -99,6 +100,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private DataExtractorContext clonableContext;
 
     private List<IExtractorFilter> extractorFilters;
+    
+    private IStatisticManager statisticManager;
 
     /**
      * @see DataExtractorService#extractConfigurationStandalone(Node,
@@ -426,10 +429,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 batch.setSentCount(batch.getSentCount() + 1);
                 batch.setStatus(OutgoingBatch.Status.SE);
                 outgoingBatchService.updateOutgoingBatch(batch);
+                statisticManager.incrementDataBytesExtracted(batch.getChannelId(), batch.getDataEventCount());
             }
         } catch (RuntimeException e) {
             SQLException se = unwrapSqlException(e);
             if (currentBatch != null) {
+                statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(), 1);
                 if (se != null) {
                     currentBatch.setSqlState(se.getSQLState());
                     currentBatch.setSqlCode(se.getErrorCode());
@@ -618,5 +623,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;
+    }
+    
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
     }
 }

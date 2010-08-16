@@ -87,9 +87,6 @@
     <entry key="deleteFromDataGapsSql">
       <value>delete from $[sym.sync.table.prefix]_data_gap where last_update_time &lt; ? and status != 'GP'</value>
     </entry>    
-    <entry key="deleteFromStatisticSql">
-      <value>delete from $[sym.sync.table.prefix]_statistic where capture_end_time &lt; ?</value>
-    </entry>
     <entry key="deleteIncomingBatchByNodeSql">
       <value>delete from $[sym.sync.table.prefix]_incoming_batch where node_id = ?</value>
     </entry>
