@@ -21,8 +21,8 @@
 
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
@@ -38,18 +38,18 @@ public class CsvExtractor extends CsvExtractor16 {
 
     protected ITriggerRouterService triggerRouterService;
     
-    public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
+    public void init(Writer writer, DataExtractorContext context) throws IOException {
         super.init(writer, context);
         CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, dbDialect.getBinaryEncoding().name());
-        writer.newLine();
+        CsvUtils.writeLineFeed(writer);
     }
 
     @Override
-    public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
+    public void begin(OutgoingBatch batch, Writer writer) throws IOException {
         CsvUtils.write(writer, CsvConstants.CHANNEL, CsvUtils.DELIMITER, batch.getChannelId());
-        writer.newLine();        
+        CsvUtils.writeLineFeed(writer);
         CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
-        writer.newLine();        
+        CsvUtils.writeLineFeed(writer);
     }
     
     /**
@@ -59,7 +59,7 @@ public class CsvExtractor extends CsvExtractor16 {
      * @param tableName
      */
     @Override
-    public void preprocessTable(Data data, String routerId, BufferedWriter out, DataExtractorContext context) throws IOException {
+    public void preprocessTable(Data data, String routerId, Writer out, DataExtractorContext context) throws IOException {
         if (data.getTriggerHistory() == null) {
             throw new RuntimeException("Missing trigger_hist for table " + data.getTableName()
                     + ": try running syncTriggers() or restarting SymmetricDS");
@@ -70,9 +70,9 @@ public class CsvExtractor extends CsvExtractor16 {
         if (!context.getHistoryRecordsWritten().contains(triggerHistoryId)) {
             writeTable(data, routerId, out);
             CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
             CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
             context.getHistoryRecordsWritten().add(triggerHistoryId);
         } else if (!context.isLastTable(data.getTableName())) {
             writeTable(data, routerId, out);
@@ -80,26 +80,26 @@ public class CsvExtractor extends CsvExtractor16 {
 
         if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null && parameterService.is(ParameterConstants.DATA_EXTRACTOR_OLD_DATA_ENABLED)) {
             CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
         }
         context.setLastTableName(data.getTableName());
     }
     
-    protected void writeTable(Data data, String routerId, BufferedWriter out) throws IOException {
+    protected void writeTable(Data data, String routerId, Writer out) throws IOException {
         // TODO Add property and write the source schema and the source catalog if set
         Router router = triggerRouterService.getActiveRouterByIdForCurrentNode(routerId, false);
         String schemaName = (router == null || router.getTargetSchemaName() == null) ? "" : router
                 .getTargetSchemaName();
         CsvUtils.write(out, CsvConstants.SCHEMA, ", ", schemaName);
-        out.newLine();
+        CsvUtils.writeLineFeed(out);
         String catalogName = (router == null || router.getTargetCatalogName() == null) ? "" : router
                 .getTargetCatalogName();
         CsvUtils.write(out, CsvConstants.CATALOG, ", ", catalogName);
-        out.newLine();
+        CsvUtils.writeLineFeed(out);
         String tableName = (router == null || router.getTargetTableName() == null) ? data.getTableName() : router
                 .getTargetTableName();
         CsvUtils.write(out, CsvConstants.TABLE, ", ", tableName);
-        out.newLine();
+        CsvUtils.writeLineFeed(out);
     }
 
     public void setTriggerRouterService(ITriggerRouterService triggerRouterService) {

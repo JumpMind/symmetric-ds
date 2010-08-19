@@ -2,14 +2,14 @@ package org.jumpmind.symmetric.statistic;
 
 import java.util.Date;
 
-abstract public class AbstractStats {
+abstract public class AbstractNodeHostStats {
 
     private String nodeId;
     private String hostName;
     private Date startTime;
     private Date endTime;
     
-    public AbstractStats(String nodeId, String hostName, Date startTime, Date endTime) {
+    public AbstractNodeHostStats(String nodeId, String hostName, Date startTime, Date endTime) {
         this.nodeId = nodeId;
         this.hostName = hostName;
         this.startTime = startTime;

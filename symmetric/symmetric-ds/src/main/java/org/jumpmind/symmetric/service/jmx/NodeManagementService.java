@@ -282,8 +282,8 @@ public class NodeManagementService {
 
     @ManagedOperation(description = "Check to see if the initial load for a node id is complete.  This method will throw an exception if the load error'd out or was never started.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id") })
-    public boolean isInitialLoadComplete(String nodeId) {
-        return outgoingBatchService.isInitialLoadComplete(nodeId);
+    public boolean areAllLoadBatchesComplete(String nodeId) {
+        return outgoingBatchService.areAllLoadBatchesComplete(nodeId);
     }
 
     @ManagedOperation(description = "Enable or disable synchronization completely for a node")

@@ -259,7 +259,6 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testBinaryColumnTypesForPostgres() {
         IDbDialect dialect = getDbDialect();

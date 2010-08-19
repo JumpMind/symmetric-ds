@@ -42,6 +42,8 @@ public interface IOutgoingBatchService {
     public OutgoingBatches getOutgoingBatchErrors(int maxRows);
 
     public boolean isInitialLoadComplete(String nodeId);
+    
+    public boolean areAllLoadBatchesComplete(String nodeId);
 
     public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId);
 

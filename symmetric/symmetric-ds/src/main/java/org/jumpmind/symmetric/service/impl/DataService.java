@@ -277,18 +277,19 @@ public class DataService extends AbstractService implements IDataService {
         }
 
         nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
-        insertNodeSecurityUpdate(targetNode, true);
+        
+        insertNodeSecurityUpdate(targetNode, false);
 
         // remove all incoming events from the node are starting a reload for.
         purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
     }
 
-    private void insertNodeSecurityUpdate(Node node, boolean isLoad) {
+    private void insertNodeSecurityUpdate(Node node, boolean isReload) {
         Data data = createData(null, null, tablePrefix + "_node_security", " t.node_id = '"
-                + node.getNodeId() + "'", isLoad);
+                + node.getNodeId() + "'");
         if (data != null) {
             insertDataAndDataEventAndOutgoingBatch(data, node.getNodeId(),
-                    Constants.UNKNOWN_ROUTER_ID, isLoad);
+                    Constants.UNKNOWN_ROUTER_ID, isReload);
         }
     }
 
@@ -377,7 +378,7 @@ public class DataService extends AbstractService implements IDataService {
                         .getTriggerRouterForTableForCurrentNode(null, null, tableName, false);
                 if (triggerRouter != null) {
                     Data data = createData(triggerRouter.getTrigger(), String.format(
-                            " t.node_id = '%s'", node.getNodeId()), false);
+                            " t.node_id = '%s'", node.getNodeId()));
                     if (data != null) {
                         insertData(data);
                     }
@@ -388,22 +389,22 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public Data createData(String catalogName, String schemaName, String tableName, boolean isReload) {
-        return createData(catalogName, schemaName, tableName, null, isReload);
+    public Data createData(String catalogName, String schemaName, String tableName) {
+        return createData(catalogName, schemaName, tableName, null);
     }
 
     public Data createData(String catalogName, String schemaName, String tableName,
-            String whereClause, boolean isReload) {
+            String whereClause) {
         Data data = null;
         TriggerRouter trigger = triggerRouterService.getTriggerRouterForTableForCurrentNode(
                 catalogName, schemaName, tableName, false);
         if (trigger != null) {
-            data = createData(trigger.getTrigger(), whereClause, isReload);
+            data = createData(trigger.getTrigger(), whereClause);
         }
         return data;
     }
 
-    public Data createData(Trigger trigger, String whereClause, boolean isReload) {
+    public Data createData(Trigger trigger, String whereClause) {
         Data data = null;
         if (trigger != null) {
             String rowData = null;
@@ -425,7 +426,7 @@ public class DataService extends AbstractService implements IDataService {
             }
             if (history != null) {
                 data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData,
-                        pkData, history, isReload ? trigger.getChannelId() : trigger
+                        pkData, history, trigger
                                 .getChannelId(), null, null);
             }
         }

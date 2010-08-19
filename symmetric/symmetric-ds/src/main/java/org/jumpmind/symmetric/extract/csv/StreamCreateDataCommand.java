@@ -1,6 +1,6 @@
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.BufferedWriter;
+import java.io.Writer;
 import java.io.IOException;
 
 import org.jumpmind.symmetric.common.csv.CsvConstants;
@@ -10,9 +10,9 @@ import org.jumpmind.symmetric.util.CsvUtils;
 
 public class StreamCreateDataCommand extends AbstractStreamDataCommand {
 
-    public void execute(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
+    public void execute(Writer writer, Data data, String routerId, DataExtractorContext context) throws IOException {
         CsvUtils.write(writer, CsvConstants.CREATE, DELIMITER, data.getRowData());
-        writer.newLine();
+        CsvUtils.writeLineFeed(writer);
         context.incrementDataEventCount();
     }
     

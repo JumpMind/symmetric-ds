@@ -52,14 +52,14 @@ public class SchemaPerNodeDataLoaderFilter implements IDataLoaderFilter {
 
     private void filter(IDataLoaderContext context) {
         if (!context.getTableName().startsWith(tablePrefix)
-                && !context.getNodeId().equals(context.getTableTemplate().getTable().getSchema())) {
+                && !context.getSourceNodeId().equals(context.getTableTemplate().getTable().getSchema())) {
             ((DataLoaderContext) context).setTableTemplate(getTableTemplate(context));
         }
     }
 
     private TableTemplate getTableTemplate(IDataLoaderContext context) {
         TableTemplate tableTemplate = new TableTemplate(jdbcTemplate, dbDialect, context.getTableName(), null, false,
-                schemaPrefix == null ? context.getNodeId() : schemaPrefix + context.getNodeId(), null);
+                schemaPrefix == null ? context.getSourceNodeId() : schemaPrefix + context.getSourceNodeId(), null);
         tableTemplate.setColumnNames(context.getColumnNames());
         tableTemplate.setKeyNames(context.getKeyNames());
         tableTemplate.setOldData(context.getOldData());

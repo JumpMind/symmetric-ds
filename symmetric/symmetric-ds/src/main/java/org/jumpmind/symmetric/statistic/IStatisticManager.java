@@ -25,18 +25,26 @@ public interface IStatisticManager {
     public void incrementDataLoadedErrors(String channelId, long count);
 
     public void incrementDataBytesLoaded(String channelId, long count);
+    
+    public void incrementDataLoaded(String channelId, long count);
 
     public void incrementDataBytesTransmitted(String channelId, long count);
+    
+    public void incrementDataTransmitted(String channelId, long count);
 
     public void incrementDataEventInserted(String channelId, long count);
 
     public void incrementDataExtractedErrors(String channelId, long count);
 
     public void incrementDataBytesExtracted(String channelId, long count);
+    
+    public void incrementDataExtracted(String channelId, long count);
 
     public void incrementDataUnRouted(String channelId, long count);
 
     public void incrementDataRouted(String channelId, long count);
     
     public void incrementDataTransmittedErrors(String channelId, long count);
+    
+    
 }

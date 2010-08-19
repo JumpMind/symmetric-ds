@@ -21,10 +21,11 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Reader;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -41,6 +42,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
@@ -66,7 +68,9 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.statistic.DataExtractorStatisticsWriter;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticConstants;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
@@ -105,7 +109,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     /**
      * @see DataExtractorService#extractConfigurationStandalone(Node,
-     *      BufferedWriter)
+     *      Writer)
      */
     public void extractConfigurationStandalone(Node node, OutputStream out) throws IOException {
         this.extractConfigurationStandalone(node, TransportUtils.toWriter(out));
@@ -118,7 +122,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * load for some reason on the client the batch status will NOT reflect the
      * failure.
      */
-    public void extractConfigurationStandalone(Node node, BufferedWriter writer) throws IOException {
+    public void extractConfigurationStandalone(Node node, Writer writer) throws IOException {
         try {
             OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG);
             if (Version.isOlderThanVersion(node.getSymmetricVersion(),
@@ -146,7 +150,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
+    public void extractConfiguration(Node node, Writer writer, DataExtractorContext ctx) throws IOException {
         List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(StringUtils.isBlank(node
                 .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(),parameterService
                 .getNodeGroupId(), node.getNodeGroupId());
@@ -215,12 +219,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return (IDataExtractor) beanFactory.getBean(beanName);
     }
 
-    public void extractInitialLoadWithinBatchFor(Node node, final TriggerRouter trigger, BufferedWriter writer,
+    public void extractInitialLoadWithinBatchFor(Node node, final TriggerRouter trigger, Writer writer,
             DataExtractorContext ctx) {
         writeInitialLoad(node, trigger, writer, ctx);
     }
 
-    protected void writeInitialLoad(Node node, TriggerRouter trigger, BufferedWriter writer, 
+    protected void writeInitialLoad(Node node, TriggerRouter trigger, Writer writer, 
             final DataExtractorContext ctx) {
         writeInitialLoad(node, trigger, triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTrigger()
                 .getTriggerId()), writer, ctx);
@@ -232,7 +236,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      *            batch.
      */
     protected void writeInitialLoad(final Node node, final TriggerRouter triggerRouter, TriggerHistory triggerHistory,
-            final BufferedWriter writer, final DataExtractorContext ctx) {
+            final Writer writer, final DataExtractorContext ctx) {
 
         final boolean newExtractorCreated = ctx == null || ctx.getDataExtractor() == null;
         final IDataExtractor dataExtractor = !newExtractorCreated ? ctx.getDataExtractor() : getDataExtractor(node
@@ -345,6 +349,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     .getIgnoreChannels());
 
             batches.filterBatchesForChannels(suspendIgnoreChannelsList.getSuspendChannels());
+            
+            // Remove non-load batches so that an initial load finishes before any other
+            // batches are loaded.
+            if (batches.containsLoadBatches()) {
+                batches.removeNonLoadBatches();
+            }
 
             FileOutgoingTransport fileTransport = null;
 
@@ -390,20 +400,70 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    protected void networkTransfer(FileOutgoingTransport fileTransport, IOutgoingTransport targetTransport)
-            throws IOException {
+    protected void networkTransfer(FileOutgoingTransport fileTransport,
+            IOutgoingTransport targetTransport) throws IOException {
         if (fileTransport != null) {
             fileTransport.close();
-            Reader reader = null;
+            BufferedReader reader = null;
+            BufferedWriter writer = null;
+            String channelId = null;
+            long lineCount = 0;
+            long byteCount = 0;
             try {
                 reader = fileTransport.getReader();
-                IOUtils.copy(reader, targetTransport.open());
+                writer = targetTransport.open();
+                String nextLine = null;
+                do {
+                    nextLine = reader.readLine();
+                    if (nextLine != null) {
+                        lineCount++;
+                        byteCount += nextLine.length();
+                        if (nextLine.startsWith(CsvConstants.CHANNEL)) {
+                            String[] csv = StringUtils.split(nextLine, ",");
+                            if (csv.length > 1) {
+                                if (channelId != null) {
+                                    statisticManager.incrementDataBytesTransmitted(channelId,
+                                            byteCount);
+                                    statisticManager.incrementDataTransmitted(channelId, lineCount);
+                                }
+                                channelId = csv[1].trim();
+                                byteCount = 0;
+                                lineCount = 0;
+                            }
+                        }
+                        writer.write(nextLine);
+                        CsvUtils.writeLineFeed(writer);
+
+                        if (channelId != null) {
+                            if (byteCount > StatisticConstants.FLUSH_SIZE_BYTES) {
+                                statisticManager
+                                        .incrementDataBytesTransmitted(channelId, byteCount);
+                                byteCount = 0;
+                            }
+
+                            if (lineCount > StatisticConstants.FLUSH_SIZE_LINES) {
+                                statisticManager.incrementDataTransmitted(channelId, lineCount);
+                                lineCount = 0;
+                            }
+                        }
+                    }
+                } while (nextLine != null);
             } finally {
                 IOUtils.closeQuietly(reader);
                 fileTransport.delete();
+                if (channelId != null) {
+                    if (byteCount > 0) {
+                        statisticManager.incrementDataBytesTransmitted(channelId, byteCount);
+                    }
+
+                    if (lineCount > 0) {
+                        statisticManager.incrementDataTransmitted(channelId, lineCount);
+                    }
+                }
             }
         }
     }
+    
 
     /**
      * Allow a handler callback to do the work so we can route the extracted
@@ -429,7 +489,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 batch.setSentCount(batch.getSentCount() + 1);
                 batch.setStatus(OutgoingBatch.Status.SE);
                 outgoingBatchService.updateOutgoingBatch(batch);
-                statisticManager.incrementDataBytesExtracted(batch.getChannelId(), batch.getDataEventCount());
             }
         } catch (RuntimeException e) {
             SQLException se = unwrapSqlException(e);
@@ -551,7 +610,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         DataExtractorContext context;
 
-        BufferedWriter writer;
+        DataExtractorStatisticsWriter writer;
 
         ExtractStreamHandler(IDataExtractor dataExtractor, IOutgoingTransport transport) throws IOException {
             this.transport = transport;
@@ -575,16 +634,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public void endBatch(OutgoingBatch batch) throws IOException {
             dataExtractor.commit(batch, writer);
+            writer.flush();
         }
 
         public void init() throws IOException {
-            this.writer = transport.open();
+            this.writer = new DataExtractorStatisticsWriter(statisticManager, transport.open(), 1024, 512);
             this.context = DataExtractorService.this.clonableContext.copy(dataExtractor);
             dataExtractor.init(writer, context);
         }
 
         public void startBatch(OutgoingBatch batch) throws IOException {
             context.setBatch(batch);
+            writer.setChannelId(batch.getChannelId());
             dataExtractor.begin(batch, writer);
         }
 

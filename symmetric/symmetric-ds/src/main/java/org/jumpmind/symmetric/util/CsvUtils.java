@@ -1,12 +1,12 @@
 package org.jumpmind.symmetric.util;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -20,6 +20,8 @@ public class CsvUtils {
     static final ILog log = LogFactory.getLog(CsvUtils.class);
 
     public static final String DELIMITER = ", ";
+    
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     public static CsvReader getCsvReader(Reader reader) {
         CsvReader csvReader = new CsvReader(reader);
@@ -56,7 +58,7 @@ public class CsvUtils {
         return out.toString();
     }
 
-    public static void write(BufferedWriter writer, String... data) throws IOException {
+    public static void write(Writer writer, String... data) throws IOException {
         StringBuilder buffer = new StringBuilder();
         for (String string : data) {
             buffer.append(string);
@@ -66,14 +68,18 @@ public class CsvUtils {
         log.debug("BufferWriting", buffer);
     }
 
-    public static void writeSql(String sql, BufferedWriter writer) throws IOException {
+    public static void writeSql(String sql, Writer writer) throws IOException {
         write(writer, CsvConstants.SQL, DELIMITER, sql);
-        writer.newLine();
+        writeLineFeed(writer);
     }
     
-    public static void writeBsh(String script, BufferedWriter writer) throws IOException {
+    public static void writeBsh(String script, Writer writer) throws IOException {
         write(writer, CsvConstants.BSH, DELIMITER, script);
-        writer.newLine();
+        writeLineFeed(writer);    
+    }
+    
+    public static void writeLineFeed(Writer writer) throws IOException {
+        writer.write(LINE_SEPARATOR);
     }
 
 }

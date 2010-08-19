@@ -21,7 +21,7 @@
 
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.BufferedWriter;
+import java.io.Writer;
 import java.io.IOException;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
@@ -40,7 +40,7 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
 
     private INodeService nodeService;
 
-    public void execute(BufferedWriter out, Data data, String routerId, DataExtractorContext context) throws IOException {
+    public void execute(Writer out, Data data, String routerId, DataExtractorContext context) throws IOException {
         String triggerId = data.getTriggerHistory().getTriggerId();
         TriggerRouter triggerRouter = triggerRouterService.findTriggerRouterById(triggerId, routerId);
         if (triggerRouter != null) {
