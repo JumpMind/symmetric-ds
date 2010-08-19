@@ -19,9 +19,9 @@
  */
 package org.jumpmind.symmetric.transport.file;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.Reader;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.io.ThresholdFileWriter;
@@ -56,7 +56,7 @@ public class FileOutgoingTransport implements IOutgoingTransport {
         out = null;
     }
 
-    public Reader getReader() throws IOException {
+    public BufferedReader getReader() throws IOException {
         return this.fileWriter.getReader();
     }
 

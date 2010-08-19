@@ -21,8 +21,8 @@
 
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.util.CsvUtils;
 public class CsvExtractor16 extends CsvExtractor14 {
 
 	@Override
-    public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context)
+    public void write(Writer writer, Data data, String routerId, DataExtractorContext context)
             throws IOException {
         IStreamDataCommand cmd = dictionary.get(data.getEventType().getCode());
         if (cmd == null) {
@@ -54,7 +54,7 @@ public class CsvExtractor16 extends CsvExtractor14 {
      * @param tableName
      */
     @Override
-    public void preprocessTable(Data data, String routerId, BufferedWriter out, DataExtractorContext context)
+    public void preprocessTable(Data data, String routerId, Writer out, DataExtractorContext context)
             throws IOException {
         if (data.getTriggerHistory() == null) {
             throw new RuntimeException("Missing trigger_hist for table " + data.getTableName()
@@ -71,20 +71,20 @@ public class CsvExtractor16 extends CsvExtractor14 {
         if (!context.getHistoryRecordsWritten().contains(triggerHistId)) {
             
             CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
             CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
             CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
             context.getHistoryRecordsWritten().add(triggerHistId);
         } else if (!context.isLastTable(data.getTableName())) {
             CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
         }
 
         if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null && parameterService.is(ParameterConstants.DATA_EXTRACTOR_OLD_DATA_ENABLED)) {
             CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
         }
         context.setLastTableName(data.getTableName());
     }

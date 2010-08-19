@@ -27,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 
@@ -102,11 +101,11 @@ public class ThresholdFileWriter extends Writer {
         }
     }
 
-    public Reader getReader() throws IOException {
+    public BufferedReader getReader() throws IOException {
         if (fileWriter != null) {
             return new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
         } else {
-            return new StringReader(buffer.toString());
+            return new BufferedReader(new StringReader(buffer.toString()));
         }
     }
     

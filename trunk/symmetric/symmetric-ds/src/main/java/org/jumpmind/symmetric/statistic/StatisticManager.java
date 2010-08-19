@@ -32,7 +32,6 @@ import org.jumpmind.symmetric.service.INotificationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 public class StatisticManager implements IStatisticManager {
 
@@ -59,6 +58,10 @@ public class StatisticManager implements IStatisticManager {
         getChannelStats(channelId).incrementDataUnRouted(count);
     }
 
+    public void incrementDataExtracted(String channelId, long count) {
+     getChannelStats(channelId).incrementDataExtracted(count);        
+    }
+    
     public void incrementDataBytesExtracted(String channelId, long count) {
         getChannelStats(channelId).incrementDataBytesExtracted(count);
     }
@@ -71,12 +74,20 @@ public class StatisticManager implements IStatisticManager {
         getChannelStats(channelId).incrementDataEventInserted(count);
     }
 
+    public void incrementDataTransmitted(String channelId, long count) {
+        getChannelStats(channelId).incrementDataTransmitted(count);
+    }
+    
     public void incrementDataBytesTransmitted(String channelId, long count) {
         getChannelStats(channelId).incrementDataBytesTransmitted(count);
     }
 
     public void incrementDataTransmittedErrors(String channelId, long count) {
         getChannelStats(channelId).incrementDataTransmittedErrors(count);
+    }
+
+    public void incrementDataLoaded(String channelId, long count) {
+        getChannelStats(channelId).incrementDataBytesLoaded(count);
     }
 
     public void incrementDataBytesLoaded(String channelId, long count) {
@@ -87,10 +98,10 @@ public class StatisticManager implements IStatisticManager {
         getChannelStats(channelId).incrementDataLoadedErrors(count);
     }
 
-    @Transactional
     public void flush() {
+        Date endTime = new Date();
         for (ChannelStats stats : channelStats.values()) {
-            stats.setEndTime(new Date());
+            stats.setEndTime(endTime);
             statisticService.save(stats);
         }
         reset(true);

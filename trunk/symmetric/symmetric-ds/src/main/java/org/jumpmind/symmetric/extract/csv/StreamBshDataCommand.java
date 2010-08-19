@@ -22,7 +22,7 @@
 
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.BufferedWriter;
+import java.io.Writer;
 import java.io.IOException;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.util.CsvUtils;
 
 class StreamBshDataCommand extends AbstractStreamDataCommand {
 
-    public void execute(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
+    public void execute(Writer writer, Data data, String routerId, DataExtractorContext context) throws IOException {
         CsvUtils.writeBsh(data.getRowData(), writer);
     }
     

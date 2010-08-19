@@ -20,23 +20,23 @@
 
 package org.jumpmind.symmetric.extract;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 public interface IDataExtractor {
 
-    public void init(BufferedWriter writer, DataExtractorContext context) throws IOException;
+    public void init(Writer writer, DataExtractorContext context) throws IOException;
 
-    public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException;
+    public void begin(OutgoingBatch batch, Writer writer) throws IOException;
 
-    public void preprocessTable(Data data, String routerId, BufferedWriter out, DataExtractorContext context) throws IOException;
+    public void preprocessTable(Data data, String routerId, Writer out, DataExtractorContext context) throws IOException;
 
-    public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException;
+    public void commit(OutgoingBatch batch, Writer writer) throws IOException;
 
-    public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException;
+    public void write(Writer writer, Data data, String routerId, DataExtractorContext context) throws IOException;
 
     /**
      * Give an opportunity to swap out the table name with a different one for backward compatibility

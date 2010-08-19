@@ -21,9 +21,9 @@
 
 package org.jumpmind.symmetric.service;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
@@ -33,13 +33,13 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public interface IDataExtractorService {
 
-    public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException;
+    public void extractConfiguration(Node node, Writer writer, DataExtractorContext ctx) throws IOException;
     
     public void extractConfigurationStandalone(Node node, OutputStream out) throws IOException;
 
-    public void extractConfigurationStandalone(Node node, BufferedWriter out) throws IOException;
+    public void extractConfigurationStandalone(Node node, Writer out) throws IOException;
     
-    public void extractInitialLoadWithinBatchFor(Node node, TriggerRouter trigger, BufferedWriter writer,
+    public void extractInitialLoadWithinBatchFor(Node node, TriggerRouter trigger, Writer writer,
             DataExtractorContext ctx);
 
     /**

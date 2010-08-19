@@ -26,16 +26,17 @@ import org.jumpmind.symmetric.statistic.ChannelStats;
 public class StatisticService extends AbstractService implements IStatisticService {
 
     public void save(ChannelStats stats) {
-        jdbcTemplate.update(
-                getSql("insertChannelStatsSql"),
-                new Object[] { stats.getNodeId(), stats.getHostName(), stats.getChannelId(),
-                        stats.getStartTime(), stats.getEndTime(), stats.getDataRouted(),
-                        stats.getDataUnRouted(), stats.getDataEventInserted(),
-                        stats.getDataBytesExtracted(), stats.getDataExtractedErrors(),
-                        stats.getDataBytesTransmitted(), stats.getDataTransmittedErrors(),
-                        stats.getDataBytesLoaded(), stats.getDataLoadedErrors() }, new int[] {
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+        jdbcTemplate.update(getSql("insertChannelStatsSql"), new Object[] { stats.getNodeId(),
+                stats.getHostName(), stats.getChannelId(), stats.getStartTime(),
+                stats.getEndTime(), stats.getDataRouted(), stats.getDataUnRouted(),
+                stats.getDataEventInserted(), stats.getDataExtracted(),
+                stats.getDataBytesExtracted(), stats.getDataExtractedErrors(),
+                stats.getDataTransmitted(), stats.getDataBytesTransmitted(),
+                stats.getDataTransmittedErrors(), stats.getDataLoaded(),
+                stats.getDataBytesLoaded(), stats.getDataLoadedErrors() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
                         Types.TIMESTAMP, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
-                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT });
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT });
     }
 }

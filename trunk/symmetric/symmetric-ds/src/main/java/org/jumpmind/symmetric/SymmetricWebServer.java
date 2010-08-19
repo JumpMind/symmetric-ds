@@ -217,8 +217,8 @@ public class SymmetricWebServer {
             ConstraintMapping cm = new ConstraintMapping();
             cm.setConstraint(constraint);
             cm.setPathSpec("/*");
-            sh.setConstraintMappings(new ConstraintMapping[] {cm});
-            //sh.addConstraintMapping(cm);
+            //sh.setConstraintMappings(new ConstraintMapping[] {cm});
+            sh.addConstraintMapping(cm);
     
             sh.setAuthenticator(new BasicAuthenticator());
             

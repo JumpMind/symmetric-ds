@@ -21,8 +21,8 @@
 
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,27 +54,27 @@ public class CsvExtractor14 implements IDataExtractor {
     	legacyTableMapping.put("sym_trigger", "sym_trigger_old");
     }
 
-    public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
+    public void init(Writer writer, DataExtractorContext context) throws IOException {
         Node nodeIdentity = nodeService.findIdentity();
         String nodeId = (nodeIdentity == null) ? parameterService.getString(ParameterConstants.EXTERNAL_ID)
                 : nodeIdentity.getNodeId();
         CsvUtils.write(writer, CsvConstants.NODEID, CsvUtils.DELIMITER, nodeId);
-        writer.newLine();
+        CsvUtils.writeLineFeed(writer);
     }
 
-    public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
+    public void begin(OutgoingBatch batch, Writer writer) throws IOException {
         CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
-        writer.newLine();
+        CsvUtils.writeLineFeed(writer);
         CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, dbDialect.getBinaryEncoding().name());
-        writer.newLine();
+        CsvUtils.writeLineFeed(writer);
     }
 
-    public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException {
+    public void commit(OutgoingBatch batch, Writer writer) throws IOException {
         CsvUtils.write(writer, CsvConstants.COMMIT, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
-        writer.newLine();
+        CsvUtils.writeLineFeed(writer);
     }
 
-    public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
+    public void write(Writer writer, Data data, String routerId, DataExtractorContext context) throws IOException {
         preprocessTable(data, routerId, writer, context);
         dictionary.get(data.getEventType().getCode()).execute(writer, data, routerId, context);
     }
@@ -85,20 +85,20 @@ public class CsvExtractor14 implements IDataExtractor {
      * @param out
      * @param tableName
      */
-    public void preprocessTable(Data data, String routerId, BufferedWriter out, DataExtractorContext context) throws IOException {
+    public void preprocessTable(Data data, String routerId, Writer out, DataExtractorContext context) throws IOException {
         if (data.getTriggerHistory() != null) {
             String historyId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
             if (!context.getHistoryRecordsWritten().contains(historyId)) {
                 CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
-                out.newLine();
+                CsvUtils.writeLineFeed(out);
                 CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
-                out.newLine();
+                CsvUtils.writeLineFeed(out);
                 CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
-                out.newLine();
+                CsvUtils.writeLineFeed(out);
                 context.getHistoryRecordsWritten().add(historyId);
             } else if (!context.isLastTable(data.getTableName())) {
                 CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
-                out.newLine();
+                CsvUtils.writeLineFeed(out);
             }
 
             context.setLastTableName(data.getTableName());

@@ -139,7 +139,7 @@ abstract public class AbstractMultiTierStressTest {
 
             IOutgoingBatchService homeOutgoingBatchService = AppUtils.find(
                     Constants.OUTGOING_BATCH_SERVICE, registrationServer);
-            while (!homeOutgoingBatchService.isInitialLoadComplete(externalId)) {
+            while (!homeOutgoingBatchService.areAllLoadBatchesComplete(externalId)) {
                 clientNode.getEngine().pull();
             }
 

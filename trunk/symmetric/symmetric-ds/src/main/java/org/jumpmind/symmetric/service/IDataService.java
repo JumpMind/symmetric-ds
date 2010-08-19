@@ -79,9 +79,9 @@ public interface IDataService {
     
     public Date findCreateTimeOfData(long dataId);
 
-    public Data createData(String catalogName, String schemaName, String tableName, boolean isReload);
+    public Data createData(String catalogName, String schemaName, String tableName);
 
-    public Data createData(String catalogName, String schemaName, String tableName, String whereClause, boolean isReload);
+    public Data createData(String catalogName, String schemaName, String tableName, String whereClause);
 
     public Map<String, String> getRowDataAsMap(Data data);
 

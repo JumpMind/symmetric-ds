@@ -1203,6 +1203,17 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Node clientNodeAfterPull = getClientEngine().getNodeService().findIdentity();
         Assert.assertNotNull(clientNodeAfterPull); 
     }
+    
+    @Test
+    public void flushStatistics() {
+        IStatisticManager statMgr = (IStatisticManager) getClientEngine().getApplicationContext().getBean(
+                Constants.STATISTIC_MANAGER);
+        statMgr.flush();
+        
+        statMgr = (IStatisticManager) getRootEngine().getApplicationContext().getBean(
+                Constants.STATISTIC_MANAGER);
+        statMgr.flush();
+    }
 
     @Test(timeout = 120000)
     public void cleanupAfterTests() {
@@ -1210,6 +1221,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().purge();
         getRootEngine().purge();
     }
+    
+
 
     private String replace(String prop, String replaceWith, String sourceString) {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);

@@ -175,8 +175,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 maxRows), new OutgoingBatchMapper()));
         return batches;
     }
-
+    
     public boolean isInitialLoadComplete(String nodeId) {
+        return areAllLoadBatchesComplete(nodeId) && !isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, nodeId);
+    }
+
+    public boolean areAllLoadBatchesComplete(String nodeId) {
 
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         if (security == null || security.isInitialLoadEnabled()) {
@@ -196,6 +200,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
         return true;
     }
+    
+    
 
     public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId) {
         int unsentCount = jdbcTemplate.queryForInt(getSql("unsentBatchesForNodeIdChannelIdSql"), new Object[] { nodeId,

@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -106,6 +107,24 @@ public class OutgoingBatches {
         List<OutgoingBatch> filtered = getBatchesForChannels(channels);
         batches.removeAll(filtered);
         return filtered;
+    }
+    
+    public void removeNonLoadBatches() {
+        for (Iterator<OutgoingBatch> iterator = batches.iterator(); iterator.hasNext();) {
+            OutgoingBatch b = iterator.next();
+            if (!b.isLoadFlag()) {
+                iterator.remove();
+            }
+        }
+    }
+    
+    public boolean containsLoadBatches() {
+        for (OutgoingBatch b : batches) {
+            if (b.isLoadFlag()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<OutgoingBatch> getBatchesForChannel(Channel channel) {

@@ -2,16 +2,19 @@ package org.jumpmind.symmetric.statistic;
 
 import java.util.Date;
 
-public class ChannelStats extends AbstractStats {
+public class ChannelStats extends AbstractNodeHostStats {
 
     private String channelId;
     private long dataRouted;
     private long dataUnRouted;
+    private long dataExtracted;
     private long dataBytesExtracted;
     private long dataExtractedErrors;
     private long dataEventInserted;
+    private long dataTransmitted;
     private long dataBytesTransmitted;
     private long dataTransmittedErrors;
+    private long dataLoaded;
     private long dataBytesLoaded;
     private long dataLoadedErrors;
     
@@ -136,5 +139,43 @@ public class ChannelStats extends AbstractStats {
     public void incrementDataLoadedErrors(long count) {
         this.dataLoadedErrors += count;
     }
+    
+    public void setDataExtracted(long dataExtracted) {
+        this.dataExtracted = dataExtracted;
+    }
+    
+    public long getDataExtracted() {
+        return dataExtracted;
+    }
+    
+    public void incrementDataExtracted(long count) {
+        this.dataExtracted += count;
+    }
+    
+    public void setDataLoaded(long dataLoaded) {
+        this.dataLoaded = dataLoaded;
+    }
+    
+    public long getDataLoaded() {
+        return dataLoaded;
+    }
+    
+    public void incrementDataLoaded(long count) {
+        this.dataLoaded += count;
+    }
+    
+    public void setDataTransmitted(long dataTransmitted) {
+        this.dataTransmitted = dataTransmitted;
+    }
+    
+    public long getDataTransmitted() {
+        return dataTransmitted;
+    }
+    
+    public void incrementDataTransmitted(long count) {
+        this.dataTransmitted += count;
+    }
+
+    
 
 }

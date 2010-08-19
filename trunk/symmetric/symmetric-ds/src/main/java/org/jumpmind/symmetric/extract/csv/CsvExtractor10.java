@@ -22,8 +22,8 @@
 
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Map;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -43,23 +43,23 @@ public class CsvExtractor10 implements IDataExtractor {
 
     private String tablePrefix;
 
-    public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
+    public void init(Writer writer, DataExtractorContext context) throws IOException {
         CsvUtils.write(writer, CsvConstants.NODEID, CsvUtils.DELIMITER, parameterService
                 .getString(ParameterConstants.EXTERNAL_ID));
-        writer.newLine();
+        CsvUtils.writeLineFeed(writer);
     }
 
-    public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
+    public void begin(OutgoingBatch batch, Writer writer) throws IOException {
         CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
-        writer.newLine();
+        CsvUtils.writeLineFeed(writer);
     }
 
-    public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException {
+    public void commit(OutgoingBatch batch, Writer writer) throws IOException {
         CsvUtils.write(writer, CsvConstants.COMMIT, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
-        writer.newLine();
+        CsvUtils.writeLineFeed(writer);
     }
 
-    public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
+    public void write(Writer writer, Data data, String routerId, DataExtractorContext context) throws IOException {
         preprocessTable(data, routerId, writer, context);
         dictionary.get(data.getEventType().getCode()).execute(writer, data, routerId, context);
     }
@@ -70,14 +70,14 @@ public class CsvExtractor10 implements IDataExtractor {
      * @param out
      * @param tableName
      */
-    public void preprocessTable(Data data, String routerId, BufferedWriter out, DataExtractorContext context) throws IOException {
+    public void preprocessTable(Data data, String routerId, Writer out, DataExtractorContext context) throws IOException {
 
         String historyId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getHistoryRecordsWritten().contains(historyId)) {
             CsvUtils.write(out, "table, ", data.getTableName());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
             CsvUtils.write(out, "keys, ", data.getTriggerHistory().getPkColumnNames());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
             String columns = data.getTriggerHistory().getColumnNames();
             if (data.getTableName().equalsIgnoreCase(tablePrefix + "_node_security")) {
                 // In 1.4 the column named changed to "node_password", but old
@@ -86,11 +86,11 @@ public class CsvExtractor10 implements IDataExtractor {
                 columns = columns.replaceFirst(",NODE_PASSWORD,", ",PASSWORD,");
             }
             CsvUtils.write(out, "columns, ", columns);
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
             context.getHistoryRecordsWritten().add(historyId);
         } else if (!context.isLastTable(data.getTableName())) {
             CsvUtils.write(out, "table, ", data.getTableName());
-            out.newLine();
+            CsvUtils.writeLineFeed(out);
         }
 
         context.setLastTableName(data.getTableName());

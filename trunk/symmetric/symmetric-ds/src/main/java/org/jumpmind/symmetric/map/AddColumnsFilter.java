@@ -105,11 +105,11 @@ public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtension
             for (String extraCol : additionalColumns.keySet()) {
                 Object extraValue = additionalColumns.get(extraCol);
                 if (TokenConstants.EXTERNAL_ID.equals(extraValue)) {
-                    extraValue = ctx.getNode() != null ? ctx.getNode().getExternalId() : null;
+                    extraValue = ctx.getSourceNode() != null ? ctx.getSourceNode().getExternalId() : null;
                 } else if (TokenConstants.NODE_ID.equals(extraValue)) {
-                    extraValue = ctx.getNodeId();
+                    extraValue = ctx.getSourceNode();
                 } else if (TokenConstants.NODE_GROUP_ID.equals(extraValue)) {
-                    extraValue = ctx.getNode() != null ? ctx.getNode().getNodeGroupId() : null;
+                    extraValue = ctx.getSourceNode() != null ? ctx.getSourceNode().getNodeGroupId() : null;
                 }
                 columnValuesPlus[i++] = extraValue;
             }

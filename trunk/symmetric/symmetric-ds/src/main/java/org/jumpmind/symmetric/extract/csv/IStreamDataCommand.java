@@ -21,13 +21,13 @@
 
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 
 interface IStreamDataCommand {
-    void execute(BufferedWriter out, Data data, String routerId, DataExtractorContext context) throws IOException;
+    void execute(Writer out, Data data, String routerId, DataExtractorContext context) throws IOException;
     boolean isTriggerHistoryRequired();
 }

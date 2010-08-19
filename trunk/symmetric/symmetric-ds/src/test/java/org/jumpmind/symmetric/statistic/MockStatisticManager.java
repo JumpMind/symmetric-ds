@@ -32,5 +32,13 @@ public class MockStatisticManager implements IStatisticManager {
     public synchronized void incrementDataTransmittedErrors(String channelId, long count) {
         
     }
+    
+    public void incrementDataExtracted(String channelId, long count) {
+    }
+    
+    public void incrementDataLoaded(String channelId, long count) {
+    }
+    
+    public void incrementDataTransmitted(String channelId, long count) {};
 
 }

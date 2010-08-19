@@ -47,6 +47,7 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         AckResourceHandler ackService = getTransportResourceHandler();

@@ -12,9 +12,10 @@
                insert into $[sym.sync.table.prefix]_node_host_channel_stats 
                  (node_id, host_name, channel_id, start_time, end_time,
                   data_routed, data_unrouted, data_event_inserted, 
-                  data_bytes_extracted, data_extracted_errors,
-                  data_bytes_transmitted, data_transmitted_errors, data_bytes_loaded, data_loaded_errors) 
-                values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                  data_extracted, data_bytes_extracted, data_extracted_errors,
+                  data_transmitted, data_bytes_transmitted, data_transmitted_errors, 
+                  data_loaded, data_bytes_loaded, data_loaded_errors) 
+                values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ]]></value>
         </entry>
     </util:map>
