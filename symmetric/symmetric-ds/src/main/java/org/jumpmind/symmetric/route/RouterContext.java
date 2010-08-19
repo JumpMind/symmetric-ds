@@ -47,6 +47,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     public static final String STAT_REREAD_DATA_MS = "already.read.data.ms";
     public static final String STAT_ENQUEUE_DATA_MS = "enqueue.data.ms";
     public static final String STAT_ENQUEUE_EOD_MS = "enqueue.eod.data.ms";
+    public static final String STAT_DATA_EVENTS_INSERTED = "enqueue.eod.data.ms";
 
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<TriggerRouter, Set<Node>> availableNodes = new HashMap<TriggerRouter, Set<Node>>();
@@ -54,6 +55,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     private Connection connection;
     private boolean needsCommitted = false;
     private long createdTimeInMs = System.currentTimeMillis();
+    private long lastDataIdProcessed;
     private Map<String, Long> transactionIdDataIds = new HashMap<String, Long>();
 
     public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
@@ -127,4 +129,11 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
         setEncountedTransactionBoundary(dataId == null ? true : dataId == data.getDataId());
     }
 
+    public void setLastDataIdProcessed(long lastDataIdProcessed) {
+        this.lastDataIdProcessed = lastDataIdProcessed;
+    }
+    
+    public long getLastDataIdProcessed() {
+        return lastDataIdProcessed;
+    }
 }

@@ -11,9 +11,9 @@ public class ChannelStats extends AbstractNodeHostStats {
     private long dataBytesExtracted;
     private long dataExtractedErrors;
     private long dataEventInserted;
-    private long dataTransmitted;
-    private long dataBytesTransmitted;
-    private long dataTransmittedErrors;
+    private long dataSent;
+    private long dataBytesSent;
+    private long dataSentErrors;
     private long dataLoaded;
     private long dataBytesLoaded;
     private long dataLoadedErrors;
@@ -92,28 +92,28 @@ public class ChannelStats extends AbstractNodeHostStats {
         this.dataEventInserted += count;
     }
 
-    public long getDataBytesTransmitted() {
-        return dataBytesTransmitted;
+    public long getDataBytesSent() {
+        return dataBytesSent;
     }
 
-    public void setDataBytesTransmitted(long dataTransmitted) {
-        this.dataBytesTransmitted = dataTransmitted;
+    public void setDataBytesSent(long dataTransmitted) {
+        this.dataBytesSent = dataTransmitted;
     }
     
-    public void incrementDataBytesTransmitted(long count) {
-        this.dataBytesTransmitted += count;
+    public void incrementDataBytesSent(long count) {
+        this.dataBytesSent += count;
     }
 
-    public void setDataTransmittedErrors(long dataTransmittedErrors) {
-        this.dataTransmittedErrors = dataTransmittedErrors;
+    public void setDataSentErrors(long dataTransmittedErrors) {
+        this.dataSentErrors = dataTransmittedErrors;
     }
     
-    public long getDataTransmittedErrors() {
-        return dataTransmittedErrors;
+    public long getDataSentErrors() {
+        return dataSentErrors;
     }
     
-    public void incrementDataTransmittedErrors(long count) {
-        this.dataTransmittedErrors += count;    
+    public void incrementDataSentErrors(long count) {
+        this.dataSentErrors += count;    
     }
     
     public long getDataBytesLoaded() {
@@ -164,16 +164,16 @@ public class ChannelStats extends AbstractNodeHostStats {
         this.dataLoaded += count;
     }
     
-    public void setDataTransmitted(long dataTransmitted) {
-        this.dataTransmitted = dataTransmitted;
+    public void setDataSent(long dataTransmitted) {
+        this.dataSent = dataTransmitted;
     }
     
-    public long getDataTransmitted() {
-        return dataTransmitted;
+    public long getDataSent() {
+        return dataSent;
     }
     
-    public void incrementDataTransmitted(long count) {
-        this.dataTransmitted += count;
+    public void incrementDataSent(long count) {
+        this.dataSent += count;
     }
 
     

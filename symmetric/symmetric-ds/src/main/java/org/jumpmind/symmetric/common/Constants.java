@@ -40,6 +40,8 @@ final public class Constants {
     
     public static final String UNROUTED_NODE_ID = "-1";
     
+    public static final long LONG_OPERATION_THRESHOLD = 30000;
+    
     public static final String ENCODING = "UTF-8";
     
     public static final String OVERRIDE_PROPERTIES_FILE_PREFIX = "symmetric.override.properties.file.";

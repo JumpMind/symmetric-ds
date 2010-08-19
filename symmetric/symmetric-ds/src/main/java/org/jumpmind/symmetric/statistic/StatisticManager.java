@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -47,62 +48,128 @@ public class StatisticManager implements IStatisticManager {
 
     IConfigurationService configurationService;
 
+    private static final int NUMBER_OF_PERMITS = 1000;
+
+    Semaphore available = new Semaphore(NUMBER_OF_PERMITS, true);
+
     public StatisticManager() {
     }
 
     public void incrementDataRouted(String channelId, long count) {
-        getChannelStats(channelId).incrementDataRouted(count);
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataRouted(count);
+        } finally {
+            available.release();
+        }
     }
 
-    public void incrementDataUnRouted(String channelId, long count) {
-        getChannelStats(channelId).incrementDataUnRouted(count);
+    public void setDataUnRouted(String channelId, long count) {
+        getChannelStats(channelId).setDataUnRouted(count);
     }
 
     public void incrementDataExtracted(String channelId, long count) {
-     getChannelStats(channelId).incrementDataExtracted(count);        
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataExtracted(count);
+        } finally {
+            available.release();
+        }
     }
-    
+
     public void incrementDataBytesExtracted(String channelId, long count) {
-        getChannelStats(channelId).incrementDataBytesExtracted(count);
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataBytesExtracted(count);
+        } finally {
+            available.release();
+        }
     }
 
     public void incrementDataExtractedErrors(String channelId, long count) {
-        getChannelStats(channelId).incrementDataExtractedErrors(count);
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataExtractedErrors(count);
+        } finally {
+            available.release();
+        }
     }
 
     public void incrementDataEventInserted(String channelId, long count) {
-        getChannelStats(channelId).incrementDataEventInserted(count);
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataEventInserted(count);
+        } finally {
+            available.release();
+        }
     }
 
-    public void incrementDataTransmitted(String channelId, long count) {
-        getChannelStats(channelId).incrementDataTransmitted(count);
-    }
-    
-    public void incrementDataBytesTransmitted(String channelId, long count) {
-        getChannelStats(channelId).incrementDataBytesTransmitted(count);
+    public void incrementDataSent(String channelId, long count) {
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataSent(count);
+        } finally {
+            available.release();
+        }
     }
 
-    public void incrementDataTransmittedErrors(String channelId, long count) {
-        getChannelStats(channelId).incrementDataTransmittedErrors(count);
+    public void incrementDataBytesSent(String channelId, long count) {
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataBytesSent(count);
+        } finally {
+            available.release();
+        }
+    }
+
+    public void incrementDataSentErrors(String channelId, long count) {
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataSentErrors(count);
+        } finally {
+            available.release();
+        }
     }
 
     public void incrementDataLoaded(String channelId, long count) {
-        getChannelStats(channelId).incrementDataBytesLoaded(count);
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataLoaded(count);
+        } finally {
+            available.release();
+        }
     }
 
     public void incrementDataBytesLoaded(String channelId, long count) {
-        getChannelStats(channelId).incrementDataBytesLoaded(count);
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataBytesLoaded(count);
+        } finally {
+            available.release();
+        }
     }
 
     public void incrementDataLoadedErrors(String channelId, long count) {
-        getChannelStats(channelId).incrementDataLoadedErrors(count);
+        available.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataLoadedErrors(count);
+        } finally {
+            available.release();
+        }
     }
 
     public void flush() {
-        Date endTime = new Date();
-        for (ChannelStats stats : channelStats.values()) {
-            stats.setEndTime(endTime);
-            statisticService.save(stats);
+        if (channelStats != null) {
+            available.acquireUninterruptibly(NUMBER_OF_PERMITS);
+            try {
+                Date endTime = new Date();
+                for (ChannelStats stats : channelStats.values()) {
+                    stats.setEndTime(endTime);
+                    statisticService.save(stats);
+                }
+            } finally {
+                available.release(NUMBER_OF_PERMITS);
+            }
         }
         reset(true);
     }

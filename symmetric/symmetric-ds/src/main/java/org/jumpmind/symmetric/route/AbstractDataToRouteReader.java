@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Channel;
@@ -139,7 +140,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     rs = ps.executeQuery();
                     long executeTimeInMs = System.currentTimeMillis()-ts;
                     context.incrementStat(executeTimeInMs, RouterContext.STAT_QUERY_TIME_MS);
-                    if (executeTimeInMs > 30000) {
+                    if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
                         log.warn("RoutedDataSelectedInTime", executeTimeInMs, channelId);
                     }
 

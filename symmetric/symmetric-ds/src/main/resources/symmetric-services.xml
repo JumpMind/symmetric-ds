@@ -85,6 +85,7 @@
         <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="configurationService" ref="configurationService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="statisticManager" ref="statisticManager" />
         <property name="clusterService" ref="clusterService" />
         <property name="dataToRouteReaderFactory">
         <bean class="org.jumpmind.symmetric.route.DataToRouteReaderFactory">
@@ -156,6 +157,7 @@
         <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
+        <property name="statisticManager" ref="statisticManager" />
     </bean>
 
     <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService" scope="singleton" parent="abstractService">

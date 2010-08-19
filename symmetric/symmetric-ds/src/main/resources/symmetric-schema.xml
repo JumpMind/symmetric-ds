@@ -78,9 +78,9 @@
         <column name="data_extracted" type="BIGINT" default="0" description="" />
         <column name="data_bytes_extracted" type="BIGINT" default="0" description="" />
         <column name="data_extracted_errors" type="BIGINT" default="0" description="" />
-        <column name="data_bytes_transmitted" type="BIGINT" default="0" description="" />
-        <column name="data_transmitted" type="BIGINT" default="0" description="" />
-        <column name="data_transmitted_errors" type="BIGINT" default="0" description="" />
+        <column name="data_bytes_sent" type="BIGINT" default="0" description="" />
+        <column name="data_sent" type="BIGINT" default="0" description="" />
+        <column name="data_sent_errors" type="BIGINT" default="0" description="" />
         <column name="data_loaded" type="BIGINT" default="0" description="" />
         <column name="data_bytes_loaded" type="BIGINT" default="0" description="" />
         <column name="data_loaded_errors" type="BIGINT" default="0" description="" />

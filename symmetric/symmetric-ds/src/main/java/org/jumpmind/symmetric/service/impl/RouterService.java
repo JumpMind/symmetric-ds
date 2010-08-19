@@ -56,6 +56,8 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticConstants;
 import org.springframework.dao.DataIntegrityViolationException;
 
 /**
@@ -83,9 +85,14 @@ public class RouterService extends AbstractService implements IRouterService {
     private Map<String, IBatchAlgorithm> batchAlgorithms;
     
     private DataToRouteReaderFactory dataToRouteReaderFactory;
+    
+    private IStatisticManager statisticManager;
 
     transient ExecutorService readThread = null;
 
+    /**
+     * For use in data load events
+     */
     public boolean shouldDataBeRouted(IRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad) {
         IDataRouter router = getDataRouter(dataMetaData.getTriggerRouter());
@@ -176,6 +183,16 @@ public class RouterService extends AbstractService implements IRouterService {
         } finally {
             try {
                 completeBatchesAndCommit(context);
+                if (context.getLastDataIdProcessed() > 0) {
+                    String channelId = nodeChannel.getChannelId();
+                    long queryTs = System.currentTimeMillis();
+                    long dataLeftToRoute = jdbcTemplate.queryForInt(getSql("selectUnroutedCountForChannelSql"), channelId, context.getLastDataIdProcessed());
+                    queryTs = System.currentTimeMillis() - queryTs;
+                    if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
+                        log.warn("UnRoutedQueryTookLongTime", channelId, queryTs);
+                    }
+                    statisticManager.setDataUnRouted(channelId, dataLeftToRoute);
+                }
             } catch (SQLException e) {
                 log.error(e);
             } finally {
@@ -233,34 +250,52 @@ public class RouterService extends AbstractService implements IRouterService {
         IDataToRouteReader reader = dataToRouteReaderFactory.getDataToRouteReader(context);
         getReadService().execute(reader);
         Data data = null;
-        int dataCount = 0;
+        int totalDataCount = 0;
+        int statsDataCount = 0;
+        int statsDataEventCount = 0;
         try {
             do {
                 data = reader.take();
                 if (data != null) {
-                    dataCount++;
-                    routeData(data, context);
+                    context.setLastDataIdProcessed(data.getDataId());
+                    statsDataCount++;
+                    totalDataCount++;
+                    statsDataEventCount += routeData(data, context);
                     if (context.isNeedsCommitted()) {
                         completeBatchesAndCommit(context);
                         long maxDataToRoute = context.getChannel().getMaxDataToRoute();
-                        if (maxDataToRoute > 0 && dataCount > maxDataToRoute) {
-                            log.info("RoutedMaxNumberData", dataCount, context.getChannel()
+                        if (maxDataToRoute > 0 && totalDataCount > maxDataToRoute) {
+                            log.info("RoutedMaxNumberData", totalDataCount, context.getChannel()
                                     .getChannelId());
                             break;
                         }
+                    }
+                    
+                    if (statsDataCount > StatisticConstants.FLUSH_SIZE_ROUTER_DATA) {
+                        statisticManager.incrementDataRouted(context.getChannel().getChannelId(), statsDataCount);
+                        statsDataCount = 0;
+                        statisticManager.incrementDataEventInserted(context.getChannel().getChannelId(), statsDataEventCount);
+                        statsDataEventCount = 0;
                     }
                 }
             } while (data != null);
 
         } finally {
             reader.setReading(false);
+            if (statsDataCount > 0) {
+                statisticManager.incrementDataRouted(context.getChannel().getChannelId(), statsDataCount);
+            }
+            if (statsDataEventCount > 0) {
+                statisticManager.incrementDataEventInserted(context.getChannel().getChannelId(), statsDataEventCount);
+            }
         }
 
-        return dataCount;
+        return totalDataCount;
 
     }
 
-    protected void routeData(Data data, RouterContext context) throws SQLException {
+    protected int routeData(Data data, RouterContext context) throws SQLException {
+        int numberOfDataEventsInserted = 0;
         context.recordTransactionBoundaryEncountered(data);
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
         if (triggerRouters != null && triggerRouters.size() > 0) {
@@ -284,18 +319,22 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
 
-                insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
+                numberOfDataEventsInserted += insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
             }
 
         } else {
             log.warn("TriggerProcessingFailedMissing", data.getTriggerHistory().getTriggerId(),
                     data.getDataId());
         }
+        
+        context.incrementStat(numberOfDataEventsInserted, RouterContext.STAT_DATA_EVENTS_INSERTED);
+        return numberOfDataEventsInserted;
 
     }
 
-    protected void insertDataEvents(RouterContext context, DataMetaData dataMetaData,
+    protected int insertDataEvents(RouterContext context, DataMetaData dataMetaData,
             Collection<String> nodeIds, TriggerRouter triggerRouter) {
+        int numberOfDataEventsInserted = 0;
         if (nodeIds == null || nodeIds.size() == 0) {
             nodeIds = new HashSet<String>(1);
             nodeIds.add(Constants.UNROUTED_NODE_ID);
@@ -314,6 +353,7 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             batch.incrementEventCount(dataMetaData.getData().getEventType());
             batch.incrementDataEventCount();
+            numberOfDataEventsInserted++;
             try {
                 dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData()
                     .getDataId(), batch.getBatchId(), triggerRouter.getRouter().getRouterId());
@@ -327,6 +367,7 @@ public class RouterService extends AbstractService implements IRouterService {
         }
         context.incrementStat(System.currentTimeMillis() - ts,
                 RouterContext.STAT_INSERT_DATA_EVENTS_MS);
+        return numberOfDataEventsInserted;
     }
 
     protected IDataRouter getDataRouter(TriggerRouter trigger) {
@@ -398,4 +439,9 @@ public class RouterService extends AbstractService implements IRouterService {
     public void setDataToRouteReaderFactory(DataToRouteReaderFactory dataToRouteReaderFactory) {
         this.dataToRouteReaderFactory = dataToRouteReaderFactory;
     }
+    
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
+    }
+    
 }

@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -97,7 +98,7 @@ public class SimpleRouterContext implements IRouterContext {
     }
 
     synchronized public void logStats(ILog log, int dataCount, long totalTimeInMs) {
-        boolean infoLevel = totalTimeInMs > 30000;
+        boolean infoLevel = totalTimeInMs > Constants.LONG_OPERATION_THRESHOLD;
         Set<String> keys = new HashSet<String>(contextCache.keySet());
         for (String key : keys) {
             if (key.startsWith("Stat.")) {

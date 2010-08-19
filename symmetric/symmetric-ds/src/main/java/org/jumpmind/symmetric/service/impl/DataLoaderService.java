@@ -274,7 +274,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 dataLoader.close();
             }
             transport.close();
-            recordStatistics(list);
         }
         return list;
     }
@@ -303,14 +302,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             transport.close();
         }
         return new FileIncomingTransport(writer);
-    }
-
-    private void recordStatistics(List<IncomingBatch> list) {
-        if (list != null) {
-            for (IncomingBatch incomingBatch : list) {
-                statisticManager.incrementDataBytesLoaded(incomingBatch.getChannelId(), incomingBatch.getStatementCount());
-            }
-        }
     }
 
     public boolean loadData(IIncomingTransport transport) throws IOException {
