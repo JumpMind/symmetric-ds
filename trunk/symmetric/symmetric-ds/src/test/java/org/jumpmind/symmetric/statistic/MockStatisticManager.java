@@ -11,7 +11,7 @@ public class MockStatisticManager implements IStatisticManager {
     public synchronized void incrementDataBytesLoaded(String channelId, long count) {
     }
 
-    public synchronized void incrementDataBytesTransmitted(String channelId, long count) {
+    public synchronized void incrementDataBytesSent(String channelId, long count) {
     }
 
     public synchronized void incrementDataEventInserted(String channelId, long count) {
@@ -23,13 +23,13 @@ public class MockStatisticManager implements IStatisticManager {
     public synchronized void incrementDataBytesExtracted(String channelId, long count) {
     }
 
-    public synchronized void incrementDataUnRouted(String channelId, long count) {
+    public synchronized void setDataUnRouted(String channelId, long count) {
     }
 
     public synchronized void incrementDataRouted(String channelId, long count) {
     }
     
-    public synchronized void incrementDataTransmittedErrors(String channelId, long count) {
+    public synchronized void incrementDataSentErrors(String channelId, long count) {
         
     }
     
@@ -39,6 +39,6 @@ public class MockStatisticManager implements IStatisticManager {
     public void incrementDataLoaded(String channelId, long count) {
     }
     
-    public void incrementDataTransmitted(String channelId, long count) {};
+    public void incrementDataSent(String channelId, long count) {};
 
 }

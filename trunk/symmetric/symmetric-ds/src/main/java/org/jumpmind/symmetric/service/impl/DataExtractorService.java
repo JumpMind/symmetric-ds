@@ -422,9 +422,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             String[] csv = StringUtils.split(nextLine, ",");
                             if (csv.length > 1) {
                                 if (channelId != null) {
-                                    statisticManager.incrementDataBytesTransmitted(channelId,
+                                    statisticManager.incrementDataBytesSent(channelId,
                                             byteCount);
-                                    statisticManager.incrementDataTransmitted(channelId, lineCount);
+                                    statisticManager.incrementDataSent(channelId, lineCount);
                                 }
                                 channelId = csv[1].trim();
                                 byteCount = 0;
@@ -434,15 +434,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         writer.write(nextLine);
                         CsvUtils.writeLineFeed(writer);
 
-                        if (channelId != null) {
+                        if (!StringUtils.isBlank(channelId)) {
                             if (byteCount > StatisticConstants.FLUSH_SIZE_BYTES) {
                                 statisticManager
-                                        .incrementDataBytesTransmitted(channelId, byteCount);
+                                        .incrementDataBytesSent(channelId, byteCount);
                                 byteCount = 0;
                             }
 
                             if (lineCount > StatisticConstants.FLUSH_SIZE_LINES) {
-                                statisticManager.incrementDataTransmitted(channelId, lineCount);
+                                statisticManager.incrementDataSent(channelId, lineCount);
                                 lineCount = 0;
                             }
                         }
@@ -451,13 +451,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             } finally {
                 IOUtils.closeQuietly(reader);
                 fileTransport.delete();
-                if (channelId != null) {
+                if (!StringUtils.isBlank(channelId)) {
                     if (byteCount > 0) {
-                        statisticManager.incrementDataBytesTransmitted(channelId, byteCount);
+                        statisticManager.incrementDataBytesSent(channelId, byteCount);
                     }
 
                     if (lineCount > 0) {
-                        statisticManager.incrementDataTransmitted(channelId, lineCount);
+                        statisticManager.incrementDataSent(channelId, lineCount);
                     }
                 }
             }
@@ -638,7 +638,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public void init() throws IOException {
-            this.writer = new DataExtractorStatisticsWriter(statisticManager, transport.open(), 1024, 512);
+            this.writer = new DataExtractorStatisticsWriter(statisticManager, transport.open(), 
+                    StatisticConstants.FLUSH_SIZE_BYTES, 
+                    StatisticConstants.FLUSH_SIZE_LINES);
             this.context = DataExtractorService.this.clonableContext.copy(dataExtractor);
             dataExtractor.init(writer, context);
         }

@@ -28,9 +28,9 @@ public interface IStatisticManager {
     
     public void incrementDataLoaded(String channelId, long count);
 
-    public void incrementDataBytesTransmitted(String channelId, long count);
+    public void incrementDataBytesSent(String channelId, long count);
     
-    public void incrementDataTransmitted(String channelId, long count);
+    public void incrementDataSent(String channelId, long count);
 
     public void incrementDataEventInserted(String channelId, long count);
 
@@ -40,11 +40,11 @@ public interface IStatisticManager {
     
     public void incrementDataExtracted(String channelId, long count);
 
-    public void incrementDataUnRouted(String channelId, long count);
+    public void setDataUnRouted(String channelId, long count);
 
     public void incrementDataRouted(String channelId, long count);
     
-    public void incrementDataTransmittedErrors(String channelId, long count);
+    public void incrementDataSentErrors(String channelId, long count);
     
     
 }

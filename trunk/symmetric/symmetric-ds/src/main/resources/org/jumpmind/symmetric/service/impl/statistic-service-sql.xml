@@ -13,7 +13,7 @@
                  (node_id, host_name, channel_id, start_time, end_time,
                   data_routed, data_unrouted, data_event_inserted, 
                   data_extracted, data_bytes_extracted, data_extracted_errors,
-                  data_transmitted, data_bytes_transmitted, data_transmitted_errors, 
+                  data_sent, data_bytes_sent, data_sent_errors, 
                   data_loaded, data_bytes_loaded, data_loaded_errors) 
                 values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ]]></value>

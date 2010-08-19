@@ -33,7 +33,12 @@
       <value><![CDATA[
         select distinct(data_id) from $[sym.sync.table.prefix]_data_event where data_id >=? and data_id <= ? order by data_id asc
       ]]></value>
-    </entry>    
+    </entry>
+    <entry key="selectUnroutedCountForChannelSql">
+      <value><![CDATA[
+        select count(*) from $[sym.sync.table.prefix]_data where channel_id=? and data_id >=? 
+      ]]></value>
+    </entry>        
   </util:map>
 
 </beans>

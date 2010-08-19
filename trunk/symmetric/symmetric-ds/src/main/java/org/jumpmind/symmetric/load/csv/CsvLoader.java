@@ -47,6 +47,8 @@ import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticConstants;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -76,8 +78,14 @@ public class CsvLoader implements IDataLoader {
     protected DataLoaderStatistics stats;
 
     protected List<IDataLoaderFilter> filters;
+    
+    protected IStatisticManager statisticManager;
 
     protected Map<String,  List<IColumnFilter>> columnFilters;
+    
+    private long bytesCount = 0;
+    
+    private long lineCount = 0;
 
     public void open(BufferedReader reader) throws IOException {
         csvReader = CsvUtils.getCsvReader(reader);
@@ -121,13 +129,17 @@ public class CsvLoader implements IDataLoader {
         try {
             long rowsBeforeCommit = parameterService.getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
             long rowsProcessed = 0;
+            lineCount = 0;
+            bytesCount = 0;
             prepareTableForDataLoad();
             while (csvReader.readRecord()) {
                 String[] tokens = csvReader.getValues();
-                stats.incrementLineCount();
                 if (tokens != null && tokens.length > 0 && tokens[0] != null) {
-                    stats.incrementByteCount(csvReader.getRawRecord().length());
-
+                    stats.incrementLineCount();
+                    lineCount++;
+                    long numberOfBytes = csvReader.getRawRecord().length();
+                    stats.incrementByteCount(numberOfBytes);
+                    bytesCount += numberOfBytes;                     
                     if (tokens[0].equals(CsvConstants.INSERT)) {
                         if (context.getTableTemplate() == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
@@ -179,10 +191,28 @@ public class CsvLoader implements IDataLoader {
                 if (rowsProcessed > rowsBeforeCommit && rowsBeforeCommit > 0) {
                     return false;
                 }
+                
+                if (bytesCount > StatisticConstants.FLUSH_SIZE_BYTES) {
+                    statisticManager.incrementDataBytesLoaded(context.getChannelId(), bytesCount);
+                    bytesCount = 0;
+                }
+                
+                if (lineCount > StatisticConstants.FLUSH_SIZE_LINES) {
+                    statisticManager.incrementDataLoaded(context.getChannelId(), lineCount);
+                    lineCount = 0;
+                }
+
             }
 
             return true;
         } finally {
+            if (bytesCount > 0) {
+                statisticManager.incrementDataBytesLoaded(context.getChannelId(), bytesCount);
+            }
+            
+            if (lineCount > 0) {
+                statisticManager.incrementDataLoaded(context.getChannelId(), lineCount);
+            }
             cleanupAfterDataLoad();
         }
     }
@@ -416,6 +446,7 @@ public class CsvLoader implements IDataLoader {
         dataLoader.setParameterService(parameterService);
         dataLoader.setTriggerRouterService(triggerRouterService);
         dataLoader.setNodeService(nodeService);
+        dataLoader.setStatisticManager(statisticManager);
         return dataLoader;
     }
 
@@ -453,4 +484,8 @@ public class CsvLoader implements IDataLoader {
         this.nodeService = nodeService;
     }
 
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
+    }
+    
 }
