@@ -41,9 +41,12 @@ public class OutgoingBatches {
     }
 
     public OutgoingBatches() {
-
     }
 
+    public boolean containsBatches() {
+        return batches != null && batches.size() > 0;    
+    }
+    
     public Set<NodeChannel> getActiveChannels() {
         return activeChannels;
     }

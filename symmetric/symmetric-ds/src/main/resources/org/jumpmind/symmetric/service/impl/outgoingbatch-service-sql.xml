@@ -52,7 +52,7 @@
         reload_event_count, insert_event_count, update_event_count, delete_event_count, other_event_count,
         router_millis, network_millis, filter_millis, load_millis, extract_millis, sql_state, sql_code, sql_message,
         failed_data_id, last_update_hostname, last_update_time, create_time, batch_id, load_flag from
-        $[sym.sync.table.prefix]_outgoing_batch where node_id = ? and status in (?, ?, ?) order by batch_id asc
+        $[sym.sync.table.prefix]_outgoing_batch where node_id = ? and status in (?, ?, ?, ?, ?) order by batch_id asc
       </value>
     </entry>
     <entry key="selectOutgoingBatchRangeSql">
