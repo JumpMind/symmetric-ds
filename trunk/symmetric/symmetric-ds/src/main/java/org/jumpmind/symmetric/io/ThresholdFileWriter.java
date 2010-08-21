@@ -44,6 +44,8 @@ public class ThresholdFileWriter extends Writer {
     String tempFileCategory;
 
     BufferedWriter fileWriter;
+    
+    BufferedReader fileReader;
 
     StringBuilder buffer;
 
@@ -74,6 +76,7 @@ public class ThresholdFileWriter extends Writer {
     public void close() throws IOException {
         if (fileWriter != null) {
             fileWriter.close();
+            fileWriter = null;            
         }
     }
 
@@ -102,7 +105,7 @@ public class ThresholdFileWriter extends Writer {
     }
 
     public BufferedReader getReader() throws IOException {
-        if (fileWriter != null) {
+        if (file != null && file.exists()) {
             return new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
         } else {
             return new BufferedReader(new StringReader(buffer.toString()));
@@ -113,6 +116,7 @@ public class ThresholdFileWriter extends Writer {
         if (file != null && file.exists()) {
             file.delete();
         }
+        buffer.setLength(0);
     }
 
 }

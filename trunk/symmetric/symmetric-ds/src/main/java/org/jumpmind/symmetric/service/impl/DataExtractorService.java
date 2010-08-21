@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
+import org.jumpmind.symmetric.io.ThresholdFileWriter;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Data;
@@ -73,7 +74,6 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
-import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.beans.BeansException;
@@ -323,6 +323,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
         });
     }
+    
+    private ExtractStreamHandler createExtractStreamHandler(IDataExtractor dataExtractor, Writer extractWriter) throws IOException {
+        return new ExtractStreamHandler(dataExtractor,
+                new DataExtractorStatisticsWriter(statisticManager, extractWriter,
+                        StatisticConstants.FLUSH_SIZE_BYTES,
+                        StatisticConstants.FLUSH_SIZE_LINES));
+    }
 
     public boolean extract(Node node, IOutgoingTransport targetTransport) throws IOException {
         IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
@@ -332,10 +339,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node);
-        
-        if (batches != null && batches.getBatches() != null && batches.getBatches().size() > 0) {
 
-            ChannelMap suspendIgnoreChannelsList = targetTransport.getSuspendIgnoreChannelLists(configurationService);
+        if (batches.containsBatches()) {
+
+            ChannelMap suspendIgnoreChannelsList = targetTransport
+                    .getSuspendIgnoreChannelLists(configurationService);
 
             // We now have either our local suspend/ignore list, or the combined
             // remote send/ignore list and our local list (along with a
@@ -345,39 +353,84 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             // ignored ones by ultimately setting the status to ignored and
             // updating them.
 
-            List<OutgoingBatch> ignoredBatches = batches.filterBatchesForChannels(suspendIgnoreChannelsList
-                    .getIgnoreChannels());
+            List<OutgoingBatch> ignoredBatches = batches
+                    .filterBatchesForChannels(suspendIgnoreChannelsList.getIgnoreChannels());
+            // Finally, update the ignored outgoing batches such that they
+            // will be skipped in the future.
+            for (OutgoingBatch batch : ignoredBatches) {
+                batch.setStatus(OutgoingBatch.Status.IG);
+            }
+
+            outgoingBatchService.updateOutgoingBatches(ignoredBatches);
 
             batches.filterBatchesForChannels(suspendIgnoreChannelsList.getSuspendChannels());
-            
-            // Remove non-load batches so that an initial load finishes before any other
-            // batches are loaded.
+
+            // Remove non-load batches so that an initial load finishes before
+            // any other batches are loaded.
             if (batches.containsLoadBatches()) {
                 batches.removeNonLoadBatches();
             }
 
-            FileOutgoingTransport fileTransport = null;
+            List<OutgoingBatch> activeBatches = batches.getBatches();
+            if (activeBatches.size() > 0) {
+                Writer extractWriter = null;
+                BufferedWriter networkWriter = null;
 
-            try {
+                ThresholdFileWriter fileWriter = new ThresholdFileWriter(parameterService
+                        .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "extract");
+
                 if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                    fileTransport = new FileOutgoingTransport(parameterService
-                            .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "extract");
+                    extractWriter = new BufferedWriter(fileWriter);
+                    networkWriter = targetTransport.open();
+                } else {
+                    extractWriter = targetTransport.open();
                 }
 
-                ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor,
-                        fileTransport != null ? fileTransport : targetTransport);
+                ExtractStreamHandler handler = createExtractStreamHandler(dataExtractor, extractWriter);
 
-                databaseExtract(node, batches.getBatches(), handler);
+                handler.init();
 
-                networkTransfer(fileTransport, targetTransport);
+                OutgoingBatch currentBatch = null;
+                try {
+                    for (OutgoingBatch outgoingBatch : activeBatches) {
+                        currentBatch = outgoingBatch;
+                        outgoingBatch.setStatus(OutgoingBatch.Status.QY);
+                        outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                        
+                        databaseExtract(node, outgoingBatch, handler);
+                        
+                        outgoingBatch.setStatus(OutgoingBatch.Status.SE);
+                        outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                        
+                        fileWriter.close();                        
+                        networkTransfer(fileWriter.getReader(), networkWriter);                        
+                        fileWriter.delete();
+                        
+                        outgoingBatch.setStatus(OutgoingBatch.Status.LD);                        
+                        outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                    }
+                } catch (RuntimeException e) {
+                    SQLException se = unwrapSqlException(e);
+                    if (currentBatch != null) {
+                        statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(),
+                                1);
+                        if (se != null) {
+                            currentBatch.setSqlState(se.getSQLState());
+                            currentBatch.setSqlCode(se.getErrorCode());
+                            currentBatch.setSqlMessage(se.getMessage());
+                        } else {
+                            currentBatch.setSqlMessage(e.getMessage());
+                        }
+                        currentBatch.setStatus(OutgoingBatch.Status.ER);
+                        outgoingBatchService.updateOutgoingBatch(currentBatch);
+                    } else {
+                        log.error("BatchStatusLoggingFailed", e);
+                    }
+                    throw e;
 
-                // Finally, update the ignored outgoing batches such that they
-                // will be skipped in the future.
-                for (OutgoingBatch batch : ignoredBatches) {
-                    batch.setStatus(OutgoingBatch.Status.IG);
+                } finally {
+                    handler.done();
                 }
-
-                outgoingBatchService.updateOutgoingBatches(ignoredBatches);
 
                 // Next, we update the node channel controls to the current
                 // timestamp
@@ -387,11 +440,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     nodeChannel.setLastExtractedTime(now.getTime());
                     configurationService.saveNodeChannelControl(nodeChannel, false);
                 }
-
-            } finally {
-                if (fileTransport != null) {
-                    fileTransport.close();
-                }
             }
 
             return true;
@@ -400,18 +448,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    protected void networkTransfer(FileOutgoingTransport fileTransport,
-            IOutgoingTransport targetTransport) throws IOException {
-        if (fileTransport != null) {
-            fileTransport.close();
-            BufferedReader reader = null;
-            BufferedWriter writer = null;
+    protected void networkTransfer(BufferedReader reader, BufferedWriter writer) throws IOException {
+        if (reader != null && writer != null) {
             String channelId = null;
             long lineCount = 0;
             long byteCount = 0;
             try {
-                reader = fileTransport.getReader();
-                writer = targetTransport.open();
                 String nextLine = null;
                 do {
                     nextLine = reader.readLine();
@@ -422,8 +464,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             String[] csv = StringUtils.split(nextLine, ",");
                             if (csv.length > 1) {
                                 if (channelId != null) {
-                                    statisticManager.incrementDataBytesSent(channelId,
-                                            byteCount);
+                                    statisticManager.incrementDataBytesSent(channelId, byteCount);
                                     statisticManager.incrementDataSent(channelId, lineCount);
                                 }
                                 channelId = csv[1].trim();
@@ -436,8 +477,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                         if (!StringUtils.isBlank(channelId)) {
                             if (byteCount > StatisticConstants.FLUSH_SIZE_BYTES) {
-                                statisticManager
-                                        .incrementDataBytesSent(channelId, byteCount);
+                                statisticManager.incrementDataBytesSent(channelId, byteCount);
                                 byteCount = 0;
                             }
 
@@ -450,7 +490,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } while (nextLine != null);
             } finally {
                 IOUtils.closeQuietly(reader);
-                fileTransport.delete();
                 if (!StringUtils.isBlank(channelId)) {
                     if (byteCount > 0) {
                         statisticManager.incrementDataBytesSent(channelId, byteCount);
@@ -462,61 +501,27 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
             }
         }
-    }
-    
+    }    
 
     /**
      * Allow a handler callback to do the work so we can route the extracted
      * data to other types of handlers for processing.
      */
-    protected void databaseExtract(Node node, List<OutgoingBatch> batches, final IExtractListener handler)
+    protected void databaseExtract(Node node, OutgoingBatch batch, final IExtractListener handler)
             throws IOException {
-        OutgoingBatch currentBatch = null;
-        try {
-            boolean initialized = false;
-            for (final OutgoingBatch batch : batches) {
                 batch.resetStats();
-                currentBatch = batch;
                 long ts = System.currentTimeMillis();
-                if (!initialized) {
-                    handler.init();
-                    initialized = true;
-                }
                 handler.startBatch(batch);
                 selectEventDataToExtract(handler, batch);
                 handler.endBatch(batch);
                 batch.setExtractMillis(System.currentTimeMillis() - ts);
                 batch.setSentCount(batch.getSentCount() + 1);
-                batch.setStatus(OutgoingBatch.Status.SE);
-                outgoingBatchService.updateOutgoingBatch(batch);
-            }
-        } catch (RuntimeException e) {
-            SQLException se = unwrapSqlException(e);
-            if (currentBatch != null) {
-                statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(), 1);
-                if (se != null) {
-                    currentBatch.setSqlState(se.getSQLState());
-                    currentBatch.setSqlCode(se.getErrorCode());
-                    currentBatch.setSqlMessage(se.getMessage());
-                } else {
-                    currentBatch.setSqlMessage(e.getMessage());
-                }
-                currentBatch.setStatus(OutgoingBatch.Status.ER);
-                outgoingBatchService.updateOutgoingBatch(currentBatch);
-            } else {
-                log.error("BatchStatusLoggingFailed", e);
-            }
-            throw e;
-        } finally {
-            handler.done();
-        }
-
     }
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
             throws IOException {
         IDataExtractor dataExtractor = getDataExtractor(null);
-        ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor, transport);
+        ExtractStreamHandler handler = createExtractStreamHandler(dataExtractor, transport.open());;
         return extractBatchRange(handler, startBatchId, endBatchId);
     }
 
@@ -604,17 +609,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     class ExtractStreamHandler implements IExtractListener {
 
-        IOutgoingTransport transport;
-
         IDataExtractor dataExtractor;
 
         DataExtractorContext context;
 
         DataExtractorStatisticsWriter writer;
 
-        ExtractStreamHandler(IDataExtractor dataExtractor, IOutgoingTransport transport) throws IOException {
-            this.transport = transport;
+        ExtractStreamHandler(IDataExtractor dataExtractor, DataExtractorStatisticsWriter writer) throws IOException {
             this.dataExtractor = dataExtractor;
+            this.writer = writer;
         }
 
         public void dataExtracted(Data data, String routerId) throws IOException {
@@ -638,9 +641,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public void init() throws IOException {
-            this.writer = new DataExtractorStatisticsWriter(statisticManager, transport.open(), 
-                    StatisticConstants.FLUSH_SIZE_BYTES, 
-                    StatisticConstants.FLUSH_SIZE_LINES);
             this.context = DataExtractorService.this.clonableContext.copy(dataExtractor);
             dataExtractor.init(writer, context);
         }
