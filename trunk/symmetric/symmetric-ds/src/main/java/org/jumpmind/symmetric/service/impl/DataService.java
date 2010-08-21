@@ -278,6 +278,7 @@ public class DataService extends AbstractService implements IDataService {
 
         nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
         
+        // don't mark this batch as a load batch so it is forced to go last
         insertNodeSecurityUpdate(targetNode, false);
 
         // remove all incoming events from the node are starting a reload for.
