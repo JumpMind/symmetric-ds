@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.Router;
@@ -131,19 +132,42 @@ public class RouterService extends AbstractService implements IRouterService {
      */
     synchronized public void routeData() {
         if (clusterService.lock(ClusterConstants.ROUTE)) {
-            try {
+            try {          
+                insertInitialLoadEvents();
                 long ts = System.currentTimeMillis();
                 IDataToRouteGapDetector gapDetector = dataToRouteReaderFactory.getDataToRouteGapDetector();
                 gapDetector.beforeRouting();
                 int dataCount = routeDataForEachChannel();
                 gapDetector.afterRouting();
                 ts = System.currentTimeMillis() - ts;
-                if (dataCount > 0 || ts > 30000) {
+                if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
                     log.info("RoutedDataInTime", dataCount, ts);
                 }
             } finally {
                 clusterService.unlock(ClusterConstants.ROUTE);
             }
+        }
+    }
+    
+    protected void insertInitialLoadEvents() {
+        try {
+            Map<String, NodeSecurity> nodeSecurities = nodeService.findAllNodeSecurity(false);
+            if (nodeSecurities != null) {
+                for (NodeSecurity security : nodeSecurities.values()) {
+                    if (security.isInitialLoadEnabled() && security.getRegistrationTime() != null) {
+                        long ts = System.currentTimeMillis();
+                        dataService.insertReloadEvents(nodeService.findNode(security.getNodeId()));
+                        ts = System.currentTimeMillis() - ts;
+                        if (ts > Constants.LONG_OPERATION_THRESHOLD) {
+                            log.warn("ReloadedNode", security.getNodeId(), ts);
+                        } else {
+                            log.info("ReloadedNode", security.getNodeId(), ts);
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            log.error(ex);
         }
     }
 

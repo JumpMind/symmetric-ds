@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
-import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -40,8 +39,6 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
     private INodeService nodeService;
 
     private IConfigurationService configurationService;
-
-    private IDataService dataService;
 
     private IDataExtractorService dataExtractorService;
 
@@ -59,9 +56,6 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
             if (nodeSecurity.isRegistrationEnabled()) {
                 registrationService.registerNode(nodeService.findNode(nodeId), outputStream, false);
             } else {
-                if (nodeSecurity.isInitialLoadEnabled()) {
-                    dataService.insertReloadEvents(nodeService.findNode(nodeId));
-                }
                 IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, map);
                 dataExtractorService.extract(nodeService.findNode(nodeId), outgoingTransport);
                 outgoingTransport.close();
@@ -89,10 +83,6 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
 
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
-    }
-
-    public void setDataService(IDataService dataService) {
-        this.dataService = dataService;
     }
 
     public void setDataExtractorService(IDataExtractorService dataExtractorService) {

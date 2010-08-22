@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.symmetric.config.INodeIdGenerator;
@@ -54,6 +55,8 @@ public interface INodeService {
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId);
     
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId);
+    
+    public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache);
 
     public NodeSecurity findNodeSecurity(String nodeId);
     
