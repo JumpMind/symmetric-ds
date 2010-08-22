@@ -33,7 +33,6 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
-import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
@@ -53,8 +52,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     private ITransportManager transportManager;
 
     private INodeService nodeService;
-
-    private IDataService dataService;
 
     private IClusterService clusterService;
 
@@ -104,13 +101,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         PushStatus status = PushStatus.ERROR;
         IOutgoingWithResponseTransport transport = null;
         try {
-            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(remote.getNodeId());
-            if (nodeSecurity != null) {
-                if (nodeSecurity.isInitialLoadEnabled()) {
-                    dataService.insertReloadEvents(remote);
-                }
-            }
-
             transport = transportManager.getPushTransport(remote, identity, identitySecurity
                     .getNodePassword(), parameterService.getRegistrationUrl());
 
@@ -196,11 +186,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     public void setAckService(IAcknowledgeService ackService) {
         this.ackService = ackService;
     }
-
-    public void setDataService(IDataService dataService) {
-        this.dataService = dataService;
-    }
-
+    
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
     }
