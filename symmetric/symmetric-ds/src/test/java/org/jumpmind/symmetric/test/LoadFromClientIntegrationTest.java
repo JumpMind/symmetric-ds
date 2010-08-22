@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,15 +32,25 @@ public class LoadFromClientIntegrationTest extends AbstractIntegrationTest {
     public LoadFromClientIntegrationTest() throws Exception {
     }
 
-    @Test(timeout = 30000)
+    @Test (timeout = 30000)
     public void registerClientWithRoot() {
         getRootEngine().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, TestConstants.TEST_CLIENT_EXTERNAL_ID);
         getClientEngine().start();
+        while (!getClientEngine().isRegistered()) {
+            getClientEngine().pull();
+        }
         String result = getClientEngine().reloadNode("00000");
         Assert.assertTrue(result, result.startsWith("Successfully opened initial load for node"));
-        getClientEngine().push();
-        int initialLoadEnabled = clientJdbcTemplate.queryForInt("select initial_load_enabled from sym_node_security where node_id='00000'");
-        Assert.assertEquals(0, initialLoadEnabled);
+        
+        getClientEngine().route();
+        while (getClientEngine().push()) {
+            AppUtils.sleep(5);
+        }
+        Assert.assertEquals(0, getInitialLoadEnabled());
+    }
+    
+    protected int getInitialLoadEnabled() {
+        return clientJdbcTemplate.queryForInt("select initial_load_enabled from sym_node_security where node_id='00000'");
     }
 
 }

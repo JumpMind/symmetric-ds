@@ -7,6 +7,7 @@ import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
+import org.jumpmind.symmetric.job.RouterJob;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
@@ -102,6 +103,11 @@ public interface ISymmetricEngine {
      * @see IPullService#pullData()
      */
     public boolean pull();
+    
+    /**
+     * Route captured data the same way the {@link RouterJob} would have.
+     */
+    public void route();
 
     /**
      * This can be called to do a purge. It may be called only if the

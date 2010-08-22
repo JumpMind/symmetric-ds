@@ -151,17 +151,23 @@ public class RouterService extends AbstractService implements IRouterService {
     
     protected void insertInitialLoadEvents() {
         try {
-            Map<String, NodeSecurity> nodeSecurities = nodeService.findAllNodeSecurity(false);
-            if (nodeSecurities != null) {
-                for (NodeSecurity security : nodeSecurities.values()) {
-                    if (security.isInitialLoadEnabled() && security.getRegistrationTime() != null) {
-                        long ts = System.currentTimeMillis();
-                        dataService.insertReloadEvents(nodeService.findNode(security.getNodeId()));
-                        ts = System.currentTimeMillis() - ts;
-                        if (ts > Constants.LONG_OPERATION_THRESHOLD) {
-                            log.warn("ReloadedNode", security.getNodeId(), ts);
-                        } else {
-                            log.info("ReloadedNode", security.getNodeId(), ts);
+            Node identity = nodeService.findIdentity();
+            if (identity != null) {
+                Map<String, NodeSecurity> nodeSecurities = nodeService.findAllNodeSecurity(false);
+                if (nodeSecurities != null) {
+                    for (NodeSecurity security : nodeSecurities.values()) {
+                        if (security.isInitialLoadEnabled()
+                                && (security.getRegistrationTime() != null || security.getNodeId()
+                                        .equals(identity.getCreatedAtNodeId()))) {
+                            long ts = System.currentTimeMillis();
+                            dataService.insertReloadEvents(nodeService.findNode(security
+                                    .getNodeId()));
+                            ts = System.currentTimeMillis() - ts;
+                            if (ts > Constants.LONG_OPERATION_THRESHOLD) {
+                                log.warn("ReloadedNode", security.getNodeId(), ts);
+                            } else {
+                                log.info("ReloadedNode", security.getNodeId(), ts);
+                            }
                         }
                     }
                 }
