@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.mock;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.symmetric.config.INodeIdGenerator;
@@ -48,6 +49,10 @@ public class MockNodeService implements INodeService {
     }
 
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId) {
+        return null;
+    }
+    
+    public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache) {
         return null;
     }
     

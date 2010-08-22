@@ -219,7 +219,6 @@ public class DataService extends AbstractService implements IDataService {
         insertDataEvent(new DataEvent(dataId, outgoingBatch.getBatchId(), routerId));
     }
 
-    @Transactional
     public String reloadNode(String nodeId) {
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
@@ -232,6 +231,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    @Transactional
     public void insertReloadEvents(Node targetNode) {
         Node sourceNode = nodeService.findIdentity();
         if (reloadListeners != null) {
@@ -283,6 +283,7 @@ public class DataService extends AbstractService implements IDataService {
 
         // remove all incoming events from the node are starting a reload for.
         purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+        
     }
 
     private void insertNodeSecurityUpdate(Node node, boolean isReload) {

@@ -243,21 +243,28 @@ public class NodeService extends AbstractService implements INodeService {
         }
         return null;
     }
+    
+    public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache) {
+        long maxSecurityCacheTime = parameterService
+                .getLong(ParameterConstants.CACHE_TIMEOUT_NODE_SECURITY_IN_MS);
+        Map<String,NodeSecurity> all = securityCache;
+        if (all == null || System.currentTimeMillis() - securityCacheTime >= maxSecurityCacheTime
+                || securityCacheTime == 0 || !useCache) {
+            all = (Map<String, NodeSecurity>) jdbcTemplate.query(
+                    getSql("findAllNodeSecuritySql"), new NodeSecurityResultSetExtractor());
+            securityCache = all;
+            securityCacheTime = System.currentTimeMillis();
+        }
+        return all;
+    }
 
     /**
      * Check that the given node and password match in the node_security table.
      * A node must authenticate before it's allowed to sync data.
      */
-    public boolean isNodeAuthorized(String id, String password) {
-        long maxSecurityCacheTime = parameterService
-                .getLong(ParameterConstants.CACHE_TIMEOUT_NODE_SECURITY_IN_MS);
-        if (System.currentTimeMillis() - securityCacheTime >= maxSecurityCacheTime || securityCacheTime == 0) {
-            securityCache = (Map<String, NodeSecurity>) jdbcTemplate.query(getSql("findAllNodeSecuritySql"),
-                    new NodeSecurityResultSetExtractor());
-            securityCacheTime = System.currentTimeMillis();
-        }
-
-        NodeSecurity nodeSecurity = securityCache.get(id);
+    public boolean isNodeAuthorized(String nodeId, String password) {
+        Map<String,NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
+        NodeSecurity nodeSecurity = nodeSecurities.get(nodeId);
         if (nodeSecurity != null
                 && ((nodeSecurity.getNodePassword() != null && !nodeSecurity.getNodePassword().equals("") && nodeSecurity
                         .getNodePassword().equals(password)) || nodeSecurity.isRegistrationEnabled())) {
