@@ -305,7 +305,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public boolean push() {
-        return ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();
+        return getPushService().pushData();
     }
 
     public void syncTriggers() {
@@ -317,7 +317,11 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public boolean pull() {
-        return ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE)).pullData();
+        return getPullService().pullData();
+    }
+    
+    public void route() {
+       getRouterService().routeData();        
     }
 
     public void purge() {
