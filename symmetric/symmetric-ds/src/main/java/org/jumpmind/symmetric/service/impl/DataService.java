@@ -57,7 +57,6 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -587,10 +586,8 @@ public class DataService extends AbstractService implements IDataService {
                 me.setSymmetricVersion(Version.version());
                 me.setDatabaseType(dbDialect.getName());
                 me.setDatabaseVersion(dbDialect.getVersion());
-                me.setBatchToSendCount(outgoingBatchService
-                        .countOutgoingBatchesWithStatus(Status.NE));
                 me.setBatchInErrorCount(outgoingBatchService
-                        .countOutgoingBatchesWithStatus(Status.ER));
+                        .countOutgoingBatchesInError());
                 if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
                     log.info("NodeConfigurationUpdating");
                     me.setSchemaVersion(parameterService

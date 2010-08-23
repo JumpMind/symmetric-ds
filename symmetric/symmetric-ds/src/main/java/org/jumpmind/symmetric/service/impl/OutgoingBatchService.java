@@ -135,8 +135,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
     }
     
-    public int countOutgoingBatchesWithStatus(Status status) {
-        return jdbcTemplate.queryForInt(getSql("countOutgoingBatchesSql"), status.name());
+    public int countOutgoingBatchesInError() {
+        return jdbcTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
     }
 
     /**

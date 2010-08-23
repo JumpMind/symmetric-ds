@@ -331,6 +331,39 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         StatisticConstants.FLUSH_SIZE_BYTES,
                         StatisticConstants.FLUSH_SIZE_LINES));
     }
+    
+    private List<OutgoingBatch> filterBatchesForExtraction(OutgoingBatches batches,
+            ChannelMap suspendIgnoreChannelsList) {
+
+        // We now have either our local suspend/ignore list, or the combined
+        // remote send/ignore list and our local list (along with a
+        // reservation, if we go this far...)
+
+        // Now, we need to skip the suspended channels and ignore the
+        // ignored ones by ultimately setting the status to ignored and
+        // updating them.
+
+        List<OutgoingBatch> ignoredBatches = batches
+                .filterBatchesForChannels(suspendIgnoreChannelsList.getIgnoreChannels());
+
+        // Finally, update the ignored outgoing batches such that they
+        // will be skipped in the future.
+        for (OutgoingBatch batch : ignoredBatches) {
+            batch.setStatus(OutgoingBatch.Status.IG);
+        }
+
+        outgoingBatchService.updateOutgoingBatches(ignoredBatches);
+
+        batches.filterBatchesForChannels(suspendIgnoreChannelsList.getSuspendChannels());
+
+        // Remove non-load batches so that an initial load finishes before
+        // any other batches are loaded.
+        if (batches.containsLoadBatches()) {
+            batches.removeNonLoadBatches();
+        }
+
+        return batches.getBatches();
+    }
 
     public boolean extract(Node node, IOutgoingTransport targetTransport) throws IOException {
         IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
@@ -343,37 +376,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         if (batches.containsBatches()) {
 
-            ChannelMap suspendIgnoreChannelsList = targetTransport
-                    .getSuspendIgnoreChannelLists(configurationService);
-
-            // We now have either our local suspend/ignore list, or the combined
-            // remote send/ignore list and our local list (along with a
-            // reservation, if we go this far...)
-
-            // Now, we need to skip the suspended channels and ignore the
-            // ignored ones by ultimately setting the status to ignored and
-            // updating them.
-
-            List<OutgoingBatch> ignoredBatches = batches
-                    .filterBatchesForChannels(suspendIgnoreChannelsList.getIgnoreChannels());
-            // Finally, update the ignored outgoing batches such that they
-            // will be skipped in the future.
-            for (OutgoingBatch batch : ignoredBatches) {
-                batch.setStatus(OutgoingBatch.Status.IG);
-            }
-
-            outgoingBatchService.updateOutgoingBatches(ignoredBatches);
-
-            batches.filterBatchesForChannels(suspendIgnoreChannelsList.getSuspendChannels());
-
-            // Remove non-load batches so that an initial load finishes before
-            // any other batches are loaded.
-            if (batches.containsLoadBatches()) {
-                batches.removeNonLoadBatches();
-            }
-
-            List<OutgoingBatch> activeBatches = batches.getBatches();
+            List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, targetTransport
+                    .getSuspendIgnoreChannelLists(configurationService));
+            
             if (activeBatches.size() > 0) {
+                
                 Writer extractWriter = null;
                 BufferedWriter networkWriter = null;
 

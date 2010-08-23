@@ -11,8 +11,8 @@
         <version.springframwork>3.0.3.RELEASE</version.springframwork>
         <version.jetty>7.1.6.v20100715</version.jetty>
         <version.derby>10.5.3.0_1</version.derby>
-        <version.hsqldb>1.8.0.10</version.hsqldb>
-        <version.h2>1.2.139</version.h2>
+        <version.hsqldb>2.0.0</version.hsqldb>
+        <version.h2>1.2.140</version.h2>
         <version.postgresql>8.2-507.jdbc3</version.postgresql>
     </properties>
 
