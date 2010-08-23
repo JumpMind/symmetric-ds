@@ -23,10 +23,10 @@
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 
-                <property name="functionInstalledSql" value="select count(*) from INFORMATION_SCHEMA.ROUTINES where ROUTINE_NAME='$(functionName)'"/>
+                <property name="functionInstalledSql" value="select count(*) from INFORMATION_SCHEMA.ROUTINES where ROUTINE_NAME=UPPER('$(functionName)')"/>
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="base_64_encode">
+                        <entry key="BASE_64_ENCODE">
                             <value>
                                 <![CDATA[CREATE FUNCTION $(functionName)(binaryData BINARY) 
                                            RETURNS VARCHAR(1000000)
@@ -37,7 +37,7 @@
                                             ]]>
                             </value>
                         </entry>
-                        <entry key="set_session">
+                        <entry key="SET_SESSION">
                             <value>
                                 <![CDATA[CREATE PROCEDURE $(functionName)(key VARCHAR(50), data VARCHAR(50))
                                            NO SQL
@@ -47,7 +47,7 @@
                                                ]]>
                             </value>
                         </entry>
-                        <entry key="get_session">
+                        <entry key="GET_SESSION">
                             <value>
                                 <![CDATA[CREATE FUNCTION $(functionName)(key VARCHAR(50))
                                            RETURNS VARCHAR(50)
