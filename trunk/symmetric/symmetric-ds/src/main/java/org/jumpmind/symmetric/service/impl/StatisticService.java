@@ -19,7 +19,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import org.hsqldb.Types;
+import java.sql.Types;
+
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.ChannelStats;
 
