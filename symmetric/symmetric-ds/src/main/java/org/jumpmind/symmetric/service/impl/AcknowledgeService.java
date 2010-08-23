@@ -67,6 +67,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     outgoingBatch.setStatus(status);
                     outgoingBatch.setErrorFlag(!batch.isOk());
                 } else {
+                    // clearing the error flag in case the user set the batch status to OK
+                    outgoingBatch.setErrorFlag(false);
                     log.warn("AckNotUpdatingBatchState", batch.getBatchId(), status.name());
                 }
                 outgoingBatch.setByteCount(batch.getByteCount());
