@@ -23,8 +23,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.ddl.Platform;
-import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
@@ -37,12 +35,6 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
     boolean dualTableCreated = false;
 
     @Override
-    public void init(Platform pf) {
-        super.init(pf);
-        createDummyDualTable();
-    }
-
-    @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName,
             String tableName, String triggerName) {
         boolean exists = (jdbcTemplate.queryForInt(
@@ -53,24 +45,7 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
                         new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
         return exists;
     }
-
-    /**
-     * This is for use in the java triggers so we can create a virtual table w/
-     * old and new columns values to bump SQL expressions up against.
-     */
-    private void createDummyDualTable() {
-        if (!dualTableCreated) {
-            Table table = getTable(null, null, DUAL_TABLE, false);
-            if (table == null) {
-                jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR(1))");
-                jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
-                jdbcTemplate.update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
-            }
-            dualTableCreated = true;
-        }
-
-    }
-
+    
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName, TriggerHistory oldHistory) {
@@ -130,7 +105,7 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
             Trigger trigger) {
-        // TODO Get I use a temporary table and a randomly generated GUID?
+        // TODO A method is coming that will all access to the transaction id ...
         return "null";
     }
 
@@ -192,4 +167,5 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
     public boolean canGapsOccurInCapturedDataIds() {
         return false;
     }
+    
 }
