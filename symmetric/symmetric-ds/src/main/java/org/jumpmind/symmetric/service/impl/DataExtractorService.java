@@ -139,6 +139,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             final DataExtractorContext ctxCopy = clonableContext.copy(dataExtractor);
 
             dataExtractor.init(writer, ctxCopy);
+            
             dataExtractor.begin(batch, writer);
 
             extractConfiguration(node, writer, ctxCopy);
@@ -395,18 +396,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     for (OutgoingBatch outgoingBatch : activeBatches) {
                         currentBatch = outgoingBatch;
                         outgoingBatch.setStatus(OutgoingBatch.Status.QY);
+                        outgoingBatch.setExtractCount(outgoingBatch.getExtractCount() + 1);
                         outgoingBatchService.updateOutgoingBatch(outgoingBatch);
                         
                         databaseExtract(node, outgoingBatch, handler);
                         
                         outgoingBatch.setStatus(OutgoingBatch.Status.SE);
+                        outgoingBatch.setSentCount(outgoingBatch.getSentCount() + 1);
                         outgoingBatchService.updateOutgoingBatch(outgoingBatch);
                         
                         fileWriter.close();                        
                         networkTransfer(fileWriter.getReader(), networkWriter);                        
                         fileWriter.delete();
                         
-                        outgoingBatch.setStatus(OutgoingBatch.Status.LD);                        
+                        outgoingBatch.setStatus(OutgoingBatch.Status.LD);     
+                        outgoingBatch.setLoadCount(outgoingBatch.getLoadCount()+1);
                         outgoingBatchService.updateOutgoingBatch(outgoingBatch);
                     }
                 } catch (RuntimeException e) {
@@ -422,6 +426,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.setSqlMessage(e.getMessage());
                         }
                         currentBatch.setStatus(OutgoingBatch.Status.ER);
+                        currentBatch.setErrorFlag(true);
                         outgoingBatchService.updateOutgoingBatch(currentBatch);
                     } else {
                         log.error("BatchStatusLoggingFailed", e);
@@ -514,8 +519,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 handler.startBatch(batch);
                 selectEventDataToExtract(handler, batch);
                 handler.endBatch(batch);
-                batch.setExtractMillis(System.currentTimeMillis() - ts);
-                batch.setSentCount(batch.getSentCount() + 1);
+                batch.setExtractMillis(System.currentTimeMillis() - ts);                
     }
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)

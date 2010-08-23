@@ -40,6 +40,8 @@ public class OutgoingBatch implements Serializable {
     private Status status = Status.NE;
     
     private boolean loadFlag;
+    
+    private boolean errorFlag;
 
     private long routerMillis;
 
@@ -54,6 +56,10 @@ public class OutgoingBatch implements Serializable {
     private long byteCount;
 
     private long sentCount;
+    
+    private long extractCount;
+    
+    private long loadCount;
 
     private long dataEventCount;
     
@@ -99,6 +105,14 @@ public class OutgoingBatch implements Serializable {
         this.loadMillis = 0;
         this.networkMillis = 0;
     }
+    
+    public void setErrorFlag(boolean errorFlag) {
+        this.errorFlag = errorFlag;
+    }
+    
+    public boolean isErrorFlag() {
+        return errorFlag;
+    }
 
     public void setLoadFlag(boolean loadFlag) {
         this.loadFlag = loadFlag;
@@ -115,6 +129,22 @@ public class OutgoingBatch implements Serializable {
     public long getSentCount() {
         return sentCount;
     }
+    
+    public void setExtractCount(long extractCount) {
+        this.extractCount = extractCount;
+    }
+    
+    public long getExtractCount() {
+        return extractCount;
+    }
+    
+    public void setLoadCount(long loadCount) {
+        this.loadCount = loadCount;
+    }
+    
+    public long getLoadCount() {
+        return loadCount;
+    }        
 
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;
