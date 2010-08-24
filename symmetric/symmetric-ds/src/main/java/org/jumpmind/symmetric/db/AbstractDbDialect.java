@@ -888,6 +888,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         try {
             log.info("TablesAutoUpdatingStart");
             String alterSql = getAlterSql(symmetricTables);
+            log.debug("TablesAutoUpdatingAlterSql", alterSql);
             if (!StringUtils.isBlank(alterSql)) {
                 new SqlScript(alterSql, jdbcTemplate.getDataSource(), true, platform
                         .getPlatformInfo().getSqlCommandDelimiter(), null).execute();
