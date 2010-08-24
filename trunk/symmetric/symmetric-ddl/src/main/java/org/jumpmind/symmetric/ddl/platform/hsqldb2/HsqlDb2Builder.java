@@ -20,6 +20,7 @@ package org.jumpmind.symmetric.ddl.platform.hsqldb2;
  */
 
 import java.io.IOException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +29,8 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.alteration.AddColumnChange;
+import org.jumpmind.symmetric.ddl.alteration.ColumnDataTypeChange;
+import org.jumpmind.symmetric.ddl.alteration.ColumnSizeChange;
 import org.jumpmind.symmetric.ddl.alteration.RemoveColumnChange;
 import org.jumpmind.symmetric.ddl.alteration.TableChange;
 import org.jumpmind.symmetric.ddl.model.Column;
@@ -91,15 +94,33 @@ public class HsqlDb2Builder extends SqlBuilder
                                                 Map      parameters,
                                                 List     changes) throws IOException
     {
-        // HsqlDb can only drop columns that are not part of a primary key
+        
         for (Iterator changeIt = changes.iterator(); changeIt.hasNext();)
         {
             TableChange change = (TableChange)changeIt.next();
 
+            // HsqlDb can only drop columns that are not part of a primary key
             if ((change instanceof RemoveColumnChange) && 
                 ((RemoveColumnChange)change).getColumn().isPrimaryKey())
             {
-                return;
+                changeIt.remove();
+            }
+            
+            // LONGVARCHAR columns always report changes
+            if (change instanceof ColumnSizeChange) {
+                ColumnSizeChange sizeChange = (ColumnSizeChange) change;
+                if (sizeChange.getChangedColumn().getTypeCode() == Types.VARCHAR && sizeChange.getNewSize() == 0) {
+                    changeIt.remove();
+                }
+            }
+
+            // LONGVARCHAR columns always report changes
+            if (change instanceof ColumnDataTypeChange) {
+                ColumnDataTypeChange dataTypeChange = (ColumnDataTypeChange) change;
+                if (dataTypeChange.getChangedColumn().getTypeCode() == Types.VARCHAR
+                        && dataTypeChange.getNewTypeCode() == Types.LONGVARCHAR) {
+                    changeIt.remove();
+                }
             }
         }
 
