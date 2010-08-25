@@ -32,7 +32,6 @@ import org.apache.log4j.Logger;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
-import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.ext.INodeGroupTestDataLoaderFilter;
 import org.jumpmind.symmetric.ext.ITestDataLoaderFilter;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
@@ -216,8 +215,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
         String thirdId = getNextId();
         insertValues[0] = thirdId;
-        insertValues[2] = "This is a very long string that will fail upon insert into the database.";
-        insertValues[9] = getDbDialect() instanceof InformixDbDialect ? "123456789.00" : "10.00";
+        // date column ...
+        insertValues[5] = "This is a very long string that will fail upon insert into the database.";
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
 
@@ -230,12 +229,12 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         assertNotNull(batch);
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
         assertEquals(batch.getFailedRowNumber(), 3l, "Wrong failed row number. " + printDatabase());
-        Assert.assertTrue("Wrong byte count. " + printDatabase(), batch.getByteCount() == 402l || batch.getByteCount() == 395l);
+        Assert.assertTrue("Wrong byte count: " + batch.getByteCount() +". " + printDatabase(), batch.getByteCount() == 403);
         assertEquals(batch.getStatementCount(), 3l, "Wrong statement count. " + printDatabase());
         assertEquals(batch.getFallbackInsertCount(), 0l, "Wrong fallback insert count. " + printDatabase());
-        assertEquals(batch.getFallbackUpdateCount(), 1l, "Wrong fallback update count. " + printDatabase());
+        assertEquals(batch.getFallbackUpdateCount(), 0l, "Wrong fallback update count. " + printDatabase());
         assertEquals(batch.getMissingDeleteCount(), 0l, "Wrong missing delete count. " + printDatabase());
-        assertNotNull(batch.getSqlState(), "Sql state should not be null. " + printDatabase());
+        assertNull(batch.getSqlState(), "Sql state should be null. " + printDatabase());
         assertNotNull(batch.getSqlMessage(), "Sql message should not be null. " + printDatabase());
         setLoggingLevelForTest(old);
     }
@@ -379,7 +378,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Logger.getLogger(DataLoaderServiceTest.class).warn("testErrorThenSuccessBatch");
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "This string is too large and will cause the statement to fail",
-                "string not null2", "char2", "char not null2", "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0",
+                "string not null2", "char2", "char not null2", "not a date", "2007-02-03 04:05:06.0", "0",
                 "47", "123456789.00", "0.474" };
         getNextBatchId();
         int retries = 3;
@@ -402,7 +401,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
         batchId--;
         values[1] = "A smaller string that will succeed";
-        values[9] = "67.89";
+        values[5] = "2007-01-02 00:00:00.0";
+        values[9] = "67.89";        
         testSimple(CsvConstants.INSERT, values, values);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status. " + printDatabase());
@@ -421,7 +421,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         String[] values = { getNextId(), "string", "string not null2", "char2", "char not null2",
                 "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
         String[] values2 = { getNextId(), "This string is too large and will cause the statement to fail",
-                "string not null2", "char2", "char not null2", "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0",
+                "string not null2", "char2", "char not null2", "Not a date", "2007-02-03 04:05:06.0", "0",
                 "47", "123456789.00", "0.474" };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();

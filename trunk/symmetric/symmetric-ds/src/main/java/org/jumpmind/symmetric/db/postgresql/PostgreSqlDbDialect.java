@@ -159,11 +159,11 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return true;
     }
 
-    public boolean isCharSpacePadded() {
+    public boolean isNonBlankCharColumnSpacePadded() {
         return true;
     }
 
-    public boolean isCharSpaceTrimmed() {
+    public boolean isCharColumnSpaceTrimmed() {
         return false;
     }
 

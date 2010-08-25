@@ -1076,9 +1076,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         } else if (type == Types.TIMESTAMP
                                 || (type == Types.DATE && isDateOverrideToTimestamp())) {
                             objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
-                        } else if (type == Types.CHAR && isCharSpacePadded()) {
-                            objectValue = StringUtils.rightPad(value.toString(), column
-                                    .getSizeAsInt(), ' ');
+                        } else if (type == Types.CHAR) {
+                            String charValue = value.toString();
+                            if ((StringUtils.isBlank(charValue) && isBlankCharColumnSpacePadded()) || 
+                                (StringUtils.isNotBlank(charValue) && isNonBlankCharColumnSpacePadded())) {
+                                objectValue = StringUtils.rightPad(value.toString(), column
+                                        .getSizeAsInt(), ' ');
+                            }
                         } else if (type == Types.INTEGER || type == Types.SMALLINT
                                 || type == Types.BIT) {
                             objectValue = Integer.valueOf(value);
@@ -1113,6 +1117,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
         
         return list.toArray();
+    }
+    
+    public boolean isBlankCharColumnSpacePadded() {
+        return isNonBlankCharColumnSpacePadded();
     }
     
     final private java.util.Date getDate(String value, String[] pattern) {

@@ -115,9 +115,17 @@ public interface IDbDialect {
 
     public String createCsvPrimaryKeySql(Trigger trig, String whereClause);
 
-    public boolean isCharSpacePadded();
+    /**
+     * @return true if blank characters are padded out
+     */
+    public boolean isBlankCharColumnSpacePadded();
+    
+    /**
+     * @return true if non-blank characters are padded out
+     */
+    public boolean isNonBlankCharColumnSpacePadded();
 
-    public boolean isCharSpaceTrimmed();
+    public boolean isCharColumnSpaceTrimmed();
 
     public boolean isEmptyStringNulled();
 

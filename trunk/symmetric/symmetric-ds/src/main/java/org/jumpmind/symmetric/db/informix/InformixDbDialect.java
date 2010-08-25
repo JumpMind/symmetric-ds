@@ -108,11 +108,11 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
-    public boolean isCharSpacePadded() {
+    public boolean isNonBlankCharColumnSpacePadded() {
         return true;
     }
 
-    public boolean isCharSpaceTrimmed() {
+    public boolean isCharColumnSpaceTrimmed() {
         return false;
     }
 

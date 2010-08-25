@@ -126,11 +126,11 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
         return "select last_insert_id()";
     }
 
-    public boolean isCharSpacePadded() {
+    public boolean isNonBlankCharColumnSpacePadded() {
         return false;
     }
 
-    public boolean isCharSpaceTrimmed() {
+    public boolean isCharColumnSpaceTrimmed() {
         return true;
     }
 

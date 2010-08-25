@@ -200,14 +200,14 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
      * 
      * @return true always
      */
-    public boolean isCharSpacePadded() {
+    public boolean isNonBlankCharColumnSpacePadded() {
         return true;
     }
 
     /**
      * @return false always
      */
-    public boolean isCharSpaceTrimmed() {
+    public boolean isCharColumnSpaceTrimmed() {
         return false;
     }
 
