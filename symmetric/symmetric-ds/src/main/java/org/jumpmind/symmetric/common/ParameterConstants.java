@@ -54,9 +54,11 @@ final public class ParameterConstants {
     public final static String AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT = "auto.config.registration.svr.sql.script";
     public final static String AUTO_CONFIGURE_REG_SVR_DDLUTIL_XML = "auto.config.registration.svr.ddlutil.xml";
     public final static String AUTO_UPGRADE = "auto.upgrade";
-    public final static String AUTO_DELETE_BEFORE_RELOAD = "initial.load.delete.first";    
-    public final static String AUTO_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
     public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
+
+    public final static String INITIAL_LOAD_DELETE_BEFORE_RELOAD = "initial.load.delete.first";    
+    public final static String INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
+    public final static String INITIAL_LOAD_USE_RELOAD_CHANNEL = "initial.load.use.reload.channel";
     
     public final static String STREAM_TO_FILE_ENABLED = "stream.to.file.enabled";
     public final static String STREAM_TO_FILE_THRESHOLD = "stream.to.file.threshold.bytes";

@@ -151,7 +151,8 @@ public class DataService extends AbstractService implements IDataService {
         TriggerHistory history = triggerRouterService
                 .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
         Data data = new Data(triggerRouter.getTrigger().getSourceTableName(), DataEventType.CREATE,
-                CsvUtils.escapeCsvData(xml), null, history, triggerRouter.getTrigger().getChannelId(), null, null);
+                CsvUtils.escapeCsvData(xml), null, history, 
+                parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD : triggerRouter.getTrigger().getChannelId(), null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
@@ -211,7 +212,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, DataEventType eventType,
             String routerId, boolean isLoad) {
-        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, channelId);
+        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD : channelId);
         outgoingBatch.setLoadFlag(isLoad);
         outgoingBatch.incrementEventCount(eventType);
         outgoingBatchService.insertOutgoingBatch(outgoingBatch);
@@ -250,14 +251,14 @@ public class DataService extends AbstractService implements IDataService {
                 .getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(),
                         targetNode.getNodeGroupId());
 
-        if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
             for (TriggerRouter triggerRouter : triggerRouters) {
                 String xml = dbDialect.getCreateTableXML(triggerRouter);
                 insertCreateEvent(targetNode, triggerRouter, xml, true);
             }
         }
 
-        if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
             for (ListIterator<TriggerRouter> iterator = triggerRouters.listIterator(triggerRouters
                     .size()); iterator.hasPrevious();) {
                 TriggerRouter triggerRouter = iterator.previous();
@@ -278,7 +279,7 @@ public class DataService extends AbstractService implements IDataService {
         nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
         
         // don't mark this batch as a load batch so it is forced to go last
-        insertNodeSecurityUpdate(targetNode, false);
+        insertNodeSecurityUpdate(targetNode, parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
 
         // remove all incoming events from the node are starting a reload for.
         purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
@@ -349,10 +350,10 @@ public class DataService extends AbstractService implements IDataService {
                     + sourceNode.getNodeGroupId();
         }
 
-        if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
             String xml = dbDialect.getCreateTableXML(triggerRouter);
             insertCreateEvent(targetNode, triggerRouter, xml, true);
-        } else if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
+        } else if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
             insertPurgeEvent(targetNode, triggerRouter, true);
         }
 

@@ -61,6 +61,8 @@ final public class Constants {
     public static final String PROPERTIES = "symmetricProperties";
 
     public static final String CHANNEL_CONFIG = "config";
+    
+    public static final String CHANNEL_RELOAD = "reload";
 
     public static final String DATA_SOURCE = "dataSource";
 
