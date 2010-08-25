@@ -453,7 +453,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             table.setSchema((String) values.get("TABLE_SCHEM"));
             table.setDescription((String) values.get("REMARKS"));
             table.addColumns(readColumns(metaData, tableName));
-            if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
                 table.addIndices(readIndices(metaData, tableName));
             }
             Collection primaryKeys = readPrimaryKeyNames(metaData, tableName);
