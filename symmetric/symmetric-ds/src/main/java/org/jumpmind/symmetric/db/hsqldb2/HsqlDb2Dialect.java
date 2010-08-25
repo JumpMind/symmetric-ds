@@ -30,9 +30,12 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
 
     public static String DUAL_TABLE = "DUAL";
 
-    private boolean enforceStrictSize = true;
-
     boolean dualTableCreated = false;
+    
+    public void init(org.jumpmind.symmetric.ddl.Platform pf) {
+        super.init(pf);
+    };
+    
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName,
@@ -117,13 +120,18 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
-    }    
+    }
     
-    public boolean isCharSpacePadded() {
-        return enforceStrictSize;
+    @Override
+    public boolean isBlankCharColumnSpacePadded() {
+        return false;
+    }
+    
+    public boolean isNonBlankCharColumnSpacePadded() {
+        return true;
     }
 
-    public boolean isCharSpaceTrimmed() {
+    public boolean isCharColumnSpaceTrimmed() {
         return false;
     }
 

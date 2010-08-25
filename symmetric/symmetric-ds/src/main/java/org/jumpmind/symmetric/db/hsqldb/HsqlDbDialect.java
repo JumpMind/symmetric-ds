@@ -147,11 +147,11 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
         return BinaryEncoding.BASE64;
     }
 
-    public boolean isCharSpacePadded() {
+    public boolean isNonBlankCharColumnSpacePadded() {
         return enforceStrictSize;
     }
 
-    public boolean isCharSpaceTrimmed() {
+    public boolean isCharColumnSpaceTrimmed() {
         return false;
     }
 

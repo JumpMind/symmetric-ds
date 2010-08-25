@@ -225,9 +225,11 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         if (isRequired && value == null) {
             value = AbstractDbDialect.REQUIRED_FIELD_NULL_SUBSTITUTE;
         }
-        if (value != null && getDbDialect().isCharSpacePadded()) {
+        if (value != null && 
+                ((StringUtils.isBlank(value) && getDbDialect().isBlankCharColumnSpacePadded()) || 
+                        (StringUtils.isNotBlank(value) && getDbDialect().isNonBlankCharColumnSpacePadded()))) {
             return StringUtils.rightPad(value, size);
-        } else if (value != null && getDbDialect().isCharSpaceTrimmed()) {
+        } else if (value != null && getDbDialect().isCharColumnSpaceTrimmed()) {
             return value.replaceFirst(" *$", "");
         }
         return value;

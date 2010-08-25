@@ -110,11 +110,11 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
         return BinaryEncoding.BASE64;
     }
 
-    public boolean isCharSpacePadded() {
+    public boolean isNonBlankCharColumnSpacePadded() {
         return false;
     }
 
-    public boolean isCharSpaceTrimmed() {
+    public boolean isCharColumnSpaceTrimmed() {
         return true;
     }
 

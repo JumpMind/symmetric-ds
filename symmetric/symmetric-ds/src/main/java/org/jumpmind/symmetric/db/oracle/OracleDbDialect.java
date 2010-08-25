@@ -122,11 +122,11 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return BinaryEncoding.BASE64;
     }
 
-    public boolean isCharSpacePadded() {
+    public boolean isNonBlankCharColumnSpacePadded() {
         return true;
     }
 
-    public boolean isCharSpaceTrimmed() {
+    public boolean isCharColumnSpaceTrimmed() {
         return false;
     }
 
