@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.test;
 
 import java.io.File;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -21,6 +23,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -109,6 +112,37 @@ public class MultiTierUnitTest {
         while (!outgoingBatchService.isInitialLoadComplete(MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_002)) {
             workstation000102.getEngine().pull();
         }
+    }
+    
+    @Test
+    public void testHeartbeatFromRegion01ToHomeServer() throws Exception {
+        final String checkHeartbeatSql = "select heartbeat_time from sym_node where external_id='region01'";
+        JdbcTemplate region01JdbcTemplate = (JdbcTemplate) region01Server.getEngine()
+                .getApplicationContext().getBean(Constants.JDBC_TEMPLATE);
+        JdbcTemplate homeJdbcTemplate = (JdbcTemplate) homeServer.getEngine()
+                .getApplicationContext().getBean(Constants.JDBC_TEMPLATE);
+        Date clientHeartbeatTimeBefore = region01JdbcTemplate.queryForObject(checkHeartbeatSql,
+                Timestamp.class);
+        Thread.sleep(1000);
+        region01Server.getEngine().heartbeat(true);
+        Date clientHeartbeatTimeAfter = region01JdbcTemplate.queryForObject(checkHeartbeatSql,
+                Timestamp.class);
+        Assert.assertNotSame("The heartbeat time was not updated at the client",
+                clientHeartbeatTimeAfter, clientHeartbeatTimeBefore);
+        Date rootHeartbeatTimeBefore = homeJdbcTemplate.queryForObject(checkHeartbeatSql,
+                Timestamp.class);
+        Assert
+                .assertNotSame(
+                        "The root heartbeat time should not be the same as the updated client heartbeat time",
+                        clientHeartbeatTimeAfter, rootHeartbeatTimeBefore);
+        while (region01Server.getEngine().push()) {
+            // continue to push while there data to push
+        }
+        Date rootHeartbeatTimeAfter = homeJdbcTemplate.queryForObject(checkHeartbeatSql,
+                Timestamp.class);
+        Assert.assertEquals(
+                "The client heartbeat time should have been the same as the root heartbeat time.",
+                clientHeartbeatTimeAfter, rootHeartbeatTimeAfter);
     }
 
     @Test
