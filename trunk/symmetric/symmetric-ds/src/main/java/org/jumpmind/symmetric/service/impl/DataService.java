@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -383,6 +384,8 @@ public class DataService extends AbstractService implements IDataService {
                             " t.node_id = '%s'", node.getNodeId()));
                     if (data != null) {
                         insertData(data);
+                    } else {
+                        log.warn("TableGeneratingEventsFailure", tableName);
                     }
                 } else {
                     log.warn("TableGeneratingEventsFailure", tableName);
@@ -582,7 +585,9 @@ public class DataService extends AbstractService implements IDataService {
             Node me = nodeService.findIdentity();
             if (me != null) {
                 log.info("NodeVersionUpdating");
-                me.setHeartbeatTime(new Date());
+                Calendar now = Calendar.getInstance();
+                now.set(Calendar.MILLISECOND, 0);
+                me.setHeartbeatTime(now.getTime());
                 me.setTimezoneOffset(AppUtils.getTimezoneOffset());
                 me.setSymmetricVersion(Version.version());
                 me.setDatabaseType(dbDialect.getName());
