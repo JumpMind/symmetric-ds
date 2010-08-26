@@ -872,23 +872,23 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues);
     }
 
-    @Test
+    @Test(timeout = 120000)
     public void testHeartbeat() throws Exception {
         logTestRunning();
         final String checkHeartbeatSql = "select heartbeat_time from sym_node where external_id='"
                 + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
-        long ts = System.currentTimeMillis();
+        Date clientHeartbeatTimeBefore = clientJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
         Thread.sleep(1000);
-        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());
-        parameterService.saveParameter(ParameterConstants.START_HEARTBEAT_JOB, true);
         getClientEngine().heartbeat(true);
-        parameterService.saveParameter(ParameterConstants.START_HEARTBEAT_JOB, false);
-        Date time = (Date) clientJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
-        Assert.assertTrue("The heartbeat time was not updated locally.", time != null && time.getTime() > ts);
-        getClientEngine().push();
-        time = (Date) rootJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
-        Assert.assertTrue("The client node was not sync'd to the root as expected.", time != null
-                && time.getTime() > ts);
+        Date clientHeartbeatTimeAfter = clientJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
+        Assert.assertNotSame("The heartbeat time was not updated at the client", clientHeartbeatTimeAfter, clientHeartbeatTimeBefore);
+        Date rootHeartbeatTimeBefore = rootJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
+        Assert.assertNotSame("The root heartbeat time should not be the same as the updated client heartbeat time", clientHeartbeatTimeAfter, rootHeartbeatTimeBefore);
+        while (getClientEngine().push()) {
+            // continue to push while there data to push
+        }
+        Date rootHeartbeatTimeAfter = rootJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
+        Assert.assertEquals("The client heartbeat time should have been the same as the root heartbeat time.",clientHeartbeatTimeAfter, rootHeartbeatTimeAfter);
     }
 
     @Test(timeout = 120000)
