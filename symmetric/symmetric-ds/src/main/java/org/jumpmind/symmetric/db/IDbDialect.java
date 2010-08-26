@@ -107,7 +107,7 @@ public interface IDbDialect {
 
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
-    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table);
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory);
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter);
 
@@ -221,6 +221,8 @@ public interface IDbDialect {
     public long insertWithGeneratedKey(JdbcTemplate jdbcTemplate, final String sql,
             final SequenceIdentifier sequenceId, final PreparedStatementCallback<Object> psCallback);
 
+    public Column[] orderColumns(String[] columnNames, Table table);
+    
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] orderedMetaData);
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames, String[] values);

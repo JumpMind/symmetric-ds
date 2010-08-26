@@ -79,8 +79,8 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         outgoingBatchService.insertOutgoingBatch(batch);
         DataExtractorContext ctx = new DataExtractorContext();
         ctx.setBatch(batch);
-
-        dataExtractorService.writeInitialLoad(node, trigger, writer, ctx);
+        
+        dataExtractorService.writeInitialLoad(node, trigger, null, writer, ctx);
         String loadResults = mockTransport.toString();
         assertEquals(countLines(loadResults), 5, "Unexpected number of lines in the csv result: " + loadResults);
         assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
@@ -92,7 +92,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         outgoingBatchService.insertOutgoingBatch(batch);
         ctx = new DataExtractorContext();
         ctx.setBatch(batch);
-        dataExtractorService.writeInitialLoad(node, trigger, writer, ctx);
+        dataExtractorService.writeInitialLoad(node, trigger, null, writer, ctx);
         loadResults = mockTransport.toString();
         assertEquals(countLines(loadResults), 17, "Unexpected number of lines in the csv result: " + loadResults);
         
