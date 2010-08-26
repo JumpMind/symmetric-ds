@@ -28,6 +28,7 @@ import java.io.Writer;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
@@ -40,7 +41,7 @@ public interface IDataExtractorService {
     public void extractConfigurationStandalone(Node node, Writer out) throws IOException;
     
     public void extractInitialLoadWithinBatchFor(Node node, TriggerRouter trigger, Writer writer,
-            DataExtractorContext ctx);
+            DataExtractorContext ctx, TriggerHistory triggerHistory);
 
     /**
      * @return true if work was done or false if there was no work to do.

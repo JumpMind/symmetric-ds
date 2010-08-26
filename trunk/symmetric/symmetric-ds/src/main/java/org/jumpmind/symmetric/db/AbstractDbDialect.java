@@ -272,8 +272,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return "null";
     }
 
-    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table) {
-        return sqlTemplate.createInitalLoadSql(node, this, trigger, table).trim();
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory) {
+        return sqlTemplate.createInitalLoadSql(node, this, trigger, table, triggerHistory).trim();
     }
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter) {
@@ -1034,7 +1034,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
 
-    protected Column[] orderColumns(String[] columnNames, Table table) {
+    public Column[] orderColumns(String[] columnNames, Table table) {
         Column[] unorderedColumns = table.getColumns();
         Column[] orderedColumns = new Column[columnNames.length];
         for (int i = 0; i < columnNames.length; i++) {

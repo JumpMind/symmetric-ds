@@ -177,7 +177,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         		triggerRouter.getTrigger().getSourceTableName(), true);
 
         String sql = getDbDialect().createInitialLoadSqlFor(new Node("1", null, "1.0"),
-                triggerRouter, table);
+                triggerRouter, table, service.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId()));
         List<String> csvStrings = getJdbcTemplate().queryForList(sql, String.class);
         assertTrue(csvStrings.size() > 0);
         String csvString = csvStrings.get(0);

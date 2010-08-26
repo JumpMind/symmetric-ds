@@ -49,7 +49,7 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
                 triggerRouter.setInitialLoadSelect(data.getRowData());
             }
             Node node = nodeService.findNode(context.getBatch().getNodeId());
-            dataExtractorService.extractInitialLoadWithinBatchFor(node, triggerRouter, out, context);
+            dataExtractorService.extractInitialLoadWithinBatchFor(node, triggerRouter, out, context, data.getTriggerHistory());
             out.flush();
         } else {
             log.error("TriggerRouterUnavailable", triggerId, routerId);

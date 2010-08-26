@@ -221,14 +221,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractInitialLoadWithinBatchFor(Node node, final TriggerRouter trigger, Writer writer,
-            DataExtractorContext ctx) {
-        writeInitialLoad(node, trigger, writer, ctx);
-    }
-
-    protected void writeInitialLoad(Node node, TriggerRouter trigger, Writer writer, 
-            final DataExtractorContext ctx) {
-        writeInitialLoad(node, trigger, triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTrigger()
-                .getTriggerId()), writer, ctx);
+            DataExtractorContext ctx, TriggerHistory triggerHistory) {
+        writeInitialLoad(node, trigger, triggerHistory, writer, ctx);
     }
 
     /**
@@ -239,6 +233,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected void writeInitialLoad(final Node node, final TriggerRouter triggerRouter, TriggerHistory triggerHistory,
             final Writer writer, final DataExtractorContext ctx) {
 
+        triggerHistory = triggerHistory != null ? triggerHistory : triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
+                .getTriggerId());
+        
         final boolean newExtractorCreated = ctx == null || ctx.getDataExtractor() == null;
         final IDataExtractor dataExtractor = !newExtractorCreated ? ctx.getDataExtractor() : getDataExtractor(node
                 .getSymmetricVersion());
@@ -248,7 +245,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         Table tableForSql = dbDialect.getTable(triggerRouter.getTrigger().getSourceCatalogName(), triggerRouter.getTrigger().getSourceSchemaName(),
         		dataExtractor.getLegacyTableName(triggerRouter.getTrigger().getSourceTableName()), true);
         
-        final String sql = dbDialect.createInitialLoadSqlFor(node, triggerRouter, tableForSql);
+        final String sql = dbDialect.createInitialLoadSqlFor(node, triggerRouter, tableForSql, triggerHistory);
         
         log.debug("Sql",sql);
         

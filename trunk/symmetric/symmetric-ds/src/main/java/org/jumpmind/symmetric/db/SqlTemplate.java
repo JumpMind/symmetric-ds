@@ -102,16 +102,15 @@ public class SqlTemplate {
 
     private String newColumnPrefix = "";
 
-    public String createInitalLoadSql(Node node, IDbDialect dialect, TriggerRouter trig, Table metaData) {
+    public String createInitalLoadSql(Node node, IDbDialect dialect, TriggerRouter triggerRouter, Table metaData, TriggerHistory triggerHistory) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-
-        Column[] columns = trig.orderColumnsForTable(metaData);
+        Column[] columns = dialect.orderColumns(triggerHistory.getParsedColumnNames(), metaData);
         String columnsText = buildColumnString(dialect, dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT, false).columnString;
         sql = AppUtils.replace("columns", columnsText, sql);
-        sql = AppUtils.replace("whereClause", StringUtils.isBlank(trig.getInitialLoadSelect()) ? "1=1" : trig.getInitialLoadSelect(), sql);
+        sql = AppUtils.replace("whereClause", StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? "1=1" : triggerRouter.getInitialLoadSelect(), sql);
         sql = AppUtils.replace("tableName", metaData.getName(), sql);
-        sql = AppUtils.replace("schemaName", trig.getTrigger().getSourceSchemaName() != null ? trig.getTrigger().getSourceSchemaName() + "." : "", sql);
+        sql = AppUtils.replace("schemaName", triggerRouter.getTrigger().getSourceSchemaName() != null ? triggerRouter.getTrigger().getSourceSchemaName() + "." : "", sql);
         sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
                 .getPrimaryKeyColumns()), sql);
 
@@ -424,93 +423,99 @@ public class SqlTemplate {
         String columnsText = "";
         boolean isBlobClob = false;
         for (Column column : columns) {
-            String templateToUse = null;
-            switch (column.getTypeCode()) {
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.INTEGER:
-            case Types.BIGINT:
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-                templateToUse = numberColumnTemplate;
-                break;
-            case Types.CHAR:
-            case Types.VARCHAR:
-            case Types.LONGVARCHAR:
-                templateToUse = stringColumnTemplate;
-                break;
-            case Types.CLOB:
-                if (isOld && dbDialect.needsToSelectLobData()) {
-                    templateToUse = emptyColumnTemplate;
-                } else {
-                    templateToUse = clobColumnTemplate;
-                }
-                isBlobClob = true;
-                break;
-            case Types.BLOB:
-                if (dialect instanceof PostgreSqlDbDialect) {
-                    templateToUse = wrappedBlobColumnTemplate;
+            if (column != null) {
+                String templateToUse = null;
+                switch (column.getTypeCode()) {
+                case Types.TINYINT:
+                case Types.SMALLINT:
+                case Types.INTEGER:
+                case Types.BIGINT:
+                case Types.FLOAT:
+                case Types.REAL:
+                case Types.DOUBLE:
+                case Types.NUMERIC:
+                case Types.DECIMAL:
+                    templateToUse = numberColumnTemplate;
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                    templateToUse = stringColumnTemplate;
+                    break;
+                case Types.CLOB:
+                    if (isOld && dbDialect.needsToSelectLobData()) {
+                        templateToUse = emptyColumnTemplate;
+                    } else {
+                        templateToUse = clobColumnTemplate;
+                    }
                     isBlobClob = true;
                     break;
+                case Types.BLOB:
+                    if (dialect instanceof PostgreSqlDbDialect) {
+                        templateToUse = wrappedBlobColumnTemplate;
+                        isBlobClob = true;
+                        break;
+                    }
+                case Types.BINARY:
+                case Types.VARBINARY:
+                case Types.LONGVARBINARY:
+                    // SQL-Server ntext binary type
+                case -10:
+                    if (isOld && dbDialect.needsToSelectLobData()) {
+                        templateToUse = emptyColumnTemplate;
+                    } else {
+                        templateToUse = blobColumnTemplate;
+                    }
+                    isBlobClob = true;
+                    break;
+                case Types.DATE:
+                    if (noDateColumnTemplate()) {
+                        templateToUse = datetimeColumnTemplate;
+                        break;
+                    }
+                    templateToUse = dateColumnTemplate;
+                    break;
+                case Types.TIME:
+                    if (noTimeColumnTemplate()) {
+                        templateToUse = datetimeColumnTemplate;
+                        break;
+                    }
+                    templateToUse = timeColumnTemplate;
+                    break;
+                case Types.TIMESTAMP:
+                    templateToUse = datetimeColumnTemplate;
+                    break;
+                case Types.BOOLEAN:
+                case Types.BIT:
+                    templateToUse = booleanColumnTemplate;
+                    break;
+                case Types.NULL:
+                case Types.OTHER:
+                case Types.JAVA_OBJECT:
+                case Types.DISTINCT:
+                case Types.STRUCT:
+                case Types.REF:
+                case Types.DATALINK:
+                    throw new NotImplementedException(column.getName() + " is of type "
+                            + column.getType());
                 }
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-                // SQL-Server ntext binary type
-            case -10:
-                if (isOld && dbDialect.needsToSelectLobData()) {
+
+                if (dml == DataEventType.DELETE && isBlobClob
+                        && dbDialect instanceof MsSqlDbDialect) {
                     templateToUse = emptyColumnTemplate;
+                }
+
+                if (templateToUse != null) {
+                    templateToUse = templateToUse.trim();
                 } else {
-                    templateToUse = blobColumnTemplate;
+                    throw new NotImplementedException();
                 }
-                isBlobClob = true;
-                break;
-            case Types.DATE:
-                if(noDateColumnTemplate()){
-                    templateToUse = datetimeColumnTemplate;
-                    break;
-                }
-                templateToUse = dateColumnTemplate;
-                break;
-            case Types.TIME:
-                if(noTimeColumnTemplate()){
-                    templateToUse = datetimeColumnTemplate;
-                    break;
-                }
-                templateToUse = timeColumnTemplate;
-                break;
-            case Types.TIMESTAMP:
-                templateToUse = datetimeColumnTemplate;
-                break;
-            case Types.BOOLEAN:
-            case Types.BIT:
-                templateToUse = booleanColumnTemplate;
-                break;
-            case Types.NULL:
-            case Types.OTHER:
-            case Types.JAVA_OBJECT:
-            case Types.DISTINCT:
-            case Types.STRUCT:
-            case Types.REF:
-            case Types.DATALINK:
-                throw new NotImplementedException(column.getName() + " is of type " + column.getType());
-            }
 
-            if (dml == DataEventType.DELETE && isBlobClob && dbDialect instanceof MsSqlDbDialect) {
-                templateToUse = emptyColumnTemplate;
+                columnsText = columnsText
+                        + "\n          "
+                        + AppUtils.replace("columnName", String.format("%s%s", columnPrefix, column
+                                .getName()), templateToUse);
             }
-            
-            if (templateToUse != null) {
-                templateToUse = templateToUse.trim();
-            } else {
-                throw new NotImplementedException();
-            }
-
-            columnsText = columnsText + "\n          "
-                    + AppUtils.replace("columnName", String.format("%s%s", columnPrefix, column.getName()), templateToUse);
 
         }
 
