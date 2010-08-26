@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -57,9 +58,11 @@ public interface ITriggerRouterService {
     public Router getRouterById(String routerId);
     
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
-
+    
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId);
 
+    public TriggerRouter getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache);
+    
     public TriggerRouter getTriggerRouterForTableForCurrentNode(String catalog, String schema, String tableName, boolean refreshCache); 
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId);

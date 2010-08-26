@@ -210,16 +210,29 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     public TriggerRouter getTriggerRouterForTableForCurrentNode(String catalogName, String schemaName, String tableName, boolean refreshCache) {
+        return getTriggerRouterForTableForCurrentNode(null, catalogName, schemaName, tableName, refreshCache);
+    }
+    
+    public TriggerRouter getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache) {
         TriggerRoutersCache cache = getTriggerRoutersCacheForCurrentNode(refreshCache);
         Collection<List<TriggerRouter>> triggerRouters = cache.triggerRoutersByTriggerId.values();
         for (List<TriggerRouter> list : triggerRouters) {
-            for (TriggerRouter triggerRouter : list) {
-                if (isMatch(catalogName, schemaName, tableName, triggerRouter.getTrigger())) {
+            for (TriggerRouter triggerRouter : list) {                
+                if (isMatch(link, triggerRouter) && 
+                        isMatch(catalogName, schemaName, tableName, triggerRouter.getTrigger())) {
                     return triggerRouter;
                 }
             }
         }
         return null;
+    }
+    
+    protected boolean isMatch(NodeGroupLink link, TriggerRouter router) {
+        if (link != null && router != null && router.getRouter() != null) {
+            return link.getSourceNodeGroupId().equals(router.getRouter().getSourceNodeGroupId()) && link.getTargetNodeGroupId().equals(router.getRouter().getTargetNodeGroupId());
+        } else {
+            return true;
+        }
     }
     
     protected boolean isMatch(String catalogName, String schemaName, String tableName,

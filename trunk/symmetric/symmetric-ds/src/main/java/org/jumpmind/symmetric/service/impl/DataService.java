@@ -378,7 +378,7 @@ public class DataService extends AbstractService implements IDataService {
         for (NodeGroupLink nodeGroupLink : links) {
             if (nodeGroupLink.getDataEventAction() == NodeGroupLinkAction.P) {
                 TriggerRouter triggerRouter = triggerRouterService
-                        .getTriggerRouterForTableForCurrentNode(null, null, tableName, false);
+                        .getTriggerRouterForTableForCurrentNode(nodeGroupLink, null, null, tableName, false);
                 if (triggerRouter != null) {
                     Data data = createData(triggerRouter.getTrigger(), String.format(
                             " t.node_id = '%s'", node.getNodeId()));
