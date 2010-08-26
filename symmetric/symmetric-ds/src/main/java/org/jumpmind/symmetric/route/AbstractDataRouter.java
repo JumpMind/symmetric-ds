@@ -178,8 +178,8 @@ public abstract class AbstractDataRouter implements IDataRouter {
             Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(),
                     dataMetaData.getTable(), columnNames, rowData);
             for (int i = 0; i < columnNames.length; i++) {
-                data.put(prefix != null ? (prefix + columnNames[i]).toUpperCase() : columnNames[i]
-                        .toUpperCase(), objects[i]);
+                String upperCase = columnNames[i].toUpperCase();
+                data.put(prefix != null ? (prefix + upperCase) : upperCase, objects[i]);
             }
             return data;
         } else {
