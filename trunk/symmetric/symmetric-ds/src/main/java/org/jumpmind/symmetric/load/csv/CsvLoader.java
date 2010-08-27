@@ -293,9 +293,9 @@ public class CsvLoader implements IDataLoader {
                 stats.startTimer();
                 if (enableFallbackUpdate && dbDialect.requiresSavepointForFallback()) {
                     if (enableFallbackSavepoint) {
-                	savepoint = dbDialect.createSavepointForFallback();
+                        savepoint = dbDialect.createSavepointForFallback();
                     } else if (context.getTableTemplate().count(context, parseKeys(tokens, 1)) > 0) {
-                	throw new DataIntegrityViolationException("Row already exists");
+                        throw new DataIntegrityViolationException("Row already exists");
                     }
                 }
                 rows = context.getTableTemplate().insert(context, columnValues);
@@ -311,8 +311,8 @@ public class CsvLoader implements IDataLoader {
                     stats.incrementFallbackUpdateCount();
                     rows = context.getTableTemplate().update(context, columnValues, keyValues);
                     if (rows == 0) {
-                        throw new SymmetricException("LoaderUpdatingFailed", e, context.getTableName(), ArrayUtils
-                                .toString(tokens));
+                        throw new SymmetricException("LoaderFallbackUpdateFailed", e, context.getTableName(), ArrayUtils
+                                .toString(tokens), ArrayUtils.toString(keyValues));
                     }
                 } else {
                     log.error("LoaderInsertingFailed", context.getTableName(), ArrayUtils.toString(tokens));
