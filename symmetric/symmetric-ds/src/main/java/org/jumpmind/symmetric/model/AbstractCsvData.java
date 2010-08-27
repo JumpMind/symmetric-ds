@@ -31,12 +31,15 @@ import org.jumpmind.symmetric.util.CsvUtils;
 
 abstract class AbstractCsvData {
 
-    Map<String, String[]> parsedCsvData = new HashMap<String, String[]>(2);
+    private Map<String, String[]> parsedCsvData = null;
 
     // TODO This could probably become more efficient
     protected String[] getData(String key, String data) {
         if (!StringUtils.isBlank(data)) {
             try {
+                if (parsedCsvData == null) {
+                    parsedCsvData = new HashMap<String, String[]>(2);
+                }
                 if (parsedCsvData.containsKey(key)) {
                     return parsedCsvData.get(key);
                 } else {
