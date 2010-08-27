@@ -1062,7 +1062,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
             String value = values[i];
             Object objectValue = value;
             Column column = orderedMetaData[i];
-
             try {
                 if (column != null) {
                     int type = column.getTypeCode();
@@ -1106,9 +1105,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         } else if (type == Types.TIME) {
                             objectValue = new Time(getTime(value, TIME_PATTERNS));
                         }
-                    }
-                    list.add(objectValue);
+                    }        
                 }
+                list.add(objectValue);
             } catch (Exception ex) {
                 logger.error("DbDialectTroubleConvertingColumnValue", value, column.getName(),
                         column.getType());
