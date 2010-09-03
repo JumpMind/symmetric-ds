@@ -68,37 +68,37 @@ public class CsvExtractor extends CsvExtractor16 {
         }
         String triggerHistoryId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getHistoryRecordsWritten().contains(triggerHistoryId)) {
-            writeTable(data, routerId, out);
-            CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
+            writeTable(data, routerId, out, context);
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames()));
             CsvUtils.writeLineFeed(out);
-            CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames()));
             CsvUtils.writeLineFeed(out);
             context.getHistoryRecordsWritten().add(triggerHistoryId);
         } else if (!context.isLastTable(data.getTableName())) {
-            writeTable(data, routerId, out);
+            writeTable(data, routerId, out, context);
         }
 
         if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null && parameterService.is(ParameterConstants.DATA_EXTRACTOR_OLD_DATA_ENABLED)) {
-            CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData());
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData()));
             CsvUtils.writeLineFeed(out);
         }
         context.setLastTableName(data.getTableName());
     }
     
-    protected void writeTable(Data data, String routerId, Writer out) throws IOException {
+    protected void writeTable(Data data, String routerId, Writer out, DataExtractorContext context) throws IOException {
         // TODO Add property and write the source schema and the source catalog if set
         Router router = triggerRouterService.getActiveRouterByIdForCurrentNode(routerId, false);
         String schemaName = (router == null || router.getTargetSchemaName() == null) ? "" : router
                 .getTargetSchemaName();
-        CsvUtils.write(out, CsvConstants.SCHEMA, ", ", schemaName);
+        context.incrementByteCount(CsvUtils.write(out, CsvConstants.SCHEMA, ", ", schemaName));
         CsvUtils.writeLineFeed(out);
         String catalogName = (router == null || router.getTargetCatalogName() == null) ? "" : router
                 .getTargetCatalogName();
-        CsvUtils.write(out, CsvConstants.CATALOG, ", ", catalogName);
+        context.incrementByteCount(CsvUtils.write(out, CsvConstants.CATALOG, ", ", catalogName));
         CsvUtils.writeLineFeed(out);
         String tableName = (router == null || router.getTargetTableName() == null) ? data.getTableName() : router
                 .getTargetTableName();
-        CsvUtils.write(out, CsvConstants.TABLE, ", ", tableName);
+        context.incrementByteCount(CsvUtils.write(out, CsvConstants.TABLE, ", ", tableName));
         CsvUtils.writeLineFeed(out);
     }
 

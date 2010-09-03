@@ -70,15 +70,15 @@ public class CsvExtractor16 extends CsvExtractor14 {
         String triggerHistId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getHistoryRecordsWritten().contains(triggerHistId)) {
             
-            CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName()));
             CsvUtils.writeLineFeed(out);
-            CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames()));
             CsvUtils.writeLineFeed(out);
-            CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames()));
             CsvUtils.writeLineFeed(out);
             context.getHistoryRecordsWritten().add(triggerHistId);
         } else if (!context.isLastTable(data.getTableName())) {
-            CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName()));
             CsvUtils.writeLineFeed(out);
         }
 

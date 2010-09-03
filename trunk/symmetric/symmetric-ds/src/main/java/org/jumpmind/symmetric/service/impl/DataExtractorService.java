@@ -397,6 +397,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 OutgoingBatch currentBatch = null;
                 try {
+                    final long MAX_BYTES_TO_SYNC = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+                    long bytesSentCount = 0;
+                    int batchesSentCount = 0;
                     for (OutgoingBatch outgoingBatch : activeBatches) {
                         currentBatch = outgoingBatch;
                         outgoingBatch.setStatus(OutgoingBatch.Status.QY);
@@ -416,6 +419,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         outgoingBatch.setStatus(OutgoingBatch.Status.LD);     
                         outgoingBatch.setLoadCount(outgoingBatch.getLoadCount()+1);
                         outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                        
+                        bytesSentCount += outgoingBatch.getByteCount();
+                        batchesSentCount++;
+                        
+                        if (bytesSentCount >= MAX_BYTES_TO_SYNC) {
+                            log.info("DataExtractorReachedMaxNumberOfBytesToSync", batchesSentCount, bytesSentCount);
+                            break;
+                        }
                     }
                 } catch (RuntimeException e) {
                     SQLException se = unwrapSqlException(e);
@@ -518,12 +529,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      */
     protected void databaseExtract(Node node, OutgoingBatch batch, final IExtractListener handler)
             throws IOException {
-                batch.resetStats();
-                long ts = System.currentTimeMillis();
-                handler.startBatch(batch);
-                selectEventDataToExtract(handler, batch);
-                handler.endBatch(batch);
-                batch.setExtractMillis(System.currentTimeMillis() - ts);                
+        batch.resetStats();
+        long ts = System.currentTimeMillis();
+        handler.startBatch(batch);
+        selectEventDataToExtract(handler, batch);
+        handler.endBatch(batch);
+        batch.setExtractMillis(System.currentTimeMillis() - ts);
     }
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
