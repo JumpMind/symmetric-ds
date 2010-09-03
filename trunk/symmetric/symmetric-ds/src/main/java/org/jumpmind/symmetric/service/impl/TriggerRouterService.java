@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
@@ -148,12 +149,23 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return hists;
     }
+    
+    private String getNewestVersionOfRootConfigChannelTableNames() {
+        TreeSet<String> ordered = new TreeSet<String>(rootConfigChannelTableNames.keySet());
+        return ordered.last();
+    }
 
     public List<TriggerRouter> getTriggerRoutersForRegistration(String version,
             String sourceGroupId, String targetGroupId) {
         int initialLoadOrder = 1;
-        String majorVersion = Integer.toString(Version.parseVersion(version)[0]);
+        String majorVersion = Integer.toString(Version.parseVersion(version)[0]);        
         List<String> tables = rootConfigChannelTableNames.get(majorVersion);
+        if (tables == null) {
+            String newestVersion = getNewestVersionOfRootConfigChannelTableNames();
+            log.warn("TriggersDefaultVersionWarning", newestVersion, majorVersion);
+            majorVersion = newestVersion;
+            tables = rootConfigChannelTableNames.get(majorVersion);
+        }
         List<TriggerRouter> triggers = new ArrayList<TriggerRouter>(tables.size());
         for (int j = 0; j < tables.size(); j++) {
             String tableName = tables.get(j);
