@@ -80,9 +80,13 @@ public class DataRefGapDetector implements IDataToRouteGapDetector {
                             } else {
                                 if (dataService.countDataInRange(lastDataId, dataId) == 0) {
                                     if (dbDialect.supportsTransactionViews()) {
-                                        if (!dbDialect.areDatabaseTransactionsPendingSince(dataService.findCreateTimeOfData(dataId).getTime())) {
-                                            log.info("RouterSkippingDataIdsNoTransactions", lastDataId, dataId);
-                                            lastDataId = dataId;
+                                        if (!dbDialect
+                                                    .areDatabaseTransactionsPendingSince(dataService
+                                                            .findCreateTimeOfData(dataId).getTime() + 5000)) {
+                                            if (dataService.countDataInRange(lastDataId, dataId) == 0) {
+                                                log.info("RouterSkippingDataIdsNoTransactions", lastDataId, dataId);
+                                                lastDataId = dataId;
+                                            }
                                         }
                                     } else if (isDataGapExpired(dataId)) {
                                         log.info("RouterSkippingDataIdsGapExpired", lastDataId,
