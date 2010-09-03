@@ -101,6 +101,7 @@ final public class ParameterConstants {
     public final static String TRANSPORT_HTTP_BASIC_AUTH_USERNAME = "http.basic.auth.username";
     public final static String TRANSPORT_HTTP_BASIC_AUTH_PASSWORD = "http.basic.auth.password";
     public final static String TRANSPORT_TYPE = "transport.type";
+    public final static String TRANSPORT_MAX_BYTES_TO_SYNC = "transport.max.bytes.to.sync";
     public final static String TRANSPORT_HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
     public final static String TRANSPORT_HTTPS_ALLOW_SELF_SIGNED_CERTS = "https.allow.self.signed.certs";
 

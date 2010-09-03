@@ -11,7 +11,7 @@ import org.jumpmind.symmetric.util.CsvUtils;
 public class StreamCreateDataCommand extends AbstractStreamDataCommand {
 
     public void execute(Writer writer, Data data, String routerId, DataExtractorContext context) throws IOException {
-        CsvUtils.write(writer, CsvConstants.CREATE, DELIMITER, data.getRowData());
+        context.incrementByteCount(CsvUtils.write(writer, CsvConstants.CREATE, DELIMITER, data.getRowData()));
         CsvUtils.writeLineFeed(writer);
         context.incrementDataEventCount();
     }

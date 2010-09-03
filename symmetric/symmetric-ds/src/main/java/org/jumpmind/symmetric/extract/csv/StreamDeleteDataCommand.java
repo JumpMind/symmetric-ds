@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.util.CsvUtils;
 class StreamDeleteDataCommand extends AbstractStreamDataCommand {
 
     public void execute(Writer out, Data data, String routerId, DataExtractorContext context) throws IOException {
-        CsvUtils.write(out, CsvConstants.DELETE, DELIMITER, data.getPkData());
+        context.incrementByteCount(CsvUtils.write(out, CsvConstants.DELETE, DELIMITER, data.getPkData()));
         CsvUtils.writeLineFeed(out);
         context.incrementDataEventCount();
     }

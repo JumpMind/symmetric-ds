@@ -58,19 +58,19 @@ public class CsvExtractor14 implements IDataExtractor {
         Node nodeIdentity = nodeService.findIdentity();
         String nodeId = (nodeIdentity == null) ? parameterService.getString(ParameterConstants.EXTERNAL_ID)
                 : nodeIdentity.getNodeId();
-        CsvUtils.write(writer, CsvConstants.NODEID, CsvUtils.DELIMITER, nodeId);
+        context.incrementByteCount(CsvUtils.write(writer, CsvConstants.NODEID, CsvUtils.DELIMITER, nodeId));
         CsvUtils.writeLineFeed(writer);
     }
 
     public void begin(OutgoingBatch batch, Writer writer) throws IOException {
-        CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
+        batch.incrementByteCount(CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId())));
         CsvUtils.writeLineFeed(writer);
-        CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, dbDialect.getBinaryEncoding().name());
+        batch.incrementByteCount(CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, dbDialect.getBinaryEncoding().name()));
         CsvUtils.writeLineFeed(writer);
     }
 
     public void commit(OutgoingBatch batch, Writer writer) throws IOException {
-        CsvUtils.write(writer, CsvConstants.COMMIT, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
+        batch.incrementByteCount(CsvUtils.write(writer, CsvConstants.COMMIT, CsvUtils.DELIMITER, Long.toString(batch.getBatchId())));
         CsvUtils.writeLineFeed(writer);
     }
 

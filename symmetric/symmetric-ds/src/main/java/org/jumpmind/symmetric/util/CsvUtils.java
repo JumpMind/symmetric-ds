@@ -58,7 +58,7 @@ public class CsvUtils {
         return out.toString();
     }
 
-    public static void write(Writer writer, String... data) throws IOException {
+    public static int write(Writer writer, String... data) throws IOException {
         StringBuilder buffer = new StringBuilder();
         for (String string : data) {
             buffer.append(string);
@@ -66,6 +66,7 @@ public class CsvUtils {
 
         writer.write(buffer.toString());
         log.debug("BufferWriting", buffer);
+        return buffer.length();
     }
 
     public static void writeSql(String sql, Writer writer) throws IOException {
