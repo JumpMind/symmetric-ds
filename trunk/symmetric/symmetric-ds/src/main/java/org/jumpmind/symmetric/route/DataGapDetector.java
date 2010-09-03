@@ -109,10 +109,13 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                                         .findCreateTimeOfData(
                                                 dataGap.getEndId() + 1);
                                         if (createTime != null && !dbDialect
-                                                .areDatabaseTransactionsPendingSince(createTime.getTime())) {
-                                            log.info("RouterSkippingDataIdsNoTransactions",
-                                                    dataGap.getStartId(), dataGap.getEndId());
-                                            dataService.updateDataGap(dataGap, DataGap.STATUS.SK);
+                                                .areDatabaseTransactionsPendingSince(createTime.getTime() + 5000)) {
+                                            if (dataService.countDataInRange(dataGap.getStartId() - 1,
+                                                    dataGap.getEndId() + 1) == 0) {
+                                                log.info("RouterSkippingDataIdsNoTransactions",
+                                                        dataGap.getStartId(), dataGap.getEndId());
+                                                dataService.updateDataGap(dataGap, DataGap.STATUS.SK);
+                                            }
                                         }
                                     } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
                                         log.info("RouterSkippingDataIdsGapExpired",
