@@ -154,18 +154,23 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         TreeSet<String> ordered = new TreeSet<String>(rootConfigChannelTableNames.keySet());
         return ordered.last();
     }
-
-    public List<TriggerRouter> getTriggerRoutersForRegistration(String version,
-            String sourceGroupId, String targetGroupId) {
-        int initialLoadOrder = 1;
+    
+    private String getMajorVersion(String version) {
         String majorVersion = Integer.toString(Version.parseVersion(version)[0]);        
         List<String> tables = rootConfigChannelTableNames.get(majorVersion);
         if (tables == null) {
             String newestVersion = getNewestVersionOfRootConfigChannelTableNames();
             log.warn("TriggersDefaultVersionWarning", newestVersion, majorVersion);
             majorVersion = newestVersion;
-            tables = rootConfigChannelTableNames.get(majorVersion);
         }
+        return majorVersion;
+    }
+
+    public List<TriggerRouter> getTriggerRoutersForRegistration(String version,
+            String sourceGroupId, String targetGroupId) {
+        int initialLoadOrder = 1;
+        String majorVersion = getMajorVersion(version);
+        List<String> tables = rootConfigChannelTableNames.get(majorVersion);
         List<TriggerRouter> triggers = new ArrayList<TriggerRouter>(tables.size());
         for (int j = 0; j < tables.size(); j++) {
             String tableName = tables.get(j);
@@ -188,7 +193,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected TriggerRouter buildRegistrationTriggerRouter(String version, String tableName,
             boolean syncChanges, String sourceGroupId, String targetGroupId) {
-        String majorVersion = Integer.toString(Version.parseVersion(version)[0]);
+        String majorVersion = getMajorVersion(version);
         boolean autoSyncConfig = parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
 
         TriggerRouter triggerRouter = new TriggerRouter();
