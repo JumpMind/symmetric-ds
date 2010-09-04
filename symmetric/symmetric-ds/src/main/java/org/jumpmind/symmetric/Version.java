@@ -47,7 +47,7 @@ final public class Version {
     public static String version() {
         if (version == null) {
             InputStream is = Version.class
-                    .getResourceAsStream("/META-INF/maven/org.jumpmind.symmetric-ds/symmetric/pom.properties");
+                    .getResourceAsStream("/META-INF/maven/org.jumpmind.symmetric/symmetric-ds/pom.properties");
             if (is != null) {
                 Properties p = new Properties();
                 try {
