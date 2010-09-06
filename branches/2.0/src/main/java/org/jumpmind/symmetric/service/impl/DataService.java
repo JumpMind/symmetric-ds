@@ -53,10 +53,10 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -71,6 +71,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 import com.csvreader.CsvWriter;
 
@@ -222,53 +224,77 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertReloadEvent(Node targetNode) {
-        Node sourceNode = nodeService.findIdentity();
-        if (reloadListeners != null) {
-            for (IReloadListener listener : reloadListeners) {
-                listener.beforeReload(targetNode);
+        if (parameterService.is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL)) {
+            newTransactionTemplate.execute(new TransactionalInsertReloadEventsDelegate(targetNode));
+        } else {
+            new TransactionalInsertReloadEventsDelegate(targetNode).doInTransaction(null);
+        }
+    }
+    
+    class TransactionalInsertReloadEventsDelegate implements TransactionCallback<Object> {
+
+        Node targetNode;
+
+        public TransactionalInsertReloadEventsDelegate(Node targetNode) {
+            this.targetNode = targetNode;
+        }
+
+        public Object doInTransaction(TransactionStatus status) {
+            Node sourceNode = nodeService.findIdentity();
+            if (reloadListeners != null) {
+                for (IReloadListener listener : reloadListeners) {
+                    listener.beforeReload(targetNode);
+                }
             }
-        }
 
-        // outgoing data events are pointless because we are reloading all data
-        outgoingBatchService.markAllAsSentForNode(targetNode);
+            // outgoing data events are pointless because we are reloading all
+            // data
+            outgoingBatchService.markAllAsSentForNode(targetNode);
 
-        // insert node security so the client doing the initial load knows that
-        // an initial load is currently happening
-        insertNodeSecurityUpdate(targetNode, true);
+            // insert node security so the client doing the initial load knows
+            // that
+            // an initial load is currently happening
+            insertNodeSecurityUpdate(targetNode, true);
 
-        List<TriggerRouter> triggerRouters = triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(sourceNode
-                .getNodeGroupId(), targetNode.getNodeGroupId());
+            List<TriggerRouter> triggerRouters = triggerRouterService
+                    .getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(),
+                            targetNode.getNodeGroupId());
 
-        if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                String xml = dbDialect.getCreateTableXML(triggerRouter);
-                insertCreateEvent(targetNode, triggerRouter, xml);
+            if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    String xml = dbDialect.getCreateTableXML(triggerRouter);
+                    insertCreateEvent(targetNode, triggerRouter, xml);
+                }
             }
-        }
 
-        if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
-            for (ListIterator<TriggerRouter> iterator = triggerRouters.listIterator(triggerRouters.size()); iterator
-                    .hasPrevious();) {
-                TriggerRouter triggerRouter = iterator.previous();
-                insertPurgeEvent(targetNode, triggerRouter);
+            if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
+                for (ListIterator<TriggerRouter> iterator = triggerRouters
+                        .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
+                    TriggerRouter triggerRouter = iterator.previous();
+                    insertPurgeEvent(targetNode, triggerRouter);
+                }
             }
-        }
 
-        for (TriggerRouter trigger : triggerRouters) {
-            insertReloadEvent(targetNode, trigger);
-        }
-
-        if (reloadListeners != null) {
-            for (IReloadListener listener : reloadListeners) {
-                listener.afterReload(targetNode);
+            for (TriggerRouter trigger : triggerRouters) {
+                insertReloadEvent(targetNode, trigger);
             }
+
+            if (reloadListeners != null) {
+                for (IReloadListener listener : reloadListeners) {
+                    listener.afterReload(targetNode);
+                }
+            }
+
+            nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
+            insertNodeSecurityUpdate(targetNode, true);
+
+            // remove all incoming events from the node are starting a reload
+            // for.
+            purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+            // TODO Auto-generated method stub
+            return null;
         }
 
-        nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
-        insertNodeSecurityUpdate(targetNode, true);
-
-        // remove all incoming events from the node are starting a reload for.
-        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
     }
 
     private void insertNodeSecurityUpdate(Node node, boolean isReload) {
