@@ -91,6 +91,8 @@ final public class ParameterConstants {
     public final static String DATA_EXTRACTOR_OLD_DATA_ENABLED = "dataextractor.old.data.enable";
     
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
+    
+    public final static String DATA_ID_INCREMENT_BY = "data.id.increment.by";
 
     public final static String TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED = "http.manual.redirects.enabled";
     public final static String TRANSPORT_HTTP_TIMEOUT = "http.timeout.ms";
