@@ -35,8 +35,8 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
     private boolean enforceStrictSize = true;
    
     @Override
-    public void init(Platform pf) {
-        super.init(pf);
+    public void init(Platform pf, int queryTimeout) {
+        super.init(pf, queryTimeout);
         jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
         jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
         jdbcTemplate.update("SET PROPERTY \"sql.enforce_strict_size\" " + enforceStrictSize);

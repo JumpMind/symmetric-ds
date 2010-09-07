@@ -59,6 +59,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     private JdbcTemplate jdbcTemplate;
 
     private BeanFactory beanFactory;
+    
+    private int queryTimeout;
 
     public IDbDialect getObject() throws Exception {
 
@@ -80,6 +82,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
             dialect = (AbstractDbDialect) beanFactory.getBean("msSqlDialect");
         } else if (pf instanceof PostgreSqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("postgresqlDialect");
+            queryTimeout = 0;
         } else if (pf instanceof DerbyPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("derbyDialect");
         } else if (pf instanceof H2Platform) {
@@ -110,7 +113,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
             throw new DbNotSupportedException();
         }
 
-        dialect.init(pf);
+        dialect.init(pf, queryTimeout);
+        jdbcTemplate.setQueryTimeout(queryTimeout);
         dialect.setTransactionTemplate((TransactionTemplate) beanFactory
                 .getBean("currentTransactionTemplate"));
         return dialect;
@@ -158,6 +162,10 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
      */
     public void setDb2zSeriesProductVersion(String version) {
         this.db2zSeriesProductVersion = version;
+    }
+    
+    public void setQueryTimeout(int queryTimeout) {
+        this.queryTimeout = queryTimeout;
     }
 
 }

@@ -146,6 +146,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected LobHandler lobHandler;
 
     protected boolean supportsTransactionViews = false;
+    
+    protected int queryTimeout = 0;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -207,9 +209,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
 
-    public void init(Platform pf) {
+    public void init(Platform pf, int queryTimeout) {
         log.info("DbDialectInUse", this.getClass().getName());
         this.jdbcTemplate = new JdbcTemplate(pf.getDataSource());
+        this.queryTimeout = queryTimeout;
+        this.jdbcTemplate.setQueryTimeout(queryTimeout);
         this.platform = pf;
         this.identifierQuoteString = "\"";
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
@@ -1139,9 +1143,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return insertWithGeneratedKey(jdbcTemplate, sql, sequenceId, callback);
     }
 
-    public long insertWithGeneratedKey(final JdbcTemplate template, final String sql,
+    public long insertWithGeneratedKey(final JdbcTemplate jdbcTemplate, final String sql,
             final SequenceIdentifier sequenceId, final PreparedStatementCallback<Object> callback) {
-        return template.execute(new ConnectionCallback<Long>() {
+        return jdbcTemplate.execute(new ConnectionCallback<Long>() {
             public Long doInConnection(Connection conn) throws SQLException, DataAccessException {
 
                 long key = 0;
@@ -1167,7 +1171,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             ps = conn.prepareStatement(replaceSql);
                         }
                     }                    
-                    ps.setQueryTimeout(template.getQueryTimeout());
+                    ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
                     if (callback != null) {
                         callback.doInPreparedStatement(ps);
                     }
