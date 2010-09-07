@@ -54,12 +54,12 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public void init(Platform pf) {
         super.init(pf);
         try {
-            if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
-                areDatabaseTransactionsPendingSince(System.currentTimeMillis());
-                supportsTransactionViews = true;
-            }
+            areDatabaseTransactionsPendingSince(System.currentTimeMillis());
+            supportsTransactionViews = true;
         } catch (Exception ex) {
-            log.warn(ex);
+            if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
+                log.warn(ex);
+            }
         }
     }
 
@@ -248,5 +248,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     
     public void setSelectTriggerSql(String selectTriggerSql) {
         this.selectTriggerSql = selectTriggerSql;
+    }
+    
+    @Override
+    public boolean supportsTransactionViews() {
+        return supportsTransactionViews && parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW);
     }
 }
