@@ -71,7 +71,9 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
 
 
 public class DataService extends AbstractService implements IDataService {
@@ -232,59 +234,81 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    @Transactional
     public void insertReloadEvents(Node targetNode) {
-        Node sourceNode = nodeService.findIdentity();
-        if (reloadListeners != null) {
-            for (IReloadListener listener : reloadListeners) {
-                listener.beforeReload(targetNode);
+        if (parameterService.is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL)) {
+            newTransactionTemplate.execute(new TransactionalInsertReloadEventsDelegate(targetNode));
+        } else {
+            new TransactionalInsertReloadEventsDelegate(targetNode).doInTransaction(null);
+        }
+    }
+    
+    class TransactionalInsertReloadEventsDelegate implements TransactionCallback<Object> {
+
+        Node targetNode;
+
+        public TransactionalInsertReloadEventsDelegate(Node targetNode) {
+            this.targetNode = targetNode;
+        }
+
+        public Object doInTransaction(TransactionStatus status) {
+
+            Node sourceNode = nodeService.findIdentity();
+            if (reloadListeners != null) {
+                for (IReloadListener listener : reloadListeners) {
+                    listener.beforeReload(targetNode);
+                }
             }
-        }
 
-        // outgoing data events are pointless because we are reloading all data
-        outgoingBatchService.markAllAsSentForNode(targetNode);
+            // outgoing data events are pointless because we are reloading all
+            // data
+            outgoingBatchService.markAllAsSentForNode(targetNode);
 
-        // insert node security so the client doing the initial load knows that
-        // an initial load is currently happening
-        insertNodeSecurityUpdate(targetNode, true);
+            // insert node security so the client doing the initial load knows
+            // that
+            // an initial load is currently happening
+            insertNodeSecurityUpdate(targetNode, true);
 
-        List<TriggerRouter> triggerRouters = triggerRouterService
-                .getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(),
-                        targetNode.getNodeGroupId());
+            List<TriggerRouter> triggerRouters = triggerRouterService
+                    .getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(),
+                            targetNode.getNodeGroupId());
 
-        if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                String xml = dbDialect.getCreateTableXML(triggerRouter);
-                insertCreateEvent(targetNode, triggerRouter, xml, true);
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    String xml = dbDialect.getCreateTableXML(triggerRouter);
+                    insertCreateEvent(targetNode, triggerRouter, xml, true);
+                }
             }
-        }
 
-        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
-            for (ListIterator<TriggerRouter> iterator = triggerRouters.listIterator(triggerRouters
-                    .size()); iterator.hasPrevious();) {
-                TriggerRouter triggerRouter = iterator.previous();
-                insertPurgeEvent(targetNode, triggerRouter, true);
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
+                for (ListIterator<TriggerRouter> iterator = triggerRouters
+                        .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
+                    TriggerRouter triggerRouter = iterator.previous();
+                    insertPurgeEvent(targetNode, triggerRouter, true);
+                }
             }
-        }
 
-        for (TriggerRouter trigger : triggerRouters) {
-            insertReloadEvent(targetNode, trigger);
-        }
-
-        if (reloadListeners != null) {
-            for (IReloadListener listener : reloadListeners) {
-                listener.afterReload(targetNode);
+            for (TriggerRouter trigger : triggerRouters) {
+                insertReloadEvent(targetNode, trigger);
             }
+
+            if (reloadListeners != null) {
+                for (IReloadListener listener : reloadListeners) {
+                    listener.afterReload(targetNode);
+                }
+            }
+
+            nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
+
+            // don't mark this batch as a load batch so it is forced to go last
+            insertNodeSecurityUpdate(targetNode,
+                    parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
+
+            // remove all incoming events from the node are starting a reload
+            // for.
+            purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+
+            return null;
         }
-
-        nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
-        
-        // don't mark this batch as a load batch so it is forced to go last
-        insertNodeSecurityUpdate(targetNode, parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
-
-        // remove all incoming events from the node are starting a reload for.
-        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
-        
     }
 
     private void insertNodeSecurityUpdate(Node node, boolean isReload) {
