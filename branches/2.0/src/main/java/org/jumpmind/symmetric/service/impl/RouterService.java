@@ -186,6 +186,7 @@ public class RouterService extends AbstractService implements IRouterService {
         // reselect the DataRef just in case somebody updated it manually during routing
         final DataRef ref = dataService.getDataRef();
         long ts = System.currentTimeMillis();
+        final int dataIdIncrementBy = parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
         long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"),
                 new Object[] { ref.getRefDataId() }, new int[] { Types.INTEGER },
                 new ResultSetExtractor<Long>() {
@@ -193,7 +194,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         long lastDataId = ref.getRefDataId();
                         while (rs.next()) {
                             long dataId = rs.getLong(1);
-                            if (lastDataId == -1 || lastDataId + 1 == dataId
+                            if (lastDataId == -1 || lastDataId + dataIdIncrementBy == dataId
                                     || lastDataId == dataId) {
                                 lastDataId = dataId;
                             } else {
