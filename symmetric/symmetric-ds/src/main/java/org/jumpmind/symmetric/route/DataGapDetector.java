@@ -70,6 +70,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
         long ts = System.currentTimeMillis();
         List<DataGap> gaps = dataService.findDataGaps();
         long lastDataId = -1;
+        final int dataIdIncrementBy = parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
         for (final DataGap dataGap : gaps) {
             
             String sql = sqlProvider.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
@@ -90,7 +91,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                             while (rs.next()) {
                                 foundAtLeastOneDataId = true;
                                 long dataId = rs.getLong(1);
-                                if (lastDataId != -1 && lastDataId + 1 != dataId
+                                if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
                                         && lastDataId != dataId) {
                                     // found a gap
                                     newGaps.add(new DataGap(lastDataId+1, dataId-1));
