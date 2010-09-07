@@ -51,7 +51,7 @@ public class FileIncomingTransport implements IIncomingTransport {
     }
 
     public BufferedReader open() throws IOException {
-        reader = new BufferedReader(fileWriter.getReader());
+        reader = fileWriter.getReader();
         return reader;
     }
 
