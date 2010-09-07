@@ -146,8 +146,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected LobHandler lobHandler;
 
     protected boolean supportsTransactionViews = false;
-    
-    protected int queryTimeout = 0;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -209,11 +207,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
 
-    public void init(Platform pf, int queryTimeout) {
+    public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
         log.info("DbDialectInUse", this.getClass().getName());
-        this.jdbcTemplate = new JdbcTemplate(pf.getDataSource());
-        this.queryTimeout = queryTimeout;
-        this.jdbcTemplate.setQueryTimeout(queryTimeout);
+        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcTemplate.setQueryTimeout(queryTimeout);        
         this.platform = pf;
         this.identifierQuoteString = "\"";
         jdbcTemplate.execute(new ConnectionCallback<Object>() {

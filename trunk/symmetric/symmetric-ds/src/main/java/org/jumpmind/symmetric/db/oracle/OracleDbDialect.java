@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.BadSqlGrammarException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
@@ -51,8 +52,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     String selectTransactionsSql;
 
     @Override
-    public void init(Platform pf, int queryTimeout) {
-        super.init(pf, queryTimeout);
+    public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
+        super.init(pf, queryTimeout, jdbcTemplate);
         try {
             areDatabaseTransactionsPendingSince(System.currentTimeMillis());
             supportsTransactionViews = true;
