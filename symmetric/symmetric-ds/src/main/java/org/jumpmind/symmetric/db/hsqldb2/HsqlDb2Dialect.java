@@ -23,15 +23,19 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
 
-    public static String DUAL_TABLE = "DUAL";
-
-    boolean dualTableCreated = false;
-
+    @Override
+    public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
+        super.init(pf, queryTimeout, jdbcTemplate);
+        jdbcTemplate.execute("SET DATABASE DEFAULT TABLE TYPE CACHED");
+    }
+    
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName,
             String tableName, String triggerName) {

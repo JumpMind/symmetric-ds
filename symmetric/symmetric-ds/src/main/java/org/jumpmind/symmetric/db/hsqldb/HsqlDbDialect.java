@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
 
@@ -35,8 +36,8 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
     private boolean enforceStrictSize = true;
    
     @Override
-    public void init(Platform pf, int queryTimeout) {
-        super.init(pf, queryTimeout);
+    public void init(Platform pf, int queryTimeout, final JdbcTemplate jdbcTemplate) {
+        super.init(pf, queryTimeout, jdbcTemplate);
         jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
         jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
         jdbcTemplate.update("SET PROPERTY \"sql.enforce_strict_size\" " + enforceStrictSize);
