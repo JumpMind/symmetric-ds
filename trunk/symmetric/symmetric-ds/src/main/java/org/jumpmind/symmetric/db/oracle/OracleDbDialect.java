@@ -49,11 +49,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     String selectTriggerSql;
     
     String selectTransactionsSql;
-   
 
     @Override
-    public void init(Platform pf) {
-        super.init(pf);
+    public void init(Platform pf, int queryTimeout) {
+        super.init(pf, queryTimeout);
         try {
             areDatabaseTransactionsPendingSince(System.currentTimeMillis());
             supportsTransactionViews = true;

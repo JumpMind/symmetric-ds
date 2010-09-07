@@ -203,7 +203,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
-    @Test(timeout = 120000)
+    @Test//(timeout = 120000)
     public void syncToClient() {
         logTestRunning();
         // test pulling no data

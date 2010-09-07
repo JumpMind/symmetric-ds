@@ -31,11 +31,6 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
     public static String DUAL_TABLE = "DUAL";
 
     boolean dualTableCreated = false;
-    
-    public void init(org.jumpmind.symmetric.ddl.Platform pf) {
-        super.init(pf);
-    };
-    
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName,

@@ -48,7 +48,6 @@
 
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource" ref="dataSource" />
-        <property name="queryTimeout" value="$[sym.db.sql.query.timeout.seconds]"/>
     </bean>
 
     <!-- Data Loader without query timeout to fix memory problems with MySQL 5 driver -->
@@ -73,6 +72,7 @@
     <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="db2zSeriesProductVersion" value="$[sym.db2.zseries.version]" />
+        <property name="queryTimeout" value="$[sym.db.sql.query.timeout.seconds]"/>        
     </bean>    
 
 </beans>
