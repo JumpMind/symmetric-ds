@@ -27,10 +27,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
+
 /**
  * Simple Servlet that returns a 200 to indicate that SymmetricDS is deployed and running.
  */
-public class PingServlet extends AbstractResourceServlet {
+public class PingServlet extends AbstractResourceServlet 
+  implements IBuiltInExtensionPoint {
 
     private static final long serialVersionUID = 1L;
     
