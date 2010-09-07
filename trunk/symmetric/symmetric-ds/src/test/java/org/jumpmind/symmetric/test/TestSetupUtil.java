@@ -269,22 +269,25 @@ public class TestSetupUtil {
 
     public static File writeTempPropertiesFileFor(String testPrefix, String databaseType, DatabaseRole databaseRole) {
         try {
-            Properties properties = getTestProperties(testPrefix);
+            Properties testProperties = getTestProperties(testPrefix);
             Properties newProperties = new Properties();
-            Set<Object> keys = properties.keySet();
+            Set<Object> keys = testProperties.keySet();
             for (Object string : keys) {
                 String key = (String) string;
                 String dbRoleReplaceToken = databaseType + "." + databaseRole.name().toLowerCase() + ".";
                 if (key.startsWith(dbRoleReplaceToken)) {
                     String newKey = key.substring(dbRoleReplaceToken.length());
-                    newProperties.put(newKey, properties.get(key));
+                    newProperties.put(newKey, testProperties.get(key));
                 } else if (key.startsWith(databaseType)) {
                     String newKey = key.substring(databaseType.length() + 1);
-                    newProperties.put(newKey, properties.get(key));
+                    newProperties.put(newKey, testProperties.get(key));
                 } else {
-                    newProperties.put(key, properties.get(key));
+                    newProperties.put(key, testProperties.get(key));
                 }
             }
+            
+            String dbDriver = newProperties.getProperty("db.driver");
+            Assert.assertNotNull("Could not find a driver for '" + databaseType + "'", dbDriver);
 
             if (isConnectionValid(newProperties)) {
                 newProperties.setProperty(ParameterConstants.NODE_GROUP_ID,
