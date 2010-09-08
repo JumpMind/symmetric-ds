@@ -634,11 +634,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         for (Trigger trigger : triggers) {
 
-            String schemaPlusTriggerName = (trigger.getSourceSchemaName() != null ? trigger
-                    .getSourceSchemaName()
-                    + "." : "")
-                    + trigger.getSourceTableName();
-
             try {
 
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
@@ -698,7 +693,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
 
                 } else {
-                    log.error("TriggerTableMissing", schemaPlusTriggerName);
+                    log.error("TriggerTableMissing", trigger.displayTableName());
 
                     if (this.triggerCreationListeners != null) {
                         for (ITriggerCreationListener l : this.triggerCreationListeners) {
@@ -707,7 +702,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
             } catch (Exception ex) {
-                log.error("TriggerSynchronizingFailed", ex, schemaPlusTriggerName);
+                log.error("TriggerSynchronizingFailed", ex, trigger.displayTableName());
                 if (this.triggerCreationListeners != null) {
                     for (ITriggerCreationListener l : this.triggerCreationListeners) {
                         l.triggerFailed(trigger, ex);

@@ -99,6 +99,15 @@ public class Trigger {
     public Trigger(String tableName) {
         this.sourceTableName = tableName;
     }
+    
+    public String displayTableName() {
+        String schemaPlusTableName = (getSourceSchemaName() != null ? getSourceSchemaName()
+                + "." : "")
+                + getSourceTableName();
+        String catalogPlusTableName = (getSourceCatalogName() != null ? getSourceCatalogName()
+                + "." : "") + schemaPlusTableName;
+        return catalogPlusTableName;
+    }
 
     /**
      * When dealing with columns, always use this method to order the columns so
@@ -120,7 +129,7 @@ public class Trigger {
         }
         return orderedColumns.toArray(new Column[orderedColumns.size()]);
     }
-
+    
     /**
      * Get a list of the natural indexes of the excluded columns
      */

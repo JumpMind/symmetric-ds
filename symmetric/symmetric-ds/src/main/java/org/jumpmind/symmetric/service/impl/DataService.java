@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -44,6 +45,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
@@ -253,6 +255,7 @@ public class DataService extends AbstractService implements IDataService {
         public Object doInTransaction(TransactionStatus status) {
 
             Node sourceNode = nodeService.findIdentity();
+            
             if (reloadListeners != null) {
                 for (IReloadListener listener : reloadListeners) {
                     listener.beforeReload(targetNode);
@@ -264,13 +267,23 @@ public class DataService extends AbstractService implements IDataService {
             outgoingBatchService.markAllAsSentForNode(targetNode);
 
             // insert node security so the client doing the initial load knows
-            // that
-            // an initial load is currently happening
+            // that an initial load is currently happening
             insertNodeSecurityUpdate(targetNode, true);
 
-            List<TriggerRouter> triggerRouters = triggerRouterService
+            List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(triggerRouterService
                     .getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(),
-                            targetNode.getNodeGroupId());
+                            targetNode.getNodeGroupId()));
+            
+            for (Iterator<TriggerRouter> iterator = triggerRouters.iterator(); iterator.hasNext();) {
+                TriggerRouter triggerRouter = iterator.next();
+                Trigger trigger = triggerRouter.getTrigger();
+                Table table = dbDialect.getTable(trigger.getSourceCatalogName(), trigger
+                        .getSourceSchemaName(), trigger.getSourceTableName(), false);
+                if (table == null) {
+                    log.warn("TriggerTableMissing",trigger.displayTableName());
+                    iterator.remove();
+                }
+            }
 
             if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
                 for (TriggerRouter triggerRouter : triggerRouters) {
@@ -303,8 +316,7 @@ public class DataService extends AbstractService implements IDataService {
             insertNodeSecurityUpdate(targetNode,
                     parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
 
-            // remove all incoming events from the node are starting a reload
-            // for.
+            // remove all incoming events from the node are starting a reload for.
             purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
 
             return null;
