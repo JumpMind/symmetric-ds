@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -40,6 +41,7 @@ import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -152,8 +154,12 @@ public class TestSetupUtil {
         }
 
         if (clientDb != null) {
-            clientEngine = new StandaloneSymmetricEngine("file:"
-                    + writeTempPropertiesFileFor(testPrefix, clientDb, DatabaseRole.CLIENT).getAbsolutePath(), null);
+            String file = writeTempPropertiesFileFor(testPrefix, clientDb, DatabaseRole.CLIENT).getAbsolutePath();
+            Properties properties = new Properties();
+            FileReader reader = new FileReader(file);
+            properties.load(reader);
+            IOUtils.closeQuietly(reader);
+            clientEngine = new StandaloneSymmetricEngine(properties);
             dropAndCreateDatabaseTables(clientDb, clientEngine);
         }
     }

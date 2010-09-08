@@ -1,8 +1,5 @@
 package org.jumpmind.symmetric;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,13 +10,13 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.config.PropertiesFactoryBean;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
@@ -187,33 +184,28 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         // this setup. Synchronizing on the class so creating multiple engines
         // is thread safe.
         synchronized (this.getClass()) {
-            if (overrideProperties != null) {
-                FileOutputStream fos = null;
-                try {
-                    File file = File.createTempFile("symmetric.", ".properties");
-                    fos = new FileOutputStream(file);
-                    overrideProperties.store(fos, "");
-                    System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_TEMP, "file:" + file.getAbsolutePath());                    
-                } catch (IOException ex) {
-                    log.error(ex);
-                    throw new RuntimeException(ex);
-                } finally {
-                    IOUtils.closeQuietly(fos);
+            try {
+                if (overrideProperties != null) {
+                    PropertiesFactoryBean.setLocalProperties(overrideProperties);
                 }
-            }
-            
-            if (!StringUtils.isBlank(overridePropertiesResource1)) {
-                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1);
-            }
-            
-            if (!StringUtils.isBlank(overridePropertiesResource2)) {
-                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2);
-            }
-            
-            if (isParentContext || ctx == null) {
-                init(createContext(ctx));
-            } else {
-                init(ctx);
+
+                if (!StringUtils.isBlank(overridePropertiesResource1)) {
+                    System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1,
+                            overridePropertiesResource1);
+                }
+
+                if (!StringUtils.isBlank(overridePropertiesResource2)) {
+                    System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2,
+                            overridePropertiesResource2);
+                }
+
+                if (isParentContext || ctx == null) {
+                    init(createContext(ctx));
+                } else {
+                    init(ctx);
+                }
+            } finally {
+                PropertiesFactoryBean.clearLocalProperties();
             }
         }
     }
