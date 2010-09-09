@@ -690,7 +690,7 @@
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>8.2-504.jdbc3</version>
+            <version>8.4-701.jdbc4</version>
             <optional>true</optional>
         </dependency>
         <dependency>
