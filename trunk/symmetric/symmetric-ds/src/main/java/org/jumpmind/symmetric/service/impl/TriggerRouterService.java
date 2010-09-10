@@ -693,7 +693,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
 
                 } else {
-                    log.error("TriggerTableMissing", trigger.displayTableName());
+                    log.error("TriggerTableMissing", trigger.qualifiedSourceTableName());
 
                     if (this.triggerCreationListeners != null) {
                         for (ITriggerCreationListener l : this.triggerCreationListeners) {
@@ -702,7 +702,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
             } catch (Exception ex) {
-                log.error("TriggerSynchronizingFailed", ex, trigger.displayTableName());
+                log.error("TriggerSynchronizingFailed", ex, trigger.qualifiedSourceTableName());
                 if (this.triggerCreationListeners != null) {
                     for (ITriggerCreationListener l : this.triggerCreationListeners) {
                         l.triggerFailed(trigger, ex);
@@ -796,12 +796,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             break;
         }
 
-        if (triggerName == null) {
+        if (StringUtils.isBlank(triggerName)) {
             String triggerPrefix1 = tablePrefix + "_";
-            String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_"
-                    + trigger.getTriggerId();
-            String triggerSuffix2 = "_"
-                    + parameterService.getNodeGroupId().replaceAll(
+            String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
+            String triggerSuffix2 = (trigger.getTriggerId() + "_"
+                    + parameterService.getNodeGroupId()).replaceAll(
                             "[^a-zA-Z0-9]|[a|e|i|o|u|A|E|I|O|U]", "");
             triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2;
             // use the node group id as part of the trigger if we can because it

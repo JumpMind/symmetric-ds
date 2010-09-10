@@ -100,7 +100,7 @@ public class Trigger {
         this.sourceTableName = tableName;
     }
     
-    public String displayTableName() {
+    public String qualifiedSourceTableName() {
         String schemaPlusTableName = (getSourceSchemaName() != null ? getSourceSchemaName()
                 + "." : "")
                 + getSourceTableName();

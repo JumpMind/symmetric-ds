@@ -237,11 +237,19 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertReloadEvents(Node targetNode) {
+        
+        // outgoing data events are pointless because we are reloading all data
+        outgoingBatchService.markAllAsSentForNode(targetNode);
+        
         if (parameterService.is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL)) {
             newTransactionTemplate.execute(new TransactionalInsertReloadEventsDelegate(targetNode));
         } else {
             new TransactionalInsertReloadEventsDelegate(targetNode).doInTransaction(null);
         }
+        
+        // remove all incoming events from the node are starting a reload for.
+        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+        
     }
     
     class TransactionalInsertReloadEventsDelegate implements TransactionCallback<Object> {
@@ -262,10 +270,6 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
 
-            // outgoing data events are pointless because we are reloading all
-            // data
-            outgoingBatchService.markAllAsSentForNode(targetNode);
-
             // insert node security so the client doing the initial load knows
             // that an initial load is currently happening
             insertNodeSecurityUpdate(targetNode, true);
@@ -280,7 +284,7 @@ public class DataService extends AbstractService implements IDataService {
                 Table table = dbDialect.getTable(trigger.getSourceCatalogName(), trigger
                         .getSourceSchemaName(), trigger.getSourceTableName(), false);
                 if (table == null) {
-                    log.warn("TriggerTableMissing",trigger.displayTableName());
+                    log.warn("TriggerTableMissing",trigger.qualifiedSourceTableName());
                     iterator.remove();
                 }
             }
@@ -315,9 +319,6 @@ public class DataService extends AbstractService implements IDataService {
             // don't mark this batch as a load batch so it is forced to go last
             insertNodeSecurityUpdate(targetNode,
                     parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
-
-            // remove all incoming events from the node are starting a reload for.
-            purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
 
             return null;
         }
