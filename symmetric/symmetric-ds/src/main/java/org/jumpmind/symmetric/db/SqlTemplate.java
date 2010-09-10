@@ -124,7 +124,7 @@ public class SqlTemplate {
     }
 
     public String createPurgeSql(Node node, IDbDialect dialect, TriggerRouter triggerRouter) {
-        return String.format("delete from %s", triggerRouter.getQualifiedTargetTableName());
+        return String.format("delete from %s", triggerRouter.qualifiedTargetTableName());
     }
 
     public String createCsvDataSql(IDbDialect dialect, Trigger trig, Table metaData, String whereClause) {

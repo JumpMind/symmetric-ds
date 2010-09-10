@@ -172,8 +172,12 @@ public class TriggerRouter {
             return null;
         }
     }
+    
+    public String qualifiedSourceTableName() {
+        return trigger.qualifiedSourceTableName();
+    }
 
-    public String getQualifiedTargetTableName() {
+    public String qualifiedTargetTableName() {
         String catalog = getTargetCatalog(null);
         String schema = getTargetSchema(null);
         String tableName = getTargetTable();
