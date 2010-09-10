@@ -567,7 +567,6 @@
         <module>../symmetric-csv</module>
         <module>../symmetric-ddl</module>
         <module>../symmetric-ds</module>
-        <module>../symmetric-web</module>
     </modules>
 
 </project>
