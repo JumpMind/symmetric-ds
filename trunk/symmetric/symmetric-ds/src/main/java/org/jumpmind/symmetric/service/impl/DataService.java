@@ -118,6 +118,12 @@ public class DataService extends AbstractService implements IDataService {
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
         TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
                 .getTriggerId());
+        
+        if (history == null) {
+            triggerRouterService.syncTriggers();
+            history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
+                    .getTriggerId());
+        }
 
         if (history == null) {
             throw new RuntimeException("Cannot find history for trigger " + trigger.getTriggerId()
