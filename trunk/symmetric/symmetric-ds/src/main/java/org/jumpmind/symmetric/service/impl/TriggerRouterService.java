@@ -804,18 +804,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (StringUtils.isBlank(triggerName)) {
             String triggerPrefix1 = tablePrefix + "_";
             String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
-            String triggerSuffix2 = replaceCharsForTriggerName(trigger.getTriggerId() + "_"
-                    + parameterService.getNodeGroupId());
-            triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2;
+            String triggerSuffix2 = replaceCharsForTriggerName(trigger.getTriggerId());
+            String triggerSuffix3 = replaceCharsForTriggerName("_" + parameterService.getNodeGroupId());
+            triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2 + triggerSuffix3;
             // use the node group id as part of the trigger if we can because it
-            // helps uniquely identify
-            // the trigger in embedded databases. In hsqldb we choose the
-            // correct connection based on the presence of
-            // a table that is named for the trigger. If the trigger isn't
-            // unique across all databases, then we can
+            // helps uniquely identify the trigger in embedded databases. In hsqldb we choose the
+            // correct connection based on the presence of a table that is named for the trigger. 
+            // If the trigger isn't unique across all databases, then we can
             // choose the wrong connection.
             if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
-                triggerName = triggerPrefix1 + triggerSuffix1;
+                triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2;
             }
         }
 
