@@ -56,7 +56,8 @@ final public class ParameterConstants {
     public final static String AUTO_UPGRADE = "auto.upgrade";
     public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
 
-    public final static String INITIAL_LOAD_DELETE_BEFORE_RELOAD = "initial.load.delete.first";    
+    public final static String INITIAL_LOAD_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
+    public final static String INITIAL_LOAD_DELETE_FIRST_SQL =     "initial.load.delete.first.sql";
     public final static String INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
     public final static String INITIAL_LOAD_USE_RELOAD_CHANNEL = "initial.load.use.reload.channel";
     
