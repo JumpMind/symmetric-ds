@@ -246,7 +246,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         }
         if (values[10] != null && !(getDbDialect() instanceof OracleDbDialect)) {
             int scale = 17;
-            if (getDbDialect() instanceof MySqlDbDialect || getDbDialect() instanceof PostgreSqlDbDialect) {
+            if (getDbDialect() instanceof MySqlDbDialect) {
                 scale = 16;
             }
             DecimalFormat df = new DecimalFormat("0.00####################################");
