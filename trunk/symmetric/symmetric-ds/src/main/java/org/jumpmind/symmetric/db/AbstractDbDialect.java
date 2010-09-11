@@ -278,7 +278,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter) {
-        return sqlTemplate.createPurgeSql(node, this, triggerRouter);
+        return String.format(parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL), triggerRouter.qualifiedTargetTableName());
     }
 
     public String createCsvDataSql(Trigger trigger, String whereClause) {

@@ -123,10 +123,6 @@ public class SqlTemplate {
         return sql;
     }
 
-    public String createPurgeSql(Node node, IDbDialect dialect, TriggerRouter triggerRouter) {
-        return String.format("delete from %s", triggerRouter.qualifiedTargetTableName());
-    }
-
     public String createCsvDataSql(IDbDialect dialect, Trigger trig, Table metaData, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 

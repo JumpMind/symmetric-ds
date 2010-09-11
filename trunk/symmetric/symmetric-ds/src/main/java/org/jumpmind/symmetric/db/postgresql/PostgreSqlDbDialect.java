@@ -51,7 +51,6 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     private String transactionIdExpression = "null";
 
-    
     @Override
     public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {        
         super.init(pf, 0, jdbcTemplate);
