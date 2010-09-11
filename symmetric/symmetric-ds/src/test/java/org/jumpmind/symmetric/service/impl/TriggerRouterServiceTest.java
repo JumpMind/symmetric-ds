@@ -91,6 +91,14 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     public TriggerRouterServiceTest() throws Exception {
         super();
     }
+    
+    @Test 
+    public void testReplaceCharactersForTriggerName() {
+        TriggerRouterService triggerRouterService = new TriggerRouterService();
+        Assert.assertEquals("123456_54321", triggerRouterService.replaceCharsForTriggerName("123456_54321"));
+        Assert.assertEquals("tst_1234_rght_n", triggerRouterService.replaceCharsForTriggerName("test_1234_right::_on"));
+        
+    }
 
     @Test
     public void testSchemaSync() throws Exception {
