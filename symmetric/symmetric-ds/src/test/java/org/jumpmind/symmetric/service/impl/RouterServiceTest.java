@@ -10,6 +10,7 @@ import junit.framework.Assert;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
+import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
@@ -805,7 +806,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         deleteAll(TEST_TABLE_1);
 
         RouterContext context = new RouterContext(TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getDataSource());
-        DataRefRouteReader reader = new DataRefRouteReader(getDataSource(), 1000, 1000, 
+        DataRefRouteReader reader = new DataRefRouteReader(getDataSource(), getDbDialect() instanceof PostgreSqlDbDialect ? 0 : 1000, 1000, 
                 ((AbstractService)getRouterService()), 1000, context, getDataService());
         
         reader.run();
