@@ -774,6 +774,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         return hist;
     }
+    
+    protected String replaceCharsForTriggerName(String triggerName) {
+        return triggerName.replaceAll(
+                "[^a-zA-Z0-9_]|[a|e|i|o|u|A|E|I|O|U]", "");
+    }
 
     protected String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger) {
 
@@ -799,9 +804,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (StringUtils.isBlank(triggerName)) {
             String triggerPrefix1 = tablePrefix + "_";
             String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
-            String triggerSuffix2 = (trigger.getTriggerId() + "_"
-                    + parameterService.getNodeGroupId()).replaceAll(
-                            "[^a-zA-Z0-9]|[a|e|i|o|u|A|E|I|O|U]", "");
+            String triggerSuffix2 = replaceCharsForTriggerName(trigger.getTriggerId() + "_"
+                    + parameterService.getNodeGroupId());
             triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2;
             // use the node group id as part of the trigger if we can because it
             // helps uniquely identify
