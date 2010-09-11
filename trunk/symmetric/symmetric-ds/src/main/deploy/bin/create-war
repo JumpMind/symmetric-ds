@@ -2,12 +2,17 @@
 #
 # Create a war file from this distribution
 #
-rm -rf ../.war
-mkdir -p  ../.war
-cp -r ../web/* ../.war/.
-mkdir -p ../.war/WEB-INF/classes
-cp ../conf/* ../.war/WEB-INF/classes/.
-cd ../.war
-jar -cvf symmetric-ds.war .
-cp symmetric-ds.war ../.
-rm -rf ../.war
+JAR_PATH=`which jar`
+if [ -f $JAR_PATH ]; then
+    rm -rf ../.war
+    mkdir -p  ../.war
+    cp -r ../web/* ../.war/.
+    mkdir -p ../.war/WEB-INF/classes
+    cp ../conf/* ../.war/WEB-INF/classes/.
+    cd ../.war
+    jar -cvf symmetric-ds.war .
+    cp symmetric-ds.war ../.
+    rm -rf ../.war
+else
+    echo "Could not find the JDK's jar command.  Please make sure it is in your path."
+fi
