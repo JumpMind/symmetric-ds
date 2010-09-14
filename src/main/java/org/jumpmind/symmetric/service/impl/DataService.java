@@ -224,11 +224,19 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertReloadEvent(Node targetNode) {
+        
+        // outgoing data events are pointless because we are reloading all
+        // data
+        outgoingBatchService.markAllAsSentForNode(targetNode);
+        
         if (parameterService.is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL)) {
             newTransactionTemplate.execute(new TransactionalInsertReloadEventsDelegate(targetNode));
         } else {
             new TransactionalInsertReloadEventsDelegate(targetNode).doInTransaction(null);
         }
+        
+        // remove all incoming events from the node are starting a reload for.
+        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
     }
     
     class TransactionalInsertReloadEventsDelegate implements TransactionCallback<Object> {
@@ -246,10 +254,6 @@ public class DataService extends AbstractService implements IDataService {
                     listener.beforeReload(targetNode);
                 }
             }
-
-            // outgoing data events are pointless because we are reloading all
-            // data
-            outgoingBatchService.markAllAsSentForNode(targetNode);
 
             // insert node security so the client doing the initial load knows
             // that
@@ -288,10 +292,6 @@ public class DataService extends AbstractService implements IDataService {
             nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
             insertNodeSecurityUpdate(targetNode, true);
 
-            // remove all incoming events from the node are starting a reload
-            // for.
-            purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
-            // TODO Auto-generated method stub
             return null;
         }
 
