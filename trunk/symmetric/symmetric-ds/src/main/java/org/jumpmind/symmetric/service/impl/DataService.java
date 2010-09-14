@@ -660,7 +660,7 @@ public class DataService extends AbstractService implements IDataService {
                 updateLastHeartbeatTime(listeners);
 
             } else {
-                log.info("HeartbeatUpdatingFailure");
+                log.debug("HeartbeatUpdatingFailureNodeNotConfigured");
             }
         }
     }

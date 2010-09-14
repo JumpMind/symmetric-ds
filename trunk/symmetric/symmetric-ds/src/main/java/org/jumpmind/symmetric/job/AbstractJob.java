@@ -69,6 +69,8 @@ abstract public class AbstractJob implements Runnable, BeanNameAware {
     private long timeBetweenRunsInMs;
     
     private String cronExpression;
+    
+    private boolean hasNotRegisteredMessageBeenLogged = false;
 
     public String getName() {
         return beanName;
@@ -98,9 +100,13 @@ abstract public class AbstractJob implements Runnable, BeanNameAware {
                                 if (!requiresRegistration
                                         || (requiresRegistration && registrationService
                                                 .isRegisteredWithServer())) {
+                                    hasNotRegisteredMessageBeenLogged = false;
                                     doJob();
                                 } else {
-                                    log.warn("SymmetricEngineNotRegistered");
+                                    if (!hasNotRegisteredMessageBeenLogged) {
+                                        log.warn("SymmetricEngineNotRegistered", getName());
+                                        hasNotRegisteredMessageBeenLogged = true;
+                                    }
                                 }
                             } finally {
                                 lastFinishTime = new Date();
