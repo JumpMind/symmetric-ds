@@ -27,6 +27,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 
@@ -40,7 +41,12 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.logging.impl.SimpleLog;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Layout;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.SecurityConstants;
@@ -120,6 +126,12 @@ public class SymmetricLauncher {
     private static final String OPTION_ENCRYPT_TEXT = "encrypt";
 
     private static final String OPTION_VERBOSE_CONSOLE = "verbose";
+    
+    private static final String OPTION_DEBUG = "debug";
+    
+    private static final String OPTION_NOCONSOLE = "noconsole";
+    
+    private static final String OPTION_NOLOGFILE = "nologfile";
 
     private static final String MESSAGE_BUNDLE = "Launcher.Option.";
 
@@ -143,24 +155,54 @@ public class SymmetricLauncher {
             boolean noNio = false;
             boolean noDirectBuffer = false;
 
+            File log4jFile = getLog4JFile();
+            if (line.hasOption(OPTION_DEBUG)) {
+                log4jFile = getLog4JFileDebugEnabled();
+            } 
+            
+            if (log4jFile.exists()) {
+                DOMConfigurator.configure(log4jFile.getAbsolutePath()); 
+             }
+            
             if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
-                System.setProperty("org.apache.commons.logging.Log", SimpleLog.class.getName());
-                System.setProperty("org.apache.commons.logging.simplelog.showlogname", "false");
-                
-                System.setProperty("org.apache.commons.logging.simplelog.defaultlog", "info");
-                System.setProperty("org.apache.commons.logging.simplelog.log.org", "error");                
-                System.setProperty("org.apache.commons.logging.simplelog.log.org.jumpmind", "info");
-                System.setProperty("org.apache.commons.logging.simplelog.log.org.jumpmind.symmetric.config.PropertiesFactoryBean", "error");
-                
-            } else {
-                System.out.println(Message.get("LauncherLogLocation"));
-                
-                // Log options to the log file only.  No need to log them to the console
-                if (line.getOptions() != null) {
-                    for (Option option : line.getOptions()) {
-                        LogFactory.getLog(SymmetricLauncher.class).info("Option", option.getLongOpt(),
-                                ArrayUtils.toString(option.getValues()));
+                Appender consoleAppender = Logger.getRootLogger().getAppender("CONSOLE");
+                if (consoleAppender != null) {
+                    Layout layout = consoleAppender.getLayout();
+                    if (layout instanceof PatternLayout) {
+                        ((PatternLayout)layout).setConversionPattern("%d %-5p [%c{2}] [%t] %m%n");
                     }
+                }                
+            }
+            
+            if (line.hasOption(OPTION_NOCONSOLE)) {
+                Logger.getRootLogger().removeAppender("CONSOLE");
+            }
+            
+            if (line.hasOption(OPTION_NOLOGFILE)) {
+                Logger.getRootLogger().removeAppender("ROLLING");
+            } else {                
+                if (line.hasOption(OPTION_PROPERTIES_FILE)) {
+                    File file = new File(line.getOptionValue(OPTION_PROPERTIES_FILE));
+                    String name = file.getName();
+                    int index = name.lastIndexOf(".");
+                    if (index > 0) {
+                        name = name.substring(0, index);
+                    }
+                    Appender appender = Logger.getRootLogger().getAppender("ROLLING");
+                    if (appender instanceof FileAppender) {
+                        FileAppender fileAppender = (FileAppender)appender;
+                        fileAppender.setFile(fileAppender.getFile().replace("symmetric.log", name + ".log"));
+                        fileAppender.activateOptions();
+                        System.out.println(Message.get("LauncherLogLocation", fileAppender.getFile()));  
+                    }
+                }
+            }
+
+            // Log options to the log file only.  No need to log them to the console
+            if (line.getOptions() != null) {
+                for (Option option : line.getOptions()) {
+                    LogFactory.getLog(SymmetricLauncher.class).info("Option", option.getLongOpt(),
+                            ArrayUtils.toString(option.getValues()));
                 }
             }
 
@@ -328,6 +370,16 @@ public class SymmetricLauncher {
             System.exit(-1);
         }
     }
+    
+    private static File getLog4JFile() throws MalformedURLException {
+        URL url = new URL(System.getProperty("log4j.configuration", "file:../conf/log4j-blank.xml"));
+        return new File(new File(url.getFile()).getParent(), "log4j.xml");
+    }
+    
+    private static File getLog4JFileDebugEnabled()  throws MalformedURLException {
+        File original = getLog4JFile();
+        return new File(original.getParent(), "log4j-debug.xml");
+    }
 
     private static void printHelp(Options options) {
         new HelpFormatter().printHelp("sym", options);
@@ -372,6 +424,9 @@ public class SymmetricLauncher {
         addOption(options, "o", OPTION_TRIGGER_GEN_ALWAYS, false);
         addOption(options, "e", OPTION_ENCRYPT_TEXT, true);
         addOption(options, "v", OPTION_VERBOSE_CONSOLE, false);
+        addOption(options, OPTION_DEBUG, OPTION_DEBUG, false);
+        addOption(options, OPTION_NOCONSOLE, OPTION_NOCONSOLE, false);
+        addOption(options, OPTION_NOLOGFILE, OPTION_NOLOGFILE, false);
         
         addOption(options, "x", OPTION_EXPORT_SCHEMA, true);
 
