@@ -19,6 +19,7 @@
         <exclude>bin/sym</exclude>
         <exclude>bin/sym_service</exclude>
         <exclude>bin/sym_service.initd</exclude>
+        <exclude>bin/create-war</exclude>
       </excludes>      
     </fileSet>
     <fileSet>
