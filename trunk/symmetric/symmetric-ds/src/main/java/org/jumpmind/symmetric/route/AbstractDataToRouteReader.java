@@ -102,6 +102,9 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         if (!channel.isUseRowDataToRoute()) {
             select = select.replace("d.row_data", "''");
         }
+        if (!channel.isUsePkDataToRoute()) {
+            select = select.replace("d.pk_data", "''");
+        }
         return select;
     }
 

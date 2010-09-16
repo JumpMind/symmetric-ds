@@ -83,6 +83,14 @@ public class NodeChannel {
     public boolean isUseRowDataToRoute() {
         return channel.isUseRowDataToRoute();
     }
+    
+    public void setUsePkDataToRoute(boolean usePkDataToRoute) {
+        channel.setUsePkDataToRoute(usePkDataToRoute);
+    }
+    
+    public boolean isUsePkDataToRoute() {
+        return channel.isUsePkDataToRoute();
+    }
 
     public int getProcessingOrder() {
         return channel.getProcessingOrder();

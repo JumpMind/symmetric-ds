@@ -92,12 +92,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 channel.getProcessingOrder(), channel.getMaxBatchSize(),
                 channel.getMaxBatchToSend(), channel.getMaxDataToRoute(),
                 channel.isUseOldDataToRoute() ? 1 : 0, channel.isUseRowDataToRoute() ? 1 : 0,
+                channel.isUsePkDataToRoute() ? 1 : 0,
                 channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
                 channel.getExtractPeriodMillis(), channel.getChannelId() })) {
             jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getChannelId(),
                     channel.getProcessingOrder(), channel.getMaxBatchSize(),
                     channel.getMaxBatchToSend(), channel.getMaxDataToRoute(),
                     channel.isUseOldDataToRoute() ? 1 : 0, channel.isUseRowDataToRoute() ? 1 : 0,
+                    channel.isUsePkDataToRoute() ? 1 : 0,
                     channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
                     channel.getExtractPeriodMillis() });
         }
@@ -173,9 +175,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                 throws SQLException {
                             NodeChannel nodeChannel = new NodeChannel();
                             nodeChannel.setChannelId(rs.getString(1));
-                            // note that 2 is intentionally missing
-                            // here.
                             nodeChannel.setNodeId(nodeId);
+                            // note that 2 is intentionally missing here.                            
                             nodeChannel.setIgnoreEnabled(isSet(rs.getObject(3)));
                             nodeChannel.setSuspendEnabled(isSet(rs.getObject(4)));
                             nodeChannel.setProcessingOrder(rs.getInt(5));
@@ -185,10 +186,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             nodeChannel.setMaxDataToRoute(rs.getInt(9));
                             nodeChannel.setUseOldDataToRoute(rs.getBoolean(10));
                             nodeChannel.setUseRowDataToRoute(rs.getBoolean(11));
-                            nodeChannel.setBatchAlgorithm(rs.getString(12));
-                            nodeChannel.setLastExtractedTime(rs.getTimestamp(13));
-                            nodeChannel.setExtractPeriodMillis(rs.getLong(14));
-
+                            nodeChannel.setUsePkDataToRoute(rs.getBoolean(12));
+                            nodeChannel.setBatchAlgorithm(rs.getString(13));
+                            nodeChannel.setLastExtractedTime(rs.getTimestamp(14));
+                            nodeChannel.setExtractPeriodMillis(rs.getLong(15));
                             return nodeChannel;
                         };
                     });

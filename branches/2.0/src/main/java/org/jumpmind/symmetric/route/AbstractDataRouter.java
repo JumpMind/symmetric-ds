@@ -57,30 +57,27 @@ public abstract class AbstractDataRouter implements IDataRouter {
             data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getNewDataAsString(null, dataMetaData));
             data.putAll(getOldDataAsString(OLD_, dataMetaData));
-            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
             break;
         case INSERT:
             data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getNewDataAsString(null, dataMetaData));
             Map<String, String> map = getNullData(OLD_, dataMetaData);
             data.putAll(map);
-            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
             break;
         case DELETE:
             data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getOldDataAsString(null, dataMetaData));
             data.putAll(getOldDataAsString(OLD_, dataMetaData));
-            if (data.size() == 0) {
-                data.putAll(getPkDataAsString(dataMetaData));
-            }
-            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
             break;
         default:
             data = new HashMap<String, String>(1);
-            data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
-            
             break;
         }
+        
+        if (data.size() == 0) {
+            data.putAll(getPkDataAsString(dataMetaData));
+        }
+        data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
         return data;
     }
 

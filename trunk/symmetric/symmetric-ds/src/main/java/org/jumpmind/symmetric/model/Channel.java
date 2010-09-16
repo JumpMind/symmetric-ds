@@ -44,6 +44,8 @@ public class Channel {
     private boolean useOldDataToRoute = true;
     
     private boolean useRowDataToRoute = true;
+    
+    private boolean usePkDataToRoute = true;
 
     private String batchAlgorithm = "default";
 
@@ -161,5 +163,13 @@ public class Channel {
     
     public boolean isUseRowDataToRoute() {
         return useRowDataToRoute;
+    }
+    
+    public void setUsePkDataToRoute(boolean usePkDataToRoute) {
+        this.usePkDataToRoute = usePkDataToRoute;
+    }
+    
+    public boolean isUsePkDataToRoute() {
+        return usePkDataToRoute;
     }
 }
