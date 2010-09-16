@@ -99,6 +99,9 @@ public class DataToRouteReader implements Runnable {
         if (!channel.isUseRowDataToRoute()) {
             select = select.replace("d.row_data", "''");
         }
+        if (!channel.isUsePkDataToRoute()) {
+            select = select.replace("d.pk_data", "''");
+        }        
         return select;
     }
 
