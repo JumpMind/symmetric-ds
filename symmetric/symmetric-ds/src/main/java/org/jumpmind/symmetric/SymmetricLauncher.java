@@ -155,50 +155,8 @@ public class SymmetricLauncher {
             boolean noNio = false;
             boolean noDirectBuffer = false;
 
-            File log4jFile = getLog4JFile();
-            if (line.hasOption(OPTION_DEBUG)) {
-                log4jFile = getLog4JFileDebugEnabled();
-            } 
-            
-            if (log4jFile.exists()) {
-                DOMConfigurator.configure(log4jFile.getAbsolutePath()); 
-             }
-            
-            if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
-                Appender consoleAppender = Logger.getRootLogger().getAppender("CONSOLE");
-                if (consoleAppender != null) {
-                    Layout layout = consoleAppender.getLayout();
-                    if (layout instanceof PatternLayout) {
-                        ((PatternLayout)layout).setConversionPattern("%d %-5p [%c{2}] [%t] %m%n");
-                    }
-                }                
-            }
-            
-            if (line.hasOption(OPTION_NOCONSOLE)) {
-                Logger.getRootLogger().removeAppender("CONSOLE");
-            }
-            
-            if (line.hasOption(OPTION_NOLOGFILE)) {
-                Logger.getRootLogger().removeAppender("ROLLING");
-            } else {                
-                if (line.hasOption(OPTION_PROPERTIES_FILE)) {
-                    File file = new File(line.getOptionValue(OPTION_PROPERTIES_FILE));
-                    String name = file.getName();
-                    int index = name.lastIndexOf(".");
-                    if (index > 0) {
-                        name = name.substring(0, index);
-                    }
-                    Appender appender = Logger.getRootLogger().getAppender("ROLLING");
-                    if (appender instanceof FileAppender) {
-                        FileAppender fileAppender = (FileAppender)appender;
-                        fileAppender.setFile(fileAppender.getFile().replace("symmetric.log", name + ".log"));
-                        fileAppender.activateOptions();
-                        System.out.println(Message.get("LauncherLogLocation", fileAppender.getFile()));  
-                    }
-                }
-            }
+            configureLogging(line);
 
-            // Log options to the log file only.  No need to log them to the console
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {
                     LogFactory.getLog(SymmetricLauncher.class).info("Option", option.getLongOpt(),
@@ -371,6 +329,12 @@ public class SymmetricLauncher {
         }
     }
     
+    private static boolean isStartApplicationOption(CommandLine line) {
+        return line.hasOption(OPTION_START_CLIENT) || line.hasOption(OPTION_START_SERVER)
+                || line.hasOption(OPTION_START_SECURE_SERVER)
+                || line.hasOption(OPTION_START_MIXED_SERVER);
+    }
+    
     private static File getLog4JFile() throws MalformedURLException {
         URL url = new URL(System.getProperty("log4j.configuration", "file:../conf/log4j-blank.xml"));
         return new File(new File(url.getFile()).getParent(), "log4j.xml");
@@ -393,6 +357,55 @@ public class SymmetricLauncher {
             Connection c = ds.getConnection();
             c.close();
             ds.close();
+        }
+    }
+    
+    private static void configureLogging(CommandLine line) throws MalformedURLException { 
+        File log4jFile = getLog4JFile();
+        if (line.hasOption(OPTION_DEBUG)) {
+            log4jFile = getLog4JFileDebugEnabled();
+        } 
+        
+        if (log4jFile.exists()) {
+            DOMConfigurator.configure(log4jFile.getAbsolutePath()); 
+         }
+        
+        if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
+            Appender consoleAppender = Logger.getRootLogger().getAppender("CONSOLE");
+            if (consoleAppender != null) {
+                Layout layout = consoleAppender.getLayout();
+                if (layout instanceof PatternLayout) {
+                    ((PatternLayout)layout).setConversionPattern("%d %-5p [%c{2}] [%t] %m%n");
+                }
+            }                
+        }
+        
+        if (line.hasOption(OPTION_NOCONSOLE)) {
+            Logger.getRootLogger().removeAppender("CONSOLE");
+        }
+        
+        if (line.hasOption(OPTION_NOLOGFILE)) {
+            Logger.getRootLogger().removeAppender("ROLLING");
+        } else {
+            Appender appender = Logger.getRootLogger().getAppender("ROLLING");
+            if (appender instanceof FileAppender) {
+                FileAppender fileAppender = (FileAppender) appender;
+
+                if (line.hasOption(OPTION_PROPERTIES_FILE) && isStartApplicationOption(line)) {
+                    File file = new File(line.getOptionValue(OPTION_PROPERTIES_FILE));
+                    String name = file.getName();
+                    int index = name.lastIndexOf(".");
+                    if (index > 0) {
+                        name = name.substring(0, index);
+                    }
+                    fileAppender.setFile(fileAppender.getFile().replace("symmetric.log",
+                            name + ".log"));
+                    fileAppender.activateOptions();
+                }
+                
+                System.out.println(Message.get("LauncherLogLocation", fileAppender.getFile()));
+
+            }
         }
     }
 
