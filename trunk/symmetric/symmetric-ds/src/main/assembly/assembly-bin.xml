@@ -19,7 +19,6 @@
         <exclude>bin/sym</exclude>
         <exclude>bin/sym_service</exclude>
         <exclude>bin/sym_service.initd</exclude>
-        <exclude>bin/create-war</exclude>
       </excludes>      
     </fileSet>
     <fileSet>
@@ -42,12 +41,7 @@
       <source>src/main/deploy/bin/sym_service</source>
       <outputDirectory>/bin</outputDirectory>
       <fileMode>774</fileMode>
-    </file>  
-    <file>
-      <source>src/main/deploy/bin/create-war</source>
-      <outputDirectory>/bin</outputDirectory>
-      <fileMode>774</fileMode>
-    </file>                
+    </file>              
     <file>
       <source>src/main/resources/symmetric-default.properties</source>
       <outputDirectory>/conf</outputDirectory>

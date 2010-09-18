@@ -66,6 +66,7 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.util.JarBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -132,6 +133,8 @@ public class SymmetricLauncher {
     private static final String OPTION_NOCONSOLE = "noconsole";
     
     private static final String OPTION_NOLOGFILE = "nologfile";
+    
+    private static final String OPTION_CREATE_WAR = "create-war";
 
     private static final String MESSAGE_BUNDLE = "Launcher.Option.";
 
@@ -195,7 +198,12 @@ public class SymmetricLauncher {
                 if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
                     throw new SymmetricException("FilePropertiesNotFound", line.getOptionValue(OPTION_PROPERTIES_FILE));
                 }
-
+            }
+            
+            if (line.hasOption(OPTION_CREATE_WAR)) {
+                generateWar(line.getOptionValue(OPTION_CREATE_WAR), propertiesFile);
+                System.exit(0);
+                return;
             }
 
             if (line.hasOption(OPTION_DDL_GEN)) {
@@ -329,6 +337,22 @@ public class SymmetricLauncher {
         }
     }
     
+    private static void generateWar(String warFileName, String propertiesFileName) throws Exception {
+        final File workingDirectory = new File("../.war");
+        FileUtils.deleteDirectory(workingDirectory);
+        FileUtils.copyDirectory(new File("../web"), workingDirectory);
+        FileUtils.copyDirectory(new File("../conf"), new File(workingDirectory,"WEB-INF/classes"));
+        if (propertiesFileName != null) {
+            File propsFile = new File(propertiesFileName);
+            if (propsFile.exists()) {
+                FileUtils.copyFile(propsFile, new File(workingDirectory, "WEB-INF/classes/symmetric.properties"));
+            }
+        }
+        JarBuilder builder = new JarBuilder(workingDirectory, new File(warFileName), new File[] {workingDirectory});
+        builder.build();
+        FileUtils.deleteDirectory(workingDirectory);
+    }
+    
     private static boolean isStartApplicationOption(CommandLine line) {
         return line.hasOption(OPTION_START_CLIENT) || line.hasOption(OPTION_START_SERVER)
                 || line.hasOption(OPTION_START_SECURE_SERVER)
@@ -440,6 +464,7 @@ public class SymmetricLauncher {
         addOption(options, OPTION_DEBUG, OPTION_DEBUG, false);
         addOption(options, OPTION_NOCONSOLE, OPTION_NOCONSOLE, false);
         addOption(options, OPTION_NOLOGFILE, OPTION_NOLOGFILE, false);
+        addOption(options, "w", OPTION_CREATE_WAR, true);
         
         addOption(options, "x", OPTION_EXPORT_SCHEMA, true);
 
