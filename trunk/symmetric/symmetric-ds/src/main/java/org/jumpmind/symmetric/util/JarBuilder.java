@@ -32,18 +32,22 @@ import java.util.jar.Manifest;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.Version;
 
-public class War {
+public class JarBuilder {
+
+    private File baseDir;
 
     private File[] sourceFiles;
 
     private File outputFile;
 
-    public War(File outputFile, File... sourceFiles) {
+    public JarBuilder(File baseDir, File outputFile, File[] sourceFiles) {
         this.sourceFiles = sourceFiles;
         this.outputFile = outputFile;
+        this.baseDir = baseDir;
     }
 
     public void build() throws IOException {
+        this.outputFile.delete();
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, Version.version());
         JarOutputStream target = new JarOutputStream(new FileOutputStream(outputFile), manifest);
@@ -53,11 +57,19 @@ public class War {
         target.close();
     }
 
+    private String massageJarEntryName(File source) {
+        String name = source.getPath();
+        if (baseDir != null && name.startsWith(baseDir.getPath()) && name.length() > baseDir.getPath().length()) {
+            name = name.substring(baseDir.getPath().length()+1);
+        }
+        return name.replace("\\", "/");
+    }
+
     private void add(File source, JarOutputStream target) throws IOException {
         BufferedInputStream in = null;
         try {
             if (source.isDirectory()) {
-                String name = source.getPath().replace("\\", "/");
+                String name = massageJarEntryName(source);
                 if (!name.isEmpty()) {
                     if (!name.endsWith("/")) {
                         name += "/";
@@ -70,23 +82,22 @@ public class War {
                 for (File nestedFile : source.listFiles()) {
                     add(nestedFile, target);
                 }
-                return;
-            }
+            } else {
+                JarEntry entry = new JarEntry(massageJarEntryName(source));
+                entry.setTime(source.lastModified());
+                target.putNextEntry(entry);
+                in = new BufferedInputStream(new FileInputStream(source));
 
-            JarEntry entry = new JarEntry(source.getPath().replace("\\", "/"));
-            entry.setTime(source.lastModified());
-            target.putNextEntry(entry);
-            in = new BufferedInputStream(new FileInputStream(source));
-
-            byte[] buffer = new byte[1024];
-            while (true) {
-                int count = in.read(buffer);
-                if (count == -1) {
-                    break;
+                byte[] buffer = new byte[1024];
+                while (true) {
+                    int count = in.read(buffer);
+                    if (count == -1) {
+                        break;
+                    }
+                    target.write(buffer, 0, count);
                 }
-                target.write(buffer, 0, count);
+                target.closeEntry();
             }
-            target.closeEntry();
         } finally {
             IOUtils.closeQuietly(in);
         }
