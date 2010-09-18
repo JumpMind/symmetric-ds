@@ -50,6 +50,7 @@ public class JarBuilder {
         this.outputFile.delete();
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, Version.version());
+        outputFile.getParentFile().mkdirs();
         JarOutputStream target = new JarOutputStream(new FileOutputStream(outputFile), manifest);
         for (File file : sourceFiles) {
             add(file, target);
