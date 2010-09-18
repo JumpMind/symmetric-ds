@@ -65,9 +65,9 @@
         <section id="deployment-options-web-archive">
             <title>Web Archive</title>
             <para>
-                As a web application archive, a WAR or EAR file is deployed to an application server,
-                such as Tomcat, Jetty, or JBoss.  The structure of the archive should have a <literal>web.xml</literal>
-                file in the <literal>WEB-INF</literal> folder, the <filename>symmetric.properties</filename> file in the <literal>WEB-INF/classes</literal> folder,
+                As a web application archive, a WAR is deployed to an application server,
+                such as Tomcat, Jetty, or JBoss.  The structure of the archive will have a <literal>web.xml</literal>
+                file in the <literal>WEB-INF</literal> folder, an appropriately configured <filename>symmetric.properties</filename> file in the <literal>WEB-INF/classes</literal> folder,
                 and the required JAR files in the <literal>WEB-INF/lib</literal> folder.
             </para>
             <mediaobject>
@@ -76,62 +76,16 @@
                 </imageobject>
             </mediaobject>
             <para>
-                The <filename>WEB-INF/web.xml</filename> file
-                is configured with a <literal>SymmetricEngineContextLoaderListener</literal>,
-                the required SymmetricFilter mapping, and the required SymmetricServlet mapping.
-           
+                A war file can be generated using the standalone installation's sym utility and the 
+                --create-war option.  The command requires the name of the war file to generate.  It 
+                essentially packages up the web directory, the conf directory and includes an optional
+                properties file.  Note that if a properties file is included, it will be copied to 
+                WEB-INF/classes/symmetric.properties.  This is the same location conf/symmetric.properties
+                would have been copied to.  The generated war distribution uses the same web.xml as the standalone
+                deployment. 
             </para>
-            <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-    version="2.5">
-
-    <display-name>sync</display-name>
-    
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <!-- You can optionally specify other Spring files to 
-                load into same context here -->
-        <param-value>classpath:symmetric.xml</param-value>
-    </context-param>
-    
-    <filter>
-        <filter-name>SymmetricFilter</filter-name>
-        <filter-class>
-            org.jumpmind.symmetric.web.SymmetricFilter
-        </filter-class>
-    </filter>
-    
-    <filter-mapping>
-        <filter-name>SymmetricFilter</filter-name>
-        <servlet-name>/*</servlet-name>
-    </filter-mapping>
-    
-    <listener>
-        <listener-class>
-            org.jumpmind.symmetric.SymmetricEngineContextLoaderListener
-        </listener-class>
-    </listener>
-    
-    <servlet>
-        <servlet-name>SymmetricServlet</servlet-name>
-        <servlet-class>
-            org.jumpmind.symmetric.web.SymmetricServlet
-        </servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    
-    <servlet-mapping>
-        <servlet-name>SymmetricServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
-    </servlet-mapping>
-
-</web-app>]]></programlisting>
             <para>
-                This example starts all the SymmetricDS Servlets with Filters to compress the
-                stream, authenticate nodes, and reject nodes when the server is too busy.
+                <command>../bin/sym -p my-symmetric-ds.properties --create-war /some/path/to/symmetric-ds.war</command>
             </para>
             <para>
                 The <literal>web.base.servlet.path</literal> property in <filename>symmetric.properties</filename> can be set if the SymmetricServlet needs to
