@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.transport.mock;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 
@@ -57,9 +58,9 @@ public class MockTransportManager implements ITransportManager {
         return outgoingTransport;
     }
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list,
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list,
                 Node local, String securityToken, String registrationUrl) throws IOException {
-        return true;
+        return HttpURLConnection.HTTP_OK;
     }
 
     public void writeAcknowledgement(OutputStream out,
