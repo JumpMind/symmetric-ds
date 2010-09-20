@@ -105,16 +105,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public boolean loadData(Node remote, Node local) throws IOException {
         boolean wasWorkDone = false;
         try {
-            NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
-            if (security != null) {
+            NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId());
+            if (localSecurity != null) {
                 Map<String, String> requestProperties = new HashMap<String, String>();
                 ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists();
                 requestProperties.put(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
                 requestProperties.put(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
 
-                List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local, security.getNodePassword(), requestProperties, parameterService.getRegistrationUrl()));
+                List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local, localSecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl()));
                 if (list.size() > 0) {
-                    sendAck(remote, local, list);
+                    sendAck(remote, local, localSecurity, list);
                     wasWorkDone = true;
                 }
             } else {
@@ -134,14 +134,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     /**
      * Try a configured number of times to get the ACK through.
      */
-    private void sendAck(Node remote, Node local, List<IncomingBatch> list) throws IOException {
+    private void sendAck(Node remote, Node local, NodeSecurity localSecurity, List<IncomingBatch> list) throws IOException {
         Exception error = null;
         boolean sendAck = false;
         int numberOfStatusSendRetries = parameterService.getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
-        NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
         for (int i = 0; i < numberOfStatusSendRetries && !sendAck; i++) {
             try {
-                sendAck = transportManager.sendAcknowledgement(remote, list, local, security.getNodePassword(), parameterService.getRegistrationUrl());
+                sendAck = transportManager.sendAcknowledgement(remote, list, local, localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
             } catch (IOException ex) {
                 log.warn("AckSendingFailed", (i + 1), ex.getMessage());
                 error = ex;
