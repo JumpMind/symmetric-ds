@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.ConnectException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -136,9 +137,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      */
     private void sendAck(Node remote, Node local, NodeSecurity localSecurity, List<IncomingBatch> list) throws IOException {
         Exception error = null;
-        boolean sendAck = false;
+        int sendAck = -1;
         int numberOfStatusSendRetries = parameterService.getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
-        for (int i = 0; i < numberOfStatusSendRetries && !sendAck; i++) {
+        for (int i = 0; i < numberOfStatusSendRetries && sendAck != HttpURLConnection.HTTP_OK; i++) {
             try {
                 sendAck = transportManager.sendAcknowledgement(remote, list, local, localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
             } catch (IOException ex) {
@@ -148,13 +149,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.warn("AckSendingFailed", (i + 1), ex.getMessage());
                 error = ex;
             }
-            if (!sendAck) {
+            if (sendAck != HttpURLConnection.HTTP_OK) {
                 if (i < numberOfStatusSendRetries - 1) {
                     AppUtils.sleep(parameterService.getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
                 } else if (error instanceof RuntimeException) {
                     throw (RuntimeException) error;
                 } else if (error instanceof IOException) {
                     throw (IOException) error;
+                } else {
+                    throw new IOException(Integer.toString(sendAck));
                 }
             }
         }

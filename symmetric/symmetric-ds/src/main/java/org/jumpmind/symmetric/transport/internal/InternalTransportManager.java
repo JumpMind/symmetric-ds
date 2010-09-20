@@ -27,6 +27,7 @@ import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 
@@ -119,7 +120,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list,
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list,
             Node local, String securityToken, String registrationUrl) throws IOException {
         try {
             if (list != null && list.size() > 0) {
@@ -134,10 +135,10 @@ public class InternalTransportManager extends AbstractTransportManager implement
                 }
 
             }
-            return true;
+            return HttpURLConnection.HTTP_OK;
         } catch (Exception ex) {
             log.error(ex);
-            return false;
+            return -1;
         }
     }
 
