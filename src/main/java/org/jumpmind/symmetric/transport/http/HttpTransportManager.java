@@ -65,21 +65,21 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         this.parameterService = parameterService;
     }
     
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException {
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException {
         if (list != null && list.size() > 0) {
             String data = getAcknowledgementData(local.getNodeId(), list);
             return sendMessage("ack", remote, local, data, securityToken, registrationUrl);
         }
-        return true;
+        return  HttpURLConnection.HTTP_OK;
     }
 
     public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list, Node local, String securityToken) throws IOException {
         writeMessage(out, getAcknowledgementData(local.getNodeId(), list));
     }
 
-    protected boolean sendMessage(String action, Node remote, Node local, String data, String securityToken, String registrationUrl) throws IOException {
+    protected int sendMessage(String action, Node remote, Node local, String data, String securityToken, String registrationUrl) throws IOException {
         HttpURLConnection conn = sendMessage(new URL(buildURL(action, remote, local, securityToken, registrationUrl)), data);
-        return conn.getResponseCode() == HttpURLConnection.HTTP_OK;
+        return conn.getResponseCode();
     }
 
     protected HttpURLConnection sendMessage(URL url, String data) throws IOException {
