@@ -110,7 +110,7 @@ public class SqlTemplate {
         sql = AppUtils.replace("columns", columnsText, sql);
         sql = AppUtils.replace("whereClause", StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? "1=1" : triggerRouter.getInitialLoadSelect(), sql);
         sql = AppUtils.replace("tableName", metaData.getName(), sql);
-        sql = AppUtils.replace("schemaName", triggerRouter.getTrigger().getSourceSchemaName() != null ? triggerRouter.getTrigger().getSourceSchemaName() + "." : "", sql);
+        sql = AppUtils.replace("schemaName", triggerRouter.qualifiedSourceTableName(), sql);
         sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
                 .getPrimaryKeyColumns()), sql);
 

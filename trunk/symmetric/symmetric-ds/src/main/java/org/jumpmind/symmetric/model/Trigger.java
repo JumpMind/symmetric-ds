@@ -100,13 +100,16 @@ public class Trigger {
         this.sourceTableName = tableName;
     }
     
-    public String qualifiedSourceTableName() {
-        String schemaPlusTableName = (getSourceSchemaName() != null ? getSourceSchemaName()
-                + "." : "")
-                + getSourceTableName();
-        String catalogPlusTableName = (getSourceCatalogName() != null ? getSourceCatalogName()
-                + "." : "") + schemaPlusTableName;
-        return catalogPlusTableName;
+    final public String qualifiedSourceTableName() {
+        return qualifiedSourceTablePrefix() + sourceTableName;
+    }
+    
+    final public String qualifiedSourceTablePrefix() {
+        String schemaPlus = (getSourceSchemaName() != null ? getSourceSchemaName()
+                + "." : "");
+        String catalogPlus = (getSourceCatalogName() != null ? getSourceCatalogName()
+                + "." : "") + schemaPlus;
+        return catalogPlus;
     }
 
     /**

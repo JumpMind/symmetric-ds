@@ -176,6 +176,10 @@ public class TriggerRouter {
     public String qualifiedSourceTableName() {
         return trigger.qualifiedSourceTableName();
     }
+    
+    public String qualifiedSourceTablePrefix() {
+        return trigger.qualifiedSourceTablePrefix();
+    }
 
     public String qualifiedTargetTableName() {
         String catalog = getTargetCatalog(null);
