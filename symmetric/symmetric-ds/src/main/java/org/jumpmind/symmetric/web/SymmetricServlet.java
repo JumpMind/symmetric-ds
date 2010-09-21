@@ -43,8 +43,8 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
- * The SymmetricServlet manages all of the other servlets. This allows for
- * easier configuration since spring manages the individual servlets.
+ * The SymmetricServlet manages all of the other Servlets. This allows for
+ * easier configuration since Spring manages the individual Servlets.
  * 
  * Configured within web.xml
  * 
