@@ -21,8 +21,8 @@ public class DataRefRouteReader extends AbstractDataToRouteReader {
     public static final String SELECT_DATA_TO_BATCH_SQL = "selectDataToBatchSql";
 
     public DataRefRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize,
-            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService) {
-        super(dataSource, queryTimeout, maxQueueSize, sqlProvider, fetchSize, context, dataService);
+            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse) {
+        super(dataSource, queryTimeout, maxQueueSize, sqlProvider, fetchSize, context, dataService, requiresAutoCommitFalse);
     }
 
     @Override

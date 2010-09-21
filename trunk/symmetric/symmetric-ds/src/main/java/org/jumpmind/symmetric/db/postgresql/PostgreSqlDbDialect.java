@@ -72,6 +72,11 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     }
 
+    @Override
+    public boolean requiresAutoCommitFalseToSetFetchSize() {
+        return true;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected Integer overrideJdbcTypeForColumn(Map values) {

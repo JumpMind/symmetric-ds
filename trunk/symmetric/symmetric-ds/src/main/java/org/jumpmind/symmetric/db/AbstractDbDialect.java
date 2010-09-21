@@ -184,6 +184,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected boolean allowsNullForIdentityColumn() {
         return true;
     }
+    
+    public boolean requiresAutoCommitFalseToSetFetchSize() {
+        return false;
+    }
 
     public void resetCachedTableModel() {
         synchronized (this.getClass()) {

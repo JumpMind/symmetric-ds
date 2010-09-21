@@ -273,7 +273,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ResultSet rs = null;
                     try {
                         
-                        conn.setAutoCommit(false); 
+                        if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                            conn.setAutoCommit(false);
+                        }
                         
                         st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
                                 java.sql.ResultSet.CONCUR_READ_ONLY);
@@ -307,8 +309,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.commit(batch, writer);
                         }
                     } finally {
-                        conn.commit();
-                        conn.setAutoCommit(autoCommitFlag); 
+                        if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                            conn.commit();
+                            conn.setAutoCommit(autoCommitFlag); 
+                        }
                         JdbcUtils.closeResultSet(rs);
                         JdbcUtils.closeStatement(st);
                     }
@@ -586,7 +590,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 PreparedStatement ps = null;
                 boolean autoCommitFlag = conn.getAutoCommit();
                 try {
-                    conn.setAutoCommit(false);
+                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                        conn.setAutoCommit(false);
+                    }
                     ps = conn.prepareStatement(getSql("selectEventDataToExtractSql"),
                             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                     ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
@@ -604,8 +610,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
                 } finally {
-                    conn.commit();
-                    conn.setAutoCommit(autoCommitFlag);
+                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                        conn.commit();
+                        conn.setAutoCommit(autoCommitFlag);
+                    }
                     JdbcUtils.closeResultSet(rs);
                     JdbcUtils.closeStatement(ps);
                 }

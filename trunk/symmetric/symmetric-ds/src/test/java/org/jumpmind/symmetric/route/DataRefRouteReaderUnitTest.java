@@ -23,7 +23,7 @@ public class DataRefRouteReaderUnitTest {
     
     @Test
     public void testOldDataReplacement() {
-        DataRefRouteReader reader = new DataRefRouteReader(null, -1, 1, getSqlProvider(), 1000, null, null);
+        DataRefRouteReader reader = new DataRefRouteReader(null, -1, 1, getSqlProvider(), 1000, null, null, false);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL, channel).contains("old_data"));
         Assert.assertFalse(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains(BLANK));
@@ -34,7 +34,7 @@ public class DataRefRouteReaderUnitTest {
     
     @Test
     public void testRowDataReplacement() {
-        DataRefRouteReader reader = new DataRefRouteReader(null, -1, 1, getSqlProvider(), 1000, null, null);
+        DataRefRouteReader reader = new DataRefRouteReader(null, -1, 1, getSqlProvider(), 1000, null, null, false);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains("row_data"));
         Assert.assertFalse(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains(BLANK));
@@ -45,7 +45,7 @@ public class DataRefRouteReaderUnitTest {
     
     @Test
     public void testOldAndRowDataReplacement() {
-        DataRefRouteReader reader = new DataRefRouteReader(null, -1, 1, getSqlProvider(), 1000, null, null);
+        DataRefRouteReader reader = new DataRefRouteReader(null, -1, 1, getSqlProvider(), 1000, null, null, false);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains("row_data"));
         Assert.assertTrue(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains("old_data"));
