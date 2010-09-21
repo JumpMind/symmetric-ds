@@ -267,6 +267,8 @@ public interface IDbDialect {
     
     public boolean areDatabaseTransactionsPendingSince(long time);
     
+    public boolean requiresAutoCommitFalseToSetFetchSize();
+    
     public LobHandler getLobHandler();
     
     /**

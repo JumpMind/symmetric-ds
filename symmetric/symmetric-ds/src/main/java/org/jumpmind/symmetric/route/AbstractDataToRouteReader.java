@@ -55,9 +55,11 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
     protected static final int DEFAULT_QUERY_TIMEOUT = 300;
 
     protected int queryTimeout = DEFAULT_QUERY_TIMEOUT;
+    
+    protected boolean requiresAutoCommitFalse = false;
 
     public AbstractDataToRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize,
-            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService) {
+            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse) {
         this.maxQueueSize = maxQueueSize;
         this.dataSource = dataSource;
         this.dataQueue = new LinkedBlockingQueue<Data>(maxQueueSize);
@@ -66,6 +68,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         this.fetchSize = fetchSize;
         this.queryTimeout = queryTimeout;
         this.dataService = dataService;
+        this.requiresAutoCommitFalse = requiresAutoCommitFalse;
     }
 
     public Data take() {
@@ -132,7 +135,9 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                 ResultSet rs = null;
                 boolean autoCommit = c.getAutoCommit();
                 try {
-                    c.setAutoCommit(false);
+                    if (requiresAutoCommitFalse) {
+                       c.setAutoCommit(false);
+                    }
                     String channelId = context.getChannel().getChannelId();
                     if (firstTry) {
                         ps = prepareStatment(c);
@@ -195,8 +200,10 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     rs = null;
                     ps = null;
 
-                    c.commit();
-                    c.setAutoCommit(autoCommit);
+                    if (requiresAutoCommitFalse) {
+                        c.commit();
+                        c.setAutoCommit(autoCommit);
+                    }
 
                     boolean done = false;
                     do {

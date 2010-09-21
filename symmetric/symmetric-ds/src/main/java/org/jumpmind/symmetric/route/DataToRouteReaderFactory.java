@@ -45,11 +45,11 @@ public class DataToRouteReaderFactory implements ISqlProvider {
         if (type == null || type.equals("ref")) {
             return new DataRefRouteReader(jdbcTemplate.getDataSource(),
                     jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                    dbDialect.getStreamingResultsFetchSize(), context, dataService);
+                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize());
         } else if (type == null || type.equals("gap")) {
             return new DataGapRouteReader(jdbcTemplate.getDataSource(),
                     jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                    dbDialect.getStreamingResultsFetchSize(), context, dataService);
+                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize());
         } else {
             throw unsupportedType(type);
         }
