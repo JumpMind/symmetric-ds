@@ -87,6 +87,16 @@
                         <entry>Y</entry>
                     </row>
                     <row>
+                        <entry>HSQLDB</entry>
+                        <entry>2.0</entry>
+                        <entry>N</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>                    
+                    <row>
                         <entry>H2</entry>
                         <entry>1.x</entry>
                         <entry>Y</entry>
