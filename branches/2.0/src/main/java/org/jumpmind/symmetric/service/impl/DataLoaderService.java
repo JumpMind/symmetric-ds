@@ -538,6 +538,7 @@ if (filters == null) {
                     fireBatchComplete(dataLoader, batch);
                     this.loadStatus = LoadStatus.DONE;
                 } else {
+                    log.info("LoaderEarlyCommit", batch.getBatchId(), dataLoader.getContext().getTableName(), dataLoader.getStatistics().getLineCount());
                     fireEarlyCommit(dataLoader, batch);
                     this.loadStatus = LoadStatus.CONTINUE;
                 }
