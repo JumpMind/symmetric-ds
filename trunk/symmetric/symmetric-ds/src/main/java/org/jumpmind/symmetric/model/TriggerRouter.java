@@ -143,9 +143,6 @@ public class TriggerRouter {
     public String getTargetSchema(String defaultSchema) {
         if (router != null && !StringUtils.isBlank(router.getTargetSchemaName())) {
             return router.getTargetSchemaName();
-        }
-        if (trigger != null && !StringUtils.isBlank(trigger.getSourceSchemaName())) {
-            return trigger.getSourceSchemaName();
         } else {
             return defaultSchema;
         }
@@ -154,9 +151,6 @@ public class TriggerRouter {
     public String getTargetCatalog(String defaultCatalog) {
         if (router != null && !StringUtils.isBlank(router.getTargetCatalogName())) {
             return router.getTargetCatalogName();
-        }
-        if (trigger != null && !StringUtils.isBlank(trigger.getSourceCatalogName())) {
-            return trigger.getSourceCatalogName();
         } else {
             return defaultCatalog;
         }
