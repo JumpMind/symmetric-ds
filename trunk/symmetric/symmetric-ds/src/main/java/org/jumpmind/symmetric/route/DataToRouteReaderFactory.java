@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.service.ISqlProvider;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class DataToRouteReaderFactory implements ISqlProvider {
 

@@ -31,7 +31,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class AbstractWebTest {
 

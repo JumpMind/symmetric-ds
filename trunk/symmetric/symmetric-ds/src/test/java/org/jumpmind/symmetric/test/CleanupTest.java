@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class CleanupTest {
     static final Log logger = LogFactory.getLog(SimpleIntegrationTest.class);

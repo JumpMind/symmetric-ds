@@ -21,7 +21,7 @@
 package org.jumpmind.symmetric.load;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public interface ITableColumnFilter extends IColumnFilter {
 

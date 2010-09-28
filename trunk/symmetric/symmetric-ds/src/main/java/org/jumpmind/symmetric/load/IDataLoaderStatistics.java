@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.load;
 import java.util.Date;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public interface IDataLoaderStatistics {
 

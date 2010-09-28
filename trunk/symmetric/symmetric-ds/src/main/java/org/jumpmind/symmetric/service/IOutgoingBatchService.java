@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public interface IOutgoingBatchService {
 

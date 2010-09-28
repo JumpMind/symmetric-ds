@@ -44,7 +44,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * 
  * @deprecated
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class SymmetricEngineContextLoaderListener extends ContextLoaderListener {
 

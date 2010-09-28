@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataService;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class HeartbeatJob extends AbstractJob {
 

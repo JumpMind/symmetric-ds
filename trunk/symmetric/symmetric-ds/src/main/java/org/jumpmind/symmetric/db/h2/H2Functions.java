@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.db.h2;
 import org.jumpmind.symmetric.db.EmbeddedDbFunctions;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class H2Functions extends EmbeddedDbFunctions {
 

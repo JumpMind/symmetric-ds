@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
  * An adapter for the trigger listener interface so you need only implement the
  * methods you are interested in.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TriggerCreationAdapter implements ITriggerCreationListener {
 

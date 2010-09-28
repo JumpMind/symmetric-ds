@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.load.ITableColumnFilter;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ChangeColumnsNamesFilter implements ITableColumnFilter, INodeGroupExtensionPoint {
 

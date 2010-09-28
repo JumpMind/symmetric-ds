@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.config.IParameterFilter;
 /**
  * Get and set application wide configuration information.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IParameterService {
 

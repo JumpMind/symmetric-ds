@@ -61,7 +61,7 @@ import org.junit.Assert;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TestSetupUtil {
 

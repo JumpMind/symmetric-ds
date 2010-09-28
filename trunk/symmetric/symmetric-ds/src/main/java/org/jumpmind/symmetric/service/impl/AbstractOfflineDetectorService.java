@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public abstract class AbstractOfflineDetectorService extends AbstractService implements IOfflineDetectorService {
 

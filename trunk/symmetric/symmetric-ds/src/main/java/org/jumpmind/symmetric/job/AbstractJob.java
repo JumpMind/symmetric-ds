@@ -40,7 +40,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for a job")
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 abstract public class AbstractJob implements Runnable, BeanNameAware {
 

@@ -45,7 +45,7 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
  * If you have special formatting needs, implement the {@link IFormat} interface
  * and map your formatter to the column you want to 'massage.'
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDataLoaderFilter {
 

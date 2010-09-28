@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class DataLoaderContext implements IDataLoaderContext {
 

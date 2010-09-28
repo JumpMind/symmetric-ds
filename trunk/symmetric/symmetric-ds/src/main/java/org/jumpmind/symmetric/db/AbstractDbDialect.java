@@ -91,7 +91,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 abstract public class AbstractDbDialect implements IDbDialect {
 

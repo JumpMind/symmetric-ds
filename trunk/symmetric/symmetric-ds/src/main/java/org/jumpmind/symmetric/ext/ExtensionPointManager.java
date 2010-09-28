@@ -67,7 +67,7 @@ import org.springframework.context.ApplicationContext;
  * application that matches the following pattern:
  * /META-INF/services/symmetric-*-ext.xml
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ExtensionPointManager implements IExtensionPointManager, BeanFactoryAware {
 

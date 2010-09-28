@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 
 /**
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 public class AuthenticationResourceHandler extends AbstractTransportResourceHandler {
 

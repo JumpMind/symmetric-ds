@@ -34,7 +34,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * An abstract convenience class meant to be implemented by classes that need to
  * publish text messages
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 abstract public class AbstractTextPublisherDataLoaderFilter implements IPublisherFilter, INodeGroupExtensionPoint,
         BeanNameAware {

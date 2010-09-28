@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.service.IRouterService;
 /**
  * This job calls {@link IRouterService#routeData()} 
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class RouterJob extends AbstractJob {
 

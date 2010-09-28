@@ -40,9 +40,9 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.handler.AbstractTransportResourceHandler;
 
 /**
- * @author dmichels2
+ * 2
  *
- * @author Dave Michels <dmichels2@users.sourceforge.net>,
+ * 
  */
 public class InetAddressResourceHandler extends AbstractTransportResourceHandler implements IInetAddressAuthorizer {
     private static final ILog log = LogFactory.getLog(InetAddressResourceHandler.class);

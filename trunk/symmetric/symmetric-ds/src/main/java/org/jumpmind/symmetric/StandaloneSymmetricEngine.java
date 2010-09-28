@@ -41,7 +41,7 @@ import org.springframework.context.ApplicationContext;
  * When the engine is ready to be started, the {@link #start()} method should be
  * called. It should only be called once.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class StandaloneSymmetricEngine extends AbstractSymmetricEngine {
 

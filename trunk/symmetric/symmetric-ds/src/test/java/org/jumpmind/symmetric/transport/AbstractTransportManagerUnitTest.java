@@ -27,7 +27,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class AbstractTransportManagerUnitTest {
 

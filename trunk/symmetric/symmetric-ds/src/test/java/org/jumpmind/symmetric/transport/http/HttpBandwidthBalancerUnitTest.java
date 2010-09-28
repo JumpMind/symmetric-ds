@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.service.mock.MockNodeService;
 import org.junit.Test;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class HttpBandwidthBalancerUnitTest {
 

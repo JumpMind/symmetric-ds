@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class IncomingBatch implements Serializable {
 

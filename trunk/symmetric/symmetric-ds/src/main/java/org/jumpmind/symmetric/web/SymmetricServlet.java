@@ -64,7 +64,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @since 1.4.0
  *
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 public class SymmetricServlet extends AbstractServlet {
 

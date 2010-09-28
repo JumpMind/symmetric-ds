@@ -34,7 +34,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 class ServletUtils {
     /**

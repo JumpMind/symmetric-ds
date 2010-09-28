@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class PushResourceHandler extends AbstractTransportResourceHandler {
 

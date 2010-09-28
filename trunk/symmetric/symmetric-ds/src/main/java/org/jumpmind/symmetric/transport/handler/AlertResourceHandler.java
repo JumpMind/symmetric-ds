@@ -49,7 +49,7 @@ import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedOutput;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class AlertResourceHandler extends AbstractTransportResourceHandler {
     private static final int MAX_ERRORS = 1000;

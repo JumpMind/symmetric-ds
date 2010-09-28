@@ -26,8 +26,6 @@ import java.io.OutputStream;
 /**
  * Throttle output stream to write at a specified rate. the rate will be an
  * average
- * 
- * @author hwang
  */
 public class MeteredOutputStream extends FilterOutputStream {
 

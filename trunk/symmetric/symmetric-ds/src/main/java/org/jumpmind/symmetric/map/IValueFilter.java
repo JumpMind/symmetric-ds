@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.map;
 import java.util.Map;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IValueFilter {
 

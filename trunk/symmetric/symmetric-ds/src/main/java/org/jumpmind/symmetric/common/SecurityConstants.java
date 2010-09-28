@@ -21,7 +21,7 @@
 package org.jumpmind.symmetric.common;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class SecurityConstants {
 

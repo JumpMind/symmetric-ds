@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.model.DataEventType;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INodeGroupExtensionPoint {
 

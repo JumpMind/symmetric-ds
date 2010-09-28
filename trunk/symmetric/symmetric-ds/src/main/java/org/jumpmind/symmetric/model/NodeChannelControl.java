@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.model;
 import java.util.Date;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class NodeChannelControl {
 

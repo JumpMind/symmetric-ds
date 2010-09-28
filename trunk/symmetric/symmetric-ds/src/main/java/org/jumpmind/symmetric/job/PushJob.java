@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.service.IPushService;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class PushJob extends AbstractJob {
 

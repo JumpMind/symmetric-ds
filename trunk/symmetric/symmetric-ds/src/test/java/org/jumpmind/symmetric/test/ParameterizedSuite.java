@@ -48,7 +48,7 @@ import org.springframework.util.ReflectionUtils;
  * efficient way to run an entire suite of tests against parameterized 'sets' of
  * data across the entire suite.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ParameterizedSuite extends Suite {
 

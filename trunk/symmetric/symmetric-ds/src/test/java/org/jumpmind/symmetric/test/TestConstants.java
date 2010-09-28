@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.test;
 import org.jumpmind.symmetric.model.Node;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TestConstants {
     

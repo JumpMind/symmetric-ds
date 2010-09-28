@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.transport.http.HttpBandwidthUrlSelector;
  * 
  * @see HttpBandwidthUrlSelector
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface ISyncUrlExtension extends IExtensionPoint {
 

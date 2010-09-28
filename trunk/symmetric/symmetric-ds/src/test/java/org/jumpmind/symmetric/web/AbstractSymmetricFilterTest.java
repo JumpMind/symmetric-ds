@@ -25,7 +25,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.test.AbstractWebTest;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class AbstractSymmetricFilterTest extends AbstractWebTest {
 

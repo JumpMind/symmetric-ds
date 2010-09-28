@@ -26,7 +26,7 @@ import java.util.Date;
 /**
  * This is the data that changed due to a data sync trigger firing.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class Data extends AbstractCsvData {
 

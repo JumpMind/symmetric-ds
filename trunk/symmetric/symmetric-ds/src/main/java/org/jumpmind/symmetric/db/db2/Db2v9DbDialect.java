@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {
 

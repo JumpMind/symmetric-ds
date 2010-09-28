@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.springframework.scripting.ScriptCompilationException;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtensionPoint {
 

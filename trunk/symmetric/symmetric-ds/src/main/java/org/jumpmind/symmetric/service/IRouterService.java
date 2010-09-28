@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.route.IRouterContext;
 
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IRouterService extends ISqlProvider {
 

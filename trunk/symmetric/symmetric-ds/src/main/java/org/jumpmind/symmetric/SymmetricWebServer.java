@@ -59,7 +59,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * 
  * @see SymmetricLauncher#main(String[])
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class SymmetricWebServer {
 

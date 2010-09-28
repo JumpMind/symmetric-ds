@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
  * from your development environment to get a SymmetricDS client and server you
  * can play with.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class RunTestEngines {
 

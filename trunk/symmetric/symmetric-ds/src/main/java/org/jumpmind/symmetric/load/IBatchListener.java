@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
  * This extension point is called whenever a batch has completed loading but before
  * the transaction has committed.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IBatchListener extends IExtensionPoint {
 

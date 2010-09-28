@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 
 /**
- * @author Mark Hanes <eegeek@users.sourceforge.net>
+ * 
  */
 public class DefaultNodeIdGenerator implements INodeIdGenerator {
 

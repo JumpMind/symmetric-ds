@@ -46,7 +46,7 @@ import org.jumpmind.symmetric.transport.ISyncUrlExtension;
  * Valid parameters are constants on this class that start with PARAM_. Any
  * parameter that is a numeral will be designated a possible URL.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExtensionPoint {
     

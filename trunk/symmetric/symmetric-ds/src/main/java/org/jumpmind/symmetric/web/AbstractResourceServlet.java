@@ -37,7 +37,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @param <T>
  *
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 public abstract class AbstractResourceServlet extends AbstractServlet implements IServletResource, IServletExtension {
 

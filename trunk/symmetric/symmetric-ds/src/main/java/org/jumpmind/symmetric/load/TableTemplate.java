@@ -42,7 +42,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * columns. It uses a cache of StatementBuilder objects that contain the SQL and
  * PreparedStatement.
  *
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class TableTemplate {
 

@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.service.INodeService;
  * Stream node configuration data if the appropriate data event type is
  * encountered.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 class StreamConfigDataCommand extends AbstractStreamDataCommand {
 

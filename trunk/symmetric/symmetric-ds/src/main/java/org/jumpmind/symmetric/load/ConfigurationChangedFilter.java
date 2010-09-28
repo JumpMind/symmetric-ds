@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
  * has changed. If it has, it will take the correct action to apply the
  * configuration change to the current node.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ConfigurationChangedFilter 
     implements IDataLoaderFilter, IBatchListener, IBuiltInExtensionPoint {

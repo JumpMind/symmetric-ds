@@ -30,9 +30,7 @@ import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
-/**
- * @author JumpMind, Inc
- */
+
 public class AutoIncrementColumnFilter implements IColumnFilter {
 
     int[] indexesToRemove = null;

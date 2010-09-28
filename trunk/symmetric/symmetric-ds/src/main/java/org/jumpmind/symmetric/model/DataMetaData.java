@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.model;
 import org.jumpmind.symmetric.ddl.model.Table;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class DataMetaData {
 

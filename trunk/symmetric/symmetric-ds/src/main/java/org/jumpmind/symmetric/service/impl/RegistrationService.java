@@ -55,7 +55,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 /**
  * @see IRegistrationService
  *
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class RegistrationService extends AbstractService implements IRegistrationService {
 

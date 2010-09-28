@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * @author Andrew Wilcox <andrewbwilcox@users.sourceforge.net>
+ * 
  */
 class StreamUpdateDataCommand extends AbstractStreamDataCommand {
 

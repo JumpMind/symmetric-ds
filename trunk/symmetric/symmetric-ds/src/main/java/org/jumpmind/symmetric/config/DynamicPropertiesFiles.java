@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
  * system property changes down the road, the initially configured files remain
  * captured during a properties refresh.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class DynamicPropertiesFiles extends ArrayList<String> {
 

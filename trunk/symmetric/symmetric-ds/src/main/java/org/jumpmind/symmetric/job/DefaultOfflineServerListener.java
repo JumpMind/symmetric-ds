@@ -31,11 +31,6 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
 /**
  * A default implementation of the Offline Server Listener.  
- * 
- * @author Jeff Bailey
- *
- *
- * @author Chris Henson <chenson42@users.sourceforge.net>
  */
 public class DefaultOfflineServerListener implements IOfflineServerListener,
  IBuiltInExtensionPoint {

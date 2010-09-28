@@ -49,7 +49,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
  * inserted or deleted tables in the triggers. Here is one idea we could
  * implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     

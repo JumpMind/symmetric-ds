@@ -56,7 +56,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
  * &lt;/batch&gt;
  * </pre>
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionPoint implements IPublisherFilter, INodeGroupExtensionPoint {
     

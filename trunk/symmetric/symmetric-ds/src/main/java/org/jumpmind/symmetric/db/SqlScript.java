@@ -44,7 +44,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * This class is for running SQL scripts against a DataSource.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class SqlScript {
 

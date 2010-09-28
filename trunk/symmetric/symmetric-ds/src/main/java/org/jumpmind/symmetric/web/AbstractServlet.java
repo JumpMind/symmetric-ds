@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 abstract public class AbstractServlet extends HttpServlet {
 

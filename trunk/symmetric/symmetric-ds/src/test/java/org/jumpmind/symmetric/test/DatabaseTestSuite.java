@@ -56,7 +56,7 @@ import org.junit.runners.Suite.SuiteClasses;
         RegistrationServiceTest.class, StatisticServiceTest.class, XmlPublisherFilterTest.class,
         AdditiveDataLoaderFilterTest.class, DataServiceTest.class, CleanupTest.class })
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class DatabaseTestSuite {
 

@@ -26,9 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author dmichels
+ * 
  *
- * @author Dave Michels <dmichels2@users.sourceforge.net>,
+ * 
  */
 public class InetAddressAuthorizerCompiler implements IInetAddressAuthorizerCompiler
 {

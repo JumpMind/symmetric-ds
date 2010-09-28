@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.ext;
 import org.springframework.beans.BeansException;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IExtensionPointManager {
 

@@ -45,7 +45,7 @@ import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class PushService extends AbstractOfflineDetectorService implements IPushService {
 

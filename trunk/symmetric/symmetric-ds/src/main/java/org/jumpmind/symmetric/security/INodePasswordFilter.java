@@ -25,8 +25,6 @@ import org.jumpmind.symmetric.ext.IExtensionPoint;
 
 /**
  * Used to intercept the saving and rendering of the node password.
- *
- * @author Jon Krajewski <jkrajewski@users.sourceforge.net>
  */
 public interface INodePasswordFilter extends IExtensionPoint {
 

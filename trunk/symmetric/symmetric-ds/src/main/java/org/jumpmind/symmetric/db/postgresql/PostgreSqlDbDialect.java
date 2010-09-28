@@ -41,7 +41,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 

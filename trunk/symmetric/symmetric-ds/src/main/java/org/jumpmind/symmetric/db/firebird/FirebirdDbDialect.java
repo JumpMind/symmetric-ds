@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.UncategorizedSQLException;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
 

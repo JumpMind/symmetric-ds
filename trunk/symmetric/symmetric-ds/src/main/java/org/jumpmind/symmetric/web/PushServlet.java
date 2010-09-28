@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.transport.handler.PushResourceHandler;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class PushServlet extends AbstractTransportResourceServlet<PushResourceHandler> 
     implements IBuiltInExtensionPoint {

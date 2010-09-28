@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.util.DefaultNodeIdGenerator;
  * </p>
  * The default implementation of this is the {@link DefaultNodeIdGenerator}
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface INodeIdGenerator extends IExtensionPoint {
 

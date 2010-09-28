@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.service.mock;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class MockNodePasswordFilter implements INodePasswordFilter {
 

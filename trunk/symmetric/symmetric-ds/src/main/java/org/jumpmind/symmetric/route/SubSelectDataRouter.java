@@ -52,7 +52,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
  * c.external_id in (select home_store from employee where employee_id in (:EMPLOYEE_ID, :OLD_EMPLOYEE_ID))
  * </code>
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class SubSelectDataRouter extends AbstractDataRouter {
 

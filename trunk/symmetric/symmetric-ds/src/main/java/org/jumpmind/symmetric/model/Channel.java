@@ -26,7 +26,7 @@ import java.util.Collection;
  * Definition of a channel and it's priority. A channel is a group of tables
  * that get synchronized together.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class Channel {
 

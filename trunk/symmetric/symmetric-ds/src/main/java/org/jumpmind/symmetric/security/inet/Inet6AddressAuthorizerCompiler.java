@@ -26,9 +26,9 @@ import java.net.UnknownHostException;
 /**
  * <b>Unimplemented</b>. Need to add IPv6 support
  * 
- * @author dmichels
+ * 
  *
- * @author Dave Michels <dmichels2@users.sourceforge.net>,
+ * 
  */
 public class Inet6AddressAuthorizerCompiler extends AbstractInetAddressAuthorizerCompiler
 {

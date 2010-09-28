@@ -26,7 +26,7 @@ import java.net.InetAddress;
 /**
  * 
  *
- * @author Dave Michels <dmichels2@users.sourceforge.net>,
+ * 
  */
 public interface IInetAddressAuthorizer
 {

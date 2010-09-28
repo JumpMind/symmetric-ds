@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class BatchResourceHandler extends AbstractTransportResourceHandler {
 

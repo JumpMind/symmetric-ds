@@ -32,7 +32,7 @@ import org.springframework.context.ApplicationContextAware;
  * Spring context. It will create its own {@link ApplicationContext} as a child
  * of the Spring {@link ApplicationContext} it is being wired into.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class SpringWireableSymmetricEngine extends AbstractSymmetricEngine implements ApplicationContextAware {
 

@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 /**
  * Provides an API to configure {@link TriggerRouter}s
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public interface ITriggerRouterService {
 

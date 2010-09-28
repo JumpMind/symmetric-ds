@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.load;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public interface IDataLoaderFilter extends IExtensionPoint {
 

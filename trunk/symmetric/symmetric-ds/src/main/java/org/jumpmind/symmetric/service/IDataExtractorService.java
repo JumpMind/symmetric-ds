@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IDataExtractorService {
 

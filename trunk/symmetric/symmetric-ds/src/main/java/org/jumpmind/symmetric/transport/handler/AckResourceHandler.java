@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class AckResourceHandler extends AbstractTransportResourceHandler {
     private IAcknowledgeService acknowledgeService;

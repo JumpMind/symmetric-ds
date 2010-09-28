@@ -33,7 +33,7 @@ import org.springframework.context.ApplicationContextAware;
  * Factory that will create either a jndiDataSource or a basicDataSource based
  * on whether a JNDI name is provided.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class DataSourceFactoryBean implements FactoryBean<DataSource>, ApplicationContextAware {
 

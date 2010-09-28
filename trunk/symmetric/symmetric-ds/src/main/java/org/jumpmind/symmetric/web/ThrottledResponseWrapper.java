@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class ThrottledResponseWrapper extends HttpServletResponseWrapper {
     private ByteArrayOutputStream output;

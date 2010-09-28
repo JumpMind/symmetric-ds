@@ -62,7 +62,7 @@ import org.springframework.context.ApplicationContext;
  * @since 1.4.0
  * 
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class SymmetricFilter implements Filter {
 

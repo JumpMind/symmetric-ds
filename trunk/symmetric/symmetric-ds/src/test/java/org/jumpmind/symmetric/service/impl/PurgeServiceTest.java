@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Test;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class PurgeServiceTest extends AbstractDatabaseTest {
 

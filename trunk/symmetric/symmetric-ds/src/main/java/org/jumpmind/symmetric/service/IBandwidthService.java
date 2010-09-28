@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.web.BandwidthSamplerServlet;
  * A client service that determines bandwidth availability.
  * @see BandwidthSamplerServlet
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IBandwidthService {
 

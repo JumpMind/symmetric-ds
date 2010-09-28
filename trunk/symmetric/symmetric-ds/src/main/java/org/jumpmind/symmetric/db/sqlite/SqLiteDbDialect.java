@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
 /**
- * @author Mark Hanes <eegeek@users.sourceforge.net>
+ * 
  */
 public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
 

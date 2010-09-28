@@ -29,7 +29,7 @@ import java.util.Map;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public interface IDataLoader extends Cloneable {
 

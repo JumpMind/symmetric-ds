@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Defines the trigger via which a table will be synchronized.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class Router {
 

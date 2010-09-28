@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.route;
 import org.jumpmind.symmetric.model.Data;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IDataToRouteReader extends Runnable {
 

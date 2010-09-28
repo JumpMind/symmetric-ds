@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public abstract class AbstractDataRouter implements IDataRouter {
 

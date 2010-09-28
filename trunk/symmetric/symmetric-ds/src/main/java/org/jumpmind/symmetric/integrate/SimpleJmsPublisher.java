@@ -29,7 +29,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.jms.core.JmsTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
 

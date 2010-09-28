@@ -35,9 +35,9 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  *
- * @author Andrew Wilcox <andrewbwilcox@users.sourceforge.net>
+ * 
  */
 public class CsvExtractor extends CsvExtractor16 {
 

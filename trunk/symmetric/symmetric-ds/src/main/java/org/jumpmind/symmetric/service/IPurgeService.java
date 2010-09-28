@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IPurgeService {
     

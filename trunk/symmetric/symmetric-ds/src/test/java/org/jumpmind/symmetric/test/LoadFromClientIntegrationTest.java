@@ -27,7 +27,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class LoadFromClientIntegrationTest extends AbstractIntegrationTest {
 

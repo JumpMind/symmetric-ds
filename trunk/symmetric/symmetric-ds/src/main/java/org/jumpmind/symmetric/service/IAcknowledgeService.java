@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IAcknowledgeService {
 

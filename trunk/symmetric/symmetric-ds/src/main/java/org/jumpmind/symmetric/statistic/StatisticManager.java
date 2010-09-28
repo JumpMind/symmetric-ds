@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.util.AppUtils;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class StatisticManager implements IStatisticManager {
 

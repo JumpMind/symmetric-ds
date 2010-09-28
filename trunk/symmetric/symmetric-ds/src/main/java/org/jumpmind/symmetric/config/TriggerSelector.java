@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 /**
  * Utility class to pair down a list of triggers from a list of TriggerRouters
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TriggerSelector {
 

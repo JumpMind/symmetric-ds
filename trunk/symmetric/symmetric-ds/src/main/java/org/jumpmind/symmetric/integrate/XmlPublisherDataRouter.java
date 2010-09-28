@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.route.IRouterContext;
  * it publishes data to the {@link IPublisher} interface. The most common implementation of the {@link IPublisher} is
  * the {@link SimpleJmsPublisher}.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements IDataRouter {
 

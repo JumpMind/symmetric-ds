@@ -84,7 +84,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class DataExtractorService extends AbstractService implements IDataExtractorService, BeanFactoryAware {
 

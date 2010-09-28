@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 /**
  * A listener that was built specifically to 'listen' for failures.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TriggerFailureListener extends TriggerCreationAdapter {
 

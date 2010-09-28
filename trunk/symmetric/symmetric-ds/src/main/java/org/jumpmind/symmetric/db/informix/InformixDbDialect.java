@@ -29,9 +29,6 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Trigger;
 
-/**
- * @author JumpMind, Inc.
- */
 public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 
     private String identifierQuoteString = "";

@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.util.AppUtils;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class NodeHost {
 

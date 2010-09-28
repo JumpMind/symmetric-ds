@@ -25,7 +25,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
- * @author Mark Hanes <eegeek@users.sourceforge.net>
+ * 
  */
 public class Message {
 

@@ -35,7 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class XmlPublisherFilterTest extends AbstractDatabaseTest {
 

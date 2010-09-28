@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IOutgoingTransport {
 

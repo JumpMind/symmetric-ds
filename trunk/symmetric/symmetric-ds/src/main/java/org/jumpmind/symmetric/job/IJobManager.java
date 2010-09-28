@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.job;
 
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IJobManager {
 

@@ -33,9 +33,9 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  *
- * @author Andrew Wilcox <andrewbwilcox@users.sourceforge.net>
+ * 
  */
 public class CsvExtractor16 extends CsvExtractor14 {
 

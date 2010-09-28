@@ -30,9 +30,9 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  *
- * @author Andrew Wilcox <andrewbwilcox@users.sourceforge.net>
+ * 
  */
 class StreamDeleteDataCommand extends AbstractStreamDataCommand {
 

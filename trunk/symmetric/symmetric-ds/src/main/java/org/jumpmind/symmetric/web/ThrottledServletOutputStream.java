@@ -28,7 +28,7 @@ import javax.servlet.ServletOutputStream;
 import org.jumpmind.symmetric.util.MeteredOutputStream;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class ThrottledServletOutputStream extends ServletOutputStream {
     private MeteredOutputStream stream;

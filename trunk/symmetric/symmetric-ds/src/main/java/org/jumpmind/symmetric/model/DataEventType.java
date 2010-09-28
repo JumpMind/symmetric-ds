@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.model;
 import org.jumpmind.symmetric.util.ICoded;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public enum DataEventType implements ICoded {
 

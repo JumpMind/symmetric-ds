@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.db;
 import org.apache.commons.codec.binary.Base64;
 
 /**
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 public class EmbeddedDbFunctions {
 

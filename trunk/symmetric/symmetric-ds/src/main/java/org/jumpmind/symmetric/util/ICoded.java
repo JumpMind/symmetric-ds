@@ -22,7 +22,7 @@
 package org.jumpmind.symmetric.util;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface ICoded {
     public String getCode();

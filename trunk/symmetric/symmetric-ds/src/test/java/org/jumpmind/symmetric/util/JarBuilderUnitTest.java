@@ -30,7 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class JarBuilderUnitTest {
 

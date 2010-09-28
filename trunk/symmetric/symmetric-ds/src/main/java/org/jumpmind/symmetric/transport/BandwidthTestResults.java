@@ -40,7 +40,7 @@ package org.jumpmind.symmetric.transport;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA  02111-1307, USA.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 
 /**

@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.statistic.ChannelStats;
 
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IStatisticService {
 

@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.INodeGroupDataLoaderFilter;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class NodeGroupTestDataLoaderFilter implements INodeGroupDataLoaderFilter, INodeGroupTestDataLoaderFilter {
 

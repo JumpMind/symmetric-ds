@@ -44,7 +44,7 @@ import org.junit.Test;
 
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class DataLoaderTest extends AbstractDataLoaderTest {
 

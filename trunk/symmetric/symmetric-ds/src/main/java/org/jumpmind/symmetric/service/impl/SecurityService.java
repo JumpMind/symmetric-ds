@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.service.ISecurityService;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class SecurityService extends AbstractService implements ISecurityService {
 

@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.upgrade;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public interface IUpgradeTask {
 

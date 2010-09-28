@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.service;
 /**
  * An exception that indicates a failed registration attempt.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class RegistrationFailedException extends RuntimeException {
 

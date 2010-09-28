@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.service.IParameterService;
  * Use runtime configuration specific seeding to get a random number for use in
  * time slotting nodes to help stagger load.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class RandomTimeSlot {
 

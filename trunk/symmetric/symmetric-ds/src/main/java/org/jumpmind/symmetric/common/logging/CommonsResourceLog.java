@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.common.logging;
 import org.jumpmind.symmetric.common.Message;
 
 /**
- * @author Mark Hanes <eegeek@users.sourceforge.net>
+ * 
  */
 public class CommonsResourceLog implements ILog {
 

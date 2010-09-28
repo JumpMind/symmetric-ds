@@ -26,7 +26,7 @@ import java.util.Random;
 import org.junit.Test;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class MeteredOutputStreamTest {
 
