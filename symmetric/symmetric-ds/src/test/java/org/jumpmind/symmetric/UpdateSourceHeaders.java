@@ -48,14 +48,14 @@ public class UpdateSourceHeaders {
         if (classBeginIndex < 0) {
             throw new IllegalStateException("Could not find class start: " + contents);
         } else {
-            if (contents.substring(0, classBeginIndex).indexOf("final") > 0) {
-                classBeginIndex = contents.substring(0, classBeginIndex).indexOf("final");
+            if (contents.substring(0, classBeginIndex).lastIndexOf("final") > 0) {
+                classBeginIndex = contents.substring(0, classBeginIndex).lastIndexOf("final");
             }
-            if (contents.substring(0, classBeginIndex).indexOf("public") > 0) {
-                classBeginIndex = contents.substring(0, classBeginIndex).indexOf("public");
+            if (contents.substring(0, classBeginIndex).lastIndexOf("public") > 0) {
+                classBeginIndex = contents.substring(0, classBeginIndex).lastIndexOf("public");
             }
-            if (contents.substring(0, classBeginIndex).indexOf("abstract") > 0) {
-                classBeginIndex = contents.substring(0, classBeginIndex).indexOf("abstract");
+            if (contents.substring(0, classBeginIndex).lastIndexOf("abstract") > 0) {
+                classBeginIndex = contents.substring(0, classBeginIndex).lastIndexOf("abstract");
             }
             
             int insertPoint = contents.substring(0, classBeginIndex+1).indexOf("*/")-1;
