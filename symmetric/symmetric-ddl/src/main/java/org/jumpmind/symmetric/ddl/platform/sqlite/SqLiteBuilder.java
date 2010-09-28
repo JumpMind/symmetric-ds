@@ -54,7 +54,6 @@ import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
  * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  * 
- * @author eegeek@users.sourceforge.net
  * @version $Revision: 518485 $
  */
 public class SqLiteBuilder extends SqlBuilder {

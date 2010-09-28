@@ -54,8 +54,6 @@ import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
  * The SQL Builder for the H2 database. From patch <a
  * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
- * 
- * @author knaas@users.sourceforge.net
  */
 public class H2Builder extends SqlBuilder {
 
