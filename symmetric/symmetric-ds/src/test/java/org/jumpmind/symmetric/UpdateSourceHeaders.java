@@ -20,10 +20,10 @@ public class UpdateSourceHeaders {
     }
     
     private static void updateHeader(File file, String newHeaderTxt) throws Exception {
-        String fileContents = FileUtils.readFileToString(file).trim();        
-        if (fileContents.startsWith("/*")) {
-            String oldHeader = fileContents.substring(0, fileContents.indexOf("*/"));
-            StringBuilder newContents = new StringBuilder(fileContents.substring(fileContents.indexOf("*/") + 2));
+        StringBuilder newContents = new StringBuilder(FileUtils.readFileToString(file).trim());        
+        if (newContents.toString().startsWith("/*")) {
+            String oldHeader = newContents.toString().substring(0, newContents.toString().indexOf("*/"));
+            newContents = new StringBuilder(newContents.toString().substring(newContents.toString().indexOf("*/") + 2));
             Pattern pattern = Pattern.compile("Copyright.*");
             Matcher matcher = pattern.matcher(oldHeader);
             while (matcher.find()) {
@@ -31,9 +31,10 @@ public class UpdateSourceHeaders {
                 String author = group.substring("Copyright (C) ".length());
                 insertAuthor(file.getName(), newContents, author);
             }
-            
-            FileUtils.writeStringToFile(file, newHeaderTxt+"\n"+newContents.toString());
         }
+        
+        FileUtils.writeStringToFile(file, newHeaderTxt+"\n"+newContents.toString());
+
     }
     
     private static void insertAuthor(String fileName, StringBuilder contents, String author) {
