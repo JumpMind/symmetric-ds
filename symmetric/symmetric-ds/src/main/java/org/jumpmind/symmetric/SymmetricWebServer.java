@@ -81,7 +81,7 @@ public class SymmetricWebServer {
 
     protected String webHome = "/sync";
 
-    protected int maxIdleTime = 900000;
+    protected int maxIdleTime = 7200000;
 
     protected int httpPort = -1;
 

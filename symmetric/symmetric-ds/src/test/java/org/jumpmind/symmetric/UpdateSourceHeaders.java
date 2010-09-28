@@ -11,7 +11,7 @@ public class UpdateSourceHeaders {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) throws Exception {
-        Collection<File> files = (Collection<File>) FileUtils.listFiles(new File("src/main"),
+        Collection<File> files = (Collection<File>) FileUtils.listFiles(new File("src"),
                 new String[] { "java" }, true);
         for (File file : files) {
             updateHeader(file, FileUtils.readFileToString(new File("HEADER.txt")));
