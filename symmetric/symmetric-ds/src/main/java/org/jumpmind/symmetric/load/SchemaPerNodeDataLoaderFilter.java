@@ -26,7 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * An extension that prefixes the table name with a schema name that is equal to the incoming node_id.
  *
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class SchemaPerNodeDataLoaderFilter implements IDataLoaderFilter {
     private IDbDialect dbDialect;

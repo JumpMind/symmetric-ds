@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.common;
 import org.jumpmind.symmetric.model.DataEvent;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * 
  */
 final public class Constants {
 

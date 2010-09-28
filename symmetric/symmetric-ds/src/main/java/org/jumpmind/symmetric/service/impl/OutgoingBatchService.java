@@ -51,9 +51,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  *
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
 

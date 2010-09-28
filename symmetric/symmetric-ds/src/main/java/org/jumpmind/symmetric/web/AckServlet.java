@@ -36,11 +36,11 @@ import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.handler.AckResourceHandler;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  *
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  *
- * @author Eric Long <erilong@user.sourceforge.net>
+ * 
  */
 public class AckServlet extends AbstractTransportResourceServlet<AckResourceHandler> implements IBuiltInExtensionPoint {
 

@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 

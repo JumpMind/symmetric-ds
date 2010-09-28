@@ -24,9 +24,6 @@ package org.jumpmind.symmetric.security.inet;
 /**
  * Provides lower-level address authorization to allow for raw address bytes to be authorized as opposed to requiring an
  * <code>InetAddress</code> to be created for authorization checks.
- * 
- *
- * @author Dave Michels <dmichels2@users.sourceforge.net>
  */
 public interface IRawInetAddressAuthorizer
 {

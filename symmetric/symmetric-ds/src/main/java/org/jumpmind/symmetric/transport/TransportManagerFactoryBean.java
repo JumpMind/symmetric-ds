@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TransportManagerFactoryBean implements FactoryBean<ITransportManager> {
 

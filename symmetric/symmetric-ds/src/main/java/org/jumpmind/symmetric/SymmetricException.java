@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.common.Message;
  * This is a {@link RuntimeException} that supports using the SymmetricDS
  * {@link Message} infrastructure
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class SymmetricException extends RuntimeException {
 

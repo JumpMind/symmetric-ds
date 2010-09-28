@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
 

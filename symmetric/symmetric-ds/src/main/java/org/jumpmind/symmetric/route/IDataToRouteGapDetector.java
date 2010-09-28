@@ -21,7 +21,7 @@
 package org.jumpmind.symmetric.route;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IDataToRouteGapDetector {
 

@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.upgrade.IUpgradeTask;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class UpgradeService extends AbstractService implements IUpgradeService {
 

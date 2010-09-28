@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class SqlDrivenUpgradeTask extends AbstractSqlUpgradeTask {
 

@@ -31,7 +31,7 @@ import org.apache.commons.lang.StringUtils;
  * Follow the Apache versioning scheme documented <a
  * href="http://apr.apache.org/versioning.html">here</a>.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 final public class Version {
 

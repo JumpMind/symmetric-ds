@@ -59,7 +59,7 @@ import org.apache.log4j.Logger;
  * 
  * 
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TestServlet extends javax.servlet.http.HttpServlet implements javax.servlet.Servlet {
     static final long serialVersionUID = 1L;

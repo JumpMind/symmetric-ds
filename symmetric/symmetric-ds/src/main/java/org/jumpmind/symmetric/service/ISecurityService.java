@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.service;
 
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public interface ISecurityService {
 

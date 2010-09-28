@@ -25,11 +25,6 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.util.CsvUtils;
 
-/**
- * @author Andrew Wilcox <andrewbwilcox@users.sourceforge.net>   
- *
- * @author Chris Henson <chenson42@users.sourceforge.net>
- */
 abstract class AbstractStreamDataCommand implements IStreamDataCommand {
     protected static final String DELIMITER = CsvUtils.DELIMITER;
     protected ILog log = LogFactory.getLog(getClass());

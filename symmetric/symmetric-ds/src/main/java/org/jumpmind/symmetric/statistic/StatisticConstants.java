@@ -21,7 +21,7 @@
 package org.jumpmind.symmetric.statistic;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public final class StatisticConstants {
 

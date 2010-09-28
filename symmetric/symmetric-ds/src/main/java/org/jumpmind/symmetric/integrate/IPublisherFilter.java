@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IPublisherFilter extends IDataLoaderFilter, IBatchListener {
 

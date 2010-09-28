@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.util.AppUtils;
  * 
  * @see IBandwidthService
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class BandwidthSamplerServlet extends AbstractResourceServlet 
   implements IBuiltInExtensionPoint {

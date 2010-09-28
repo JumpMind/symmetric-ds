@@ -26,7 +26,7 @@ package org.jumpmind.symmetric.model;
  * Identifies the action to take when the event watcher sees events in the event
  * table.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public enum NodeGroupLinkAction {
 

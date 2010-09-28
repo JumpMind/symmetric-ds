@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 abstract public class AbstractEmbeddedDbDialect extends AbstractDbDialect implements IDbDialect {
 

@@ -43,7 +43,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
  * </p>
  * 
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 
 public class SelfSignedX509TrustManager implements X509TrustManager

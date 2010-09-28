@@ -51,7 +51,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 

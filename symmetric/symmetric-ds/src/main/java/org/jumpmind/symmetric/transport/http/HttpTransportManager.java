@@ -53,7 +53,7 @@ import org.jumpmind.symmetric.web.WebConstants;
  * Allow remote communication to nodes, in order to push data, pull data, and
  * send messages.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class HttpTransportManager extends AbstractTransportManager implements ITransportManager {
 

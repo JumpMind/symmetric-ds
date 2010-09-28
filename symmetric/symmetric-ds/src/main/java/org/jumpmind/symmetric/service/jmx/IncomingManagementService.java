@@ -25,7 +25,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for incoming synchronization")
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class IncomingManagementService {
 

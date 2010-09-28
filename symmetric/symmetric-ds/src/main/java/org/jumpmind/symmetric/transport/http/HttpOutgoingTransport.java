@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.web.WebConstants;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 

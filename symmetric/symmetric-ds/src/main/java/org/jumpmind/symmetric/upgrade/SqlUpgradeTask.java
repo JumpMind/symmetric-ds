@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
 

@@ -38,7 +38,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * All symmetric servlets and filters (other than {@link SymmetricFilter} and
  * {@link SymmetricServlet}) should extend this class. It it managed by Spring.
  *
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 public class ServletResourceTemplate implements IServletResource {
     protected ServletContext servletContext;

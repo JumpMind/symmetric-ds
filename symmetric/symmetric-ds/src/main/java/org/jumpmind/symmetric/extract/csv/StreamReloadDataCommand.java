@@ -33,9 +33,9 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  *
- * @author Andrew Wilcox <andrewbwilcox@users.sourceforge.net>
+ * 
  */
 class StreamReloadDataCommand extends AbstractStreamDataCommand {
 

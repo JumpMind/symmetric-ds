@@ -30,7 +30,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * @author Mark Hanes <eegeek@users.sourceforge.net>
+ * 
  */
 public class ChannelMap {
 

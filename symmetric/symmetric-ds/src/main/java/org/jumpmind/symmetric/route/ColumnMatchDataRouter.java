@@ -72,7 +72,7 @@ import org.jumpmind.symmetric.service.IRegistrationService;
  * be 'store_id=:REDIRECT_NODE' and the router_type would be 'column'.
  * 
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {
 

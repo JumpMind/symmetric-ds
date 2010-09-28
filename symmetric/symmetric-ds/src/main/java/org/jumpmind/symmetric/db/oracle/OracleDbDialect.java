@@ -45,7 +45,7 @@ import org.springframework.jdbc.support.lob.OracleLobHandler;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 

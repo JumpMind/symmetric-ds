@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.transport;
 import java.io.IOException;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class AuthenticationException extends IOException {
 

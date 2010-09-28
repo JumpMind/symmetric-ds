@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.model.Node;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public interface IDataLoaderContext extends ICacheContext {
 

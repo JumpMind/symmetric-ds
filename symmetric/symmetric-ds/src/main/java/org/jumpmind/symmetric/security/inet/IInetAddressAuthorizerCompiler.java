@@ -25,9 +25,9 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 /**
- * @author dmichels
+ * 
  *
- * @author Dave Michels <dmichels2@users.sourceforge.net>,
+ * 
  */
 public interface IInetAddressAuthorizerCompiler
 {

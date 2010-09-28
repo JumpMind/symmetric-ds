@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 abstract public class AbstractSqlUpgradeTask implements IUpgradeTask {
 

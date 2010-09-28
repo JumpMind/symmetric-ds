@@ -42,7 +42,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ParameterService extends AbstractService implements IParameterService,
         BeanFactoryAware {

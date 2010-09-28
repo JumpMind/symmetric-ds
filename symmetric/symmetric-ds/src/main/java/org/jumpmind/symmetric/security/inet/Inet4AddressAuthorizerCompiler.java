@@ -31,9 +31,9 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 /**
  * Filter compiler for IPv4 addresses.
  * 
- * @author dmichels2
+ * 2
  *
- * @author Dave Michels <dmichels2@users.sourceforge.net>,
+ * 
  */
 public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorizerCompiler {
     private static final ILog log = LogFactory.getLog(Inet4AddressAuthorizerCompiler.class);
@@ -53,7 +53,7 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
      * address space between 2 IPv4 addresses, inclusive of the bounds (highest
      * and lowest possible) addresses themselves.
      * 
-     * @author dmichels
+     * 
      */
     static class RawInet4AddressRangeAuthorizer implements IRawInetAddressAuthorizer {
         private final short[] startAddress;
@@ -88,7 +88,7 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
      * Used for comparison of addresses to a CIDR (Classless Inter-Domain
      * Routing) address block (i.e. '10.5.5.32/27')
      * 
-     * @author dmichels
+     * 
      */
     static class RawInet4AddressCidrAuthorizer implements IRawInetAddressAuthorizer {
         private final int checkAddress;
@@ -141,7 +141,7 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
      * broadcast). So, static IP addresses such as <code>10.5.5.32</code> and
      * <code>10.5.5.*</code> are handled by this authorizer.
      * 
-     * @author dmichels
+     * 
      */
     static class RawInet4AddressAuthorizer implements IRawInetAddressAuthorizer {
         private final byte[] checkAddress;

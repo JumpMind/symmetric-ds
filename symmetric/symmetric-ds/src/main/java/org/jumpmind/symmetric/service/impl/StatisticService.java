@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.ChannelStats;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class StatisticService extends AbstractService implements IStatisticService {
 

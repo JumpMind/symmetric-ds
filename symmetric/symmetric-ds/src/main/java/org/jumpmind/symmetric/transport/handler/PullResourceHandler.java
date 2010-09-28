@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class PullResourceHandler extends AbstractTransportResourceHandler {
 

@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.transport.InetAddressResourceHandler;
 /**
  * This better be the first filter that executes!
  *
- * @author Dave Michels <dmichels2@users.sourceforge.net>,
+ * 
  */
 public class InetAddressFilter extends AbstractTransportFilter<InetAddressResourceHandler> 
     implements IBuiltInExtensionPoint {

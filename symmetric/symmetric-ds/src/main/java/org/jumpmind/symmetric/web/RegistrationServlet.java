@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.transport.handler.RegistrationResourceHandler;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class RegistrationServlet extends AbstractTransportResourceServlet<RegistrationResourceHandler> 
     implements IBuiltInExtensionPoint {

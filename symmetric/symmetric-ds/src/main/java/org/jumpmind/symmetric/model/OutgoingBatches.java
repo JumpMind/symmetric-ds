@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author Mark Hanes <eegeek@users.sourceforge.net>
+ * 
  */
 public class OutgoingBatches {
 

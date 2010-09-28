@@ -57,7 +57,7 @@ import org.springframework.beans.factory.BeanFactory;
 /**
  * Coordinates interaction between two symmetric engines in the same JVM.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class InternalTransportManager extends AbstractTransportManager implements ITransportManager {
 

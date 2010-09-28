@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
 /**
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
 

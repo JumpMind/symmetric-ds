@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  * 
  * @since 2.0
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IBatchAlgorithm extends IExtensionPoint {
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData,

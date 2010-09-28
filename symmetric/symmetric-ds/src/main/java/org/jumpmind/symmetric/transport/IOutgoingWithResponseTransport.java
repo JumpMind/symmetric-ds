@@ -25,7 +25,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IOutgoingWithResponseTransport extends IOutgoingTransport {
     public BufferedReader readResponse() throws IOException;

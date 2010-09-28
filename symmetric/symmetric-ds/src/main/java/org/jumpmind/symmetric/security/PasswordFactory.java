@@ -28,7 +28,7 @@ import org.springframework.beans.factory.FactoryBean;
 /**
  * Used to protect database user and password from casual observation in the properties file
  *
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class PasswordFactory implements FactoryBean<String> {
 

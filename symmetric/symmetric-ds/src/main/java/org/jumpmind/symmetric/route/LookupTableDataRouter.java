@@ -40,7 +40,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 /**
  * A data router that uses a lookup table to map data to nodes
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class LookupTableDataRouter extends AbstractDataRouter implements IDataRouter {
 

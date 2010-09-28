@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.junit.Test;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ClusterServiceTest extends AbstractDatabaseTest {
 

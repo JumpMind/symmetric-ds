@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public interface IRegistrationService {
 

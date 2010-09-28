@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IRegistrationService;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class RegistrationResourceHandler extends AbstractTransportResourceHandler {
     private IRegistrationService registrationService;

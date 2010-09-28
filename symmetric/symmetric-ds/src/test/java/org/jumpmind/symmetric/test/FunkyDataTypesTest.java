@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class FunkyDataTypesTest extends AbstractDatabaseTest {
 

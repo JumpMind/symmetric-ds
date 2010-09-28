@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 /**
  * This class represents a node who has registered for sync updates.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class Node {
 

@@ -32,7 +32,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.symmetric.ddl.model.Column;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class StatementBuilder {
     public enum DmlType {

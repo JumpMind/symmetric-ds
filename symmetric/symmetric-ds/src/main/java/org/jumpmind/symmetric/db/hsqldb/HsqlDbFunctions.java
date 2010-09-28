@@ -26,7 +26,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.db.EmbeddedDbFunctions;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class HsqlDbFunctions extends EmbeddedDbFunctions {
 

@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IRouterContext extends ICacheContext {
 

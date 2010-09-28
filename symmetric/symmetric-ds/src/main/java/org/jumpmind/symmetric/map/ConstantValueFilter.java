@@ -26,7 +26,7 @@ import java.util.Map;
  * Use this value filter if you want a constant value to always be inserted
  * as a column value.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ConstantValueFilter implements IValueFilter {
 

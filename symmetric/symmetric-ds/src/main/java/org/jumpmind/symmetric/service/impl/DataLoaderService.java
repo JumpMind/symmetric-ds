@@ -78,7 +78,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class DataLoaderService extends AbstractService implements IDataLoaderService, BeanFactoryAware {
 

@@ -22,7 +22,7 @@
 package org.jumpmind.symmetric.common.csv;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 final public class CsvConstants {
 

@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class InternalOutgoingWithResponseTransport implements IOutgoingWithResponseTransport {
 

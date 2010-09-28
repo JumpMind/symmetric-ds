@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
 

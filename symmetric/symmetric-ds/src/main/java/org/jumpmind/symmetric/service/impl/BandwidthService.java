@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 /**
  * @see IBandwidthService
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class BandwidthService extends AbstractService implements IBandwidthService {
     

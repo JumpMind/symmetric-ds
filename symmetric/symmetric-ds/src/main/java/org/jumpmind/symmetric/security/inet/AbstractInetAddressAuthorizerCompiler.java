@@ -31,10 +31,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 /**
  * Base class that all {@link IInetAddressAuthorizerCompiler} implementations
  * should extend.
- * 
- * @author dmichels2
  *
- * @author Dave Michels <dmichels2@users.sourceforge.net>,
  */
 public abstract class AbstractInetAddressAuthorizerCompiler implements IInetAddressAuthorizerCompiler {
     /**

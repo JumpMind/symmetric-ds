@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.Reservation
 /**
  * Configured within symmetric-web.xml
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class NodeConcurrencyFilter extends AbstractFilter 
   implements IBuiltInExtensionPoint {

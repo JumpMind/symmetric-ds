@@ -36,7 +36,7 @@ import org.hsqldb.Trigger;
 import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements Trigger {
 

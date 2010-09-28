@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.web.WebConstants;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 abstract public class AbstractTransportManager {
 

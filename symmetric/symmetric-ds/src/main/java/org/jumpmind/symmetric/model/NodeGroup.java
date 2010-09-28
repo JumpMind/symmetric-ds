@@ -22,7 +22,7 @@
 package org.jumpmind.symmetric.model;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class NodeGroup {
 

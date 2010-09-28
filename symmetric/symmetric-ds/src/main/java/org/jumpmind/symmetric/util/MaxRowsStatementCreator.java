@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class MaxRowsStatementCreator implements PreparedStatementCreator {
 

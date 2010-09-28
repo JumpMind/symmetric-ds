@@ -30,7 +30,7 @@ import org.springframework.jdbc.core.StatementCreatorUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class ArgTypePreparedStatementSetter implements PreparedStatementSetter
 {

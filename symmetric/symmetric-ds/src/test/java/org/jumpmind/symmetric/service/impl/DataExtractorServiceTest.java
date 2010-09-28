@@ -42,7 +42,7 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class DataExtractorServiceTest extends AbstractDatabaseTest {
 

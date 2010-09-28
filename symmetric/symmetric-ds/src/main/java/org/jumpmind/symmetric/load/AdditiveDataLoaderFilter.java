@@ -35,7 +35,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * applied to the node's current value. Override columns simply override (write
  * over) whatever value the node currently has.
  *
- * @author Mark Hanes <eegeek@users.sourceforge.net>
+ * 
  */
 public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
 

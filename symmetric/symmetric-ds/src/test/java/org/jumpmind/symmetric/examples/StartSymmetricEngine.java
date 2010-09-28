@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.examples;
 import org.jumpmind.symmetric.SymmetricWebServer;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class StartSymmetricEngine {
 

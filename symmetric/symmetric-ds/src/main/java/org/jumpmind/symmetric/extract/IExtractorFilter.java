@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.Data;
  * has been streamed. It has the ability to inspect each row of data to take
  * some action and indicate, if necessary, that the row should not be streamed.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IExtractorFilter extends IExtensionPoint {
 

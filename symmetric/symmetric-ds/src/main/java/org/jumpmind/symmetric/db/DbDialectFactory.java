@@ -52,7 +52,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAware {
 

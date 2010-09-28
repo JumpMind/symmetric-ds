@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.security.INodePasswordFilter;
  * This service provides an API to access {@link Node}s and Node related
  * information.
  *
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public interface INodeService {
 

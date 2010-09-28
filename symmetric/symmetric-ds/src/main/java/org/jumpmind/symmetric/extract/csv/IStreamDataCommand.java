@@ -28,9 +28,9 @@ import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  *
- * @author Andrew Wilcox <andrewbwilcox@users.sourceforge.net>
+ * 
  */
 interface IStreamDataCommand {
     void execute(Writer out, Data data, String routerId, DataExtractorContext context) throws IOException;

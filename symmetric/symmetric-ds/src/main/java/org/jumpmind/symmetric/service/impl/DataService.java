@@ -80,7 +80,7 @@ import org.springframework.transaction.support.TransactionCallback;
 
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class DataService extends AbstractService implements IDataService {
 

@@ -34,7 +34,7 @@ import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.Version;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class JarBuilder {
 

@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.common;
  * These are properties that can be set only as Java System properties using
  * -D settings.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class SystemConstants {
     

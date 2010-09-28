@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.service;
 
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IClusterService {
 

@@ -58,7 +58,7 @@ import bsh.Interpreter;
 
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public class CsvLoader implements IDataLoader {
 

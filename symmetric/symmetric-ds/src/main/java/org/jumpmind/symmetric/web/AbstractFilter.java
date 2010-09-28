@@ -35,7 +35,7 @@ import org.springframework.beans.BeanUtils;
  * 
  * @since 1.4.0
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public abstract class AbstractFilter extends ServletResourceTemplate implements Filter, IExtensionPoint {
 

@@ -32,7 +32,7 @@ import java.io.OutputStreamWriter;
 import org.jumpmind.symmetric.common.Constants;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TransportUtils {
 

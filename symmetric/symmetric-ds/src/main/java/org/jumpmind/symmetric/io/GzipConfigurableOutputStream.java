@@ -27,7 +27,7 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class GzipConfigurableOutputStream extends DeflaterOutputStream {
 

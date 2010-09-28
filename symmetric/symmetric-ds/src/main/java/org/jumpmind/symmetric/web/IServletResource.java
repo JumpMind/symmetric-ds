@@ -30,7 +30,7 @@ import javax.servlet.ServletRequest;
  * @since 1.4.0
  * 
  *
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 public interface IServletResource {
 

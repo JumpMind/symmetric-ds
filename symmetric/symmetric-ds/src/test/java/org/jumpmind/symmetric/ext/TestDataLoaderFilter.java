@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TestDataLoaderFilter implements IDataLoaderFilter, ITestDataLoaderFilter {
 

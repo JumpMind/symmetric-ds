@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.util.AppUtils;
  * reached, flush the buffer to the file and write to the file from that point
  * forward.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ThresholdFileWriter extends Writer {
 

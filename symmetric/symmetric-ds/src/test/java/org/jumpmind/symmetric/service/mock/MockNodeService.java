@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.INodeService;
 
 /**
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 public class MockNodeService implements INodeService {
 

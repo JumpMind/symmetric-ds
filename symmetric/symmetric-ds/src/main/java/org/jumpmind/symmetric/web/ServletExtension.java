@@ -26,7 +26,7 @@ import javax.servlet.Servlet;
  * This is an extension that an be used to register a Servlet that gets called by
  * SymmetricDS's {@link SymmetricServlet} 
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class ServletExtension implements IServletExtension {
 

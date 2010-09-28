@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.ddl.model.Table;
  * locations), then we still have the history of what the columns and primary
  * keys were at the time.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TriggerHistory extends AbstractCsvData {
 

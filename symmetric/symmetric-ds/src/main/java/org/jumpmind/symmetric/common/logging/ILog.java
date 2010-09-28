@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.common.logging;
 
 
 /**
- * @author Mark Hanes <eegeek@users.sourceforge.net>
+ * 
  */
 public interface ILog {
 

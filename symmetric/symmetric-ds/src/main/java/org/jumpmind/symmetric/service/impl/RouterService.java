@@ -68,7 +68,7 @@ import org.springframework.dao.DataIntegrityViolationException;
  * 
  * @since 2.0
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class RouterService extends AbstractService implements IRouterService {
 

@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 /**
  * Simple Servlet that returns a 200 to indicate that SymmetricDS is deployed and running.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class PingServlet extends AbstractResourceServlet 
   implements IBuiltInExtensionPoint {

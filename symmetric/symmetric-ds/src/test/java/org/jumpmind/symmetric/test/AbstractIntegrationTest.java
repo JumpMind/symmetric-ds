@@ -34,7 +34,7 @@ import org.junit.BeforeClass;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class AbstractIntegrationTest extends AbstractTest {
 

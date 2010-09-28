@@ -32,7 +32,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses( { InetAddressFilterTest.class, AuthenticationFilterTest.class, SymmetricForbiddenFilterTest.class,
         SymmetricRegistrationRequiredTest.class })
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class TestSuite {
 

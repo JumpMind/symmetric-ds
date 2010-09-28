@@ -27,7 +27,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  *
- * @author Eric Long <erilong@users.sourceforge.net>
+ * 
  */
 public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
     private static final ILog log = LogFactory.getLog(DuplicateTableDataLoaderFilter.class);

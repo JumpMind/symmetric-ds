@@ -27,10 +27,7 @@ import org.jumpmind.symmetric.ddl.model.Table;
 /**
  * Adds Catalog & Schema aware finder for ddlutils Database class.
  * 
- * also caches the index of the table to speed up Table lookup.
- * 
- * 
- * @author Lari Hotari
+ * Also caches the index of the table to speed up Table lookup.
  * 
  */
 public class DatabaseModel extends org.jumpmind.symmetric.ddl.model.Database {

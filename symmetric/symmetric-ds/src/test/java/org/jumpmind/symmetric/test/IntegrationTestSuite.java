@@ -30,7 +30,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(ParameterizedSuite.class)
 @SuiteClasses( { SimpleIntegrationTest.class, LoadFromClientIntegrationTest.class, CleanupTest.class })
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class IntegrationTestSuite {
 

@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.transport.handler.AlertResourceHandler;
  * This is a place holder for the idea that we could create an RSS feed for
  * alerts.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public class AlertServlet extends AbstractTransportResourceServlet<AlertResourceHandler> 
 implements IBuiltInExtensionPoint {

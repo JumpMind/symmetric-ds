@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @author Eric Long <erilong@users.sourceforge.net>,
+ * ,
  */
 public interface IIncomingBatchService {
 

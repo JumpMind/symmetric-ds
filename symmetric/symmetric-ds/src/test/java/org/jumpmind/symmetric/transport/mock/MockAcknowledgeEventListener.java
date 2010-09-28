@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
 /**
- * @author Jon Krajewski <jkrajewski@users.sourceforge.net>,
+ * ,
  */
 public class MockAcknowledgeEventListener implements IAcknowledgeEventListener {
 

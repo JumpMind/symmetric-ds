@@ -41,10 +41,10 @@ import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
  * This should also probably be springified so that they can be injected into
  * all the right places.
  * 
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  * 
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>,
+ * ,
  */
 public abstract class AbstractTransportResourceHandler implements ITransportResourceHandler {
 

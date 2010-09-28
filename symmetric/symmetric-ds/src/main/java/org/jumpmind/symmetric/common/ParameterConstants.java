@@ -21,7 +21,7 @@
 package org.jumpmind.symmetric.common;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 final public class ParameterConstants {
 

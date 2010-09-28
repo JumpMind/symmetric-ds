@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 /**
  * An incoming stream that reads from a file.
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class FileIncomingTransport implements IIncomingTransport {
 

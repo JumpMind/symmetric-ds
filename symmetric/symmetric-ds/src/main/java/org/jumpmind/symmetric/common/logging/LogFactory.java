@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.common.logging;
 import org.apache.commons.logging.LogConfigurationException;
 
 /**
- * @author Mark Hanes <eegeek@users.sourceforge.net>
+ * 
  */
 public class LogFactory {
 

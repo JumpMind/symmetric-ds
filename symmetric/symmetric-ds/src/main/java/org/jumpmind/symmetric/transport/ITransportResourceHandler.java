@@ -26,7 +26,7 @@ package org.jumpmind.symmetric.transport;
  * 
  * @param <T>
  *
- * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
  */
 public interface ITransportResourceHandler {
 

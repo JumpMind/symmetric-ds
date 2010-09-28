@@ -41,7 +41,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  * @see SubSelectDataRouter
  * @see ColumnMatchDataRouter
  *
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IDataRouter extends IExtensionPoint {
 

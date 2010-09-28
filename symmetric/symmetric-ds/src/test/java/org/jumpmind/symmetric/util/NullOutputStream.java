@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class NullOutputStream extends OutputStream {
 

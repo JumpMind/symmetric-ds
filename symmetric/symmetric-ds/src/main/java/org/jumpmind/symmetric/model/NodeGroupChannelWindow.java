@@ -27,7 +27,7 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.symmetric.util.AppUtils;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public class NodeGroupChannelWindow {
 

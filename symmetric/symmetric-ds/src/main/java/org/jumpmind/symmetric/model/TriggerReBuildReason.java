@@ -25,10 +25,6 @@ import org.jumpmind.symmetric.util.ICoded;
 
 /**
  * {@link TriggerHistory}
- * 
- * @author chenson
- *
- * @author Chris Henson <chenson42@users.sourceforge.net>
  */
 public enum TriggerReBuildReason implements ICoded {
 

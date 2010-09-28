@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.integrate;
 import org.jumpmind.symmetric.ext.ICacheContext;
 
 /**
- * @author Chris Henson <chenson42@users.sourceforge.net>
+ * 
  */
 public interface IPublisher {
     public void publish(ICacheContext context, String text);
