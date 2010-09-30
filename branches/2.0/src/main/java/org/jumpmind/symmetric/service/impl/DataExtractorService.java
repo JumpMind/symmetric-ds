@@ -331,7 +331,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             routingService.routeData();
         }
 
+        long ts = System.currentTimeMillis();
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node);
+        long delta = System.currentTimeMillis()-ts;
+        if (delta > 30000) {
+            log.warn("LongRunningOperation", "selecting batches to extract", delta);
+        }
+        
         if (batches != null && batches.getBatches() != null && batches.getBatches().size() > 0) {
 
             ChannelMap suspendIgnoreChannelsList = targetTransport.getSuspendIgnoreChannelLists(configurationService);
@@ -513,7 +519,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                     ps.setString(1, batch.getNodeId());
                     ps.setLong(2, batch.getBatchId());
+                    long ts = System.currentTimeMillis();
                     rs = ps.executeQuery();
+                    long delta = System.currentTimeMillis()-ts;
+                    if (delta > 30000) {
+                        log.warn("LongRunningOperation", "selecting data to extract", delta);
+                    }
                     while (rs.next()) {
                         try {
                             handler.dataExtracted(dataService.readData(rs), rs.getString(13));
