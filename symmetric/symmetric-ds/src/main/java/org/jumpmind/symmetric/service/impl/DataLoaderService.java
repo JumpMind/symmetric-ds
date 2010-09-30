@@ -269,7 +269,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 handleBatchError(batch);
             } else {
                 if (e instanceof IOException) {
-                    log.error("BatchReadingFailed", e.getMessage());
+                    if (!e.getMessage().startsWith("http")) {
+                        log.error("BatchReadingFailed", e.getMessage());
+                    } else {
+                        log.error("BatchReadingFailed", e.getMessage(), e);
+                    }
                 } else {
                     log.error("BatchParsingFailed", e);
                 }
