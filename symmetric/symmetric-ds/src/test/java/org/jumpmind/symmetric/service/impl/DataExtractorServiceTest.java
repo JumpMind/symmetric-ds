@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
@@ -79,7 +80,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         JdbcTemplate template = getJdbcTemplate();
         template.update("delete from " + TriggerRouterServiceTest.TEST_TRIGGERS_TABLE);
         TriggerRouter trigger = getTriggerRouterService().getTriggerRouterForTableForCurrentNode(null, null, TriggerRouterServiceTest.TEST_TRIGGERS_TABLE, false);
-        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId());
+        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId(), Status.NE);
         outgoingBatchService.insertOutgoingBatch(batch);
         DataExtractorContext ctx = new DataExtractorContext();
         ctx.setBatch(batch);
@@ -92,7 +93,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT1_VALUES, template, getDbDialect());
         TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT2_VALUES, template, getDbDialect());
         
-        batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId());
+        batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId(), Status.NE);
         outgoingBatchService.insertOutgoingBatch(batch);
         ctx = new DataExtractorContext();
         ctx.setBatch(batch);

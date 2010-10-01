@@ -32,7 +32,7 @@ public class OutgoingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        NE, QY, SE, LD, ER, OK, IG;
+        RT, NE, QY, SE, LD, ER, OK, IG;
     }
 
     private long batchId;
@@ -41,7 +41,7 @@ public class OutgoingBatch implements Serializable {
 
     private String channelId;
 
-    private Status status = Status.NE;
+    private Status status = Status.RT;
     
     private boolean loadFlag;
     
@@ -94,10 +94,10 @@ public class OutgoingBatch implements Serializable {
     public OutgoingBatch() {
     }
 
-    public OutgoingBatch(String nodeId, String channelId) {
+    public OutgoingBatch(String nodeId, String channelId, Status status) {
         this.nodeId = nodeId;
         this.channelId = channelId;
-        this.status = Status.NE;
+        this.status = status;
         this.createTime = new Date();
     }
     

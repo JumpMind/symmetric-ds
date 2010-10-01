@@ -244,7 +244,8 @@ public class RouterService extends AbstractService implements IRouterService {
             for (IDataRouter dataRouter : usedRouters) {
                 dataRouter.completeBatch(context, batch);
             }
-            outgoingBatchService.updateOutgoingBatch(context.getJdbcTemplate(), batch);
+            batch.setStatus(Status.NE);
+            outgoingBatchService.updateOutgoingBatch(batch);
             context.getBatchesByNodes().remove(batch.getNodeId());
         }
         context.commit();
@@ -377,11 +378,11 @@ public class RouterService extends AbstractService implements IRouterService {
             Map<String, OutgoingBatch> batches = context.getBatchesByNodes();
             OutgoingBatch batch = batches.get(nodeId);
             if (batch == null) {
-                batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId());
+                batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(), Status.RT);
                 if (Constants.UNROUTED_NODE_ID.equals(nodeId)) {
                     batch.setStatus(Status.OK);
                 }
-                outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
+                outgoingBatchService.insertOutgoingBatch(batch);
                 context.getBatchesByNodes().put(nodeId, batch);
             }
             batch.incrementEventCount(dataMetaData.getData().getEventType());

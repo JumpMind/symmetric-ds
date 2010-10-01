@@ -77,10 +77,9 @@ public class DataRefRouteReaderUnitTest {
     }  
     
     private ISqlProvider getSqlProvider() {
-        return new ISqlProvider() {
-            
-            public String getSql(String key) {
-                return routerServiceSql.get(key);
+        return new ISqlProvider() {            
+            public String getSql(String... keys) {
+                return routerServiceSql.get(keys[0]);
             }
         };
     }

@@ -61,6 +61,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -227,7 +228,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, DataEventType eventType,
             String routerId, boolean isLoad) {
-        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD : channelId);
+        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD : channelId, Status.NE);
         outgoingBatch.setLoadFlag(isLoad);
         outgoingBatch.incrementEventCount(eventType);
         outgoingBatchService.insertOutgoingBatch(outgoingBatch);

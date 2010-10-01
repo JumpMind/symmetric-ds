@@ -20,29 +20,17 @@
 
 package org.jumpmind.symmetric.route;
 
-import java.util.Map;
-
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ISqlProvider;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.jumpmind.symmetric.service.impl.AbstractService;
 
 /**
  * 
  */
-public class DataToRouteReaderFactory implements ISqlProvider {
-
-    private JdbcTemplate jdbcTemplate;
-
-    private IDbDialect dbDialect;
+public class DataToRouteReaderFactory extends AbstractService implements ISqlProvider {
 
     private IDataService dataService;
-
-    private IParameterService parameterService;
-
-    private Map<String, String> sql;
 
     public IDataToRouteReader getDataToRouteReader(RouterContext context) {
         String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
@@ -80,23 +68,4 @@ public class DataToRouteReaderFactory implements ISqlProvider {
         this.dataService = dataService;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
-    }
-
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    public String getSql(String key) {
-        return sql.get(key);
-    }
-
-    public void setSql(Map<String, String> sql) {
-        this.sql = sql;
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-    }
 }

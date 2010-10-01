@@ -59,6 +59,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -127,7 +128,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      */
     public void extractConfigurationStandalone(Node node, Writer writer) throws IOException {
         try {
-            OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG);
+            OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG, Status.NE);
             if (Version.isOlderThanVersion(node.getSymmetricVersion(),
                     UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
                 outgoingBatchService.insertOutgoingBatch(batch);
@@ -377,7 +378,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node);
-
+        
         if (batches.containsBatches()) {
 
             List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, targetTransport
@@ -602,7 +603,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                     ps.setString(1, batch.getNodeId());
                     ps.setLong(2, batch.getBatchId());
+                    long ts = System.currentTimeMillis();
                     rs = ps.executeQuery();
+                    long executeTimeInMs = System.currentTimeMillis()-ts;
+                    if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+                        log.warn("LongRunningOperation", "selecting data to extract", executeTimeInMs);
+                    }
                     while (rs.next()) {
                         try {
                             handler.dataExtracted(dataService.readData(rs), rs.getString(13));
