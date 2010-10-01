@@ -221,6 +221,10 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
     public void setNodeGroups(String[] nodeGroups) {
         this.nodeGroups = nodeGroups;
     }
+    
+    public void setNodeGroup(String nodeGroup) {
+        this.nodeGroups = new String[] { nodeGroup };
+    }
 
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
