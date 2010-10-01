@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +18,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -38,8 +38,6 @@ public class DataToRouteReader implements Runnable {
 
     protected BlockingQueue<Data> dataQueue;
 
-    private Map<String, String> sql;
-
     private DataSource dataSource;
 
     private RouterContext context;
@@ -47,6 +45,8 @@ public class DataToRouteReader implements Runnable {
     private DataRef dataRef;
 
     private IDataService dataService;
+    
+    private IService sql;
 
     private boolean reading = true;
 
@@ -56,13 +56,13 @@ public class DataToRouteReader implements Runnable {
 
     private int queryTimeout = DEFAULT_QUERY_TIMEOUT;
 
-    public DataToRouteReader(DataSource dataSource, int maxQueueSize, Map<String, String> sql,
+    public DataToRouteReader(DataSource dataSource, int maxQueueSize, IService sql,
             int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService) {
         this(dataSource, maxQueueSize, sql, fetchSize, context, dataRef, dataService,
                 DEFAULT_QUERY_TIMEOUT);
     }
 
-    public DataToRouteReader(DataSource dataSource, int maxQueueSize, Map<String, String> sql,
+    public DataToRouteReader(DataSource dataSource, int maxQueueSize, IService sql,
             int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService,
             int queryTimeout) {
         this.maxQueueSize = maxQueueSize;
@@ -92,7 +92,7 @@ public class DataToRouteReader implements Runnable {
     }
 
     protected String getSql(Channel channel) {
-        String select = sql.get("selectDataToBatchSql");
+        String select = sql.getSql("selectDataToBatchSql");
         if (!channel.isUseOldDataToRoute()) {
             select = select.replace("d.old_data", "''");
         }

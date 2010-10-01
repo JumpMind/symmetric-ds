@@ -28,6 +28,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.Node;
@@ -40,6 +41,8 @@ import org.springframework.jdbc.support.JdbcUtils;
 
 public class RouterContext extends SimpleRouterContext implements IRouterContext {
 
+    static final ILog log = LogFactory.getLog(RouterContext.class);
+    
     public static final String STAT_INSERT_DATA_EVENTS_MS = "insert.data.events.ms";
     public static final String STAT_DATA_ROUTER_MS = "data.router.ms";
     public static final String STAT_READ_DATA_MS = "read.data.ms";
@@ -55,10 +58,12 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     private boolean needsCommitted = false;
     private long createdTimeInMs = System.currentTimeMillis();
     private Map<String, Long> transactionIdDataIds = new HashMap<String, Long>();
+    private boolean oldAutoCommitSetting = false;
 
     public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
             throws SQLException {
         this.connection = dataSource.getConnection();
+        this.oldAutoCommitSetting = this.connection.getAutoCommit();
         this.connection.setAutoCommit(false);
         this.init(new JdbcTemplate(new SingleConnectionDataSource(connection, true)), channel,
                 nodeId);
@@ -89,6 +94,12 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     }
 
     public void cleanup() {
+        try {
+            this.connection.commit();
+            this.connection.setAutoCommit(oldAutoCommitSetting);
+        } catch (Exception ex) {
+            log.warn(ex);
+        }
         JdbcUtils.closeConnection(this.connection);
     }
 

@@ -118,7 +118,7 @@ public class AppUtils {
             }
         }
         return original;
-    }
+    }    
 
     /**
      * This method will return the timezone in RFC822 format. </p> The format

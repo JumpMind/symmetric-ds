@@ -106,8 +106,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public TriggerHistory findTriggerHistory(String sourceTableName) {
         final Map<Long, TriggerHistory> retMap = new HashMap<Long, TriggerHistory>();
-        jdbcTemplate.query(String.format("%s%s", getSql("allTriggerHistSql"),
-                getSql("triggerHistBySourceTableWhereSql")), new Object[] { sourceTableName },
+        jdbcTemplate.query(getSql("allTriggerHistSql","triggerHistBySourceTableWhereSql"), new Object[] { sourceTableName },
                 new int[] { Types.VARCHAR }, new TriggerHistoryMapper(retMap));
         if (retMap.size() > 0) {
             return retMap.values().iterator().next();
@@ -142,8 +141,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      * Get a list of trigger histories that need to be inactivated.
      */
     protected List<TriggerHistory> getActiveTriggerHistoriesForInactivation() {
-        List<TriggerHistory> hists = jdbcTemplate.query(getSql("allTriggerHistSql")
-                + getSql("inactiveTriggerHistoryWhereSql"), new Object[] {parameterService.getNodeGroupId()}, new TriggerHistoryMapper());
+        List<TriggerHistory> hists = jdbcTemplate.query(getSql("allTriggerHistSql",
+                "inactiveTriggerHistoryWhereSql"), new Object[] {parameterService.getNodeGroupId()}, new TriggerHistoryMapper());
         for (Iterator<TriggerHistory> iterator = hists.iterator(); iterator.hasNext();) {
             TriggerHistory triggerHistory = iterator.next();
             if (triggerHistory.getSourceTableName().toLowerCase().startsWith(tablePrefix + "_")) {
@@ -225,8 +224,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRouter;
     }
 
-    private String getTriggerRouterSqlPrefix() {
-        return getSql("selectTriggerRouterPrefixSql");
+    private String getTriggerRouterSql(String sql) {
+        return getSql("selectTriggerRouterPrefixSql", sql);
     }
     
     public TriggerRouter getTriggerRouterForTableForCurrentNode(String catalogName, String schemaName, String tableName, boolean refreshCache) {
@@ -391,7 +390,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId) {
         List<TriggerRouter> triggers = (List<TriggerRouter>) jdbcTemplate.query(
-                getTriggerRouterSqlPrefix() + getSql("activeTriggersForSourceNodeGroupSql"),
+                getTriggerRouterSql("activeTriggersForSourceNodeGroupSql"),
                 new Object[] { sourceNodeGroupId }, new TriggerRouterMapper());
         mergeInConfigurationTablesTriggerRoutersForCurrentNode(sourceNodeGroupId, triggers);
         return triggers;
@@ -399,14 +398,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(
             String sourceNodeGroupId, String targetNodeGroupId) {
-        return (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
-                + getSql("activeTriggersForReloadSql"), new Object[] { sourceNodeGroupId,
+        return (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSql("activeTriggersForReloadSql"), new Object[] { sourceNodeGroupId,
                 targetNodeGroupId, Constants.CHANNEL_CONFIG }, new TriggerRouterMapper());
     }
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId) {
         List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(
-                getTriggerRouterSqlPrefix() + getSql("selectTriggerRouterSql"), new Object[] {
+                getTriggerRouterSql("selectTriggerRouterSql"), new Object[] {
                         triggerId, routerId }, new TriggerRouterMapper());
         if (configs.size() > 0) {
             return configs.get(0);
@@ -417,7 +415,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public Trigger getTriggerById(String triggerId) {
         List<TriggerRouter> triggers = (List<TriggerRouter>) jdbcTemplate.query(
-                getTriggerRouterSqlPrefix() + getSql("selectTriggerByIdSql"),
+                getTriggerRouterSql("selectTriggerByIdSql"),
                 new Object[] { triggerId }, new TriggerRouterMapper());
         if (triggers.size() > 0) {
             return triggers.get(0).getTrigger();
@@ -428,7 +426,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId) {
         final Map<String, List<TriggerRouter>> retMap = new HashMap<String, List<TriggerRouter>>();
-        jdbcTemplate.query(getTriggerRouterSqlPrefix() + getSql("selectGroupTriggersSql"),
+        jdbcTemplate.query(getTriggerRouterSql("selectGroupTriggersSql"),
                 new Object[] { nodeGroupId }, new TriggerRouterMapper() {
                     public TriggerRouter mapRow(java.sql.ResultSet rs, int arg1)
                             throws java.sql.SQLException {

@@ -30,11 +30,13 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.StringUtils;
 
 abstract class AbstractService implements IService {
 
@@ -82,6 +84,14 @@ abstract class AbstractService implements IService {
     }
 
     public String getSql(String key) {
+        String sqlString = sql.get(key).trim();
+        if (dbDialect instanceof Db2DbDialect && StringUtils.startsWithIgnoreCase(sqlString, "select ")) {
+            sqlString = sqlString + " FOR FETCH ONLY";
+        }
+        return sqlString;
+    }
+    
+    public String getSqlPrefix(String key) {
         return sql.get(key);
     }
     

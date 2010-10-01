@@ -121,7 +121,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      */
     public void extractConfigurationStandalone(Node node, BufferedWriter writer) throws IOException {
         try {
-            OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG);
+            OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG, OutgoingBatch.Status.NE);
             if (Version.isOlderThanVersion(node.getSymmetricVersion(),
                     UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
                 outgoingBatchService.insertOutgoingBatch(batch);

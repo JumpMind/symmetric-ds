@@ -45,15 +45,12 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 
- *
- * 
+ * This service is responsible for access to the outgoing batch table. 
  */
 public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
 
@@ -72,21 +69,21 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         } while (batches.getBatches().size() > 0);
     }
-
-    public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
-        updateOutgoingBatch(jdbcTemplate, outgoingBatch);
+    
+    public void updateAbandonedRoutingBatches() {
+        jdbcTemplate.update(getSql("updateOutgoingBatchesStatusSql"), Status.NE.name(), Status.RT.name());
     }
 
     public void updateOutgoingBatches(List<OutgoingBatch> outgoingBatches) {
         for (OutgoingBatch batch : outgoingBatches) {
-            updateOutgoingBatch(jdbcTemplate, batch);
+            updateOutgoingBatch(batch);
         }
     }
 
-    public void updateOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch) {
+    public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
-        template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), 
+        jdbcTemplate.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), 
                 outgoingBatch.isLoadFlag() ? 1 : 0,
                 outgoingBatch.isErrorFlag() ? 1 : 0,
                 outgoingBatch.getByteCount(),
@@ -108,11 +105,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 Types.VARCHAR, Types.TIMESTAMP, Types.INTEGER });
     }
 
-    public void insertOutgoingBatch(OutgoingBatch outgoingBatch) {
-        insertOutgoingBatch(jdbcTemplate, outgoingBatch);
-    }
-
-    public void insertOutgoingBatch(JdbcTemplate jdbcTemplate, final OutgoingBatch outgoingBatch) {
+    public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
         long batchId = dbDialect.insertWithGeneratedKey(jdbcTemplate, getSql("insertOutgoingBatchSql"),
                 SequenceIdentifier.OUTGOING_BATCH, new PreparedStatementCallback<Object>() {
@@ -151,6 +144,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * order.
      */
     public OutgoingBatches getOutgoingBatches(Node node) {
+        long ts = System.currentTimeMillis();
+
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"),
                 new Object[] { node.getNodeId(), 
             OutgoingBatch.Status.NE.toString(), 
@@ -175,6 +170,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         }
         batches.setBatches(keepers);
+        
+        long executeTimeInMs = System.currentTimeMillis()-ts;
+        if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+            log.warn("LongRunningOperation", "selecting batches to extract", executeTimeInMs);
+        }
+
         return batches;
     }
 

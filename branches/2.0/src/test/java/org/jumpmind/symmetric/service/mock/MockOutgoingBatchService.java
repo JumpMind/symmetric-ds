@@ -42,6 +42,9 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
 
     }
 
+    public void updateAbandonedRoutingBatches() {
+    }
+    
     public void buildOutgoingBatches(String nodeId, NodeChannel channel) {
 
     }

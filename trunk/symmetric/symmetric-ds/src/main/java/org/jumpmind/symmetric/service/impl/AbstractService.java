@@ -31,6 +31,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.jumpmind.symmetric.service.ISqlProvider;
@@ -38,11 +39,9 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.StringUtils;
 
-/**
- * 
- */
-abstract class AbstractService implements IService, ISqlProvider {
+abstract public class AbstractService implements IService, ISqlProvider {
 
     protected ILog log = LogFactory.getLog(getClass());
 
@@ -87,12 +86,29 @@ abstract class AbstractService implements IService, ISqlProvider {
         this.sql = sql;
     }
 
-    public String getSql(String key) {
-	String sqlString = sql.get(key);
-	if (dbDialect != null) {
-	    sqlString = AppUtils.replaceTokens(sqlString, dbDialect.getSqlScriptReplacementTokens());
-	}
-        return sqlString;
+    public String getSql(String... keys) {
+        StringBuilder sqlString = new StringBuilder();
+        if (keys != null) {
+            for (String key : keys) {
+                sqlString.append(sql.get(key));
+            }
+
+            if (sql != null) {
+                if (dbDialect != null) {
+                    Map<String, String> replacementTokens = dbDialect
+                            .getSqlScriptReplacementTokens();
+                    if (replacementTokens != null) {
+                        sqlString = new StringBuilder(AppUtils.replaceTokens(sqlString.toString(),
+                                replacementTokens).trim());
+                    }
+                    
+                    if (dbDialect instanceof Db2DbDialect && StringUtils.startsWithIgnoreCase(sqlString.toString(), "select ")) {
+                        sqlString.append(" FOR FETCH ONLY");
+                    }
+                }
+            }
+        }
+        return sqlString.toString();
     }
 
     public void setTablePrefix(String tablePrefix) {
