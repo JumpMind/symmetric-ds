@@ -206,7 +206,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, String routerId) {
-        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, channelId);
+        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, channelId, OutgoingBatch.Status.NE);
         outgoingBatchService.insertOutgoingBatch(outgoingBatch);
         insertDataEvent(new DataEvent(dataId, outgoingBatch.getBatchId(), routerId));
     }

@@ -102,7 +102,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public TriggerHistory findTriggerHistory(String sourceTableName) {
         final Map<Long, TriggerHistory> retMap = new HashMap<Long, TriggerHistory>();
-        jdbcTemplate.query(String.format("%s%s", getSql("allTriggerHistSql"),
+        jdbcTemplate.query(String.format("%s%s", getSqlPrefix("allTriggerHistSql"),
                 getSql("triggerHistBySourceTableWhereSql")), new Object[] { sourceTableName },
                 new int[] { Types.VARCHAR }, new TriggerHistoryMapper(retMap));
         if (retMap.size() > 0) {
@@ -138,7 +138,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      * Get a list of trigger histories that need to be inactivated.
      */
     protected List<TriggerHistory> getActiveTriggerHistoriesForInactivation() {
-        List<TriggerHistory> hists = jdbcTemplate.query(getSql("allTriggerHistSql")
+        List<TriggerHistory> hists = jdbcTemplate.query(getSqlPrefix("allTriggerHistSql")
                 + getSql("inactiveTriggerHistoryWhereSql"), new Object[] {parameterService.getNodeGroupId()}, new TriggerHistoryMapper());
         for (Iterator<TriggerHistory> iterator = hists.iterator(); iterator.hasNext();) {
             TriggerHistory triggerHistory = iterator.next();
@@ -207,7 +207,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     private String getTriggerRouterSqlPrefix() {
-        return getSql("selectTriggerRouterPrefixSql");
+        return getSqlPrefix("selectTriggerRouterPrefixSql");
     }
 
     public TriggerRouter findTriggerRouterForCurrentNode(String table) {

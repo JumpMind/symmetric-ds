@@ -130,13 +130,13 @@ public class OutgoingBatchesUnitTest {
         channels.add(channelA);
 
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
-        OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId());
+        OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId(), OutgoingBatch.Status.NE);
         batches.add(batch1);
 
-        OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId());
+        OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId(), OutgoingBatch.Status.NE);
         batches.add(batch2);
 
-        OutgoingBatch batch3 = new OutgoingBatch("1", channelC.getChannelId());
+        OutgoingBatch batch3 = new OutgoingBatch("1", channelC.getChannelId(), OutgoingBatch.Status.NE);
         batches.add(batch3);
 
         OutgoingBatches outgoingBatches = new OutgoingBatches(batches);
@@ -165,14 +165,14 @@ public class OutgoingBatchesUnitTest {
         channels.add(channelA);
 
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
-        OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId());
+        OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId(), OutgoingBatch.Status.NE);
         batch1.setStatus(OutgoingBatch.Status.ER);
         batches.add(batch1);
 
-        OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId());
+        OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId(), OutgoingBatch.Status.NE);
         batches.add(batch2);
 
-        OutgoingBatch batch3 = new OutgoingBatch("1", channelC.getChannelId());
+        OutgoingBatch batch3 = new OutgoingBatch("1", channelC.getChannelId(), OutgoingBatch.Status.NE);
         batches.add(batch3);
 
         OutgoingBatches outgoingBatches = new OutgoingBatches(batches);
@@ -201,19 +201,19 @@ public class OutgoingBatchesUnitTest {
         channels.add(channelA);
 
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
-        OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId());
+        OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId(), OutgoingBatch.Status.NE);
         batch1.setStatus(OutgoingBatch.Status.ER);
         batch1.setLastUpdatedTime(new Date());
         batches.add(batch1);
 
         AppUtils.sleep(50);
 
-        OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId());
+        OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId(), OutgoingBatch.Status.NE);
         batch2.setStatus(OutgoingBatch.Status.ER);
         batch2.setLastUpdatedTime(new Date());
         batches.add(batch2);
 
-        OutgoingBatch batch3 = new OutgoingBatch("1", channelC.getChannelId());
+        OutgoingBatch batch3 = new OutgoingBatch("1", channelC.getChannelId(), OutgoingBatch.Status.NE);
         batches.add(batch3);
 
         OutgoingBatches outgoingBatches = new OutgoingBatches(batches);
@@ -243,7 +243,7 @@ public class OutgoingBatchesUnitTest {
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
-                OutgoingBatch b = new OutgoingBatch(nodeIds[i], "testChannel" + j);
+                OutgoingBatch b = new OutgoingBatch(nodeIds[i], "testChannel" + j, OutgoingBatch.Status.NE);
                 b.setBatchId(batchId++);
                 batches.add(b);
             }

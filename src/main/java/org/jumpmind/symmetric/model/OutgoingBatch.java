@@ -28,7 +28,7 @@ public class OutgoingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        NE, SE, ER, OK, IG;
+        RT, NE, SE, ER, OK, IG;
     }
 
     private long batchId;
@@ -37,7 +37,7 @@ public class OutgoingBatch implements Serializable {
 
     private String channelId;
 
-    private Status status = Status.NE;
+    private Status status = Status.RT;
 
     private long routerMillis;
 
@@ -72,10 +72,10 @@ public class OutgoingBatch implements Serializable {
     public OutgoingBatch() {
     }
 
-    public OutgoingBatch(String nodeId, String channelId) {
+    public OutgoingBatch(String nodeId, String channelId, Status status) {
+        this.status = status;
         this.nodeId = nodeId;
-        this.channelId = channelId;
-        this.status = Status.NE;
+        this.channelId = channelId;;
         this.createTime = new Date();
     }
     

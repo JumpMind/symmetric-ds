@@ -69,6 +69,12 @@
         select count(*) from $[sym.sync.table.prefix]_outgoing_batch where status = ?
       </value>
     </entry>    
+    <entry key="updateOutgoingBatchesStatusSql">
+      <value>
+        update $[sym.sync.table.prefix]_outgoing_batch set status=? where status = ?
+      </value>
+    </entry>        
+    
 
   </util:map>
 

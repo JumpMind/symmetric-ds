@@ -75,7 +75,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         JdbcTemplate template = getJdbcTemplate();
         template.update("delete from " + TriggerRouterServiceTest.TEST_TRIGGERS_TABLE);
         TriggerRouter trigger = getTriggerRouterService().findTriggerRouterForCurrentNode(TriggerRouterServiceTest.TEST_TRIGGERS_TABLE);
-        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId());
+        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId(), OutgoingBatch.Status.NE);
         outgoingBatchService.insertOutgoingBatch(batch);
         DataExtractorContext ctx = new DataExtractorContext();
         ctx.setBatch(batch);
@@ -88,7 +88,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT1_VALUES, template, getDbDialect());
         TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT2_VALUES, template, getDbDialect());
         
-        batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId());
+        batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId(), OutgoingBatch.Status.NE);
         outgoingBatchService.insertOutgoingBatch(batch);
         ctx = new DataExtractorContext();
         ctx.setBatch(batch);

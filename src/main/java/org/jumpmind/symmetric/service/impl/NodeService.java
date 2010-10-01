@@ -86,13 +86,13 @@ public class NodeService extends AbstractService implements INodeService {
     }
     
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId) {
-        return jdbcTemplate.query(String.format("%s%s", getSql("selectNodePrefixSql"),
+        return jdbcTemplate.query(String.format("%s%s", getSqlPrefix("selectNodePrefixSql"),
                 getSql("findEnabledNodesFromNodeGroupSql")), new Object[] { nodeGroupId }, new NodeRowMapper());
     }
 
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
         Set<Node> all = new HashSet<Node>();
-        List<Node> list = jdbcTemplate.query(String.format("%s%s", getSql("selectNodePrefixSql"),
+        List<Node> list = jdbcTemplate.query(String.format("%s%s", getSqlPrefix("selectNodePrefixSql"),
                 getSql("findNodesCreatedByMeSql")), new Object[] { originalNodeId }, new NodeRowMapper());
         if (list.size() > 0) {
             all.addAll(list);
@@ -108,13 +108,13 @@ public class NodeService extends AbstractService implements INodeService {
      * with it.
      */
     public Node findNode(String id) {
-        List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeSql"),
+        List<Node> list = jdbcTemplate.query(getSqlPrefix("selectNodePrefixSql") + getSql("findNodeSql"),
                 new Object[] { id }, new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
 
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {
-        List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeByExternalIdSql"),
+        List<Node> list = jdbcTemplate.query(getSqlPrefix("selectNodePrefixSql") + getSql("findNodeByExternalIdSql"),
                 new Object[] { nodeGroupId, externalId }, new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
@@ -276,7 +276,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public Node findIdentity(boolean useCache) {
         if (cachedNodeIdentity == null || useCache == false) {
-            List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeIdentitySql"),
+            List<Node> list = jdbcTemplate.query(getSqlPrefix("selectNodePrefixSql") + getSql("findNodeIdentitySql"),
                     new NodeRowMapper());
             cachedNodeIdentity = (Node) getFirstEntry(list);
         }
@@ -294,7 +294,7 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findSourceNodesFor(NodeGroupLinkAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
-            return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoTargetMeSql"), new Object[] {
+            return jdbcTemplate.query(getSqlPrefix("selectNodePrefixSql") + getSql("findNodesWhoTargetMeSql"), new Object[] {
                     node.getNodeGroupId(), eventAction.name() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();
@@ -304,7 +304,7 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findTargetNodesFor(NodeGroupLinkAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
-            return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoITargetSql"), new Object[] {
+            return jdbcTemplate.query(getSqlPrefix("selectNodePrefixSql") + getSql("findNodesWhoITargetSql"), new Object[] {
                     node.getNodeGroupId(), eventAction.name() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();
@@ -480,7 +480,7 @@ public class NodeService extends AbstractService implements INodeService {
         if (myNode != null) {
             long offlineNodeDetectionMillis =  (getOfflineNodeDetectionMinutes() * 60)*1000;
             
-            List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql")+getSql("findOfflineNodesSql"), 
+            List<Node> list = jdbcTemplate.query(getSqlPrefix("selectNodePrefixSql")+getSql("findOfflineNodesSql"), 
                     new Object[] { myNode.getNodeId(),  myNode.getNodeId()}, 
                     new NodeRowMapper());
             

@@ -68,6 +68,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         } while (batches.getBatches().size() > 0);
     }
+    
+    public void updateAbandonedRoutingBatches() {
+        jdbcTemplate.update(getSql("updateOutgoingBatchesStatusSql"), Status.NE.name(), Status.RT.name());
+    }
 
     public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
         updateOutgoingBatch(jdbcTemplate, outgoingBatch);

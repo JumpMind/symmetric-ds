@@ -32,6 +32,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public interface IOutgoingBatchService {
 
     public void markAllAsSentForNode(Node node);
+    
+    public void updateAbandonedRoutingBatches();
 
     public OutgoingBatch findOutgoingBatch(long batchId);
 

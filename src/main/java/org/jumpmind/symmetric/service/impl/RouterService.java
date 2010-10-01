@@ -108,6 +108,13 @@ public class RouterService extends AbstractService implements IRouterService {
             try {
                 long databaseTimeAtRoutingStart = dbDialect.getDatabaseTime();
                 long ts = System.currentTimeMillis();
+                
+                updateAbandonedRoutingBatches();
+                long delta = System.currentTimeMillis()-ts;
+                if (delta > 30000) {
+                    log.warn("LongRunningOperation", "updating abandoned RT batches", delta);
+                }
+
                 Node sourceNode = nodeService.findIdentity();
                 DataRef ref = dataService.getDataRef();
                 int dataCount = routeDataForEachChannel(ref, sourceNode);
@@ -120,6 +127,10 @@ public class RouterService extends AbstractService implements IRouterService {
                 clusterService.unlock(ClusterConstants.ROUTE);
             }
         }
+    }
+    
+    protected void updateAbandonedRoutingBatches() {
+        outgoingBatchService.updateAbandonedRoutingBatches();
     }
 
     /**
@@ -175,7 +186,8 @@ public class RouterService extends AbstractService implements IRouterService {
             for (IDataRouter dataRouter : usedRouters) {
                 dataRouter.completeBatch(context, batch);
             }
-            outgoingBatchService.updateOutgoingBatch(context.getJdbcTemplate(), batch);
+            batch.setStatus(Status.NE);
+            outgoingBatchService.updateOutgoingBatch(batch);
             context.getBatchesByNodes().remove(batch.getNodeId());
         }
         context.commit();
@@ -275,7 +287,7 @@ public class RouterService extends AbstractService implements IRouterService {
     protected int selectDataAndRoute(DataRef ref, RouterContext context) throws SQLException {
 
         DataToRouteReader reader = new DataToRouteReader(dataSource, dbDialect
-                .getRouterDataPeekAheadCount(), getSql(), dbDialect.getStreamingResultsFetchSize(),
+                .getRouterDataPeekAheadCount(), this, dbDialect.getStreamingResultsFetchSize(),
                 context, ref, dataService, jdbcTemplate.getQueryTimeout());
         readThread.execute(reader);
         Data data = null;
@@ -350,11 +362,11 @@ public class RouterService extends AbstractService implements IRouterService {
             Map<String, OutgoingBatch> batches = context.getBatchesByNodes();
             OutgoingBatch batch = batches.get(nodeId);
             if (batch == null) {
-                batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId());
+                batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(), OutgoingBatch.Status.RT);
                 if (Constants.UNROUTED_NODE_ID.equals(nodeId)) {
                     batch.setStatus(Status.OK);
                 }
-                outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
+                outgoingBatchService.insertOutgoingBatch(batch);
                 context.getBatchesByNodes().put(nodeId, batch);
             }
             batch.incrementDataEventCount();
