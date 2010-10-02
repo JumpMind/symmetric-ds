@@ -85,10 +85,10 @@ abstract public class AbstractService implements IService, ISqlProvider {
     }
 
     public String getSql(String... keys) {
-        StringBuilder sqlString = new StringBuilder();
+        StringBuilder sqlBuffer = new StringBuilder();
         if (keys != null) {
             for (String key : keys) {
-                sqlString.append(sql.get(key));
+                sqlBuffer.append(sql.get(key));
             }
 
             if (sql != null) {
@@ -96,13 +96,13 @@ abstract public class AbstractService implements IService, ISqlProvider {
                     Map<String, String> replacementTokens = dbDialect
                             .getSqlScriptReplacementTokens();
                     if (replacementTokens != null) {
-                        sqlString = new StringBuilder(AppUtils.replaceTokens(sqlString.toString(),
+                        sqlBuffer = new StringBuilder(AppUtils.replaceTokens(sqlBuffer.toString(),
                                 replacementTokens).trim());
                     }                    
                 }
             }
         }
-        return sqlString.toString();
+        return sqlBuffer.toString();
     }
 
     public void setTablePrefix(String tablePrefix) {
