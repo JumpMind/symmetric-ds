@@ -31,7 +31,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.jumpmind.symmetric.service.ISqlProvider;
@@ -39,7 +38,6 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.StringUtils;
 
 abstract public class AbstractService implements IService, ISqlProvider {
 
@@ -100,11 +98,7 @@ abstract public class AbstractService implements IService, ISqlProvider {
                     if (replacementTokens != null) {
                         sqlString = new StringBuilder(AppUtils.replaceTokens(sqlString.toString(),
                                 replacementTokens).trim());
-                    }
-                    
-                    if (dbDialect instanceof Db2DbDialect && StringUtils.startsWithIgnoreCase(sqlString.toString(), "select ")) {
-                        sqlString.append(" FOR FETCH ONLY");
-                    }
+                    }                    
                 }
             }
         }
