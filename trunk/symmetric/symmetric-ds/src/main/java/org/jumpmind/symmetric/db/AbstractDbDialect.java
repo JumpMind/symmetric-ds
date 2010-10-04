@@ -95,7 +95,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 abstract public class AbstractDbDialect implements IDbDialect {
 
-    final ILog logger = LogFactory.getLog(getClass());
+    protected final ILog log = LogFactory.getLog(getClass());
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
@@ -107,8 +107,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public static final FastDateFormat JDBC_TIMESTAMP_FORMATTER = FastDateFormat
             .getInstance("yyyy-MM-dd hh:mm:ss.SSS");
-
-    protected final ILog log = LogFactory.getLog(getClass());
 
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
@@ -1117,7 +1115,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     list.add(objectValue);
                 }
             } catch (Exception ex) {
-                logger.error("DbDialectTroubleConvertingColumnValue", value, column.getName(),
+                log.error("DbDialectTroubleConvertingColumnValue", value, column.getName(),
                         column.getType());
                 throw new RuntimeException(ex);
             }
@@ -1370,7 +1368,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 jdbcTemplate.update("truncate table " + tableName);
                 success = true;
             } catch (DataAccessException ex) {
-                logger.warn(ex);
+                log.warn(ex);
                 AppUtils.sleep(5000);
                 tryCount--;
             }
