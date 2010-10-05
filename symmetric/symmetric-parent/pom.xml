@@ -61,24 +61,19 @@
 
     <mailingLists>
         <mailingList>
-            <name>SymmetricDS Development Mailing list</name>
-            <subscribe>http://lists.sourceforge.net/mailman/listinfo/symmetricds-development
-            </subscribe>
-            <unsubscribe>http://lists.sourceforge.net/mailman/listinfo/symmetricds-development
-            </unsubscribe>
-            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=
+            <name>SymmetricDS Development Forum</name>
+            <archive>http://sourceforge.net/projects/symmetricds/forums/forum/739237
             </archive>
-            <post>symmetricds-development@lists.sourceforge.net</post>
         </mailingList>
         <mailingList>
-            <name>SymmetricDS User Mailing list</name>
-            <subscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users
-            </subscribe>
-            <unsubscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users
-            </unsubscribe>
-            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=
+            <name>SymmetricDS Help Forum</name>
+            <archive>http://sourceforge.net/projects/symmetricds/forums/forum/739236
             </archive>
-            <post>symmetricds-users@lists.sourceforge.net</post>
+        </mailingList>
+        <mailingList>
+            <name>SymmetricDS Open Discussion Forum</name>
+            <archive>http://sourceforge.net/projects/symmetricds/forums/forum/739235
+            </archive>
         </mailingList>
     </mailingLists>
 
