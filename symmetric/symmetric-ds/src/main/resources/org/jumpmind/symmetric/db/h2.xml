@@ -47,7 +47,7 @@
                 </property>
                 <property name="datetimeColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||formatdatetime($(tableAlias)"$(columnName)", ''yyyy-MM-dd HH:mm:ss'')||''"'' end ||'',''||]]>
+                        <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||formatdatetime($(tableAlias)"$(columnName)", ''yyyy-MM-dd HH:mm:ss.S'')||''"'' end ||'',''||]]>
                     </value>
                 </property>
                 <property name="booleanColumnTemplate">
