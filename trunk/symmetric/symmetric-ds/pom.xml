@@ -28,6 +28,11 @@
         </license>
     </licenses>
 
+	<organization>
+		<name>JumpMind, Inc.</name>
+		<url>http://www.jumpmind.com/</url>
+	</organization>
+	
     <properties>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide/2.x</docbook.target>
