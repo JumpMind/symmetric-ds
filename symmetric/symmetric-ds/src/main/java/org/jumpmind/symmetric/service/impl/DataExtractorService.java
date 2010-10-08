@@ -601,8 +601,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                     ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
                     ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                    ps.setString(1, batch.getNodeId());
-                    ps.setLong(2, batch.getBatchId());
+                    ps.setLong(1, batch.getBatchId());
                     long ts = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long executeTimeInMs = System.currentTimeMillis()-ts;
