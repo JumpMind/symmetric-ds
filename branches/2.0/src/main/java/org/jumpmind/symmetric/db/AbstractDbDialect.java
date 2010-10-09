@@ -73,7 +73,6 @@ import org.jumpmind.symmetric.ddlutils.JdbcModelReaderSupport;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -1372,7 +1371,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
     
-    public String massageDataExtractionSql(String sql, NodeChannel channel) {
+    public String massageDataExtractionSql(String sql, String channelId) {
         return sql;       
     }
 }

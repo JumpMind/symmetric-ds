@@ -514,6 +514,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         conn.setAutoCommit(false);
                     }
                     String sql = getSql("selectEventDataToExtractSql");
+                    sql = dbDialect.massageDataExtractionSql(sql, batch.getChannelId());
                     ps = conn.prepareStatement(sql,
                             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                     ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());

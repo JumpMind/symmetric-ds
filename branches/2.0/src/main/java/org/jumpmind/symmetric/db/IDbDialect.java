@@ -31,7 +31,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -260,7 +259,7 @@ public interface IDbDialect {
     
     public boolean areDatabaseTransactionsPendingSince(long time);
     
-    public String massageDataExtractionSql(String sql, NodeChannel channel);
+    public String massageDataExtractionSql(String sql, String channelId);
     
     public LobHandler getLobHandler();
 }

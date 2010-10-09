@@ -90,7 +90,7 @@ final public class ParameterConstants {
     
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
     
-    public final static String DBDIALECT_ORACLE_BIG_BLOG_CHANNELS = "oracle.big.blob.channels";
+    public final static String DBDIALECT_ORACLE_USE_DBMS_LOB_SUBSTR = "oracle.use.dbms.lob.substr.channels";
     
     public final static String DATA_ID_INCREMENT_BY = "data.id.increment.by";
 
