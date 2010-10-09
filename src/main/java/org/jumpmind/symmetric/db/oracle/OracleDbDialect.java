@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
@@ -254,4 +255,15 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean supportsTransactionViews() {
         return supportsTransactionViews && parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW);
     }
+    
+    public String massageDataExtractionSql(String sql, NodeChannel channel) {
+        String channels = parameterService.getString(ParameterConstants.DBDIALECT_ORACLE_BIG_BLOG_CHANNELS);
+        if (StringUtils.isBlank(channels) || !channels.contains(channel.getChannelId())) {
+            sql = StringUtils.replace(sql, "d.row_data", "dbms_lob.substr(d.row_data, 4000, 1 )");
+            sql = StringUtils.replace(sql, "d.old_data", "dbms_lob.substr(d.old_data, 4000, 1 )");
+            sql = StringUtils.replace(sql, "d.pk_data", "dbms_lob.substr(d.pk_data, 4000, 1 )");
+        }
+        return sql;        
+    }
+    
 }

@@ -513,7 +513,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (dbDialect instanceof PostgreSqlDbDialect) {
                         conn.setAutoCommit(false);
                     }
-                    ps = conn.prepareStatement(getSql("selectEventDataToExtractSql"),
+                    String sql = getSql("selectEventDataToExtractSql");
+                    ps = conn.prepareStatement(sql,
                             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                     ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
                     ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
