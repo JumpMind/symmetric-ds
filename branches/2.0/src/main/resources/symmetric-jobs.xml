@@ -101,7 +101,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
             <list>
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
                     <!-- Random wait before start to stagger load -->
-                    <property name="delay" ref="$[sym.job.purge.period.time.ms]" />
+                    <property name="delay" value="$[sym.job.purge.period.time.ms]" />
                     <property name="period" value="$[sym.job.purge.period.time.ms]" />
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.PurgeJob">
