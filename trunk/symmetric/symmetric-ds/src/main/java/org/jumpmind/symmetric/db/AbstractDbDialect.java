@@ -1007,6 +1007,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public boolean supportsReturningKeys() {
         return false;
     }
+    
+    public boolean supportsJdbcBatch() {
+        return true;
+    }
 
     public String getSelectLastInsertIdSql(String sequenceName) {
         throw new UnsupportedOperationException();

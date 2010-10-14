@@ -22,8 +22,10 @@ package org.jumpmind.symmetric.route;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,6 +33,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -61,6 +64,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     private long createdTimeInMs = System.currentTimeMillis();
     private long lastDataIdProcessed;
     private Map<String, Long> transactionIdDataIds = new HashMap<String, Long>();
+    private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
 
     public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
             throws SQLException {
@@ -70,6 +74,18 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
                 nodeId);
     }
 
+    public List<DataEvent> getDataEventList() {
+        return dataEventsToSend;
+    }
+    
+    public void clearDataEventsList() {
+        dataEventsToSend.clear();
+    }
+    
+    public void addDataEvent(long dataId, long batchId, String routerId) {
+        dataEventsToSend.add(new DataEvent(dataId, batchId, routerId));
+    }
+    
     public Map<String, OutgoingBatch> getBatchesByNodes() {
         return batchesByNodes;
     }
