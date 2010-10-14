@@ -197,6 +197,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
         }
     }
+    
+    public boolean supportsJdbcBatch() {
+        return true;
+    }
 
     /**
      * Provide a default implementation of this method using DDLUtils,
