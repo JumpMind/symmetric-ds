@@ -29,6 +29,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -49,6 +50,9 @@ public class MockDataService implements IDataService {
     public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId,
             String routerId) {
 
+    }
+    
+    public void insertDataEvents(JdbcTemplate template, List<DataEvent> events) {
     }
     
     public Date findCreateTimeOfData(long dataId) {

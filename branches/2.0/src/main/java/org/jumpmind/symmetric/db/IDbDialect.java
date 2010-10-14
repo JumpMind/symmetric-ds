@@ -133,6 +133,8 @@ public interface IDbDialect {
 
     public boolean storesLowerCaseNamesInCatalog();
 
+    public boolean supportsJdbcBatch();
+    
     public boolean supportsTransactionId();
     
     /**

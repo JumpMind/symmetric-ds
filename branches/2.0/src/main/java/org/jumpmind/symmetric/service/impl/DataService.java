@@ -68,6 +68,7 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
@@ -190,6 +191,29 @@ public class DataService extends AbstractService implements IDataService {
         } catch (RuntimeException ex) {
             log.error("DataEventInsertFailed", ex, dataId, batchId, routerId);
             throw ex;
+        }
+    }
+    
+    public void insertDataEvents(JdbcTemplate template, final List<DataEvent> events) {
+        if (events.size() > 0) {
+            jdbcTemplate.batchUpdate(getSql("insertIntoDataEventSql"),
+                    new BatchPreparedStatementSetter() {
+
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            DataEvent event = events.get(i);
+                            ps.setLong(1, event.getDataId());
+                            ps.setLong(2, event.getBatchId());
+                            ps
+                                    .setString(
+                                            3,
+                                            StringUtils.isBlank(event.getRouterId()) ? Constants.UNKNOWN_ROUTER_ID
+                                                    : event.getRouterId());
+                        }
+
+                        public int getBatchSize() {
+                            return events.size();
+                        }
+                    });
         }
     }
 

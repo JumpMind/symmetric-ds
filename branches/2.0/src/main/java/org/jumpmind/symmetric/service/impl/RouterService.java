@@ -167,8 +167,18 @@ public class RouterService extends AbstractService implements IRouterService {
             return 0;
         } finally {
             try {
+                if (dbDialect.supportsJdbcBatch()) {
+                    dataService.insertDataEvents(context.getJdbcTemplate(), context.getDataEventList());
+                    context.clearDataEventsList();
+                }
                 completeBatchesAndCommit(context);
             } catch (SQLException e) {
+                if (context != null) {
+                    context.rollback();
+                }
+                
+                
+                
                 log.error(e);
             } finally {
                 context.logStats(log, dataCount, System.currentTimeMillis() - ts);
@@ -297,7 +307,12 @@ public class RouterService extends AbstractService implements IRouterService {
                 data = reader.take();
                 if (data != null) {
                     dataCount++;
-                    routeData(data, context);
+                    routeData(data, context);                    
+                    if (dbDialect.supportsJdbcBatch() && (parameterService.getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE) <= context.getDataEventList().size() || context.isNeedsCommitted())) {
+                        dataService.insertDataEvents(context.getJdbcTemplate(), context.getDataEventList());
+                        context.clearDataEventsList();
+                    }
+                    
                     if (context.isNeedsCommitted()) {
                         completeBatchesAndCommit(context);
                         long maxDataToRoute = context.getChannel().getMaxDataToRoute();
@@ -370,8 +385,13 @@ public class RouterService extends AbstractService implements IRouterService {
                 context.getBatchesByNodes().put(nodeId, batch);
             }
             batch.incrementDataEventCount();
-            dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData()
-                    .getDataId(), batch.getBatchId(), triggerRouter.getRouter().getRouterId());
+            if (dbDialect.supportsJdbcBatch()) {
+                context.addDataEvent(dataMetaData.getData()
+                        .getDataId(), batch.getBatchId(), triggerRouter.getRouter().getRouterId());                
+            } else {
+                dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData()
+                        .getDataId(), batch.getBatchId(), triggerRouter.getRouter().getRouterId());
+            }
             if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
                     batch, dataMetaData, context)) {
                 context.setNeedsCommitted(true);
