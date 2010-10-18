@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.load.IColumnFilter;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -293,4 +294,7 @@ public interface IDbDialect {
      * Indicates whether captured data can contain gaps.
      */
     public boolean canGapsOccurInCapturedDataIds();
+    
+    public String massageDataExtractionSql(String sql, Channel channel);
+    
 }

@@ -25,8 +25,6 @@ import java.util.Collection;
 /**
  * Definition of a channel and it's priority. A channel is a group of tables
  * that get synchronized together.
- *
- * 
  */
 public class Channel {
 
@@ -49,6 +47,8 @@ public class Channel {
     private boolean useRowDataToRoute = true;
     
     private boolean usePkDataToRoute = true;
+    
+    private boolean containsBigLob = false;
 
     private String batchAlgorithm = "default";
 
@@ -174,5 +174,13 @@ public class Channel {
     
     public boolean isUsePkDataToRoute() {
         return usePkDataToRoute;
+    }
+    
+    public void setContainsBigLob(boolean containsBigLobs) {
+        this.containsBigLob = containsBigLobs;
+    }
+    
+    public boolean isContainsBigLob() {
+        return containsBigLob;
     }
 }
