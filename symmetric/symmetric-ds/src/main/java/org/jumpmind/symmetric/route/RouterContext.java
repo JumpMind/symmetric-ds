@@ -100,6 +100,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
         this.encountedTransactionBoundary = false;
         this.batchesByNodes.clear();
         this.availableNodes.clear();
+        this.dataEventsToSend.clear();
     }
 
     public void rollback() {

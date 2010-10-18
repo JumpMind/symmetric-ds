@@ -45,6 +45,7 @@ import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
+import org.jumpmind.symmetric.db.JdbcBatchPreparedStatementCallback;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
@@ -216,8 +217,8 @@ public class DataService extends AbstractService implements IDataService {
     
     public void insertDataEvents(JdbcTemplate template, final List<DataEvent> events) {
         if (events.size() > 0) {
-            jdbcTemplate.batchUpdate(getSql("insertIntoDataEventSql"),
-                    new BatchPreparedStatementSetter() {
+            JdbcBatchPreparedStatementCallback callback = new JdbcBatchPreparedStatementCallback(
+                    dbDialect, new BatchPreparedStatementSetter() {
 
                         public void setValues(PreparedStatement ps, int i) throws SQLException {
                             DataEvent event = events.get(i);
@@ -233,10 +234,12 @@ public class DataService extends AbstractService implements IDataService {
                         public int getBatchSize() {
                             return events.size();
                         }
-                    });
-        }
-    }    
+                    }, parameterService.getInt(ParameterConstants.JDBC_EXECUTE_BATCH_SIZE));
 
+            template.execute(getSql("insertIntoDataEventSql"), callback);
+        }
+
+    }
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId,
             List<Node> nodes, String routerId, boolean isLoad) {
         long dataId = insertData(data);
