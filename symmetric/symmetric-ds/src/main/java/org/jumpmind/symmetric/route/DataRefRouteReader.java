@@ -26,6 +26,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ISqlProvider;
@@ -40,8 +41,8 @@ public class DataRefRouteReader extends AbstractDataToRouteReader {
     public static final String SELECT_DATA_TO_BATCH_SQL = "selectDataToBatchSql";
 
     public DataRefRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize,
-            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse) {
-        super(dataSource, queryTimeout, maxQueueSize, sqlProvider, fetchSize, context, dataService, requiresAutoCommitFalse);
+            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse, IDbDialect dbDialect) {
+        super(dataSource, queryTimeout, maxQueueSize, sqlProvider, fetchSize, context, dataService, requiresAutoCommitFalse, dbDialect);
     }
 
     @Override

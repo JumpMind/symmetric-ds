@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.service.IDataService;
@@ -76,9 +77,11 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
     protected int queryTimeout = DEFAULT_QUERY_TIMEOUT;
     
     protected boolean requiresAutoCommitFalse = false;
+    
+    protected IDbDialect dbDialect;
 
     public AbstractDataToRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize,
-            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse) {
+            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse, IDbDialect dbDialect) {
         this.maxQueueSize = maxQueueSize;
         this.dataSource = dataSource;
         this.dataQueue = new LinkedBlockingQueue<Data>(maxQueueSize);
@@ -88,6 +91,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         this.queryTimeout = queryTimeout;
         this.dataService = dataService;
         this.requiresAutoCommitFalse = requiresAutoCommitFalse;
+        this.dbDialect = dbDialect;
     }
 
     public Data take() {
@@ -126,8 +130,8 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         }
         if (!channel.isUsePkDataToRoute()) {
             select = select.replace("d.pk_data", "''");
-        }
-        return select;
+        } 
+        return dbDialect == null ? select : dbDialect.massageDataExtractionSql(select, channel);
     }
 
     public void run() {

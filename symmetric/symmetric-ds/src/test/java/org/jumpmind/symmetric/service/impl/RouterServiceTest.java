@@ -826,7 +826,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         RouterContext context = new RouterContext(TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getDataSource());
         DataRefRouteReader reader = new DataRefRouteReader(getDataSource(), getDbDialect() instanceof PostgreSqlDbDialect ? 0 : 1000, 1000, 
-                ((AbstractService)getRouterService()), 1000, context, getDataService(), getDbDialect().requiresAutoCommitFalseToSetFetchSize());
+                ((AbstractService)getRouterService()), 1000, context, getDataService(), getDbDialect().requiresAutoCommitFalseToSetFetchSize(), null);
         
         reader.run();
         
