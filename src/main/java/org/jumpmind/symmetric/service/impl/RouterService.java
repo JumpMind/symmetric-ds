@@ -160,10 +160,10 @@ public class RouterService extends AbstractService implements IRouterService {
             dataCount = selectDataAndRoute(ref, context);
             return dataCount;
         } catch (Exception ex) {
+            log.error("RouterRoutingFailed", ex, nodeChannel.getChannelId());
             if (context != null) {
                 context.rollback();
             }
-            log.error("RouterRoutingFailed", ex, nodeChannel.getChannelId());
             return 0;
         } finally {
             try {
@@ -180,9 +180,6 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (context != null) {
                     context.rollback();
                 }
-                
-                
-                
                 log.error(e);
             } finally {
                 context.logStats(log, dataCount, System.currentTimeMillis() - ts);
@@ -200,7 +197,9 @@ public class RouterService extends AbstractService implements IRouterService {
             for (IDataRouter dataRouter : usedRouters) {
                 dataRouter.completeBatch(context, batch);
             }
-            if (!Constants.UNROUTED_NODE_ID.equals(batch.getNodeId())) {
+            if (Constants.UNROUTED_NODE_ID.equals(batch.getNodeId())) {
+                batch.setStatus(Status.OK);
+            } else {
                 batch.setStatus(Status.NE);
             }
             outgoingBatchService.updateOutgoingBatch(batch);
@@ -316,23 +315,27 @@ public class RouterService extends AbstractService implements IRouterService {
                     dataCount++;
                     routeData(data, context);    
                     long ts = System.currentTimeMillis();
-                    if (numberOfEventsBeforeFlush <= context.getDataEventList().size() || 
-                            context.isNeedsCommitted()) {
-                        dataService.insertDataEvents(context.getJdbcTemplate(), context.getDataEventList());
-                        context.clearDataEventsList();
-                    }
-                    
-                    if (context.isNeedsCommitted()) {
-                        completeBatchesAndCommit(context);
-                        long maxDataToRoute = context.getChannel().getMaxDataToRoute();
-                        if (maxDataToRoute > 0 && dataCount > maxDataToRoute) {
-                            log.info("RoutedMaxNumberData", dataCount, context.getChannel()
-                                    .getChannelId());
-                            break;
+                    try {
+                        if (numberOfEventsBeforeFlush <= context.getDataEventList().size()
+                                || context.isNeedsCommitted()) {
+                            dataService.insertDataEvents(context.getJdbcTemplate(), context
+                                    .getDataEventList());
+                            context.clearDataEventsList();
                         }
+
+                        if (context.isNeedsCommitted()) {
+                            completeBatchesAndCommit(context);
+                            long maxDataToRoute = context.getChannel().getMaxDataToRoute();
+                            if (maxDataToRoute > 0 && dataCount > maxDataToRoute) {
+                                log.info("RoutedMaxNumberData", dataCount, context.getChannel()
+                                        .getChannelId());
+                                break;
+                            }
+                        }
+                    } finally {
+                        context.incrementStat(System.currentTimeMillis() - ts,
+                                RouterContext.STAT_INSERT_DATA_EVENTS_MS);
                     }
-                    context.incrementStat(System.currentTimeMillis() - ts,
-                            RouterContext.STAT_INSERT_DATA_EVENTS_MS);
                 }
             } while (data != null);
         } finally {
@@ -389,9 +392,6 @@ public class RouterService extends AbstractService implements IRouterService {
             OutgoingBatch batch = batches.get(nodeId);
             if (batch == null) {
                 batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(), OutgoingBatch.Status.RT);
-                if (Constants.UNROUTED_NODE_ID.equals(nodeId)) {
-                    batch.setStatus(Status.OK);
-                }
                 outgoingBatchService.insertOutgoingBatch(batch);
                 context.getBatchesByNodes().put(nodeId, batch);
             }

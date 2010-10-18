@@ -94,7 +94,14 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     }
     
     public void commit() throws SQLException {
-        connection.commit();
+        try {
+           connection.commit();
+        } finally {
+           clearState();
+        }
+    }
+    
+    protected void clearState() {
         this.usedDataRouters.clear();
         this.encountedTransactionBoundary = false;
         this.batchesByNodes.clear();
@@ -107,6 +114,8 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
             connection.rollback();
         } catch (SQLException e) {
             LogFactory.getLog(getClass()).warn(e);
+        } finally {
+            clearState();
         }
     }
 
