@@ -196,7 +196,7 @@ public class RouterService extends AbstractService implements IRouterService {
             for (IDataRouter dataRouter : usedRouters) {
                 dataRouter.completeBatch(context, batch);
             }
-            if (!batch.getNodeId().equals(Constants.UNROUTED_NODE_ID)) {
+            if (!Constants.UNROUTED_NODE_ID.equals(batch.getNodeId())) {
                 batch.setStatus(Status.NE);
             }
             outgoingBatchService.updateOutgoingBatch(batch);
