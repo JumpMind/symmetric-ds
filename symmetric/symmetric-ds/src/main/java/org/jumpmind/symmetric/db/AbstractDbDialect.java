@@ -72,6 +72,7 @@ import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 import org.jumpmind.symmetric.ddl.platform.informix.InformixModelReader;
 import org.jumpmind.symmetric.ddlutils.JdbcModelReaderSupport;
 import org.jumpmind.symmetric.load.IColumnFilter;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -1439,5 +1440,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     public boolean canGapsOccurInCapturedDataIds() {
         return true;
+    }
+    
+    public String massageDataExtractionSql(String sql, Channel channel) {
+        return sql;
     }
 }

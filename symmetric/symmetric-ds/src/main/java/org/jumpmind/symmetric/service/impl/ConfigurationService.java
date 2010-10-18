@@ -96,6 +96,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 channel.getMaxBatchToSend(), channel.getMaxDataToRoute(),
                 channel.isUseOldDataToRoute() ? 1 : 0, channel.isUseRowDataToRoute() ? 1 : 0,
                 channel.isUsePkDataToRoute() ? 1 : 0,
+                channel.isContainsBigLob() ? 1 : 0,
                 channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
                 channel.getExtractPeriodMillis(), channel.getChannelId() })) {
             jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getChannelId(),
@@ -103,6 +104,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     channel.getMaxBatchToSend(), channel.getMaxDataToRoute(),
                     channel.isUseOldDataToRoute() ? 1 : 0, channel.isUseRowDataToRoute() ? 1 : 0,
                     channel.isUsePkDataToRoute() ? 1 : 0,
+                    channel.isContainsBigLob() ? 1 : 0,
                     channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
                     channel.getExtractPeriodMillis() });
         }
@@ -190,9 +192,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             nodeChannel.setUseOldDataToRoute(rs.getBoolean(10));
                             nodeChannel.setUseRowDataToRoute(rs.getBoolean(11));
                             nodeChannel.setUsePkDataToRoute(rs.getBoolean(12));
-                            nodeChannel.setBatchAlgorithm(rs.getString(13));
-                            nodeChannel.setLastExtractedTime(rs.getTimestamp(14));
-                            nodeChannel.setExtractPeriodMillis(rs.getLong(15));
+                            nodeChannel.setContainsBigLobs(rs.getBoolean(13));
+                            nodeChannel.setBatchAlgorithm(rs.getString(14));
+                            nodeChannel.setLastExtractedTime(rs.getTimestamp(15));
+                            nodeChannel.setExtractPeriodMillis(rs.getLong(16));
                             return nodeChannel;
                         };
                     });

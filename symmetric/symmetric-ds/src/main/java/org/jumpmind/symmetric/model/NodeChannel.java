@@ -172,5 +172,13 @@ public class NodeChannel {
     public void setExtractPeriodMillis(long extractPeriodMillis) {
         channel.setExtractPeriodMillis(extractPeriodMillis);
     }
+    
+    public void setContainsBigLobs(boolean containsBigLobs) {
+        this.channel.setContainsBigLob(containsBigLobs);
+    }
+    
+    public boolean isContainsBigLob() {
+        return this.channel.isContainsBigLob();
+    }
 
 }
