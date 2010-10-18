@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ISqlProvider;
@@ -43,8 +44,8 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
     private static final String SELECT_DATA_USING_GAPS_SQL = "selectDataUsingGapsSql";
 
     public DataGapRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize,
-            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse) {
-        super(dataSource, queryTimeout, maxQueueSize, sqlProvider, fetchSize, context, dataService, requiresAutoCommitFalse);
+            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse, IDbDialect dbDialect) {
+        super(dataSource, queryTimeout, maxQueueSize, sqlProvider, fetchSize, context, dataService, requiresAutoCommitFalse, dbDialect);
     }
     
     @Override

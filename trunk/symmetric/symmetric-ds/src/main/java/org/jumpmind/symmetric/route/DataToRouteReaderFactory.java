@@ -37,11 +37,11 @@ public class DataToRouteReaderFactory extends AbstractService implements ISqlPro
         if (type == null || type.equals("ref")) {
             return new DataRefRouteReader(jdbcTemplate.getDataSource(),
                     jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize());
+                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize(), dbDialect);
         } else if (type == null || type.equals("gap")) {
             return new DataGapRouteReader(jdbcTemplate.getDataSource(),
                     jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize());
+                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize(), dbDialect);
         } else {
             throw unsupportedType(type);
         }
