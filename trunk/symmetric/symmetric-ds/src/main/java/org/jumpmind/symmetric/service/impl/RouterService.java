@@ -214,22 +214,28 @@ public class RouterService extends AbstractService implements IRouterService {
             return 0;
         } finally {
             try {
-                if (dbDialect.supportsJdbcBatch()) {
-                    dataService.insertDataEvents(context.getJdbcTemplate(), context.getDataEventList());
+                if (dataCount > 0) {
+                    long insertTs = System.currentTimeMillis();
+                    dataService.insertDataEvents(context.getJdbcTemplate(), context
+                            .getDataEventList());
                     context.clearDataEventsList();
-                }
-                completeBatchesAndCommit(context);
-                if (context.getLastDataIdProcessed() > 0) {
-                    String channelId = nodeChannel.getChannelId();
-                    long queryTs = System.currentTimeMillis();
-                    long dataLeftToRoute = jdbcTemplate.queryForInt(getSql("selectUnroutedCountForChannelSql"), channelId, context.getLastDataIdProcessed());
-                    queryTs = System.currentTimeMillis() - queryTs;
-                    if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
-                        log.warn("UnRoutedQueryTookLongTime", channelId, queryTs);
+                    completeBatchesAndCommit(context);
+                    context.incrementStat(System.currentTimeMillis() - insertTs,
+                            RouterContext.STAT_INSERT_DATA_EVENTS_MS);
+                    if (context.getLastDataIdProcessed() > 0) {
+                        String channelId = nodeChannel.getChannelId();
+                        long queryTs = System.currentTimeMillis();
+                        long dataLeftToRoute = jdbcTemplate.queryForInt(
+                                getSql("selectUnroutedCountForChannelSql"), channelId, context
+                                        .getLastDataIdProcessed());
+                        queryTs = System.currentTimeMillis() - queryTs;
+                        if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
+                            log.warn("UnRoutedQueryTookLongTime", channelId, queryTs);
+                        }
+                        statisticManager.setDataUnRouted(channelId, dataLeftToRoute);
                     }
-                    statisticManager.setDataUnRouted(channelId, dataLeftToRoute);
                 }
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 if (context != null) {
                     context.rollback();
                 }                
@@ -295,6 +301,7 @@ public class RouterService extends AbstractService implements IRouterService {
         int totalDataCount = 0;
         int statsDataCount = 0;
         int statsDataEventCount = 0;
+        final int maxNumberOfEventsBeforeFlush = parameterService.getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
         try {
             do {
                 data = reader.take();
@@ -303,8 +310,10 @@ public class RouterService extends AbstractService implements IRouterService {
                     statsDataCount++;
                     totalDataCount++;
                     statsDataEventCount += routeData(data, context);
-                    if (dbDialect.supportsJdbcBatch() && 
-                       (parameterService.getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE) <= context.getDataEventList().size() || context.isNeedsCommitted())) {
+                    
+                    long insertTs = System.currentTimeMillis();
+                    if (maxNumberOfEventsBeforeFlush <= context.getDataEventList().size() || 
+                            context.isNeedsCommitted()) {
                         dataService.insertDataEvents(context.getJdbcTemplate(), context.getDataEventList());
                         context.clearDataEventsList();
                     }
@@ -317,6 +326,8 @@ public class RouterService extends AbstractService implements IRouterService {
                             break;
                         }
                     }
+                    context.incrementStat(System.currentTimeMillis() - insertTs,
+                            RouterContext.STAT_INSERT_DATA_EVENTS_MS);
                     
                     if (statsDataCount > StatisticConstants.FLUSH_SIZE_ROUTER_DATA) {
                         statisticManager.incrementDataRouted(context.getChannel().getChannelId(), statsDataCount);
@@ -402,14 +413,8 @@ public class RouterService extends AbstractService implements IRouterService {
             batch.incrementDataEventCount();
             numberOfDataEventsInserted++;
             try {
-                if (dbDialect.supportsJdbcBatch()) {
-                    context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
-                            triggerRouter.getRouter().getRouterId());
-                } else {
-                    dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData()
-                            .getDataId(), batch.getBatchId(), triggerRouter.getRouter()
-                            .getRouterId());
-                }
+                context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
+                    triggerRouter.getRouter().getRouterId());
                 if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
                         batch, dataMetaData, context)) {
                     context.setNeedsCommitted(true);

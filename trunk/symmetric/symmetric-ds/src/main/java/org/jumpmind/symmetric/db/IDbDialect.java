@@ -147,8 +147,6 @@ public interface IDbDialect {
 
     public boolean supportsTransactionId();
     
-    public boolean supportsJdbcBatch();
-    
     /**
      * Use this call to check to see if the implemented database dialect supports 
      * a way to check on pending database transactions.
