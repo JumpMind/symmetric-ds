@@ -66,7 +66,7 @@ public class JdbcBatchPreparedStatementCallback implements PreparedStatementCall
                     rowsAffected += ps.executeUpdate();
                 } else {
                     ps.addBatch();
-                    if (i % executeBatchSize == 0) {
+                    if (i % executeBatchSize == 0 || i == batchSize-1) {
                         int[] results = ps.executeBatch();
                         for (int j : results) {
                             rowsAffected += j;
@@ -74,15 +74,7 @@ public class JdbcBatchPreparedStatementCallback implements PreparedStatementCall
                     }
                 }
             }
-            if (oracleStyle) {
-                return ps.executeUpdate() + rowsAffected;
-            } else {
-                int[] results = ps.executeBatch();
-                for (int j : results) {
-                    rowsAffected += j;
-                }
-                return rowsAffected;
-            }
+            return rowsAffected;
         } else {
             for (int i = 0; i < batchSize; i++) {
                 pss.setValues(ps, i);
