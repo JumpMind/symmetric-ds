@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.JdbcBatchPreparedStatementCallback;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
@@ -53,10 +54,10 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -196,8 +197,8 @@ public class DataService extends AbstractService implements IDataService {
     
     public void insertDataEvents(JdbcTemplate template, final List<DataEvent> events) {
         if (events.size() > 0) {
-            jdbcTemplate.batchUpdate(getSql("insertIntoDataEventSql"),
-                    new BatchPreparedStatementSetter() {
+            JdbcBatchPreparedStatementCallback callback = new JdbcBatchPreparedStatementCallback(
+                    dbDialect, new BatchPreparedStatementSetter() {
 
                         public void setValues(PreparedStatement ps, int i) throws SQLException {
                             DataEvent event = events.get(i);
@@ -213,8 +214,11 @@ public class DataService extends AbstractService implements IDataService {
                         public int getBatchSize() {
                             return events.size();
                         }
-                    });
+                    }, parameterService.getInt(ParameterConstants.JDBC_EXECUTE_BATCH_SIZE));
+
+            template.execute(getSql("insertIntoDataEventSql"), callback);
         }
+
     }
 
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId) {
