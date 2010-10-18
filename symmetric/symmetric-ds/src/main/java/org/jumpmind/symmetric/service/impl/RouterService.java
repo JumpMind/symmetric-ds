@@ -41,9 +41,9 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.route.DataToRouteReaderFactory;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
@@ -61,7 +61,6 @@ import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * This service is responsible for routing data to specific nodes and managing
@@ -412,15 +411,11 @@ public class RouterService extends AbstractService implements IRouterService {
             batch.incrementEventCount(dataMetaData.getData().getEventType());
             batch.incrementDataEventCount();
             numberOfDataEventsInserted++;
-            try {
-                context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
+            context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
                     triggerRouter.getRouter().getRouterId());
-                if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
-                        batch, dataMetaData, context)) {
-                    context.setNeedsCommitted(true);
-                }
-            } catch (DataIntegrityViolationException ex) {
-                log.warn("RoutedDataIntegrityError", dataMetaData.getData().getDataId());
+            if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
+                    batch, dataMetaData, context)) {
+                context.setNeedsCommitted(true);
             }
             
             if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
