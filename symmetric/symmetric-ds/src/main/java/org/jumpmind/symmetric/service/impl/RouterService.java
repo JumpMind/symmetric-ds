@@ -206,10 +206,10 @@ public class RouterService extends AbstractService implements IRouterService {
             dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (Exception ex) {
+            log.error("RouterRoutingFailed", ex, nodeChannel.getChannelId());
             if (context != null) {
                 context.rollback();
             }
-            log.error("RouterRoutingFailed", ex, nodeChannel.getChannelId());
             return 0;
         } finally {
             try {
@@ -255,7 +255,9 @@ public class RouterService extends AbstractService implements IRouterService {
             for (IDataRouter dataRouter : usedRouters) {
                 dataRouter.completeBatch(context, batch);
             }
-            if (!Constants.UNROUTED_NODE_ID.equals(batch.getNodeId())) {
+            if (Constants.UNROUTED_NODE_ID.equals(batch.getNodeId())) {
+                batch.setStatus(Status.OK);
+            } else {
                 batch.setStatus(Status.NE);
             }
             outgoingBatchService.updateOutgoingBatch(batch);
@@ -311,28 +313,34 @@ public class RouterService extends AbstractService implements IRouterService {
                     statsDataEventCount += routeData(data, context);
                     
                     long insertTs = System.currentTimeMillis();
-                    if (maxNumberOfEventsBeforeFlush <= context.getDataEventList().size() || 
-                            context.isNeedsCommitted()) {
-                        dataService.insertDataEvents(context.getJdbcTemplate(), context.getDataEventList());
-                        context.clearDataEventsList();
-                    }
-                    if (context.isNeedsCommitted()) {
-                        completeBatchesAndCommit(context);
-                        long maxDataToRoute = context.getChannel().getMaxDataToRoute();
-                        if (maxDataToRoute > 0 && totalDataCount > maxDataToRoute) {
-                            log.info("RoutedMaxNumberData", totalDataCount, context.getChannel()
-                                    .getChannelId());
-                            break;
+                    try {
+                        if (maxNumberOfEventsBeforeFlush <= context.getDataEventList().size()
+                                || context.isNeedsCommitted()) {
+                            dataService.insertDataEvents(context.getJdbcTemplate(), context
+                                    .getDataEventList());
+                            context.clearDataEventsList();
                         }
-                    }
-                    context.incrementStat(System.currentTimeMillis() - insertTs,
-                            RouterContext.STAT_INSERT_DATA_EVENTS_MS);
-                    
-                    if (statsDataCount > StatisticConstants.FLUSH_SIZE_ROUTER_DATA) {
-                        statisticManager.incrementDataRouted(context.getChannel().getChannelId(), statsDataCount);
-                        statsDataCount = 0;
-                        statisticManager.incrementDataEventInserted(context.getChannel().getChannelId(), statsDataEventCount);
-                        statsDataEventCount = 0;
+                        if (context.isNeedsCommitted()) {
+                            completeBatchesAndCommit(context);
+                            long maxDataToRoute = context.getChannel().getMaxDataToRoute();
+                            if (maxDataToRoute > 0 && totalDataCount > maxDataToRoute) {
+                                log.info("RoutedMaxNumberData", totalDataCount, context
+                                        .getChannel().getChannelId());
+                                break;
+                            }
+                        }
+                    } finally {
+                        context.incrementStat(System.currentTimeMillis() - insertTs,
+                                RouterContext.STAT_INSERT_DATA_EVENTS_MS);
+
+                        if (statsDataCount > StatisticConstants.FLUSH_SIZE_ROUTER_DATA) {
+                            statisticManager.incrementDataRouted(context.getChannel()
+                                    .getChannelId(), statsDataCount);
+                            statsDataCount = 0;
+                            statisticManager.incrementDataEventInserted(context.getChannel()
+                                    .getChannelId(), statsDataEventCount);
+                            statsDataEventCount = 0;
+                        }
                     }
                 }
             } while (data != null);
@@ -402,9 +410,6 @@ public class RouterService extends AbstractService implements IRouterService {
             OutgoingBatch batch = batches.get(nodeId);
             if (batch == null) {
                 batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(), Status.RT);
-                if (Constants.UNROUTED_NODE_ID.equals(nodeId)) {
-                    batch.setStatus(Status.OK);
-                }
                 outgoingBatchService.insertOutgoingBatch(batch);
                 context.getBatchesByNodes().put(nodeId, batch);
             }

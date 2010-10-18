@@ -31,6 +31,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
@@ -47,6 +48,8 @@ import org.springframework.jdbc.support.JdbcUtils;
  */
 public class RouterContext extends SimpleRouterContext implements IRouterContext {
 
+    static final ILog log = LogFactory.getLog(RouterContext.class);
+    
     public static final String STAT_INSERT_DATA_EVENTS_MS = "insert.data.events.ms";
     public static final String STAT_DATA_ROUTER_MS = "data.router.ms";
     public static final String STAT_QUERY_TIME_MS = "read.query.time.ms";
@@ -65,10 +68,12 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     private long lastDataIdProcessed;
     private Map<String, Long> transactionIdDataIds = new HashMap<String, Long>();
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
+    private boolean oldAutoCommitSetting = false;
 
     public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
             throws SQLException {
         this.connection = dataSource.getConnection();
+        this.oldAutoCommitSetting = this.connection.getAutoCommit();
         this.connection.setAutoCommit(false);
         this.init(new JdbcTemplate(new SingleConnectionDataSource(connection, true)), channel,
                 nodeId);
@@ -95,7 +100,14 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     }
 
     public void commit() throws SQLException {
-        connection.commit();
+        try {
+           connection.commit();
+        } finally {
+           clearState();
+        }
+    }
+    
+    protected void clearState() {
         this.usedDataRouters.clear();
         this.encountedTransactionBoundary = false;
         this.batchesByNodes.clear();
@@ -108,10 +120,18 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
             connection.rollback();
         } catch (SQLException e) {
             LogFactory.getLog(getClass()).warn(e);
+        } finally {
+            clearState();
         }
     }
 
     public void cleanup() {
+        try {
+            this.connection.commit();
+            this.connection.setAutoCommit(oldAutoCommitSetting);
+        } catch (Exception ex) {
+            log.warn(ex);
+        }
         JdbcUtils.closeConnection(this.connection);
     }
 
