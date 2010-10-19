@@ -377,6 +377,10 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         
         boolean isRegistrationServer = getNodeService().isRegistrationServer();
         
+        boolean isSelfConfigurable = isRegistrationServer && 
+        (getParameterService().is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND) || 
+         StringUtils.isNotBlank(getParameterService().getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT))); 
+        
         Table symNodeTable = dbDialect.getTable(dbDialect.getDefaultCatalog(), dbDialect.getDefaultSchema(), TableConstants.getTableName(dbDialect.getTablePrefix(), TableConstants.SYM_NODE), false);
         
         Node node = symNodeTable != null ? getNodeService().findIdentity() : null;
@@ -388,16 +392,14 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         
         String registrationUrl = getParameterService().getRegistrationUrl();
         
-        if (node == null && isRegistrationServer) {
+        if (!isSelfConfigurable && node == null && isRegistrationServer) {
             log.warn("ValidationRegServerIsMissingConfiguration", ParameterConstants.REGISTRATION_URL);
-        } else if (node == null && StringUtils.isBlank(getParameterService().getRegistrationUrl())) {
-            log.warn("ValidationSetRegistrationUrl", ParameterConstants.REGISTRATION_URL);
-            
+        } else if (!isSelfConfigurable && node == null && StringUtils.isBlank(getParameterService().getRegistrationUrl())) {
+            log.warn("ValidationSetRegistrationUrl", ParameterConstants.REGISTRATION_URL);            
         } else if (PLEASE_SET_ME.equals(getParameterService().getExternalId()) || 
                 PLEASE_SET_ME.equals(registrationUrl) || 
                 PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
-            log.warn("ValidationPleaseSetMe");
-            
+            log.warn("ValidationPleaseSetMe");            
         } else if (node != null
                 && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node
                         .getNodeGroupId().equals(getParameterService().getNodeGroupId()))) {
