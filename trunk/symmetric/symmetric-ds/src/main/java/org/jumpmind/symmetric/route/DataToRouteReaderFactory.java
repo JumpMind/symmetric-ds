@@ -32,7 +32,7 @@ public class DataToRouteReaderFactory extends AbstractService implements ISqlPro
 
     private IDataService dataService;
 
-    public IDataToRouteReader getDataToRouteReader(RouterContext context) {
+    public IDataToRouteReader getDataToRouteReader(ChannelRouterContext context) {
         String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
         if (type == null || type.equals("ref")) {
             return new DataRefRouteReader(jdbcTemplate.getDataSource(),

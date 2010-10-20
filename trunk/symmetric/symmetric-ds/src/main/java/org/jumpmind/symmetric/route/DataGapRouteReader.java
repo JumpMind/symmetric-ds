@@ -44,7 +44,7 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
     private static final String SELECT_DATA_USING_GAPS_SQL = "selectDataUsingGapsSql";
 
     public DataGapRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize,
-            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse, IDbDialect dbDialect) {
+            ISqlProvider sqlProvider, int fetchSize, ChannelRouterContext context, IDataService dataService, boolean requiresAutoCommitFalse, IDbDialect dbDialect) {
         super(dataSource, queryTimeout, maxQueueSize, sqlProvider, fetchSize, context, dataService, requiresAutoCommitFalse, dbDialect);
     }
     
