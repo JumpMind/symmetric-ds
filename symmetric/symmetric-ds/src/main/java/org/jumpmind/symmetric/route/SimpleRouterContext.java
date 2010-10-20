@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.route;
 
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -39,13 +41,14 @@ public class SimpleRouterContext implements IRouterContext {
     protected JdbcTemplate jdbcTemplate;
     protected boolean encountedTransactionBoundary = false;
     protected Map<String, Object> contextCache = new HashMap<String, Object>();
+    protected Map<String, Long> stats = new HashMap<String, Long>();
     protected String nodeId;
 
     public SimpleRouterContext(String nodeId, JdbcTemplate jdbcTemplate, NodeChannel channel) {
         this.init(jdbcTemplate, channel, nodeId);
     }
 
-    public SimpleRouterContext() {
+    protected SimpleRouterContext() {
     }
 
     protected void init(JdbcTemplate jdbcTemplate, NodeChannel channel, String nodeId) {
@@ -78,47 +81,47 @@ public class SimpleRouterContext implements IRouterContext {
         return this.encountedTransactionBoundary;
     }
 
-    private final String getStatKey(String name) {
-        return String.format("Stat.%s", name);
-    }
-
     synchronized public void incrementStat(long amount, String name) {
-        final String KEY = getStatKey(name);
-        Long val = (Long) contextCache.get(KEY);
+        Long val = stats.get(name);
         if (val == null) {
             val = 0l;
         }
         val += amount;
-        contextCache.put(KEY, val);
+        stats.put(name, val);
     }
 
     synchronized public long getStat(String name) {
-        final String KEY = getStatKey(name);
-        Long val = (Long) contextCache.get(KEY);
+        Long val = (Long) stats.get(name);
         if (val == null) {
             val = 0l;
         }
         return val;
     }
 
-    synchronized public void logStats(ILog log, int dataCount, long totalTimeInMs) {
+    synchronized public void logStats(ILog log, long totalTimeInMs) {
         boolean infoLevel = totalTimeInMs > Constants.LONG_OPERATION_THRESHOLD;
-        Set<String> keys = new HashSet<String>(contextCache.keySet());
+        Set<String> keys = new TreeSet<String>(stats.keySet());
+        StringBuilder statsPrintout = new StringBuilder(channel.getChannelId());
         for (String key : keys) {
-            if (key.startsWith("Stat.")) {
-                String keyString = key.substring(key.indexOf(".") + 1);
-                if (infoLevel) {
-                    log.info("RouterStats", channel.getChannelId(), keyString, contextCache.get(key));                    
-                } else {
-                    log.debug("RouterStats", channel.getChannelId(), keyString, contextCache.get(key));                    
-                }               
-            }
+            statsPrintout.append(", " + key + "=" + stats.get(key));
         }
         
         if (infoLevel) {
-            log.info("RouterTimeForChannel", totalTimeInMs, dataCount, channel.getChannelId());
+            log.info("RouterStats", statsPrintout);
         } else {
-            log.debug("RouterTimeForChannel", totalTimeInMs,  dataCount, channel.getChannelId());
+            log.debug("RouterStats", statsPrintout);
+        }
+
+    }
+
+    synchronized public void transferStats(SimpleRouterContext ctx) {
+        Set<String> keys = new HashSet<String>(ctx.stats.keySet());
+        for (String key : keys) {
+            Long value = stats.get(key);
+            if (value == null) {
+                value = 0l;
+            }
+            incrementStat(value, key);
         }
     }
 }

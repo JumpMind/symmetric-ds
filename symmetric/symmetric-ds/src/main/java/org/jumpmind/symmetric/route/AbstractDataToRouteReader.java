@@ -64,7 +64,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
 
     protected DataSource dataSource;
 
-    protected RouterContext context;
+    protected ChannelRouterContext context;
 
     protected IDataService dataService;
 
@@ -81,7 +81,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
     protected IDbDialect dbDialect;
 
     public AbstractDataToRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize,
-            ISqlProvider sqlProvider, int fetchSize, RouterContext context, IDataService dataService, boolean requiresAutoCommitFalse, IDbDialect dbDialect) {
+            ISqlProvider sqlProvider, int fetchSize, ChannelRouterContext context, IDataService dataService, boolean requiresAutoCommitFalse, IDbDialect dbDialect) {
         this.maxQueueSize = maxQueueSize;
         this.dataSource = dataSource;
         this.dataQueue = new LinkedBlockingQueue<Data>(maxQueueSize);
@@ -170,7 +170,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     long ts = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long executeTimeInMs = System.currentTimeMillis()-ts;
-                    context.incrementStat(executeTimeInMs, RouterContext.STAT_QUERY_TIME_MS);
+                    context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
                     if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
                         log.warn("RoutedDataSelectedInTime", executeTimeInMs, channelId);
                     }
@@ -186,10 +186,10 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                             memQueue.add(data);
                             dataCount++;
                             context.incrementStat(System.currentTimeMillis() - ts,
-                                    RouterContext.STAT_READ_DATA_MS);
+                                    ChannelRouterContext.STAT_READ_DATA_MS);
                         } else {
                             context.incrementStat(System.currentTimeMillis() - ts,
-                                    RouterContext.STAT_REREAD_DATA_MS);
+                                    ChannelRouterContext.STAT_REREAD_DATA_MS);
                         }
 
                         ts = System.currentTimeMillis();
@@ -203,7 +203,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                         }
 
                         context.incrementStat(System.currentTimeMillis() - ts,
-                                RouterContext.STAT_ENQUEUE_DATA_MS);
+                                ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
 
                         ts = System.currentTimeMillis();
                     }
@@ -213,7 +213,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     copyToQueue(memQueue);
 
                     context.incrementStat(System.currentTimeMillis() - ts,
-                            RouterContext.STAT_ENQUEUE_DATA_MS);
+                            ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
 
                     return dataCount;
 

@@ -46,18 +46,20 @@ import org.springframework.jdbc.support.JdbcUtils;
 /**
  * 
  */
-public class RouterContext extends SimpleRouterContext implements IRouterContext {
+public class ChannelRouterContext extends SimpleRouterContext implements IRouterContext {
 
-    static final ILog log = LogFactory.getLog(RouterContext.class);
+    static final ILog log = LogFactory.getLog(ChannelRouterContext.class);
     
-    public static final String STAT_INSERT_DATA_EVENTS_MS = "insert.data.events.ms";
-    public static final String STAT_DATA_ROUTER_MS = "data.router.ms";
-    public static final String STAT_QUERY_TIME_MS = "read.query.time.ms";
-    public static final String STAT_READ_DATA_MS = "read.data.ms";
-    public static final String STAT_REREAD_DATA_MS = "already.read.data.ms";
-    public static final String STAT_ENQUEUE_DATA_MS = "enqueue.data.ms";
-    public static final String STAT_ENQUEUE_EOD_MS = "enqueue.eod.data.ms";
-    public static final String STAT_DATA_EVENTS_INSERTED = "enqueue.eod.data.ms";
+    public static final String STAT_INSERT_DATA_EVENTS_MS = "data.events.insert.time.ms";
+    public static final String STAT_DATA_ROUTER_MS = "data.router.time.ms";
+    public static final String STAT_QUERY_TIME_MS = "data.read.query.time.ms";
+    public static final String STAT_READ_DATA_MS = "data.read.total.time.ms";
+    public static final String STAT_REREAD_DATA_MS = "data.reread.time.ms";
+    public static final String STAT_ENQUEUE_DATA_MS = "data.enqueue.time.ms";
+    public static final String STAT_ENQUEUE_EOD_MS = "data.enqueue.eod.time.ms";
+    public static final String STAT_DATA_EVENTS_INSERTED = "data.events.insert.count";
+    public static final String STAT_DATA_ROUTED_COUNT = "data.routed.count";
+    public static final String STAT_ROUTE_TOTAL_TIME = "total.time.ms";
 
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<TriggerRouter, Set<Node>> availableNodes = new HashMap<TriggerRouter, Set<Node>>();
@@ -70,7 +72,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
     private boolean oldAutoCommitSetting = false;
 
-    public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
+    public ChannelRouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
             throws SQLException {
         this.connection = dataSource.getConnection();
         this.oldAutoCommitSetting = this.connection.getAutoCommit();

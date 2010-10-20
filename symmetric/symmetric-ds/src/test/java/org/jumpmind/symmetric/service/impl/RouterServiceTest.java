@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.DataRefRouteReader;
-import org.jumpmind.symmetric.route.RouterContext;
+import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Test;
@@ -824,7 +824,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         // delete
         deleteAll(TEST_TABLE_1);
 
-        RouterContext context = new RouterContext(TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getDataSource());
+        ChannelRouterContext context = new ChannelRouterContext(TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getDataSource());
         DataRefRouteReader reader = new DataRefRouteReader(getDataSource(), getDbDialect() instanceof PostgreSqlDbDialect ? 0 : 1000, 1000, 
                 ((AbstractService)getRouterService()), 1000, context, getDataService(), getDbDialect().requiresAutoCommitFalseToSetFetchSize(), null);
         
