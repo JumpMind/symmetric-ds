@@ -360,8 +360,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * Returns a new {@link Table} object.
      */
     protected Table getTable(String catalogName, String schemaName, String tblName) {
-        if (parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
-            Table table = getTableCaseSensitive(StringUtils.upperCase(catalogName), StringUtils
+        Table table = getTableCaseSensitive(catalogName, schemaName, tblName);
+
+        if (table == null && parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
+            table = getTableCaseSensitive(StringUtils.upperCase(catalogName), StringUtils
                     .upperCase(schemaName), StringUtils.upperCase(tblName));
             if (table == null) {
                 table = getTableCaseSensitive(StringUtils.lowerCase(catalogName), StringUtils
@@ -379,10 +381,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     }
                 }
             }
-            return table;
-        } else {
-            return getTableCaseSensitive(catalogName, schemaName, tblName);
         }
+        return table;
     }
 
     protected String getPlatformTableName(String catalogName, String schemaName, String tblName) {
@@ -448,7 +448,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
         String tableName = (String) values.get("TABLE_NAME");
         Table table = null;
@@ -513,7 +513,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
         ResultSet columnData = null;
@@ -534,7 +534,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
         Column column = new Column();
         column.setName((String) values.get("COLUMN_NAME"));
@@ -577,7 +577,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Map<String, Object> readColumns(ResultSet resultSet, List columnDescriptors)
             throws SQLException {
         HashMap<String, Object> values = new HashMap<String, Object>();
@@ -589,7 +589,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return values;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
         ResultSet pkData = null;
@@ -607,13 +607,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected String readPrimaryKeyName(DatabaseMetaDataWrapper metaData, Map values)
             throws SQLException {
         return (String) values.get("COLUMN_NAME");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected List initColumnsForIndex() {
         List result = new ArrayList();
 
@@ -630,7 +630,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
 	if (this instanceof InformixDbDialect) {
@@ -657,7 +657,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return indices.values();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected void readIndex(DatabaseMetaDataWrapper metaData, Map values, Map knownIndices)
             throws SQLException {
         Short indexType = (Short) values.get("TYPE");
