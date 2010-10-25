@@ -74,8 +74,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * Run SymmetricDS utilities and/or launch an embedded version of SymmetricDS. If you run this program without any
  * arguments 'help' will print out.
- *
- * 
  */
 public class SymmetricLauncher {
 

@@ -41,8 +41,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * table in the target database in case the table is missing or has missing
  * columns. It uses a cache of StatementBuilder objects that contain the SQL and
  * PreparedStatement.
- *
- * ,
  */
 public class TableTemplate {
 
