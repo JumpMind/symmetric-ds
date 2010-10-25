@@ -1,5 +1,34 @@
 <html>
 <body>
+<h1>Release Notes - SymmetricDS - Version 2.1.1</h1>       
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-351'>SYMMETRICDS-351</a>] -         H2 trigger only captures TIMESTAMP columns to a resolution of seconds. 
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-353'>SYMMETRICDS-353</a>] -         Support PostgreSQL 8.0 - fix type &quot;e&quot; does not exist error
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-357'>SYMMETRICDS-357</a>] -         When db.metadata.ignore.case is set to true, SymmetricDS should still attempt to use the recorded table name first while looking up metadata
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-359'>SYMMETRICDS-359</a>] -         Fix the service wrapper configuration file to reference the new jar locations.
+</li>
+</ul>
+    
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-344'>SYMMETRICDS-344</a>] -         Improve performance of sym_data select on oracle by adding option to use dbms_lob.substr( sqltext, 4000, 1 ) at the channel level
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-347'>SYMMETRICDS-347</a>] -         In order to support bigger ACK payloads, Jetty needs to have a default setting ( -Dorg.mortbay.jetty.Request.maxFormContentSize) increased
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-348'>SYMMETRICDS-348</a>] -         Better support DB2 by inserting into SYM_OUTGOING_BATCH outside the transaction that inserts SYM_DATA_EVENT
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-349'>SYMMETRICDS-349</a>] -         Introduce changes to make it easier to massage SQL from the getSQL method
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-355'>SYMMETRICDS-355</a>] -         Use JDBC batch APIs for insert of sym_data_event during routing.  In some database environments this should boost performance.
+</li>
+</ul>
+                
 <h1>Release Notes - SymmetricDS - Version 2.1.0</h1>       
 <h2>        Bug
 </h2>
