@@ -56,10 +56,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import bsh.EvalError;
 import bsh.Interpreter;
 
-
-/**
- * ,
- */
 public class CsvLoader implements IDataLoader {
 
     static final ILog log = LogFactory.getLog(CsvLoader.class);
