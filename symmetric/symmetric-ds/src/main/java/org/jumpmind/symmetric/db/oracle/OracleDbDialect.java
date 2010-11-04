@@ -126,7 +126,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isNonBlankCharColumnSpacePadded() {
-        return false;
+        return true;
     }
 
     public boolean isCharColumnSpaceTrimmed() {
