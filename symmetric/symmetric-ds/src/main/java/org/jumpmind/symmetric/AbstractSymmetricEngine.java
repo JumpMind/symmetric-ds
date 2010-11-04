@@ -71,7 +71,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected final ILog log = LogFactory.getLog(getClass());
 
-    private static final String PLEASE_SET_ME = "Please set me";
+    private static final String PLEASE_SET_ME = "please set me";
     private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new HashMap<String, ISymmetricEngine>();
     private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
 

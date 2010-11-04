@@ -43,9 +43,6 @@ import org.jumpmind.symmetric.transport.http.SelfSignedX509TrustManager;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 import org.springframework.beans.factory.FactoryBean;
 
-/**
- * 
- */
 public class TransportManagerFactoryBean implements FactoryBean<ITransportManager> {
 
     private IParameterService parameterService;
