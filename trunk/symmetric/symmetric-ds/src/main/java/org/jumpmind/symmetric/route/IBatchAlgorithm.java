@@ -30,8 +30,6 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  * This is the point where the decision is made whether to end a batch or not.
  * 
  * @since 2.0
- *
- * 
  */
 public interface IBatchAlgorithm extends IExtensionPoint {
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData,

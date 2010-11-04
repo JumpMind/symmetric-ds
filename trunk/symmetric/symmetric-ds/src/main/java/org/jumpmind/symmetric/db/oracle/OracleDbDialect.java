@@ -69,12 +69,11 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected void initLobHandler() {
         lobHandler = new OracleLobHandler();
         try {
-            Class clazz = Class.forName(parameterService
-                    .getString(ParameterConstants.DB_NATIVE_EXTRACTOR));
+            Class<? extends NativeJdbcExtractor> clazz = Class.forName(parameterService
+                    .getString(ParameterConstants.DB_NATIVE_EXTRACTOR)).asSubclass(NativeJdbcExtractor.class);
             NativeJdbcExtractor nativeJdbcExtractor = (NativeJdbcExtractor) clazz.newInstance();
             ((OracleLobHandler) lobHandler).setNativeJdbcExtractor(nativeJdbcExtractor);
         } catch (Exception e) {
@@ -82,9 +81,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected Integer overrideJdbcTypeForColumn(Map values) {
+    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
         // This is for Oracle's TIMESTAMP(9)
         if (typeName != null && typeName.startsWith("TIMESTAMP")) {
@@ -128,7 +126,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
+        return false;
     }
 
     public boolean isCharColumnSpaceTrimmed() {

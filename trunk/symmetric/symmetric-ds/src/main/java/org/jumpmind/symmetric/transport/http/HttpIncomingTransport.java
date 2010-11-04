@@ -39,9 +39,6 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.web.WebConstants;
 
-/**
- * 
- */
 public class HttpIncomingTransport implements IIncomingTransport {
 
     private HttpURLConnection connection;

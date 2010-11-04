@@ -52,8 +52,6 @@ import org.jumpmind.symmetric.web.WebConstants;
 /**
  * Allow remote communication to nodes, in order to push data, pull data, and
  * send messages.
- *
- * 
  */
 public class HttpTransportManager extends AbstractTransportManager implements ITransportManager {
 
@@ -100,8 +98,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public static HttpURLConnection openConnection(URL url, String username, String password) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        setBasicAuthIfNeeded(conn, username, password);
-        
+        setBasicAuthIfNeeded(conn, username, password);        
         return conn;
     }
     
@@ -194,7 +191,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     protected HttpURLConnection createGetConnectionFor(URL url) throws IOException {
         HttpURLConnection conn = HttpTransportManager.openConnection(url, getBasicAuthUsername(), getBasicAuthPassword());
-
         conn.setRequestProperty("accept-encoding", "gzip");
         conn.setConnectTimeout(getHttpTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());
