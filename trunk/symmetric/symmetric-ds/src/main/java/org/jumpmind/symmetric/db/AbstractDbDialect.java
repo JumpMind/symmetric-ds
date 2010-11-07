@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -926,11 +927,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
         builder.alterDatabase(currentModel, desiredModel, null);
         return writer.toString();
     }
-
+    
     protected Database readSymmetricSchemaFromXml() {
         try {
-            Database database = new DatabaseIO().read(new InputStreamReader(AbstractDbDialect.class
-                    .getResource("/symmetric-schema.xml").openStream()));
+            Database database = merge(
+                    readDatabaseFromXml("/symmetric-schema.xml"),
+                    readDatabaseFromXml("/console-schema.xml"));
+            
             if (prefixConfigDatabase(database)) {
                 log.info("TablesMissing");
             }
@@ -940,8 +943,31 @@ abstract public class AbstractDbDialect implements IDbDialect {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
+    }    
 
+    protected Database readDatabaseFromXml(String resourceName) throws IOException {
+        URL url = AbstractDbDialect.class
+        .getResource(resourceName);
+        if (url != null) {
+            return new DatabaseIO().read(new InputStreamReader(url.openStream()));    
+        } else {
+            return new Database();
+        }        
+    }
+    
+    protected Database merge(Database...databases) {
+        Database database = new Database();
+        if (databases != null) {
+            for (Database db : databases) {
+                Table[] tables = db.getTables();
+                for (Table table : tables) {
+                    database.addTable(table);
+                }
+            }
+        }
+        return database;
+    }
+    
     protected void fixForeignKeys(Table table, String tablePrefix, boolean clone)
             throws CloneNotSupportedException {
         ForeignKey[] keys = table.getForeignKeys();
