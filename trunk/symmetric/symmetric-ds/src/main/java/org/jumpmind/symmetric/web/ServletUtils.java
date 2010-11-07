@@ -36,7 +36,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 /**
  * 
  */
-class ServletUtils {
+public class ServletUtils {
     /**
      * Because you can't send an error when the response is already committed,
      * this helps to avoid unnecessary errors in the logs.
