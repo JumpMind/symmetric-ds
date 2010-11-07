@@ -68,6 +68,14 @@ abstract public class AbstractService implements IService, ISqlProvider {
     synchronized public void synchronize(Runnable runnable) {
         runnable.run();
     }
+    
+    protected boolean isSet(Object value) {
+        if (value != null && value.toString().equals("1")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     @SuppressWarnings("unchecked")
     protected SQLException unwrapSqlException(Throwable e) {

@@ -54,7 +54,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
- * 
+ * Responsible for configuration activities.
  */
 public class ConfigurationService extends AbstractService implements IConfigurationService {
 
@@ -237,14 +237,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void reloadChannels() {
         synchronized (this) {
             nodeChannelCache = null;
-        }
-    }
-
-    private boolean isSet(Object value) {
-        if (value != null && value.toString().equals("1")) {
-            return true;
-        } else {
-            return false;
         }
     }
 
