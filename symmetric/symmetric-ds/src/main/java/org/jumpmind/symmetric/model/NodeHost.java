@@ -50,6 +50,7 @@ public class NodeHost {
     private Date createTime;
 
     public NodeHost() {
+        this.refresh();
     }
 
     public NodeHost(String nodeId) {
