@@ -208,10 +208,6 @@ public class NodeHost {
         return lastRestartTime;
     }
 
-    public void setLastRestartTime(Date lastRestartTime) {
-        this.lastRestartTime = lastRestartTime;
-    }
-
     public Date getCreateTime() {
         return createTime;
     }
