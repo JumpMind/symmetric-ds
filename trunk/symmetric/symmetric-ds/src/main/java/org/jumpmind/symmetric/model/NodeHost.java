@@ -46,7 +46,7 @@ public class NodeHost {
     private String symmetricVersion;
     private String timezoneOffset;
     private Date heartbeatTime;
-    private Date lastRestartTime;
+    private static Date lastRestartTime = new Date();
     private Date createTime;
 
     public NodeHost() {
@@ -55,7 +55,6 @@ public class NodeHost {
     public NodeHost(String nodeId) {
         this.nodeId = nodeId;
         this.refresh();
-        this.lastRestartTime = new Date();
         this.createTime = new Date();
     }
 
