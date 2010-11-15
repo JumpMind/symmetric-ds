@@ -82,6 +82,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
@@ -93,7 +94,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * ,
+ *
  */
 abstract public class AbstractDbDialect implements IDbDialect {
 
@@ -392,42 +393,51 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected Table getTableCaseSensitive(String catalogName, String schemaName,
             final String tblName) {
-        // If we don't provide a default schema or catalog, then on some
-        // databases multiple results will be found in the metadata from
-        // multiple schemas/catalogs
-        final String schema = StringUtils.isBlank(schemaName) ? getDefaultSchema() : schemaName;
-        final String catalog = StringUtils.isBlank(catalogName) ? getDefaultCatalog() : catalogName;
-        return (Table) jdbcTemplate.execute(new ConnectionCallback<Table>() {
-            public Table doInConnection(Connection c) throws SQLException, DataAccessException {
-                Table table = null;
-                DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
-                metaData.setMetaData(c.getMetaData());
-                metaData.setCatalog(catalog);
-                metaData.setSchemaPattern(schema);
-                metaData.setTableTypes(null);
-                String tableName = tblName;
-                if (storesUpperCaseNamesInCatalog()) {
-                    tableName = tblName.toUpperCase();
-                } else if (storesLowerCaseNamesInCatalog()) {
-                    tableName = tblName.toLowerCase();
-                }
-
-                ResultSet tableData = null;
-                try {
-                    tableData = metaData.getTables(getTableNamePattern(tableName));
-                    while (tableData != null && tableData.next()) {
-                        Map<String, Object> values = readColumns(tableData, initColumnsForTable());
-                        table = readTable(metaData, values);
+        Table table = null;
+        try {
+            // If we don't provide a default schema or catalog, then on some
+            // databases multiple results will be found in the metadata from
+            // multiple schemas/catalogs
+            final String schema = StringUtils.isBlank(schemaName) ? getDefaultSchema() : schemaName;
+            final String catalog = StringUtils.isBlank(catalogName) ? getDefaultCatalog()
+                    : catalogName;
+            table = (Table) jdbcTemplate.execute(new ConnectionCallback<Table>() {
+                public Table doInConnection(Connection c) throws SQLException, DataAccessException {
+                    Table table = null;
+                    DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
+                    metaData.setMetaData(c.getMetaData());
+                    metaData.setCatalog(catalog);
+                    metaData.setSchemaPattern(schema);
+                    metaData.setTableTypes(null);
+                    String tableName = tblName;
+                    if (storesUpperCaseNamesInCatalog()) {
+                        tableName = tblName.toUpperCase();
+                    } else if (storesLowerCaseNamesInCatalog()) {
+                        tableName = tblName.toLowerCase();
                     }
-                } finally {
-                    JdbcUtils.closeResultSet(tableData);
+
+                    ResultSet tableData = null;
+                    try {
+                        tableData = metaData.getTables(getTableNamePattern(tableName));
+                        while (tableData != null && tableData.next()) {
+                            Map<String, Object> values = readColumns(tableData,
+                                    initColumnsForTable());
+                            table = readTable(metaData, values);
+                        }
+                    } finally {
+                        JdbcUtils.closeResultSet(tableData);
+                    }
+
+                    makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
+
+                    return table;
                 }
+            });
+        } catch (TransientDataAccessResourceException ex) {
+            log.debug("Message", ex.getMessage());
+        }
 
-                makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
-
-                return table;
-            }
-        });
+        return table;
     }
 
     protected String getTableNamePattern(String tableName) {
