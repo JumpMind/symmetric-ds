@@ -32,8 +32,6 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 
 /**
  * Provides an API to configure data synchronizations.
- *
- * ,
  */
 public interface IConfigurationService {
 

@@ -63,7 +63,7 @@ public class RandomTimeSlot {
         }
     }
 
-    public int getRandomValueSeededByDomainId() {
+    public int getRandomValueSeededByExternalId() {
         int nextValue = random.nextInt(maxValue);
         return nextValue == 0 ? 1 : nextValue;
     }

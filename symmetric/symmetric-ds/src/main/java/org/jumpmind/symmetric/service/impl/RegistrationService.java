@@ -179,7 +179,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     private void sleepBeforeRegistrationRetry() {
         try {
-            long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomTimeSlot.getRandomValueSeededByDomainId();
+            long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomTimeSlot.getRandomValueSeededByExternalId();
             log.warn("NodeRegistertingFailed", sleepTimeInMs);
             Thread.sleep(sleepTimeInMs);
         } catch (InterruptedException e) {
