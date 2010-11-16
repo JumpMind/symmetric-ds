@@ -14,9 +14,6 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     </bean>
 
     <bean id="jobManager" class="org.jumpmind.symmetric.job.JobManager">
-        <property name="parameterService" ref="parameterService" />
-        <property name="taskScheduler" ref="symmetricScheduler" />
-        <property name="randomTimeSlot" ref="randomTimeSlot" />
         <property name="jobs">
             <list>
                 <ref bean="job.routing" />
@@ -31,47 +28,57 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         </property>
     </bean>
 
-    <bean id="job.abstract" abstract="true" class="org.jumpmind.symmetric.job.AbstractJob">
+    <bean id="job.abstract" abstract="true" class="org.jumpmind.symmetric.job.AbstractJob" init-method="init">
         <property name="parameterService" ref="parameterService" />
         <property name="dataSource" ref="dataSource" />
         <property name="registrationService" ref="registrationService" />
+        <property name="taskScheduler" ref="symmetricScheduler" />
+        <property name="randomTimeSlot" ref="randomTimeSlot"/>
     </bean>
 
     <bean id="job.routing" parent="job.abstract" class="org.jumpmind.symmetric.job.RouterJob">
         <property name="routingService" ref="routingService" />
+        <property name="autoStartParameterName" value="start.route.job" />
     </bean>
 
     <bean id="job.push" parent="job.abstract" class="org.jumpmind.symmetric.job.PushJob">
         <property name="pushService" ref="pushService" />
+        <property name="autoStartParameterName" value="start.push.job" />
     </bean>
 
     <bean id="job.pull" parent="job.abstract" class="org.jumpmind.symmetric.job.PullJob">
         <property name="requiresRegistration" value="false" />
         <property name="pullService" ref="pullService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="autoStartParameterName" value="start.pull.job" />
     </bean>
 
     <bean id="job.purge" parent="job.abstract" class="org.jumpmind.symmetric.job.PurgeJob">
         <property name="purgeService" ref="purgeService" />
+        <property name="autoStartParameterName" value="start.purge.job" />
     </bean>
 
     <bean id="job.stat.flush" parent="job.abstract" class="org.jumpmind.symmetric.job.StatisticFlushJob">
         <property name="statisticManager" ref="statisticManager" />
+        <property name="autoStartParameterName" value="start.stat.flush.job" />
     </bean>
 
     <bean id="job.synctriggers" parent="job.abstract" class="org.jumpmind.symmetric.job.SyncTriggersJob">
         <property name="triggerRouterService" ref="triggerRouterService" />
+        <property name="autoStartParameterName" value="start.synctriggers.job" />
     </bean>
 
     <bean id="job.heartbeat" parent="job.abstract" class="org.jumpmind.symmetric.job.HeartbeatJob">
         <property name="requiresRegistration" value="false" />
         <property name="dataService" ref="dataService" />
         <property name="clusterService" ref="clusterService" />
+        <property name="autoStartParameterName" value="start.heartbeat.job" />
     </bean>
 
     <bean id="job.watchdog" parent="job.abstract" class="org.jumpmind.symmetric.job.WatchdogJob">
         <property name="requiresRegistration" value="false" />
         <property name="nodeService" ref="nodeService" />
+        <property name="autoStartParameterName" value="start.watchdog.job" />
     </bean>
 
 </beans>

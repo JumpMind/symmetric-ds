@@ -17,14 +17,14 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.job;
 
 import java.util.Date;
+import java.util.concurrent.ScheduledFuture;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -32,25 +32,25 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
 
 @ManagedResource(description = "The management interface for a job")
-/**
- * 
- */
-abstract public class AbstractJob implements Runnable, BeanNameAware {
+abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
 
-    DataSource dataSource;
+    protected DataSource dataSource;
 
     protected final ILog log = LogFactory.getLog(getClass());
 
     protected IParameterService parameterService;
 
-    private String beanName;
+    private String jobName;
 
     private boolean requiresRegistration = true;
 
@@ -70,14 +70,69 @@ abstract public class AbstractJob implements Runnable, BeanNameAware {
 
     private boolean started;
     
-    private long timeBetweenRunsInMs;
+    private long timeBetweenRunsInMs = -1;
     
     private String cronExpression;
     
     private boolean hasNotRegisteredMessageBeenLogged = false;
+    
+    private ThreadPoolTaskScheduler taskScheduler;
+    
+    private String autoStartParameterName;   
+    
+    private ScheduledFuture<?> scheduledJob;
+    
+    private RandomTimeSlot randomTimeSlot;
+    
+    private boolean autoStartConfigured;
 
+    protected void init() {
+        this.autoStartConfigured = parameterService.is(autoStartParameterName);
+            this.cronExpression = parameterService.getString(jobName + ".cron", null);
+            this.timeBetweenRunsInMs = parameterService.getInt(jobName + ".period.time.ms", -1);
+    }
+    
+    public boolean isAutoStartConfigured() {
+        return autoStartConfigured;
+    }
+    
+    public void start() {
+        if (this.scheduledJob == null) {
+            log.info("JobStarting", jobName);
+            if (!StringUtils.isBlank(cronExpression)) {
+                this.scheduledJob = taskScheduler.schedule(this, new CronTrigger(cronExpression));
+                started = true;
+            } else {
+
+                int startDelay = randomTimeSlot.getRandomValueSeededByExternalId();
+                if (this.timeBetweenRunsInMs > 0) {
+                    this.scheduledJob = taskScheduler.scheduleWithFixedDelay(this,
+                            new Date(System.currentTimeMillis() + startDelay),
+                            this.timeBetweenRunsInMs);
+                    started = true;
+                } else {
+                    log.error("JobFailedToSchedule", jobName);
+                }
+            }
+        }
+    }
+    
+    public boolean stop() {
+        boolean success = false;
+        if (this.scheduledJob != null) {
+            success = this.scheduledJob.cancel(true);
+            this.scheduledJob = null;
+            if (success) {
+                log.info("JobCancelled", jobName);
+            } else {
+                log.warn("JobFailedToCancel", jobName);
+            }
+        }
+        return success;
+    }
+    
     public String getName() {
-        return beanName;
+        return jobName;
     }
 
     @ManagedOperation(description = "Run this job is it isn't already running")
@@ -92,7 +147,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware {
                     .getString(ParameterConstants.ENGINE_NAME));
 
             if (engine == null) {
-                log.info("SymmetricEngineMissing", beanName);
+                log.info("SymmetricEngineMissing", jobName);
             } else if (engine.isStarted()) {
                 if (!paused || force) {
                     if (!running) {
@@ -143,7 +198,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware {
     abstract void doJob() throws Exception;
 
     public void setBeanName(final String beanName) {
-        this.beanName = beanName;
+        this.jobName = beanName;
     }
 
     public void setDataSource(final DataSource dataSource) {
@@ -161,7 +216,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware {
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
     }
-    
+
     @ManagedOperation(description = "Pause this job")
     public void pause() {
         setPaused(true);
@@ -184,10 +239,6 @@ abstract public class AbstractJob implements Runnable, BeanNameAware {
     @ManagedAttribute(description = "If true, this job has been started")
     public boolean isStarted() {
         return started;
-    }
-
-    public void setStarted(boolean started) {
-        this.started = started;
     }
 
     @ManagedMetric(description = "The amount of time this job spent in execution during it's last run")
@@ -241,5 +292,16 @@ abstract public class AbstractJob implements Runnable, BeanNameAware {
     public long getTimeBetweenRunsInMs() {
         return timeBetweenRunsInMs;
     }
-
+    
+    public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
+        this.taskScheduler = taskScheduler;
+    }
+    
+    public void setAutoStartParameterName(String autoStartParameterName) {
+        this.autoStartParameterName = autoStartParameterName;
+    }
+    
+    public void setRandomTimeSlot(RandomTimeSlot randomTimeSlot) {
+        this.randomTimeSlot = randomTimeSlot;
+    }
 }

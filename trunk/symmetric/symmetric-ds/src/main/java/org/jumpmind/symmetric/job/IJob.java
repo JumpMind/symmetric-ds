@@ -16,26 +16,44 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 package org.jumpmind.symmetric.job;
 
-import java.util.List;
+import java.util.Date;
 
+public interface IJob {
 
+    public void start();
 
-/**
- * An API that provides access to individual jobs and provides job
- * life cycle control
- */
-public interface IJobManager {
+    public boolean stop();
 
-    public void startJobs();
+    public String getName();
+
+    public void pause();
+
+    public void unpause();
+
+    public boolean isPaused();
+
+    public boolean isStarted();
     
-    public void stopJobs();
-    
-    public void destroy();
-    
-    public List<IJob> getJobs();
-    
+    public boolean isAutoStartConfigured();
+
+    public long getLastExecutionTimeInMs();
+
+    public Date getLastFinishTime();
+
+    public boolean isRunning();
+
+    public long getNumberOfRuns();
+
+    public long getTotalExecutionTimeInMs();
+
+    public long getAverageExecutionTimeInMs();
+
+    public String getCronExpression();
+
+    public long getTimeBetweenRunsInMs();
+
 }
