@@ -124,6 +124,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
             this.scheduledJob = null;
             if (success) {
                 log.info("JobCancelled", jobName);
+                started = false;                
             } else {
                 log.warn("JobFailedToCancel", jobName);
             }
