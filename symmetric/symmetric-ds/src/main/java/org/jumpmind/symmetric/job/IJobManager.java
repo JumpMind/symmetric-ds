@@ -38,4 +38,6 @@ public interface IJobManager {
     
     public List<IJob> getJobs();
     
+    public IJob getJob(String name);
+    
 }
