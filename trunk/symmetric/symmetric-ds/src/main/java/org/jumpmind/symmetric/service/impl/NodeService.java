@@ -54,7 +54,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
- * ,
+ * @see INodeService
  */
 public class NodeService extends AbstractService implements INodeService {
     
@@ -316,6 +316,10 @@ public class NodeService extends AbstractService implements INodeService {
         } else {
             return Collections.emptyList();
         }
+    }
+    
+    public List<Node> findAllNodes() {
+        return jdbcTemplate.query(getSql("selectNodePrefixSql"), new NodeRowMapper());        
     }
 
     public boolean updateNodeSecurity(NodeSecurity security) {

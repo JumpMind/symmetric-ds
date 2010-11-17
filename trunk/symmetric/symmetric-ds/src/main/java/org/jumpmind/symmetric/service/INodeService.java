@@ -82,6 +82,8 @@ public interface INodeService {
     public Node findIdentity(boolean useCache);
     
     public void deleteIdentity();
+    
+    public List<Node> findAllNodes();
 
     public List<Node> findNodesToPull();
 

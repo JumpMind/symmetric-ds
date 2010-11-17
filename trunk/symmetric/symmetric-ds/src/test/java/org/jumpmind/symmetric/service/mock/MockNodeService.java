@@ -35,11 +35,12 @@ import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.INodeService;
 
-/**
- * 
- */
 public class MockNodeService implements INodeService {
-
+    
+    public List<Node> findAllNodes() {
+        return null;
+    }
+    
     public boolean isRegistrationServer() {
         return false;
     }
