@@ -454,11 +454,14 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected List<TriggerRouter> getTriggerRoutersForData(Data data) {
-        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(
-                false).get((data.getTriggerHistory().getTriggerId()));
-        if (triggerRouters == null || triggerRouters.size() == 0) {
-            triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(true).get(
+        List<TriggerRouter> triggerRouters = null;
+        if (data != null && data.getTriggerHistory() != null) {
+            triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(false).get(
                     (data.getTriggerHistory().getTriggerId()));
+            if (triggerRouters == null || triggerRouters.size() == 0) {
+                triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(true).get(
+                        (data.getTriggerHistory().getTriggerId()));
+            }
         }
         return triggerRouters;
     }
