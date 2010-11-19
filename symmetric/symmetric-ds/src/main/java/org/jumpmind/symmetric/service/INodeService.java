@@ -55,6 +55,8 @@ public interface INodeService {
      */
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId);
     
+    public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId, boolean recursive);
+    
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId);
     
     public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache);

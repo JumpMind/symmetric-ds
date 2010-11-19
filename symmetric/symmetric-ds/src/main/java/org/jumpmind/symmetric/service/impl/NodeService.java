@@ -90,14 +90,20 @@ public class NodeService extends AbstractService implements INodeService {
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId) {
         return jdbcTemplate.query(getSql("selectNodePrefixSql","findEnabledNodesFromNodeGroupSql"), new Object[] { nodeGroupId }, new NodeRowMapper());
     }
-
+    
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
+        return findNodesThatOriginatedFromNodeId(originalNodeId, true);
+    }
+
+    public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId, boolean recursive) {
         Set<Node> all = new HashSet<Node>();
         List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql","findNodesCreatedByMeSql"), new Object[] { originalNodeId }, new NodeRowMapper());
         if (list.size() > 0) {
             all.addAll(list);
-            for (Node node : list) {
-                all.addAll(findNodesThatOriginatedFromNodeId(node.getNodeId()));
+            if (recursive) {
+                for (Node node : list) {
+                    all.addAll(findNodesThatOriginatedFromNodeId(node.getNodeId()));
+                }
             }
         }
         return all;
