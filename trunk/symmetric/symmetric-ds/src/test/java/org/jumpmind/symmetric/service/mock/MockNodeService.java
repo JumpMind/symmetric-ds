@@ -48,6 +48,10 @@ public class MockNodeService implements INodeService {
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
         return null;
     }
+    
+    public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId, boolean recursive) {
+        return null;
+    }
 
     public Node findIdentity() {
         return null;
