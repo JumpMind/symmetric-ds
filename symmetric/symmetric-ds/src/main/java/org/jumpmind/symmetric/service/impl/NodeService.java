@@ -150,6 +150,10 @@ public class NodeService extends AbstractService implements INodeService {
         return findNodeSecurity(id, false);
     }
     
+    public List<NodeHost> findNodeHosts(String nodeId) {
+        return jdbcTemplate.query(getSql("selectNodeHostPrefixSql", "selectNodeHostByNodeIdSql"), new NodeHostRowMapper(), nodeId);
+    }
+    
     public void updateNodeHostForCurrentNode() {
         if (nodeHostForCurrentNode == null) {
             nodeHostForCurrentNode = new NodeHost(findIdentityNodeId());
@@ -352,54 +356,6 @@ public class NodeService extends AbstractService implements INodeService {
         return false;
     }
 
-    class NodeRowMapper implements RowMapper<Node> {
-        public Node mapRow(ResultSet rs, int num) throws SQLException {
-            Node node = new Node();
-            node.setNodeId(rs.getString(1));
-            node.setNodeGroupId(rs.getString(2));
-            node.setExternalId(rs.getString(3));
-            node.setSyncEnabled(rs.getBoolean(4));
-            node.setSyncUrl(rs.getString(5));
-            node.setSchemaVersion(rs.getString(6));
-            node.setDatabaseType(rs.getString(7));
-            node.setDatabaseVersion(rs.getString(8));
-            node.setSymmetricVersion(rs.getString(9));
-            node.setCreatedAtNodeId(rs.getString(10));
-            node.setHeartbeatTime(rs.getTimestamp(11));
-            node.setTimezoneOffset(rs.getString(12));
-            node.setBatchToSendCount(rs.getInt(13));
-            node.setBatchInErrorCount(rs.getInt(14));
-            return node;
-        }
-    }
-
-    class NodeSecurityRowMapper implements RowMapper<NodeSecurity> {
-        public NodeSecurity mapRow(ResultSet rs, int num) throws SQLException {
-            NodeSecurity nodeSecurity = new NodeSecurity();
-            nodeSecurity.setNodeId(rs.getString(1));
-            nodeSecurity.setNodePassword(rs.getString(2));
-            nodeSecurity.setRegistrationEnabled(rs.getBoolean(3));
-            nodeSecurity.setRegistrationTime(rs.getTimestamp(4));
-            nodeSecurity.setInitialLoadEnabled(rs.getBoolean(5));
-            nodeSecurity.setInitialLoadTime(rs.getTimestamp(6));
-            nodeSecurity.setCreatedAtNodeId(rs.getString(7));
-            return nodeSecurity;
-        }
-    }
-
-    class NodeSecurityResultSetExtractor implements ResultSetExtractor<Map<String, NodeSecurity>> {
-        public Map<String, NodeSecurity> extractData(ResultSet rs) throws SQLException, DataAccessException {
-            Map<String, NodeSecurity> result = new HashMap<String, NodeSecurity>();
-            NodeSecurityRowMapper mapper = new NodeSecurityRowMapper();
-
-            while (rs.next()) {
-                NodeSecurity nodeSecurity = (NodeSecurity) mapper.mapRow(rs, 0);
-                result.put(nodeSecurity.getNodeId(), nodeSecurity);
-            }
-            return result;
-        }
-    }
-
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId) {
         return jdbcTemplate.queryForInt(getSql("isNodeRegisteredSql"), new Object[] { nodeGroupId, externalId }) > 0;
     }
@@ -554,4 +510,79 @@ public class NodeService extends AbstractService implements INodeService {
             }
         }
     }
+    
+
+    class NodeRowMapper implements RowMapper<Node> {
+        public Node mapRow(ResultSet rs, int num) throws SQLException {
+            Node node = new Node();
+            node.setNodeId(rs.getString(1));
+            node.setNodeGroupId(rs.getString(2));
+            node.setExternalId(rs.getString(3));
+            node.setSyncEnabled(rs.getBoolean(4));
+            node.setSyncUrl(rs.getString(5));
+            node.setSchemaVersion(rs.getString(6));
+            node.setDatabaseType(rs.getString(7));
+            node.setDatabaseVersion(rs.getString(8));
+            node.setSymmetricVersion(rs.getString(9));
+            node.setCreatedAtNodeId(rs.getString(10));
+            node.setHeartbeatTime(rs.getTimestamp(11));
+            node.setTimezoneOffset(rs.getString(12));
+            node.setBatchToSendCount(rs.getInt(13));
+            node.setBatchInErrorCount(rs.getInt(14));
+            return node;
+        }
+    }
+    
+    class NodeSecurityRowMapper implements RowMapper<NodeSecurity> {
+        public NodeSecurity mapRow(ResultSet rs, int num) throws SQLException {
+            NodeSecurity nodeSecurity = new NodeSecurity();
+            nodeSecurity.setNodeId(rs.getString(1));
+            nodeSecurity.setNodePassword(rs.getString(2));
+            nodeSecurity.setRegistrationEnabled(rs.getBoolean(3));
+            nodeSecurity.setRegistrationTime(rs.getTimestamp(4));
+            nodeSecurity.setInitialLoadEnabled(rs.getBoolean(5));
+            nodeSecurity.setInitialLoadTime(rs.getTimestamp(6));
+            nodeSecurity.setCreatedAtNodeId(rs.getString(7));
+            return nodeSecurity;
+        }
+    }
+
+    class NodeSecurityResultSetExtractor implements ResultSetExtractor<Map<String, NodeSecurity>> {
+        public Map<String, NodeSecurity> extractData(ResultSet rs) throws SQLException, DataAccessException {
+            Map<String, NodeSecurity> result = new HashMap<String, NodeSecurity>();
+            NodeSecurityRowMapper mapper = new NodeSecurityRowMapper();
+
+            while (rs.next()) {
+                NodeSecurity nodeSecurity = (NodeSecurity) mapper.mapRow(rs, 0);
+                result.put(nodeSecurity.getNodeId(), nodeSecurity);
+            }
+            return result;
+        }
+    }
+    
+    class NodeHostRowMapper implements RowMapper<NodeHost> {
+        public NodeHost mapRow(ResultSet rs, int rowNum) throws SQLException {
+            NodeHost nodeHost = new NodeHost();
+            nodeHost.setNodeId(rs.getString(1));
+            nodeHost.setHostName(rs.getString(2));
+            nodeHost.setIpAddress(rs.getString(3));
+            nodeHost.setOsUser(rs.getString(4));
+            nodeHost.setOsName(rs.getString(5));
+            nodeHost.setOsArch(rs.getString(6));
+            nodeHost.setOsVersion(rs.getString(7));
+            nodeHost.setAvailableProcessors(rs.getInt(8));
+            nodeHost.setFreeMemoryBytes(rs.getLong(9));
+            nodeHost.setTotalMemoryBytes(rs.getLong(10));
+            nodeHost.setMaxMemoryBytes(rs.getLong(11));
+            nodeHost.setJavaVersion(rs.getString(12));
+            nodeHost.setJavaVendor(rs.getString(13));
+            nodeHost.setSymmetricVersion(rs.getString(14));
+            nodeHost.setTimezoneOffset(rs.getString(15));
+            nodeHost.setHeartbeatTime(rs.getTimestamp(16));
+            nodeHost.setLastRestartTime(rs.getTimestamp(17));
+            nodeHost.setCreateTime(rs.getTimestamp(18));
+            return nodeHost;
+        }
+    }        
+    
 }
