@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
+import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
@@ -50,6 +51,10 @@ public class MockNodeService implements INodeService {
     }
     
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId, boolean recursive) {
+        return null;
+    }
+    
+    public List<NodeHost> findNodeHosts(String nodeId) {
         return null;
     }
 

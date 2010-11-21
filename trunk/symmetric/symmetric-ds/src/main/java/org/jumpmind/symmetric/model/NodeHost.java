@@ -30,6 +30,8 @@ import org.jumpmind.symmetric.util.AppUtils;
  */
 public class NodeHost {
 
+    public static Date LAST_RESTART_TIME = new Date();
+    
     private String nodeId;
     private String hostName;
     private String ipAddress;
@@ -46,7 +48,7 @@ public class NodeHost {
     private String symmetricVersion;
     private String timezoneOffset;
     private Date heartbeatTime;
-    private static Date lastRestartTime = new Date();
+    private Date lastRestartTime = LAST_RESTART_TIME;
     private Date createTime;
 
     public NodeHost() {
@@ -215,6 +217,10 @@ public class NodeHost {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+    
+    public void setLastRestartTime(Date lastRestartTime) {
+        this.lastRestartTime = lastRestartTime;
     }
 
 }
