@@ -30,15 +30,18 @@ import org.jumpmind.symmetric.service.impl.AbstractService;
  */
 public class DataToRouteReaderFactory extends AbstractService implements ISqlProvider {
 
+    public static final String GAP_DETECTOR_TYPE_GAP = "gap";
+    public static final String GAP_DETECTOR_TYPE_REF = "ref";
+    
     private IDataService dataService;
 
     public IDataToRouteReader getDataToRouteReader(ChannelRouterContext context) {
         String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
-        if (type == null || type.equals("ref")) {
+        if (type == null || type.equals(GAP_DETECTOR_TYPE_REF)) {
             return new DataRefRouteReader(jdbcTemplate.getDataSource(),
                     jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
                     dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize(), dbDialect);
-        } else if (type == null || type.equals("gap")) {
+        } else if (type == null || type.equals(GAP_DETECTOR_TYPE_GAP)) {
             return new DataGapRouteReader(jdbcTemplate.getDataSource(),
                     jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
                     dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize(), dbDialect);
@@ -49,14 +52,19 @@ public class DataToRouteReaderFactory extends AbstractService implements ISqlPro
 
     public IDataToRouteGapDetector getDataToRouteGapDetector() {
         String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
-        if (type == null || type.equals("ref")) {
+        if (type == null || type.equals(GAP_DETECTOR_TYPE_REF)) {
             return new DataRefGapDetector(dataService, parameterService, jdbcTemplate, dbDialect,
                     this);
-        } else if (type == null || type.equals("gap")) {
+        } else if (type == null || type.equals(GAP_DETECTOR_TYPE_GAP)) {
             return new DataGapDetector(dataService, parameterService, jdbcTemplate, dbDialect, this);
         } else {
             throw unsupportedType(type);
         }
+    }
+    
+    public boolean isUsingDataRef() {
+        String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
+        return type == null || type.equals(GAP_DETECTOR_TYPE_REF);
     }
 
     private RuntimeException unsupportedType(String type) {

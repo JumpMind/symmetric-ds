@@ -754,6 +754,10 @@ public class DataService extends AbstractService implements IDataService {
         // them.
         return data;
     }
+    
+    public long findMaxDataId() {
+        return jdbcTemplate.queryForLong(getSql("selectMaxDataIdSql"));
+    }
 
 
     public void setTriggerRouterService(ITriggerRouterService triggerService) {

@@ -30,11 +30,16 @@ import org.jumpmind.symmetric.route.IRouterContext;
 
 
 /**
+ * This service is responsible for routing data to specific nodes and managing
+ * the batching of data to be delivered to each node.
  * 
+ * @since 2.0
  */
 public interface IRouterService extends ISqlProvider {
 
     public void routeData();
+ 
+    public long getUnroutedDataCount();
     
     public boolean shouldDataBeRouted(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
  

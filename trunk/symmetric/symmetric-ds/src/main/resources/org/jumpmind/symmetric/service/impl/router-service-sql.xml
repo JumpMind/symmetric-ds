@@ -38,7 +38,18 @@
       <value><![CDATA[
         select count(*) from $[sym.sync.table.prefix]_data where channel_id=? and data_id >=? 
       ]]></value>
+    </entry>
+    <entry key="selectLastDataIdRoutedUsingDataRefSql">
+      <value><![CDATA[
+        select max(ref_data_id) from $[sym.sync.table.prefix]_data_ref 
+      ]]></value>
+    </entry>
+    <entry key="selectLastDataIdRoutedUsingDataGapSql">
+      <value><![CDATA[
+        select max(end_id) from $[sym.sync.table.prefix]_data_gap 
+      ]]></value>
     </entry>        
+            
   </util:map>
 
 </beans>
