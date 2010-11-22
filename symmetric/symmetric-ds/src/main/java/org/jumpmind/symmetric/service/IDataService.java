@@ -122,5 +122,7 @@ public interface IDataService {
     public void insertDataGap(DataGap gap);
     
     public void updateDataGap(DataGap gap, DataGap.STATUS status);
+    
+    public long findMaxDataId();
 
 }

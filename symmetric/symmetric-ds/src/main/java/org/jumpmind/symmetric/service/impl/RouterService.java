@@ -63,10 +63,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
 
 /**
- * This service is responsible for routing data to specific nodes and managing
- * the batching of data to be delivered to each node.
- * 
- * @since 2.0
+ * @see IRouterService
  */
 public class RouterService extends AbstractService implements IRouterService {
 
@@ -476,6 +473,22 @@ public class RouterService extends AbstractService implements IRouterService {
 
     public void addBatchAlgorithm(String name, IBatchAlgorithm algorithm) {
         batchAlgorithms.put(name, algorithm);
+    }
+    
+    public long getUnroutedDataCount() {
+        long maxDataIdAlreadyRouted = 0;
+        if (dataToRouteReaderFactory.isUsingDataRef()) {
+            maxDataIdAlreadyRouted = jdbcTemplate.queryForLong(getSql("selectLastDataIdRoutedUsingDataRefSql"));
+        } else {
+            maxDataIdAlreadyRouted = jdbcTemplate.queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
+        }
+        
+        long leftToRoute = dataService.findMaxDataId()-maxDataIdAlreadyRouted;
+        if (leftToRoute > 0) {
+            return leftToRoute;
+        } else {
+            return 0;
+        }
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {
