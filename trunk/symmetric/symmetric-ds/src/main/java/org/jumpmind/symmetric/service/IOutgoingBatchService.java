@@ -25,10 +25,11 @@ import java.util.List;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 
 /**
- * ,
+ * This service is responsible for access to the outgoing batch table. 
  */
 public interface IOutgoingBatchService {
 
@@ -57,5 +58,7 @@ public interface IOutgoingBatchService {
     public void insertOutgoingBatch(OutgoingBatch outgoingBatch);
 
     public int countOutgoingBatchesInError();
+    
+    public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
 
 }

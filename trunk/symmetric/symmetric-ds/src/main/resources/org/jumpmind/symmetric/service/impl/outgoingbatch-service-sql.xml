@@ -79,6 +79,12 @@
       <value>
         select count(*) from $[sym.sync.table.prefix]_outgoing_batch where error_flag=1
       </value>
+    </entry>
+    <entry key="countBatchesEventsStatusByNodeSql">
+      <value>
+        select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time
+          from $[sym.sync.table.prefix]_outgoing_batch where status in (:STATUS_LIST) group by status, node_id order by oldest_batch_time asc
+      </value>
     </entry>    
     <entry key="updateOutgoingBatchesStatusSql">
       <value>
