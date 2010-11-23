@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service.impl;
 
@@ -53,7 +53,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @see IOutgoingBatchService 
+ * @see IOutgoingBatchService
  */
 public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
 
@@ -72,9 +72,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         } while (batches.getBatches().size() > 0);
     }
-    
+
     public void updateAbandonedRoutingBatches() {
-        jdbcTemplate.update(getSql("updateOutgoingBatchesStatusSql"), Status.NE.name(), Status.RT.name());
+        jdbcTemplate.update(getSql("updateOutgoingBatchesStatusSql"), Status.NE.name(),
+                Status.RT.name());
     }
 
     public void updateOutgoingBatches(List<OutgoingBatch> outgoingBatches) {
@@ -86,38 +87,47 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
-        jdbcTemplate.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(), 
-                outgoingBatch.isLoadFlag() ? 1 : 0,
-                outgoingBatch.isErrorFlag() ? 1 : 0,
-                outgoingBatch.getByteCount(),
-                outgoingBatch.getExtractCount(),
-                outgoingBatch.getSentCount(),
-                outgoingBatch.getLoadCount(),
-                outgoingBatch.getDataEventCount(),
-                outgoingBatch.getReloadEventCount(), outgoingBatch.getInsertEventCount(), outgoingBatch.getUpdateEventCount(),
-                outgoingBatch.getDeleteEventCount(), outgoingBatch.getOtherEventCount(),
-                outgoingBatch.getRouterMillis(), outgoingBatch.getNetworkMillis(), outgoingBatch.getFilterMillis(),
-                outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(), outgoingBatch.getSqlState(),
-                outgoingBatch.getSqlCode(), StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000),
-                outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
-                outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() }, new int[] { Types.CHAR, Types.INTEGER,
-                Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.INTEGER,
-                Types.VARCHAR, Types.TIMESTAMP, Types.INTEGER });
+        jdbcTemplate
+                .update(getSql("updateOutgoingBatchSql"),
+                        new Object[] { outgoingBatch.getStatus().name(),
+                                outgoingBatch.isLoadFlag() ? 1 : 0,
+                                outgoingBatch.isErrorFlag() ? 1 : 0, outgoingBatch.getByteCount(),
+                                outgoingBatch.getExtractCount(), outgoingBatch.getSentCount(),
+                                outgoingBatch.getLoadCount(), outgoingBatch.getDataEventCount(),
+                                outgoingBatch.getReloadEventCount(),
+                                outgoingBatch.getInsertEventCount(),
+                                outgoingBatch.getUpdateEventCount(),
+                                outgoingBatch.getDeleteEventCount(),
+                                outgoingBatch.getOtherEventCount(),
+                                outgoingBatch.getRouterMillis(), outgoingBatch.getNetworkMillis(),
+                                outgoingBatch.getFilterMillis(), outgoingBatch.getLoadMillis(),
+                                outgoingBatch.getExtractMillis(), outgoingBatch.getSqlState(),
+                                outgoingBatch.getSqlCode(),
+                                StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000),
+                                outgoingBatch.getFailedDataId(),
+                                outgoingBatch.getLastUpdatedHostName(),
+                                outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() },
+                        new int[] { Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER,
+                                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
+                                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
+                                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
+                                Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER,
+                                Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.TIMESTAMP,
+                                Types.INTEGER });
     }
 
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
-        long batchId = dbDialect.insertWithGeneratedKey(jdbcTemplate, getSql("insertOutgoingBatchSql"),
-                SequenceIdentifier.OUTGOING_BATCH, new PreparedStatementCallback<Object>() {
-                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
+        long batchId = dbDialect.insertWithGeneratedKey(jdbcTemplate,
+                getSql("insertOutgoingBatchSql"), SequenceIdentifier.OUTGOING_BATCH,
+                new PreparedStatementCallback<Object>() {
+                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
+                            DataAccessException {
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
                         ps.setInt(4, outgoingBatch.isLoadFlag() ? 1 : 0);
-                        ps.setLong(5, outgoingBatch.getReloadEventCount()); 
+                        ps.setLong(5, outgoingBatch.getReloadEventCount());
                         ps.setLong(6, outgoingBatch.getOtherEventCount());
                         ps.setString(7, outgoingBatch.getLastUpdatedHostName());
                         return null;
@@ -127,15 +137,16 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public OutgoingBatch findOutgoingBatch(long batchId) {
-        List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("findOutgoingBatchSql"),
-                new Object[] { batchId }, new int[] { Types.INTEGER }, new OutgoingBatchMapper());
+        List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
+                getSql("findOutgoingBatchSql"), new Object[] { batchId },
+                new int[] { Types.INTEGER }, new OutgoingBatchMapper());
         if (list != null && list.size() > 0) {
             return list.get(0);
         } else {
             return null;
         }
     }
-    
+
     public int countOutgoingBatchesInError() {
         return jdbcTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
     }
@@ -149,14 +160,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public OutgoingBatches getOutgoingBatches(Node node) {
         long ts = System.currentTimeMillis();
 
-        List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"),
-                new Object[] { node.getNodeId(), 
-            OutgoingBatch.Status.NE.toString(), 
-            OutgoingBatch.Status.QY.toString(),
-            OutgoingBatch.Status.SE.toString(),
-            OutgoingBatch.Status.LD.toString(),
-            OutgoingBatch.Status.ER.toString() }, new OutgoingBatchMapper());
-
+        List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
+                getSql("selectOutgoingBatchSql"), new Object[] { node.getNodeId(),
+                        OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.QY.toString(),
+                        OutgoingBatch.Status.SE.toString(), OutgoingBatch.Status.LD.toString(),
+                        OutgoingBatch.Status.ER.toString() }, new OutgoingBatchMapper());
 
         OutgoingBatches batches = new OutgoingBatches(list);
 
@@ -166,15 +174,18 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         List<OutgoingBatch> keepers = new ArrayList<OutgoingBatch>();
 
         for (NodeChannel channel : channels) {
-            if (parameterService.is(ParameterConstants.DATA_EXTRACTOR_ENABLED) || channel.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
-                keepers.addAll(batches
-                    .getBatchesForChannelWindows(node, channel, configurationService
-                            .getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getChannelId())));
+            if (parameterService.is(ParameterConstants.DATA_EXTRACTOR_ENABLED)
+                    || channel.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
+                keepers.addAll(batches.getBatchesForChannelWindows(
+                        node,
+                        channel,
+                        configurationService.getNodeGroupChannelWindows(
+                                parameterService.getNodeGroupId(), channel.getChannelId())));
             }
         }
         batches.setBatches(keepers);
-        
-        long executeTimeInMs = System.currentTimeMillis()-ts;
+
+        long executeTimeInMs = System.currentTimeMillis() - ts;
         if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
             log.warn("LongRunningOperation", "selecting batches to extract", executeTimeInMs);
         }
@@ -184,20 +195,21 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId) {
         OutgoingBatches batches = new OutgoingBatches();
-        batches.setBatches(jdbcTemplate.query(getSql("selectOutgoingBatchRangeSql"), new Object[] { startBatchId,
-                endBatchId }, new OutgoingBatchMapper()));
+        batches.setBatches(jdbcTemplate.query(getSql("selectOutgoingBatchRangeSql"), new Object[] {
+                startBatchId, endBatchId }, new OutgoingBatchMapper()));
         return batches;
     }
 
     public OutgoingBatches getOutgoingBatchErrors(int maxRows) {
         OutgoingBatches batches = new OutgoingBatches();
-        batches.setBatches(jdbcTemplate.query(new MaxRowsStatementCreator(getSql("selectOutgoingBatchErrorsSql"),
-                maxRows), new OutgoingBatchMapper()));
+        batches.setBatches(jdbcTemplate.query(new MaxRowsStatementCreator(
+                getSql("selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper()));
         return batches;
     }
-    
+
     public boolean isInitialLoadComplete(String nodeId) {
-        return areAllLoadBatchesComplete(nodeId) && !isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, nodeId);
+        return areAllLoadBatchesComplete(nodeId)
+                && !isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, nodeId);
     }
 
     public boolean areAllLoadBatchesComplete(String nodeId) {
@@ -207,8 +219,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             return false;
         }
 
-        List<String> statuses = (List<String>) jdbcTemplate.queryForList(getSql("initialLoadStatusSql"), new Object[] {
-                nodeId, 1 }, String.class);
+        List<String> statuses = (List<String>) jdbcTemplate.queryForList(
+                getSql("initialLoadStatusSql"), new Object[] { nodeId, 1 }, String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
@@ -220,12 +232,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
         return true;
     }
-    
-    
 
     public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId) {
-        int unsentCount = jdbcTemplate.queryForInt(getSql("unsentBatchesForNodeIdChannelIdSql"), new Object[] { nodeId,
-                channelId });
+        int unsentCount = jdbcTemplate.queryForInt(getSql("unsentBatchesForNodeIdChannelIdSql"),
+                new Object[] { nodeId, channelId });
         if (unsentCount > 0) {
             return true;
         }
@@ -233,17 +243,18 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         // Do we need to check for unbatched data?
         return false;
     }
-    
+
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(Status... statuses) {
         List<String> statusList = new ArrayList<String>();
         for (Status status : statuses) {
             statusList.add(status.name());
         }
-        Map<String,Object> params = new HashMap<String, Object>();
-        params.put("STATUS_LIST", statusList);
-        return jdbcTemplate.query(getSql(""), new OutgoingBatchSummaryMapper(), params);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("STATUS_LIST", statusList);        
+        return getSimpleTemplate().query(getSql("selectOutgoingBatchSummaryByStatusSql"),
+                new OutgoingBatchSummaryMapper(), params);
     }
- 
+
     class OutgoingBatchSummaryMapper implements RowMapper<OutgoingBatchSummary> {
         public OutgoingBatchSummary mapRow(ResultSet rs, int rowNum) throws SQLException {
             OutgoingBatchSummary summary = new OutgoingBatchSummary();
@@ -271,7 +282,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             batch.setInsertEventCount(rs.getLong(10));
             batch.setUpdateEventCount(rs.getLong(11));
             batch.setDeleteEventCount(rs.getLong(12));
-            batch.setOtherEventCount(rs.getLong(13));            
+            batch.setOtherEventCount(rs.getLong(13));
             batch.setRouterMillis(rs.getLong(14));
             batch.setNetworkMillis(rs.getLong(15));
             batch.setFilterMillis(rs.getLong(16));
