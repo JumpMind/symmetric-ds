@@ -27,7 +27,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
@@ -37,6 +39,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -50,7 +53,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * This service is responsible for access to the outgoing batch table. 
+ * @see IOutgoingBatchService 
  */
 public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
 
@@ -228,15 +231,29 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
 
         // Do we need to check for unbatched data?
-        // int unbatchedCount =
-        // jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"),
-        // new Object[] {
-        // nodeId, channelId });
-        // if (unbatchedCount > 0) {
-        // return true;
-        // }
-
         return false;
+    }
+    
+    public List<OutgoingBatchSummary> findOutgoingBatchSummary(Status... statuses) {
+        List<String> statusList = new ArrayList<String>();
+        for (Status status : statuses) {
+            statusList.add(status.name());
+        }
+        Map<String,Object> params = new HashMap<String, Object>();
+        params.put("STATUS_LIST", statusList);
+        return jdbcTemplate.query(getSql(""), new OutgoingBatchSummaryMapper(), params);
+    }
+ 
+    class OutgoingBatchSummaryMapper implements RowMapper<OutgoingBatchSummary> {
+        public OutgoingBatchSummary mapRow(ResultSet rs, int rowNum) throws SQLException {
+            OutgoingBatchSummary summary = new OutgoingBatchSummary();
+            summary.setBatchCount(rs.getInt(1));
+            summary.setDataCount(rs.getInt(2));
+            summary.setStatus(Status.valueOf(rs.getString(3)));
+            summary.setNodeId(rs.getString(4));
+            summary.setOldestBatchCreateTime(rs.getTimestamp(5));
+            return summary;
+        }
     }
 
     class OutgoingBatchMapper implements RowMapper<OutgoingBatch> {
