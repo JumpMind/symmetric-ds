@@ -490,6 +490,10 @@ public class RouterService extends AbstractService implements IRouterService {
             return 0;
         }
     }
+    
+    public List<String> getAvailableBatchAlgorithms() {
+        return new ArrayList<String>(batchAlgorithms.keySet());
+    }
 
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
