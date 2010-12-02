@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -34,10 +35,10 @@ import org.jumpmind.symmetric.service.IParameterService;
  *
  * 
  */
-public class Node {
-
-    private static final long serialVersionUID = 5228552569658130763L;
+public class Node implements Serializable {
     
+    private static final long serialVersionUID = 1L;
+
     private int MAX_VERSION_SIZE = 50;
 
     private String nodeId;

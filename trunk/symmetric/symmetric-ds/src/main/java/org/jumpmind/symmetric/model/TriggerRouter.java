@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -34,11 +35,11 @@ import org.jumpmind.symmetric.ddl.model.Table;
  *
  * 
  */
-public class TriggerRouter {
+public class TriggerRouter implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     static final Log logger = LogFactory.getLog(TriggerRouter.class);
-
-    private static final long serialVersionUID = 8947288471097851573L;
 
     /**
      * This is the order in which the definitions will be processed.

@@ -21,14 +21,15 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 
  */
-public class NodeChannelControl {
-
-    private static final long serialVersionUID = -2493052366767513160L;
+public class NodeChannelControl implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     private String nodeId = null;
     

@@ -20,12 +20,15 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 
  */
-public class DataRef {
+public class DataRef implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     private long refDataId;
     private Date refTime;

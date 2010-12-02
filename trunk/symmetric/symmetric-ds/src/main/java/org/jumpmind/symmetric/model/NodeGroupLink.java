@@ -21,10 +21,12 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
+
 /**
  * 
  */
-public class NodeGroupLink {
+public class NodeGroupLink implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

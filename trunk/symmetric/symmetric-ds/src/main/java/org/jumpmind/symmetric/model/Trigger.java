@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -38,13 +39,13 @@ import org.jumpmind.symmetric.ddl.model.Table;
  *
  * 
  */
-public class Trigger {
+public class Trigger implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     static final Log logger = LogFactory.getLog(Trigger.class);
 
     private static int maxTriggerId;
-
-    private static final long serialVersionUID = 8947288471097851573L;
 
     private static final String DEFAULT_CONDITION = "1=1";
 

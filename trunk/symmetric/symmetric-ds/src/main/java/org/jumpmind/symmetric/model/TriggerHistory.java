@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.jumpmind.symmetric.ddl.model.Column;
@@ -36,7 +37,9 @@ import org.jumpmind.symmetric.ddl.model.Table;
  *
  * 
  */
-public class TriggerHistory extends AbstractCsvData {
+public class TriggerHistory extends AbstractCsvData implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int triggerHistoryId;
 

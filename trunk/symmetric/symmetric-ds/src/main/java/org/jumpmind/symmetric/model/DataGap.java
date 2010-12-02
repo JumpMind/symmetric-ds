@@ -19,9 +19,12 @@
  * under the License.  */
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class DataGap {
+public class DataGap implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     public enum STATUS {GP,SK,FL};
     

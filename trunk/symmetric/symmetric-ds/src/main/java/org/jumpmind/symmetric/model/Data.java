@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -28,7 +29,9 @@ import java.util.Date;
  *
  * 
  */
-public class Data extends AbstractCsvData {
+public class Data extends AbstractCsvData implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     /**
      * Primary key

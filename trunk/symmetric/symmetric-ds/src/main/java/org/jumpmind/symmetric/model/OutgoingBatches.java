@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -34,7 +35,9 @@ import java.util.Set;
 /**
  * 
  */
-public class OutgoingBatches {
+public class OutgoingBatches implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
     Set<NodeChannel> activeChannels = new HashSet<NodeChannel>();

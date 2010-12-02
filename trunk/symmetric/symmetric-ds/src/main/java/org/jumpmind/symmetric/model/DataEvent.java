@@ -19,7 +19,11 @@
  * under the License.  */
 package org.jumpmind.symmetric.model;
 
-public class DataEvent {
+import java.io.Serializable;
+
+public class DataEvent implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     private long dataId;
    
