@@ -40,7 +40,12 @@ public interface IConfigurationService {
     public List<NodeGroupLink> getGroupLinksFor(String sourceGroupId);
     
     public List<NodeGroupLink> getGroupLinksFor(String sourceNodeGroupId, String targetNodeGroupId);
-
+    
+    /**
+     * Check to see if the channel is currently being used in the system.
+     */
+    public boolean isChannelInUse(String channelId);
+    
     public void saveChannel(Channel channel, boolean reloadChannels);
 
     public void saveChannel(NodeChannel channel, boolean reloadChannels);
