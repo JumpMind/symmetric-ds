@@ -20,13 +20,14 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
  * Definition of a channel and it's priority. A channel is a group of tables
  * that get synchronized together.
  */
-public class Channel {
+public class Channel implements Serializable {
 
     private static final long serialVersionUID = -8183376200537307264L;
 
