@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,11 +33,11 @@ import org.apache.commons.logging.LogFactory;
  *
  * 
  */
-public class Router {
+public class Router implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     static final Log logger = LogFactory.getLog(Router.class);
-
-    private static final long serialVersionUID = 8947288471097851573L;
 
     private static int maxRouterId;
 

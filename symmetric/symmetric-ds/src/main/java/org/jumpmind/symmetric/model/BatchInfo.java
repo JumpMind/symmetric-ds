@@ -21,10 +21,14 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
+
 /**
  * 
  */
-public class BatchInfo {
+public class BatchInfo  implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;
     

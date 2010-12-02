@@ -27,9 +27,6 @@ import java.util.Date;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 
-/**
- * ,
- */
 public class IncomingBatch implements Serializable {
 
     private static final long serialVersionUID = 1L;

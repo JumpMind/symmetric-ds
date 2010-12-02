@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.jumpmind.symmetric.Version;
@@ -28,7 +29,9 @@ import org.jumpmind.symmetric.util.AppUtils;
 /**
  * 
  */
-public class NodeHost {
+public class NodeHost implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public static Date LAST_RESTART_TIME = new Date();
     

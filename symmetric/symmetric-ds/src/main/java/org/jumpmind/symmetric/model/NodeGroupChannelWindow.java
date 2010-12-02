@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.sql.Time;
 import java.util.Date;
 
@@ -29,7 +30,9 @@ import org.jumpmind.symmetric.util.AppUtils;
 /**
  * 
  */
-public class NodeGroupChannelWindow {
+public class NodeGroupChannelWindow implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String nodeGroupId;
     private String channelId;

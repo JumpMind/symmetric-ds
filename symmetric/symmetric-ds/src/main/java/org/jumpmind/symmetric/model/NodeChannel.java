@@ -16,20 +16,23 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 
  */
-public class NodeChannel {
+public class NodeChannel implements Serializable {
 
-    private static final long serialVersionUID = -2493052366767513160L;
+    private static final long serialVersionUID = 1L;
+
     private Channel channel;
+    
     private NodeChannelControl nodeChannelControl;
 
     public NodeChannel() {
@@ -87,11 +90,11 @@ public class NodeChannel {
     public boolean isUseRowDataToRoute() {
         return channel.isUseRowDataToRoute();
     }
-    
+
     public void setUsePkDataToRoute(boolean usePkDataToRoute) {
         channel.setUsePkDataToRoute(usePkDataToRoute);
     }
-    
+
     public boolean isUsePkDataToRoute() {
         return channel.isUsePkDataToRoute();
     }
@@ -172,11 +175,11 @@ public class NodeChannel {
     public void setExtractPeriodMillis(long extractPeriodMillis) {
         channel.setExtractPeriodMillis(extractPeriodMillis);
     }
-    
+
     public void setContainsBigLobs(boolean containsBigLobs) {
         this.channel.setContainsBigLob(containsBigLobs);
     }
-    
+
     public boolean isContainsBigLob() {
         return this.channel.isContainsBigLob();
     }

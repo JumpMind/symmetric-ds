@@ -21,12 +21,13 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * ,
  */
-public class NodeSecurity {
+public class NodeSecurity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
