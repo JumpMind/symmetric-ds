@@ -89,6 +89,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return links;
     }
+    
+    public boolean isChannelInUse(String channelId) {
+        return jdbcTemplate.queryForInt(getSql("isChannelInUseSql")) > 0;
+    }
 
     public void saveChannel(Channel channel, boolean reloadChannels) {
         if (0 == jdbcTemplate.update(getSql("updateChannelSql"), new Object[] {
@@ -138,6 +142,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void deleteChannel(Channel channel) {
+        jdbcTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { channel.getChannelId() });
         jdbcTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getChannelId() });
     }
 
