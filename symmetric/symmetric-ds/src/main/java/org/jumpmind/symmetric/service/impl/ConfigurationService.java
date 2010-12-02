@@ -91,7 +91,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
     
     public boolean isChannelInUse(String channelId) {
-        return jdbcTemplate.queryForInt(getSql("isChannelInUseSql")) > 0;
+        return jdbcTemplate.queryForInt(getSql("isChannelInUseSql"), channelId) > 0;
     }
 
     public void saveChannel(Channel channel, boolean reloadChannels) {
