@@ -31,6 +31,8 @@ final public class Constants {
     private Constants() {
     }
 
+    public static final String PLEASE_SET_ME = "please set me";
+    
     /**
      * Use this value for the router_id in {@link DataEvent} if the router is unknown.
      */

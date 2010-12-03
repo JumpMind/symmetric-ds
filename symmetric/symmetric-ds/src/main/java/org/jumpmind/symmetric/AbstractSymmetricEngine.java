@@ -71,7 +71,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected final ILog log = LogFactory.getLog(getClass());
 
-    private static final String PLEASE_SET_ME = "please set me";
     private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new HashMap<String, ISymmetricEngine>();
     private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
 
@@ -396,9 +395,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
             log.warn("ValidationRegServerIsMissingConfiguration", ParameterConstants.REGISTRATION_URL);
         } else if (!isSelfConfigurable && node == null && StringUtils.isBlank(getParameterService().getRegistrationUrl())) {
             log.warn("ValidationSetRegistrationUrl", ParameterConstants.REGISTRATION_URL);            
-        } else if (PLEASE_SET_ME.equals(getParameterService().getExternalId()) || 
-                PLEASE_SET_ME.equals(registrationUrl) || 
-                PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
+        } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId()) || 
+                Constants.PLEASE_SET_ME.equals(registrationUrl) || 
+                Constants.PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
             log.warn("ValidationPleaseSetMe");            
         } else if (node != null
                 && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node
