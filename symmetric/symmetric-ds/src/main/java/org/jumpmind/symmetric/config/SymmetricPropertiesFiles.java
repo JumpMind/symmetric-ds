@@ -17,12 +17,12 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.config;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.jumpmind.symmetric.common.Constants;
@@ -30,18 +30,24 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
- * A list of properties files that were set via system properties so that if the
+ * A list of properties files that SymmetricDS uses to determine it's configuration.
+ * It has support for properties files that were set via system properties so that if the
  * system property changes down the road, the initially configured files remain
  * captured during a properties refresh.
- *
- * 
  */
-public class DynamicPropertiesFiles extends ArrayList<String> {
+public class SymmetricPropertiesFiles extends ArrayList<String> {
 
     private static final long serialVersionUID = 1L;
-    private static ILog log = LogFactory.getLog(DynamicPropertiesFiles.class);
+    private static ILog log = LogFactory.getLog(SymmetricPropertiesFiles.class);
 
-    public DynamicPropertiesFiles() {
+    public SymmetricPropertiesFiles() {
+        this(new ArrayList<String>(0));
+    }
+       
+    public SymmetricPropertiesFiles(List<String> resources) {
+        
+        addAll(resources);
+        
         File file = new File(System.getProperty("user.dir"), "symmetric.properties");
         if (file.exists() && file.isFile()) {
             try {
@@ -58,4 +64,5 @@ public class DynamicPropertiesFiles extends ArrayList<String> {
             }
         }
     }
+       
 }
