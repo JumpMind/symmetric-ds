@@ -88,6 +88,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         this.addTriggerCreationListeners(this.failureListener);
     }
 
+    public List<Trigger> getTriggers() {
+        return jdbcTemplate.query("select " + getSql("selectTriggersColumnList", "selectTriggersSql"), new TriggerMapper());
+    }
+    
     public void inactivateTriggerHistory(TriggerHistory history) {
         jdbcTemplate.update(getSql("inactivateTriggerHistorySql"), new Object[] { history
                 .getTriggerHistoryId() });
@@ -223,9 +227,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         return triggerRouter;
     }
-
+    
     private String getTriggerRouterSql(String sql) {
-        return getSql("selectTriggerRouterPrefixSql", sql);
+        return getSql("select", "selectTriggersColumnList", ",", "selectRoutersColumnList", ",",
+                "selectTriggerRoutersColumnList","selectTriggerRoutersSql", sql);
     }
     
     public TriggerRouter getTriggerRouterForTableForCurrentNode(String catalogName, String schemaName, String tableName, boolean refreshCache) {
@@ -382,7 +387,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     
     public Router getRouterById(String routerId) {
         try {
-            return jdbcTemplate.queryForObject(getSql("selectRouterSql"), new RouterMapper(), routerId);
+            return jdbcTemplate.queryForObject(getSql("select","selectRoutersColumnList",
+                    "selectRouterSql"), new RouterMapper(), routerId);
         } catch (EmptyResultDataAccessException ex) {
             return null;
         }
@@ -907,60 +913,73 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             return router;
         }
     }
-
-    class TriggerRouterMapper implements RowMapper<TriggerRouter> {
-        public TriggerRouter mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
-            TriggerRouter trig = new TriggerRouter();
-            trig.getTrigger().setTriggerId(rs.getString("trigger_id"));
-            trig.getTrigger().setChannelId(rs.getString("channel_id"));
-            trig.getTrigger().setSourceTableName(rs.getString("source_table_name"));
-            trig.getTrigger().setSyncOnInsert(rs.getBoolean("sync_on_insert"));
-            trig.getTrigger().setSyncOnUpdate(rs.getBoolean("sync_on_update"));
-            trig.getTrigger().setSyncOnDelete(rs.getBoolean("sync_on_delete"));
-            trig.getTrigger().setSyncOnIncomingBatch(rs.getBoolean("sync_on_incoming_batch"));
-            trig.getTrigger().setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
-            trig.getTrigger().setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
-            trig.getTrigger().setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));
+    
+    class TriggerMapper implements RowMapper<Trigger> {
+        public Trigger mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Trigger trigger = new Trigger();
+            trigger.setTriggerId(rs.getString("trigger_id"));
+            trigger.setChannelId(rs.getString("channel_id"));
+            trigger.setSourceTableName(rs.getString("source_table_name"));
+            trigger.setSyncOnInsert(rs.getBoolean("sync_on_insert"));
+            trigger.setSyncOnUpdate(rs.getBoolean("sync_on_update"));
+            trigger.setSyncOnDelete(rs.getBoolean("sync_on_delete"));
+            trigger.setSyncOnIncomingBatch(rs.getBoolean("sync_on_incoming_batch"));
+            trigger.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
+            trigger.setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
+            trigger.setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));
             String schema = rs.getString("source_schema_name");
-            trig.getTrigger().setSourceSchemaName(schema);
+            trigger.setSourceSchemaName(schema);
             String catalog = rs.getString("source_catalog_name");
-            trig.getTrigger().setSourceCatalogName(catalog);
+            trigger.setSourceCatalogName(catalog);
             String condition = rs.getString("sync_on_insert_condition");
             if (!StringUtils.isBlank(condition)) {
-                trig.getTrigger().setSyncOnInsertCondition(condition);
+                trigger.setSyncOnInsertCondition(condition);
             }
             condition = rs.getString("sync_on_update_condition");
             if (!StringUtils.isBlank(condition)) {
-                trig.getTrigger().setSyncOnUpdateCondition(condition);
+                trigger.setSyncOnUpdateCondition(condition);
             }
 
             condition = rs.getString("sync_on_delete_condition");
             if (!StringUtils.isBlank(condition)) {
-                trig.getTrigger().setSyncOnDeleteCondition(condition);
+                trigger.setSyncOnDeleteCondition(condition);
             }
 
             condition = rs.getString("external_select");
             if (!StringUtils.isBlank(condition)) {
-                trig.getTrigger().setExternalSelect(condition);
+                trigger.setExternalSelect(condition);
             }
 
-            trig.getTrigger().setTxIdExpression(rs.getString("tx_id_expression"));
-            trig.getTrigger().setCreateTime(rs.getTimestamp("t_create_time"));
-            trig.getTrigger().setLastUpdateTime(rs.getTimestamp("t_last_update_time"));
-            trig.getTrigger().setLastUpdateBy(rs.getString("t_last_update_by"));
-            trig.getTrigger().setExcludedColumnNames(rs.getString("excluded_column_names"));
+            trigger.setTxIdExpression(rs.getString("tx_id_expression"));
+            
+            trigger.setCreateTime(rs.getTimestamp("t_create_time"));
+            trigger.setLastUpdateTime(rs.getTimestamp("t_last_update_time"));
+            trigger.setLastUpdateBy(rs.getString("t_last_update_by"));
+            trigger.setExcludedColumnNames(rs.getString("excluded_column_names"));
 
-            RouterMapper mapper = new RouterMapper();
-            trig.setRouter(mapper.mapRow(rs, arg1));
+            return trigger;
+        }
+    }
 
-            trig.setCreateTime(rs.getTimestamp("create_time"));
-            trig.setLastUpdateTime(rs.getTimestamp("last_update_time"));
-            trig.setLastUpdateBy(rs.getString("last_update_by"));
-            trig.setInitialLoadOrder(rs.getInt("initial_load_order"));
-            trig.setInitialLoadSelect(rs.getString("initial_load_select"));
-            trig.setPingBackEnabled(rs.getBoolean("ping_back_enabled"));
+    class TriggerRouterMapper implements RowMapper<TriggerRouter> {
+        
+        private TriggerMapper triggerMapper = new TriggerMapper();
+        private RouterMapper routerMapper = new RouterMapper();
+        
+        public TriggerRouter mapRow(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
+            TriggerRouter triggerRouter = new TriggerRouter();
 
-            return trig;
+            triggerRouter.setTrigger(triggerMapper.mapRow(rs, rowNum));
+            triggerRouter.setRouter(routerMapper.mapRow(rs, rowNum));
+       
+            triggerRouter.setCreateTime(rs.getTimestamp("create_time"));
+            triggerRouter.setLastUpdateTime(rs.getTimestamp("last_update_time"));
+            triggerRouter.setLastUpdateBy(rs.getString("last_update_by"));
+            triggerRouter.setInitialLoadOrder(rs.getInt("initial_load_order"));
+            triggerRouter.setInitialLoadSelect(rs.getString("initial_load_select"));
+            triggerRouter.setPingBackEnabled(rs.getBoolean("ping_back_enabled"));
+
+            return triggerRouter;
         }
     }
 

@@ -96,7 +96,10 @@ abstract public class AbstractService implements IService, ISqlProvider {
         StringBuilder sqlBuffer = new StringBuilder();
         if (keys != null) {
             for (String key : keys) {
-                sqlBuffer.append(sql.get(key));
+                if (key != null) {
+                    String value = sql.get(key);
+                    sqlBuffer.append(value == null ? key : value);
+                }
             }
 
             if (sql != null) {

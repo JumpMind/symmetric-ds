@@ -141,7 +141,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                                 getParameterService().getNodeGroupId(), getParameterService()
                                         .getExternalId());
                     }
-                    getTriggerService().syncTriggers();
+                    getTriggerRouterService().syncTriggers();
                     heartbeat(false);
                     jobManager.startJobs();
                     log.info("SymmetricDSStarted", getParameterService().getString(
@@ -319,7 +319,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void syncTriggers() {
-        getTriggerService().syncTriggers();
+        getTriggerRouterService().syncTriggers();
     }
 
     public NodeStatus getNodeStatus() {
@@ -487,10 +487,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public IPurgeService getPurgeService() {
         return AppUtils.find(Constants.PURGE_SERVICE, this);
-    }
-
-    public ITriggerRouterService getTriggerService() {
-        return AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, this);
     }
 
     public IDataService getDataService() {
