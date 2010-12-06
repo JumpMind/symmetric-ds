@@ -548,5 +548,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     public ITriggerRouterService getTriggerRouterService() {
     	return AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, this);
     }
+    
+    public DataSource getDataSource() {
+        return AppUtils.find(Constants.DATA_SOURCE, this);
+    }
 
 }
