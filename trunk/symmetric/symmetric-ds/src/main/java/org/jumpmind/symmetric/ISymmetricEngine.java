@@ -21,6 +21,8 @@ package org.jumpmind.symmetric;
 
 import java.util.Properties;
 
+import javax.sql.DataSource;
+
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.PullJob;
@@ -231,5 +233,7 @@ public interface ISymmetricEngine {
     public IStatisticService getStatisticService();
     
     public ITriggerRouterService getTriggerRouterService();
+    
+    public DataSource getDataSource();
 
 }
