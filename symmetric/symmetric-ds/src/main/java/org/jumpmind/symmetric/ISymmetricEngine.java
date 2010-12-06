@@ -202,8 +202,6 @@ public interface ISymmetricEngine {
 
     public IPurgeService getPurgeService();
 
-    public ITriggerRouterService getTriggerService();
-
     public IDataService getDataService();
 
     public IDbDialect getDbDialect();

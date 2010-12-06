@@ -61,6 +61,11 @@ public interface ITriggerRouterService {
     
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
     
+    /**
+     * Get a list of all the triggers that have been defined for the system.
+     */
+    public List<Trigger> getTriggers();
+    
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId);
 
     public TriggerRouter getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache);
