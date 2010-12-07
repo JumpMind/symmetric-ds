@@ -448,7 +448,7 @@ public class DataService extends AbstractService implements IDataService {
      */
     public void insertHeartbeatEvent(Node node, boolean isReload) {
         String tableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE);
-        List<NodeGroupLink> links = configurationService.getGroupLinksFor(parameterService
+        List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(parameterService
                 .getNodeGroupId());
         for (NodeGroupLink nodeGroupLink : links) {
             if (nodeGroupLink.getDataEventAction() == NodeGroupLinkAction.P) {

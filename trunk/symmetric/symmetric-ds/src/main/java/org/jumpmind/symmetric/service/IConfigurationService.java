@@ -46,11 +46,11 @@ public interface IConfigurationService {
     
     public boolean isNodeGroupLinkInUse(NodeGroupLink link);
     
-    public List<NodeGroupLink> getGroupLinks();
+    public List<NodeGroupLink> getNodeGroupLinks();
 
-    public List<NodeGroupLink> getGroupLinksFor(String sourceGroupId);
+    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId);
     
-    public List<NodeGroupLink> getGroupLinksFor(String sourceNodeGroupId, String targetNodeGroupId);
+    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceNodeGroupId, String targetNodeGroupId);
     
     /**
      * Check to see if the channel is currently being used in the system.

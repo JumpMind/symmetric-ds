@@ -111,17 +111,17 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return jdbcTemplate.query(getSql("selectNodeGroupsSql"), new NodeGroupMapper());
     }
 
-    public List<NodeGroupLink> getGroupLinks() {
+    public List<NodeGroupLink> getNodeGroupLinks() {
         return jdbcTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
     }
 
-    public List<NodeGroupLink> getGroupLinksFor(String sourceNodeGroupId) {
+    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceNodeGroupId) {
         return jdbcTemplate.query(getSql("groupsLinksForSql"), new Object[] { sourceNodeGroupId },
                 new NodeGroupLinkMapper());
     }
 
-    public List<NodeGroupLink> getGroupLinksFor(String sourceNodeGroupId, String targetNodeGroupId) {
-        List<NodeGroupLink> links = getGroupLinksFor(sourceNodeGroupId);
+    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceNodeGroupId, String targetNodeGroupId) {
+        List<NodeGroupLink> links = getNodeGroupLinksFor(sourceNodeGroupId);
         Iterator<NodeGroupLink> it = links.iterator();
         while (it.hasNext()) {
             NodeGroupLink nodeGroupLink = (NodeGroupLink) it.next();
