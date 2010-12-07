@@ -23,9 +23,6 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 
-/**
- * 
- */
 public class NodeGroup implements Serializable {
     
     private static final long serialVersionUID = 1L;
@@ -33,6 +30,14 @@ public class NodeGroup implements Serializable {
     private String nodeGroupId;
 
     private String description;
+
+    public NodeGroup(String nodeGroupId) {
+        this.nodeGroupId = nodeGroupId;
+    }
+    
+    public NodeGroup() {
+    }
+    
 
     public String getNodeGroupId() {
         return nodeGroupId;
