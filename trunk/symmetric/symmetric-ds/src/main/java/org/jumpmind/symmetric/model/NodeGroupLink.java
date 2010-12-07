@@ -23,9 +23,6 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 
-/**
- * 
- */
 public class NodeGroupLink implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -48,15 +45,16 @@ public class NodeGroupLink implements Serializable {
         return sourceNodeGroupId;
     }
 
-    public void setSourceNodeGroupId(String domainName) {
-        this.sourceNodeGroupId = domainName;
+    public void setSourceNodeGroupId(String sourceNodeGroupId) {
+        this.sourceNodeGroupId = sourceNodeGroupId;
     }
 
     public String getTargetNodeGroupId() {
         return targetNodeGroupId;
     }
 
-    public void setTargetNodeGroupId(String targetDomainName) {
-        this.targetNodeGroupId = targetDomainName;
+    public void setTargetNodeGroupId(String targetNodeGroupId) {
+        this.targetNodeGroupId = targetNodeGroupId;
     }
+    
 }

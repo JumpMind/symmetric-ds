@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
@@ -54,7 +55,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
- * Responsible for configuration activities.
+ * @see IConfigurationService
  */
 public class ConfigurationService extends AbstractService implements IConfigurationService {
 
@@ -67,6 +68,47 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private List<Channel> defaultChannels;
 
     public ConfigurationService() {
+    }
+    
+    public void saveNodeGroupLink(NodeGroupLink link) {        
+        if (!doesNodeGroupExist(link.getSourceNodeGroupId())) {
+            saveNodeGroup(new NodeGroup(link.getSourceNodeGroupId()));
+        }
+        
+        if (!doesNodeGroupExist(link.getTargetNodeGroupId())) {
+            saveNodeGroup(new NodeGroup(link.getTargetNodeGroupId()));
+        }
+        
+        if (jdbcTemplate.update(getSql("updateNodeGroupLinkSql"), link.getDataEventAction().name(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId()) == 0) {
+            jdbcTemplate.update(getSql("insertNodeGroupLinkSql"), link.getDataEventAction().name(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
+        }
+    }
+    
+    public boolean doesNodeGroupExist(String nodeGroupId) {
+        boolean exists = false;
+        List<NodeGroup> groups = getNodeGroups();
+        for (NodeGroup nodeGroup : groups) {
+            exists |= nodeGroup.getNodeGroupId().equals(nodeGroupId);
+        }
+        return exists;
+    }
+    
+    public void saveNodeGroup(NodeGroup group) {
+        if (jdbcTemplate.update(getSql("updateNodeGroupSql"), group.getDescription(), group.getNodeGroupId()) == 0) {
+            jdbcTemplate.update(getSql("insertNodeGroupSql"), group.getDescription(), group.getNodeGroupId());
+        }
+    }
+    
+    public void deleteNodeGroupLink(NodeGroupLink link) {
+        jdbcTemplate.update(getSql("deleteNodeGroupLinkSql"), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
+    }
+    
+    public boolean isNodeGroupLinkInUse(NodeGroupLink link) {
+        return true;
+    }
+    
+    public List<NodeGroup> getNodeGroups() {        
+        return jdbcTemplate.query(getSql("selectNodeGroupsSql"), new NodeGroupMapper());
     }
 
     public List<NodeGroupLink> getGroupLinks() {
@@ -245,7 +287,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    public NodeGroupLinkAction getDataEventActionsByGroupId(String sourceGroupId,
+    public NodeGroupLinkAction getDataEventActionByGroupLinkId(String sourceGroupId,
             String targetGroupId) {
         String code = (String) jdbcTemplate.queryForObject(getSql("selectDataEventActionsByIdSql"),
                 new Object[] { sourceGroupId, targetGroupId }, String.class);
@@ -432,11 +474,20 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     class NodeGroupLinkMapper implements RowMapper<NodeGroupLink> {
         public NodeGroupLink mapRow(ResultSet rs, int num) throws SQLException {
-            NodeGroupLink node_groupTarget = new NodeGroupLink();
-            node_groupTarget.setSourceNodeGroupId(rs.getString(1));
-            node_groupTarget.setTargetNodeGroupId(rs.getString(2));
-            node_groupTarget.setDataEventAction(NodeGroupLinkAction.fromCode(rs.getString(3)));
-            return node_groupTarget;
+            NodeGroupLink link = new NodeGroupLink();
+            link.setSourceNodeGroupId(rs.getString(1));
+            link.setTargetNodeGroupId(rs.getString(2));
+            link.setDataEventAction(NodeGroupLinkAction.fromCode(rs.getString(3)));
+            return link;
+        }
+    }
+    
+    class NodeGroupMapper implements RowMapper<NodeGroup> {
+        public NodeGroup mapRow(ResultSet rs, int num) throws SQLException {
+            NodeGroup group = new NodeGroup();
+            group.setNodeGroupId(rs.getString(1));
+            group.setDescription(rs.getString(2));
+            return group;
         }
     }
 
