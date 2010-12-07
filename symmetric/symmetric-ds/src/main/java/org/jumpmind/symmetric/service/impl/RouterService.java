@@ -271,7 +271,7 @@ public class RouterService extends AbstractService implements IRouterService {
         if (nodes == null) {
             nodes = new HashSet<Node>();
             Router router = triggerRouter.getRouter();
-            List<NodeGroupLink> links = configurationService.getGroupLinksFor(router
+            List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(router
                     .getSourceNodeGroupId(), router.getTargetNodeGroupId());
             if (links.size() > 0) {
                nodes.addAll(nodeService.findEnabledNodesFromNodeGroup(router.getTargetNodeGroupId()));           
