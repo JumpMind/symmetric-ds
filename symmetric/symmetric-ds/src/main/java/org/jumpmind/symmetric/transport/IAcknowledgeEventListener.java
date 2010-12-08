@@ -36,4 +36,5 @@ public interface IAcknowledgeEventListener extends IExtensionPoint {
 	 * @param batchInfo The batch metadata.
 	 */
 	public void onAcknowledgeEvent(BatchInfo batchInfo);
+	
 }
