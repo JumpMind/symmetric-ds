@@ -29,8 +29,14 @@ package org.jumpmind.symmetric.model;
  * 
  */
 public enum NodeGroupLinkAction {
-
-    P, W;
+    
+    P("pushes to"), W("waits for pull from");
+    
+    private String description;
+    
+    NodeGroupLinkAction (String desc) {
+        this.description = desc;
+    }
 
     public static NodeGroupLinkAction fromCode(String code) {
         if (code != null && code.length() > 0) {
@@ -41,6 +47,11 @@ public enum NodeGroupLinkAction {
             }
         }
         return null;
+    }
+    
+    @Override
+    public String toString() {     
+        return description;
     }
 
 }
