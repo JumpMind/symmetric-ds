@@ -50,7 +50,7 @@ public interface IConfigurationService {
 
     public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId);
     
-    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceNodeGroupId, String targetNodeGroupId);
+    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId);
     
     /**
      * Check to see if the channel is currently being used in the system.

@@ -44,7 +44,7 @@ public interface ITriggerRouterService {
      * @param sourceGroupId group id of the node being registered with
      * @param targetGroupId group id of the node that is registering
      */
-    public List<TriggerRouter> getTriggerRoutersForRegistration(String version,String sourceGroupId, String targetGroupId);
+    public List<TriggerRouter> getTriggerRoutersForRegistration(String version, NodeGroupLink nodeGroupLink);
     
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String configurationTypeId);
 
@@ -58,6 +58,12 @@ public interface ITriggerRouterService {
     public Router getActiveRouterByIdForCurrentNode(String routerId, boolean refreshCache);
     
     public Router getRouterById(String routerId);
+    
+    public List<Router> getRouters();
+    
+    public boolean isRouterBeingUsed(String routerId);
+    
+    public void deleteRouter(Router router);
     
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
     

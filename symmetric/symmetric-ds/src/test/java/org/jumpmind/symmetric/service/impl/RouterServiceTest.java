@@ -877,8 +877,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         if (trigger == null) {
             trigger = new TriggerRouter();
             trigger.getTrigger().setSourceTableName(tableName);
-            trigger.getRouter().setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
-            trigger.getRouter().setTargetNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+            trigger.getRouter().getNodeGroupLink().setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            trigger.getRouter().getNodeGroupLink().setTargetNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
             if (tableName.equals(TEST_TABLE_2)) {
                 trigger.getTrigger().setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
             } else {

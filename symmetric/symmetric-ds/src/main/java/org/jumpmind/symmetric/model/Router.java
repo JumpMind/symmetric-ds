@@ -29,9 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Defines the trigger via which a table will be synchronized.
- *
- * 
+ * Metadata about how and when to route data to a node group or a specific node
  */
 public class Router implements Serializable {
 
@@ -43,9 +41,7 @@ public class Router implements Serializable {
 
     private String routerId;
 
-    private String sourceNodeGroupId;
-
-    private String targetNodeGroupId;
+    private NodeGroupLink nodeGroupLink;
 
     private String routerType = null;
 
@@ -104,21 +100,16 @@ public class Router implements Serializable {
         return lastTriggerBuildTime == null || getLastUpdateTime() == null
                 || lastTriggerBuildTime.before(getLastUpdateTime());
     }
-
-    public String getSourceNodeGroupId() {
-        return sourceNodeGroupId;
+    
+    public void setNodeGroupLink(NodeGroupLink nodeGroupLink) {
+        this.nodeGroupLink = nodeGroupLink;
     }
-
-    public void setSourceNodeGroupId(String domainName) {
-        this.sourceNodeGroupId = domainName;
-    }
-
-    public String getTargetNodeGroupId() {
-        return targetNodeGroupId;
-    }
-
-    public void setTargetNodeGroupId(String targetDomainName) {
-        this.targetNodeGroupId = targetDomainName;
+    
+    public NodeGroupLink getNodeGroupLink() {
+        if (nodeGroupLink == null) {
+            nodeGroupLink = new NodeGroupLink();
+        }
+        return nodeGroupLink;
     }
 
     public String getRouterId() {
@@ -127,7 +118,7 @@ public class Router implements Serializable {
 
     public void setRouterId(String routerId) {
         this.routerId = routerId;
-        if (StringUtils.isNumeric(routerId)) {
+        if (StringUtils.isNotBlank(routerId) && StringUtils.isNumeric(routerId)) {
             int id = Integer.parseInt(routerId);
             if (id >= maxRouterId) {
                 maxRouterId = id + 1;

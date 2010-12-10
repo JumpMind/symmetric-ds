@@ -88,6 +88,10 @@ public class RouterService extends AbstractService implements IRouterService {
     private IStatisticManager statisticManager;
 
     transient ExecutorService readThread = null;
+    
+    public Map<String, IDataRouter> getRouters() {
+        return routers;
+    }
 
     /**
      * For use in data load events
@@ -271,12 +275,12 @@ public class RouterService extends AbstractService implements IRouterService {
         if (nodes == null) {
             nodes = new HashSet<Node>();
             Router router = triggerRouter.getRouter();
-            List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(router
-                    .getSourceNodeGroupId(), router.getTargetNodeGroupId());
-            if (links.size() > 0) {
-               nodes.addAll(nodeService.findEnabledNodesFromNodeGroup(router.getTargetNodeGroupId()));           
+            NodeGroupLink link = configurationService.getNodeGroupLinkFor(router
+                    .getNodeGroupLink().getSourceNodeGroupId(), router.getNodeGroupLink().getTargetNodeGroupId());
+            if (link != null) {
+               nodes.addAll(nodeService.findEnabledNodesFromNodeGroup(router.getNodeGroupLink().getTargetNodeGroupId()));           
             } else {
-               log.error("RouterIllegalNodeGroupLink", router.getRouterId(), router.getSourceNodeGroupId(), router.getTargetNodeGroupId());
+               log.error("RouterIllegalNodeGroupLink", router.getRouterId(), router.getNodeGroupLink().getSourceNodeGroupId(), router.getNodeGroupLink().getTargetNodeGroupId());
             }
             context.getAvailableNodes().put(triggerRouter, nodes);
         }

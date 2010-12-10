@@ -47,7 +47,7 @@ public class TriggerRouterSelector {
         List<TriggerRouter> filtered = new ArrayList<TriggerRouter>();
         for (TriggerRouter trigger : triggers) {
             if (trigger.getTrigger().getChannelId().equals(channelId)
-                    && (targetNodeGroupId == null || trigger.getRouter().getTargetNodeGroupId().equals(targetNodeGroupId))) {
+                    && (targetNodeGroupId == null || trigger.getRouter().getNodeGroupLink().getTargetNodeGroupId().equals(targetNodeGroupId))) {
                 filtered.add(trigger);
             }
         }
