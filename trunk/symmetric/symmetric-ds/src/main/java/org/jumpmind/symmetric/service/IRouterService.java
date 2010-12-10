@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -52,6 +53,8 @@ public interface IRouterService extends ISqlProvider {
      * Get a list of available batch algorithms that can be used for the different channels
      */
     public List<String> getAvailableBatchAlgorithms();
+    
+    public Map<String, IDataRouter> getRouters();
     
     public void stop ();
     

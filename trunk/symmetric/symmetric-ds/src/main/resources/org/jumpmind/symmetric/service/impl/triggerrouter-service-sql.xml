@@ -130,7 +130,17 @@
         </entry>
     </util:map>
 
-  <util:map id="triggerRouterServiceSql">
+  <util:map id="triggerRouterServiceSql">  
+    <entry key="countTriggerRoutersByRouterIdSql">
+      <value>
+        select count(*) from $[sym.sync.table.prefix]_trigger_router where router_id=?
+      </value>
+    </entry>
+    <entry key="deleteRouterSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_router where router_id=?
+      </value>
+    </entry>    
     <entry key="inactivateTriggerHistorySql">
       <value>
         update $[sym.sync.table.prefix]_trigger_hist set inactive_time = current_timestamp where
@@ -294,6 +304,9 @@
     <entry key="selectRouterSql">
       <value>from $[sym.sync.table.prefix]_router r where r.router_id=?</value>
     </entry>    
+    <entry key="selectRoutersSql">
+      <value>from $[sym.sync.table.prefix]_router r</value>
+    </entry>     
     <entry key="selectTriggerByIdSql">
       <value>where t.trigger_id = ?</value>
     </entry>

@@ -55,6 +55,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -156,9 +157,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, Writer writer, DataExtractorContext ctx) throws IOException {
-        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(StringUtils.isBlank(node
-                .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(),parameterService
+        NodeGroupLink nodeGroupLink = new NodeGroupLink(parameterService
                 .getNodeGroupId(), node.getNodeGroupId());
+        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(StringUtils.isBlank(node
+                .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(), nodeGroupLink);
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
                 TriggerRouter triggerRouter = triggerRouters.get(i);

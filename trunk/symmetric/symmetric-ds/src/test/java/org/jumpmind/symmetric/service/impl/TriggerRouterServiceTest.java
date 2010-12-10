@@ -158,8 +158,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         Router router = getTriggerRouterService().getRouterById("3000");
         Assert.assertNotNull(router);
         Assert.assertEquals("3000", router.getRouterId());
-        Assert.assertEquals("test-root-group", router.getSourceNodeGroupId());
-        Assert.assertEquals("test-node-group2", router.getTargetNodeGroupId());
+        Assert.assertEquals("test-root-group", router.getNodeGroupLink().getSourceNodeGroupId());
+        Assert.assertEquals("test-node-group2", router.getNodeGroupLink().getTargetNodeGroupId());
 
         router = getTriggerRouterService().getRouterById("666");
         Assert.assertNull(router);
@@ -257,8 +257,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             trigger.setSourceTableName("test_oracle_binary_types");
             trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
             Router router = trouter.getRouter();
-            router.setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
-            router.setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            router.getNodeGroupLink().setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            router.getNodeGroupLink().setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
             getTriggerRouterService().saveTriggerRouter(trouter);
 
             ITriggerRouterService triggerService = getTriggerRouterService();
@@ -282,8 +282,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             trigger.setSourceTableName("test_postgres_binary_types");
             trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
             Router router = trouter.getRouter();
-            router.setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
-            router.setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            router.getNodeGroupLink().setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            router.getNodeGroupLink().setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
             getTriggerRouterService().saveTriggerRouter(trouter);
 
             ITriggerRouterService triggerService = getTriggerRouterService();
@@ -321,8 +321,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             trigger.setSourceTableName("test_derby_binary_types");
             trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
             Router router = trouter.getRouter();
-            router.setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
-            router.setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            router.getNodeGroupLink().setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            router.getNodeGroupLink().setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
             getTriggerRouterService().saveTriggerRouter(trouter);
 
             ITriggerRouterService triggerService = getTriggerRouterService();

@@ -118,7 +118,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 new NodeGroupLinkMapper());
     }
 
-    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceNodeGroupId, String targetNodeGroupId) {
+    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId) {
         List<NodeGroupLink> links = getNodeGroupLinksFor(sourceNodeGroupId);
         Iterator<NodeGroupLink> it = links.iterator();
         while (it.hasNext()) {
@@ -127,7 +127,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 it.remove();
             }
         }
-        return links;
+        return links.size() > 0 ? links.get(0) : null;
     }
     
     public boolean isChannelInUse(String channelId) {

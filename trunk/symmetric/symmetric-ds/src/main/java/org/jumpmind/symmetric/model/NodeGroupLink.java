@@ -33,6 +33,14 @@ public class NodeGroupLink implements Serializable {
 
     private NodeGroupLinkAction dataEventAction = NodeGroupLinkAction.W;
 
+    public NodeGroupLink() {   
+    }
+    
+    public NodeGroupLink(String sourceNodeGroupId, String targetNodeGroupId) {
+        this.sourceNodeGroupId = sourceNodeGroupId;
+        this.targetNodeGroupId = targetNodeGroupId;
+    }
+    
     public NodeGroupLinkAction getDataEventAction() {
         return dataEventAction;
     }
@@ -56,5 +64,42 @@ public class NodeGroupLink implements Serializable {
     public void setTargetNodeGroupId(String targetNodeGroupId) {
         this.targetNodeGroupId = targetNodeGroupId;
     }
+
+    @Override
+    public String toString() {     
+        return sourceNodeGroupId + " " + dataEventAction + " " + targetNodeGroupId;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((sourceNodeGroupId == null) ? 0 : sourceNodeGroupId.hashCode());
+        result = prime * result + ((targetNodeGroupId == null) ? 0 : targetNodeGroupId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        NodeGroupLink other = (NodeGroupLink) obj;
+        if (sourceNodeGroupId == null) {
+            if (other.sourceNodeGroupId != null)
+                return false;
+        } else if (!sourceNodeGroupId.equals(other.sourceNodeGroupId))
+            return false;
+        if (targetNodeGroupId == null) {
+            if (other.targetNodeGroupId != null)
+                return false;
+        } else if (!targetNodeGroupId.equals(other.targetNodeGroupId))
+            return false;
+        return true;
+    }
+    
     
 }

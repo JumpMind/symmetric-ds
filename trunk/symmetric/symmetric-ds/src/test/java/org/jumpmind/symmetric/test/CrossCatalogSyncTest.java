@@ -68,8 +68,8 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         jdbcTemplate.update("use " + db);
         TriggerRouter triggerRouter = new TriggerRouter();
         triggerRouter.getTrigger().setChannelId("other");
-        triggerRouter.getRouter().setSourceNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        triggerRouter.getRouter().setTargetNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        triggerRouter.getRouter().getNodeGroupLink().setSourceNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        triggerRouter.getRouter().getNodeGroupLink().setTargetNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
         if (catalog) {
             triggerRouter.getTrigger().setSourceCatalogName("other");
         }
@@ -103,8 +103,8 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         jdbcTemplate.update("use " + db);
         TriggerRouter trigger = new TriggerRouter();
         trigger.getTrigger().setChannelId("other");
-        trigger.getRouter().setSourceNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.getRouter().setTargetNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getRouter().getNodeGroupLink().setSourceNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getRouter().getNodeGroupLink().setTargetNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
         trigger.getTrigger().setSourceCatalogName("other");
         trigger.getTrigger().setSourceSchemaName("dbo");
         trigger.getTrigger().setSourceTableName("other_table");
@@ -133,8 +133,8 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         jdbcTemplate.update("create table other.other_table2 (id char(5) not null, name varchar(40), primary key(id))");
         TriggerRouter trigger = new TriggerRouter();
         trigger.getTrigger().setChannelId("other");
-        trigger.getRouter().setSourceNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.getRouter().setTargetNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getRouter().getNodeGroupLink().setSourceNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getRouter().getNodeGroupLink().setTargetNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
         trigger.getTrigger().setSourceSchemaName("other");
         trigger.getTrigger().setSourceTableName("other_table2");
         trigger.getTrigger().setSyncOnInsert(true);
