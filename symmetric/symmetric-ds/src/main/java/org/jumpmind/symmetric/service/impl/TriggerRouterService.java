@@ -92,6 +92,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return jdbcTemplate.query("select " + getSql("selectTriggersColumnList", "selectTriggersSql"), new TriggerMapper());
     }
     
+    public boolean isTriggerBeingUsed(String triggerId) {
+        return jdbcTemplate.queryForInt(getSql("countTriggerRoutersByTriggerIdSql"), triggerId) > 0;
+    }
+    
+    public void deleteTrigger(Trigger trigger) {
+        jdbcTemplate.update(getSql("deleteTriggerSql"), trigger.getTriggerId());
+    }
+
+    
     public void inactivateTriggerHistory(TriggerHistory history) {
         jdbcTemplate.update(getSql("inactivateTriggerHistorySql"), new Object[] { history
                 .getTriggerHistoryId() });

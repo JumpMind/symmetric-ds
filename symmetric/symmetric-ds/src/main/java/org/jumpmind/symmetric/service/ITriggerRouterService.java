@@ -61,9 +61,11 @@ public interface ITriggerRouterService {
     
     public List<Router> getRouters();
     
-    public boolean isRouterBeingUsed(String routerId);
+    public boolean isRouterBeingUsed(String routerId);    
     
     public void deleteRouter(Router router);
+    
+    public void saveRouter(Router router);
     
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
     
@@ -71,6 +73,12 @@ public interface ITriggerRouterService {
      * Get a list of all the triggers that have been defined for the system.
      */
     public List<Trigger> getTriggers();
+    
+    public void saveTrigger(Trigger trigger);
+
+    public void deleteTrigger(Trigger trigger);
+    
+    public boolean isTriggerBeingUsed(String triggerId);
     
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId);
 
@@ -95,11 +103,7 @@ public interface ITriggerRouterService {
     public Map<Long, TriggerHistory> getHistoryRecords();
 
     public void saveTriggerRouter(TriggerRouter trigger);
-    
-    public void saveRouter(Router router);
-    
-    public void saveTrigger(Trigger trigger);
-    
+        
     public void syncTriggers();
 
     public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always);
