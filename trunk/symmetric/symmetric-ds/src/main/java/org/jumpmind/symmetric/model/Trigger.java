@@ -184,7 +184,7 @@ public class Trigger implements Serializable {
     
     public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
-        if (StringUtils.isNumeric(triggerId)) {
+        if (StringUtils.isNotBlank(triggerId) && StringUtils.isNumeric(triggerId)) {
             int id = Integer.parseInt(triggerId);
             if (id >= maxTriggerId) {
                 maxTriggerId = id + 1;
