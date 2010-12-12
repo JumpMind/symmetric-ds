@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
@@ -96,8 +97,35 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return jdbcTemplate.queryForInt(getSql("countTriggerRoutersByTriggerIdSql"), triggerId) > 0;
     }
     
+    public boolean doesTriggerExist(String triggerId) {
+        return jdbcTemplate.queryForInt(getSql("countTriggerByTriggerIdSql"), triggerId) > 0;
+    }
+    
+    public boolean doesTriggerExistForTable(String tableName) {
+        return jdbcTemplate.queryForInt(getSql("countTriggerByTableNameSql"), tableName) > 0;
+    }
+    
     public void deleteTrigger(Trigger trigger) {
         jdbcTemplate.update(getSql("deleteTriggerSql"), trigger.getTriggerId());
+    }
+    
+    public void createTriggersOnChannelForTables(String channelId, Set<Table> tables, String lastUpdateBy) {
+        for (Table table : tables) {
+            Trigger trigger = new Trigger();
+            trigger.setChannelId(channelId);
+            trigger.setSourceTableName(table.getName());
+            trigger.setTriggerId(table.getName());
+            if (StringUtils.isNotBlank(table.getCatalog())) {
+                trigger.setSourceCatalogName(table.getCatalog());
+            }
+            if (StringUtils.isNotBlank(table.getSchema())) {
+                trigger.setSourceSchemaName(table.getSchema());
+            }
+            trigger.setLastUpdateBy(lastUpdateBy);
+            trigger.setLastUpdateTime(new Date());
+            trigger.setCreateTime(new Date());
+            saveTrigger(trigger);
+        }
     }
 
     

@@ -868,7 +868,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
-    }
+    }        
 
     public Database readPlatformDatabase(boolean includeSymmetricTables) {
         String schema = getDefaultSchema();

@@ -23,8 +23,10 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
@@ -78,7 +80,13 @@ public interface ITriggerRouterService {
 
     public void deleteTrigger(Trigger trigger);
     
+    public void createTriggersOnChannelForTables(String channelId, Set<Table> tables, String lastUpdateBy);
+    
     public boolean isTriggerBeingUsed(String triggerId);
+    
+    public boolean doesTriggerExist(String triggerId);
+    
+    public boolean doesTriggerExistForTable(String tableName);
     
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId);
 
