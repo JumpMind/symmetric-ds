@@ -82,7 +82,7 @@ public class Trigger implements Serializable {
     private String excludedColumnNames = null;
 
     /**
-     * This is a sql expression that creates a unique id which the sync process
+     * This is a SQL expression that creates a unique id which the sync process
      * can use to 'group' events together and commit together.
      */
     private String txIdExpression = null;

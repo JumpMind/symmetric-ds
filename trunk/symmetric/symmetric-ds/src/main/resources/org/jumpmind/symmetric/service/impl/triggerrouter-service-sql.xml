@@ -140,7 +140,17 @@
       <value>
         select count(*) from $[sym.sync.table.prefix]_trigger_router where trigger_id=?
       </value>
-    </entry>    
+    </entry>
+    <entry key="countTriggerByTriggerIdSql">
+      <value>
+        select count(*) from $[sym.sync.table.prefix]_trigger where trigger_id=?
+      </value>
+    </entry>  
+    <entry key="countTriggerByTableNameSql">
+      <value>
+        select count(*) from $[sym.sync.table.prefix]_trigger where source_table_name=?
+      </value>
+    </entry>          
     <entry key="deleteRouterSql">
       <value>
         delete from $[sym.sync.table.prefix]_router where router_id=?
