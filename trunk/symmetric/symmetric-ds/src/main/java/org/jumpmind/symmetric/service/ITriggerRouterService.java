@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.  */
 
-
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
@@ -34,9 +33,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
 /**
- * Provides an API to configure {@link TriggerRouter}s
- *
- * ,
+ * Provides an API to configure {@link TriggerRouter}s, {@link Trigger}s and {@link Router}s.
  */
 public interface ITriggerRouterService {
 
@@ -110,6 +107,10 @@ public interface ITriggerRouterService {
 
     public Map<Long, TriggerHistory> getHistoryRecords();
 
+    public void deleteTriggerRouter(TriggerRouter triggerRouter);
+    
+    public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly);
+    
     public void saveTriggerRouter(TriggerRouter trigger);
         
     public void syncTriggers();

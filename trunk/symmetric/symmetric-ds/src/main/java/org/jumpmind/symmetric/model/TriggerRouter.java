@@ -32,8 +32,6 @@ import org.jumpmind.symmetric.ddl.model.Table;
 
 /**
  * Defines the trigger via which a table will be synchronized.
- *
- * 
  */
 public class TriggerRouter implements Serializable {
 
@@ -61,10 +59,14 @@ public class TriggerRouter implements Serializable {
     private boolean pingBackEnabled = false;
 
     public TriggerRouter() {
-        trigger = new Trigger();
-        router = new Router();
+        this(new Trigger(), new Router());
+    }
+    
+    public TriggerRouter(Trigger trigger, Router router) {
+        this.trigger = trigger;
+        this.router = router;
         createTime = new Date();
-        lastUpdateTime = new Date();
+        lastUpdateTime = new Date();        
     }
 
     public Date getCreateTime() {

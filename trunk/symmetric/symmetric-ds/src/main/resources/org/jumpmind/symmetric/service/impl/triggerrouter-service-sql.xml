@@ -164,7 +164,7 @@
     </entry>
     <entry key="selectTriggersSql">
       <value> 
-        from $[sym.sync.table.prefix]_trigger t 
+        from $[sym.sync.table.prefix]_trigger t order by trigger_id asc
       </value>
     </entry>    
     <entry key="selectTriggerRoutersSql">
@@ -299,6 +299,11 @@
         where router_id=?
       </value>
     </entry>              
+    <entry key="deleteTriggerRouterSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_trigger_router where trigger_id=? and router_id=?
+      </value>
+    </entry>    
     <entry key="insertTriggerRouterSql">
       <value>
         insert into $[sym.sync.table.prefix]_trigger_router
