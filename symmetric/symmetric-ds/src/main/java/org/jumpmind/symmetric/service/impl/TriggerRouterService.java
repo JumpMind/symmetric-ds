@@ -59,7 +59,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
- * 
+ * @see ITriggerRouterService
  */
 public class TriggerRouterService extends AbstractService implements ITriggerRouterService {
 
@@ -501,10 +501,21 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT });
     }
+    
+    public void deleteTriggerRouter(TriggerRouter triggerRouter) {
+        jdbcTemplate.update(getSql("deleteTriggerRouterSql"), triggerRouter.getTrigger().getTriggerId(), 
+                triggerRouter.getRouter().getRouterType());
+    }
 
     public void saveTriggerRouter(TriggerRouter triggerRouter) {
-        saveTrigger(triggerRouter.getTrigger());
-        saveRouter(triggerRouter.getRouter());
+        saveTriggerRouter(triggerRouter, false);
+    }
+    
+    public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly) {
+        if (!updateTriggerRouterTableOnly) {
+            saveTrigger(triggerRouter.getTrigger());
+            saveRouter(triggerRouter.getRouter());
+        }
         triggerRouter.setLastUpdateTime(new Date());
         if (0 == jdbcTemplate.update(getSql("updateTriggerRouterSql"),
                 new Object[] { triggerRouter.getInitialLoadOrder(),
