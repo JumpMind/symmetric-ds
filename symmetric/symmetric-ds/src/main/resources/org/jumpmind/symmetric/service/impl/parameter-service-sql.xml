@@ -26,6 +26,12 @@
         node_group_id=?
       </value>
     </entry>
+    <entry key="selectParametersByKeySql">
+      <value>
+        select param_key, param_value, external_id, node_group_id from $[sym.sync.table.prefix]_parameter where param_key=?
+        order by node_group_id, external_id
+      </value>
+    </entry>    
 
   </util:map>
 
