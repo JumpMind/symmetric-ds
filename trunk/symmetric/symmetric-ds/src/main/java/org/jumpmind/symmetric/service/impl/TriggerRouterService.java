@@ -504,7 +504,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     
     public void deleteTriggerRouter(TriggerRouter triggerRouter) {
         jdbcTemplate.update(getSql("deleteTriggerRouterSql"), triggerRouter.getTrigger().getTriggerId(), 
-                triggerRouter.getRouter().getRouterType());
+                triggerRouter.getRouter().getRouterId());
     }
 
     public void saveTriggerRouter(TriggerRouter triggerRouter) {
