@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.IParameterFilter;
+import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.beans.BeansException;
@@ -261,6 +263,10 @@ public class ParameterService extends AbstractService implements IParameterServi
         }
         return value;
     }
+    
+    public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {
+        return jdbcTemplate.query(getSql("selectParametersByKeySql"), new DatabaseParameterMapper(), paramKey);
+    }
 
     protected String getWithHostName(String paramKey) {
         String value = getString(paramKey);
@@ -285,6 +291,12 @@ public class ParameterService extends AbstractService implements IParameterServi
             url = url.trim();
         }
         return url; 
+    }
+    
+    class DatabaseParameterMapper implements RowMapper<DatabaseParameter> {
+        public DatabaseParameter mapRow(ResultSet rs, int rowNum) throws SQLException {            
+            return new DatabaseParameter(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4));
+        }
     }
 
 }

@@ -23,9 +23,11 @@ package org.jumpmind.symmetric.service;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.config.IParameterFilter;
+import org.jumpmind.symmetric.model.DatabaseParameter;
 
 /**
  * Get and set application wide configuration information.
@@ -65,6 +67,8 @@ public interface IParameterService {
     public void rereadParameters();
 
     public Date getLastTimeParameterWereCached();
+    
+    public List<DatabaseParameter> getDatabaseParametersFor(String paramKey);
 
     public Map<String, String> getAllParameters();
 
