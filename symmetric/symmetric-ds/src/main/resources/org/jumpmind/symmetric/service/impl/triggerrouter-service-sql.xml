@@ -328,9 +328,9 @@
     </entry>
     <entry key="selectRouterSql">
       <value>from $[sym.sync.table.prefix]_router r where r.router_id=?</value>
-    </entry>    
+    </entry>
     <entry key="selectRoutersSql">
-      <value>from $[sym.sync.table.prefix]_router r</value>
+      <value>from $[sym.sync.table.prefix]_router r order by r.router_id</value>
     </entry>     
     <entry key="selectTriggerByIdSql">
       <value>where t.trigger_id = ?</value>
