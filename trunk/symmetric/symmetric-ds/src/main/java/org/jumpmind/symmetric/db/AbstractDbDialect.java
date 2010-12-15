@@ -817,16 +817,23 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
         return sql;
     }
+    
+    private void setDatabaseName(TriggerRouter triggerRouter, Database db) {
+        db.setName(triggerRouter.getTargetSchema(getDefaultSchema()));
+        if (db.getName() == null) {
+            db.setName(getDefaultCatalog());
+        }
+        if (db.getName() == null) {
+            db.setName("DDL");
+        }
+    }
 
     public String getCreateTableXML(TriggerRouter triggerRouter) {
         Table table = getTable(null, triggerRouter.getTrigger().getSourceSchemaName(),
                 triggerRouter.getTrigger().getSourceTableName());
         table.setName(triggerRouter.getTargetTable());
         Database db = new Database();
-        db.setName(triggerRouter.getTargetSchema(getDefaultSchema()));
-        if (db.getName() == null) {
-            db.setName(getDefaultCatalog());
-        }
+        setDatabaseName(triggerRouter, db);
         db.addTable(table);
         StringWriter buffer = new StringWriter();
         DatabaseIO xmlWriter = new DatabaseIO();
