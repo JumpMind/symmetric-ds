@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/symmetric/src/test/java/org/jumpmind/symmetric/test/RunTestEngines.java"/>
+<listEntry value="/symmetric-server/src/test/java/org/jumpmind/symmetric/test/RunTestEngines.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -12,5 +12,5 @@
 <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.jumpmind.symmetric.test.RunTestEngines"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="symmetric-ds"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="symmetric-server"/>
 </launchConfiguration>
