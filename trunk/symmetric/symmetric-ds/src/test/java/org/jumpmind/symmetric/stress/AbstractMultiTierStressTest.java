@@ -65,7 +65,7 @@ abstract public class AbstractMultiTierStressTest {
     @Test(timeout = 120000)
     public void validateHomeServerStartup() {
         INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE,
-                homeServer);
+                homeServer.getEngine());
         Node node = nodeService.findIdentity();
         Assert.assertNotNull(node);
         Assert.assertEquals(node.getNodeId(),
@@ -141,7 +141,7 @@ abstract public class AbstractMultiTierStressTest {
         }
         clientNode.getEngine().pull();
         INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE,
-                clientNode);
+                clientNode.getEngine());
         Node node = nodeService.findIdentity();
         Assert.assertNotNull(node);
         Assert.assertEquals(node.getNodeId(), externalId);
@@ -157,7 +157,7 @@ abstract public class AbstractMultiTierStressTest {
             }
 
             IOutgoingBatchService homeOutgoingBatchService = AppUtils.find(
-                    Constants.OUTGOING_BATCH_SERVICE, registrationServer);
+                    Constants.OUTGOING_BATCH_SERVICE, registrationServer.getEngine());
             while (!homeOutgoingBatchService.areAllLoadBatchesComplete(externalId)) {
                 clientNode.getEngine().pull();
             }
@@ -176,7 +176,7 @@ abstract public class AbstractMultiTierStressTest {
 
     protected IParameterService getParameterService(SymmetricWebServer server) {
         IParameterService s = AppUtils
-                .find(Constants.PARAMETER_SERVICE, server);
+                .find(Constants.PARAMETER_SERVICE, server.getEngine());
         return s;
     }
 

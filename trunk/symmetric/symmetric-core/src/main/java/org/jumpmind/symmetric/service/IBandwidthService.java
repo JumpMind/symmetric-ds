@@ -20,7 +20,6 @@
 
 package org.jumpmind.symmetric.service;
 
-import org.jumpmind.symmetric.web.BandwidthSamplerServlet;
 
 /**
  * A client service that determines bandwidth availability.

@@ -64,7 +64,6 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
@@ -237,10 +236,8 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         IExtensionPointManager extMgr = (IExtensionPointManager)this.applicationContext.getBean(Constants.EXTENSION_MANAGER);
         extMgr.register();        
     }
-
-    private ApplicationContext createContext(ApplicationContext parentContext) {
-        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric.xml" }, parentContext);
-    }
+    
+    protected abstract ApplicationContext createContext(ApplicationContext parentContext);
 
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
         Set<String> keys = new HashSet<String>(map.keySet());

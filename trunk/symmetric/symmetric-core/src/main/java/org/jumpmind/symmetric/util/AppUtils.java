@@ -35,11 +35,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.StandaloneSymmetricEngine;
-import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+
+import bsh.EvalError;
+import bsh.Interpreter;
 
 /**
  * 
@@ -151,14 +152,6 @@ public class AppUtils {
     }
 
     /**
-     * @see #find(String, StandaloneSymmetricEngine)
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T find(String name, SymmetricWebServer server) {
-        return (T)find(name, server.getEngine());
-    }
-
-    /**
      * Use this method to create any needed temporary files for SymmetricDS.
      */
     public static File createTempFile(String token) throws IOException {
@@ -234,5 +227,15 @@ public class AppUtils {
     public static boolean isSystemPropertySet(String propName, boolean defaultValue) {
         return "true".equalsIgnoreCase(System.getProperty(propName, Boolean.toString(defaultValue)));
     }    
+    
+    
+    public static void runBsh(String script) {
+        try {
+            Interpreter interpreter =  new Interpreter();
+            interpreter.eval(script);
+        } catch (EvalError e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

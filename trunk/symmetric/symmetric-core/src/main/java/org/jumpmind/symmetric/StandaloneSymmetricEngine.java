@@ -24,6 +24,7 @@ package org.jumpmind.symmetric;
 import java.util.Properties;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * This is the preferred way to create, configure, start and manage a
@@ -69,6 +70,12 @@ public class StandaloneSymmetricEngine extends AbstractSymmetricEngine {
             String overridePropertiesResource) {
         this(parentContext, isParentContext, null, overridePropertiesResource, null);
     }
+
+    @Override
+    protected ApplicationContext createContext(ApplicationContext parentContext) {
+        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric-client.xml" }, parentContext);
+    }
+
 
     /**
      * Create a SymmetricDS instance using an existing

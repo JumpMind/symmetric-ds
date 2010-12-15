@@ -49,12 +49,10 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import bsh.EvalError;
-import bsh.Interpreter;
 
 public class CsvLoader implements IDataLoader {
 
@@ -175,7 +173,7 @@ public class CsvLoader implements IDataLoader {
                         }
                     } else if (tokens[0].equals(CsvConstants.BSH)) {
                         if (!context.isSkipping()) {
-                            runBsh(tokens[1]);
+                            AppUtils.runBsh(tokens[1]);
                             rowsProcessed++;
                         }                        
                     } else if (tokens[0].equals(CsvConstants.CREATE)) {
@@ -214,16 +212,7 @@ public class CsvLoader implements IDataLoader {
             }
             cleanupAfterDataLoad();
         }
-    }
-    
-    protected void runBsh(String script) {
-        try {
-            Interpreter interpreter =  new Interpreter();
-            interpreter.eval(script);
-        } catch (EvalError e) {
-            throw new RuntimeException(e);
-        }
-    }
+    }    
 
     protected boolean isMetaTokenParsed(String[] tokens) {
         boolean isMetaTokenParsed = true;

@@ -66,7 +66,7 @@
           class="org.jumpmind.symmetric.security.inet.InetAddressAuthorizerCompiler"/>
           
     <bean id="inetAddressResourceHandler"
-        class="org.jumpmind.symmetric.transport.InetAddressResourceHandler">
+        class="org.jumpmind.symmetric.transport.handler.InetAddressResourceHandler">
         <property name="addressCompiler" ref="inetAddressAuthorizationCompiler" />
         <property name="parameterService" ref="parameterService" />
     </bean>
