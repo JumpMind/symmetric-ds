@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/symmetric/src/main/java/org/jumpmind/symmetric/SymmetricLauncher.java"/>
+<listEntry value="/symmetric-server/src/main/java/org/jumpmind/symmetric/SymmetricLauncher.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -13,6 +13,6 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.jumpmind.symmetric.SymmetricLauncher"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-v -p root.properties --run-ddl create_sample.xml"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="symmetric-ds"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="symmetric-server"/>
 <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:symmetric-ds/src/main/deploy/samples}"/>
 </launchConfiguration>
