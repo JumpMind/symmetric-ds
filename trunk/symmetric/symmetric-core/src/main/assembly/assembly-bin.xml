@@ -14,42 +14,15 @@
         <include>NOTICE</include>
       </includes>
     </fileSet>  
-    <fileSet>
-      <directory>target/site/guide</directory>
-      <outputDirectory>/doc</outputDirectory>
-    </fileSet>
   </fileSets>
-  <files>
-    <file>
-      <source>src/main/deploy/bin/sym</source>
-      <outputDirectory>/bin</outputDirectory>
-      <fileMode>774</fileMode>
-    </file>
-    <file>
-      <source>src/main/deploy/bin/sym_service.initd</source>
-      <outputDirectory>/bin</outputDirectory>
-      <fileMode>774</fileMode>
-    </file>
-    <file>
-      <source>src/main/deploy/bin/sym_service</source>
-      <outputDirectory>/bin</outputDirectory>
-      <fileMode>774</fileMode>
-    </file>              
-    <file>
-      <source>../symmetric-core/src/main/resources/symmetric-default.properties</source>
-      <outputDirectory>/conf</outputDirectory>
-      <fileMode>664</fileMode>
-      <destName>symmetric.properties</destName>
-    </file>
-  </files>  
   <dependencySets>
     <dependencySet>
-      <outputDirectory>/web/WEB-INF/lib</outputDirectory>
+      <outputDirectory>/lib</outputDirectory>
       <unpack>false</unpack>
       <scope>runtime</scope>
     </dependencySet>
     <dependencySet>
-      <outputDirectory>/lib</outputDirectory>
+      <outputDirectory>/optional</outputDirectory>
       <unpack>false</unpack>
       <scope>provided</scope>
       <useProjectArtifact>false</useProjectArtifact>
