@@ -45,7 +45,7 @@
       <fileMode>774</fileMode>
     </file>              
     <file>
-      <source>src/main/resources/symmetric-default.properties</source>
+      <source>../symmetric-core/src/main/resources/symmetric-default.properties</source>
       <outputDirectory>/conf</outputDirectory>
       <fileMode>664</fileMode>
       <destName>symmetric.properties</destName>
