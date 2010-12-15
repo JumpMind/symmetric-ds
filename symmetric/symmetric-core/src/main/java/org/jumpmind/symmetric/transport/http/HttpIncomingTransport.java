@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -74,9 +72,9 @@ public class HttpIncomingTransport implements IIncomingTransport {
             throw new RegistrationRequiredException();
         case WebConstants.SYNC_DISABLED:
             throw new SyncDisabledException();
-        case HttpServletResponse.SC_SERVICE_UNAVAILABLE:
+        case WebConstants.SC_SERVICE_UNAVAILABLE:
             throw new ConnectionRejectedException();
-        case HttpServletResponse.SC_FORBIDDEN:
+        case WebConstants.SC_FORBIDDEN:
             throw new AuthenticationException();
         default:
             reader = HttpTransportManager.getReaderFrom(connection);

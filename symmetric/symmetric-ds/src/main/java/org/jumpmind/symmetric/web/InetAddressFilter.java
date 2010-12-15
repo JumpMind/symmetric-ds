@@ -37,12 +37,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.transport.InetAddressResourceHandler;
+import org.jumpmind.symmetric.transport.handler.InetAddressResourceHandler;
 
 /**
  * This better be the first filter that executes!
- *
- * 
  */
 public class InetAddressFilter extends AbstractTransportFilter<InetAddressResourceHandler> 
     implements IBuiltInExtensionPoint {

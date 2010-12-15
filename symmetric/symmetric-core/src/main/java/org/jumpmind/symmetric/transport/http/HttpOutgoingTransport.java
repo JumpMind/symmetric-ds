@@ -30,8 +30,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -170,9 +168,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * @throws {@link AuthenticationException}
      */
     private void analyzeResponseCode(int code) throws IOException {
-        if (HttpServletResponse.SC_SERVICE_UNAVAILABLE == code) {
+        if (WebConstants.SC_SERVICE_UNAVAILABLE == code) {
             throw new ConnectionRejectedException();
-        } else if (HttpServletResponse.SC_FORBIDDEN == code) {
+        } else if (WebConstants.SC_FORBIDDEN == code) {
             throw new AuthenticationException();
         } else if (WebConstants.SYNC_DISABLED == code) {
             throw new SyncDisabledException();

@@ -84,7 +84,7 @@ public class MultiTierUnitTest {
     @Test
     public void validateHomeServerStartup() {
         Assert.assertTrue(homeServer.getEngine().isStarted());
-        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE, homeServer);
+        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE, homeServer.getEngine());
         Node node = nodeService.findIdentity();
         Assert.assertNotNull(node);
         Assert.assertEquals(node.getNodeId(), MultiTierTestConstants.NODE_ID_HOME);
@@ -123,11 +123,11 @@ public class MultiTierUnitTest {
      */
     @Test
     public void registerAndLoadWorkstation000102WithHomeServer() {
-        IRegistrationService registrationService = AppUtils.find(Constants.REGISTRATION_SERVICE, homeServer);
+        IRegistrationService registrationService = AppUtils.find(Constants.REGISTRATION_SERVICE, homeServer.getEngine());
         registrationService.saveRegistrationRedirect(MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_002,
                 MultiTierTestConstants.NODE_ID_REGION_1);
         workstation000102.getEngine().pull();
-        IOutgoingBatchService outgoingBatchService = AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, region01Server);
+        IOutgoingBatchService outgoingBatchService = AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, region01Server.getEngine());
         while (!outgoingBatchService.isInitialLoadComplete(MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_002)) {
             workstation000102.getEngine().pull();
         }
@@ -181,7 +181,7 @@ public class MultiTierUnitTest {
             registrationServer.getEngine().openRegistration(nodeGroupId, externalId);
         }
         clientNode.getEngine().pull();
-        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE, clientNode);
+        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE, clientNode.getEngine());
         Node node = nodeService.findIdentity();
         Assert.assertNotNull(node);
         Assert.assertEquals(node.getNodeId(), externalId);
@@ -192,7 +192,7 @@ public class MultiTierUnitTest {
             }
 
             IOutgoingBatchService homeOutgoingBatchService = AppUtils.find(Constants.OUTGOING_BATCH_SERVICE,
-                    registrationServer);
+                    registrationServer.getEngine());
             while (!homeOutgoingBatchService.isInitialLoadComplete(externalId)) {
                 clientNode.getEngine().pull();
             }

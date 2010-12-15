@@ -31,6 +31,10 @@ public class WebConstants {
     public static final int REGISTRATION_REQUIRED = 657;
     
     public static final int SYNC_DISABLED = 658;
+    
+    public static final int SC_FORBIDDEN = 403;
+    
+    public static final int SC_SERVICE_UNAVAILABLE = 503;
 
     public static final String ACK_BATCH_NAME = "batch-";
 

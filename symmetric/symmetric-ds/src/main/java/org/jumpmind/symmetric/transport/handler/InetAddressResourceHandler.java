@@ -19,7 +19,7 @@
  * under the License.  */
 
 
-package org.jumpmind.symmetric.transport;
+package org.jumpmind.symmetric.transport.handler;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;

@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * This is the preferred way to wire a SymmetricDS instance into an existing
@@ -47,6 +48,11 @@ public class SpringWireableSymmetricEngine extends AbstractSymmetricEngine imple
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.init(applicationContext, true, properties, null, null);
+    }
+    
+    @Override
+    protected ApplicationContext createContext(ApplicationContext parentContext) {
+        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric-server.xml" }, parentContext);
     }
 
 }
