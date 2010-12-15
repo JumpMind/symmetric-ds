@@ -15,6 +15,25 @@
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bin</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/src/main/assembly/assembly-bin.xml
+                                </descriptor>
+                            </descriptors>
+                            <finalName>symmetric-client-${pom.version}</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>        
         </plugins>
     </build>
     <reporting>
