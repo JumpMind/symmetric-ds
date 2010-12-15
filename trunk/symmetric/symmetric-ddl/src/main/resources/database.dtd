@@ -195,7 +195,7 @@ Defines a column in a table.
                    | REAL | NUMERIC | DECIMAL     | CHAR       | VARCHAR   | LONGVARCHAR
                    | DATE | TIME    | TIMESTAMP   | BINARY     | VARBINARY | LONGVARBINARY
                    | NULL | OTHER   | JAVA_OBJECT | DISTINCT   | STRUCT    | ARRAY
-                   | BLOB | CLOB    | REF         | BOOLEANINT | BOOLEANCHAR
+                   | BLOB | CLOB    | REF         | BOOLEANINT | BOOLEANCHAR | BOOLEAN
                    | DOUBLE) "VARCHAR"
   javaType         (object | primitive) #IMPLIED
   size             CDATA #IMPLIED
