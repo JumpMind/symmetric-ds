@@ -15,15 +15,6 @@
       </includes>
     </fileSet>  
     <fileSet>
-      <directory>src/main/deploy</directory>
-      <outputDirectory>/</outputDirectory>
-      <excludes>
-        <exclude>bin/sym</exclude>
-        <exclude>bin/sym_service</exclude>
-        <exclude>bin/sym_service.initd</exclude>
-      </excludes>      
-    </fileSet>
-    <fileSet>
       <directory>target/site/guide</directory>
       <outputDirectory>/doc</outputDirectory>
     </fileSet>
