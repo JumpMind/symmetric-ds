@@ -94,7 +94,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- *
+ * The abstract class for database dialects.
  */
 abstract public class AbstractDbDialect implements IDbDialect {
 
@@ -909,10 +909,20 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * @return true if SQL was executed.
      */
     protected boolean createTablesIfNecessary() {
-        Database symmetricTables = readSymmetricSchemaFromXml();
+        Database databaseTables = readSymmetricSchemaFromXml();
+                
+        String extraTablesXml = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_EXTRA_TABLES);
+        if (StringUtils.isNotBlank(extraTablesXml)) {
+            try {
+                databaseTables = merge(databaseTables, readDatabaseFromXml(extraTablesXml));
+            } catch (Exception ex) {
+                log.error(ex);
+            }
+        }
+        
         try {
             log.info("TablesAutoUpdatingStart");
-            String alterSql = getAlterSql(symmetricTables);
+            String alterSql = getAlterSql(databaseTables);
             log.debug("TablesAutoUpdatingAlterSql", alterSql);
             if (!StringUtils.isBlank(alterSql)) {
                 new SqlScript(alterSql, jdbcTemplate.getDataSource(), true, platform
