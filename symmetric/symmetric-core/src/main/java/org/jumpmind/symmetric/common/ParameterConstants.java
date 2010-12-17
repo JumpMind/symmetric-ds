@@ -59,6 +59,7 @@ final public class ParameterConstants {
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
     public final static String AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT = "auto.config.registration.svr.sql.script";
     public final static String AUTO_CONFIGURE_REG_SVR_DDLUTIL_XML = "auto.config.registration.svr.ddlutil.xml";
+    public final static String AUTO_CONFIGURE_EXTRA_TABLES = "auto.config.extra.tables.ddlutil.xml";
     public final static String AUTO_UPGRADE = "auto.upgrade";
     public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
 
