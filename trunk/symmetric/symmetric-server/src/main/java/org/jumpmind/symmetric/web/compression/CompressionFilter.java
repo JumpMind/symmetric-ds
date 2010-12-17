@@ -103,8 +103,7 @@ public class CompressionFilter implements Filter {
      * the next entity in the chain using the FilterChain object (
      * <code>chain.doFilter()</code>), <br>
      */
-
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
 
