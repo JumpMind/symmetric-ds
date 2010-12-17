@@ -27,9 +27,6 @@ import java.io.OutputStream;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
-/**
- * 
- */
 public class BatchResourceHandler extends AbstractTransportResourceHandler {
 
     private IDataExtractorService dataExtractorService;

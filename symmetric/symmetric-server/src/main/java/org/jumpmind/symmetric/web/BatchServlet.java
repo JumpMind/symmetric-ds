@@ -32,8 +32,6 @@ import org.jumpmind.symmetric.transport.handler.BatchResourceHandler;
 
 /**
  * Allows for the request of a batch by id.
- *
- * ,
  */
 public class BatchServlet extends AbstractTransportResourceServlet<BatchResourceHandler> 
   implements IBuiltInExtensionPoint {
