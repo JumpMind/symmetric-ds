@@ -58,8 +58,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * Start up SymmetricDS through an embedded Jetty instance.
  * 
  * @see SymmetricLauncher#main(String[])
- *
- * 
  */
 public class SymmetricWebServer {
 
@@ -173,6 +171,7 @@ public class SymmetricWebServer {
         webapp = new WebAppContext();
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
+        webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime);
         
         server.setHandler(webapp);
 
