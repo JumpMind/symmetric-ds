@@ -26,12 +26,8 @@ import org.jumpmind.symmetric.transport.ITransportResourceHandler;
 /**
  * This is a filter that is used by a transport.
  * 
- * 
  * @param <T>
  * @since 1.4.0
- * 
- *
- * 
  */
 public abstract class AbstractTransportFilter<T extends ITransportResourceHandler> extends AbstractFilter implements
         ITransportResource<T> {

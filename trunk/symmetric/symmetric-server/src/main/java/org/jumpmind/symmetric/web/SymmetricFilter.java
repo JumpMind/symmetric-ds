@@ -60,9 +60,6 @@ import org.springframework.context.ApplicationContext;
  * </pre>
  * 
  * @since 1.4.0
- * 
- *
- * ,
  */
 public class SymmetricFilter implements Filter {
 
