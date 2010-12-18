@@ -31,9 +31,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * This class represents a node who has registered for sync updates.
- *
- * 
+ * This class represents a node who has registered for sync updates. 
  */
 public class Node implements Serializable {
     
