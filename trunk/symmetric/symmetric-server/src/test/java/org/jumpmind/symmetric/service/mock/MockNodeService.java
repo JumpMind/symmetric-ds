@@ -193,6 +193,10 @@ public class MockNodeService implements INodeService {
     public List<Node> findOfflineNodes() {
         return null;
     }
+    
+    public List<Node> findOfflineNodes(long minutesOffline) {
+        return null;
+    }
 
     public void deleteIdentity() {        
     }
