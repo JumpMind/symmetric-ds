@@ -446,11 +446,15 @@ public class NodeService extends AbstractService implements INodeService {
     }
     
     public List<Node> findOfflineNodes() {
+        return findOfflineNodes(getOfflineNodeDetectionMinutes());
+    }
+    
+    public List<Node> findOfflineNodes(long minutesOffline) {
         List<Node> offlineNodeList = new ArrayList<Node>();
         Node myNode = findIdentity();
         
         if (myNode != null) {
-            long offlineNodeDetectionMillis =  (getOfflineNodeDetectionMinutes() * 60)*1000;
+            long offlineNodeDetectionMillis =  minutesOffline*60*1000;
             
             List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql","findOfflineNodesSql"), 
                     new Object[] { myNode.getNodeId(),  myNode.getNodeId()}, 

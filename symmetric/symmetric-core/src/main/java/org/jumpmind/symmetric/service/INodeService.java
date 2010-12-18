@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service;
 
@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
+import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -38,15 +39,15 @@ import org.jumpmind.symmetric.security.INodePasswordFilter;
 /**
  * This service provides an API to access {@link Node}s and Node related
  * information.
- *
+ * 
  * ,
  */
 public interface INodeService {
 
     public Node findNode(String nodeId);
-    
+
     public List<NodeHost> findNodeHosts(String nodeId);
-    
+
     public boolean isRegistrationServer();
 
     public Node findNodeByExternalId(String nodeGroupId, String externalId);
@@ -57,24 +58,25 @@ public interface INodeService {
      * (recursively).
      */
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId);
-    
+
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId, boolean recursive);
-    
+
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId);
-    
+
     public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache);
 
     public NodeSecurity findNodeSecurity(String nodeId);
-    
+
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound);
-    
+
     public void deleteNodeSecurity(String nodeId);
 
     public String findSymmetricVersion();
 
     public String findIdentityNodeId();
 
-    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId);
+    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId,
+            String nodeGroupId, String externalId);
 
     public boolean isNodeAuthorized(String nodeId, String password);
 
@@ -85,9 +87,9 @@ public interface INodeService {
     public Node findIdentity();
 
     public Node findIdentity(boolean useCache);
-    
+
     public void deleteIdentity();
-    
+
     public List<Node> findAllNodes();
 
     public List<Node> findNodesToPull();
@@ -100,14 +102,15 @@ public interface INodeService {
 
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId);
 
-    public void insertNode(String nodeId, String nodeGroupdId, String externalId, String createdAtNodeId);
-    
+    public void insertNode(String nodeId, String nodeGroupdId, String externalId,
+            String createdAtNodeId);
+
     public boolean updateNode(Node node);
-    
+
     public void updateNodeHostForCurrentNode();
-    
+
     public void insertNodeIdentity(String nodeId);
-    
+
     public void insertNodeGroup(String groupId, String description);
 
     public boolean updateNodeSecurity(NodeSecurity security);
@@ -119,7 +122,7 @@ public interface INodeService {
     public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator);
 
     public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter);
-    
+
     /**
      * @return true if a data load has occurred and has been completed.
      */
@@ -129,27 +132,38 @@ public interface INodeService {
      * @return true if a data load has started but not yet completed.
      */
     public boolean isDataLoadStarted();
-    
+
     /**
      * Get the current status of this node.
      * 
      * @return {@link NodeStatus}
      */
     public NodeStatus getNodeStatus();
-    
+
     /**
-     * Check to see if any nodes are offline and
-     * process any nodes found using the configured IOfflineNodeHandler.
+     * Check to see if any nodes are offline and process any nodes found using
+     * the configured IOfflineNodeHandler.
      */
     public void checkForOfflineNodes();
-    
+
     /**
-     * Find offline nodes.
+     * Find nodes that have been offline for the configured timeframe before {@link IOfflineClientListener} 
+     * and {@link IOfflineServerListener} will be called
      * 
      * @return list of offline nodes
      */
     public List<Node> findOfflineNodes();
-    
+
+    /**
+     * Find nodes that have been offline for a number of minutes
+     * 
+     * @return list of offline nodes
+     * @param minutesOffline
+     *            the number of minutes that have passed that a node has not
+     *            checked in for until it is considered offline
+     */
+    public List<Node> findOfflineNodes(long minutesOffline);
+
     public void addOfflineServerListener(IOfflineServerListener listener);
 
     public boolean removeOfflineServerListener(IOfflineServerListener listener);
