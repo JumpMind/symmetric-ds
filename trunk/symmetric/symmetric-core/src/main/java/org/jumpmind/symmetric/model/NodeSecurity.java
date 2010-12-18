@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * ,
+ * Represents the status of a node.
  */
 public class NodeSecurity implements Serializable {
 
@@ -99,6 +99,14 @@ public class NodeSecurity implements Serializable {
 
     public void setCreatedAtNodeId(String createdByNodeId) {
         this.createdAtNodeId = createdByNodeId;
+    }
+    
+    public boolean hasRegistered() {
+        return this.registrationTime  != null;
+    }
+    
+    public boolean hasInitialLoaded() {
+        return this.initialLoadTime != null;
     }
 
 }
