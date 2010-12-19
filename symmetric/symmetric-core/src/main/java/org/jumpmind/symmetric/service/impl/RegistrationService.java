@@ -54,8 +54,6 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 
 /**
  * @see IRegistrationService
- *
- * ,
  */
 public class RegistrationService extends AbstractService implements IRegistrationService {
 
@@ -74,12 +72,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private INodePasswordFilter nodePasswordFilter;
 
     /**
-     * Register a node for the given group name and external id if the
-     * registration is open.
-     * 
-     * @param isRequestedRegistration
-     *            An indicator that registration has been requested by the
-     *            remote client
+     * @see IRegistrationService#registerNode(Node, OutputStream, boolean)
      */
     public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration) throws IOException {
         if (!nodeService.isRegistrationServer()) {

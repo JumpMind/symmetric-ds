@@ -29,10 +29,18 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 
 /**
- * ,
+ * This service provides an API that deals with {@link Node} registration
  */
 public interface IRegistrationService {
 
+    /**
+     * Register a node for the given group name and external id if the
+     * registration is open.
+     * 
+     * @param isRequestedRegistration
+     *            An indicator that registration has been requested by the
+     *            remote client
+     */
     public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration) throws IOException;
 
     /**
