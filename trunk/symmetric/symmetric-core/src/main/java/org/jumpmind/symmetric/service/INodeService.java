@@ -39,8 +39,6 @@ import org.jumpmind.symmetric.security.INodePasswordFilter;
 /**
  * This service provides an API to access {@link Node}s and Node related
  * information.
- * 
- * ,
  */
 public interface INodeService {
 

@@ -106,7 +106,7 @@ public class Node implements Serializable {
     }
     
     @Override
-    public int hashCode() {      
+    public int hashCode() {
         return nodeId != null ? nodeId.hashCode() : super.hashCode();
     }
 

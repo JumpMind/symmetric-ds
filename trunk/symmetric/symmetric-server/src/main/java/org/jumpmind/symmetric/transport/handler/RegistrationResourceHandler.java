@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IRegistrationService;
 
 /**
- * ,
+ * Handler that delegates to the {@link IRegistrationService}
  */
 public class RegistrationResourceHandler extends AbstractTransportResourceHandler {
     private IRegistrationService registrationService;

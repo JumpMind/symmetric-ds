@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.transport.handler.RegistrationResourceHandler;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 
 /**
- * ,
+ * Accepts registration requests
  */
 public class RegistrationServlet extends AbstractTransportResourceServlet<RegistrationResourceHandler> 
     implements IBuiltInExtensionPoint {
