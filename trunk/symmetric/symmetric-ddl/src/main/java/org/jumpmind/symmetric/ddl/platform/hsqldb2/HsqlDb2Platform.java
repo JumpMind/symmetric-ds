@@ -72,6 +72,8 @@ public class HsqlDb2Platform extends PlatformImplBase
         info.setDefaultSize(Types.VARCHAR,   Integer.MAX_VALUE);
         info.setDefaultSize(Types.BINARY,    Integer.MAX_VALUE);
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
+        
+        info.setAlterTableForDropUsed(true);
 
         setSqlBuilder(new HsqlDb2Builder(this));
         setModelReader(new HsqlDb2ModelReader(this));

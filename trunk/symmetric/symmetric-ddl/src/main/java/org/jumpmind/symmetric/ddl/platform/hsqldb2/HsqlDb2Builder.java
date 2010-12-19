@@ -207,4 +207,5 @@ public class HsqlDb2Builder extends SqlBuilder
         printEndOfStatement();
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
+    
 }
