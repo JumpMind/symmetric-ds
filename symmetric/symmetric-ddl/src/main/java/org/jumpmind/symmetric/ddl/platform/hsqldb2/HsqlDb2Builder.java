@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.ddl.alteration.RemoveColumnChange;
 import org.jumpmind.symmetric.ddl.alteration.TableChange;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Database;
+import org.jumpmind.symmetric.ddl.model.Index;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
@@ -206,6 +207,14 @@ public class HsqlDb2Builder extends SqlBuilder
         printIdentifier(getColumnName(change.getColumn()));
         printEndOfStatement();
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
+    }
+    
+    @Override
+    public void writeExternalIndexDropStmt(Table table, Index index) throws IOException
+    {
+        print("DROP INDEX ");
+        printIdentifier(getIndexName(index));
+        printEndOfStatement();
     }
     
 }
