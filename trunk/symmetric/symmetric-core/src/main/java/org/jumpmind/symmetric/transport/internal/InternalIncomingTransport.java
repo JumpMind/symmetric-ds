@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 
 /**
- * 
+ * Wraps an incoming stream that comes from memory
  */
 public class InternalIncomingTransport implements IIncomingTransport {
 
@@ -51,6 +51,10 @@ public class InternalIncomingTransport implements IIncomingTransport {
 
     public BufferedReader open() throws IOException {
         return reader;
+    }
+    
+    public String getRedirectionUrl() {
+        return null;
     }
 
 }

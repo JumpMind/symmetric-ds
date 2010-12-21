@@ -95,7 +95,7 @@ public class ParameterService extends AbstractService implements IParameterServi
                 return Boolean.parseBoolean(val);
             }
         } else {
-            return false;
+            return defaultVal;
         }
     }
 

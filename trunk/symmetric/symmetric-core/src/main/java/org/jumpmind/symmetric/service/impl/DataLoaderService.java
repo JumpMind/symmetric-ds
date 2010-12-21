@@ -40,6 +40,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -68,6 +69,8 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
+import org.jumpmind.symmetric.transport.http.HttpIncomingTransport;
+import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.WebConstants;
@@ -137,6 +140,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (list.size() > 0) {
                 local = nodeService.findIdentity();
                 localSecurity = nodeService.findNodeSecurity(local.getNodeId());
+                if (StringUtils.isNotBlank(transport.getRedirectionUrl())) {
+                    // we were redirected for the pull, we need to redirect for the ack
+                    String url = transport.getRedirectionUrl();
+                    url = url.replace(HttpTransportManager.buildRegistrationUrl("", local), "");
+                    remote.setSyncUrl(url);
+                }
                 sendAck(remote, local, localSecurity, list);
                 wasWorkDone = true;
             }

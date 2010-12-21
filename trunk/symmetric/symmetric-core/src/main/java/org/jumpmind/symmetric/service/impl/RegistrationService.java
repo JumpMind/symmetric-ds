@@ -147,20 +147,22 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
     
     public void saveRegisgtrationRequest(RegistrationRequest request) {
+        String externalId = request.getExternalId() == null ? "" : request.getExternalId();
+        String nodeGroupId = request.getNodeGroupId() == null ? "" : request.getNodeGroupId();
         int count = jdbcTemplate.update(
                 getSql("updateRegistrationRequestSql"),
                 new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
                         request.getRegisteredNodeId(), request.getStatus().name(), 
-                        request.getNodeGroupId(),
-                        request.getExternalId(), request.getIpAddress(), 
+                        nodeGroupId,
+                        externalId, request.getIpAddress(), 
                         request.getHostName(), RegistrationStatus.RQ.name() });
         if (count == 0) {
             jdbcTemplate
                     .update(getSql("insertRegistrationRequestSql"),
                             new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
                                     request.getRegisteredNodeId(),
-                                    request.getStatus().name(), request.getNodeGroupId(),
-                                    request.getExternalId(), request.getIpAddress(),
+                                    request.getStatus().name(), nodeGroupId,
+                                    externalId, request.getIpAddress(),
                                     request.getHostName() });
         }
 
