@@ -383,5 +383,10 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         url = registrationService.getRedirectionUrlFor("44445");
         Assert.assertNull(url);
     }
+    
+    @Test
+    public void testGetRegistrationRequests() {
+        Assert.assertNotNull(registrationService.getRegistrationRequests());
+    }
 
 }
