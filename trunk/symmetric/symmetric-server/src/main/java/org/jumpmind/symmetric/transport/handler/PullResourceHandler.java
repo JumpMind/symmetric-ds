@@ -45,7 +45,7 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
 
     private IRegistrationService registrationService;
 
-    public void pull(String nodeId, OutputStream outputStream, ChannelMap map) throws IOException {
+    public void pull(String nodeId, String remoteHost, String remoteAddress, OutputStream outputStream, ChannelMap map) throws IOException {
         INodeService nodeService = getNodeService();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
 
@@ -55,7 +55,7 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
 
         if (nodeSecurity != null) {
             if (nodeSecurity.isRegistrationEnabled()) {
-                registrationService.registerNode(nodeService.findNode(nodeId), outputStream, false);
+                registrationService.registerNode(nodeService.findNode(nodeId), remoteHost, remoteAddress, outputStream, false);
             } else {
                 IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, map);
                 dataExtractorService.extract(nodeService.findNode(nodeId), outgoingTransport);

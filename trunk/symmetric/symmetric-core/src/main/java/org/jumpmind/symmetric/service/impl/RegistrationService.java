@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.IOException;
@@ -38,6 +36,8 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.RegistrationRequest;
+import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 
 /**
  * @see IRegistrationService
@@ -71,16 +72,22 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     private INodePasswordFilter nodePasswordFilter;
 
+    public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration)
+            throws IOException {
+        return registerNode(node, null, null, out, isRequestedRegistration);
+    }
+    
     /**
      * @see IRegistrationService#registerNode(Node, OutputStream, boolean)
      */
-    public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration) throws IOException {
+    public boolean registerNode(Node node, String remoteHost, String remoteAddress, OutputStream out, boolean isRequestedRegistration) throws IOException {
         if (!nodeService.isRegistrationServer()) {
             // registration is not allowed until this node has an identity and
             // an initial load
             Node identity = nodeService.findIdentity();
             NodeSecurity security = identity == null ? null : nodeService.findNodeSecurity(identity.getNodeId());
             if (security == null || security.getInitialLoadTime() == null) {
+                saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.RQ, remoteHost, remoteAddress));                
                 log.warn("RegistrationNotAllowedNoInitialLoad");
                 return false;
             }
@@ -89,6 +96,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         String redirectUrl = getRedirectionUrlFor(node.getExternalId());
         if (redirectUrl != null) {
             log.info("RegistrationRedirecting", node.getExternalId(), redirectUrl);
+            saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.RR, remoteHost, remoteAddress));
             throw new RegistrationRedirectException(redirectUrl);
         }
 
@@ -103,6 +111,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     node) : node.getNodeId();
             security = nodeService.findNodeSecurity(nodeId);
         } else if (security == null || !security.isRegistrationEnabled()) {
+            saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.RQ, remoteHost, remoteAddress));
             return false;
         }
 
@@ -127,8 +136,34 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
 
         dataExtractorService.extractConfigurationStandalone(node, out);
+        
+        saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.OK, remoteHost, remoteAddress));
 
         return true;
+    }
+    
+    public List<RegistrationRequest> getRegistrationRequests() {
+        return jdbcTemplate.query(getSql("selectRegistrationRequestSql"), new RegistrationRequestMapper(), RegistrationStatus.RQ.name());
+    }
+    
+    public void saveRegisgtrationRequest(RegistrationRequest request) {
+        int count = jdbcTemplate.update(
+                getSql("updateRegistrationRequestSql"),
+                new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
+                        request.getRegisteredNodeId(), request.getStatus().name(), 
+                        request.getNodeGroupId(),
+                        request.getExternalId(), request.getIpAddress(), 
+                        request.getHostName(), RegistrationStatus.RQ.name() });
+        if (count == 0) {
+            jdbcTemplate
+                    .update(getSql("insertRegistrationRequestSql"),
+                            new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
+                                    request.getRegisteredNodeId(),
+                                    request.getStatus().name(), request.getNodeGroupId(),
+                                    request.getExternalId(), request.getIpAddress(),
+                                    request.getHostName() });
+        }
+
     }
 
     public String getRedirectionUrlFor(String externalId) {
@@ -193,12 +228,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
             boolean errorOccurred = false;
             try {
                 log.info("NodeRegisterting", parameterService.getRegistrationUrl());
-                registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
-                        this.parameterService, dbDialect), parameterService.getRegistrationUrl()));
+                registered = dataLoaderService.loadDataFromPull(null);
             } catch (ConnectException e) {
                 log.warn("NodeRegistertingFailedConnection");
             } catch (UnknownHostException e) {
-                log.warn("NodeRegistertingFailedConnection");                
+                log.warn("NodeRegistertingFailedConnection");
             } catch (Exception e) {
                 log.error(e);
             }
@@ -320,5 +354,22 @@ public class RegistrationService extends AbstractService implements IRegistratio
             s = nodePasswordFilter.onNodeSecuritySave(password);
         }
         return s;
+    }
+    
+    class RegistrationRequestMapper implements RowMapper<RegistrationRequest> {
+        public RegistrationRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
+            RegistrationRequest request = new RegistrationRequest();
+            request.setNodeGroupId(rs.getString(1));
+            request.setExternalId(rs.getString(2));
+            request.setStatus(RegistrationStatus.valueOf(RegistrationStatus.class, rs.getString(3)));
+            request.setHostName(rs.getString(4));
+            request.setIpAddress(rs.getString(5));
+            request.setAttemptCount(rs.getLong(6));
+            request.setRegisteredNodeId(rs.getString(7));
+            request.setCreateTime(rs.getTimestamp(8));
+            request.setLastUpdateBy(rs.getString(7));
+            request.setLastUpdateTime(rs.getTimestamp(8));
+            return request;
+        }
     }
 }

@@ -23,15 +23,27 @@ package org.jumpmind.symmetric.service;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 
 /**
  * This service provides an API that deals with {@link Node} registration
  */
 public interface IRegistrationService {
+
+    /**
+     * Register a node for the given group name and external id if the
+     * registration is open.
+     * 
+     * @param isRequestedRegistration
+     *            An indicator that registration has been requested by the
+     *            remote client
+     */
+    public boolean registerNode(Node node, String remoteHost, String remoteAddress, OutputStream out, boolean isRequestedRegistration) throws IOException;
 
     /**
      * Register a node for the given group name and external id if the
@@ -77,6 +89,10 @@ public interface IRegistrationService {
      * or the maximum number of attempts has been reached.
      */
     public void registerWithServer();
+    
+    public List<RegistrationRequest> getRegistrationRequests();
+    
+    public void saveRegisgtrationRequest(RegistrationRequest request);
 
     public boolean isRegisteredWithServer();
     
@@ -93,5 +109,6 @@ public interface IRegistrationService {
     public Map<String,String> getRegistrationRedirectMap();
     
     public String getRedirectionUrlFor(String externalId);
+       
 
 }

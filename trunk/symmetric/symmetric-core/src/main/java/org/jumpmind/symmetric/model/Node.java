@@ -86,13 +86,13 @@ public class Node implements Serializable {
         this.nodeGroupId = nodeGroupId;
     }    
 
-    public Node(IParameterService runtimeConfig, IDbDialect dbDialect) {
-        setNodeGroupId(runtimeConfig.getNodeGroupId());
-        setExternalId(runtimeConfig.getExternalId());
+    public Node(IParameterService parameterService, IDbDialect dbDialect) {
+        setNodeGroupId(parameterService.getNodeGroupId());
+        setExternalId(parameterService.getExternalId());
         setDatabaseType(dbDialect.getName());
         setDatabaseVersion(dbDialect.getVersion());
-        setSyncUrl(runtimeConfig.getSyncUrl());
-        setSchemaVersion(runtimeConfig.getString(ParameterConstants.SCHEMA_VERSION));
+        setSyncUrl(parameterService.getSyncUrl());
+        setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
     }
 
     public Node(String nodeId, String syncURL, String version) {

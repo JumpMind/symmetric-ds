@@ -64,7 +64,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         String nodeName = " for " + node;
                         try {
                             log.debug("DataPulling", nodeName);
-                            if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
+                            if (dataLoaderService.loadDataFromPull(node)) {
                                 log.info("DataPulled", nodeName);
                                 dataPulled = true;
                             } else {

@@ -54,7 +54,7 @@ public class RegistrationServlet extends AbstractTransportResourceServlet<Regist
 
         try {
             OutputStream outputStream = createOutputStream(resp);
-            if (!getTransportResourceHandler().registerNode(node, outputStream)) {
+            if (!getTransportResourceHandler().registerNode(node, req.getRemoteHost(), req.getRemoteAddr(), outputStream)) {
                 log.warn("RegistrationNotAllowed", node);
                 sendError(resp, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.",
                         node));

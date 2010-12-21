@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 
 /**
@@ -42,9 +41,7 @@ import org.jumpmind.symmetric.transport.ITransportManager;
  */
 public interface IDataLoaderService {
     
-    public boolean loadData(Node remote, Node local) throws IOException;
-
-    public boolean loadData(IIncomingTransport reader) throws IOException;
+    public boolean loadDataFromPull(Node remote) throws IOException;
 
     public void loadData(InputStream in, OutputStream out) throws IOException;
 

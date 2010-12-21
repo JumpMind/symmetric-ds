@@ -34,6 +34,8 @@ final public class Constants {
      */
     public static final String UNKNOWN_ROUTER_ID = "?";
     
+    public static final String UNKNOWN_STRING = "unknown";
+    
     /**
      * Use this value if data is not to be routed anywhere.
      */

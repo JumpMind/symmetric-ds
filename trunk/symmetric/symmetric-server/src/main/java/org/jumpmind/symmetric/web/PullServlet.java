@@ -54,7 +54,6 @@ public class PullServlet extends AbstractTransportResourceServlet<PullResourceHa
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         // request has the "other" nodes info
-
         String nodeId = getParameter(req, WebConstants.NODE_ID);
 
         log.debug("ServletPulling", nodeId);
@@ -71,7 +70,7 @@ public class PullServlet extends AbstractTransportResourceServlet<PullResourceHa
         OutputStream outputStream = createOutputStream(resp);
         // pull out headers and pass to pull() method
 
-        getTransportResourceHandler().pull(nodeId, outputStream, map);
+        getTransportResourceHandler().pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), outputStream, map);
 
         log.debug("ServletPulled", nodeId);
 
