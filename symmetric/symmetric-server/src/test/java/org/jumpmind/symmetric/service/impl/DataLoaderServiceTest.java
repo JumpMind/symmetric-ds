@@ -460,7 +460,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     protected void load(ByteArrayOutputStream out) throws Exception {
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         getTransportManager().setIncomingTransport(new InternalIncomingTransport(in));
-        getDataLoaderService().loadData(client, root);
+        getDataLoaderService().loadDataFromPull(client);
     }
 
     protected IncomingBatch.Status findIncomingBatchStatus(int batchId, String nodeId) {

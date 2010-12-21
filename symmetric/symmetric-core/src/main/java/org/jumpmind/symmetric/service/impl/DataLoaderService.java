@@ -103,30 +103,47 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private List<IBatchListener> batchListeners;
 
     /**
-     * Connect to the remote node and pull data. The acknowledgment of commit/error status is sent separately after the
-     * data is processed.
+     * Connect to the remote node and pull data. The acknowledgment of
+     * commit/error status is sent separately after the data is processed.
      */
-    public boolean loadData(Node remote, Node local) throws IOException {
+    public boolean loadDataFromPull(Node remote)
+            throws IOException {
         boolean wasWorkDone = false;
         try {
-            NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId());
-            if (localSecurity != null) {
-                Map<String, String> requestProperties = new HashMap<String, String>();
-                ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists();
-                requestProperties.put(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
-                requestProperties.put(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
-
-                List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local, localSecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl()));
-                if (list.size() > 0) {
-                    sendAck(remote, local, localSecurity, list);
-                    wasWorkDone = true;
-                }
-            } else {
-                log.error("NodeSecurityMissing", local.getNodeId());
+            Node local = nodeService.findIdentity();
+            if (local == null) {
+                local = new Node(this.parameterService, dbDialect);
             }
+            NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId());
+            IIncomingTransport transport = null;
+            if (remote != null && localSecurity != null) {
+                Map<String, String> requestProperties = new HashMap<String, String>();
+                ChannelMap suspendIgnoreChannels = configurationService
+                        .getSuspendIgnoreChannelLists();
+                requestProperties.put(WebConstants.SUSPENDED_CHANNELS,
+                        suspendIgnoreChannels.getSuspendChannelsAsString());
+                requestProperties.put(WebConstants.IGNORED_CHANNELS,
+                        suspendIgnoreChannels.getIgnoreChannelsAsString());
+                transport = transportManager.getPullTransport(remote, local,
+                        localSecurity.getNodePassword(), requestProperties,
+                        parameterService.getRegistrationUrl());
+            } else {
+                transport = transportManager.getRegisterTransport(local, parameterService.getRegistrationUrl());
+                remote = new Node();
+                remote.setSyncUrl(parameterService.getRegistrationUrl());
+            }
+
+            List<IncomingBatch> list = loadDataAndReturnBatches(transport);
+            if (list.size() > 0) {
+                local = nodeService.findIdentity();
+                localSecurity = nodeService.findNodeSecurity(local.getNodeId());
+                sendAck(remote, local, localSecurity, list);
+                wasWorkDone = true;
+            }
+
         } catch (RegistrationRequiredException e) {
             log.warn("RegistrationLost");
-            loadData(transportManager.getRegisterTransport(local, parameterService.getRegistrationUrl()));
+            loadDataFromPull(null);
             nodeService.findIdentity(false);
             wasWorkDone = true;
         } catch (MalformedURLException e) {
@@ -311,19 +328,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             transport.close();
         }
         return new FileIncomingTransport(writer);
-    }
-
-    public boolean loadData(IIncomingTransport transport) throws IOException {
-        boolean inError = false;
-        List<IncomingBatch> list = loadDataAndReturnBatches(transport);
-        if (list != null && list.size() > 0) {
-            for (IncomingBatch incomingBatch : list) {
-                inError |= incomingBatch.getStatus() != org.jumpmind.symmetric.model.IncomingBatch.Status.OK;
-            }
-        } else {
-            inError = true;
-        }
-        return !inError;
     }
 
     private void fireEarlyCommit(IDataLoader loader, IncomingBatch batch) {

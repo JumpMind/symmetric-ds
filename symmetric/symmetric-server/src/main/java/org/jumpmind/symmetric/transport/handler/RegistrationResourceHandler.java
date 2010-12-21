@@ -32,8 +32,8 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 public class RegistrationResourceHandler extends AbstractTransportResourceHandler {
     private IRegistrationService registrationService;
 
-    public boolean registerNode(Node node, OutputStream outputStream) throws IOException {
-        return getRegistrationService().registerNode(node, outputStream, true);
+    public boolean registerNode(Node node, String remoteHost, String remoteAddress, OutputStream outputStream) throws IOException {
+        return getRegistrationService().registerNode(node, remoteHost, remoteAddress, outputStream, true);
     }
 
     private IRegistrationService getRegistrationService() {
