@@ -45,6 +45,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
 
     private IParameterService parameterService;
     
+    private String redirectionUrl;
+    
     public HttpIncomingTransport(HttpURLConnection connection, IParameterService parameterService) {
         this.connection = connection;
         this.parameterService = parameterService;
@@ -57,10 +59,14 @@ public class HttpIncomingTransport implements IIncomingTransport {
     public boolean isOpen() {
         return reader != null;
     }
+    
+    public String getRedirectionUrl() {
+        return redirectionUrl;
+    }
 
     public BufferedReader open() throws IOException {
     
-        boolean manualRedirects = parameterService.is(ParameterConstants.TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED, false);
+        boolean manualRedirects = parameterService.is(ParameterConstants.TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED, true);
         if (manualRedirects) {
             connection = this.openConnectionCheckRedirects(connection);
         }
@@ -112,12 +118,12 @@ public class HttpIncomingTransport implements IIncomingTransport {
                 stat != HttpURLConnection.HTTP_NOT_MODIFIED)
              {
                 URL base = http.getURL();
-                String loc = http.getHeaderField("Location");
+                redirectionUrl = http.getHeaderField("Location");
 
                 URL target = null;
-                if (loc != null)
+                if (redirectionUrl != null)
                 {
-                   target = new URL(base, loc);
+                   target = new URL(base, redirectionUrl);
                 }
                 http.disconnect();
                 // Redirection should be allowed only for HTTP and HTTPS

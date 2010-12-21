@@ -34,4 +34,6 @@ public interface IIncomingTransport {
     public void close() throws IOException;
 
     public boolean isOpen();
+    
+    public String getRedirectionUrl();
 }

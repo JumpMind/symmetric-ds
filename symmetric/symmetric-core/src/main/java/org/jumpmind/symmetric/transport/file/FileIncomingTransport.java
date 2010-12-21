@@ -28,9 +28,7 @@ import org.jumpmind.symmetric.io.ThresholdFileWriter;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 
 /**
- * An incoming stream that reads from a file.
- *
- * 
+ * Wraps an incoming stream that comes from a file.
  */
 public class FileIncomingTransport implements IIncomingTransport {
 
@@ -56,6 +54,10 @@ public class FileIncomingTransport implements IIncomingTransport {
     public BufferedReader open() throws IOException {
         reader = fileWriter.getReader();
         return reader;
+    }
+    
+    public String getRedirectionUrl() {
+        return null;
     }
 
 }

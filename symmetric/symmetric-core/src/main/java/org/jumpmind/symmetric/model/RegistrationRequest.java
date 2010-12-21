@@ -44,7 +44,6 @@ public class RegistrationRequest implements Serializable {
     
     public RegistrationRequest() {
     }
-
     
     public RegistrationRequest(Node node, RegistrationStatus status,
             String hostName, String ipAddress) {
@@ -55,7 +54,6 @@ public class RegistrationRequest implements Serializable {
         this.hostName = hostName == null ? "unknown" : hostName;
         this.ipAddress = ipAddress == null ? "unknown" : ipAddress;
     }
-
 
     public String getNodeGroupId() {
         return nodeGroupId;
