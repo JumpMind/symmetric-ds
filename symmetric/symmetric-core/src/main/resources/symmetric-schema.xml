@@ -227,14 +227,14 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-        <index>
+        <index name="idx_reg_req_1">
             <index-column name="node_group_id"/>
             <index-column name="external_id"/>
             <index-column name="status"/>
             <index-column name="host_name"/>
             <index-column name="ip_address"/>
         </index>
-        <index>
+        <index name="idx_reg_req_2">
             <index-column name="status"/>
         </index>
     </table>

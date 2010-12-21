@@ -94,6 +94,10 @@ public class NodeService extends AbstractService implements INodeService {
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
         return findNodesThatOriginatedFromNodeId(originalNodeId, true);
     }
+    
+    public Collection<Node> findNodesWithOpenRegistration() {
+        return jdbcTemplate.query(getSql("selectNodePrefixSql","findNodesWithOpenRegistrationSql"), new NodeRowMapper());
+    }
 
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId, boolean recursive) {
         Set<Node> all = new HashSet<Node>();

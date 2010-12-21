@@ -54,6 +54,10 @@ public class MockNodeService implements INodeService {
         return null;
     }
     
+    public Collection<Node> findNodesWithOpenRegistration() {
+        return null;
+    }
+    
     public List<NodeHost> findNodeHosts(String nodeId) {
         return null;
     }
