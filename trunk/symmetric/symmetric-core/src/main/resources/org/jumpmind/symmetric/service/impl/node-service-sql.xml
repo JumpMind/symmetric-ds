@@ -68,6 +68,11 @@
         where node_group_id = ? and sync_enabled=1
       </value>      
     </entry>    
+    <entry key="findNodesWithOpenRegistrationSql">
+      <value>
+        where node_id in (select node_id from $[sym.sync.table.prefix]_node_security where registration_enabled='1')
+      </value>      
+    </entry>     
     <entry key="findNodesCreatedByMeSql">
       <value>
         where created_at_node_id=? and created_at_node_id != node_id

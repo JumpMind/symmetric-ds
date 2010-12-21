@@ -90,7 +90,7 @@ public interface IRegistrationService {
      */
     public void registerWithServer();
     
-    public List<RegistrationRequest> getRegistrationRequests();
+    public List<RegistrationRequest> getRegistrationRequests(boolean includeNodesWithOpenRegistrations);
     
     public void saveRegisgtrationRequest(RegistrationRequest request);
 

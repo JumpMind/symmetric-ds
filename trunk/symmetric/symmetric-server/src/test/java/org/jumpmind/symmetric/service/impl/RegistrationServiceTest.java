@@ -386,7 +386,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
     
     @Test
     public void testGetRegistrationRequests() {
-        Assert.assertNotNull(registrationService.getRegistrationRequests());
+        Assert.assertNotNull(registrationService.getRegistrationRequests(false));
     }
 
 }
