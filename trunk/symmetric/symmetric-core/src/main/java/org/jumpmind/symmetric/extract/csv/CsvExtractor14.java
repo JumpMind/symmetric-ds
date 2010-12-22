@@ -39,9 +39,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * 
- *
- * 
+ * @see IDataExtractor 
  */
 public class CsvExtractor14 implements IDataExtractor {
 

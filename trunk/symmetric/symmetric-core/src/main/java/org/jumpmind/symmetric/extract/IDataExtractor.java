@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 /**
- * 
+ * Interface that is responsible for writing captured data to the transport format
  */
 public interface IDataExtractor {
 
