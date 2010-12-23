@@ -1,0 +1,327 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+
+@title Torque/DdlUtils XML database schema DTD
+@hidden $Id: database.dtd 539990 2007-05-21 01:30:52Z tomdz $
+-->
+
+<!--
+This defines the schema for a database. More precisely, it contains a number of DML elements that
+define the schema, such as tables, foreign key relationships, indexes and so forth.<br>
+<b>Note: DdlUtils only uses the <code>name</code> attribute. All other attributes are Torque-specific.</b>
+-->
+<!ELEMENT database (external-schema*, table+)>
+<!--
+@attr name                    The name of the database.
+@attr defaultIdMethod         Defines how values for identity columns are generated.
+                              Do not use autoincrement or sequence. They are deprecated in favor of
+                              using native which will use the Turbine Connection pool to determine
+                              which database it is talking to (yes, it knows that) and then use
+                              whatever native database methodology for insert increments that it can.
+                              Otherwise, you should use idbroker or none. none is good if you have a
+                              table that is just a join table. idbroker is good if you want a
+                              centralized repository for brokering out clumps of id's in a database
+                              agnostic way.
+                              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr defaultJavaType         Whether jdbc types are mapped to primitive types such as <code>int</code>
+                              (if possible) by default, or to reference types such as
+                              <code>java.lang.Integer</code>. 
+                              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr package                 The package of the Java classes generated from this schema. 
+                              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr baseClass               The base class for the Java classes generated from this schema. 
+                              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr basePeer                Sorry, no documentation available.
+                              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr defaultJavaNamingMethod Determines how a table or column name is converted
+                              from the name attribute in the xml database file to a Java class or method name:
+                              <dl>
+                              <dt>nochange</dt><dd>Indicates not change is performed.</dd>
+                              <dt>underscore</dt><dd>Underscores are removed, First letter is capitalized, first
+                              letter after an underscore is capitalized, the rest of the letters are converted to
+                              lowercase.</dd>
+                              <dt>javaname</dt><dd>Same as underscore, but no letters are converted to lowercase.</dd>
+                              </dl>
+                              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr heavyIndexing           Sorry, no documentation available.
+                              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+-->
+<!ATTLIST database
+  name                    CDATA #IMPLIED
+  defaultIdMethod         (idbroker | native | autoincrement | sequence | none) "none"
+  defaultJavaType         (object | primitive) "primitive"
+  package                 CDATA #IMPLIED
+  baseClass               CDATA #IMPLIED
+  basePeer                CDATA #IMPLIED
+  defaultJavaNamingMethod (nochange | underscore | javaname) "underscore"
+  heavyIndexing           (true | false) "false"
+>
+
+<!--
+Sorry, no documentation available
+<br><b>Note: DdlUtils currently ignores this element.</b>
+-->
+<!ELEMENT external-schema EMPTY>
+<!--
+@attr filename Sorry, no documentation available.
+               <br><b>Note: This attribute is ignored by DdlUtils.</b>
+-->
+<!ATTLIST external-schema
+  filename CDATA #REQUIRED
+>
+
+<!-- 
+Defines a table in the database schema.
+-->
+<!ELEMENT table (column+, (foreign-key | index | unique | id-method-parameter)*)>
+<!-- 
+@attr name             The name of this table.
+@attr javaName         The name of the Java class generated from this table.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr idMethod         Defines how values for identity columns are generated. See 
+                       <code>database.defaultIdMethod</code> for more info.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr skipSql          Sorry, no documentation available.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr abstract         Whether the class generated from this table is abstract.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr baseClass        Base class for the java class generated from this table.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr basePeer         Sorry, no documentation available.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr alias            Sorry, no documentation available.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr interface        Sorry, no documentation available.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr javaNamingMethod How the name of the corresponding java class is generated. See 
+                       <code>database.defaultJavaNamingMethod</code> for more info. Use
+                       <code>nochange</code> if the default naming method shall be used.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr heavyIndexing    Sorry, no documentation available.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr description      Description of the table.
+-->
+<!ATTLIST table
+  name             CDATA #REQUIRED
+  javaName         CDATA #IMPLIED
+  idMethod         (idbroker | native | autoincrement | sequence | none | null) "null"
+  skipSql          (true | false) "false"
+  abstract         (true | false) "false"
+  baseClass        CDATA #IMPLIED
+  basePeer         CDATA #IMPLIED
+  alias            CDATA #IMPLIED
+  interface        CDATA #IMPLIED
+  javaNamingMethod (nochange | underscore | javaname) #IMPLIED
+  heavyIndexing    (true | false) #IMPLIED
+  description      CDATA #IMPLIED
+>
+
+<!--
+Sorry, no documentation available
+<br><b>Note: DdlUtils currently ignores this element.</b>
+-->
+<!ELEMENT id-method-parameter EMPTY>
+<!--
+@attr name  Sorry, no documentation available.
+            <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr value Sorry, no documentation available.
+            <br><b>Note: This attribute is ignored by DdlUtils.</b>
+-->
+<!ATTLIST id-method-parameter
+  name  CDATA "default"
+  value CDATA #REQUIRED
+>
+
+<!--
+Defines a column in a table.
+-->
+<!ELEMENT column (inheritance*)>
+<!--
+@attr name             The name of this column.
+@attr javaName         The name of the Java field generated from this column.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr primaryKey       Whether this is a primary key column.
+@attr required         Whether this is a required column, i.e. a column that is not
+                       allowed to contain <code>NULL</code> values. Note that primary
+                       key columns are <b>not</b> automatically required.
+@attr type             The JDBC type of the column. This will be automatically translated
+                       to a type native to the database.
+@attr javaType         Whether the jdbc type is mapped to a primitive type such as
+                       <code>int</code> (if possible), or to a reference type such as
+                       <code>java.lang.Integer</code>. 
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr size             The JDBC size specification of the column. This is type specific.
+                       For types that have a length (such as VARCHAR), specify a single
+                       number specifying this length. For types that have precision and
+                       scale (such as NUMERIC), specify a pair of values "precision,scale".
+@attr default          The default value of the column if any. Do not specify this attribute
+                       unless the column shall have a default value as an empty attribute
+                       value will be passed as an empty string (not <code>NULL</code>) to
+                       the database. This value is passed as is to the database, though you
+                       don't need to quote it for e.g. string values.
+@attr autoIncrement    Whether this column is an identity column, i.e. it's value is
+                       automatically defined by the database.
+@attr inheritance      Sorry, no documentation available.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr inputValidator   Sorry, no documentation available.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr javaNamingMethod How the name of the corresponding java field is generated. See 
+                       <code>database.defaultJavaNamingMethod</code> for more info. Use
+                       <code>nochange</code> if the default naming method shall be used.
+                       <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr description      Description of the column.
+-->
+<!ATTLIST column
+  name             CDATA #REQUIRED
+  javaName         CDATA #IMPLIED
+  primaryKey       (true | false) "false"
+  required         (true | false) "false"
+  type             ( BIT  | TINYINT | SMALLINT    | INTEGER    | BIGINT    | FLOAT
+                   | REAL | NUMERIC | DECIMAL     | CHAR       | VARCHAR   | LONGVARCHAR
+                   | DATE | TIME    | TIMESTAMP   | BINARY     | VARBINARY | LONGVARBINARY
+                   | NULL | OTHER   | JAVA_OBJECT | DISTINCT   | STRUCT    | ARRAY
+                   | BLOB | CLOB    | REF         | BOOLEANINT | BOOLEANCHAR
+                   | DOUBLE) "VARCHAR"
+  javaType         (object | primitive) #IMPLIED
+  size             CDATA #IMPLIED
+  default          CDATA #IMPLIED
+  autoIncrement    (true | false) "false"
+  inheritance      (single | false) "false"
+  inputValidator   CDATA #IMPLIED
+  javaNamingMethod (nochange | underscore | javaname) #IMPLIED
+  description      CDATA #IMPLIED
+>
+
+<!--
+Sorry, no documentation available
+<br><b>Note: DdlUtils currently ignores this element.</b>
+-->
+<!ELEMENT inheritance EMPTY>
+<!--
+@attr key     Sorry, no documentation available.
+              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr class   Sorry, no documentation available.
+              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+@attr extends Sorry, no documentation available.
+              <br><b>Note: This attribute is ignored by DdlUtils.</b>
+-->
+<!ATTLIST inheritance
+  key     CDATA #REQUIRED
+  class   CDATA #REQUIRED
+  extends CDATA #IMPLIED
+>
+
+<!--
+Defines a foreign key relation from the table this element is defined in,
+to another table.
+-->
+<!ELEMENT foreign-key (reference+)>
+<!--
+@attr foreignTable The name of the foreign table
+@attr name         The name of this foreign key. Even though you can leave it empty, 
+                   we suggest that you always supply a meaningful name for foreign keys.
+@attr onUpdate     Specifies the action to perform when the value in the referenced column
+                   in the foreign table is changed:
+                   <dl>
+                   <dt>cascade</dt><dd>Change the value of the local column accordingly.</dd>
+                   <dt>setnull</dt><dd>Set the local column to <code>NULL</code> which 
+                   effectively removes this specific foreign key relationship.</dd>
+                   <dt>restrict</dt><dd>Different databases may interpret this value
+                   differently, but usually it is synonymous with <code>none</code>.</dd>
+                   <dt>none</dt><dd>The value of the local column remains unchanged.</dd>
+                   <br><b>Note: This attribute is currently ignored by DdlUtils.</b>
+@attr onDelete     Specifies the action to perform when the referenced row in the foreign
+                   table is deleted:
+                   <dl>
+                   <dt>cascade</dt><dd>Delete the local row.</dd>
+                   <dt>setnull</dt><dd>Set the local column to <code>NULL</code> which 
+                   effectively removes this specific foreign key relationship.</dd>
+                   <dt>restrict</dt><dd>Different databases may interpret this value
+                   differently, but usually it is synonymous with <code>none</code>.</dd>
+                   <dt>none</dt><dd>The value of the local column remains unchanged.</dd>
+                   <br><b>Note: This attribute is currently ignored by DdlUtils.</b>
+-->
+<!ATTLIST foreign-key
+  foreignTable CDATA #REQUIRED
+  name         CDATA #IMPLIED
+  onUpdate     (cascade | setnull | restrict | none) "none"
+  onDelete     (cascade | setnull | restrict | none) "none"
+>
+
+<!--
+A foreign key is specified by one or more references which put a column in the current table
+and a column in the foreign table into relation.
+-->
+<!ELEMENT reference EMPTY>
+<!--
+@attr local   The name of the column in the current table
+@attr foreign The name of the column in the foreign table
+-->
+<!ATTLIST reference
+  local   CDATA #REQUIRED
+  foreign CDATA #REQUIRED
+>
+
+<!--
+Defines a non-unique index for the current table.
+-->
+<!ELEMENT index (index-column+)>
+<!--
+@attr name The name of this index. Even though you can leave it empty,  we suggest that
+           you always supply a meaningful name for foreign keys.
+-->
+<!ATTLIST index
+  name CDATA #IMPLIED
+>
+
+<!--
+An index is defined for one or more columns of a table, which are specified by this element.
+-->
+<!ELEMENT index-column EMPTY>
+<!--
+@attr name The name of the column in the current table.
+@attr size The size of the column within the index.
+           <br><b>Note: This attribute is currently ignored by DdlUtils.</b>
+-->
+<!ATTLIST index-column
+  name CDATA #REQUIRED
+  size CDATA #IMPLIED
+>
+
+<!--
+Defines an unique index for the current table.
+-->
+<!ELEMENT unique (unique-column+)>
+<!--
+@attr name The name of this index. Even though you can leave it empty,  we suggest that
+           you always supply a meaningful name for foreign keys.
+-->
+<!ATTLIST unique
+  name CDATA #IMPLIED
+>
+
+<!--
+An unique index is defined for one or more columns of a table, which are specified by this element.
+-->
+<!ELEMENT unique-column EMPTY>
+<!--
+@attr name The name of the column in the current table.
+-->
+<!ATTLIST unique-column
+  name CDATA #REQUIRED
+>
