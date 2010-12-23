@@ -39,9 +39,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * 
- *
- * 
+ * @see IDataExtractor 
  */
 public class CsvExtractor14 implements IDataExtractor {
 
@@ -101,12 +99,13 @@ public class CsvExtractor14 implements IDataExtractor {
                 CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
                 CsvUtils.writeLineFeed(out);
                 context.getHistoryRecordsWritten().add(historyId);
-            } else if (!context.isLastTable(data.getTableName())) {
+            } else if (!context.isLastDataFromSameTriggerAndRouter(historyId, routerId)) {
                 CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
                 CsvUtils.writeLineFeed(out);
             }
 
-            context.setLastTableName(data.getTableName());
+            context.setLastRouterId(routerId);
+            context.setLastTriggerHistoryId(historyId);
         }
     }
 

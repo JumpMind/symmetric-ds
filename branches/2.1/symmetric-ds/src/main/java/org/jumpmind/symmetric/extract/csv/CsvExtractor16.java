@@ -28,14 +28,13 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * 
- *
- * 
+ * @see IDataExtractor 
  */
 public class CsvExtractor16 extends CsvExtractor14 {
 
@@ -82,7 +81,7 @@ public class CsvExtractor16 extends CsvExtractor14 {
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames()));
             CsvUtils.writeLineFeed(out);
             context.getHistoryRecordsWritten().add(triggerHistId);
-        } else if (!context.isLastTable(data.getTableName())) {
+        } else if (!context.isLastDataFromSameTriggerAndRouter(triggerHistId, routerId)) {
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName()));
             CsvUtils.writeLineFeed(out);
         }
@@ -91,7 +90,8 @@ public class CsvExtractor16 extends CsvExtractor14 {
             CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData());
             CsvUtils.writeLineFeed(out);
         }
-        context.setLastTableName(data.getTableName());
+        context.setLastRouterId(routerId);
+        context.setLastTriggerHistoryId(triggerHistId);
     }
 
 }
