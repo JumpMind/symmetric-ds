@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.extract;
 
 import java.util.ArrayList;
@@ -27,12 +25,13 @@ import java.util.List;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 /**
- * 
+ * Holds the current state of a data extraction
  */
 public class DataExtractorContext implements Cloneable {
 
     private List<String> auditRecordsWritten = new ArrayList<String>();
-    private String lastTableName;
+    private String lastTriggerHistoryId;
+    private String lastRouterId;
     private OutgoingBatch batch;
     private IDataExtractor dataExtractor;
 
@@ -52,12 +51,16 @@ public class DataExtractorContext implements Cloneable {
         return auditRecordsWritten;
     }
 
-    public void setLastTableName(String tableName) {
-        lastTableName = tableName;
+    public void setLastTriggerHistoryId(String tableName) {
+        lastTriggerHistoryId = tableName;
+    }
+    
+    public void setLastRouterId(String lastRouterId) {
+        this.lastRouterId = lastRouterId;
     }
 
-    public boolean isLastTable(String tableName) {
-        return lastTableName.equals(tableName);
+    public boolean isLastDataFromSameTriggerAndRouter(String currentTriggerHistoryId, String currentRouterId) {
+        return currentTriggerHistoryId != null && lastTriggerHistoryId.equals(currentTriggerHistoryId) && currentRouterId != null && currentRouterId.equals(lastRouterId);
     }
 
     public OutgoingBatch getBatch() {

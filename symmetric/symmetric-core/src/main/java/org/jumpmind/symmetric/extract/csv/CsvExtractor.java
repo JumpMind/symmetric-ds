@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.extract.csv;
 
 import java.io.IOException;
@@ -70,6 +68,7 @@ public class CsvExtractor extends CsvExtractor16 {
         } else if (!data.getTriggerHistory().getSourceTableName().toLowerCase().equals(data.getTableName().toLowerCase())) {
             throw new RuntimeException(String.format("The table name captured in the data table (%1$s) does not match the table name recorded in the trigger_hist table (%2$s).  Please drop the symmetric triggers on %1$s and restart the server",  data.getTableName(), data.getTriggerHistory().getSourceTableName() ));
         }
+        
         String triggerHistoryId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getHistoryRecordsWritten().contains(triggerHistoryId)) {
             writeTable(data, routerId, out, context);
@@ -78,7 +77,7 @@ public class CsvExtractor extends CsvExtractor16 {
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames()));
             CsvUtils.writeLineFeed(out);
             context.getHistoryRecordsWritten().add(triggerHistoryId);
-        } else if (!context.isLastTable(data.getTableName())) {
+        } else if (!context.isLastDataFromSameTriggerAndRouter(triggerHistoryId, routerId)) {
             writeTable(data, routerId, out, context);
         }
 
@@ -86,7 +85,8 @@ public class CsvExtractor extends CsvExtractor16 {
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData()));
             CsvUtils.writeLineFeed(out);
         }
-        context.setLastTableName(data.getTableName());
+        context.setLastRouterId(routerId);
+        context.setLastTriggerHistoryId(triggerHistoryId);
     }
     
     protected void writeTable(Data data, String routerId, Writer out, DataExtractorContext context) throws IOException {
@@ -113,4 +113,5 @@ public class CsvExtractor extends CsvExtractor16 {
     public String getLegacyTableName(String currentTableName){
         return currentTableName;
     }
+    
 }
