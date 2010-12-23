@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
@@ -34,6 +32,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -43,8 +42,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * This class is for running SQL scripts against a DataSource.
- *
- * 
  */
 public class SqlScript {
 
@@ -68,6 +65,8 @@ public class SqlScript {
     private Map<String, String> replacementTokens;
 
     private String fileName = "memory";
+    
+    private String lineDeliminator;
 
     public SqlScript(URL url, DataSource ds) {
         this(url, ds, true, QUERY_ENDS, null);
@@ -156,9 +155,13 @@ public class SqlScript {
                                 }
                                 sql.append(line.substring(0, line
                                         .lastIndexOf(delimiter)).trim());
+                                String toExecute = sql.toString();
+                                if (StringUtils.isNotBlank(lineDeliminator)) {
+                                    toExecute = toExecute.replaceAll(lineDeliminator, "\n");
+                                }
                                 log.debug("Sql", sql);
                                 try {
-                                    st.execute(AppUtils.replaceTokens(sql.toString(), replacementTokens));
+                                    st.execute(AppUtils.replaceTokens(toExecute, replacementTokens));
                                     count++;
                                     if (count % commitRate == 0) {
                                         connection.commit();
@@ -230,4 +233,9 @@ public class SqlScript {
     public void setCommitRate(int commitRate) {
         this.commitRate = commitRate;
     }
+    
+    public void setLineDeliminator(String lineDeliminator) {
+        this.lineDeliminator = lineDeliminator;
+    }
+
 }
