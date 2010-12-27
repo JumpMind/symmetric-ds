@@ -28,6 +28,9 @@ abstract public class AbstractNodeHostStats {
     private Date startTime;
     private Date endTime;
     
+    public AbstractNodeHostStats() {
+    }
+    
     public AbstractNodeHostStats(String nodeId, String hostName, Date startTime, Date endTime) {
         this.nodeId = nodeId;
         this.hostName = hostName;

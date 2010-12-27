@@ -84,6 +84,11 @@
         <column name="data_loaded" type="BIGINT" default="0" description="" />
         <column name="data_bytes_loaded" type="BIGINT" default="0" description="" />
         <column name="data_loaded_errors" type="BIGINT" default="0" description="" />
+        <index name="idx_node_host_channel_stats">
+            <index-column name="node_id"/>        
+            <index-column name="start_time"/>
+            <index-column name="end_time"/>
+        </index>
      </table>
      
      <!-- 
