@@ -37,10 +37,27 @@ public class ChannelStats extends AbstractNodeHostStats {
     private long dataBytesLoaded;
     private long dataLoadedErrors;
     
+    public ChannelStats() {}
+    
     public ChannelStats(String nodeId, String hostName, Date startTime, Date endTime,
             String channelId) {
         super(nodeId, hostName, startTime, endTime);
         this.channelId = channelId;
+    }
+    
+    public void add(ChannelStats stats) {
+        dataRouted += stats.getDataRouted();
+        dataUnRouted += stats.getDataUnRouted();
+        dataExtracted += stats.getDataExtracted();
+        dataBytesExtracted += stats.getDataBytesExtracted();
+        dataExtractedErrors += stats.getDataExtractedErrors();
+        dataEventInserted += stats.getDataEventInserted();
+        dataSent += stats.getDataSent();
+        dataBytesSent += stats.getDataBytesSent();
+        dataSentErrors += stats.getDataSentErrors();
+        dataLoaded += stats.getDataLoaded();
+        dataBytesLoaded += stats.getDataBytesLoaded();
+        dataLoadedErrors += stats.getDataLoadedErrors();
     }
 
     public String getChannelId() {

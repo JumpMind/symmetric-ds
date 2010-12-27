@@ -24,16 +24,16 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Holder class for summary information about outgoing batches
+ * Holder class for summary information about incoming batches
  */
-public class OutgoingBatchSummary implements Serializable {
+public class IncomingBatchSummary implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
     private String nodeId;
     private int batchCount;
     private int dataCount;
-    private OutgoingBatch.Status status;
+    private IncomingBatch.Status status;
     private Date oldestBatchCreateTime;
 
     public String getNodeId() {
@@ -60,11 +60,11 @@ public class OutgoingBatchSummary implements Serializable {
         this.dataCount = dataCount;
     }
 
-    public OutgoingBatch.Status getStatus() {
+    public IncomingBatch.Status getStatus() {
         return status;
     }
 
-    public void setStatus(OutgoingBatch.Status status) {
+    public void setStatus(IncomingBatch.Status status) {
         this.status = status;
     }
 

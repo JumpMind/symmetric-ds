@@ -20,14 +20,20 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.util.Date;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.jumpmind.symmetric.statistic.ChannelStats;
 
 
 /**
- * 
+ * This service provides an API to access captured statistics
  */
 public interface IStatisticService {
 
     public void save(ChannelStats stats);
+    
+    public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
     
 }

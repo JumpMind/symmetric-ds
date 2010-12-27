@@ -96,7 +96,11 @@ public class ConfigurationChangedFilter
     }
 
     private boolean matchesTable(IDataLoaderContext context, String tableSuffix) {
-        return context.getTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix, tableSuffix));
+        if (context.getTableName() != null) {
+            return context.getTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix, tableSuffix));
+        } else {
+            return false;
+        }
     }
 
     public boolean isAutoRegister() {
