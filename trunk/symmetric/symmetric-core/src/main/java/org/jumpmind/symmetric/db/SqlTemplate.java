@@ -63,6 +63,8 @@ public class SqlTemplate {
     
     private String stringColumnTemplate;
 
+    private String xmlColumnTemplate;
+
     private String numberColumnTemplate;
 
     private String datetimeColumnTemplate;
@@ -441,6 +443,9 @@ public class SqlTemplate {
                 case Types.LONGVARCHAR:
                     templateToUse = stringColumnTemplate;
                     break;
+                case Types.SQLXML:
+                    templateToUse = xmlColumnTemplate;
+                    break;
                 case Types.CLOB:
                     if (isOld && dbDialect.needsToSelectLobData()) {
                         templateToUse = emptyColumnTemplate;
@@ -626,6 +631,10 @@ public class SqlTemplate {
 
     public void setStringColumnTemplate(String columnTemplate) {
         this.stringColumnTemplate = columnTemplate;
+    }
+
+    public void setXmlColumnTemplate(String columnTemplate) {
+        this.xmlColumnTemplate = columnTemplate;
     }
 
     public void setDatetimeColumnTemplate(String datetimeColumnTemplate) {
