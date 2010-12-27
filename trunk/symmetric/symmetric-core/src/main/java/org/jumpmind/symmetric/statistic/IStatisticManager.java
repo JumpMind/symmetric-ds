@@ -20,8 +20,11 @@
 
 package org.jumpmind.symmetric.statistic;
 
+import java.util.Map;
+
+
 /**
- * 
+ * This manager provides an API record statistics
  */
 public interface IStatisticManager {    
     public void flush();
@@ -49,6 +52,8 @@ public interface IStatisticManager {
     public void incrementDataRouted(String channelId, long count);
     
     public void incrementDataSentErrors(String channelId, long count);
+    
+    public Map<String, ChannelStats> getWorkingChannelStats();
     
     
 }

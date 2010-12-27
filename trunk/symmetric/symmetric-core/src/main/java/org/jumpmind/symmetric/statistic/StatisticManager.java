@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.util.AppUtils;
 
 /**
- * 
+ * @see IStatisticManager
  */
 public class StatisticManager implements IStatisticManager {
 
@@ -176,6 +176,10 @@ public class StatisticManager implements IStatisticManager {
             }
         }
         reset(true);
+    }
+    
+    public Map<String, ChannelStats> getWorkingChannelStats() {
+        return new HashMap<String, ChannelStats>(channelStats);
     }
 
     protected void reset(boolean force) {

@@ -62,6 +62,7 @@ import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -536,6 +537,10 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public ISecurityService getSecurityService() {
     	return AppUtils.find(Constants.SECURITY_SERVICE, this);
+    }
+    
+    public IStatisticManager getStatisticManager() {
+        return AppUtils.find(Constants.STATISTIC_MANAGER, this);
     }
     
     public IStatisticService getStatisticService() {
