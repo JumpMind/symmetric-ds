@@ -21,5 +21,6 @@ drop table sym_outgoing_batch;
 drop table sym_parameter;
 drop table sym_node_host_channel_stats;
 drop table sym_registration_redirect;
+drop table sym_registration_request;
 -- test tables for version backwards compatibility
 drop table sym_trigger_old;
