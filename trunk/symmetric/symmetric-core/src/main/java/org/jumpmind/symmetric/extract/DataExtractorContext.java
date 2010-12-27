@@ -60,9 +60,9 @@ public class DataExtractorContext implements Cloneable {
     }
 
     public boolean isLastDataFromSameTriggerAndRouter(String currentTriggerHistoryId, String currentRouterId) {
-        return currentTriggerHistoryId != null && lastTriggerHistoryId.equals(currentTriggerHistoryId) && currentRouterId != null && currentRouterId.equals(lastRouterId);
+        return lastTriggerHistoryId != null && lastTriggerHistoryId.equals(currentTriggerHistoryId) && lastRouterId != null && lastRouterId.equals(currentRouterId);
     }
-
+    
     public OutgoingBatch getBatch() {
         return batch;
     }
