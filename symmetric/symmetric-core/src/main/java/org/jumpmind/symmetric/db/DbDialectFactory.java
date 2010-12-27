@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.ddl.platform.oracle.Oracle8Platform;
 import org.jumpmind.symmetric.ddl.platform.oracle.Oracle9Platform;
 import org.jumpmind.symmetric.ddl.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.symmetric.ddl.platform.sqlite.SqLitePlatform;
+import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
 import org.jumpmind.symmetric.ddlutils.PlatformFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -112,6 +113,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
             }
         } else if (pf instanceof FirebirdPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("firebirdDialect");
+        } else if (pf instanceof SybasePlatform) {
+            dialect = (AbstractDbDialect) beanFactory.getBean("sybaseDialect");
         } else {
             throw new DbNotSupportedException();
         }
