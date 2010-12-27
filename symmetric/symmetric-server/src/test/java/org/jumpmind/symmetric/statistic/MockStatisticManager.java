@@ -19,6 +19,8 @@
  * under the License.  */
 package org.jumpmind.symmetric.statistic;
 
+import java.util.Map;
+
 public class MockStatisticManager implements IStatisticManager {
 
     public void flush() {
@@ -48,8 +50,7 @@ public class MockStatisticManager implements IStatisticManager {
     public synchronized void incrementDataRouted(String channelId, long count) {
     }
     
-    public synchronized void incrementDataSentErrors(String channelId, long count) {
-        
+    public synchronized void incrementDataSentErrors(String channelId, long count) {        
     }
     
     public void incrementDataExtracted(String channelId, long count) {
@@ -59,5 +60,8 @@ public class MockStatisticManager implements IStatisticManager {
     }
     
     public void incrementDataSent(String channelId, long count) {};
-
+    
+    public Map<String, ChannelStats> getWorkingChannelStats() {
+        return null;
+    }
 }

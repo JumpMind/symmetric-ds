@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.springframework.context.ApplicationContext;
 
 public interface ISymmetricEngine {
@@ -233,6 +234,8 @@ public interface ISymmetricEngine {
     public IStatisticService getStatisticService();
     
     public ITriggerRouterService getTriggerRouterService();
+    
+    public IStatisticManager getStatisticManager();
     
     public DataSource getDataSource();
 
