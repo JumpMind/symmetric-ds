@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -55,6 +56,17 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         Types.TIMESTAMP, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT });
+    }   
+    
+    public static void main(String[] args) {
+        System.out.println("41="+new StatisticService().round(41));
+        System.out.println("45="+new StatisticService().round(45));
+        System.out.println("43="+new StatisticService().round(43));
+        System.out.println("46="+new StatisticService().round(46));
+    }
+    
+    protected int round(int value) {
+        return 5 * new BigDecimal((double)value/5d).setScale(2, BigDecimal.ROUND_HALF_DOWN).intValue();
     }
 
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes) {
@@ -62,7 +74,13 @@ public class StatisticService extends AbstractService implements IStatisticServi
         List<ChannelStats> list = jdbcTemplate.query(getSql("selectChannelStatsSql"),
                 new ChannelStatsMapper(), start, end, nodeId);
         Iterator<ChannelStats> stats = list.iterator();
-        Date periodStart = list.size() > 0 ? list.get(0).getStartTime() : start;
+        Calendar startCal = Calendar.getInstance();
+        startCal.setTime(start);
+        startCal.set(Calendar.SECOND, 0);
+        startCal.set(Calendar.MILLISECOND, 0);
+        // TODO this is hard coded assuming 5 minute buckets
+        startCal.set(Calendar.MINUTE, round(startCal.get(Calendar.MINUTE)));
+        Date periodStart = startCal.getTime();
         Date periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
         orderedMap.put(periodStart, new HashMap<String, ChannelStats>());
         ChannelStats stat = null;
