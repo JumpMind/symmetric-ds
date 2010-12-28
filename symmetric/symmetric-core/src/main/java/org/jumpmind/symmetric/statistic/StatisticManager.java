@@ -40,7 +40,7 @@ import org.jumpmind.symmetric.util.AppUtils;
  */
 public class StatisticManager implements IStatisticManager {
 
-    Map<String, ChannelStats> channelStats;
+    Map<String, ChannelStats> channelStats = new HashMap<String, ChannelStats>();
 
     INodeService nodeService;
 

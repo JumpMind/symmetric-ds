@@ -27,6 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -58,9 +59,10 @@ public class StatisticService extends AbstractService implements IStatisticServi
 
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes) {
         TreeMap<Date, Map<String, ChannelStats>> orderedMap = new TreeMap<Date, Map<String,ChannelStats>>();
-        Iterator<ChannelStats> stats = jdbcTemplate.query(getSql("selectChannelStatsSql"),
-                new ChannelStatsMapper(), start, end, nodeId).iterator();
-        Date periodStart = start;
+        List<ChannelStats> list = jdbcTemplate.query(getSql("selectChannelStatsSql"),
+                new ChannelStatsMapper(), start, end, nodeId);
+        Iterator<ChannelStats> stats = list.iterator();
+        Date periodStart = list.size() > 0 ? list.get(0).getStartTime() : start;
         Date periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
         orderedMap.put(periodStart, new HashMap<String, ChannelStats>());
         ChannelStats stat = null;
