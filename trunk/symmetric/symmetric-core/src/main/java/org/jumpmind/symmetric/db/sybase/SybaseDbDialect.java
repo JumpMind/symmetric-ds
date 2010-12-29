@@ -190,12 +190,13 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return "@TransactionId";
+        // TODO: use sp_transactions where spid = @@spid ... maybe get starttime as integer?
+        return "null";
     }
 
     @Override
     public boolean supportsTransactionId() {
-        return true;
+        return false;
     }
 
     /**
@@ -244,7 +245,7 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public String getDefaultSchema() {
         if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
+            this.defaultSchema = (String) jdbcTemplate.queryForObject("select USER_NAME()", String.class);
         }
         return this.defaultSchema;
     }
