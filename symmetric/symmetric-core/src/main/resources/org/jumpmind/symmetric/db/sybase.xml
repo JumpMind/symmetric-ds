@@ -24,6 +24,7 @@
                     <map>
                         <entry key="base64_encode">
                             <value>
+                                <!-- TODO: this will not work on sybase -->
                                 <![CDATA[ 
                                 create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)
                                   with schemabinding, returns null on null input
@@ -35,16 +36,14 @@
                         </entry>
                         <entry key="triggers_disabled">
                             <value>
-                                <!-- TODO: use "exec set clientapplname SymmetricDS" and "select * from sysprocesses where spid = @@spid" -->
-                                <!-- TODO: use "exec set clientapplname null" -->
                                 <![CDATA[
-                                create function dbo.$(functionName)() returns smallint
+                                create function dbo.$(functionName)(@unused smallint) returns smallint as
                                 begin
-                                  declare @disabled varchar(1);
-                                  set @disabled = coalesce(str_replace(substring(cast(context_info() as varchar), 1, 1), 0x0, ''), '');
-                                  if @disabled is null or @disabled != '1'
-                                    return 0;
-                                  return 1;
+                                    declare @clientapplname varchar(50)
+                                    select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid
+                                    if @clientapplname = 'SymmetricDS'
+                                        return 1
+                                    return 0
                                 end
                                 ]]>
                             </value>
@@ -52,18 +51,18 @@
                         <entry key="node_disabled">
                             <value>
                                 <![CDATA[
-                                create function dbo.$(functionName)() returns varchar(50)
+                                create function dbo.$(functionName)(@unused smallint) returns varchar(50) as
                                 begin
-                                  declare @node varchar(50);
-                                  set @node = coalesce(str_replace(substring(cast(context_info() as varchar), 2, 50), 0x0, ''), '');
-                                  return @node;
+                                    declare @clientname varchar(50)
+                                    select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'
+                                    return @clientname
                                 end
                                 ]]>
                             </value>
                         </entry>
                     </map>
                 </property>
-                <property name="stringColumnTemplate" ref="msSqlStringTemplate">
+                <property name="stringColumnTemplate">
 		            <value>
 		                <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' + str_replace(str_replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') + '"' end +','+]]>
 		            </value>
@@ -125,7 +124,7 @@
                                        fetch next from DataCursor into @DataRow, $(newKeyVariables)
                                        while @@FETCH_STATUS = 0 begin
                                            insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) 
-                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), $(externalSelect), getdate())                                   
+                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(0), $(externalSelect), getdate())                                   
                                            fetch next from DataCursor into @DataRow, $(newKeyVariables)
                                        end
                                        close DataCursor
@@ -160,7 +159,7 @@
                                        fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
                                        while @@FETCH_STATUS = 0 begin                                   
                                          insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) 
-                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), $(externalSelect), getdate())
+                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(0), $(externalSelect), getdate())
                                          fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
                                        end
                                        close DataCursor
@@ -189,7 +188,7 @@
                                        fetch next from DataCursor into @OldPk, @OldDataRow, $(oldKeyVariables)
                                        while @@FETCH_STATUS = 0 begin 
                                          insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) 
-                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), $(externalSelect), getdate())
+                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(0), $(externalSelect), getdate())
                                          fetch next from DataCursor into @OldPk,@OldDataRow, $(oldKeyVariables)
                                        end
                                        close DataCursor

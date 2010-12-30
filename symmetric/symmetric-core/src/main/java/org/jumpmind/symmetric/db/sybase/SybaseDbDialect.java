@@ -176,12 +176,13 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
         if (nodeId == null) {
             nodeId = "";
         }
-        jdbcTemplate.update("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId + "' as varbinary(128));"
-                + "SET context_info @CI;");
+        jdbcTemplate.update("exec set clientapplname 'SymmetricDS'");
+        jdbcTemplate.update("exec set clientname '" + nodeId + "'");
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.update("set context_info 0x0");
+        jdbcTemplate.update("exec set clientapplname null");
+        jdbcTemplate.update("exec set clientname null");
     }
 
     public String getSyncTriggersExpression() {
