@@ -35,8 +35,6 @@ import org.jumpmind.symmetric.route.IRouterContext;
  * This is an {@link IDataRouter} that can be configured as an extension point. Instead of routing data to other nodes,
  * it publishes data to the {@link IPublisher} interface. The most common implementation of the {@link IPublisher} is
  * the {@link SimpleJmsPublisher}.
- *
- * 
  */
 public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements IDataRouter {
 
