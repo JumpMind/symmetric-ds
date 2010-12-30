@@ -20,5 +20,6 @@
     <import resource="classpath:/org/jumpmind/symmetric/db/firebird.xml" />
     <import resource="classpath:/org/jumpmind/symmetric/db/sqlite.xml" />
     <import resource="classpath:/org/jumpmind/symmetric/db/informix.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/sybase.xml" />
 
 </beans>
