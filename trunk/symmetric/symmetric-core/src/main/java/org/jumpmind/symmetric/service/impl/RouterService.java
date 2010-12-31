@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.SQLException;
@@ -250,12 +249,12 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected void completeBatchesAndCommit(ChannelRouterContext context) throws SQLException {
+        Set<IDataRouter> usedRouters = new HashSet<IDataRouter>(context.getUsedDataRouters());
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
         context.commit();
         for (OutgoingBatch batch : batches) {
             batch.setRouterMillis(System.currentTimeMillis()-batch.getCreateTime().getTime());
-            Set<IDataRouter> usedRouters = context.getUsedDataRouters();
             for (IDataRouter dataRouter : usedRouters) {
                 dataRouter.completeBatch(context, batch);
             }
@@ -266,7 +265,11 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             outgoingBatchService.updateOutgoingBatch(batch);
             context.getBatchesByNodes().remove(batch.getNodeId());
-        }        
+        }      
+        
+        for (IDataRouter dataRouter : usedRouters) {
+            dataRouter.contextCommitted(context);
+        }
         context.setNeedsCommitted(false);
     }
 
@@ -423,11 +426,6 @@ public class RouterService extends AbstractService implements IRouterService {
             numberOfDataEventsInserted++;
             context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
                     triggerRouter.getRouter().getRouterId());
-            if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
-                    batch, dataMetaData, context)) {
-                context.setNeedsCommitted(true);
-            }
-            
             if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
                     batch, dataMetaData, context)) {
                 context.setNeedsCommitted(true);

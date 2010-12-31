@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 /**
- * 
+ * A common superclass for data routers
  */
 public abstract class AbstractDataRouter implements IDataRouter {
 
@@ -51,6 +51,9 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
+    }
+    
+    public void contextCommitted(IRouterContext context) {
     }
 
     protected Map<String, String> getDataMap(DataMetaData dataMetaData) {
