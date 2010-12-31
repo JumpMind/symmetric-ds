@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.util.AppUtils;
 
 /**
- * ,
+ * Responsible for generating dialect specific SQL such as trigger bodies and functions
  */
 public class SqlTemplate {
 

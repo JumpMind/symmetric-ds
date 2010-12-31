@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.map;
 
 import java.util.Map;
@@ -25,8 +24,6 @@ import java.util.Map;
 /**
  * Use this value filter if you want a constant value to always be inserted
  * as a column value.
- *
- * 
  */
 public class ConstantValueFilter implements IValueFilter {
 
