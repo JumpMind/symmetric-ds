@@ -48,8 +48,6 @@ import org.springframework.jdbc.core.ConnectionCallback;
  * TODO support text and image fields, they cannot be referenced from the
  * inserted or deleted tables in the triggers. Here is one idea we could
  * implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
- *
- * 
  */
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     
