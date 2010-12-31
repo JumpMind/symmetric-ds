@@ -38,10 +38,13 @@ import org.jumpmind.symmetric.route.IRouterContext;
  */
 public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements IDataRouter {
 
-    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
+    public void contextCommitted(IRouterContext context) {
         if (doesXmlExistToPublish(context)) {
             finalizeXmlAndPublish(context);
         }
+    }
+    
+    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
     }
 
     public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
