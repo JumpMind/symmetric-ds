@@ -156,7 +156,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
     
     public int countOutgoingBatches(List<String> channels,
-            OutgoingBatch.Status[] statuses) {
+            List<OutgoingBatch.Status> statuses) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));        
@@ -164,7 +164,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
     
     public List<OutgoingBatch> listOutgoingBatches(List<String> channels,
-            OutgoingBatch.Status[] statuses, long startAtBatchId, boolean descending, final int rowsExpected) {
+            List<OutgoingBatch.Status> statuses, long startAtBatchId, boolean descending, final int rowsExpected) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
@@ -195,8 +195,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return list;
     }
 
-    protected List<String> toStringList(OutgoingBatch.Status[] statuses) {
-        List<String> statusStrings = new ArrayList<String>(statuses.length);
+    protected List<String> toStringList(List<OutgoingBatch.Status> statuses) {
+        List<String> statusStrings = new ArrayList<String>(statuses.size());
         for (Status status : statuses) {
             statusStrings.add(status.name());
         }
