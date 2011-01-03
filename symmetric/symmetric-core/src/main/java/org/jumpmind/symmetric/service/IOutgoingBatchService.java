@@ -62,9 +62,9 @@ public interface IOutgoingBatchService {
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
     
     public int countOutgoingBatches(List<String> channels,
-            OutgoingBatch.Status[] statuses);
+            List<OutgoingBatch.Status> statuses);
     
     public List<OutgoingBatch> listOutgoingBatches(List<String> channels,
-            OutgoingBatch.Status[] statuses, long startAtBatchId, boolean descending, int rowsExpected);
+            List<OutgoingBatch.Status> statuses, long startAtBatchId, boolean descending, int rowsExpected);
 
 }
