@@ -39,9 +39,9 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -49,7 +49,11 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -138,7 +142,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public OutgoingBatch findOutgoingBatch(long batchId) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
-                getSql("findOutgoingBatchSql"), new Object[] { batchId },
+                getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"), new Object[] { batchId },
                 new int[] { Types.INTEGER }, new OutgoingBatchMapper());
         if (list != null && list.size() > 0) {
             return list.get(0);
@@ -149,6 +153,55 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public int countOutgoingBatchesInError() {
         return jdbcTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
+    }
+    
+    public int countOutgoingBatches(List<String> channels,
+            OutgoingBatch.Status[] statuses) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("CHANNELS", channels);
+        params.put("STATUSES", toStringList(statuses));        
+        return new SimpleJdbcTemplate(dataSource).queryForInt(getSql("selectCountBatchesPrefixSql","selectOutgoingBatchByChannelAndStatusSql"), params);
+    }
+    
+    public List<OutgoingBatch> listOutgoingBatches(List<String> channels,
+            OutgoingBatch.Status[] statuses, long startAtBatchId, boolean descending, final int rowsExpected) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("CHANNELS", channels);
+        params.put("STATUSES", toStringList(statuses));
+        String startAtBatchIdSql = null;
+        if (startAtBatchId > 0) {
+            params.put("BATCH_ID", startAtBatchId);
+            startAtBatchIdSql = descending ? " and batch_id < :BATCH_ID "
+                    : " and batch_id > :BATCH_ID ";
+        }
+        String orderBy = descending ? " order by batch_id desc" : " order by batch_id asc";
+        
+        NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(dataSource);
+        ResultSetExtractor<List<OutgoingBatch>> extractor = new ResultSetExtractor<List<OutgoingBatch>>() {
+            OutgoingBatchMapper rowMapper = new OutgoingBatchMapper();
+            public List<OutgoingBatch> extractData(ResultSet rs) throws SQLException, DataAccessException {
+                List<OutgoingBatch> list = new ArrayList<OutgoingBatch>(rowsExpected);
+                int count = 0;
+                while (rs.next() && count < rowsExpected) {
+                    list.add(rowMapper.mapRow(rs, ++count));
+                }
+                return list;
+            }
+        };
+        
+        List<OutgoingBatch> list = template.query(
+                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchByChannelAndStatusSql",
+                        startAtBatchIdSql, orderBy), new MapSqlParameterSource(params), extractor);
+        return list;
+    }
+
+    protected List<String> toStringList(OutgoingBatch.Status[] statuses) {
+        List<String> statusStrings = new ArrayList<String>(statuses.length);
+        for (Status status : statuses) {
+            statusStrings.add(status.name());
+        }
+        return statusStrings;
+
     }
 
     /**
@@ -161,7 +214,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         long ts = System.currentTimeMillis();
 
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
-                getSql("selectOutgoingBatchSql"), new Object[] { node.getNodeId(),
+                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"), new Object[] { node.getNodeId(),
                         OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.QY.toString(),
                         OutgoingBatch.Status.SE.toString(), OutgoingBatch.Status.LD.toString(),
                         OutgoingBatch.Status.ER.toString() }, new OutgoingBatchMapper());
@@ -195,7 +248,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId) {
         OutgoingBatches batches = new OutgoingBatches();
-        batches.setBatches(jdbcTemplate.query(getSql("selectOutgoingBatchRangeSql"), new Object[] {
+        batches.setBatches(jdbcTemplate.query(getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchRangeSql"), new Object[] {
                 startBatchId, endBatchId }, new OutgoingBatchMapper()));
         return batches;
     }
@@ -203,7 +256,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public OutgoingBatches getOutgoingBatchErrors(int maxRows) {
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(jdbcTemplate.query(new MaxRowsStatementCreator(
-                getSql("selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper()));
+                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper()));
         return batches;
     }
 

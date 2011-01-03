@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.model;
 
@@ -25,7 +25,12 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 
+ * Used for tracking the sending a collection of data to a node in the system. A
+ * new outgoing_batch is created and given a status of 'NE'. After sending the
+ * outgoing_batch to its target node, the status becomes 'SE'. The node responds
+ * with either a success status of 'OK' or an error status of 'ER'. An error
+ * while sending to the node also results in an error status of 'ER' regardless
+ * of whether the node sends that acknowledgement.
  */
 public class OutgoingBatch implements Serializable {
 
@@ -42,9 +47,9 @@ public class OutgoingBatch implements Serializable {
     private String channelId;
 
     private Status status = Status.RT;
-    
+
     private boolean loadFlag;
-    
+
     private boolean errorFlag;
 
     private long routerMillis;
@@ -54,27 +59,27 @@ public class OutgoingBatch implements Serializable {
     private long filterMillis;
 
     private long loadMillis;
-    
+
     private long extractMillis;
 
     private long byteCount;
 
     private long sentCount;
-    
+
     private long extractCount;
-    
+
     private long loadCount;
 
     private long dataEventCount;
-    
+
     private long reloadEventCount;
-    
+
     private long insertEventCount;
-    
+
     private long updateEventCount;
-    
+
     private long deleteEventCount;
-    
+
     private long otherEventCount;
 
     private long failedDataId;
@@ -100,7 +105,7 @@ public class OutgoingBatch implements Serializable {
         this.status = status;
         this.createTime = new Date();
     }
-    
+
     public void resetStats() {
         this.dataEventCount = 0;
         this.byteCount = 0;
@@ -109,11 +114,11 @@ public class OutgoingBatch implements Serializable {
         this.loadMillis = 0;
         this.networkMillis = 0;
     }
-    
+
     public void setErrorFlag(boolean errorFlag) {
         this.errorFlag = errorFlag;
     }
-    
+
     public boolean isErrorFlag() {
         return errorFlag;
     }
@@ -121,11 +126,11 @@ public class OutgoingBatch implements Serializable {
     public void setLoadFlag(boolean loadFlag) {
         this.loadFlag = loadFlag;
     }
-    
+
     public boolean isLoadFlag() {
         return loadFlag;
     }
-    
+
     public void setSentCount(long sentCount) {
         this.sentCount = sentCount;
     }
@@ -133,22 +138,22 @@ public class OutgoingBatch implements Serializable {
     public long getSentCount() {
         return sentCount;
     }
-    
+
     public void setExtractCount(long extractCount) {
         this.extractCount = extractCount;
     }
-    
+
     public long getExtractCount() {
         return extractCount;
     }
-    
+
     public void setLoadCount(long loadCount) {
         this.loadCount = loadCount;
     }
-    
+
     public long getLoadCount() {
         return loadCount;
-    }        
+    }
 
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;
@@ -197,11 +202,11 @@ public class OutgoingBatch implements Serializable {
     public long getRouterMillis() {
         return routerMillis;
     }
-    
+
     public void setUpdateEventCount(long updateEventCount) {
         this.updateEventCount = updateEventCount;
     }
-    
+
     public long getUpdateEventCount() {
         return updateEventCount;
     }
@@ -209,11 +214,11 @@ public class OutgoingBatch implements Serializable {
     public void setDeleteEventCount(long deleteEventCount) {
         this.deleteEventCount = deleteEventCount;
     }
-    
+
     public long getDeleteEventCount() {
         return deleteEventCount;
     }
-    
+
     public void incrementEventCount(DataEventType type) {
         switch (type) {
         case RELOAD:
@@ -233,31 +238,31 @@ public class OutgoingBatch implements Serializable {
             break;
         }
     }
-    
+
     public void setInsertEventCount(long insertEventCount) {
         this.insertEventCount = insertEventCount;
     }
-    
+
     public long getInsertEventCount() {
         return insertEventCount;
     }
-    
+
     public void setOtherEventCount(long otherEventCount) {
         this.otherEventCount = otherEventCount;
     }
-    
+
     public long getOtherEventCount() {
         return otherEventCount;
     }
-    
+
     public void setReloadEventCount(long reloadEventCount) {
         this.reloadEventCount = reloadEventCount;
     }
-    
+
     public long getReloadEventCount() {
         return reloadEventCount;
     }
-    
+
     public void setRouterMillis(long routerMillis) {
         this.routerMillis = routerMillis;
     }
@@ -301,19 +306,19 @@ public class OutgoingBatch implements Serializable {
     public void setDataEventCount(long dataEventCount) {
         this.dataEventCount = dataEventCount;
     }
-    
+
     public void setExtractMillis(long extractMillis) {
         this.extractMillis = extractMillis;
     }
-    
+
     public long getExtractMillis() {
         return extractMillis;
     }
-    
+
     public void incrementDataEventCount() {
         this.dataEventCount++;
     }
-    
+
     public void incrementByteCount(int size) {
         this.byteCount += size;
     }
