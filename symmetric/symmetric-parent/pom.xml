@@ -412,6 +412,12 @@
                 <groupId>commons-betwixt</groupId>
                 <artifactId>commons-betwixt</artifactId>
                 <version>0.8</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-collections</groupId>
+                        <artifactId>commons-collections</artifactId>
+                    </exclusion>
+                </exclusions>                
             </dependency>
             <dependency>
                 <groupId>commons-beanutils</groupId>
