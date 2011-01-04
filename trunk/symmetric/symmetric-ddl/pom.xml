@@ -69,8 +69,12 @@
         </dependency>
         <dependency>
             <groupId>commons-betwixt</groupId>
-            <artifactId>commons-betwixt</artifactId>
+            <artifactId>commons-betwixt</artifactId>            
         </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+        </dependency>             
         <dependency>
             <groupId>oro</groupId>
             <artifactId>oro</artifactId>
