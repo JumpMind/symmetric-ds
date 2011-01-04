@@ -155,17 +155,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return jdbcTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
     }
     
-    public int countOutgoingBatches(List<String> channels,
+    public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses) {
         Map<String, Object> params = new HashMap<String, Object>();
+        params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));        
         return new SimpleJdbcTemplate(dataSource).queryForInt(getSql("selectCountBatchesPrefixSql","selectOutgoingBatchByChannelAndStatusSql"), params);
     }
     
-    public List<OutgoingBatch> listOutgoingBatches(List<String> channels,
+    public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, long startAtBatchId, boolean descending, final int rowsExpected) {
         Map<String, Object> params = new HashMap<String, Object>();
+        params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
         String startAtBatchIdSql = null;

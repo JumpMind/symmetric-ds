@@ -65,7 +65,7 @@
     </entry>
     <entry key="findEnabledNodesFromNodeGroupSql">
       <value>
-        where node_group_id = ? and sync_enabled=1
+        where node_group_id = ? and sync_enabled=1 order by node_id
       </value>      
     </entry>    
     <entry key="findNodesWithOpenRegistrationSql">
