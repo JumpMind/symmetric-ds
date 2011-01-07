@@ -24,8 +24,6 @@ import java.util.Date;
 
 /**
  * This is the data that changed due to a data sync trigger firing.
- *
- * 
  */
 public class Data extends AbstractCsvData implements Serializable {
     
