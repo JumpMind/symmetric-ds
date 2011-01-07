@@ -67,6 +67,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtractListener;
+import org.jumpmind.symmetric.service.IModelRetrievalHandler;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
@@ -590,46 +591,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch) {
-        jdbcTemplate.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                ResultSet rs = null;
-                PreparedStatement ps = null;
-                boolean autoCommitFlag = conn.getAutoCommit();
-                try {
-                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
-                        conn.setAutoCommit(false);
-                    }
-                    String sql = dbDialect.massageDataExtractionSql(getSql("selectEventDataToExtractSql"), 
-                            batch != null ? configurationService.getNodeChannel(batch.getChannelId(), false).getChannel() : null);
-                    ps = conn.prepareStatement(sql,
-                            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                    ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-                    ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                    ps.setLong(1, batch.getBatchId());
-                    long ts = System.currentTimeMillis();
-                    rs = ps.executeQuery();
-                    long executeTimeInMs = System.currentTimeMillis()-ts;
-                    if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-                        log.warn("LongRunningOperation", "selecting data to extract", executeTimeInMs);
-                    }
-                    while (rs.next()) {
-                        try {
-                            handler.dataExtracted(dataService.readData(rs), rs.getString(13));
-                        } catch (RuntimeException e) {
-                            throw e;
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                } finally {
-                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
-                        conn.commit();
-                        conn.setAutoCommit(autoCommitFlag);
-                    }
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(ps);
-                }
-                return null;
+        dataService.handleDataSelect(batch.getBatchId(), -1, batch.getChannelId(), false, new IModelRetrievalHandler<Data, String>() {            
+            public boolean retrieved(Data data, String routerId, int count) throws IOException {
+                handler.dataExtracted(data, routerId);
+                return true;
             }
         });
     }

@@ -37,8 +37,10 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+/**
+ * This service provides an API to access and update {@link Data}.
+ */
 public interface IDataService {
-
     
     public String reloadNode(String nodeId);
 
@@ -51,7 +53,7 @@ public interface IDataService {
 
     public void insertReloadEvents(Node targetNode);
 
-    public void insertReloadEvent(final Node targetNode, final TriggerRouter trigger);
+    public void insertReloadEvent(Node targetNode, TriggerRouter trigger);
     
     public void sendScript(String nodeId, String script, boolean isLoad);
 
@@ -62,13 +64,13 @@ public interface IDataService {
 
     public void insertHeartbeatEvent(Node node, boolean isReload);
 
-    public long insertData(final Data data);
+    public long insertData(Data data);
 
     public void insertDataEvent(long dataId, long batchId, String routerId);
 
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId);
 
-    public void insertDataEvents(JdbcTemplate template, final List<DataEvent> events);
+    public void insertDataEvents(JdbcTemplate template, List<DataEvent> events);
     
     public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, DataEventType eventType, String routerId, boolean isLoad);
 
@@ -80,7 +82,7 @@ public interface IDataService {
 
     public void insertSqlEvent(Node targetNode, Trigger trigger, String sql, boolean isLoad);
 
-    public void insertSqlEvent(final Node targetNode, String sql, boolean isLoad);
+    public void insertSqlEvent(Node targetNode, String sql, boolean isLoad);
 
     public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, String xml, boolean isLoad);
     
@@ -118,6 +120,13 @@ public interface IDataService {
     public boolean removeReloadListener(IReloadListener listener);
 
     public Data readData(ResultSet results) throws SQLException;
+    
+    public List<Integer> listDataIds(long batchId, boolean descending);
+    
+    public List<Data> listData(long batchId, long startDataId, String channelId, boolean descending, int maxRowsToRetrieve);
+    
+    public void handleDataSelect(final long batchId, final long startDataId, final String channelId, final boolean descending,  
+            final IModelRetrievalHandler<Data, String> handler);
     
     public void insertDataGap(DataGap gap);
     

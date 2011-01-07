@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -59,12 +60,13 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IModelRetrievalHandler;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
@@ -74,16 +76,18 @@ import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 
-
 /**
- * 
+ * @see IDataService
  */
 public class DataService extends AbstractService implements IDataService {
 
@@ -734,7 +738,79 @@ public class DataService extends AbstractService implements IDataService {
             return false;
         }
     }
+    
+    private final String getOrderByDataId(boolean descending) {
+        return descending ? " order by d.data_id desc" : "order by d.data_id asc";
+    }
+    
+    public List<Integer> listDataIds(long batchId, boolean descending) {
+        return jdbcTemplate.query(getSql("selectEventDataIdsSql", getOrderByDataId(descending)), new Object[] {batchId}, new SingleColumnRowMapper<Integer>());
+    }
+    
+    public List<Data> listData(long batchId, long startDataId, String channelId, boolean descending, final int maxRowsToRetrieve) {
+        final List<Data> list = new ArrayList<Data>(maxRowsToRetrieve);
+        handleDataSelect(batchId, startDataId, channelId, descending, new IModelRetrievalHandler<Data, String>() {
+            public boolean retrieved(Data data, String routerId, int count) throws IOException {
+                list.add(data);
+                return count < maxRowsToRetrieve;
+            }
+        });
+        return list;
+    }
 
+    public void handleDataSelect(final long batchId, final long startDataId, final String channelId, final boolean descending,  
+            final IModelRetrievalHandler<Data, String> handler) {
+        jdbcTemplate.execute(new ConnectionCallback<Object>() {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                ResultSet rs = null;
+                PreparedStatement ps = null;
+                boolean autoCommitFlag = conn.getAutoCommit();
+                try {
+                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                        conn.setAutoCommit(false);
+                    }
+                    String orderBy = getOrderByDataId(descending);
+                    String startAtDataIdSql = startDataId >= 0l ? (descending ? " and d.data_id <= ? " : " and d.data_id >= ? ") : "";
+                    String sql = dbDialect.massageDataExtractionSql(getSql("selectEventDataToExtractSql", startAtDataIdSql, orderBy), 
+                            configurationService.getNodeChannel(channelId, false).getChannel());
+                    ps = conn.prepareStatement(sql,
+                            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                    ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+                    ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                    ps.setLong(1, batchId);
+                    if (StringUtils.isNotBlank(startAtDataIdSql)) {
+                        ps.setLong(2, startDataId);
+                    }
+                    long ts = System.currentTimeMillis();
+                    rs = ps.executeQuery();
+                    long executeTimeInMs = System.currentTimeMillis()-ts;
+                    if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+                        log.warn("LongRunningOperation", "selecting data to extract", executeTimeInMs);
+                    }
+                    int count = 0;
+                    boolean continueReading = true;
+                    while (rs.next() && continueReading) {
+                        try {
+                            continueReading = handler.retrieved(readData(rs), rs.getString(13), ++count);
+                        } catch (RuntimeException e) {
+                            throw e;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } finally {
+                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                        conn.commit();
+                        conn.setAutoCommit(autoCommitFlag);
+                    }
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(ps);
+                }
+                return null;
+            }
+        });
+    }
+    
     public Data readData(ResultSet results) throws SQLException {
         Data data = new Data();
         data.setDataId(results.getLong(1));
