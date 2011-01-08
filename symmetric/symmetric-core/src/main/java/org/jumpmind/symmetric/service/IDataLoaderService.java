@@ -37,7 +37,8 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.ITransportManager;
 
 /**
- * ,
+ * This service provides an API to load data into a SymmetricDS node's
+ * database from a transport
  */
 public interface IDataLoaderService {
     
