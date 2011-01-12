@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.ddl.TestPlatformBase;
  * 
  * @version $Revision: 279421 $
  */
-public class TestPlatformImplBase extends TestPlatformBase 
+abstract public class TestPlatformImplBase extends TestPlatformBase 
 {
     /** The tested model. */
     private static final String TESTED_MODEL =
