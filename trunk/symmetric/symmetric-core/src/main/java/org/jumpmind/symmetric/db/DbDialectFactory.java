@@ -27,6 +27,8 @@ import java.sql.SQLException;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.ddl.PlatformFactory;
+import org.jumpmind.symmetric.ddl.PlatformUtils;
 import org.jumpmind.symmetric.ddl.platform.db2.Db2Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
@@ -42,7 +44,6 @@ import org.jumpmind.symmetric.ddl.platform.oracle.Oracle9Platform;
 import org.jumpmind.symmetric.ddl.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.symmetric.ddl.platform.sqlite.SqLitePlatform;
 import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
-import org.jumpmind.symmetric.ddlutils.PlatformFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
@@ -71,7 +72,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
 
         waitForAvailableDatabase();
 
-        Platform pf = PlatformFactory.getPlatform(jdbcTemplate.getDataSource());
+        Platform pf = PlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());        
 
         AbstractDbDialect dialect = null;
 
@@ -100,12 +101,14 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         } else if (pf instanceof InformixPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("informixDialect");
         } else if (pf instanceof Db2Platform) {
-            String currentDbProductVersion = PlatformFactory.getDatabaseProductVersion(jdbcTemplate
+            String currentDbProductVersion = PlatformUtils.getDatabaseProductVersion(jdbcTemplate
                     .getDataSource());
             if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
                 dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
             } else {
-                if (PlatformFactory.getDbMajorVersion(jdbcTemplate.getDataSource()) < 9 || (PlatformFactory.getDbMajorVersion(jdbcTemplate.getDataSource()) == 9 && PlatformFactory.getDbMinorVersion(jdbcTemplate.getDataSource()) < 5)) {
+                int dbMajorVersion = PlatformUtils.getDatabaseMajorVersion(jdbcTemplate.getDataSource());
+                int dbMinorVersion = PlatformUtils.getDatabaseMinorVersion(jdbcTemplate.getDataSource());
+                if (dbMajorVersion < 9 || (dbMajorVersion == 9 && dbMinorVersion < 5)) {
                     dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
                 } else {
                     dialect = (AbstractDbDialect) beanFactory.getBean("db2v9Dialect");

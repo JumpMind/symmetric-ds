@@ -110,7 +110,7 @@ public class PlatformFactory
      */
     public static synchronized Platform createNewPlatformInstance(String jdbcDriver, String jdbcConnectionUrl) throws DdlUtilsException
     {
-        return createNewPlatformInstance(new PlatformUtils().determineDatabaseType(jdbcDriver, jdbcConnectionUrl));
+        return createNewPlatformInstance(PlatformUtils.determineDatabaseType(jdbcDriver, jdbcConnectionUrl));
     }
 
     /**
@@ -124,30 +124,11 @@ public class PlatformFactory
      */
     public static synchronized Platform createNewPlatformInstance(DataSource dataSource) throws DdlUtilsException
     {
-        Platform platform = createNewPlatformInstance(new PlatformUtils().determineDatabaseType(dataSource));
-
+        Platform platform = createNewPlatformInstance(PlatformUtils.determineDatabaseNameVersion(dataSource));
+        if (platform == null) {
+            platform = createNewPlatformInstance(PlatformUtils.determineDatabaseType(dataSource));
+        }
         platform.setDataSource(dataSource);
-        return platform;
-    }
-
-    /**
-     * Creates a new platform for the specified database. This is a shortcut method that uses
-     * {@link PlatformUtils#determineDatabaseType(DataSource)} to determine the parameter
-     * for {@link #createNewPlatformInstance(String)}. Note that this method sets the data source
-     * at the returned platform instance (method {@link Platform#setDataSource(DataSource)}).
-     * 
-     * @param dataSource The data source for the database
-     * @param username   The user name to use for connecting to the database
-     * @param password   The password to use for connecting to the database
-     * @return The platform or <code>null</code> if the database is not supported
-     */
-    public static synchronized Platform createNewPlatformInstance(DataSource dataSource, String username, String password) throws DdlUtilsException
-    {
-        Platform platform = createNewPlatformInstance(new PlatformUtils().determineDatabaseType(dataSource, username, password));
-
-        platform.setDataSource(dataSource);
-        platform.setUsername(username);
-        platform.setPassword(password);
         return platform;
     }
 
@@ -197,7 +178,7 @@ public class PlatformFactory
         addPlatform(_platforms, AxionPlatform.DATABASENAME,       AxionPlatform.class);
         addPlatform(_platforms, CloudscapePlatform.DATABASENAME,  CloudscapePlatform.class);
         addPlatform(_platforms, Db2Platform.DATABASENAME,         Db2Platform.class);
-        addPlatform(_platforms, Db2v8Platform.DATABASENAME,       Db2v8Platform.class);
+        addPlatform(_platforms, Db2v8Platform.DATABASENAMES,       Db2v8Platform.class);
         addPlatform(_platforms, DerbyPlatform.DATABASENAME,       DerbyPlatform.class);
         addPlatform(_platforms, FirebirdPlatform.DATABASENAME,    FirebirdPlatform.class);
         addPlatform(_platforms, HsqlDbPlatform.DATABASENAME,      HsqlDbPlatform.class);
@@ -224,6 +205,13 @@ public class PlatformFactory
      * @param platformName  The platform name
      * @param platformClass The platform class which must implement the {@link Platform} interface
      */
+    private static synchronized void addPlatform(Map<String,Class<? extends Platform>> platformMap, String[] platformNames, Class<? extends Platform> platformClass)
+    {
+        for (String platformName : platformNames) {
+            addPlatform(platformMap, platformName, platformClass);
+        }
+    }
+    
     private static synchronized void addPlatform(Map<String,Class<? extends Platform>> platformMap, String platformName, Class<? extends Platform> platformClass)
     {
         if (!Platform.class.isAssignableFrom(platformClass))
@@ -231,5 +219,6 @@ public class PlatformFactory
             throw new IllegalArgumentException("Cannot register class "+platformClass.getName()+" because it does not implement the "+Platform.class.getName()+" interface");
         }
         platformMap.put(platformName.toLowerCase(), platformClass);        
+
     }
 }
