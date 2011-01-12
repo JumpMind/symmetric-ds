@@ -36,14 +36,15 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!-- TODO Need user configuration and review all tests for all platforms -->
-                    <skip>true</skip>
                     <systemProperties>
                         <property>
                             <name>jdbc.properties.file</name>
                             <value>${jdbc.properties.file}</value>
                         </property>
                     </systemProperties>
+                    <excludes>
+                        <exclude>**/TestPlatform*.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
