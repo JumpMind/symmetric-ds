@@ -51,6 +51,9 @@ import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
  */
 public class PlatformUtils
 {
+    private PlatformUtils() {
+    }
+    
     // Extended drivers that support more than one database
 
     /** The DataDirect Connect DB2 jdbc driver. */
@@ -126,14 +129,14 @@ public class PlatformUtils
     public static final String JDBC_SUBPROTOCOL_JTDS_SYBASE               = "jtds:sybase";
 
     /** Maps the sub-protocl part of a jdbc connection url to a OJB platform name. */
-    private HashMap<String,String> jdbcSubProtocolToPlatform = new HashMap<String,String>();
+    private static HashMap<String,String> jdbcSubProtocolToPlatform = new HashMap<String,String>();
     /** Maps the jdbc driver name to a OJB platform name. */
-    private HashMap<String,String> jdbcDriverToPlatform      = new HashMap<String,String>();
+    private static HashMap<String,String> jdbcDriverToPlatform      = new HashMap<String,String>();
 
     /**
      * Creates a new instance.
      */
-    public PlatformUtils()
+    static
     {
         // Note that currently Sapdb and MaxDB have equal subprotocols and
         // drivers so we have no means to distinguish them
@@ -223,37 +226,14 @@ public class PlatformUtils
      * @param dataSource The data source
      * @return The database type or <code>null</code> if the database type couldn't be determined
      */
-    public String determineDatabaseType(DataSource dataSource) throws DatabaseOperationException
-    {
-        return determineDatabaseType(dataSource, null, null);
-    }
-
-    /**
-     * Tries to determine the database type for the given data source. Note that this will establish
-     * a connection to the database.
-     * 
-     * @param dataSource The data source
-     * @param username   The user name to use for connecting to the database
-     * @param password   The password to use for connecting to the database
-     * @return The database type or <code>null</code> if the database type couldn't be determined
-     */
-    public String determineDatabaseType(DataSource dataSource, String username, String password) throws DatabaseOperationException
+    public static String determineDatabaseType(DataSource dataSource) throws DatabaseOperationException
     {
         Connection connection = null;
 
         try
         {
-            if (username != null)
-            {
-                connection = dataSource.getConnection(username, password);
-            }
-            else
-            {
-                connection = dataSource.getConnection();
-            }
-            
+            connection = dataSource.getConnection();
             DatabaseMetaData metaData = connection.getMetaData();
-
             return determineDatabaseType(metaData.getDriverName(), metaData.getURL());
         }
         catch (SQLException ex)
@@ -275,6 +255,95 @@ public class PlatformUtils
             }
         }
     }
+    
+    public static String getDatabaseProductVersion(DataSource dataSource) {        
+        Connection connection = null;
+
+        try {
+            connection = dataSource.getConnection();
+            DatabaseMetaData metaData = connection.getMetaData();
+            return metaData.getDatabaseProductVersion();
+        } catch (SQLException ex) {
+            throw new DatabaseOperationException("Error while reading the database metadata: "
+                    + ex.getMessage(), ex);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    // we ignore this one
+                }
+            }
+        }
+    }
+    
+    public static int getDatabaseMajorVersion(DataSource dataSource) {        
+        Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
+            DatabaseMetaData metaData = connection.getMetaData();
+            return metaData.getDatabaseMajorVersion();
+        } catch (SQLException ex) {
+            throw new DatabaseOperationException("Error while reading the database metadata: "
+                    + ex.getMessage(), ex);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    // we ignore this one
+                }
+            }
+        }
+    }
+    
+    public static int getDatabaseMinorVersion(DataSource dataSource) {        
+        Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
+            DatabaseMetaData metaData = connection.getMetaData();
+            return metaData.getDatabaseMinorVersion();
+        } catch (SQLException ex) {
+            throw new DatabaseOperationException("Error while reading the database metadata: "
+                    + ex.getMessage(), ex);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    // we ignore this one
+                }
+            }
+        }
+    }    
+    
+    public static String determineDatabaseNameVersion(DataSource dataSource) throws DatabaseOperationException {
+        Connection connection = null;
+
+        try {
+            connection = dataSource.getConnection();
+            DatabaseMetaData metaData = connection.getMetaData();
+            String productName = metaData.getDatabaseProductName();
+            int majorVersion = metaData.getDatabaseMajorVersion();
+            String productString = productName;
+            if (majorVersion > 0) {
+                productString += majorVersion;
+            }
+
+            return productString;
+        } catch (SQLException ex) {
+            throw new DatabaseOperationException("Error while reading the database metadata: "
+                    + ex.getMessage(), ex);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    // we ignore this one
+                }
+            }
+        }
+    }    
 
     /**
      * Tries to determine the database type for the given jdbc driver and connection url.
@@ -283,7 +352,7 @@ public class PlatformUtils
      * @param jdbcConnectionUrl The connection url
      * @return The database type or <code>null</code> if the database type couldn't be determined
      */
-    public String determineDatabaseType(String driverName, String jdbcConnectionUrl)
+    public static String determineDatabaseType(String driverName, String jdbcConnectionUrl)
     {
         if (jdbcDriverToPlatform.containsKey(driverName))
         {

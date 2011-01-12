@@ -85,6 +85,8 @@ public class MSSqlPlatform extends PlatformImplBase
 
         setSqlBuilder(new MSSqlBuilder(this));
         setModelReader(new MSSqlModelReader(this));
+        
+        setDelimitedIdentifierModeOn(true);
     }
 
     /**
