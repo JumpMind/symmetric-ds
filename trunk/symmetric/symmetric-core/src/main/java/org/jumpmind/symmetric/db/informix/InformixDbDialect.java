@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Trigger;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -61,13 +62,13 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
                 new Object[] { triggerName.toLowerCase() }) > 0;
     }
 
-    public void disableSyncTriggers(String nodeId) {
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
         jdbcTemplate.queryForList("select " + tablePrefix + "_triggers_set_disabled('t'), "
                 + tablePrefix + "_node_set_disabled(?) from sysmaster:sysdual",
                 new Object[] { nodeId });
     }
 
-    public void enableSyncTriggers() {
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
         jdbcTemplate.queryForList("select " + tablePrefix + "_triggers_set_disabled('f'), "
                 + tablePrefix + "_node_set_disabled(null) from sysmaster:sysdual");
     }

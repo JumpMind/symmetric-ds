@@ -193,7 +193,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return tablePrefix + "_pkg";
     }
 
-    public void disableSyncTriggers(String nodeId) {
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
         jdbcTemplate.update(String.format("call %s.setValue(1)", getSymmetricPackageName()));
         if (nodeId != null) {
             jdbcTemplate.update(String.format("call %s.setNodeValue('" + nodeId + "')",
@@ -201,7 +201,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void enableSyncTriggers() {
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
         jdbcTemplate.update(String.format("call %s.setValue(null)", getSymmetricPackageName()));
         jdbcTemplate.update(String.format("call %s.setNodeValue(null)", getSymmetricPackageName()));
     }

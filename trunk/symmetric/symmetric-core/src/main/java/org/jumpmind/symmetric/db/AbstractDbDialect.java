@@ -31,6 +31,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -88,9 +89,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
@@ -131,8 +129,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected Boolean supportsGetGeneratedKeys;
 
-    protected TransactionTemplate transactionTemplate;
-
     protected String databaseName;
 
     protected int databaseMajorVersion;
@@ -150,6 +146,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected LobHandler lobHandler;
 
     protected boolean supportsTransactionViews = false;
+    
+    protected int queryTimeoutInSeconds = 300;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -179,10 +177,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
 
-    public void prepareTableForDataLoad(Table table) {
+    public void prepareTableForDataLoad(JdbcTemplate jdbcTemplate, Table table) {
     }
 
-    public void cleanupAfterDataLoad(Table table) {
+    public void cleanupAfterDataLoad(JdbcTemplate jdbcTemplate, Table table) {
     }
 
     protected boolean allowsNullForIdentityColumn() {
@@ -218,6 +216,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
         log.info("DbDialectInUse", this.getClass().getName());
         this.jdbcTemplate = jdbcTemplate;
+        this.queryTimeoutInSeconds = queryTimeout;
         this.jdbcTemplate.setQueryTimeout(queryTimeout);        
         this.platform = pf;
         this.identifierQuoteString = "\"";
@@ -231,6 +230,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 return null;
             }
         });
+    }
+    
+    public int getQueryTimeoutInSeconds() {
+        return queryTimeoutInSeconds;
     }
 
     abstract protected void initTablesAndFunctionsForSpecificDialect();
@@ -1275,38 +1278,38 @@ abstract public class AbstractDbDialect implements IDbDialect {
         });
     }
 
-    public Object createSavepoint() {
-        return transactionTemplate.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus transactionstatus) {
-                return transactionstatus.createSavepoint();
+    public Object createSavepoint(JdbcTemplate jdbcTemplate) {
+        return jdbcTemplate.execute(new ConnectionCallback<Object>() {
+            public Object doInConnection(Connection con) throws SQLException, DataAccessException {                
+                return con.setSavepoint();
             }
         });
     }
 
-    public Object createSavepointForFallback() {
+    public Object createSavepointForFallback(JdbcTemplate jdbcTemplate) {
         if (requiresSavepointForFallback()) {
-            return createSavepoint();
+            return createSavepoint(jdbcTemplate);
         }
         return null;
     }
 
-    public void rollbackToSavepoint(final Object savepoint) {
-        if (savepoint != null) {
-            transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-                @Override
-                protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
-                    transactionstatus.rollbackToSavepoint(savepoint);
+    public void rollbackToSavepoint(JdbcTemplate jdbcTemplate, final Object savepoint) {
+        if (savepoint != null && savepoint instanceof Savepoint) {
+            jdbcTemplate.execute(new ConnectionCallback<Object>() {
+                public Object doInConnection(Connection con) throws SQLException, DataAccessException {                
+                    con.rollback((Savepoint)savepoint);
+                    return null;
                 }
             });
         }
     }
 
-    public void releaseSavepoint(final Object savepoint) {
-        if (savepoint != null) {
-            transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-                @Override
-                protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
-                    transactionstatus.releaseSavepoint(savepoint);
+    public void releaseSavepoint(JdbcTemplate jdbcTemplate, final Object savepoint) {
+        if (savepoint != null && savepoint instanceof Savepoint) {
+            jdbcTemplate.execute(new ConnectionCallback<Object>() {
+                public Object doInConnection(Connection con) throws SQLException, DataAccessException {                
+                    con.releaseSavepoint((Savepoint)savepoint);
+                    return null;
                 }
             });
         }
@@ -1316,8 +1319,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return false;
     }
 
-    public void disableSyncTriggers() {
-        disableSyncTriggers(null);
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate) {
+        disableSyncTriggers(jdbcTemplate, null);
     }
 
     public boolean supportsTransactionId() {
@@ -1358,10 +1361,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void setStreamingResultsFetchSize(int streamingResultsFetchSize) {
         this.streamingResultsFetchSize = streamingResultsFetchSize;
-    }
-
-    public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
-        this.transactionTemplate = transactionTemplate;
     }
 
     public String getEngineName() {

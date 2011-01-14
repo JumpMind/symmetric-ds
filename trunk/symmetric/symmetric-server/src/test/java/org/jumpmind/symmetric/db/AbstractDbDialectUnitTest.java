@@ -24,6 +24,7 @@ import junit.framework.Assert;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class AbstractDbDialectUnitTest {
 
@@ -188,10 +189,10 @@ public class AbstractDbDialectUnitTest {
                 return null;
             }
 
-            public void enableSyncTriggers() {
+            public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
             }
 
-            public void disableSyncTriggers(String nodeId) {
+            public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
             }
 
             @Override

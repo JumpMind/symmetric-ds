@@ -26,6 +26,7 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * ,
@@ -74,10 +75,10 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
         return BinaryEncoding.HEX;
     }
 
-    public void disableSyncTriggers(String nodeId) {
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
     }
 
-    public void enableSyncTriggers() {
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
     }
 
     public String getSyncTriggersExpression() {

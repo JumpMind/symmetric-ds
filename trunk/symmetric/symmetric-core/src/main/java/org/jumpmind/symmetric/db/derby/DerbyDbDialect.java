@@ -26,6 +26,7 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * 
@@ -63,7 +64,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return BinaryEncoding.BASE64;
     }
 
-    public void disableSyncTriggers(String nodeId) {
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
         jdbcTemplate.queryForInt(String.format("values %s_sync_triggers_set_disabled(1)", tablePrefix));
         if (nodeId != null) {
             jdbcTemplate.queryForObject(String.format("values %s_sync_node_set_disabled('%s')", tablePrefix, nodeId),
@@ -71,7 +72,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void enableSyncTriggers() {
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
         jdbcTemplate.queryForInt(String.format("values %s_sync_triggers_set_disabled(0)", tablePrefix));
         jdbcTemplate.queryForObject(String.format("values %s_sync_node_set_disabled(null)", tablePrefix), String.class);
     }

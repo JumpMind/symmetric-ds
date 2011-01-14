@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.db;
 
 import java.util.Date;
@@ -42,7 +40,7 @@ import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 /**
- * 
+ * A dialect is the interface to insulate SymmetricDS from database implmentation specifics. 
  */
 public interface IDbDialect {
 
@@ -65,14 +63,15 @@ public interface IDbDialect {
      * giving the dialect an opportunity to do any pre loading work. Only one
      * table is active at any one point.
      */
-    public void prepareTableForDataLoad(Table table);
+    public void prepareTableForDataLoad(JdbcTemplate jdbcTemplate, Table table);
 
     /**
      * This is called by the data loader each time the table context changes
      * away from a table or when the the data loader is closed, giving the
      * dialect an opportunity to do any post loading work for the given table.
+     * @param jdbcTemplate TODO
      */
-    public void cleanupAfterDataLoad(Table table);
+    public void cleanupAfterDataLoad(JdbcTemplate jdbcTemplate, Table table);
 
     public Database readPlatformDatabase(boolean includeSymmetricTables);
     
@@ -148,6 +147,8 @@ public interface IDbDialect {
 
     public boolean supportsTransactionId();
     
+    public int getQueryTimeoutInSeconds();
+    
     /**
      * Use this call to check to see if the implemented database dialect supports 
      * a way to check on pending database transactions.
@@ -156,13 +157,13 @@ public interface IDbDialect {
 
     public boolean requiresSavepointForFallback();
 
-    public Object createSavepoint();
+    public Object createSavepoint(JdbcTemplate jdbcTemplate);
 
-    public Object createSavepointForFallback();
+    public Object createSavepointForFallback(JdbcTemplate jdbcTemplate);
 
-    public void rollbackToSavepoint(Object savepoint);
+    public void rollbackToSavepoint(JdbcTemplate jdbcTemplate, Object savepoint);
 
-    public void releaseSavepoint(Object savepoint);
+    public void releaseSavepoint(JdbcTemplate jdbcTemplate, Object savepoint);
 
     public IColumnFilter newDatabaseColumnFilter();
 
@@ -173,11 +174,11 @@ public interface IDbDialect {
      */
     public void purge();
 
-    public void disableSyncTriggers();
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate);
 
-    public void disableSyncTriggers(String nodeId);
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId);
 
-    public void enableSyncTriggers();
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate);
 
     public String getSyncTriggersExpression();
     

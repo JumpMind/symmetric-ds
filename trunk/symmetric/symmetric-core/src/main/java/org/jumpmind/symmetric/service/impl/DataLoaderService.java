@@ -447,17 +447,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch batch) {
         try {
-            dbDialect.disableSyncTriggers(dataLoader.getContext().getSourceNodeId());
             if (incomingBatchService.acquireIncomingBatch(batch)) {
                 dataLoader.load();
             } else {
                 dataLoader.skip();
-            }           
+            }
         } catch (IOException e) {
             throw new TransportException(e);
-        } finally {
-            dbDialect.enableSyncTriggers();
-        }
+        } 
     }
     
     class LoadBatchResultsListener extends BatchListenerAdapter {

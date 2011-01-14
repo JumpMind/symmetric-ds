@@ -26,6 +26,7 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * 
@@ -82,12 +83,12 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
         return true;
     }
 
-    public void disableSyncTriggers(String nodeId) {
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
         jdbcTemplate.update("set @sync_prevented=1");
         jdbcTemplate.update("set @node_value=?", new Object[] { nodeId });
     }
 
-    public void enableSyncTriggers() {
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
         jdbcTemplate.update("set @sync_prevented=null");
         jdbcTemplate.update("set @node_value=null");
     }
