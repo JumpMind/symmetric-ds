@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.IncomingBatch;
 
 /**
  * This is an optional {@link IDataLoaderFilter} and {@link IBatchListener} that is capable of translating table data to
@@ -98,7 +99,7 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
         return loadDataInTargetDatabase;
     }
 
-    public void batchComplete(IDataLoader loader, IDataLoaderContext context) {
+    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
         IDataLoaderContext ctx = loader.getContext();
         if (doesXmlExistToPublish(ctx)) {
             finalizeXmlAndPublish(ctx);
@@ -109,13 +110,13 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
     }
 
-    public void batchCommitted(IDataLoader loader, IDataLoaderContext context) {
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
     }
 
-    public void batchRolledback(IDataLoader loader, IDataLoaderContext context, Exception ex) {
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
     }
     
-    public void earlyCommit(IDataLoader loader, IDataLoaderContext context) {
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
     }
 
 }

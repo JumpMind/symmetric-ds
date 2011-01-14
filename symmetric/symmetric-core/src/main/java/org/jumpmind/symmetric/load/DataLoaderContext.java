@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -50,7 +51,7 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     private String channelId;
 
-    private long batchId;
+    private IncomingBatch batch;
 
     private boolean isSkipping;
 
@@ -86,7 +87,7 @@ public class DataLoaderContext implements IDataLoaderContext {
     
     public Node getNode() {
           return getSourceNode();
-    }
+    }   
     
     public Node getSourceNode()
     {
@@ -143,12 +144,16 @@ public class DataLoaderContext implements IDataLoaderContext {
         return tables;
     }
 
-    public long getBatchId() {
-        return batchId;
+    public void clearBatch() {
+        this.batch = null;    
+    }
+    
+    public IncomingBatch getBatch() {
+        return batch;
     }
 
     public void setBatchId(long batchId) {
-        this.batchId = batchId;
+        this.batch = new IncomingBatch(batchId, this);
         isSkipping = false;
     }
 

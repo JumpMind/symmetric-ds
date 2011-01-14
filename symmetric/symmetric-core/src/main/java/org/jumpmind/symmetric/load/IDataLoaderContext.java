@@ -17,21 +17,20 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.load;
 
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ext.ICacheContext;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 
 /**
- *
+ * A working context used by the data loader
  */
 public interface IDataLoaderContext extends ICacheContext {
 
-    public long getBatchId();
+    public IncomingBatch getBatch();
 
     /**
      * Returns the node id on which the data was extracted; i.e., the source node id.

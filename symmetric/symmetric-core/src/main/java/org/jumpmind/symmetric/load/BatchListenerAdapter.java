@@ -16,31 +16,28 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
-
-package org.jumpmind.symmetric.service;
-
-import java.util.List;
+ * under the License. 
+ */
+package org.jumpmind.symmetric.load;
 
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * This service provides an API to access to the incoming batch table. 
- */
-public interface IIncomingBatchService {
+public class BatchListenerAdapter implements IBatchListener {
 
-    public IncomingBatch findIncomingBatch(long batchId, String nodeId);
+    public boolean isAutoRegister() {
+        return true;
+    }
 
-    public List<IncomingBatch> findIncomingBatchErrors(int maxRows);
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
+    }
 
-    public boolean acquireIncomingBatch(IncomingBatch status);
+    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
+    }
 
-    public void insertIncomingBatch(IncomingBatch status);
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
+    }
 
-    public int updateIncomingBatch(JdbcTemplate jdbcTemplate, IncomingBatch batch);
-    
-    public int updateIncomingBatch(IncomingBatch batch);
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
+    }
 
 }

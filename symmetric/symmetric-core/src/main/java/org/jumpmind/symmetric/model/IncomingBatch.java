@@ -78,11 +78,11 @@ public class IncomingBatch implements Serializable {
     public IncomingBatch() {
     }
 
-    public IncomingBatch(IDataLoaderContext context) {
-        batchId = context.getBatchId();
-        nodeId = context.getSourceNodeId();
-        channelId = context.getChannelId();
-        status = Status.LD;
+    public IncomingBatch(long batchId, IDataLoaderContext context) {
+        this.batchId = batchId;
+        this.nodeId = context.getSourceNodeId();
+        this.channelId = context.getChannelId();
+        this.status = Status.LD;
     }
 
     public void setValues(IDataLoaderStatistics statistics, boolean isSuccess) {
@@ -277,6 +277,11 @@ public class IncomingBatch implements Serializable {
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
+    }
+    
+    @Override
+    public String toString() {
+        return Long.toString(batchId);
     }
 
 }

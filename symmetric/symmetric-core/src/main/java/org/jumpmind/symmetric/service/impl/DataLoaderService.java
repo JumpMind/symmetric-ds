@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.io.ThresholdFileWriter;
+import org.jumpmind.symmetric.load.BatchListenerAdapter;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
@@ -100,6 +101,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private Map<String, List<IColumnFilter>> columnFilters = new HashMap<String, List<IColumnFilter>>();
 
     private List<IBatchListener> batchListeners;
+    
+    public DataLoaderService() {
+         addBatchListener(new LoadBatchResultsListener());
+    }
 
     /**
      * Connect to the remote node and pull data. The acknowledgment of
@@ -196,17 +201,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public IDataLoaderStatistics loadDataBatch(String batchData) throws IOException {
         BufferedReader reader = new BufferedReader(new StringReader(batchData));
-        IDataLoader dataLoader = openDataLoader(reader);
+        IDataLoader dataLoader = null;
         IDataLoaderStatistics stats = null;
         try {
+            dataLoader = openDataLoader(reader);
             while (dataLoader.hasNext()) {
                 dataLoader.load();
-                IncomingBatch batch = new IncomingBatch(dataLoader.getContext());
-                batch.setValues(dataLoader.getStatistics(), true);
             }
         } finally {
-            stats = dataLoader.getStatistics();
-            dataLoader.close();
+            if (dataLoader != null) {
+                stats = dataLoader.getStatistics();
+                dataLoader.close();
+            }
         }
         return stats;
     }
@@ -230,13 +236,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             
             IDataLoaderContext context = dataLoader.getContext();            
             while (dataLoader.hasNext()) {
-                batch = new IncomingBatch(context);
+                batch = context.getBatch();
                 if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED) || 
                     (batch.getChannelId() != null && batch.getChannelId().equals(Constants.CHANNEL_CONFIG))) {
                     list.add(batch);
                     loadBatch(dataLoader, batch);
-                    batch.setStatus(Status.OK);
-                    incomingBatchService.updateIncomingBatch(batch);
                 }
                 batch = null;
             }
@@ -268,8 +272,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             log.warn("SyncDisabled");
             throw ex;
         } catch (Throwable e) {
-            if (dataLoader != null && dataLoader.getContext().getBatchId() > 0 && batch == null) {
-                batch = new IncomingBatch(dataLoader.getContext());
+            if (dataLoader != null && dataLoader.getContext().getBatch() != null && batch == null) {
+                batch = dataLoader.getContext().getBatch();
                 list.add(batch);
             }
             if (dataLoader != null && batch != null) {
@@ -448,13 +452,22 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 dataLoader.load();
             } else {
                 dataLoader.skip();
-            }
-            batch.setValues(dataLoader.getStatistics(), true);
+            }           
         } catch (IOException e) {
             throw new TransportException(e);
         } finally {
             dbDialect.enableSyncTriggers();
         }
+    }
+    
+    class LoadBatchResultsListener extends BatchListenerAdapter {
+
+        public void batchComplete(IDataLoader loader, IncomingBatch batch) {
+            loader.getContext().getBatch().setValues(loader.getStatistics(), true);
+            batch.setStatus(Status.OK);
+            incomingBatchService.updateIncomingBatch(batch);           
+        }
+        
     }
 
 }
