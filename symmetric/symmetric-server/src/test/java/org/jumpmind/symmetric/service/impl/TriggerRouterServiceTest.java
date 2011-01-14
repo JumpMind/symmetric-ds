@@ -233,9 +233,9 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testDisableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        getDbDialect().disableSyncTriggers();
+        getDbDialect().disableSyncTriggers(jdbcTemplate);
         int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
-        getDbDialect().enableSyncTriggers();
+        getDbDialect().enableSyncTriggers(jdbcTemplate);
         assertTrue(count == 1);
         String csvString = getNextDataRow();
         // DB2 captures decimal differently

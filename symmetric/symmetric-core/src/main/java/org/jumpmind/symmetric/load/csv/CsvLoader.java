@@ -99,7 +99,7 @@ public class CsvLoader implements IDataLoader {
             this.connection.setAutoCommit(false);
             this.batchListeners = batchListeners != null ? batchListeners : new ArrayList<IBatchListener>();
             this.jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(connection, true));
-            this.jdbcTemplate.setQueryTimeout(parameterService.getInt(ParameterConstants.DB_QUERY_TIMEOUT_SECS));
+            this.jdbcTemplate.setQueryTimeout(dbDialect.getQueryTimeoutInSeconds());
             this.csvReader = CsvUtils.getCsvReader(reader);
             this.context = new DataLoaderContext(nodeService, jdbcTemplate);
             this.stats = new DataLoaderStatistics();
@@ -143,6 +143,7 @@ public class CsvLoader implements IDataLoader {
 
     public void load() throws IOException {
         try {
+            dbDialect.disableSyncTriggers(jdbcTemplate, context.getSourceNodeId());
             long rowsBeforeCommit = parameterService.getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
             long rowsProcessed = 0;
             lineCount = 0;
@@ -235,14 +236,18 @@ public class CsvLoader implements IDataLoader {
             rollback(ex);
             throw new RuntimeException(ex);
         } finally {
-            if (bytesCount > 0) {
-                statisticManager.incrementDataBytesLoaded(context.getChannelId(), bytesCount);
+            try {
+                if (bytesCount > 0) {
+                    statisticManager.incrementDataBytesLoaded(context.getChannelId(), bytesCount);
+                }
+
+                if (lineCount > 0) {
+                    statisticManager.incrementDataLoaded(context.getChannelId(), lineCount);
+                }
+                cleanupAfterDataLoad();                
+            } finally {
+                dbDialect.enableSyncTriggers(jdbcTemplate);
             }
-            
-            if (lineCount > 0) {
-                statisticManager.incrementDataLoaded(context.getChannelId(), lineCount);
-            }
-            cleanupAfterDataLoad();
         }
     }   
     
@@ -291,13 +296,13 @@ public class CsvLoader implements IDataLoader {
 
     protected void prepareTableForDataLoad() {
         if (context != null && context.getTableTemplate() != null) {
-            dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
+            dbDialect.prepareTableForDataLoad(this.jdbcTemplate, context.getTableTemplate().getTable());
         }
     }
 
     protected void cleanupAfterDataLoad() {
         if (context != null && context.getTableTemplate() != null) {
-            dbDialect.cleanupAfterDataLoad(context.getTableTemplate().getTable());
+            dbDialect.cleanupAfterDataLoad(this.jdbcTemplate, context.getTableTemplate().getTable());
         }
     }
 
@@ -323,7 +328,7 @@ public class CsvLoader implements IDataLoader {
                 stats.startTimer();
                 if (enableFallbackUpdate && dbDialect.requiresSavepointForFallback()) {
                     if (enableFallbackSavepoint) {
-                        savepoint = dbDialect.createSavepointForFallback();
+                        savepoint = dbDialect.createSavepointForFallback(jdbcTemplate);
                     } else if (context.getTableTemplate().count(context, parseKeys(tokens, 1)) > 0) {
                         throw new DataIntegrityViolationException("Row already exists");
                     }
@@ -333,7 +338,7 @@ public class CsvLoader implements IDataLoader {
                 // TODO: modify sql-error-codes.xml for unique constraint vs
                 // foreign key
                 if (enableFallbackUpdate) {
-                    dbDialect.rollbackToSavepoint(savepoint);
+                    dbDialect.rollbackToSavepoint(jdbcTemplate, savepoint);
                     if (log.isDebugEnabled()) {
                         log.debug("LoaderInsertingFailedUpdating", context.getTableName(), ArrayUtils.toString(tokens));
                     }

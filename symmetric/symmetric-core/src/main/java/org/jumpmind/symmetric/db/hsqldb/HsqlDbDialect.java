@@ -119,12 +119,12 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
         return true;
     }
 
-    public void disableSyncTriggers(String nodeId) {
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
         jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('sync_prevented','1')");
         jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('node_value','"+nodeId+"')");
     }
 
-    public void enableSyncTriggers() {
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
         jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('sync_prevented',null)");
         jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('node_value',null)");
     }

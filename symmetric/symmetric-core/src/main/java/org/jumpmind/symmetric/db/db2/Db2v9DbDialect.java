@@ -25,6 +25,7 @@ import java.net.URL;
 
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * ,
@@ -38,7 +39,7 @@ public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
         try {
-            enableSyncTriggers();
+            enableSyncTriggers(jdbcTemplate);
         } catch (Exception e) {
             try {
                 log.info("EnvironmentVariablesCreating", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
@@ -54,14 +55,14 @@ public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {
         return getClass().getResource("/org/jumpmind/symmetric/db/db2.sql");
     }
 
-    public void disableSyncTriggers(String nodeId) {
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
         jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
         if (nodeId != null) {
             jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
         }
     }
 
-    public void enableSyncTriggers() {
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
         jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
         jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }

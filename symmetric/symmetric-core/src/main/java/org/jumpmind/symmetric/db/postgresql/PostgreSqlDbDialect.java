@@ -37,8 +37,6 @@ import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 /**
  * 
@@ -68,7 +66,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;
         }
         try {
-            enableSyncTriggers();
+            enableSyncTriggers(jdbcTemplate);
         } catch (Exception e) {
             log.error("PostgreSqlCustomVariableMissing");
             throw new SymmetricException("PostgreSqlCustomVariableMissing", e);
@@ -81,9 +79,8 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected Integer overrideJdbcTypeForColumn(Map values) {
+    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
             return Types.TIMESTAMP;
@@ -136,7 +133,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         }
     }
 
-    public void disableSyncTriggers(String nodeId) {
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
         jdbcTemplate.queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '1', false)");
         if (nodeId == null) {
             nodeId = "";
@@ -144,16 +141,11 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '" + nodeId + "', false)");
     }
 
-    public void enableSyncTriggers() {
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
-                if (!transactionstatus.isRollbackOnly()) {
-                    jdbcTemplate
-                            .queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '', false)");
-                    jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '', false)");
-                }
-            }
-        });
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
+        jdbcTemplate.queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE
+                + "', '', false)");
+        jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE
+                + "', '', false)");
     }
 
     public String getSyncTriggersExpression() {

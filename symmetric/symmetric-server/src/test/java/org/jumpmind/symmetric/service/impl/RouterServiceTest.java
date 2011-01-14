@@ -950,7 +950,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 try {
                     if (node2disable != null) {
-                        getDbDialect().disableSyncTriggers(node2disable);
+                        getDbDialect().disableSyncTriggers(getJdbcTemplate(), node2disable);
                     }
                     for (int i = 0; i < count; i++) {
                         update(tableName, routingVarcharFieldValue);
@@ -961,7 +961,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
                     }
                 } finally {
                     if (node2disable != null) {
-                        getDbDialect().enableSyncTriggers();
+                        getDbDialect().enableSyncTriggers(getJdbcTemplate());
                     }
                 }
 
@@ -986,12 +986,12 @@ public class RouterServiceTest extends AbstractDatabaseTest {
                 SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
                 try {
                     if (node2disable != null) {
-                        getDbDialect().disableSyncTriggers(node2disable);
+                        getDbDialect().disableSyncTriggers(getJdbcTemplate(), node2disable);
                     }
                         t.update(sql);
                 } finally {
                     if (node2disable != null) {
-                        getDbDialect().enableSyncTriggers();
+                        getDbDialect().enableSyncTriggers(getJdbcTemplate());
                     }
                 }
 

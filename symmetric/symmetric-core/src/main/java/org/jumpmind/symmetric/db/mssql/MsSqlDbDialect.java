@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
@@ -60,9 +61,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
     
-    @SuppressWarnings("unchecked")
     @Override
-    protected Integer overrideJdbcTypeForColumn(Map values) {
+    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.startsWith("TEXT")) {
             return Types.CLOB;          
@@ -122,16 +122,16 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public void prepareTableForDataLoad(Table table) {
+    public void prepareTableForDataLoad(JdbcTemplate template, Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
-            jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " ON");
+            template.execute("SET IDENTITY_INSERT " + table.getName() + " ON");
         }
     }
 
     @Override
-    public void cleanupAfterDataLoad(Table table) {
+    public void cleanupAfterDataLoad(JdbcTemplate template, Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
-            jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " OFF");
+            template.execute("SET IDENTITY_INSERT " + table.getName() + " OFF");
         }
     }
 
@@ -169,7 +169,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         });
     }
 
-    public void disableSyncTriggers(String nodeId) {
+    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
         if (nodeId == null) {
             nodeId = "";
         }
@@ -177,7 +177,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                 + "SET context_info @CI;");
     }
 
-    public void enableSyncTriggers() {
+    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
         jdbcTemplate.update("set context_info 0x0");
     }
 

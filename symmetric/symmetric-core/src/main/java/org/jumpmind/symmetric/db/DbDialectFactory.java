@@ -51,7 +51,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * 
@@ -123,8 +122,6 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         }
 
         dialect.init(pf, queryTimeout, jdbcTemplate);
-        dialect.setTransactionTemplate((TransactionTemplate) beanFactory
-                .getBean("currentTransactionTemplate"));
         return dialect;
     }
 
