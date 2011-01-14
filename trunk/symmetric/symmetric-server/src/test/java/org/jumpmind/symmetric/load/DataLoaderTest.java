@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.load;
 
 import java.io.ByteArrayOutputStream;
@@ -36,25 +34,14 @@ import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
-import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-
-/**
- * ,
- */
 public class DataLoaderTest extends AbstractDataLoaderTest {
 
     public DataLoaderTest() throws Exception {
-    }
-
-    @Test
-    public void verifyProxyInterface() {
-        IDataLoader service = getDataLoader();
-        Assert.assertNotSame(CsvLoader.class, service.getClass());
     }
     
     @Test
@@ -336,7 +323,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         in.getNextEntry();
         long startTime = System.currentTimeMillis();
         IDataLoader dataLoader = getDataLoader();
-        dataLoader.open(TransportUtils.toReader(in));
+        dataLoader.open(TransportUtils.toReader(in), getDataSource(), null);
         while (dataLoader.hasNext()) {
             dataLoader.load();
         }

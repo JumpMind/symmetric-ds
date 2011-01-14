@@ -288,6 +288,10 @@ public class NodeService extends AbstractService implements INodeService {
     public void flushNodeAuthorizedCache() {
         securityCacheTime = 0;
     }
+    
+    public Node getCachedIdentity() {
+        return cachedNodeIdentity;
+    }
 
     public Node findIdentity() {
         return findIdentity(true);

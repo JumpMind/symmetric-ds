@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -39,6 +41,8 @@ import org.jumpmind.symmetric.util.AppUtils;
  * @see IStatisticManager
  */
 public class StatisticManager implements IStatisticManager {
+    
+    static final ILog log = LogFactory.getLog(StatisticManager.class);
 
     Map<String, ChannelStats> channelStats = new HashMap<String, ChannelStats>();
 
@@ -200,13 +204,15 @@ public class StatisticManager implements IStatisticManager {
         reset(false);
         ChannelStats stats = channelStats.get(channelId);
         if (stats == null) {
-            Node node = nodeService.findIdentity();
-            String nodeId = "Unknown";
+            Node node = nodeService.getCachedIdentity();
             if (node != null) {
-                nodeId = node.getNodeId();
+                stats = new ChannelStats(node.getNodeId(), AppUtils.getServerId(), new Date(), null, channelId);
+                channelStats.put(channelId, stats);
+            } else {
+                log.warn("StatisticNodeNotAvailableWarning");
+                stats = new ChannelStats("Unknown", AppUtils.getServerId(), new Date(), null, channelId);
             }
-            stats = new ChannelStats(nodeId, AppUtils.getServerId(), new Date(), null, channelId);
-            channelStats.put(channelId, stats);
+
         }
         return stats;
     }

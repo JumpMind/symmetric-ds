@@ -152,8 +152,6 @@
 
     <bean id="dataLoader" class="org.jumpmind.symmetric.load.csv.CsvLoader" scope="prototype">
         <property name="dbDialect" ref="dbDialect" />
-        <property name="jdbcTemplate" ref="dataLoaderTemplate" />
-        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
         <property name="statisticManager" ref="statisticManager" />

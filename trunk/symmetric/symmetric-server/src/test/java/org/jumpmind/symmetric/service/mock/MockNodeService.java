@@ -38,6 +38,10 @@ import org.jumpmind.symmetric.service.INodeService;
 
 public class MockNodeService implements INodeService {
     
+    public Node getCachedIdentity() {
+        return null;
+    }
+    
     public List<Node> findAllNodes() {
         return null;
     }

@@ -24,10 +24,9 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
- * ,
+ * This service provides an API to access to the incoming batch table. 
  */
 public interface IIncomingBatchService {
 
@@ -35,13 +34,10 @@ public interface IIncomingBatchService {
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows);
 
-    @Transactional
     public boolean acquireIncomingBatch(IncomingBatch status);
 
-    @Transactional
     public void insertIncomingBatch(IncomingBatch status);
 
-    @Transactional
     public int updateIncomingBatch(IncomingBatch batch);
 
 }

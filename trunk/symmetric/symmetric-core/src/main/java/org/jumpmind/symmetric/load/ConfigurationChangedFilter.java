@@ -25,7 +25,6 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -34,8 +33,6 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
  * An out of the box filter that checks to see if the SymmetricDS configuration
  * has changed. If it has, it will take the correct action to apply the
  * configuration change to the current node.
- *
- * 
  */
 public class ConfigurationChangedFilter 
     implements IDataLoaderFilter, IBatchListener, IBuiltInExtensionPoint {
@@ -106,14 +103,16 @@ public class ConfigurationChangedFilter
     public boolean isAutoRegister() {
         return true;
     }
-
-    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
+    
+    public void batchComplete(IDataLoader loader, IDataLoaderContext ctx) {
     }
-
-    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
+    
+    public void batchRolledback(IDataLoader loader, IDataLoaderContext ctx, Exception ex) {
     }
+    
+    public void earlyCommit(IDataLoader loader, IDataLoaderContext ctx) {};
 
-    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
+    public void batchCommitted(IDataLoader loader, IDataLoaderContext context) {
         if (loader.getContext().getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("ChannelFlushed");
             configurationService.reloadChannels();
@@ -135,9 +134,6 @@ public class ConfigurationChangedFilter
 
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;
-    }
-
-    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {

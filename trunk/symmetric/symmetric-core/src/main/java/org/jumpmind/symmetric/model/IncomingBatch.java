@@ -30,7 +30,7 @@ public class IncomingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        OK, ER, SK;
+        LD, OK, ER, SK;
     }
 
     private long batchId;
@@ -82,7 +82,7 @@ public class IncomingBatch implements Serializable {
         batchId = context.getBatchId();
         nodeId = context.getSourceNodeId();
         channelId = context.getChannelId();
-        status = Status.OK;
+        status = Status.LD;
     }
 
     public void setValues(IDataLoaderStatistics statistics, boolean isSuccess) {
@@ -95,7 +95,6 @@ public class IncomingBatch implements Serializable {
         missingDeleteCount = statistics.getMissingDeleteCount();
         lastUpdatedTime = new Date();
         if (!isSuccess) {
-            status = Status.ER;
             failedRowNumber = statistics.getStatementCount();
         }
     }

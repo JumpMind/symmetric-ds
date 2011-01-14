@@ -87,6 +87,8 @@ public interface INodeService {
     public Node findIdentity();
 
     public Node findIdentity(boolean useCache);
+    
+    public Node getCachedIdentity();
 
     public void deleteIdentity();
 

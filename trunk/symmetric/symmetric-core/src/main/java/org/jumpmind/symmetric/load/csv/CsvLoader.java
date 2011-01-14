@@ -17,14 +17,17 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.load.csv;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -38,6 +41,7 @@ import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.DataLoaderStatistics;
+import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -46,13 +50,13 @@ import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 public class CsvLoader implements IDataLoader {
 
@@ -63,8 +67,6 @@ public class CsvLoader implements IDataLoader {
     protected IDbDialect dbDialect;
 
     protected IParameterService parameterService;
-
-    protected ITriggerRouterService triggerRouterService;
 
     protected INodeService nodeService;
 
@@ -80,19 +82,35 @@ public class CsvLoader implements IDataLoader {
 
     protected Map<String,  List<IColumnFilter>> columnFilters;
     
-    private long bytesCount = 0;
+    protected long bytesCount = 0;
     
-    private long lineCount = 0;
+    protected long lineCount = 0;
+    
+    protected Connection connection;
+    
+    protected boolean oldAutoCommitSetting;
+    
+    protected List<IBatchListener> batchListeners;
 
-    public void open(BufferedReader reader) throws IOException {
-        csvReader = CsvUtils.getCsvReader(reader);
-        context = new DataLoaderContext(nodeService);
-        stats = new DataLoaderStatistics();
+    public void open(BufferedReader reader, DataSource dataSource, List<IBatchListener> batchListeners) throws IOException {
+        try {
+            this.connection = dataSource.getConnection();
+            this.oldAutoCommitSetting = this.connection.getAutoCommit();
+            this.connection.setAutoCommit(false);
+            this.batchListeners = batchListeners != null ? batchListeners : new ArrayList<IBatchListener>();
+            this.jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(connection, true));
+            this.jdbcTemplate.setQueryTimeout(parameterService.getInt(ParameterConstants.DB_QUERY_TIMEOUT_SECS));
+            this.csvReader = CsvUtils.getCsvReader(reader);
+            this.context = new DataLoaderContext(nodeService, jdbcTemplate);
+            this.stats = new DataLoaderStatistics();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
-    public void open(BufferedReader reader, List<IDataLoaderFilter> filters, Map<String,  List<IColumnFilter>> columnFilters)
+    public void open(BufferedReader reader, DataSource dataSource, List<IBatchListener> batchListeners, List<IDataLoaderFilter> filters, Map<String,  List<IColumnFilter>> columnFilters)
             throws IOException {
-        open(reader);
+        open(reader, dataSource, batchListeners);
         this.filters = filters;
         this.columnFilters = columnFilters;
     }
@@ -100,13 +118,12 @@ public class CsvLoader implements IDataLoader {
     public boolean hasNext() throws IOException {
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
-
             if (tokens[0].equals(CsvConstants.BATCH)) {
-                context.setBatchId(new Long(tokens[1]));
-                stats = new DataLoaderStatistics();
+                this.context.setBatchId(new Long(tokens[1]));
+                this.stats = new DataLoaderStatistics();
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
-                context.setNodeId(tokens[1]);
+                this.context.setNodeId(tokens[1]);
             } else if (isMetaTokenParsed(tokens)) {
                 continue;
             } else {
@@ -122,7 +139,7 @@ public class CsvLoader implements IDataLoader {
         // skipping is reset when a new batch_id is set
     }
 
-    public boolean load() throws IOException {
+    public void load() throws IOException {
         try {
             long rowsBeforeCommit = parameterService.getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
             long rowsProcessed = 0;
@@ -163,6 +180,9 @@ public class CsvLoader implements IDataLoader {
                     } else if (isMetaTokenParsed(tokens)) {
                         continue;
                     } else if (tokens[0].equals(CsvConstants.COMMIT)) {
+                        fireBatchComplete();
+                        connection.commit();
+                        fireBatchCommitted();
                         rowsProcessed = 0;
                         break;
                     } else if (tokens[0].equals(CsvConstants.SQL)) {
@@ -186,7 +206,12 @@ public class CsvLoader implements IDataLoader {
                     }
                 }
                 if (rowsProcessed > rowsBeforeCommit && rowsBeforeCommit > 0) {
-                    return false;
+                    rowsProcessed = 0;       
+                    fireEarlyCommit();
+                    connection.commit();
+                    // Chances are if SymmetricDS is configured to commit early in a batch we want to give other threads
+                    // a chance to do work and access the database.
+                    AppUtils.sleep(5);                    
                 }
                 
                 if (bytesCount > StatisticConstants.FLUSH_SIZE_BYTES) {
@@ -201,7 +226,12 @@ public class CsvLoader implements IDataLoader {
 
             }
 
-            return true;
+        } catch (RuntimeException ex) {
+            rollback(ex);            
+            throw ex;
+        } catch (Exception ex) {
+            rollback(ex);
+            throw new RuntimeException(ex);
         } finally {
             if (bytesCount > 0) {
                 statisticManager.incrementDataBytesLoaded(context.getChannelId(), bytesCount);
@@ -212,7 +242,17 @@ public class CsvLoader implements IDataLoader {
             }
             cleanupAfterDataLoad();
         }
-    }    
+    }   
+    
+    protected void rollback(Exception ex) {
+        try {
+            connection.rollback();
+        } catch (SQLException ex2) {
+            log.warn(ex2);
+        } finally {
+            fireBatchRolledback(ex);
+        }
+    }
 
     protected boolean isMetaTokenParsed(String[] tokens) {
         boolean isMetaTokenParsed = true;
@@ -429,10 +469,8 @@ public class CsvLoader implements IDataLoader {
 
     public IDataLoader clone() {
         CsvLoader dataLoader = new CsvLoader();
-        dataLoader.setJdbcTemplate(jdbcTemplate);
         dataLoader.setDbDialect(dbDialect);
         dataLoader.setParameterService(parameterService);
-        dataLoader.setTriggerRouterService(triggerRouterService);
         dataLoader.setNodeService(nodeService);
         dataLoader.setStatisticManager(statisticManager);
         return dataLoader;
@@ -442,7 +480,67 @@ public class CsvLoader implements IDataLoader {
         if (csvReader != null) {
             csvReader.close();
         }
+        
+        if (connection != null) {
+            try {
+                connection.setAutoCommit(oldAutoCommitSetting);
+                connection.close();
+            } catch (SQLException ex) {
+                log.error(ex);
+            } finally {
+                connection = null;
+            }
+        }
     }
+    
+    private void fireEarlyCommit() {
+        if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
+            for (IBatchListener listener : batchListeners) {
+                listener.earlyCommit(this, context);
+            }
+            // update the filter milliseconds so batch listeners are also
+            // included
+            stats.setFilterMillis(stats.getFilterMillis() + (System.currentTimeMillis() - ts));
+        }
+    }
+
+    private void fireBatchComplete() {
+        if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
+            for (IBatchListener listener : batchListeners) {
+                listener.batchComplete(this, context);
+            }
+            // update the filter milliseconds so batch listeners are also
+            // included
+            stats.setFilterMillis(stats.getFilterMillis() + (System.currentTimeMillis() - ts));
+        }
+    }
+
+    private void fireBatchCommitted() {
+        if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
+            for (IBatchListener listener : batchListeners) {
+                listener.batchCommitted(this, context);
+            }
+            // update the filter milliseconds so batch listeners are also
+            // included
+            stats.setFilterMillis(stats.getFilterMillis() + (System.currentTimeMillis() - ts));
+        }
+    }
+
+    private void fireBatchRolledback(Exception ex) {
+        if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
+            for (IBatchListener listener : batchListeners) {
+                listener.batchRolledback(this, context, ex);
+            }
+            // update the filter milliseconds so batch listeners are also
+            // included
+            stats.setFilterMillis(stats.getFilterMillis() + (System.currentTimeMillis() - ts));
+        }
+    }
+
 
     public IDataLoaderContext getContext() {
         return context;
@@ -451,21 +549,13 @@ public class CsvLoader implements IDataLoader {
     public IDataLoaderStatistics getStatistics() {
         return stats;
     }
-
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
+    
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
     }
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
-    }
-
-    public void setTriggerRouterService(ITriggerRouterService triggerService) {
-        this.triggerRouterService = triggerService;
     }
 
     public void setNodeService(INodeService nodeService) {

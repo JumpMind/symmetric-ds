@@ -137,7 +137,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     protected void load(ByteArrayOutputStream out, Map<String, List<IColumnFilter>> filters) throws Exception {
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         IDataLoader dataLoader = getDataLoader();
-        dataLoader.open(TransportUtils.toReader(in), null, filters);
+        dataLoader.open(TransportUtils.toReader(in), getDataSource(), null, null, filters);
         while (dataLoader.hasNext()) {
             dataLoader.load();
         }
