@@ -16,18 +16,17 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 package org.jumpmind.symmetric.load;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
+import org.jumpmind.symmetric.model.IncomingBatch;
 
 /**
  * This extension point is called whenever a batch has completed loading but before
  * the transaction has committed.
- *
- * 
  */
 public interface IBatchListener extends IExtensionPoint {
 
@@ -35,21 +34,21 @@ public interface IBatchListener extends IExtensionPoint {
      * If the {@link ParameterConstants#DATA_LOADER_MAX_ROWS_BEFORE_COMMIT} property is set and the max number of 
      * rows is reached and a commit is about to happen, then this method is called.
      */
-    public void earlyCommit(IDataLoader loader, IDataLoaderContext ctx);
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch);
     
     /**
      * This method is called after a batch has been successfully processed. It
      * is called in the scope of the transaction that controls the batch commit.
      */
-    public void batchComplete(IDataLoader loader, IDataLoaderContext ctx);
+    public void batchComplete(IDataLoader loader, IncomingBatch batch);
     
     /**
      * This method is called after the database transaction for the batch has been committed.
      */
-    public void batchCommitted(IDataLoader loader, IDataLoaderContext ctx);
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch);
     
     /**
      * This method is called after the database transaction for the batch has been rolled back.
      */
-    public void batchRolledback(IDataLoader loader, IDataLoaderContext ctx, Exception ex); 
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex); 
 }

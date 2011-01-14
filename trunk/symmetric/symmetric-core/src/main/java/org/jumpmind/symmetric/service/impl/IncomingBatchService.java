@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -105,11 +106,15 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public int updateIncomingBatch(IncomingBatch batch) {
+        return updateIncomingBatch(this.jdbcTemplate, batch);
+    }
+    
+    public int updateIncomingBatch(JdbcTemplate template, IncomingBatch batch) {
         int count = 0;
         if (batch.isPersistable()) {
             batch.setLastUpdatedHostName(AppUtils.getServerId());
             batch.setLastUpdatedTime(new Date());
-            count = jdbcTemplate.update(
+            count = template.update(
                     getSql("updateIncomingBatchSql"),
                     new Object[] { batch.getStatus().toString(), batch.getNetworkMillis(),
                             batch.getFilterMillis(), batch.getDatabaseMillis(),

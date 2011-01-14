@@ -104,6 +104,7 @@ public class CsvLoader implements IDataLoader {
             this.context = new DataLoaderContext(nodeService, jdbcTemplate);
             this.stats = new DataLoaderStatistics();
         } catch (SQLException ex) {
+            close();
             throw new RuntimeException(ex);
         }
     }
@@ -116,6 +117,7 @@ public class CsvLoader implements IDataLoader {
     }
 
     public boolean hasNext() throws IOException {
+        context.clearBatch();
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
             if (tokens[0].equals(CsvConstants.BATCH)) {
@@ -202,7 +204,7 @@ public class CsvLoader implements IDataLoader {
                             rowsProcessed++;
                         }
                     } else {
-                        log.warn("LoaderTokenUnexpected", tokens[0], stats.getLineCount(), context.getBatchId());
+                        log.warn("LoaderTokenUnexpected", tokens[0], stats.getLineCount(), context.getBatch());
                     }
                 }
                 if (rowsProcessed > rowsBeforeCommit && rowsBeforeCommit > 0) {
@@ -497,7 +499,7 @@ public class CsvLoader implements IDataLoader {
         if (batchListeners != null) {
             long ts = System.currentTimeMillis();
             for (IBatchListener listener : batchListeners) {
-                listener.earlyCommit(this, context);
+                listener.earlyCommit(this, context.getBatch());
             }
             // update the filter milliseconds so batch listeners are also
             // included
@@ -509,7 +511,7 @@ public class CsvLoader implements IDataLoader {
         if (batchListeners != null) {
             long ts = System.currentTimeMillis();
             for (IBatchListener listener : batchListeners) {
-                listener.batchComplete(this, context);
+                listener.batchComplete(this, context.getBatch());
             }
             // update the filter milliseconds so batch listeners are also
             // included
@@ -521,7 +523,7 @@ public class CsvLoader implements IDataLoader {
         if (batchListeners != null) {
             long ts = System.currentTimeMillis();
             for (IBatchListener listener : batchListeners) {
-                listener.batchCommitted(this, context);
+                listener.batchCommitted(this, context.getBatch());
             }
             // update the filter milliseconds so batch listeners are also
             // included
@@ -533,7 +535,7 @@ public class CsvLoader implements IDataLoader {
         if (batchListeners != null) {
             long ts = System.currentTimeMillis();
             for (IBatchListener listener : batchListeners) {
-                listener.batchRolledback(this, context, ex);
+                listener.batchRolledback(this, context.getBatch(), ex);
             }
             // update the filter milliseconds so batch listeners are also
             // included

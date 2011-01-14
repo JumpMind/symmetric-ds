@@ -25,6 +25,7 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -104,15 +105,15 @@ public class ConfigurationChangedFilter
         return true;
     }
     
-    public void batchComplete(IDataLoader loader, IDataLoaderContext ctx) {
+    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
     }
     
-    public void batchRolledback(IDataLoader loader, IDataLoaderContext ctx, Exception ex) {
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
     }
     
-    public void earlyCommit(IDataLoader loader, IDataLoaderContext ctx) {};
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {};
 
-    public void batchCommitted(IDataLoader loader, IDataLoaderContext context) {
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
         if (loader.getContext().getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("ChannelFlushed");
             configurationService.reloadChannels();

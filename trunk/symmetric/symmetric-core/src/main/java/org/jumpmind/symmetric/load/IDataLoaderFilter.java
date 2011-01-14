@@ -17,14 +17,19 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.load;
 
 import org.jumpmind.symmetric.ext.IExtensionPoint;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * ,
+ * Extension point that can be used to change or take action on data as it is about to be 
+ * written to a target {@link Node}.
+ * <p/>
+ * If work needs to occur on the target database itself within the same database transaction
+ * that the load is taking place in, then the {@link IDataLoaderContext} should be 
+ * used to access an {@link JdbcTemplate}.  The JdbcTemplate contains the connection that is being 
+ * used for the data load.
  */
 public interface IDataLoaderFilter extends IExtensionPoint {
 
