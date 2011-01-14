@@ -65,9 +65,6 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-/**
- * 
- */
 public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     public static boolean testFlag = false;
@@ -329,7 +326,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
     }
 
-    @Test(timeout = 120000)
+    @Test//(timeout = 120000)
     public void testSuspendIgnorePushRemoteBatches() throws ParseException {
 
         // test suspend / ignore with remote database specifying the suspends

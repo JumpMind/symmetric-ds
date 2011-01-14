@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.ByteArrayInputStream;
@@ -42,10 +40,6 @@ import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.junit.Test;
 
-
-/**
- * ,
- */
 public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     protected Node client = new Node(TestConstants.TEST_CLIENT_EXTERNAL_ID, null, null);

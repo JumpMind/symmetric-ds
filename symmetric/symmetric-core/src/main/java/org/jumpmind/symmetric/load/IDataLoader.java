@@ -26,22 +26,21 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.transaction.annotation.Transactional;
+import javax.sql.DataSource;
 
 /**
- * ,
+ * 
  */
 public interface IDataLoader extends Cloneable {
 
-    public void open(BufferedReader in) throws IOException;
+    public void open(BufferedReader in, DataSource dataSource, List<IBatchListener> batchListeners) throws IOException;
 
-    public void open(BufferedReader in, List<IDataLoaderFilter> filters, Map<String,  List<IColumnFilter>> columnFilters)
+    public void open(BufferedReader in, DataSource dataSource, List<IBatchListener> batchListeners, List<IDataLoaderFilter> filters, Map<String,  List<IColumnFilter>> columnFilters)
             throws IOException;
 
     public boolean hasNext() throws IOException;
 
-    @Transactional
-    public boolean load() throws IOException;
+    public void load() throws IOException;
 
     public void skip() throws IOException;
 

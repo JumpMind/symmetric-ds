@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.load;
 
 import java.util.Collection;
@@ -31,9 +29,10 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * ,
+ * @see IDataLoaderContext
  */
 public class DataLoaderContext implements IDataLoaderContext {
 
@@ -68,14 +67,21 @@ public class DataLoaderContext implements IDataLoaderContext {
     private transient Node sourceNode;
     
     private transient Node targetNode;
+    
+    private JdbcTemplate jdbcTemplate;
 
-    public DataLoaderContext(INodeService nodeService) {
+    public DataLoaderContext(INodeService nodeService, JdbcTemplate jdbcTemplate) {
         this();
         this.nodeService = nodeService;
+        this.jdbcTemplate = jdbcTemplate;
     }
     
     public DataLoaderContext() {
         this.tableTemplateMap = new HashMap<String, TableTemplate>();
+    }
+    
+    public JdbcTemplate getJdbcTemplate() {
+        return jdbcTemplate;
     }
     
     public Node getNode() {

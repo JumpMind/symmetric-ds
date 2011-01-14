@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 
 /**
- * This service is responsible for access to the outgoing batch table. 
+ * This service provides an API to access to the outgoing batch table. 
  */
 public interface IOutgoingBatchService {
 

@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
 
 /**
- * 
+ * @see IPullService
  */
 public class PullService extends AbstractOfflineDetectorService implements IPullService {
 

@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -74,8 +75,6 @@ import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 
 /**
  * @see IDataLoaderService
@@ -191,7 +190,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public IDataLoader openDataLoader(BufferedReader reader) throws IOException {
         IDataLoader dataLoader = (IDataLoader) beanFactory.getBean(Constants.DATALOADER);
-        dataLoader.open(reader, filters, columnFilters);
+        dataLoader.open(reader, dataSource, batchListeners, filters, columnFilters);
         return dataLoader;
     }
 
@@ -202,9 +201,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         try {
             while (dataLoader.hasNext()) {
                 dataLoader.load();
-                IncomingBatch history = new IncomingBatch(dataLoader.getContext());
-                history.setValues(dataLoader.getStatistics(), true);
-                fireBatchComplete(dataLoader, history);
+                IncomingBatch batch = new IncomingBatch(dataLoader.getContext());
+                batch.setValues(dataLoader.getStatistics(), true);
             }
         } finally {
             stats = dataLoader.getStatistics();
@@ -229,13 +227,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             }
             dataLoader = openDataLoader(transport.open());
-            IDataLoaderContext context = dataLoader.getContext();
+            
+            IDataLoaderContext context = dataLoader.getContext();            
             while (dataLoader.hasNext()) {
                 batch = new IncomingBatch(context);
                 if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED) || 
                     (batch.getChannelId() != null && batch.getChannelId().equals(Constants.CHANNEL_CONFIG))) {
                     list.add(batch);
                     loadBatch(dataLoader, batch);
+                    batch.setStatus(Status.OK);
+                    incomingBatchService.updateIncomingBatch(batch);
                 }
                 batch = null;
             }
@@ -245,9 +246,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
 
             for (IncomingBatch incomingBatch : list) {
-                if (incomingBatch.isPersistable()) {
-                    incomingBatchService.updateIncomingBatch(incomingBatch);
-                }
+                // TODO I wonder if there is a way to avoid the second update?
+                incomingBatchService.updateIncomingBatch(incomingBatch);
             }
 
         } catch (RegistrationRequiredException ex) {
@@ -336,62 +336,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return new FileIncomingTransport(writer);
     }
 
-    private void fireEarlyCommit(IDataLoader loader, IncomingBatch batch) {
-        if (batchListeners != null) {
-            long ts = System.currentTimeMillis();
-            for (IBatchListener listener : batchListeners) {
-                listener.earlyCommit(loader, batch);
-            }
-            // update the filter milliseconds so batch listeners are also
-            // included
-            batch.setFilterMillis(batch.getFilterMillis() + (System.currentTimeMillis() - ts));
-        }
-    }
-
-    private void fireBatchComplete(IDataLoader loader, IncomingBatch batch) {
-        if (batchListeners != null) {
-            long ts = System.currentTimeMillis();
-            for (IBatchListener listener : batchListeners) {
-                listener.batchComplete(loader, batch);
-            }
-            // update the filter milliseconds so batch listeners are also
-            // included
-            batch.setFilterMillis(batch.getFilterMillis() + (System.currentTimeMillis() - ts));
-        }
-    }
-
-    private void fireBatchCommitted(IDataLoader loader, IncomingBatch batch) {
-        if (batchListeners != null) {
-            long ts = System.currentTimeMillis();
-            for (IBatchListener listener : batchListeners) {
-                listener.batchCommitted(loader, batch);
-            }
-            // update the filter milliseconds so batch listeners are also
-            // included
-            batch.setFilterMillis(batch.getFilterMillis() + (System.currentTimeMillis() - ts));
-        }
-    }
-
-    private void fireBatchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
-        if (batchListeners != null) {
-            long ts = System.currentTimeMillis();
-            for (IBatchListener listener : batchListeners) {
-                listener.batchRolledback(loader, batch, ex);
-            }
-            // update the filter milliseconds so batch listeners are also
-            // included
-            batch.setFilterMillis(batch.getFilterMillis() + (System.currentTimeMillis() - ts));
-        }
-    }
-
-    protected void handleBatchError(final IncomingBatch status) {
+    protected void handleBatchError(final IncomingBatch batch) {
         try {
-            if (!status.isRetry()) {
-                status.setStatus(IncomingBatch.Status.ER);
-                incomingBatchService.insertIncomingBatch(status);
+            if (batch.getStatus() != Status.OK) {
+                batch.setStatus(IncomingBatch.Status.ER);
             }
+            incomingBatchService.updateIncomingBatch(batch);
         } catch (Exception e) {
-            log.error("BatchStatusRecordFailed", status.getNodeBatchId());
+            log.error("BatchStatusRecordFailed", batch.getNodeBatchId());
         }
     }
 
@@ -489,70 +441,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.configurationService = configurationService;
     }
 
-    private enum LoadStatus {
-        CONTINUE, DONE
-    }
-
     protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch batch) {
         try {
-            TransactionalLoadDelegate loadDelegate = new TransactionalLoadDelegate(batch, dataLoader);
-            LoadStatus loadStatus = loadDelegate.getLoadStatus();
-            do {
-                newTransactionTemplate.execute(loadDelegate);
-                loadStatus = loadDelegate.getLoadStatus();
-                if (loadStatus == LoadStatus.CONTINUE) {
-                    // Chances are if SymmetricDS is configured to commit early in a batch we want to give other threads
-                    // a chance to do work and access the database.
-                    AppUtils.sleep(5);
-                }
-            } while (LoadStatus.CONTINUE == loadStatus);
-            fireBatchCommitted(dataLoader, batch);
-        } catch (RuntimeException ex) {
-            fireBatchRolledback(dataLoader, batch, ex);
-            throw ex;
-        }
-    }
-
-    class TransactionalLoadDelegate implements TransactionCallback<LoadStatus> {
-        IncomingBatch batch;
-        IDataLoader dataLoader;
-        LoadStatus loadStatus = LoadStatus.DONE;
-
-        public TransactionalLoadDelegate(IncomingBatch status, IDataLoader dataLoader) {
-            this.batch = status;
-            this.dataLoader = dataLoader;
-        }
-
-        public LoadStatus doInTransaction(TransactionStatus txStatus) {
-            try {
-                boolean done = true;
-                dbDialect.disableSyncTriggers(dataLoader.getContext().getSourceNodeId());
-                if (this.loadStatus == LoadStatus.CONTINUE || incomingBatchService.acquireIncomingBatch(batch)) {
-                    done = dataLoader.load();
-                } else {
-                    dataLoader.skip();
-                }
-                batch.setValues(dataLoader.getStatistics(), true);
-                if (done) {
-                    fireBatchComplete(dataLoader, batch);
-                    this.loadStatus = LoadStatus.DONE;
-                } else {
-                    log.info("LoaderEarlyCommit", batch.getBatchId(), dataLoader.getContext().getTableName(), dataLoader.getStatistics().getLineCount());
-                    fireEarlyCommit(dataLoader, batch);
-                    this.loadStatus = LoadStatus.CONTINUE;
-                }
-                return this.loadStatus;
-            } catch (IOException e) {
-                throw new TransportException(e);
-            } finally {
-                dbDialect.enableSyncTriggers();
+            dbDialect.disableSyncTriggers(dataLoader.getContext().getSourceNodeId());
+            if (incomingBatchService.acquireIncomingBatch(batch)) {
+                dataLoader.load();
+            } else {
+                dataLoader.skip();
             }
+            batch.setValues(dataLoader.getStatistics(), true);
+        } catch (IOException e) {
+            throw new TransportException(e);
+        } finally {
+            dbDialect.enableSyncTriggers();
         }
-
-        public LoadStatus getLoadStatus() {
-            return loadStatus;
-        }
-
     }
 
 }

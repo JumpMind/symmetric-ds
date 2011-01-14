@@ -27,14 +27,11 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.model.IncomingBatch;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * An abstract convenience class meant to be implemented by classes that need to
  * publish text messages
- *
- * 
  */
 abstract public class AbstractTextPublisherDataLoaderFilter implements IPublisherFilter, INodeGroupExtensionPoint,
         BeanNameAware {
@@ -131,7 +128,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter implements IPublishe
         }
     }
 
-    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
+    public void batchComplete(IDataLoader loader, IDataLoaderContext context) {
         IDataLoaderContext ctx = loader.getContext();
         if (doesTextExistToPublish(ctx)) {
             finalizeAndPublish(ctx);
@@ -185,12 +182,12 @@ abstract public class AbstractTextPublisherDataLoaderFilter implements IPublishe
         this.tableName = tableName;
     }
 
-    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
+    public void batchCommitted(IDataLoader loader, IDataLoaderContext context) {
     }
 
-    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
+    public void batchRolledback(IDataLoader loader, IDataLoaderContext context, Exception ex) {
     }
 
-    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
+    public void earlyCommit(IDataLoader loader, IDataLoaderContext context) {
     }
 }
