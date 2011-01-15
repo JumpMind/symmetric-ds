@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -45,16 +46,22 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
- * 
- * TODO support text and image fields, they cannot be referenced from the
- * inserted or deleted tables in the triggers. Here is one idea we could
- * implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
+ * Sybase dialect was tested with jconn4 JDBC driver.
+ * Based on the MsSqlDbDialect.
  *
- * 
+ *  disk resize name = master, size = 16384
+ *  create database symmetricclient on master = '30M'
+ *  
  */
 public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
     
+    private Map<String, String> sqlScriptReplacementTokens;
+
+    public SybaseDbDialect() {
+        sqlScriptReplacementTokens = new HashMap<String, String>();
+        sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
+    }
+
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
     }
@@ -64,12 +71,11 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
     
-    @SuppressWarnings("unchecked")
     @Override
-    protected Integer overrideJdbcTypeForColumn(Map values) {
+    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
-        if (typeName != null && typeName.startsWith("TEXT")) {
-            return Types.CLOB;          
+        if (typeName != null && typeName.toUpperCase().startsWith("TEXT")) {
+            return Types.LONGVARCHAR;          
         } else {
             return super.overrideJdbcTypeForColumn(values);
         }
@@ -187,40 +193,30 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultCatalog)dbo."+tablePrefix+"_triggers_disabled() = 0";
+        return "$(defaultCatalog)dbo."+tablePrefix+"_triggers_disabled(0) = 0";
     }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        // TODO: use sp_transactions where spid = @@spid ... maybe get starttime as integer?
-        return "null";
+    	return getDefaultCatalog() + ".dbo."+tablePrefix+"_txid(0)";
     }
 
     @Override
     public boolean supportsTransactionId() {
-        return false;
+        return true;
     }
 
-    /**
-     * SQL Server always pads character fields out to the right to fill out
-     * field with space characters.
-     * 
-     * @return true always
-     */
     public boolean isNonBlankCharColumnSpacePadded() {
         return true;
     }
 
-    /**
-     * @return false always
-     */
     public boolean isCharColumnSpaceTrimmed() {
         return false;
     }
 
     @Override
     public boolean isTransactionIdOverrideSupported() {
-        return false;
+        return true;
     }
 
     @Override
@@ -228,11 +224,6 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    /**
-     * SQL Server pads an empty string with spaces.
-     * 
-     * @return false always
-     */
     public boolean isEmptyStringNulled() {
         return false;
     }
@@ -252,13 +243,13 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
         return this.defaultSchema;
     }
 
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
+    public boolean needsToSelectLobData() {
         return true;
     }
 
-    public boolean needsToSelectLobData() {
-        return true;
+    @Override
+    public Map<String, String> getSqlScriptReplacementTokens() {
+        return sqlScriptReplacementTokens;
     }
 
 }
