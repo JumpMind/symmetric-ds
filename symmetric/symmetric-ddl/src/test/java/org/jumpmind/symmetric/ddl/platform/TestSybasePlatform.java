@@ -134,8 +134,8 @@ public class TestSybasePlatform extends TestPlatformBase
             "IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'RI' AND name = 'testfk')\n"+
             "    ALTER TABLE \"table3\" DROP CONSTRAINT \"testfk\";\n"+
             "SET quoted_identifier on;\n"+
-            "IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'RI' AND name = 'table2_FK_COL_L_FK_2_table1')\n"+
-            "    ALTER TABLE \"table2\" DROP CONSTRAINT \"table2_FK_COL_L_FK_2_table1\";\n"+
+            "IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'RI' AND name = 'table2_FK_COL_FK_1_COL_FK_2_table1')\n"+
+            "    ALTER TABLE \"table2\" DROP CONSTRAINT \"table2_FK_COL_FK_1_COL_FK_2_table1\";\n"+
             "SET quoted_identifier on;\n"+
             "SET quoted_identifier on;\n"+
             "IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = 'table3')\n"+
@@ -179,7 +179,7 @@ public class TestSybasePlatform extends TestPlatformBase
             "    \"COL_FK\" INT NOT NULL,\n"+
             "    PRIMARY KEY (\"COL_PK\")\n"+
             ");\n"+
-            "ALTER TABLE \"table2\" ADD CONSTRAINT \"table2_FK_COL_L_FK_2_table1\" FOREIGN KEY (\"COL_FK_1\", \"COL_FK_2\") REFERENCES \"table1\" (\"COL_PK_2\", \"COL_PK_1\");\n"+
+            "ALTER TABLE \"table2\" ADD CONSTRAINT \"table2_FK_COL_FK_1_COL_FK_2_table1\" FOREIGN KEY (\"COL_FK_1\", \"COL_FK_2\") REFERENCES \"table1\" (\"COL_PK_2\", \"COL_PK_1\");\n"+
             "ALTER TABLE \"table3\" ADD CONSTRAINT \"testfk\" FOREIGN KEY (\"COL_FK\") REFERENCES \"table2\" (\"COL_PK\");\n",
             createTestDatabase(TABLE_CONSTRAINT_TEST_SCHEMA));
     }
