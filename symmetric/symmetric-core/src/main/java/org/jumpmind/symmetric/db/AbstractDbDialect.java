@@ -58,6 +58,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
+import org.jumpmind.symmetric.db.sybase.SybaseDbDialect;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.io.DatabaseIO;
 import org.jumpmind.symmetric.ddl.model.Column;
@@ -84,12 +85,12 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.TransientDataAccessResourceException;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
-import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * The abstract class for database dialects.
@@ -367,25 +368,35 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected Table getTable(String catalogName, String schemaName, String tblName) {
         Table table = getTableCaseSensitive(catalogName, schemaName, tblName);
 
-        if (table == null && parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
-            table = getTableCaseSensitive(StringUtils.upperCase(catalogName), StringUtils
-                    .upperCase(schemaName), StringUtils.upperCase(tblName));
-            if (table == null) {
-                table = getTableCaseSensitive(StringUtils.lowerCase(catalogName), StringUtils
-                        .lowerCase(schemaName), StringUtils.lowerCase(tblName));
-                if (table == null) {
-                    table = getTableCaseSensitive(catalogName, schemaName, StringUtils
-                            .upperCase(tblName));
-                    if (table == null) {
-                        table = getTableCaseSensitive(catalogName, schemaName, StringUtils
-                                .lowerCase(tblName));
-                        if (table == null) {
-                            table = getTableCaseSensitive(catalogName, schemaName,
-                                    getPlatformTableName(catalogName, schemaName, tblName));
-                        }
-                    }
-                }
-            }
+        try {
+	        if (table == null && parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
+	            table = getTableCaseSensitive(StringUtils.upperCase(catalogName), StringUtils
+	                    .upperCase(schemaName), StringUtils.upperCase(tblName));
+	            if (table == null) {
+	                table = getTableCaseSensitive(StringUtils.lowerCase(catalogName), StringUtils
+	                        .lowerCase(schemaName), StringUtils.lowerCase(tblName));
+	                if (table == null) {
+	                    table = getTableCaseSensitive(catalogName, schemaName, StringUtils
+	                            .upperCase(tblName));
+	                    if (table == null) {
+	                        table = getTableCaseSensitive(catalogName, schemaName, StringUtils
+	                                .lowerCase(tblName));
+	                        if (table == null) {
+	                            table = getTableCaseSensitive(catalogName, schemaName,
+	                                    getPlatformTableName(catalogName, schemaName, tblName));
+	                        }
+	                    }
+	                }
+	            }
+	        }
+        } catch (UncategorizedSQLException e) {
+        	if (this instanceof SybaseDbDialect && e.getCause() instanceof SQLException &&
+        			((SQLException) e.getCause()).getErrorCode() == 911) {
+            	// Sybase is case sensitive and it will throw an exception
+            	// if you ask for a catalog or schema that does not exist        		
+        	} else {
+        		throw e;
+        	}
         }
         return table;
     }
@@ -487,7 +498,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 reader.removeSystemIndices(metaData, table);
             }
 
-            if (this instanceof MsSqlDbDialect || this instanceof InformixDbDialect) {
+            if (this instanceof MsSqlDbDialect || this instanceof InformixDbDialect ||
+            		this instanceof SybaseDbDialect) {
                 determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
             }
         }
