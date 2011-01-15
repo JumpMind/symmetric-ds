@@ -159,13 +159,16 @@ public class SqlScript {
                                 if (StringUtils.isNotBlank(lineDeliminator)) {
                                     toExecute = toExecute.replaceAll(lineDeliminator, "\n");
                                 }
-                                log.debug("Sql", sql);
                                 try {
-                                    st.execute(AppUtils.replaceTokens(toExecute, replacementTokens));
-                                    count++;
-                                    if (count % commitRate == 0) {
-                                        connection.commit();
-                                    }
+                                	toExecute = AppUtils.replaceTokens(toExecute, replacementTokens);
+                                	// Empty SQL only seems to come from SybasePlatform
+                                	if (!toExecute.equals("")) {
+                                        st.execute(toExecute);
+                                        count++;
+	                                    if (count % commitRate == 0) {
+	                                        connection.commit();
+	                                    }
+                                	}
                                 } catch (SQLException e) {
                                     if (failOnError) {
                                         log
