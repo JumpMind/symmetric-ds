@@ -183,10 +183,6 @@ public class CsvLoader implements IDataLoader {
                     } else if (isMetaTokenParsed(tokens)) {
                         continue;
                     } else if (tokens[0].equals(CsvConstants.COMMIT)) {
-                        fireBatchComplete();
-                        connection.commit();
-                        fireBatchCommitted();
-                        rowsProcessed = 0;
                         break;
                     } else if (tokens[0].equals(CsvConstants.SQL)) {
                         if ((context.getTableTemplate() == null || !context.getTableTemplate().isIgnoreThisTable())
@@ -208,6 +204,7 @@ public class CsvLoader implements IDataLoader {
                         log.warn("LoaderTokenUnexpected", tokens[0], stats.getLineCount(), context.getBatch());
                     }
                 }
+                
                 if (rowsProcessed > rowsBeforeCommit && rowsBeforeCommit > 0) {
                     rowsProcessed = 0;       
                     fireEarlyCommit();
@@ -228,6 +225,11 @@ public class CsvLoader implements IDataLoader {
                 }
 
             }
+            
+            fireBatchComplete();
+            connection.commit();
+            fireBatchCommitted();
+            rowsProcessed = 0;
 
         } catch (RuntimeException ex) {
             rollback(ex);            
