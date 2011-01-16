@@ -18,7 +18,6 @@ package org.jumpmind.symmetric.ddl;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 import java.sql.Connection;
 import java.util.Map;
 
@@ -108,8 +107,6 @@ public interface Platform
      */
     public void setPassword(String password);
 
-    // runtime properties
-
     /**
      * Determines whether script mode is on. This means that the generated SQL is not
      * intended to be sent directly to the database but rather to be saved in a SQL
@@ -194,8 +191,6 @@ public interface Platform
      * @param foreignKeysSorted <code>true</code> if read foreign keys shall be sorted
      */
     public void setForeignKeysSorted(boolean foreignKeysSorted);
-
-    // functionality
     
     /**
      * Returns a (new) JDBC connection from the data source.

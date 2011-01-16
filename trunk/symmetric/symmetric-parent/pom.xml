@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-parent</artifactId>
@@ -233,7 +234,7 @@
                 <artifactId>wagon-webdav</artifactId>
                 <version>1.0-beta-2</version>
             </extension>
-        </extensions>    
+        </extensions>
         <plugins>
             <plugin>
                 <artifactId>maven-eclipse-plugin</artifactId>
@@ -290,7 +291,7 @@
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-core</artifactId>
                 <version>2.2.0-SNAPSHOT</version>
-            </dependency>            
+            </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-server</artifactId>
@@ -417,7 +418,7 @@
                         <groupId>commons-collections</groupId>
                         <artifactId>commons-collections</artifactId>
                     </exclusion>
-                </exclusions>                
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>commons-beanutils</groupId>
@@ -496,7 +497,7 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-jmx</artifactId>
                 <version>${version.jetty}</version>
-            </dependency>            
+            </dependency>
             <!-- Include so log4j works w/ jetty -->
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -525,6 +526,11 @@
                 <version>1.1</version>
             </dependency>
             <!-- Databases -->
+            <dependency>
+                <groupId>org.firebirdsql.jdbc</groupId>
+                <artifactId>jaybird</artifactId>
+                <version>2.1.6</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derby</artifactId>

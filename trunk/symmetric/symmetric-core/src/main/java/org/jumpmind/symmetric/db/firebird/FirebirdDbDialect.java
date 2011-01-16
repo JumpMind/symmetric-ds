@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.db.firebird;
 
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -29,7 +27,7 @@ import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * 
+ * Database dialect for <a href="http://www.firebirdsql.org/">Firebird</a>.
  */
 public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
 

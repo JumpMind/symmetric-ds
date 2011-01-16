@@ -28,9 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Conatains information about the database platform such as supported features and native type mappings.
- * 
- * @version $Revision: 289996 $
+ * Contains information about the database platform such as supported features and native type mappings.
  */
 public class PlatformInfo
 {
