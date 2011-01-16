@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-server</artifactId>
@@ -29,11 +30,11 @@
         </license>
     </licenses>
 
-	<organization>
-		<name>JumpMind, Inc.</name>
-		<url>http://www.jumpmind.com/</url>
-	</organization>
-	
+    <organization>
+        <name>JumpMind, Inc.</name>
+        <url>http://www.jumpmind.com/</url>
+    </organization>
+
     <properties>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide/2.x</docbook.target>
@@ -96,9 +97,6 @@
                         </additionalClasspathElement>
                         <additionalClasspathElement>
                             ${user.home}/.symmetricds/lib/db2jcc.jar
-                        </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}/.symmetricds/lib/jaybird-full-2.1.6.jar
                         </additionalClasspathElement>
                         <additionalClasspathElement>
                             ${user.home}/.symmetricds/lib/ifxjdbc.jar
@@ -228,7 +226,7 @@
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-core</artifactId>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -326,12 +324,12 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
             <scope>provided</scope>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jmx</artifactId>
             <scope>provided</scope>
-        </dependency>              
+        </dependency>
         <!-- Include so log4j works w/ jetty -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -390,6 +388,11 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.firebirdsql.jdbc</groupId>
+            <artifactId>jaybird</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -465,7 +468,8 @@
                                                 <include name="css/*.css" />
                                             </fileset>
                                         </copy>
-                                        <copy todir="${docbook.target}/html-single/images" flatten="true">
+                                        <copy todir="${docbook.target}/html-single/images"
+                                            flatten="true">
                                             <fileset dir="${docbook.build}">
                                                 <include name="**/images/*" />
                                             </fileset>
@@ -506,7 +510,8 @@
                                             </fileset>
                                         </copy>
                                         <delete file="${docbook.build}/symmetric-schema.xml" />
-                                        <delete file="${basedir}/torque/report.symmetric-server.doc.generation" />
+                                        <delete
+                                            file="${basedir}/torque/report.symmetric-server.doc.generation" />
                                         <delete file="${basedir}/target/torque/sqldbmap.properties" />
                                         <delete file="${basedir}/target/torque/context.doc.properties" />
                                     </postProcess>
