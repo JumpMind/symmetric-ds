@@ -291,6 +291,10 @@ public interface IDbDialect {
     
     public Map<String, String> getSqlScriptReplacementTokens();
     
+    public String scrubSql(String sql);
+    
+    public StringBuilder scrubSql(StringBuilder sql);
+    
     /**
      * Indicates whether captured data can contain gaps.
      */

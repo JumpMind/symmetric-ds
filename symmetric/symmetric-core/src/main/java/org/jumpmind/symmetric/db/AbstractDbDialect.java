@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
@@ -1508,5 +1507,24 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     public String massageDataExtractionSql(String sql, Channel channel) {
         return sql;
+    }
+    
+    public String scrubSql(String sql) {
+        Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
+        if (replacementTokens != null) {
+            return AppUtils.replaceTokens(sql,
+                    replacementTokens).trim();
+        } else {
+            return sql;
+        }
+    }
+
+    public StringBuilder scrubSql(StringBuilder sql) {
+        Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
+        if (replacementTokens != null) {
+            return new StringBuilder(scrubSql(sql.toString()));
+        } else {
+            return sql;
+        }
     }
 }

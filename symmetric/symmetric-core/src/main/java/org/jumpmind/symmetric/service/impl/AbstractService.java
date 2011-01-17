@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.jumpmind.symmetric.service.ISqlProvider;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -102,15 +101,8 @@ abstract public class AbstractService implements IService, ISqlProvider {
                 }
             }
 
-            if (sql != null) {
-                if (dbDialect != null) {
-                    Map<String, String> replacementTokens = dbDialect
-                            .getSqlScriptReplacementTokens();
-                    if (replacementTokens != null) {
-                        sqlBuffer = new StringBuilder(AppUtils.replaceTokens(sqlBuffer.toString(),
-                                replacementTokens).trim());
-                    }                    
-                }
+            if (dbDialect != null) {
+               sqlBuffer = dbDialect.scrubSql(sqlBuffer);
             }
         }
         return sqlBuffer.toString();
