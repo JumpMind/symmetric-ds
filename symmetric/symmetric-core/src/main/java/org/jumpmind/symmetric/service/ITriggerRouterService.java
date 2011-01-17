@@ -60,6 +60,11 @@ public interface ITriggerRouterService {
     
     public List<Router> getRouters();
     
+    /**
+     * Get a list of routers for a specific node group link.
+     */
+    public List<Router> getRoutersByGroupLink(NodeGroupLink link);
+    
     public boolean isRouterBeingUsed(String routerId);    
     
     public void deleteRouter(Router router);

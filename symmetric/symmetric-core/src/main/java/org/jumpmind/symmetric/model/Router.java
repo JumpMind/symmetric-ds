@@ -43,7 +43,7 @@ public class Router implements Serializable {
 
     private NodeGroupLink nodeGroupLink;
 
-    private String routerType = null;
+    private String routerType = "default";
 
     /**
      * Default to routing all data to all nodes.
@@ -188,6 +188,17 @@ public class Router implements Serializable {
     
     public boolean isSyncOnUpdate() {
         return syncOnUpdate;
+    }
+    
+    public String createDefaultName() {
+        if (nodeGroupLink != null) {
+            return nodeGroupLink.getSourceNodeGroupId()
+            .toUpperCase()
+            + "_2_"
+            + nodeGroupLink.getTargetNodeGroupId().toUpperCase();
+        } else {
+            throw new IllegalStateException("Need the nodeGroupLink to be set");
+        }
     }
     
     @Override
