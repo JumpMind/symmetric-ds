@@ -44,8 +44,6 @@ public interface IConfigurationService {
     
     public void deleteNodeGroupLink(NodeGroupLink link);
     
-    public boolean isNodeGroupLinkInUse(NodeGroupLink link);
-    
     public List<NodeGroupLink> getNodeGroupLinks();
 
     public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId);

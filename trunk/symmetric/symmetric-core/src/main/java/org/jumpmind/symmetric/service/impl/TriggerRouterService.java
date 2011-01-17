@@ -419,6 +419,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 .get(routerId);
     }
     
+    /**
+     * @see ITriggerRouterService#getRoutersByGroupLink(NodeGroupLink)
+     */
+    public List<Router> getRoutersByGroupLink(NodeGroupLink link) {
+        return jdbcTemplate.query(getSql("select","selectRoutersColumnList",
+                "selectRouterByNodeGroupLinkWhereSql"), new RouterMapper(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
+    }
+    
     public Router getRouterById(String routerId) {
         try {
             return jdbcTemplate.queryForObject(getSql("select","selectRoutersColumnList",

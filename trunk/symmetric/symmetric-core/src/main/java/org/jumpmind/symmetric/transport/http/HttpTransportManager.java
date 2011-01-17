@@ -177,16 +177,20 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public static String buildRegistrationUrl(String baseUrl, Node node) throws IOException {
-        StringBuilder builder = new StringBuilder(baseUrl);
-        builder.append("/registration?");
-        append(builder, WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
-        append(builder, WebConstants.EXTERNAL_ID, node.getExternalId());
-        append(builder, WebConstants.SYNC_URL, node.getSyncUrl());
-        append(builder, WebConstants.SCHEMA_VERSION, node.getSchemaVersion());
-        append(builder, WebConstants.DATABASE_TYPE, node.getDatabaseType());
-        append(builder, WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
-        append(builder, WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
-        return builder.toString();
+        if (StringUtils.isNotBlank(baseUrl)) {
+            StringBuilder builder = new StringBuilder(baseUrl);
+            builder.append("/registration?");
+            append(builder, WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
+            append(builder, WebConstants.EXTERNAL_ID, node.getExternalId());
+            append(builder, WebConstants.SYNC_URL, node.getSyncUrl());
+            append(builder, WebConstants.SCHEMA_VERSION, node.getSchemaVersion());
+            append(builder, WebConstants.DATABASE_TYPE, node.getDatabaseType());
+            append(builder, WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
+            append(builder, WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
+            return builder.toString();
+        } else {
+            return "";
+        }
     }
 
     protected HttpURLConnection createGetConnectionFor(URL url) throws IOException {
