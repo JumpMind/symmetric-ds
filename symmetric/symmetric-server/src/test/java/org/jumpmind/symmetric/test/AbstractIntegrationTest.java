@@ -117,6 +117,17 @@ public class AbstractIntegrationTest extends AbstractTest {
                     TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT, databases[0], databases[1]);
         }
     }
+    
+    protected boolean clientPush() {
+        int tries = 0;
+        boolean pushed = false;
+        while (!pushed && tries < 10) {
+            pushed = getClientEngine().push();
+            AppUtils.sleep(100);
+            tries++;
+        }
+        return pushed;
+    }
 
     @AfterClass
     public static void cleanup() throws Exception {

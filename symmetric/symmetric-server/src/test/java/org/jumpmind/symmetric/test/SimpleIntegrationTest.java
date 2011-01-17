@@ -326,7 +326,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
     }
 
-    @Test//(timeout = 120000)
+    @Test(timeout = 120000)
     public void testSuspendIgnorePushRemoteBatches() throws ParseException {
 
         // test suspend / ignore with remote database specifying the suspends
@@ -338,7 +338,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "101", 1, "STK", "110000065", 3, 3.33 });
 
-        getClientEngine().push();
+        clientPush();
 
         assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "101" }).size(), 1,
                 "The order record wasn't sync'd when it should have.");
@@ -355,7 +355,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "102", 100, null, date }, new int[] {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "102", 1, "STK", "110000065", 3, 3.33 });
-        getClientEngine().push();
+        clientPush();
 
         OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
 
@@ -368,7 +368,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setIgnoreEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
-        getClientEngine().push();
+        clientPush();
 
         batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
 
@@ -383,7 +383,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         c.setSuspendEnabled(false);
         c.setIgnoreEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
-        getClientEngine().push();
+        clientPush();
     }
 
     @Test(timeout = 120000)
@@ -397,7 +397,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "105", 1, "STK", "110000065", 3, 3.33 });
 
-        getClientEngine().push();
+        clientPush();
 
         assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "105" }).size(), 1,
                 "The order record wasn't sync'd when it should have.");
@@ -414,7 +414,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "106", 100, null, date }, new int[] {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "106", 1, "STK", "110000065", 3, 3.33 });
-        getClientEngine().push();
+        clientPush();
 
         OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
 
@@ -426,7 +426,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setIgnoreEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
-        getClientEngine().push();
+        clientPush();
 
         batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
 
@@ -441,7 +441,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         c.setSuspendEnabled(false);
         c.setIgnoreEnabled(false);
         clientConfigurationService.saveNodeChannel(c, true);
-        getClientEngine().push();
+        clientPush();
     }
 
     @Test(timeout = 120000)
@@ -680,11 +680,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         final String NEW_VALUE = "unique new value one value";
         IDbDialect clientDialect = getClientDbDialect();
         insertIntoTestTriggerTable(clientJdbcTemplate, clientDialect, new Object[] { 3, "value one", "value \" two" });
-        getClientEngine().push();
+        clientPush();
         clientJdbcTemplate.update(updateTestTriggerTableSql, new Object[] { NEW_VALUE });
         final String verifySql = "select count(*) from test_triggers_table where string_one_value=?";
         Assert.assertEquals(3, clientJdbcTemplate.queryForInt(verifySql, new Object[] { NEW_VALUE }));
-        getClientEngine().push();
+        clientPush();
         Assert.assertEquals(3, rootJdbcTemplate.queryForInt(verifySql, new Object[] { NEW_VALUE }));
     }
 
@@ -721,7 +721,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "10", 100, null, date }, new int[] {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "10", 1, "STK", "110000065", 3, 3.33 });
-        getClientEngine().push();
+        clientPush();
     }
 
     @Test(timeout = 120000)
@@ -813,10 +813,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             return;
         }
         clientJdbcTemplate.update(insertStoreStatusSql, new Object[] { "00001", "", 1 });
-        getClientEngine().push();
+        clientPush();
 
         clientJdbcTemplate.update(updateStoreStatusSql, new Object[] { 2, "00001", "" });
-        getClientEngine().push();
+        clientPush();
 
         int status = rootJdbcTemplate.queryForInt(selectStoreStatusSql, new Object[] { "00001", "   " });
         assertEquals(status, 2, "Wrong store status");
@@ -828,7 +828,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         // do an extra push & pull to make sure we have events cleared out
         getClientEngine().pull();
-        getClientEngine().push();
+        clientPush();
 
         Thread.sleep(2000);
 
@@ -885,7 +885,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertNotSame("The heartbeat time was not updated at the client", clientHeartbeatTimeAfter, clientHeartbeatTimeBefore);
         Date rootHeartbeatTimeBefore = rootJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
         Assert.assertNotSame("The root heartbeat time should not be the same as the updated client heartbeat time", clientHeartbeatTimeAfter, rootHeartbeatTimeBefore);
-        while (getClientEngine().push()) {
+        while (clientPush()) {
             // continue to push while there data to push
         }
         Date rootHeartbeatTimeAfter = rootJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
@@ -1193,9 +1193,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "99", 100, null, date }, new int[] {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "99", 1, "STK", "110000099", 3, 3.33 });
+        
         // The push will cause a Registration Required return code which will cause the the client identify to be removed 
         // in order to force registration.
-        getClientEngine().push();
+        clientPush();
         
         // A pull will cause the registration to occur and the node identify to be
         // reestablished.
