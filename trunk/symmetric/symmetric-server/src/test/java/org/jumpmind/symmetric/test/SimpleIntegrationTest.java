@@ -785,8 +785,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void ignoreNodeChannel() {
         logTestRunning();
         INodeService rootNodeService = (INodeService) AppUtils.find(Constants.NODE_SERVICE, getRootEngine());
-        IConfigurationService rootConfigService = (IConfigurationService) getRootEngine().getApplicationContext()
-                .getBean("configurationService");
+        IConfigurationService rootConfigService = (IConfigurationService) getRootEngine().getConfigurationService();
         rootNodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         rootConfigService.reloadChannels();
@@ -805,6 +804,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootNodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         rootConfigService.reloadChannels();
+        
+        getClientEngine().pull();
+        getClientEngine().getConfigurationService().reloadChannels();
     }
 
     @Test(timeout = 120000)
@@ -815,6 +817,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             if (getClientDbDialect().isEmptyStringNulled()) {
                 return;
             }
+            
+            IConfigurationService rootConfigService = (IConfigurationService) getRootEngine().getConfigurationService();            
+            NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                    TestConstants.TEST_ROOT_EXTERNAL_ID, false);
+            Assert.assertNotNull(channel);
+            Assert.assertFalse(channel.isIgnoreEnabled());
+            Assert.assertFalse(channel.isSuspendEnabled());
+            
             clientJdbcTemplate.update(insertStoreStatusSql, new Object[] { "00001", "", 1 });
             clientPush();
 
