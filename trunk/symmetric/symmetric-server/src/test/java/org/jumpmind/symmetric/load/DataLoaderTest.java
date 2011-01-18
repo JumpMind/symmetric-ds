@@ -322,12 +322,15 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         ZipInputStream in = new ZipInputStream(getClass().getResourceAsStream("/test-data-loader-benchmark.zip"));
         in.getNextEntry();
         long startTime = System.currentTimeMillis();
-        IDataLoader dataLoader = getDataLoader();
-        dataLoader.open(TransportUtils.toReader(in), getDataSource(), null);
-        while (dataLoader.hasNext()) {
-            dataLoader.load();
+        IDataLoader dataLoader = getDataLoader();       
+        try {
+            dataLoader.open(TransportUtils.toReader(in), getDataSource(), null);
+            while (dataLoader.hasNext()) {
+                dataLoader.load();
+            }
+        } finally {
+            dataLoader.close();
         }
-        dataLoader.close();
         double totalSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
         // TODO: this used to run in 1 second; can we do some optimization?
         Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow", totalSeconds <= 15.0);

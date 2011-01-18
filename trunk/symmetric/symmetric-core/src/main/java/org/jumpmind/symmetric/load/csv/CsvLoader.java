@@ -486,18 +486,20 @@ public class CsvLoader implements IDataLoader {
     }
 
     public void close() {
-        if (csvReader != null) {
-            csvReader.close();
-        }
-        
-        if (connection != null) {
-            try {
-                connection.setAutoCommit(oldAutoCommitSetting);
-                connection.close();
-            } catch (SQLException ex) {
-                log.error(ex);
-            } finally {
-                connection = null;
+        try {
+            if (csvReader != null) {
+                csvReader.close();
+            }
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(oldAutoCommitSetting);
+                    connection.close();
+                } catch (SQLException ex) {
+                    log.error(ex);
+                } finally {
+                    connection = null;
+                }
             }
         }
     }

@@ -138,10 +138,13 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         IDataLoader dataLoader = getDataLoader();
         dataLoader.open(TransportUtils.toReader(in), getDataSource(), null, null, filters);
-        while (dataLoader.hasNext()) {
-            dataLoader.load();
+        try {
+            while (dataLoader.hasNext()) {
+                dataLoader.load();
+            }
+        } finally {
+            dataLoader.close();
         }
-        dataLoader.close();
     }
     
     protected IDataLoader getDataLoader() {
