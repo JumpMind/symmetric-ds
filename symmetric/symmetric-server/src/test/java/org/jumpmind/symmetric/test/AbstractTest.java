@@ -24,6 +24,8 @@ import org.apache.log4j.Logger;
 import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.RouterService;
+import org.jumpmind.symmetric.util.CsvUtils;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 abstract public class AbstractTest {
 
@@ -32,6 +34,8 @@ abstract public class AbstractTest {
         Logger.getLogger(DataLoaderService.class).setLevel(level);
         Logger.getLogger(RouterService.class).setLevel(level);
         Logger.getLogger(CsvLoader.class).setLevel(level);
+        Logger.getLogger(CsvUtils.class).setLevel(level);
+        Logger.getLogger(JdbcTemplate.class).setLevel(level);
         return old;
     }
     
