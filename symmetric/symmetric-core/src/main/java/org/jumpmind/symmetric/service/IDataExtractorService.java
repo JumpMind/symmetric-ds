@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.  */
 
-
 package org.jumpmind.symmetric.service;
 
 import java.io.IOException;
@@ -33,7 +32,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 /**
- * 
+ * This service provides an API to extract and stream data from a source database.
  */
 public interface IDataExtractorService {
 

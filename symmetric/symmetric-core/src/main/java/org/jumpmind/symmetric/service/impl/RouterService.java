@@ -191,6 +191,10 @@ public class RouterService extends AbstractService implements IRouterService {
         for (NodeChannel nodeChannel : channels) {
             if (!nodeChannel.isSuspendEnabled() && nodeChannel.isEnabled()) {
                 dataCount += routeDataForChannel(nodeChannel, sourceNode);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("RouterSkippingChannel", nodeChannel.getChannelId());
+                }
             }
         }
         return dataCount;
