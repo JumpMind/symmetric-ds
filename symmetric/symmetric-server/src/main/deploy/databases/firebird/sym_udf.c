@@ -1,23 +1,23 @@
 /*
- * SymmetricDS is an open source database synchronization solution.
- *   
- * Copyright (C) Eric Long <erilong@users.sourceforge.net>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
+ * Licensed to JumpMind Inc under one or more contributor 
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding 
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see
+ * License along with this library; if not, see           
  * <http://www.gnu.org/licenses/>.
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License. 
  */
-
 #include "sym_udf.h"
 
 char *sym_escape(char *str)
@@ -67,27 +67,27 @@ char *sym_escape(char *str)
 char *sym_hex(BLOBCALLBACK blob)
 {
    char *result, *hex_result;
-   int hex_result_size;
+   long hex_result_size;
    long bytes_read;
    long bytes_left, total_bytes_read;
-   int i, j;
+   long i, j;
 
    bytes_read = 0;
    total_bytes_read = 0;
 
    if (blob->blob_handle == NULL)
    {
-      result = (char *) ib_util_malloc(1);
+      result = (char *) malloc(1);
    }
    else
    {
-      result = (char *) ib_util_malloc(blob->blob_total_length + 1);
+      result = (char *) malloc(blob->blob_total_length + 1);
       memset(result, 0, blob->blob_total_length + 1);
 
       bytes_left = blob->blob_total_length;
       while (bytes_left > 0)
       {
-         if (!blob->blob_get_segment(blob->blob_handle, result + total_bytes_read,
+         if (!blob->blob_get_segment(blob->blob_handle, (ISC_UCHAR *)result + total_bytes_read,
                  blob->blob_total_length, &bytes_read))
          {
             break;
@@ -97,16 +97,25 @@ char *sym_hex(BLOBCALLBACK blob)
          bytes_left -= bytes_read;
       }
    }
+   
+   while (total_bytes_read>0 && isspace(result[total_bytes_read-1])) 
+   {
+    --total_bytes_read;
+   }
 
+   result[total_bytes_read] = '\0';
+  
    hex_result_size = (total_bytes_read * 2) + 1;
    hex_result = (char *) ib_util_malloc(hex_result_size);
    memset(hex_result, 0, hex_result_size);
-   for (i = 0, j = 0; j < hex_result_size; i++, j += 2)
+   for (i = 0, j = 0; i < total_bytes_read; i++, j += 2)
    {
-      sprintf(hex_result + j, "%02x", result[i]); 
+     sprintf(hex_result + j, "%02x", (unsigned char)result[i]); 
    }
 
-   hex_result[hex_result_size - 1] = NULL;
+   hex_result[hex_result_size] = '\0';    
+  
+   free(result);
 
    return hex_result;
 }
