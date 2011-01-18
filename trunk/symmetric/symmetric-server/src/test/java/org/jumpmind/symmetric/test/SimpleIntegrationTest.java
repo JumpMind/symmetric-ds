@@ -809,17 +809,25 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     @Test(timeout = 120000)
     public void syncUpdateWithEmptyKey() {
-        if (getClientDbDialect().isEmptyStringNulled()) {
-            return;
+        logTestRunning();
+        Level oldLevel = setLoggingLevelForTest(Level.DEBUG);
+        try {
+            if (getClientDbDialect().isEmptyStringNulled()) {
+                return;
+            }
+            clientJdbcTemplate.update(insertStoreStatusSql, new Object[] { "00001", "", 1 });
+            clientPush();
+
+            clientJdbcTemplate.update(updateStoreStatusSql, new Object[] { 2, "00001", "" });
+            clientPush();
+
+            int status = rootJdbcTemplate.queryForInt(selectStoreStatusSql, new Object[] { "00001",
+                    "   " });
+            assertEquals(status, 2, "Wrong store status");
+        } finally {
+            setLoggingLevelForTest(oldLevel);
+            logTestComplete();
         }
-        clientJdbcTemplate.update(insertStoreStatusSql, new Object[] { "00001", "", 1 });
-        clientPush();
-
-        clientJdbcTemplate.update(updateStoreStatusSql, new Object[] { 2, "00001", "" });
-        clientPush();
-
-        int status = rootJdbcTemplate.queryForInt(selectStoreStatusSql, new Object[] { "00001", "   " });
-        assertEquals(status, 2, "Wrong store status");
     }
 
     @Test(timeout = 120000)
