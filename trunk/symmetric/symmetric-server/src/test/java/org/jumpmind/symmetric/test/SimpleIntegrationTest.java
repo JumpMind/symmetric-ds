@@ -818,13 +818,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 return;
             }
             
-            IConfigurationService rootConfigService = (IConfigurationService) getRootEngine().getConfigurationService();            
-            NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-                    TestConstants.TEST_ROOT_EXTERNAL_ID, false);
-            Assert.assertNotNull(channel);
-            Assert.assertFalse(channel.isIgnoreEnabled());
-            Assert.assertFalse(channel.isSuspendEnabled());
-            
             clientJdbcTemplate.update(insertStoreStatusSql, new Object[] { "00001", "", 1 });
             clientPush();
 

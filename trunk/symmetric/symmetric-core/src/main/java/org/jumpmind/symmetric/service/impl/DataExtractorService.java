@@ -87,7 +87,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
- * ,
+ * @see IDataExtractorService
  */
 public class DataExtractorService extends AbstractService implements IDataExtractorService, BeanFactoryAware {
 
@@ -358,6 +358,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         // will be skipped in the future.
         for (OutgoingBatch batch : ignoredBatches) {
             batch.setStatus(OutgoingBatch.Status.IG);
+            if (log.isDebugEnabled()) {
+                log.debug("BatchIgnored", batch.getBatchId());
+            }
         }
 
         outgoingBatchService.updateOutgoingBatches(ignoredBatches);
