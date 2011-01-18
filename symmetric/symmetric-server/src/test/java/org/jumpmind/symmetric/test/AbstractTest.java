@@ -40,6 +40,11 @@ abstract public class AbstractTest {
                 + printDatabases());
     }
     
+    protected void logTestComplete() {
+        Logger.getLogger(getClass()).info("Completed running " + new Exception().getStackTrace()[1].getMethodName() + ". "
+                + printDatabases());
+    }
+    
     abstract protected String printDatabases();
     
 }
