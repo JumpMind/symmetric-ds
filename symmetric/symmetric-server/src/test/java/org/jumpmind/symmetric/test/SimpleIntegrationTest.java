@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.test;
 
 import java.math.BigDecimal;
@@ -204,7 +203,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
-    @Test//(timeout = 120000)
+    @Test(timeout = 120000)
     public void syncToClient() {
         logTestRunning();
         // test pulling no data
@@ -812,7 +811,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void syncUpdateWithEmptyKey() {
         logTestRunning();
-        Level oldLevel = setLoggingLevelForTest(Level.DEBUG);
         try {
             if (getClientDbDialect().isEmptyStringNulled()) {
                 return;
@@ -828,7 +826,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                     "   " });
             assertEquals(status, 2, "Wrong store status");
         } finally {
-            setLoggingLevelForTest(oldLevel);
             logTestComplete();
         }
     }
