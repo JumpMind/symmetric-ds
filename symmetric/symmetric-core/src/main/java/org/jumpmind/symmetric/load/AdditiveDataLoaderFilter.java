@@ -34,8 +34,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * columns use the incoming new and old values to compute the delta to be
  * applied to the node's current value. Override columns simply override (write
  * over) whatever value the node currently has.
- *
- * 
  */
 public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
 
@@ -57,11 +55,9 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
         if (!tableName.equalsIgnoreCase(context.getTableName())) {
             return true;
         } else {
-
             // The correct behavior here would seem to be to use the "old"
             // values to back out the node's overall
             // contribution to the summary columns, much like a reverse update.
-
             throw new RuntimeException("delete not supported for AdditiveDataLoaderFilter, table: "
                     + context.getTableName() + ", key(s): " + keyValues);
         }

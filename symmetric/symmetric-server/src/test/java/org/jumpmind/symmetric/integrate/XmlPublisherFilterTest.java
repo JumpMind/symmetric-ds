@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.integrate;
 
 import java.util.ArrayList;
@@ -54,6 +53,7 @@ public class XmlPublisherFilterTest extends AbstractDatabaseTest {
         ctx = new DataLoaderContext();
         ctx.setNodeId("54321");
         ctx.setTableName(TABLE_TEST);
+        ctx.chooseTableTemplate();
         ctx.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST, null, false, null, null));
         ctx.setColumnNames(new String[] { "ID1", "ID2", "DATA1", "DATA2", "DATA3" });
 

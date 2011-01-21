@@ -49,7 +49,7 @@ public class Table implements Serializable, Cloneable
     private String _schema = null;
     /** The name. */
     private String _name = null;
-    /** A desription of the table. */
+    /** A description of the table. */
     private String _description = null;
     /** The table's type as read from the database. */
     private String _type = null;

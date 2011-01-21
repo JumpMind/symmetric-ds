@@ -30,9 +30,6 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-/**
- * 
- */
 public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
 
     private static final String TABLE_TEST_1 = "TEST_ADD_DL_TABLE_1";
@@ -56,6 +53,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         ctx1 = new DataLoaderContext();
         ctx1.setNodeId("54321");
         ctx1.setTableName(TABLE_TEST_1);
+        ctx1.chooseTableTemplate();
         ctx1.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_1, null, false, null,
                 null));
         ctx1.setColumnNames(new String[] { "PK1", "PK2", "ADD1", "ADD2", "ADD3", "OVR1", "OVR2", "OVR3", "NADA1" });
