@@ -101,10 +101,14 @@ public class DataLoaderContext implements IDataLoaderContext {
     public TableTemplate getTableTemplate() {
         return tableTemplate;
     }
+    
+    private final String getFullQualifiedTableName() {
+        return catalogName + "." + schemaName + "." + tableName;
+    }
 
     public void setTableTemplate(TableTemplate tableTemplate) {
         this.tableTemplate = tableTemplate;
-        tableTemplateMap.put(getTableName(), tableTemplate);
+        tableTemplateMap.put(getFullQualifiedTableName(), tableTemplate);
     }
 
     public int getColumnIndex(String columnName) {
@@ -195,11 +199,14 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     public String getTableName() {
         return tableName;
-    }
-
+    }    
+    
     public void setTableName(String tableName) {
         this.tableName = tableName;
-        this.tableTemplate = tableTemplateMap.get(tableName);
+    }
+
+    public void chooseTableTemplate() {
+        this.tableTemplate = tableTemplateMap.get(getFullQualifiedTableName());
     }
 
     public String[] getOldData() {

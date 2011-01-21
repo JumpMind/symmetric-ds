@@ -53,7 +53,7 @@ public class XmlPublisherFilterTest extends AbstractDatabaseTest {
     public void setUp() {
         ctx = new DataLoaderContext();
         ctx.setNodeId("54321");
-        ctx.setTableName(TABLE_TEST);
+        ctx.setTableName(TABLE_TEST);        
         ctx.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST, null, false, null, null));
         ctx.setColumnNames(new String[] { "ID1", "ID2", "DATA1", "DATA2", "DATA3" });
 
