@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.util;
 
 import java.io.File;
@@ -43,7 +42,7 @@ import bsh.EvalError;
 import bsh.Interpreter;
 
 /**
- * 
+ * General application utility methods
  */
 public class AppUtils {
     
@@ -222,7 +221,7 @@ public class AppUtils {
                 log.warn(ex);
             }
         }
-    }
+    }   
     
     public static boolean isSystemPropertySet(String propName, boolean defaultValue) {
         return "true".equalsIgnoreCase(System.getProperty(propName, Boolean.toString(defaultValue)));

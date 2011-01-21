@@ -270,7 +270,8 @@ public class CsvLoader implements IDataLoader {
         } else if (tokens[0].equals(CsvConstants.CATALOG)) {
             context.setCatalogName(StringUtils.isBlank(tokens[1]) ? null : tokens[1]);
         } else if (tokens[0].equals(CsvConstants.TABLE)) {
-            resetTable(tokens[1]);
+            context.setTableName(tokens[1]);
+            resetTable();
         } else if (tokens[0].equals(CsvConstants.KEYS)) {
             context.setKeyNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
         } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
@@ -285,12 +286,12 @@ public class CsvLoader implements IDataLoader {
         return isMetaTokenParsed;
     }
 
-    protected void resetTable(String tableName) {
+    protected void resetTable() {
         cleanupAfterDataLoad();
-        context.setTableName(tableName);
+        context.chooseTableTemplate();
         if (context.getTableTemplate() == null) {
-            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
-                    this.columnFilters != null ? this.columnFilters.get(tableName) : null, parameterService
+            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, context.getTableName(),
+                    this.columnFilters != null ? this.columnFilters.get(context.getTableName()) : null, parameterService
                             .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE), context.getSchemaName(), context.getCatalogName()));
         }
         prepareTableForDataLoad();
