@@ -56,6 +56,10 @@ public class SimpleRouterContext implements IRouterContext {
         this.jdbcTemplate = jdbcTemplate;
         this.nodeId = nodeId;
     }
+    
+    public long getBatchId() {
+        return -1;
+    }
 
     public String getNodeId() {
         return nodeId;
