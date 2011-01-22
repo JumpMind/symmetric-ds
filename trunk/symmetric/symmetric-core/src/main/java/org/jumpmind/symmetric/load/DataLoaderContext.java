@@ -168,6 +168,10 @@ public class DataLoaderContext implements IDataLoaderContext {
     public String getNodeId() {
         return getSourceNodeId();
     }
+    
+    public long getBatchId() {
+        return batch != null ? batch.getBatchId() : -1;
+    }
 
 
     public void setSourceNodeId(String sourceNodeId) {        
@@ -175,8 +179,8 @@ public class DataLoaderContext implements IDataLoaderContext {
         this.sourceNode = null;
     }
     
-    public void setNodeId(String sourceNodeId)
-    {
+    @Deprecated
+    public void setNodeId(String sourceNodeId) {
         setSourceNodeId(sourceNodeId);
     }
     

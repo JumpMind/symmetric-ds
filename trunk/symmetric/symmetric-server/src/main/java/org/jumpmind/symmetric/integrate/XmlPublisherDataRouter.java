@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.jdom.Element;
+import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -38,6 +39,10 @@ import org.jumpmind.symmetric.route.IRouterContext;
  */
 public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements IDataRouter {
 
+    boolean onePerBatch = false;
+    
+    DataLoaderContext contextForPublishing = new DataLoaderContext();
+    
     public void contextCommitted(IRouterContext context) {
         if (doesXmlExistToPublish(context)) {
             finalizeXmlAndPublish(context);
@@ -45,6 +50,11 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
     }
     
     public void completeBatch(IRouterContext context, OutgoingBatch batch) {
+        contextForPublishing.setSourceNodeId(batch.getNodeId());
+        contextForPublishing.setBatchId(batch.getBatchId());
+        if (onePerBatch && doesXmlExistToPublish(contextForPublishing)) {
+            finalizeXmlAndPublish(contextForPublishing);
+        }
     }
 
     public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
@@ -66,4 +76,13 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
         return Collections.emptySet();
     }
 
+    /**
+     * Indicates that one message should be published per batch.  If this is set to false, then
+     * only one message will be published once for each set of data that is routed (even though 
+     * it may have been routed to several nodes across several different batches).
+     * @param onePerBatch
+     */
+    public void setOnePerBatch(boolean onePerBatch) {
+        this.onePerBatch = onePerBatch;
+    }
 }

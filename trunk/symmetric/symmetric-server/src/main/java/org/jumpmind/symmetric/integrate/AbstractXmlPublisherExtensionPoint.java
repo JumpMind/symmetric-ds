@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.model.DataEventType;
 
 /**
- * 
+ * An abstract class that accumulates data to publish.
  */
 public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INodeGroupExtensionPoint {
 
@@ -148,6 +148,7 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
      */
     protected void addFormattedExtraGroupAttributes(ICacheContext ctx, Element xml) {
         xml.setAttribute("nodeid", ctx.getNodeId());
+        xml.setAttribute("batchid", Long.toString(ctx.getBatchId()));
         if (timeStringGenerator != null) {
             xml.setAttribute("time", timeStringGenerator.getTime());
         }

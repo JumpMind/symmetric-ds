@@ -25,5 +25,8 @@ public interface ICacheContext {
 
     public Map<String, Object> getContextCache();
     
+    public long getBatchId();
+    
     public String getNodeId();
+    
 }
