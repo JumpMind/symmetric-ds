@@ -55,7 +55,7 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
         if (onePerBatch && doesXmlExistToPublish(contextForPublishing)) {
             finalizeXmlAndPublish(contextForPublishing);
         }
-    }
+    }            
 
     public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
