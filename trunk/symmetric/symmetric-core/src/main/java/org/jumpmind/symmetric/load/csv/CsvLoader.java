@@ -31,6 +31,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -125,7 +126,7 @@ public class CsvLoader implements IDataLoader {
                 this.stats = new DataLoaderStatistics();
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
-                this.context.setNodeId(tokens[1]);
+                this.context.setSourceNodeId(tokens[1]);
             } else if (isMetaTokenParsed(tokens)) {
                 continue;
             } else {
@@ -148,6 +149,7 @@ public class CsvLoader implements IDataLoader {
             long rowsProcessed = 0;
             lineCount = 0;
             bytesCount = 0;
+            long ts = System.currentTimeMillis();
             prepareTableForDataLoad();
             while (csvReader.readRecord()) {
                 String[] tokens = csvReader.getValues();
@@ -222,6 +224,12 @@ public class CsvLoader implements IDataLoader {
                 if (lineCount > StatisticConstants.FLUSH_SIZE_LINES) {
                     statisticManager.incrementDataLoaded(context.getChannelId(), lineCount);
                     lineCount = 0;
+                }
+                
+                long executeTimeInMs = System.currentTimeMillis()-ts;
+                if (executeTimeInMs >  DateUtils.MILLIS_PER_MINUTE * 10) {
+                    log.warn("LongRunningOperation", "loading " + stats.getLineCount() + " data for batch " + context.getBatchId(), executeTimeInMs);
+                    ts = System.currentTimeMillis();
                 }
 
             }
