@@ -228,7 +228,7 @@ public class CsvLoader implements IDataLoader {
                 
                 long executeTimeInMs = System.currentTimeMillis()-ts;
                 if (executeTimeInMs >  DateUtils.MILLIS_PER_MINUTE * 10) {
-                    log.warn("LongRunningOperation", "loading " + stats.getLineCount() + " data for batch " + context.getBatchId(), executeTimeInMs);
+                    log.warn("LongRunningOperation", "loaded " + stats.getLineCount() + " data so far for batch " + context.getBatchId(), executeTimeInMs);
                     ts = System.currentTimeMillis();
                 }
 
