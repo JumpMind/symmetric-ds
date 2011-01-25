@@ -64,6 +64,8 @@ public interface INodeService {
     public Collection<Node> findNodesWithOpenRegistration();
 
     public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache);
+    
+    public List<String> findAllExternalIds();
 
     public NodeSecurity findNodeSecurity(String nodeId);
 

@@ -33,6 +33,10 @@ public class DatabaseParameter implements Serializable {
 
     public DatabaseParameter() {
     }
+    
+    public DatabaseParameter(String key) {
+        this.key = key;
+    }
 
     public DatabaseParameter(String key, String value, String externalId, String nodeGroupId) {
         this.key = key;

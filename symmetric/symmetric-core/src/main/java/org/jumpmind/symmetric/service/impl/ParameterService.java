@@ -142,11 +142,11 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     /**
-     * Save a parameter that applies to {@link IParameterService#ALL} external
+     * Save a parameter that applies to {@link ParameterConstants#ALL} external
      * ids and all node groups.
      */
     public void saveParameter(String key, Object paramValue) {
-        this.saveParameter(IParameterService.ALL, IParameterService.ALL, key, paramValue);
+        this.saveParameter(ParameterConstants.ALL, ParameterConstants.ALL, key, paramValue);
     }
 
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
@@ -186,8 +186,8 @@ public class ParameterService extends AbstractService implements IParameterServi
 
     private Map<String, String> rereadDatabaseParameters(Properties p) {
         try {
-            Map<String, String> map = rereadDatabaseParameters(ALL, ALL);
-            map.putAll(rereadDatabaseParameters(ALL, p
+            Map<String, String> map = rereadDatabaseParameters(ParameterConstants.ALL, ParameterConstants.ALL);
+            map.putAll(rereadDatabaseParameters(ParameterConstants.ALL, p
                     .getProperty(ParameterConstants.NODE_GROUP_ID)));
             map.putAll(rereadDatabaseParameters(p.getProperty(ParameterConstants.EXTERNAL_ID), p
                     .getProperty(ParameterConstants.NODE_GROUP_ID)));

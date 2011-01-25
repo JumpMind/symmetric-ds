@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.jmx;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -53,7 +54,7 @@ public class ParameterManagementService {
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
             @ManagedOperationParameter(name = "value", description = "The value for the parameter") })
     public void updateParameterForAll(String key, String value) {
-        this.parameterService.saveParameter(IParameterService.ALL, IParameterService.ALL, key, value);
+        this.parameterService.saveParameter(ParameterConstants.ALL, ParameterConstants.ALL, key, value);
     }
 
     @ManagedOperation(description = "Update a parameter for all nodes in a group")
@@ -62,7 +63,7 @@ public class ParameterManagementService {
             @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
             @ManagedOperationParameter(name = "value", description = "The value for the parameter") })
     public void updateParameterForNodeGroup(String nodeGroup, String key, String value) {
-        this.parameterService.saveParameter(IParameterService.ALL, nodeGroup, key, value);
+        this.parameterService.saveParameter(ParameterConstants.ALL, nodeGroup, key, value);
     }
 
     @ManagedOperation(description = "Update a parameter for a specific node")
