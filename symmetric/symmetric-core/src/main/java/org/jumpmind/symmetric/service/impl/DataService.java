@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.Message;
@@ -785,10 +786,11 @@ public class DataService extends AbstractService implements IDataService {
                     rs = ps.executeQuery();
                     long executeTimeInMs = System.currentTimeMillis()-ts;
                     if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-                        log.warn("LongRunningOperation", "selecting data to extract", executeTimeInMs);
+                        log.warn("LongRunningOperation", "selecting data to extract", executeTimeInMs);                        
                     }
                     int count = 0;
                     boolean continueReading = true;
+                    ts = System.currentTimeMillis();
                     while (rs.next() && continueReading) {
                         try {
                             continueReading = handler.retrieved(readData(rs), rs.getString(13), ++count);
@@ -796,6 +798,12 @@ public class DataService extends AbstractService implements IDataService {
                             throw e;
                         } catch (Exception e) {
                             throw new RuntimeException(e);
+                        }
+                        
+                        executeTimeInMs = System.currentTimeMillis()-ts;
+                        if (executeTimeInMs >  DateUtils.MILLIS_PER_MINUTE * 10) {
+                            log.warn("LongRunningOperation", "extracted " + count + " data for batch " + batchId, executeTimeInMs);
+                            ts = System.currentTimeMillis();
                         }
                     }
                 } finally {

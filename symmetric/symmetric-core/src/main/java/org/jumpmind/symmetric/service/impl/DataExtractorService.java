@@ -38,6 +38,7 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -288,7 +289,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 java.sql.ResultSet.CONCUR_READ_ONLY);
                         st.setQueryTimeout(jdbcTemplate.getQueryTimeout());
                         st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                        long ts = System.currentTimeMillis();
                         rs = st.executeQuery();
+                        long executeTimeInMs = System.currentTimeMillis()-ts;
+                        if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+                            log.warn("LongRunningOperation", "selecting initial load to extract for batch " + batch.getBatchId(), executeTimeInMs);
+                        }
                         final DataExtractorContext ctxCopy = ctx == null ? clonableContext.copy(dataExtractor) : ctx;
                         if (newExtractorCreated) {
                             dataExtractor.init(writer, ctxCopy);
@@ -297,17 +303,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         SimpleRouterContext routingContext = new SimpleRouterContext(node.getNodeId(), jdbcTemplate,
                                 channel);
                         int dataNotRouted = 0;
-                        while (rs.next()) {
-                        	
+                        int dataRouted = 0;
+                        ts = System.currentTimeMillis();
+                        while (rs.next()) {                        	
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, triggerHistory2Use
                                     .getSourceTableName(), null, triggerHistory2Use, triggerRouter.getTrigger().getChannelId(), null, null);
                             DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, channel);
                             if (!StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) || 
                                     routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
                                 dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctxCopy);
+                                dataRouted++;
                             } else {
                                 dataNotRouted++;
                             }
+                            
+                            executeTimeInMs = System.currentTimeMillis()-ts;
+                            if (executeTimeInMs >  DateUtils.MILLIS_PER_MINUTE * 10) {
+                                log.warn("LongRunningOperation", "initial load extracted " + (dataRouted+dataNotRouted) + " data for batch " + batch.getBatchId(), executeTimeInMs);
+                                ts = System.currentTimeMillis();
+                            }
+
                         }
                         if (dataNotRouted > 0) {
                             log.info("RouterInitialLoadNotRouted",dataNotRouted, triggerRouter.getTrigger().getSourceTableName());
