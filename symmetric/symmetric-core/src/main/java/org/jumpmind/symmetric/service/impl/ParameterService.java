@@ -163,6 +163,12 @@ public class ParameterService extends AbstractService implements IParameterServi
 
         rereadParameters();
     }
+    
+    public void deleteParameter(String externalId, String nodeGroupId, String key) {
+        jdbcTemplate.update(getSql("deleteParameterSql"), externalId, nodeGroupId, key);
+        rereadParameters();
+        
+    }
 
     public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters) {
         Set<String> keys = parameters.keySet();

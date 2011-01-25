@@ -22,14 +22,16 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
+
 public class DatabaseParameter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private String key;
     private String value;
-    private String externalId;
-    private String nodeGroupId;
+    private String externalId = ParameterConstants.ALL;
+    private String nodeGroupId = ParameterConstants.ALL;
 
     public DatabaseParameter() {
     }
