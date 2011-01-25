@@ -84,7 +84,12 @@
         initial_load_enabled, initial_load_time, created_at_node_id from $[sym.sync.table.prefix]_node_security where
         node_id = ?
       </value>
-    </entry>
+    </entry>    
+    <entry key="selectExternalIdsSql">
+      <value>
+        select distinct(external_id) from $[sym.sync.table.prefix]_node where sync_enabled=1 order by external_id asc
+      </value>
+    </entry>    
     <entry key="findAllNodeSecuritySql">
       <value>
         select node_id, node_password, registration_enabled, registration_time,

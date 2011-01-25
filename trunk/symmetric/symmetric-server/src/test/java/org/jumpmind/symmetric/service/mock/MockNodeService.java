@@ -46,6 +46,10 @@ public class MockNodeService implements INodeService {
         return null;
     }
     
+    public List<String> findAllExternalIds() {
+        return null;
+    }
+    
     public boolean isRegistrationServer() {
         return false;
     }

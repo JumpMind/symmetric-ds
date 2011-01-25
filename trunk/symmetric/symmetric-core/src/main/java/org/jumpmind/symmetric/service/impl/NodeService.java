@@ -334,6 +334,10 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
     
+    public List<String> findAllExternalIds() {     
+        return jdbcTemplate.queryForList(getSql("selectExternalIdsSql"), String.class);
+    }
+    
     public List<Node> findAllNodes() {
         return jdbcTemplate.query(getSql("selectNodePrefixSql"), new NodeRowMapper());        
     }

@@ -25,6 +25,7 @@ package org.jumpmind.symmetric.common;
  */
 final public class ParameterConstants {
 
+    public static final String ALL = "ALL";
     private ParameterConstants() {
     }
 
