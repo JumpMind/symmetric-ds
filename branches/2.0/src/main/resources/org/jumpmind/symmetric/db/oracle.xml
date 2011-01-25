@@ -125,9 +125,20 @@
                 </property>
                 <property name="datetimeColumnTemplate" >
                     <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.ff')),'"')) ||','||]]>
+                    </value>
+                </property>               
+                <property name="dateColumnTemplate" >
+                    <value>
                         <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"')) ||','||]]>
                     </value>
                 </property>
+                <property name="timeColumnTemplate" >
+                    <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"')) ||','||]]>
+                    </value>
+                </property>                
+
                 <property name="triggerConcatCharacter" value="||"/>
                 <property name="newTriggerValue" value=":new"/>
                 <property name="oldTriggerValue" value=":old"/>
