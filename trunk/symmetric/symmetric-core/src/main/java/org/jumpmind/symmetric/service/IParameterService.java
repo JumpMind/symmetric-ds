@@ -56,9 +56,11 @@ public interface IParameterService {
 
     public void saveParameter(String key, Object paramValue);
 
-    public void saveParameter(String nodeId, String nodeGroupId, String key, Object paramValue);
+    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue);
 
-    public void saveParameters(String nodeId, String nodeGroupId, Map<String, Object> parameters);
+    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters);
+    
+    public void deleteParameter(String externalId, String nodeGroupId, String key);
 
     public void rereadParameters();
 

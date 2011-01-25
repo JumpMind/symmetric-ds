@@ -31,7 +31,13 @@
         select param_key, param_value, external_id, node_group_id from $[sym.sync.table.prefix]_parameter where param_key=?
         order by node_group_id, external_id
       </value>
-    </entry>    
+    </entry>
+    <entry key="deleteParameterSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_parameter where external_id=? and
+        node_group_id=? and param_key=?
+      </value>
+    </entry>        
 
   </util:map>
 
