@@ -317,7 +317,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             
                             executeTimeInMs = System.currentTimeMillis()-ts;
                             if (executeTimeInMs >  DateUtils.MILLIS_PER_MINUTE * 10) {
-                                log.warn("LongRunningOperation", "initial load extracted " + (dataRouted+dataNotRouted) + " data for batch " + batch.getBatchId(), executeTimeInMs);
+                                log.warn("LongRunningOperation", "initial load extracted " + (dataRouted+dataNotRouted) + " data so far for batch " + batch.getBatchId(), executeTimeInMs);
                                 ts = System.currentTimeMillis();
                             }
 
