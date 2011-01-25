@@ -80,8 +80,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected Integer overrideJdbcTypeForColumn(Map values) {
         String typeName = (String) values.get("TYPE_NAME");
-        // This is for Oracle's TIMESTAMP(9)
-        if (typeName != null && typeName.startsWith("TIMESTAMP")) {
+        if (typeName != null && typeName.startsWith("DATE")) {
+            return Types.DATE;
+        } else if (typeName != null && typeName.startsWith("TIMESTAMP")) {
+            // This is for Oracle's TIMESTAMP(9)
             return Types.TIMESTAMP;
             // This is for Oracle's NVARCHAR type
         } else if (typeName != null && typeName.startsWith("NVARCHAR")) {
