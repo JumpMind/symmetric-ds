@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.ddl.model.Column;
@@ -113,7 +114,7 @@ public class SqlTemplate {
         String columnsText = buildColumnString(dialect, dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT, false).columnString;
         sql = AppUtils.replace("columns", columnsText, sql);
-        sql = AppUtils.replace("whereClause", StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? "1=1" : triggerRouter.getInitialLoadSelect(), sql);
+        sql = AppUtils.replace("whereClause", StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION : triggerRouter.getInitialLoadSelect(), sql);
         sql = AppUtils.replace("tableName", metaData.getName(), sql);
         sql = AppUtils.replace("schemaName", triggerRouter.qualifiedSourceTablePrefix(), sql);
         sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
@@ -240,7 +241,7 @@ public class SqlTemplate {
                 && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", syncTriggersExpression);
         syncTriggersExpression = AppUtils.replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
                 && defaultSchema.length() > 0 ? defaultSchema + "." : "", syncTriggersExpression);
-        ddl = AppUtils.replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? "1=1"
+        ddl = AppUtils.replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? Constants.ALWAYS_TRUE_CONDITION
                 : syncTriggersExpression, ddl);
         ddl = AppUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 

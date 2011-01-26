@@ -20,6 +20,8 @@
 
 package org.jumpmind.symmetric.test;
 
+import java.util.Date;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
@@ -203,6 +205,15 @@ public class AbstractDatabaseTest extends AbstractTest {
     
     protected void assertNumberOfRows(int rows, String tableName) {
         Assert.assertEquals(tableName + " had an unexpected number of rows", rows, getJdbcTemplate().queryForInt("select count(*) from " + tableName));
+    }
+    
+    protected void forceRebuildOfTrigers() {
+        getJdbcTemplate().update("update sym_trigger set last_update_time=?", new Date());
+        getTriggerRouterService().syncTriggers();
+    }
+    
+    protected int countData() {
+        return getDataService().countDataInRange(-1, Integer.MAX_VALUE);
     }
 
 }
