@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
@@ -79,7 +80,7 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
                 }
             }
         } else {
-            gapSqlClause.append("1=1");
+            gapSqlClause.append(Constants.ALWAYS_TRUE_CONDITION);
         }
         String sql = AppUtils.replace("gap.clause", gapSqlClause.toString(), getSql(SELECT_DATA_USING_GAPS_SQL, context.getChannel().getChannel()));
         PreparedStatement ps = c.prepareStatement(sql,

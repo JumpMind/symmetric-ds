@@ -52,6 +52,7 @@ import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -1478,12 +1479,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
         if (parameterService.is(ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY)) {
             return getDbSpecificDataHasChangedCondition();
         } else {
-            return "1=1";
+            return Constants.ALWAYS_TRUE_CONDITION;
         }
     }
     
     protected String getDbSpecificDataHasChangedCondition() {
-        return "1=1";
+        return Constants.ALWAYS_TRUE_CONDITION;
     }
 
     public Map<String, String> getSqlScriptReplacementTokens() {

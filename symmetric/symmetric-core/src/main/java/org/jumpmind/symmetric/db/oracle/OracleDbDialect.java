@@ -46,7 +46,7 @@ import org.springframework.jdbc.support.lob.OracleLobHandler;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 /**
- * 
+ * A dialect that is specific to Oracle databases
  */
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -269,6 +269,11 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             sql = StringUtils.replace(sql, "d.pk_data", "dbms_lob.substr(d.pk_data, 4000, 1 )");
         }
         return sql;        
+    }
+    
+    @Override
+    protected String getDbSpecificDataHasChangedCondition() {
+        return "var_row_data != var_old_data";
     }
     
 }

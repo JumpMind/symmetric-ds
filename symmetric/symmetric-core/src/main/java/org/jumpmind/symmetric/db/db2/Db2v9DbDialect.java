@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.db.db2;
 
 import java.net.URL;
@@ -28,7 +26,7 @@ import org.jumpmind.symmetric.db.SqlScript;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * ,
+ * 
  */
 public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {
 

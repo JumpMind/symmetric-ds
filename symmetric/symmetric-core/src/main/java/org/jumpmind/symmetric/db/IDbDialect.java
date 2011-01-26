@@ -40,7 +40,7 @@ import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 /**
- * A dialect is the interface to insulate SymmetricDS from database implmentation specifics. 
+ * A dialect is the interface that insulates SymmetricDS from database implementation specifics. 
  */
 public interface IDbDialect {
 

@@ -31,6 +31,8 @@ import java.util.List;
 
 import javax.sql.rowset.serial.SerialBlob;
 
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
@@ -199,6 +201,28 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
         assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
                 + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
+    }
+    
+    @Test
+    public void testCaptureOnlyChangedData() throws Exception {
+        boolean oldvalue = getParameterService().is(
+                ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY);
+        try {
+            getParameterService().saveParameter(
+                    ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, true);
+            if (!Constants.ALWAYS_TRUE_CONDITION
+                    .equals(getDbDialect().getDataHasChangedCondition())) {
+                forceRebuildOfTrigers();
+                Assert.assertTrue(getJdbcTemplate().queryForInt("select count(*) from " + TEST_TRIGGERS_TABLE) > 0);
+                int dataCount = countData();
+                getJdbcTemplate().update("update " + TEST_TRIGGERS_TABLE + " set string_one_value=string_one_value");
+                Assert.assertEquals(dataCount, countData());
+            }
+        } finally {
+            getParameterService().saveParameter(
+                    ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, oldvalue);
+            forceRebuildOfTrigers();
+        }
     }
 
     @Test

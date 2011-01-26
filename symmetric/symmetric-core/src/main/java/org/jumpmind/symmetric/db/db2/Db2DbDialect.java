@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * ,
+ * A dialect that is specific to DB2 databases
  */
 public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -150,6 +150,11 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public void truncateTable(String tableName) {
         jdbcTemplate.update("delete from " + tableName);
+    }
+    
+    @Override
+    protected String getDbSpecificDataHasChangedCondition() {
+        return "var_row_data != var_old_data";
     }
     
 }

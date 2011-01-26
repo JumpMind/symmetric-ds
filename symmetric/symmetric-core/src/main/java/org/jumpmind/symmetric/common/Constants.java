@@ -36,6 +36,8 @@ final public class Constants {
     
     public static final String UNKNOWN_STRING = "unknown";
     
+    public static final String ALWAYS_TRUE_CONDITION = "1=1";
+    
     /**
      * Use this value if data is not to be routed anywhere.
      */
