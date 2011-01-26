@@ -30,6 +30,7 @@ import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.BinaryEncoding;
+import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
@@ -332,8 +333,14 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
             dataLoader.close();
         }
         double totalSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
+        
+        double targetTime = 15.0;
+        if (getDbDialect() instanceof InformixDbDialect) {
+            targetTime = 20.0;
+        }
+        
         // TODO: this used to run in 1 second; can we do some optimization?
-        Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow", totalSeconds <= 15.0);
+        Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow", totalSeconds <= targetTime);
     }    
 
 }
