@@ -26,8 +26,6 @@ import org.jumpmind.symmetric.model.Node;
 /**
  * This is an extension point that is called when the current instance has detected it cannot sync with another
  * {@link Node}.
- *
- * 
  */
 public interface IOfflineClientListener extends IExtensionPoint {
 
