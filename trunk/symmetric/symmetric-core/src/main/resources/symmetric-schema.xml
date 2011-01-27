@@ -373,7 +373,7 @@
         <index name="idx_ib_time_status">
             <index-column name="create_time" />
             <index-column name="status" />
-        </index>         
+        </index>
     </table>
     
     <table name="lock" description="Contains semaphores that are set when processes run, so that only one server can run a process at a time.  Enable this feature by using the cluster.lock.during.xxxx parameters.">

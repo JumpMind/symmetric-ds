@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric;
 
 import java.lang.management.ManagementFactory;
@@ -171,7 +170,7 @@ public class SymmetricWebServer {
         webapp = new WebAppContext();
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
-        webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime);
+        webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime/1000);
         
         server.setHandler(webapp);
 
