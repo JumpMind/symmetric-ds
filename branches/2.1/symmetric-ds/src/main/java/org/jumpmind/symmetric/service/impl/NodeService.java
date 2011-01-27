@@ -53,9 +53,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
-/**
- * ,
- */
 public class NodeService extends AbstractService implements INodeService {
     
     private Node cachedNodeIdentity;
@@ -182,8 +179,6 @@ public class NodeService extends AbstractService implements INodeService {
                 if (security == null && createIfNotFound) {
                     insertNodeSecurity(nodeId);
                     security = findNodeSecurity(nodeId, false);
-                } else if (security != null) {
-                    security.setNodePassword(filterPasswordOnRenderIfNeeded(security.getNodePassword()));
                 }
                 return security;
             } else {
@@ -367,7 +362,7 @@ public class NodeService extends AbstractService implements INodeService {
         public NodeSecurity mapRow(ResultSet rs, int num) throws SQLException {
             NodeSecurity nodeSecurity = new NodeSecurity();
             nodeSecurity.setNodeId(rs.getString(1));
-            nodeSecurity.setNodePassword(rs.getString(2));
+            nodeSecurity.setNodePassword(filterPasswordOnRenderIfNeeded(rs.getString(2)));
             nodeSecurity.setRegistrationEnabled(rs.getBoolean(3));
             nodeSecurity.setRegistrationTime(rs.getTimestamp(4));
             nodeSecurity.setInitialLoadEnabled(rs.getBoolean(5));
