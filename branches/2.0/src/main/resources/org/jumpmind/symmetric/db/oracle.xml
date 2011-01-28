@@ -125,7 +125,7 @@
                 </property>
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.ff')),'"')) ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.FF3')),'"')) ||','||]]>
                     </value>
                 </property>               
                 <property name="dateColumnTemplate" >
