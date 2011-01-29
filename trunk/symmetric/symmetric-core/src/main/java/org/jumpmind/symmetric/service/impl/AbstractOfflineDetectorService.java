@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.net.ConnectException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,7 +91,10 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         boolean offline = false;
         if (ex != null) {
             Throwable cause = ExceptionUtils.getRootCause(ex);
-            offline = cause instanceof SocketException || cause instanceof ConnectException;
+            offline = cause instanceof SocketException || 
+              cause instanceof ConnectException ||
+              cause instanceof SocketTimeoutException ||
+              cause instanceof UnknownHostException;
         }
         return offline;
     }
