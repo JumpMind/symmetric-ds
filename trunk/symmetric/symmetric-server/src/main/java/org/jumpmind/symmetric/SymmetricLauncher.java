@@ -57,6 +57,7 @@ import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.io.DatabaseIO;
 import org.jumpmind.symmetric.ddl.model.Database;
+import org.jumpmind.symmetric.profile.IProfile;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -102,6 +103,8 @@ public class SymmetricLauncher {
     private static final String OPTION_RUN_DDL_XML = "run-ddl";
 
     private static final String OPTION_RUN_SQL = "run-sql";
+    
+    private static final String OPTION_RUN_PROFILE = "run-profile";
 
     private static final String OPTION_PROPERTIES_GEN = "generate-default-properties";
     
@@ -130,6 +133,8 @@ public class SymmetricLauncher {
     private static final String OPTION_VERBOSE_CONSOLE = "verbose";
     
     private static final String OPTION_DEBUG = "debug";
+    
+    private static final String OPTION_PROFILE = "profile";
     
     private static final String OPTION_NOCONSOLE = "noconsole";
     
@@ -284,6 +289,13 @@ public class SymmetricLauncher {
                 System.exit(0);
                 return;
             }
+            
+            if (line.hasOption(OPTION_RUN_PROFILE)) {
+                testConnection(line);
+                runProfile(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_RUN_PROFILE));
+                System.exit(0);
+                return;
+            }            
 
             if (line.hasOption(OPTION_LOAD_BATCH)) {
                 testConnection(line);
@@ -452,6 +464,7 @@ public class SymmetricLauncher {
         addOption(options, "g", OPTION_PROPERTIES_GEN, true);
         addOption(options, "r", OPTION_RUN_DDL_XML, true);
         addOption(options, "s", OPTION_RUN_SQL, true);
+        addOption(options, OPTION_PROFILE, OPTION_RUN_PROFILE, true);
 
         addOption(options, "a", OPTION_AUTO_CREATE, false);
         addOption(options, "R", OPTION_OPEN_REGISTRATION, true);
@@ -598,6 +611,24 @@ public class SymmetricLauncher {
             script.execute();
         } else {
             throw new SymmetricException("FileNotFound", fileName);
+        }
+    }
+    
+    private static void runProfile(ISymmetricEngine engine, String profileName)
+            throws FileNotFoundException, MalformedURLException {
+        IProfile profile = (IProfile) engine.getApplicationContext().getBean(profileName);
+        if (profile != null) {
+            if (profile.isCompatible(engine)) {
+                try {
+                    profile.configure(engine);
+                } catch (Exception ex) {
+                    throw new SymmetricException("ProfileError", ex, profileName);
+                }
+            } else {
+                throw new SymmetricException("ProfileNotCompatible", profileName);
+            }
+        } else {
+            throw new SymmetricException("ProfileNotFound", profileName);
         }
     }
 
