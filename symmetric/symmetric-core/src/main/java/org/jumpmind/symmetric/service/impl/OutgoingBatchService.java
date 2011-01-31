@@ -165,7 +165,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
     
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, long startAtBatchId, boolean descending, final int maxRowsToRetrieve) {
+            List<OutgoingBatch.Status> statuses, long startAtBatchId, final int maxRowsToRetrieve) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
@@ -173,10 +173,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         String startAtBatchIdSql = null;
         if (startAtBatchId > 0) {
             params.put("BATCH_ID", startAtBatchId);
-            startAtBatchIdSql = descending ? " and batch_id < :BATCH_ID "
-                    : " and batch_id > :BATCH_ID ";
+            startAtBatchIdSql = " and batch_id < :BATCH_ID ";
         }
-        String orderBy = descending ? " order by batch_id desc" : " order by batch_id asc";
+        String orderBy = " order by batch_id desc";
         
         NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(dataSource);
         ResultSetExtractor<List<OutgoingBatch>> extractor = new ResultSetExtractor<List<OutgoingBatch>>() {

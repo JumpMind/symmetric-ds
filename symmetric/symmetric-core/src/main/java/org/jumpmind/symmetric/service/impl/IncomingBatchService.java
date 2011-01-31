@@ -21,8 +21,11 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -31,10 +34,15 @@ import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /**
  * @see IIncomingBatchService
@@ -43,7 +51,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public IncomingBatch findIncomingBatch(long batchId, String nodeId) {
         try {
-            return (IncomingBatch) jdbcTemplate.queryForObject(getSql("findIncomingBatchSql"), new Object[] { batchId,
+            return (IncomingBatch) jdbcTemplate.queryForObject(getSql("selectIncomingBatchPrefixSql","findIncomingBatchSql"), new Object[] { batchId,
                     nodeId }, new IncomingBatchMapper());
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -52,7 +60,53 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
         return (List<IncomingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
-                getSql("findIncomingBatchErrorsSql"), maxRows), new IncomingBatchMapper());
+                getSql("selectIncomingBatchPrefixSql","findIncomingBatchErrorsSql"), maxRows), new IncomingBatchMapper());
+    }
+    
+    public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("NODES", nodeIds);
+        params.put("CHANNELS", channels);
+        params.put("STATUSES", toStringList(statuses));
+        params.put("CREATE_TIME", startAtCreateTime);
+        NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
+        return template.query(getSql("selectCreateTimePrefixSql","listIncomingBatchesSql"), params, new SingleColumnRowMapper<Date>());
+    }
+    
+    public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("NODES", nodeIds);
+        params.put("CHANNELS", channels);
+        params.put("STATUSES", toStringList(statuses));
+        params.put("CREATE_TIME", startAtCreateTime);
+        
+        NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
+        ResultSetExtractor<List<IncomingBatch>> extractor = new ResultSetExtractor<List<IncomingBatch>>() {
+            IncomingBatchMapper rowMapper = new IncomingBatchMapper();
+            public List<IncomingBatch> extractData(ResultSet rs) throws SQLException, DataAccessException {
+                List<IncomingBatch> list = new ArrayList<IncomingBatch>(maxRowsToRetrieve);
+                int count = 0;
+                while (rs.next() && count < maxRowsToRetrieve) {
+                    list.add(rowMapper.mapRow(rs, ++count));
+                }
+                return list;
+            }
+        };
+        
+        List<IncomingBatch> list = template.query(
+                getSql("selectIncomingBatchPrefixSql","listIncomingBatchesSql"), new MapSqlParameterSource(params), extractor);
+        return list;
+    }    
+    
+    protected List<String> toStringList(List<IncomingBatch.Status> statuses) {
+        List<String> statusStrings = new ArrayList<String>(statuses.size());
+        for (Status status : statuses) {
+            statusStrings.add(status.name());
+        }
+        return statusStrings;
+
     }
 
     public boolean acquireIncomingBatch(IncomingBatch batch) {

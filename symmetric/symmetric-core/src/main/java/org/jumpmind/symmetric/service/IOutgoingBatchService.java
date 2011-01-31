@@ -65,6 +65,6 @@ public interface IOutgoingBatchService {
             List<OutgoingBatch.Status> statuses);
     
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, long startAtBatchId, boolean descending, int rowsExpected);
+            List<OutgoingBatch.Status> statuses, long startAtBatchId, int rowsExpected);
 
 }

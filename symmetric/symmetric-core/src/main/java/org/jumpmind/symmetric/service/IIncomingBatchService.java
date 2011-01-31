@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -42,5 +43,11 @@ public interface IIncomingBatchService {
     public int updateIncomingBatch(JdbcTemplate jdbcTemplate, IncomingBatch batch);
     
     public int updateIncomingBatch(IncomingBatch batch);
+    
+    public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime);
+    
+    public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve);
 
 }
