@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * ,
@@ -290,6 +291,10 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
+    }
+    
+    public JdbcTemplate getJdbcTemplate() {
+    	return tableTemplate != null ? tableTemplate.getJdbcTemplate() : null;
     }
 
 }
