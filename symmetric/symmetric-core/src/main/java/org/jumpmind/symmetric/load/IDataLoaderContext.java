@@ -24,6 +24,7 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * A working context used by the data loader
@@ -107,5 +108,10 @@ public interface IDataLoaderContext extends ICacheContext {
     public Object[] getObjectKeyValues(String[] values);
 
     public Object[] getOldObjectValues();
+    
+    /**
+     * @return a {@link JdbcTemplate} that wraps the connection being used to do the data load.
+     */
+    public JdbcTemplate getJdbcTemplate();
 
 }

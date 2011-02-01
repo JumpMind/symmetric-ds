@@ -305,6 +305,6 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
-    }
+    }      
 
 }
