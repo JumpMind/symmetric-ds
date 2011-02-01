@@ -175,7 +175,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             params.put("BATCH_ID", startAtBatchId);
             startAtBatchIdSql = " and batch_id < :BATCH_ID ";
         }
-        String orderBy = " order by batch_id desc";
         
         NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(dataSource);
         ResultSetExtractor<List<OutgoingBatch>> extractor = new ResultSetExtractor<List<OutgoingBatch>>() {
@@ -192,7 +191,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         
         List<OutgoingBatch> list = template.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchByChannelAndStatusSql",
-                        startAtBatchIdSql, orderBy), new MapSqlParameterSource(params), extractor);
+                        startAtBatchIdSql, " order by batch_id desc"), new MapSqlParameterSource(params), extractor);
         return list;
     }
 
