@@ -296,5 +296,9 @@ public class TableTemplate {
     public String[] getOldData() {
         return oldData;
     }
+    
+    public JdbcTemplate getJdbcTemplate() {
+		return jdbcTemplate;
+	}
 
 }
