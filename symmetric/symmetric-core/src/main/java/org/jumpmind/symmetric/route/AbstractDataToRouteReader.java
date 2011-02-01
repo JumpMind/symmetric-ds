@@ -267,6 +267,6 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
     }
 
     class EOD extends Data {
-
+        private static final long serialVersionUID = 1L;
     }
 }

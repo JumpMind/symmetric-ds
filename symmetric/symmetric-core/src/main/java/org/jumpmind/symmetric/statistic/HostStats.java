@@ -1,0 +1,158 @@
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding 
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
+ * <http://www.gnu.org/licenses/>.
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.  */
+package org.jumpmind.symmetric.statistic;
+
+import java.util.Date;
+
+public class HostStats extends AbstractNodeHostStats {
+
+    private long restarted;
+    private long nodesPulled;
+    private long nodesPushed;
+    private long nodesRejected;
+    private long nodesRegistered;
+    private long nodesLoaded;
+    private long nodesDisabled;
+    private long purgedDataRows;
+    private long purgedDataEventRows;
+    private long purgedBatchOutgoingRows;
+    private long purgedBatchIncomingRows;
+    private long triggersCreatedCount;
+    private long triggersRebuiltCount;
+    private long triggersRemovedCount;
+    
+    public HostStats() {}
+    
+    public HostStats(String nodeId, String hostName, Date startTime, Date endTime) {
+        super(nodeId, hostName, startTime, endTime);
+    }
+    
+    public void add(HostStats stats) {
+        restarted += stats.getRestarted();
+        nodesPulled += stats.getNodesPulled();
+        nodesPushed += stats.getNodesPushed();
+        nodesRejected += stats.getNodesRejected();
+        nodesRegistered += stats.getNodesRegistered();
+        nodesLoaded += stats.getNodesLoaded();
+        nodesDisabled += stats.getNodesDisabled();
+        purgedDataRows += stats.getPurgedDataRows();
+        purgedDataEventRows += stats.getPurgedDataEventRows();
+        purgedBatchOutgoingRows += stats.getPurgedBatchOutgoingRows();
+        purgedBatchIncomingRows += stats.getPurgedBatchIncomingRows();
+        triggersCreatedCount += stats.getTriggersCreatedCount();
+        triggersRebuiltCount += stats.getTriggersRebuiltCount();
+        triggersRemovedCount += stats.getTriggersRemovedCount();
+    }
+
+    public long getRestarted() {
+        return restarted;
+    }
+    
+    public void incrementRestarted(long value) {
+        restarted += value;
+    }
+
+    public long getNodesPulled() {
+        return nodesPulled;
+    }
+    
+    public void incrementNodesPulled(long value) {
+        nodesPulled += value;
+    }
+
+    public long getNodesPushed() {
+        return nodesPushed;
+    }
+    
+    public void incrementNodesPushed(long value) {
+        nodesPushed += value;
+    }
+
+    public long getNodesRejected() {
+        return nodesRejected;
+    }
+    
+    public void incrementNodesRejected(long value) {
+        nodesRejected += value;
+    }
+
+    public long getNodesRegistered() {
+        return nodesRegistered;
+    }
+    
+    public void incrementNodesRegistered(long value) {
+        nodesRegistered += value;
+    }
+
+    public long getNodesLoaded() {
+        return nodesLoaded;
+    }
+    
+    public void incrementNodesLoaded(long value) {
+        nodesLoaded += value;
+    }
+
+    public long getNodesDisabled() {
+        return nodesDisabled;
+    }
+    
+    public void incrementNodesDisabled(long value) {
+        nodesDisabled += value;
+    }
+
+    public long getPurgedDataRows() {
+        return purgedDataRows;
+    }
+    
+    public void incrementPurgedDataRows(long value) {
+        purgedDataRows += value;        
+    }
+
+    public long getPurgedDataEventRows() {
+        return purgedDataEventRows;
+    }
+    
+    public void incrementPurgedDataEventRows(long value) {
+        restarted += value;
+    }
+
+    public long getPurgedBatchOutgoingRows() {
+        return purgedBatchOutgoingRows;
+    }
+
+    public long getPurgedBatchIncomingRows() {
+        return purgedBatchIncomingRows;
+    }
+
+    public long getTriggersCreatedCount() {
+        return triggersCreatedCount;
+    }
+
+    public long getTriggersRebuiltCount() {
+        return triggersRebuiltCount;
+    }
+
+    public long getTriggersRemovedCount() {
+        return triggersRemovedCount;
+    }
+    
+    
+
+}
