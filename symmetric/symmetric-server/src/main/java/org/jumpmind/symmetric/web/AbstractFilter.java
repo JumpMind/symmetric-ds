@@ -20,12 +20,10 @@
 
 package org.jumpmind.symmetric.web;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
 import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.transport.ITransportResource;
 import org.springframework.beans.BeanUtils;
 
@@ -34,9 +32,8 @@ import org.springframework.beans.BeanUtils;
  * class. It is managed by Spring.
  * 
  * @since 1.4.0
- *
  */
-public abstract class AbstractFilter extends ServletResourceTemplate implements Filter, IExtensionPoint {
+public abstract class AbstractFilter extends ServletResourceTemplate implements IServletFilterExtension {
 
     protected abstract ILog getLog();
 

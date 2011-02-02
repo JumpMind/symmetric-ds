@@ -20,13 +20,18 @@
 
 package org.jumpmind.symmetric.ext;
 
+import java.util.List;
+
 import org.springframework.beans.BeansException;
 
 /**
- * 
+ * An API that is responsible for finding and registering available
+ * extension points.
  */
 public interface IExtensionPointManager {
 
     public void register() throws BeansException;
+    
+    public List<ExtensionPointMetaData> getExtensionPoints();
     
 }

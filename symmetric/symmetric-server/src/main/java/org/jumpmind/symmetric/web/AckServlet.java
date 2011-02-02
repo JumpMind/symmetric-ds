@@ -32,15 +32,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.handler.AckResourceHandler;
 
 /**
- * 
- *
- * 
- *
- * 
+ * Responsible for marking {@link OutgoingBatch}s as acknowledged.
  */
 public class AckServlet extends AbstractTransportResourceServlet<AckResourceHandler> implements IBuiltInExtensionPoint {
 
