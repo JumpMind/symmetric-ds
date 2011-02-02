@@ -104,7 +104,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     
     public DataLoaderService() {
          addBatchListener(new LoadBatchResultsListener());
-    }
+    }    
 
     /**
      * Connect to the remote node and pull data. The acknowledgment of

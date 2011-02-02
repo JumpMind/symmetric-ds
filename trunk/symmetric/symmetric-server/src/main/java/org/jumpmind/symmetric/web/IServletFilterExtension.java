@@ -16,18 +16,14 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-package org.jumpmind.symmetric.ext;
-
-/**
- * 
+ * under the License. 
  */
-public interface IExtensionPoint {
+package org.jumpmind.symmetric.web;
 
-    /**
-     * Allow the plug-in implementation to specific whether the SymmetricDS
-     * runtime should auto register it or if it will register itself.
-     */
-    public boolean isAutoRegister();
+import javax.servlet.Filter;
+
+import org.jumpmind.symmetric.ext.IExtensionPoint;
+
+public interface IServletFilterExtension extends IExtensionPoint, Filter {
 
 }

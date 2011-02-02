@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
- * ,
+ * Super class for SymmetricDS Servlets.  Contains useful Servlet processing methods.
  */
 abstract public class AbstractServlet extends HttpServlet {
 

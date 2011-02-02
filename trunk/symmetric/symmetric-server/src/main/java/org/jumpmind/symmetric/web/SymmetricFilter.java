@@ -78,14 +78,14 @@ public class SymmetricFilter implements Filter {
         servletContext = filterConfig.getServletContext();
         filters = new ArrayList<Filter>();
         ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
-        Map<String, Filter> filterBeans = new LinkedHashMap<String, Filter>();
-        filterBeans.putAll(ctx.getBeansOfType(Filter.class));
+        Map<String, IServletFilterExtension> filterBeans = new LinkedHashMap<String, IServletFilterExtension>();
+        filterBeans.putAll(ctx.getBeansOfType(IServletFilterExtension.class));
         if (ctx.getParent() != null) {
-            filterBeans.putAll(ctx.getParent().getBeansOfType(Filter.class));
+            filterBeans.putAll(ctx.getParent().getBeansOfType(IServletFilterExtension.class));
         }
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file
-        for (final Map.Entry<String, Filter> filterEntry : filterBeans.entrySet()) {            
+        for (final Map.Entry<String, IServletFilterExtension> filterEntry : filterBeans.entrySet()) {            
             final Filter filter = filterEntry.getValue();
             if (filter instanceof IExtensionPoint) {
                 String filterKey = filterEntry.getKey();

@@ -17,9 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.ext;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -66,8 +66,6 @@ import org.springframework.context.ApplicationContext;
  * SymmetricDS reads in any Spring XML file found in the classpath of the
  * application that matches the following pattern:
  * /META-INF/services/symmetric-*-ext.xml
- *
- * 
  */
 public class ExtensionPointManager implements IExtensionPointManager, BeanFactoryAware {
 
@@ -98,8 +96,10 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
     private BeanFactory beanFactory;
 
     private boolean initialized = false;
+    
+    private List<ExtensionPointMetaData> extensionPoints = new ArrayList<ExtensionPointMetaData>();
 
-    public void register() throws BeansException {
+    public void register() throws BeansException {        
         ConfigurableListableBeanFactory cfgBeanFactory = (ConfigurableListableBeanFactory) beanFactory;
         if (!initialized) {
             Map<String, IExtensionPoint> extensions = new TreeMap<String, IExtensionPoint>();
@@ -111,6 +111,7 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
             }
             for (String beanName : extensions.keySet()) {
                 IExtensionPoint ext = extensions.get(beanName);
+                boolean registered = false;
                 if (ext.isAutoRegister()) {
                     boolean registerExtension = false;
                     if (ext instanceof INodeGroupExtensionPoint) {
@@ -131,17 +132,25 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
                     }
 
                     if (registerExtension) {
-                        registerExtension(beanName, ext);
+                        registered = registerExtension(beanName, ext);
                     }
+                }
+                
+                if (!registered) {
+                    extensionPoints.add(new ExtensionPointMetaData(ext, beanName, null, false));
                 }
             }
             this.initialized = true;
         }
 
+    }    
+    
+    public List<ExtensionPointMetaData> getExtensionPoints() {
+        return new ArrayList<ExtensionPointMetaData>(extensionPoints);
     }
 
-    private void registerExtension(String beanName, IExtensionPoint ext) {
-
+    protected boolean registerExtension(String beanName, IExtensionPoint ext) {
+        boolean installed = false;
         if (ext instanceof IBuiltInExtensionPoint) {
             log.debug("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
         } else {
@@ -149,31 +158,45 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         }
 
         if (ext instanceof ISyncUrlExtension) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, ISyncUrlExtension.class, true));
             transportManager.addExtensionSyncUrlHandler(beanName, (ISyncUrlExtension) ext);
         }
 
         if (ext instanceof INodePasswordFilter) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, INodePasswordFilter.class, true));
             nodeService.setNodePasswordFilter((INodePasswordFilter) ext);
             registrationService.setNodePasswordFilter((INodePasswordFilter) ext);
         }
 
         if (ext instanceof IAcknowledgeEventListener) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IAcknowledgeEventListener.class, true));
             acknowledgeService.addAcknowledgeEventListener((IAcknowledgeEventListener) ext);
         }
 
         if (ext instanceof ITriggerCreationListener) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, ITriggerCreationListener.class, true));
             triggerRouterService.addTriggerCreationListeners((ITriggerCreationListener) ext);
         }
 
         if (ext instanceof IBatchListener) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IBatchListener.class, true));
             dataLoaderService.addBatchListener((IBatchListener) ext);
         }
 
         if (ext instanceof IHeartbeatListener) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IHeartbeatListener.class, true));
             dataService.addHeartbeatListener((IHeartbeatListener) ext);
         }
 
         if (ext instanceof IDataLoaderFilter) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IDataLoaderFilter.class, true));
             dataLoaderService.addDataLoaderFilter((IDataLoaderFilter) ext);
         }
 
@@ -183,6 +206,8 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
                 if (tableColumnFilter.getTables() != null) {
                     String[] tables = tableColumnFilter.getTables();
                     for (String table : tables) {
+                        installed = true;
+                        extensionPoints.add(new ExtensionPointMetaData(ext, beanName, ITableColumnFilter.class, true, table));
                         dataLoaderService.addColumnFilter(table, tableColumnFilter);
                     }
                 }
@@ -195,39 +220,57 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         }
 
         if (ext instanceof IReloadListener) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IReloadListener.class, true));
             dataService.addReloadListener((IReloadListener) ext);
         }
 
         if (ext instanceof IParameterFilter) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IParameterFilter.class, true));
             parameterService.setParameterFilter((IParameterFilter) ext);
         }
 
         if (ext instanceof IExtractorFilter) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IExtractorFilter.class, true));
             dataExtractorService.addExtractorFilter((IExtractorFilter) ext);
         }
 
         if (ext instanceof INodeIdGenerator) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, INodeIdGenerator.class, true));
             nodeService.setNodeIdGenerator((INodeIdGenerator) ext);
         }
 
         if (ext instanceof IDataRouter) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IDataRouter.class, true));
             routingService.addDataRouter(beanName, (IDataRouter) ext);
         }
 
         if (ext instanceof IBatchAlgorithm) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IBatchAlgorithm.class, true));
             routingService.addBatchAlgorithm(beanName, (IBatchAlgorithm) ext);
         }
 
         if (ext instanceof IOfflineClientListener) {
             for (IOfflineDetectorService service : offlineDetectorServices) {
+                installed = true;
+                extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IOfflineClientListener.class, true));
                 service.addOfflineListener((IOfflineClientListener) ext);
             }
         }
 
         if (ext instanceof IOfflineServerListener) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IOfflineServerListener.class, true));
             nodeService.addOfflineServerListener((IOfflineServerListener) ext);
-        }
-    }
+        }        
+        
+        return installed;
+    }   
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {
         this.dataLoaderService = dataLoaderService;

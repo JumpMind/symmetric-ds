@@ -35,9 +35,7 @@ import org.springframework.context.ApplicationContext;
 /**
  * @since 1.4.0
  * 
- * @param <T>
- *
- * 
+ * @param <T> 
  */
 public abstract class AbstractResourceServlet extends AbstractServlet implements IServletResource, IServletExtension {
 
@@ -137,7 +135,7 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
     /**
      * Returns true if this is a container managed resource.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected IServletResource getSpringBean() {
         IServletResource retVal = this;        
         if (!isSpringManaged()) {
