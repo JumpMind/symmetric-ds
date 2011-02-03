@@ -72,6 +72,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataAccessException;
@@ -105,6 +106,8 @@ public class DataService extends AbstractService implements IDataService {
     private List<IReloadListener> reloadListeners;
 
     private List<IHeartbeatListener> heartbeatListeners;
+    
+    private IStatisticManager statisticManager;
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
 
@@ -363,6 +366,8 @@ public class DataService extends AbstractService implements IDataService {
             insertNodeSecurityUpdate(targetNode,
                     parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
 
+            statisticManager.incrementNodesLoaded(1);
+            
             return null;
         }
     }
@@ -834,8 +839,7 @@ public class DataService extends AbstractService implements IDataService {
         data.setTransactionId(results.getString(10));
         data.setSourceNodeId(results.getString(11));
         data.setExternalData(results.getString(12));
-        // TODO Be careful add more columns. Callers might not be expecting
-        // them.
+        // Be careful adding more columns. Callers might not be expecting them!
         return data;
     }
     
@@ -863,4 +867,9 @@ public class DataService extends AbstractService implements IDataService {
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
     }
+    
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
+    }
+    
 }

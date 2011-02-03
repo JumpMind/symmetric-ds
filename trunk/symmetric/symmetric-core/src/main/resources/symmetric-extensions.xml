@@ -49,6 +49,7 @@
     <bean id="offlineServerListener" class="org.jumpmind.symmetric.job.DefaultOfflineServerListener">
         <property name="nodeService" ref="nodeService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="statisticManager" ref="statisticManager" />
     </bean>
     
     <bean id="offlineClientListener" class="org.jumpmind.symmetric.io.DefaultOfflineClientListener">

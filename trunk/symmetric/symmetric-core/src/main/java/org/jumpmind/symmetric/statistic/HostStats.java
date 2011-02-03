@@ -160,16 +160,25 @@ public class HostStats extends AbstractNodeHostStats {
     }
 
     public void incrementPurgedDataEventRows(long value) {
-        restarted += value;
+        purgedDataEventRows += value;
     }
 
     public long getPurgedBatchOutgoingRows() {
         return purgedBatchOutgoingRows;
     }
 
+    public void incrementPurgedBatchOutgoingRows(long value) {
+        purgedBatchOutgoingRows += value;
+    }
+
     public long getPurgedBatchIncomingRows() {
         return purgedBatchIncomingRows;
     }
+    
+    public void incrementPurgedBatchIncomingRows(long value) {
+        purgedBatchIncomingRows += value;
+    }
+
 
     public long getTriggersCreatedCount() {
         return triggersCreatedCount;

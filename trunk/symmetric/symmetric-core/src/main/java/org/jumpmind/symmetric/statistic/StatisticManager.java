@@ -237,6 +237,60 @@ public class StatisticManager implements IStatisticManager {
             hostStatsLock.release();
         }  
     }
+    
+    public void incrementNodesLoaded(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementNodesLoaded(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }
+    
+    public void incrementNodesDisabled(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementNodesDisabled(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }    
+
+    public void incrementPurgedBatchIncomingRows(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementPurgedBatchIncomingRows(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }    
+
+    public void incrementPurgedBatchOutgoingRows(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementPurgedBatchOutgoingRows(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }    
+
+    public void incrementPurgedDataRows(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementPurgedDataRows(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }    
+
+    public void incrementPurgedDataEventRows(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementPurgedDataEventRows(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }    
 
     public void flush() {
         if (channelStats != null) {

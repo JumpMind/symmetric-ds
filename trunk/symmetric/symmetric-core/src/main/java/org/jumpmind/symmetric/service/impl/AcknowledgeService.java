@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
@@ -37,9 +35,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 
- *
- * 
+ * @see IAcknowledgeService
  */
 public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
 

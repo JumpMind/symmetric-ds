@@ -65,7 +65,19 @@ public interface IStatisticManager {
     
     public void incrementNodesRejected(long count);
     
+    public void incrementNodesLoaded(long count);
+    
     public void incrementNodesRegistered(long count);
+    
+    public void incrementNodesDisabled(long count);
+    
+    public void incrementPurgedBatchIncomingRows(long count);
+
+    public void incrementPurgedBatchOutgoingRows(long count);
+
+    public void incrementPurgedDataRows(long count);
+
+    public void incrementPurgedDataEventRows(long count);
     
     public Map<String, ChannelStats> getWorkingChannelStats();
     
