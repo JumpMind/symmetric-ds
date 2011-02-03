@@ -24,6 +24,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
 import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.transport.ITransportResource;
 import org.springframework.beans.BeanUtils;
 
@@ -35,7 +36,11 @@ import org.springframework.beans.BeanUtils;
  */
 public abstract class AbstractFilter extends ServletResourceTemplate implements IServletFilterExtension {
 
-    protected abstract ILog getLog();
+    final ILog log = LogFactory.getLog(getClass());
+    
+    protected ILog getLog() {
+       return log;    
+    }
 
     public void init(FilterConfig filterConfig) throws ServletException {
         init(filterConfig.getServletContext());

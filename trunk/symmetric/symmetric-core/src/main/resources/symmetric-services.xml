@@ -176,6 +176,7 @@
         <property name="transportManager" ref="transportManager" />
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="dataService" ref="dataService" />
+        <property name="statisticManager" ref="statisticManager" />
         <property name="randomTimeSlot">
             <bean class="org.jumpmind.symmetric.util.RandomTimeSlot">
                 <property name="parameterService" ref="parameterService" />

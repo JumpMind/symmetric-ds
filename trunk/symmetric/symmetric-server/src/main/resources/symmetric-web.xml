@@ -97,6 +97,7 @@
             </list>
         </property>
         <property name="reservationUriPattern" value="/push/*"/>
+        <property name="statisticManager" ref="statisticManager"/>
     </bean>
 
     <bean id="compressionFilter"

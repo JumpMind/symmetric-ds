@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
@@ -31,27 +29,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 
 /**
- * Configured within symmetric-web.xml
- *
- * ,
+ * A Servlet filter that controls access to this node for pushes and pulls.  It is 
+ * configured within symmetric-web.xml
  */
 public class NodeConcurrencyFilter extends AbstractFilter 
   implements IBuiltInExtensionPoint {
 
-    private final static ILog log = LogFactory.getLog(NodeConcurrencyFilter.class);
-
     private IConcurrentConnectionManager concurrentConnectionManager;
 
     private IConfigurationService configurationService;
+    
+    private IStatisticManager statisticManager;
 
     private String reservationUriPattern;
 
@@ -75,6 +71,7 @@ public class NodeConcurrencyFilter extends AbstractFilter
             // that HEAD is better if no content is going to be returned.
             resp.setContentLength(0);
             if (!concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.SOFT)) {
+                statisticManager.incrementNodesRejected(1);
                 sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             } else {
                 buildSuspendIgnoreResponseHeaders(nodeId, resp);
@@ -87,6 +84,7 @@ public class NodeConcurrencyFilter extends AbstractFilter
                 concurrentConnectionManager.releaseConnection(nodeId, poolId);
             }
         } else {
+            statisticManager.incrementNodesRejected(1);
             sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         }
     }
@@ -96,11 +94,6 @@ public class NodeConcurrencyFilter extends AbstractFilter
         ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(nodeId);
         httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
         httpResponse.setHeader(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
-    }
-
-    @Override
-    protected ILog getLog() {
-        return log;
     }
 
     public void setConcurrentConnectionManager(IConcurrentConnectionManager concurrentConnectionManager) {
@@ -114,8 +107,8 @@ public class NodeConcurrencyFilter extends AbstractFilter
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
     }
-
-    public IConfigurationService getConfigurationService() {
-        return configurationService;
+    
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
     }
 }
