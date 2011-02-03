@@ -33,18 +33,21 @@ public class MockStatisticManager implements IStatisticManager {
     public void incrementNodesPulled(long count) {
     }
 
+    public void incrementNodesRegistered(long count) {  
+    }
+    
     public void incrementNodesPushed(long count) {
-
     }
 
     public void incrementTotalNodesPulledTime(long count) {
-
     }
 
     public void incrementTotalNodesPushedTime(long count) {
-
     }
 
+    public void incrementNodesRejected(long count) {
+    }
+    
     public synchronized void incrementDataLoadedErrors(String channelId, long count) {
     }
 

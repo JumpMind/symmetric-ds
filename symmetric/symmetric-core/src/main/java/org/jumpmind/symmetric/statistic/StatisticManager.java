@@ -219,6 +219,24 @@ public class StatisticManager implements IStatisticManager {
             hostStatsLock.release();
         }   
     }
+    
+    public void incrementNodesRejected(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementNodesRejected(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }
+    
+    public void incrementNodesRegistered(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementNodesRegistered(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }
 
     public void flush() {
         if (channelStats != null) {

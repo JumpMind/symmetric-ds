@@ -182,11 +182,10 @@ public class ServletResourceTemplate implements IServletResource {
     /**
      * Returns true if this is a container managed resource.
      */
-    @SuppressWarnings("unchecked")
     public IServletResource getSpringBean() {
         IServletResource retVal = this;
         if (!isSpringManaged()) {
-            Iterator iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
+            Iterator<?> iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
             if (iterator.hasNext()) {
                 retVal = (IServletResource) iterator.next();
             }

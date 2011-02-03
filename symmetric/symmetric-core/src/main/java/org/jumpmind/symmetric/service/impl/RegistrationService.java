@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
@@ -74,6 +75,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private RandomTimeSlot randomTimeSlot;
 
     private INodePasswordFilter nodePasswordFilter;
+    
+    private IStatisticManager statisticManager;
 
     public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration)
             throws IOException {
@@ -151,6 +154,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
         saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.OK, remoteHost,
                 remoteAddress));
 
+        statisticManager.incrementNodesRegistered(1);
+        
         return true;
     }
 
@@ -386,6 +391,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
         this.nodePasswordFilter = nodePasswordFilter;
+    }
+    
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
     }
 
     private String filterPasswordOnSaveIfNeeded(String password) {

@@ -117,6 +117,11 @@
         <column name="triggers_created_count" type="BIGINT" description="" />
         <column name="triggers_rebuilt_count" type="BIGINT" description="" />
         <column name="triggers_removed_count" type="BIGINT" description="" />
+        <index name="idx_node_host_stats">
+            <index-column name="node_id"/>        
+            <index-column name="start_time"/>
+            <index-column name="end_time"/>
+        </index>        
      </table>     
      
      <!-- 

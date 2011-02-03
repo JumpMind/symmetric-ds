@@ -63,6 +63,10 @@ public interface IStatisticManager {
     
     public void incrementTotalNodesPushedTime(long count);
     
+    public void incrementNodesRejected(long count);
+    
+    public void incrementNodesRegistered(long count);
+    
     public Map<String, ChannelStats> getWorkingChannelStats();
     
     
