@@ -26,16 +26,28 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.web.PushServlet;
 
 /**
- * ,
+ * Handles data pushes from nodes.
+ * 
+ * @see PushServlet
  */
 public class PushResourceHandler extends AbstractTransportResourceHandler {
 
     private IDataLoaderService dataLoaderService;
 
+    private IStatisticManager statisticManager;
+    
     public void push(InputStream inputStream, OutputStream outputStream) throws IOException {
-        getDataLoaderService().loadData(inputStream, outputStream);
+        long ts = System.currentTimeMillis();
+        try {
+            getDataLoaderService().loadData(inputStream, outputStream);
+        } finally {
+            statisticManager.incrementNodesPushed(1);
+            statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);
+        }
     }
 
     private IDataLoaderService getDataLoaderService() {
@@ -44,6 +56,10 @@ public class PushResourceHandler extends AbstractTransportResourceHandler {
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {
         this.dataLoaderService = dataLoaderService;
+    }
+    
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
     }
 
 }

@@ -74,7 +74,6 @@ public class StatisticService extends AbstractService implements IStatisticServi
         startCal.setTime(start);
         startCal.set(Calendar.SECOND, 0);
         startCal.set(Calendar.MILLISECOND, 0);
-        // TODO this is hard coded assuming 5 minute buckets
         startCal.set(Calendar.MINUTE, round(startCal.get(Calendar.MINUTE)));
         Date periodStart = startCal.getTime();
         Date periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
@@ -112,7 +111,6 @@ public class StatisticService extends AbstractService implements IStatisticServi
         startCal.setTime(start);
         startCal.set(Calendar.SECOND, 0);
         startCal.set(Calendar.MILLISECOND, 0);
-        // TODO this is hard coded assuming 5 minute buckets
         startCal.set(Calendar.MINUTE, round(startCal.get(Calendar.MINUTE)));
         Date periodStart = startCal.getTime();
         Date periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
@@ -147,11 +145,13 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         stats.getNodesDisabled(), stats.getPurgedDataRows(),
                         stats.getPurgedDataEventRows(), stats.getPurgedBatchOutgoingRows(),
                         stats.getPurgedBatchIncomingRows(), stats.getTriggersCreatedCount(),
-                        stats.getTriggersRebuiltCount(), stats.getTriggersRemovedCount() },
+                        stats.getTriggersRebuiltCount(), stats.getTriggersRemovedCount(),
+                        stats.getTotalNodesPullTime(), stats.getTotalNodesPushTime()},
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
-                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT });
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, 
+                        Types.BIGINT });
     }
 
     class ChannelStatsMapper implements RowMapper<ChannelStats> {
@@ -199,6 +199,8 @@ public class StatisticService extends AbstractService implements IStatisticServi
             stats.setTriggersCreatedCount(rs.getLong(16));
             stats.setTriggersRebuiltCount(rs.getLong(17));
             stats.setTriggersRemovedCount(rs.getLong(18));
+            stats.setTotalNodesPullTime(rs.getLong(19));
+            stats.setTotalNodesPushTime(rs.getLong(20));
             return stats;
         }
     }

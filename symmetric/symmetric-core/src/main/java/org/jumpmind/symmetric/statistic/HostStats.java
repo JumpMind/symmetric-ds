@@ -26,7 +26,9 @@ public class HostStats extends AbstractNodeHostStats {
 
     private long restarted;
     private long nodesPulled;
+    private long totalNodesPullTime;
     private long nodesPushed;
+    private long totalNodesPushTime;
     private long nodesRejected;
     private long nodesRegistered;
     private long nodesLoaded;
@@ -49,7 +51,9 @@ public class HostStats extends AbstractNodeHostStats {
     public void add(HostStats stats) {
         restarted += stats.getRestarted();
         nodesPulled += stats.getNodesPulled();
+        totalNodesPullTime += stats.getTotalNodesPullTime();
         nodesPushed += stats.getNodesPushed();
+        totalNodesPushTime += stats.getTotalNodesPushTime();
         nodesRejected += stats.getNodesRejected();
         nodesRegistered += stats.getNodesRegistered();
         nodesLoaded += stats.getNodesLoaded();
@@ -70,7 +74,31 @@ public class HostStats extends AbstractNodeHostStats {
     public void incrementRestarted(long value) {
         restarted += value;
     }
-
+    
+    public long getTotalNodesPullTime() {
+        return totalNodesPullTime;
+    }
+    
+    public void setTotalNodesPullTime(long totalNodesPullTime) {
+        this.totalNodesPullTime = totalNodesPullTime;
+    }
+    
+    public void incrementTotalNodesPullTime(long value) {
+        totalNodesPullTime += value;
+    }
+    
+    public long getTotalNodesPushTime() {
+        return totalNodesPushTime;
+    }
+    
+    public void setTotalNodesPushTime(long totalNodesPushTime) {
+        this.totalNodesPushTime = totalNodesPushTime;
+    }
+    
+    public void incrementTotalNodesPushTime(long value) {
+        totalNodesPushTime += value;
+    }
+    
     public long getNodesPulled() {
         return nodesPulled;
     }

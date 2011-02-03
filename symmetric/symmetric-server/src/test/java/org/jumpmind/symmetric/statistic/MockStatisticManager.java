@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.statistic;
 
 import java.util.Map;
@@ -25,8 +26,23 @@ public class MockStatisticManager implements IStatisticManager {
 
     public void flush() {
     }
-    
+
     public void incrementRestart() {
+    }
+
+    public void incrementNodesPulled(long count) {
+    }
+
+    public void incrementNodesPushed(long count) {
+
+    }
+
+    public void incrementTotalNodesPulledTime(long count) {
+
+    }
+
+    public void incrementTotalNodesPushedTime(long count) {
+
     }
 
     public synchronized void incrementDataLoadedErrors(String channelId, long count) {
@@ -52,18 +68,19 @@ public class MockStatisticManager implements IStatisticManager {
 
     public synchronized void incrementDataRouted(String channelId, long count) {
     }
-    
-    public synchronized void incrementDataSentErrors(String channelId, long count) {        
+
+    public synchronized void incrementDataSentErrors(String channelId, long count) {
     }
-    
+
     public void incrementDataExtracted(String channelId, long count) {
     }
-    
+
     public void incrementDataLoaded(String channelId, long count) {
     }
-    
-    public void incrementDataSent(String channelId, long count) {};
-    
+
+    public void incrementDataSent(String channelId, long count) {
+    };
+
     public Map<String, ChannelStats> getWorkingChannelStats() {
         return null;
     }

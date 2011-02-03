@@ -55,6 +55,14 @@ public interface IStatisticManager {
     
     public void incrementRestart();
     
+    public void incrementNodesPulled(long count);
+    
+    public void incrementNodesPushed(long count);
+    
+    public void incrementTotalNodesPulledTime(long count);
+    
+    public void incrementTotalNodesPushedTime(long count);
+    
     public Map<String, ChannelStats> getWorkingChannelStats();
     
     
