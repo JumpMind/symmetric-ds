@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.jumpmind.symmetric.statistic.ChannelStats;
+import org.jumpmind.symmetric.statistic.HostStats;
 
 
 /**
@@ -34,6 +35,10 @@ public interface IStatisticService {
 
     public void save(ChannelStats stats);
     
+    public void save(HostStats stats);
+    
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
+    
+    public TreeMap<Date, HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
     
 }

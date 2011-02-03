@@ -35,6 +35,7 @@ import java.util.TreeMap;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.ChannelStats;
+import org.jumpmind.symmetric.statistic.HostStats;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -56,21 +57,16 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         Types.TIMESTAMP, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT });
-    }   
-    
-    public static void main(String[] args) {
-        System.out.println("41="+new StatisticService().round(41));
-        System.out.println("45="+new StatisticService().round(45));
-        System.out.println("43="+new StatisticService().round(43));
-        System.out.println("46="+new StatisticService().round(46));
-    }
-    
-    protected int round(int value) {
-        return 5 * new BigDecimal((double)value/5d).setScale(2, BigDecimal.ROUND_HALF_DOWN).intValue();
     }
 
-    public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes) {
-        TreeMap<Date, Map<String, ChannelStats>> orderedMap = new TreeMap<Date, Map<String,ChannelStats>>();
+    protected int round(int value) {
+        return 5 * new BigDecimal((double) value / 5d).setScale(2, BigDecimal.ROUND_HALF_DOWN)
+                .intValue();
+    }
+
+    public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end,
+            String nodeId, int periodSizeInMinutes) {
+        TreeMap<Date, Map<String, ChannelStats>> orderedMap = new TreeMap<Date, Map<String, ChannelStats>>();
         List<ChannelStats> list = jdbcTemplate.query(getSql("selectChannelStatsSql"),
                 new ChannelStatsMapper(), start, end, nodeId);
         Iterator<ChannelStats> stats = list.iterator();
@@ -86,15 +82,15 @@ public class StatisticService extends AbstractService implements IStatisticServi
         ChannelStats stat = null;
         while (periodStart.before(end)) {
             stat = stats.hasNext() && stat == null ? stats.next() : stat;
-            if (stat != null && 
-                    (periodStart.equals(stat.getStartTime()) || periodStart.before(stat.getStartTime())) 
-                    && periodEnd.after(stat.getStartTime())) {
+            if (stat != null
+                    && (periodStart.equals(stat.getStartTime()) || periodStart.before(stat
+                            .getStartTime())) && periodEnd.after(stat.getStartTime())) {
                 Map<String, ChannelStats> map = orderedMap.get(periodStart);
                 ChannelStats existing = map.get(stat.getChannelId());
                 if (existing == null) {
                     map.put(stat.getChannelId(), stat);
                 } else {
-                    existing.add(stat); 
+                    existing.add(stat);
                 }
                 stat = null;
             } else {
@@ -104,6 +100,58 @@ public class StatisticService extends AbstractService implements IStatisticServi
             }
         }
         return orderedMap;
+    }
+
+    public TreeMap<Date, HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId,
+            int periodSizeInMinutes) {
+        TreeMap<Date, HostStats> orderedMap = new TreeMap<Date, HostStats>();
+        List<HostStats> list = jdbcTemplate.query(getSql("selectHostStatsSql"),
+                new HostStatsMapper(), start, end, nodeId);
+        Iterator<HostStats> stats = list.iterator();
+        Calendar startCal = Calendar.getInstance();
+        startCal.setTime(start);
+        startCal.set(Calendar.SECOND, 0);
+        startCal.set(Calendar.MILLISECOND, 0);
+        // TODO this is hard coded assuming 5 minute buckets
+        startCal.set(Calendar.MINUTE, round(startCal.get(Calendar.MINUTE)));
+        Date periodStart = startCal.getTime();
+        Date periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
+        HostStats stat = null;
+        while (periodStart.before(end)) {
+            stat = stats.hasNext() && stat == null ? stats.next() : stat;
+            if (stat != null
+                    && (periodStart.equals(stat.getStartTime()) || periodStart.before(stat
+                            .getStartTime())) && periodEnd.after(stat.getStartTime())) {
+                HostStats existing = orderedMap.get(periodStart);
+                if (existing == null) {
+                    orderedMap.put(periodStart, stat);
+                } else {
+                    existing.add(stat);
+                }
+                stat = null;
+            } else {
+                periodStart = periodEnd;
+                periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
+            }
+        }
+        return orderedMap;
+    }
+
+    public void save(HostStats stats) {
+        jdbcTemplate.update(
+                getSql("insertHostStatsSql"),
+                new Object[] { stats.getNodeId(), stats.getHostName(), stats.getStartTime(),
+                        stats.getEndTime(), stats.getRestarted(), stats.getNodesPulled(),
+                        stats.getNodesPushed(), stats.getNodesRejected(),
+                        stats.getNodesRegistered(), stats.getNodesLoaded(),
+                        stats.getNodesDisabled(), stats.getPurgedDataRows(),
+                        stats.getPurgedDataEventRows(), stats.getPurgedBatchOutgoingRows(),
+                        stats.getPurgedBatchIncomingRows(), stats.getTriggersCreatedCount(),
+                        stats.getTriggersRebuiltCount(), stats.getTriggersRemovedCount() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP,
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT });
     }
 
     class ChannelStatsMapper implements RowMapper<ChannelStats> {
@@ -126,6 +174,31 @@ public class StatisticService extends AbstractService implements IStatisticServi
             stats.setDataLoaded(rs.getLong(15));
             stats.setDataBytesLoaded(rs.getLong(16));
             stats.setDataLoadedErrors(rs.getLong(17));
+            return stats;
+        }
+    }
+
+    class HostStatsMapper implements RowMapper<HostStats> {
+        public HostStats mapRow(ResultSet rs, int rowNum) throws SQLException {
+            HostStats stats = new HostStats();
+            stats.setNodeId(rs.getString(1));
+            stats.setHostName(rs.getString(2));
+            stats.setStartTime(rs.getTimestamp(3));
+            stats.setEndTime(rs.getTimestamp(4));
+            stats.setRestarted(rs.getLong(5));
+            stats.setNodesPulled(rs.getLong(6));
+            stats.setNodesPushed(rs.getLong(7));
+            stats.setNodesRejected(rs.getLong(8));
+            stats.setNodesRegistered(rs.getLong(9));
+            stats.setNodesLoaded(rs.getLong(10));
+            stats.setNodesDisabled(rs.getLong(11));
+            stats.setPurgedDataRows(rs.getLong(12));
+            stats.setPurgedDataEventRows(rs.getLong(13));
+            stats.setPurgedBatchOutgoingRows(rs.getLong(14));
+            stats.setPurgedBatchIncomingRows(rs.getLong(15));
+            stats.setTriggersCreatedCount(rs.getLong(16));
+            stats.setTriggersRebuiltCount(rs.getLong(17));
+            stats.setTriggersRemovedCount(rs.getLong(18));
             return stats;
         }
     }

@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.statistic;
 
 import java.util.Date;
@@ -42,33 +41,43 @@ import org.jumpmind.symmetric.util.AppUtils;
  */
 public class StatisticManager implements IStatisticManager {
     
+    private static final String UNKNOWN = "Unknown";
+
     static final ILog log = LogFactory.getLog(StatisticManager.class);
 
-    Map<String, ChannelStats> channelStats = new HashMap<String, ChannelStats>();
+    private Map<String, ChannelStats> channelStats = new HashMap<String, ChannelStats>();
+    
+    private HostStats hostStats;
 
-    INodeService nodeService;
+    protected INodeService nodeService;
 
-    IStatisticService statisticService;
+    protected IStatisticService statisticService;
 
-    INotificationService notificationService;
+    protected INotificationService notificationService;
 
-    IParameterService parameterService;
+    protected IParameterService parameterService;
 
-    IConfigurationService configurationService;
+    protected IConfigurationService configurationService;
 
     private static final int NUMBER_OF_PERMITS = 1000;
 
-    Semaphore available = new Semaphore(NUMBER_OF_PERMITS, true);
+    Semaphore channelStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+    
+    Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
     public StatisticManager() {
     }
+    
+    protected void init() {
+        incrementRestart();
+    }
 
     public void incrementDataRouted(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataRouted(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
@@ -77,116 +86,149 @@ public class StatisticManager implements IStatisticManager {
     }
 
     public void incrementDataExtracted(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataExtracted(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
     public void incrementDataBytesExtracted(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataBytesExtracted(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
     public void incrementDataExtractedErrors(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataExtractedErrors(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
     public void incrementDataEventInserted(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataEventInserted(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
     public void incrementDataSent(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataSent(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
     public void incrementDataBytesSent(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataBytesSent(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
     public void incrementDataSentErrors(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataSentErrors(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
     public void incrementDataLoaded(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataLoaded(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
     public void incrementDataBytesLoaded(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataBytesLoaded(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
     }
 
     public void incrementDataLoadedErrors(String channelId, long count) {
-        available.acquireUninterruptibly();
+        channelStatsLock.acquireUninterruptibly();
         try {
             getChannelStats(channelId).incrementDataLoadedErrors(count);
         } finally {
-            available.release();
+            channelStatsLock.release();
         }
+    }
+    
+    public void incrementRestart() {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementRestarted(1);
+        } finally {
+            hostStatsLock.release();
+        }
+        
     }
 
     public void flush() {
         if (channelStats != null) {
-            available.acquireUninterruptibly(NUMBER_OF_PERMITS);
+            channelStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
                 Date endTime = new Date();
                 for (ChannelStats stats : channelStats.values()) {
+                    if (stats.getNodeId().equals(UNKNOWN)) {
+                        Node node = nodeService.getCachedIdentity();
+                        if (node != null) {
+                            stats.setNodeId(node.getNodeId());
+                        }
+                    }
                     stats.setEndTime(endTime);
                     statisticService.save(stats);
+                    resetChannelStats(true);
                 }
             } finally {
-                available.release(NUMBER_OF_PERMITS);
+                channelStatsLock.release(NUMBER_OF_PERMITS);
             }
         }
-        reset(true);
+        
+        if (hostStats != null) {
+            hostStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
+            try {
+                if (hostStats.getNodeId().equals(UNKNOWN)) {
+                    Node node = nodeService.getCachedIdentity();
+                    if (node != null) {
+                        hostStats.setNodeId(node.getNodeId());
+                    }
+                }
+                hostStats.setEndTime(new Date());
+                statisticService.save(hostStats);
+                hostStats = null;
+            } finally {
+                hostStatsLock.release(NUMBER_OF_PERMITS);
+            }
+        }        
     }
     
     public Map<String, ChannelStats> getWorkingChannelStats() {
         return new HashMap<String, ChannelStats>(channelStats);
     }
 
-    protected void reset(boolean force) {
+    protected void resetChannelStats(boolean force) {
         if (force) {
             channelStats = null;
         }
@@ -201,7 +243,7 @@ public class StatisticManager implements IStatisticManager {
     }
 
     protected ChannelStats getChannelStats(String channelId) {
-        reset(false);
+        resetChannelStats(false);
         ChannelStats stats = channelStats.get(channelId);
         if (stats == null) {
             Node node = nodeService.getCachedIdentity();
@@ -210,12 +252,27 @@ public class StatisticManager implements IStatisticManager {
                 channelStats.put(channelId, stats);
             } else {
                 log.warn("StatisticNodeNotAvailableWarning");
-                stats = new ChannelStats("Unknown", AppUtils.getServerId(), new Date(), null, channelId);
+                stats = new ChannelStats(UNKNOWN, AppUtils.getServerId(), new Date(), null, channelId);
             }
 
         }
         return stats;
     }
+    
+    protected HostStats getHostStats() {
+        resetChannelStats(false);
+        if (hostStats == null) {
+            Node node = nodeService.getCachedIdentity();
+            if (node != null) {
+                hostStats = new HostStats(node.getNodeId(), AppUtils.getServerId(), new Date(), null);
+            } else {
+                log.warn("StatisticNodeNotAvailableWarning");
+                hostStats = new HostStats(UNKNOWN, AppUtils.getServerId(), new Date(), null);
+            }
+
+        }
+        return hostStats;
+    }    
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;

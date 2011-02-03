@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.statistic;
 
 import java.util.Date;
@@ -37,13 +38,14 @@ public class HostStats extends AbstractNodeHostStats {
     private long triggersCreatedCount;
     private long triggersRebuiltCount;
     private long triggersRemovedCount;
-    
-    public HostStats() {}
-    
+
+    public HostStats() {
+    }
+
     public HostStats(String nodeId, String hostName, Date startTime, Date endTime) {
         super(nodeId, hostName, startTime, endTime);
     }
-    
+
     public void add(HostStats stats) {
         restarted += stats.getRestarted();
         nodesPulled += stats.getNodesPulled();
@@ -64,7 +66,7 @@ public class HostStats extends AbstractNodeHostStats {
     public long getRestarted() {
         return restarted;
     }
-    
+
     public void incrementRestarted(long value) {
         restarted += value;
     }
@@ -72,7 +74,7 @@ public class HostStats extends AbstractNodeHostStats {
     public long getNodesPulled() {
         return nodesPulled;
     }
-    
+
     public void incrementNodesPulled(long value) {
         nodesPulled += value;
     }
@@ -80,7 +82,7 @@ public class HostStats extends AbstractNodeHostStats {
     public long getNodesPushed() {
         return nodesPushed;
     }
-    
+
     public void incrementNodesPushed(long value) {
         nodesPushed += value;
     }
@@ -88,7 +90,7 @@ public class HostStats extends AbstractNodeHostStats {
     public long getNodesRejected() {
         return nodesRejected;
     }
-    
+
     public void incrementNodesRejected(long value) {
         nodesRejected += value;
     }
@@ -96,7 +98,7 @@ public class HostStats extends AbstractNodeHostStats {
     public long getNodesRegistered() {
         return nodesRegistered;
     }
-    
+
     public void incrementNodesRegistered(long value) {
         nodesRegistered += value;
     }
@@ -104,7 +106,7 @@ public class HostStats extends AbstractNodeHostStats {
     public long getNodesLoaded() {
         return nodesLoaded;
     }
-    
+
     public void incrementNodesLoaded(long value) {
         nodesLoaded += value;
     }
@@ -112,7 +114,7 @@ public class HostStats extends AbstractNodeHostStats {
     public long getNodesDisabled() {
         return nodesDisabled;
     }
-    
+
     public void incrementNodesDisabled(long value) {
         nodesDisabled += value;
     }
@@ -120,15 +122,15 @@ public class HostStats extends AbstractNodeHostStats {
     public long getPurgedDataRows() {
         return purgedDataRows;
     }
-    
+
     public void incrementPurgedDataRows(long value) {
-        purgedDataRows += value;        
+        purgedDataRows += value;
     }
 
     public long getPurgedDataEventRows() {
         return purgedDataEventRows;
     }
-    
+
     public void incrementPurgedDataEventRows(long value) {
         restarted += value;
     }
@@ -152,7 +154,61 @@ public class HostStats extends AbstractNodeHostStats {
     public long getTriggersRemovedCount() {
         return triggersRemovedCount;
     }
-    
-    
+
+    public void setRestarted(long restarted) {
+        this.restarted = restarted;
+    }
+
+    public void setNodesPulled(long nodesPulled) {
+        this.nodesPulled = nodesPulled;
+    }
+
+    public void setNodesPushed(long nodesPushed) {
+        this.nodesPushed = nodesPushed;
+    }
+
+    public void setNodesRejected(long nodesRejected) {
+        this.nodesRejected = nodesRejected;
+    }
+
+    public void setNodesRegistered(long nodesRegistered) {
+        this.nodesRegistered = nodesRegistered;
+    }
+
+    public void setNodesLoaded(long nodesLoaded) {
+        this.nodesLoaded = nodesLoaded;
+    }
+
+    public void setNodesDisabled(long nodesDisabled) {
+        this.nodesDisabled = nodesDisabled;
+    }
+
+    public void setPurgedDataRows(long purgedDataRows) {
+        this.purgedDataRows = purgedDataRows;
+    }
+
+    public void setPurgedDataEventRows(long purgedDataEventRows) {
+        this.purgedDataEventRows = purgedDataEventRows;
+    }
+
+    public void setPurgedBatchOutgoingRows(long purgedBatchOutgoingRows) {
+        this.purgedBatchOutgoingRows = purgedBatchOutgoingRows;
+    }
+
+    public void setPurgedBatchIncomingRows(long purgedBatchIncomingRows) {
+        this.purgedBatchIncomingRows = purgedBatchIncomingRows;
+    }
+
+    public void setTriggersCreatedCount(long triggersCreatedCount) {
+        this.triggersCreatedCount = triggersCreatedCount;
+    }
+
+    public void setTriggersRebuiltCount(long triggersRebuiltCount) {
+        this.triggersRebuiltCount = triggersRebuiltCount;
+    }
+
+    public void setTriggersRemovedCount(long triggersRemovedCount) {
+        this.triggersRemovedCount = triggersRemovedCount;
+    }
 
 }

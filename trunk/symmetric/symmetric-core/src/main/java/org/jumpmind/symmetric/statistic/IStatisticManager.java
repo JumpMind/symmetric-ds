@@ -53,6 +53,8 @@ public interface IStatisticManager {
     
     public void incrementDataSentErrors(String channelId, long count);
     
+    public void incrementRestart();
+    
     public Map<String, ChannelStats> getWorkingChannelStats();
     
     
