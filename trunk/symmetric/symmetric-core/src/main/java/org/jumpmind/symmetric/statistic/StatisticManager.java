@@ -181,8 +181,43 @@ public class StatisticManager implements IStatisticManager {
             getHostStats().incrementRestarted(1);
         } finally {
             hostStatsLock.release();
-        }
-        
+        }        
+    }
+    
+    public void incrementNodesPulled(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementNodesPulled(count);
+        } finally {
+            hostStatsLock.release();
+        }   
+    }
+    
+    public void incrementNodesPushed(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementNodesPushed(count);
+        } finally {
+            hostStatsLock.release();
+        }    
+    }
+    
+    public void incrementTotalNodesPulledTime(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementTotalNodesPullTime(count);
+        } finally {
+            hostStatsLock.release();
+        }    
+    }
+    
+    public void incrementTotalNodesPushedTime(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementTotalNodesPushTime(count);
+        } finally {
+            hostStatsLock.release();
+        }   
     }
 
     public void flush() {

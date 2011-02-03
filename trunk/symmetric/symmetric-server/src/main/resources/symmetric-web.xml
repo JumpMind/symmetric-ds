@@ -9,11 +9,13 @@
         <property name="configurationService" ref="configurationService" />
         <property name="registrationService" ref="registrationService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
+        <property name="statisticManager" ref="statisticManager"/>
     </bean>
 
     <bean id="pushResourceHandler"
         class="org.jumpmind.symmetric.transport.handler.PushResourceHandler">
         <property name="dataLoaderService" ref="dataLoaderService" />
+        <property name="statisticManager" ref="statisticManager"/>
     </bean>
 
     <bean id="registrationResourceHandler"

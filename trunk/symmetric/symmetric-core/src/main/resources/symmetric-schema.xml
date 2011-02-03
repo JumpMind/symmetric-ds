@@ -103,7 +103,9 @@
         <column name="restarted" type="BIGINT" default="0" required="true"
             description="Indicate that a restart occurred during this period." />
         <column name="nodes_pulled" type="BIGINT" default="0" description="" />
+        <column name="total_nodes_pull_time" type="BIGINT" default="0" description="" />
         <column name="nodes_pushed" type="BIGINT" default="0" description="" />
+        <column name="total_nodes_push_time" type="BIGINT" default="0" description="" />
         <column name="nodes_rejected" type="BIGINT" default="0" description="" />
         <column name="nodes_registered" type="BIGINT" default="0" description="" />
         <column name="nodes_loaded" type="BIGINT" default="0" description="" />

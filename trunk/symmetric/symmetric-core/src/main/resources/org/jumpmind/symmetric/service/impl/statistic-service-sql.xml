@@ -36,9 +36,10 @@
                   restarted,nodes_pulled,nodes_pushed,nodes_rejected,
                   nodes_registered,nodes_loaded,nodes_disabled,purged_data_rows,
                   purged_data_event_rows,purged_batch_outgoing_rows,purged_batch_incoming_rows,
-                  triggers_created_count,triggers_rebuilt_count,triggers_removed_count
+                  triggers_created_count,triggers_rebuilt_count,triggers_removed_count,
+                  total_nodes_pull_time, total_nodes_push_time
                   ) 
-                values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ]]></value>
         </entry>     
         <entry key="selectHostStatsSql">
@@ -47,7 +48,8 @@
                   restarted,nodes_pulled,nodes_pushed,nodes_rejected,
                   nodes_registered,nodes_loaded,nodes_disabled,purged_data_rows,
                   purged_data_event_rows,purged_batch_outgoing_rows,purged_batch_incoming_rows,
-                  triggers_created_count,triggers_rebuilt_count,triggers_removed_count 
+                  triggers_created_count,triggers_rebuilt_count,triggers_removed_count,
+                  total_nodes_pull_time, total_nodes_push_time
                   from $[sym.sync.table.prefix]_node_host_stats
                where  start_time >= ? and end_time <= ? and node_id=? order by start_time asc
             ]]></value>
