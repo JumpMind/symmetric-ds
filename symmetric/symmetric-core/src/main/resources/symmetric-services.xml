@@ -9,7 +9,7 @@
         <property name="parameterService" ref="parameterService" />
     </bean>
     
-    <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager">
+    <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager" init-method="init">
         <property name="statisticService" ref="statisticService" />
         <property name="nodeService" ref="nodeService" />
         <property name="notificationService" ref="notificationService" />

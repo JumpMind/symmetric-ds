@@ -25,6 +25,9 @@ public class MockStatisticManager implements IStatisticManager {
 
     public void flush() {
     }
+    
+    public void incrementRestart() {
+    }
 
     public synchronized void incrementDataLoadedErrors(String channelId, long count) {
     }
