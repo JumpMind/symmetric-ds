@@ -17,18 +17,28 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.service;
+
+import java.util.Calendar;
 
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 
+ * This service provides an API to kick off the purge process or 
+ * call individual purge processes with specific dates.
+ * <p/>
+ * This service will never purge data that has not been delivered to 
+ * a target node that is still enabled.
  */
 public interface IPurgeService {
     
     public void purge();
+    
+    public void purgeDataGaps(Calendar retentionCutoff);
+    
+    public void purgeOutgoing(Calendar retentionCutoff);
+    
+    public void purgeIncoming(Calendar retentionCutoff);
 
     @Transactional
     public void purgeAllIncomingEventsForNode(String nodeId);

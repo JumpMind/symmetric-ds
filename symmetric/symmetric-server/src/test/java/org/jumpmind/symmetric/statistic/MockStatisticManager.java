@@ -33,9 +33,9 @@ public class MockStatisticManager implements IStatisticManager {
     public void incrementNodesPulled(long count) {
     }
 
-    public void incrementNodesRegistered(long count) {  
+    public void incrementNodesRegistered(long count) {
     }
-    
+
     public void incrementNodesPushed(long count) {
     }
 
@@ -47,7 +47,7 @@ public class MockStatisticManager implements IStatisticManager {
 
     public void incrementNodesRejected(long count) {
     }
-    
+
     public synchronized void incrementDataLoadedErrors(String channelId, long count) {
     }
 
@@ -86,5 +86,29 @@ public class MockStatisticManager implements IStatisticManager {
 
     public Map<String, ChannelStats> getWorkingChannelStats() {
         return null;
+    }
+
+    public void incrementNodesLoaded(long count) {
+
+    }
+
+    public void incrementNodesDisabled(long count) {
+
+    }
+
+    public void incrementPurgedBatchIncomingRows(long count) {
+
+    }
+
+    public void incrementPurgedBatchOutgoingRows(long count) {
+
+    }
+
+    public void incrementPurgedDataRows(long count) {
+
+    }
+
+    public void incrementPurgedDataEventRows(long count) {
+
     }
 }

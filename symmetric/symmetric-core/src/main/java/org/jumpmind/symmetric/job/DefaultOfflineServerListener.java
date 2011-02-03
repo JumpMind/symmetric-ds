@@ -28,16 +28,19 @@ import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 /**
- * A default implementation of the Offline Server Listener.  
+ * The default implementation of the {@link IOfflineServerListener}.  
  */
 public class DefaultOfflineServerListener implements IOfflineServerListener,
  IBuiltInExtensionPoint {
 
+    protected static final ILog log = LogFactory.getLog(DefaultOfflineServerListener.class);
+
+    protected IStatisticManager statisticManager;
     protected INodeService nodeService;
     protected IOutgoingBatchService outgoingBatchService;
-    protected static final ILog log = LogFactory.getLog(DefaultOfflineServerListener.class);
     
     /**
      * Handle a client node that was determined to be offline.
@@ -46,6 +49,7 @@ public class DefaultOfflineServerListener implements IOfflineServerListener,
      */
     public void clientNodeOffline(Node node) {
         log.warn("NodeOffline", node.getNodeId(), node.getHeartbeatTime(), node.getTimezoneOffset());
+        statisticManager.incrementNodesDisabled(1);
         node.setSyncEnabled(false);
         nodeService.updateNode(node);
         outgoingBatchService.markAllAsSentForNode(node);
@@ -63,4 +67,9 @@ public class DefaultOfflineServerListener implements IOfflineServerListener,
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
     }
+    
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
+    }
+    
 }
