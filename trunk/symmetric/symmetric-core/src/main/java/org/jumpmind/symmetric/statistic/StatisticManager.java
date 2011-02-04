@@ -361,6 +361,10 @@ public class StatisticManager implements IStatisticManager {
     public Map<String, ChannelStats> getWorkingChannelStats() {
         return new HashMap<String, ChannelStats>(channelStats);
     }
+    
+    public HostStats getWorkingHostStats() {
+        return new HostStats(this.hostStats);
+    }
 
     protected void resetChannelStats(boolean force) {
         if (force) {

@@ -47,6 +47,11 @@ public class HostStats extends AbstractNodeHostStats {
     public HostStats(String nodeId, String hostName, Date startTime, Date endTime) {
         super(nodeId, hostName, startTime, endTime);
     }
+    
+    public HostStats(HostStats source) {
+       super(source.getNodeId(), source.getHostName(), source.getStartTime(), source.getEndTime());
+       add(source);
+    }    
 
     public void add(HostStats stats) {
         restarted += stats.getRestarted();

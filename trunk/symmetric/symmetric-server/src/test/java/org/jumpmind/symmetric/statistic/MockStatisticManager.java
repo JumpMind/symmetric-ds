@@ -87,6 +87,10 @@ public class MockStatisticManager implements IStatisticManager {
     public Map<String, ChannelStats> getWorkingChannelStats() {
         return null;
     }
+    
+    public HostStats getWorkingHostStats() {
+        return null;
+    }
 
     public void incrementNodesLoaded(long count) {
 

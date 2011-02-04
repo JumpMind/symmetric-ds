@@ -87,5 +87,7 @@ public interface IStatisticManager {
     
     public Map<String, ChannelStats> getWorkingChannelStats();
     
+    public HostStats getWorkingHostStats();
+    
     
 }
