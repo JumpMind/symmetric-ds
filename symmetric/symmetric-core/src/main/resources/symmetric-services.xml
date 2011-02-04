@@ -72,6 +72,7 @@
         <property name="sql" ref="triggerRouterServiceSql" />
         <property name="clusterService" ref="clusterService" />
         <property name="configurationService" ref="configurationService"/>
+        <property name="statisticManager" ref="statisticManager" />
         <property name="rootConfigChannelInitialLoadSelect" ref="rootConfigChannelInitialLoadSelect" />
         <property name="rootConfigChannelTableNames" ref="rootConfigChannelTableNames" />
     </bean>

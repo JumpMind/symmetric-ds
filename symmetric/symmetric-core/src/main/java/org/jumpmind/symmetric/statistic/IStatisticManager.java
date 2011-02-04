@@ -78,6 +78,12 @@ public interface IStatisticManager {
     public void incrementPurgedDataRows(long count);
 
     public void incrementPurgedDataEventRows(long count);
+ 
+    public void incrementTriggersRemovedCount(long count);
+    
+    public void incrementTriggersRebuiltCount(long count);
+    
+    public void incrementTriggersCreatedCount(long count);
     
     public Map<String, ChannelStats> getWorkingChannelStats();
     

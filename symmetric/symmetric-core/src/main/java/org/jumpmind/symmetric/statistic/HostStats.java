@@ -183,6 +183,18 @@ public class HostStats extends AbstractNodeHostStats {
     public long getTriggersCreatedCount() {
         return triggersCreatedCount;
     }
+    
+    public void incrementTriggersCreatedCount(long count) {
+        triggersCreatedCount+=count;
+    }
+    
+    public void incrementTriggersRebuiltCount(long count) {
+        triggersRebuiltCount+=count;
+    }
+    
+    public void incrementTriggersRemovedCount(long count) {
+        triggersRemovedCount+=count;
+    }
 
     public long getTriggersRebuiltCount() {
         return triggersRebuiltCount;

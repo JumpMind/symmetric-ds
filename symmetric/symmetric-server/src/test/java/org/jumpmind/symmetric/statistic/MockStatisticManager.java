@@ -111,4 +111,16 @@ public class MockStatisticManager implements IStatisticManager {
     public void incrementPurgedDataEventRows(long count) {
 
     }
+
+    public void incrementTriggersRemovedCount(long count) {
+
+    }
+
+    public void incrementTriggersRebuiltCount(long count) {
+
+    }
+
+    public void incrementTriggersCreatedCount(long count) {
+
+    }
 }

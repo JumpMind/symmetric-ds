@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
@@ -55,6 +53,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -78,6 +77,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private List<ITriggerCreationListener> triggerCreationListeners;
 
     private TriggerFailureListener failureListener = new TriggerFailureListener();
+    
+    private IStatisticManager statisticManager;
     
     /**
      * Cache the history for performance. History never changes and does not
@@ -795,6 +796,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean triggerIsActive, Table table) {
 
         boolean triggerExists = false;
+        boolean triggerRemoved = false;
 
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
         int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
@@ -833,6 +835,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             dbDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema, oldTriggerName,
                     trigger.getSourceTableName(), oldhist);
             triggerExists = false;
+            triggerRemoved = true;
         }
 
         boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate()
@@ -846,6 +849,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         if (!triggerExists && triggerIsActive) {
             dbDialect.createTrigger(sqlBuffer, dmlType, trigger, hist, tablePrefix, table);
+            if (triggerRemoved) {
+                statisticManager.incrementTriggersRebuiltCount(1);
+            } else {
+                statisticManager.incrementTriggersCreatedCount(1);
+            }
+        } else if (triggerRemoved) {
+            statisticManager.incrementTriggersRemovedCount(1);
         }
 
         return hist;
@@ -1088,6 +1098,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public Map<Trigger, Exception> getFailedTriggers() {
         return this.failureListener.getFailures();
     }
+    
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
+    }
 
     class TriggerRoutersCache {
 
@@ -1100,4 +1114,5 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         Map<String, List<TriggerRouter>> triggerRoutersByTriggerId = new HashMap<String, List<TriggerRouter>>();
         Map<String, Router> routersByRouterId = new HashMap<String, Router>();
     }
+    
 }
