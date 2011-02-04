@@ -291,6 +291,33 @@ public class StatisticManager implements IStatisticManager {
             hostStatsLock.release();
         }  
     }    
+    
+    public void incrementTriggersRemovedCount(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementTriggersRemovedCount(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }    
+    
+    public void incrementTriggersRebuiltCount(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementTriggersRebuiltCount(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }    
+    
+    public void incrementTriggersCreatedCount(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementTriggersCreatedCount(count);
+        } finally {
+            hostStatsLock.release();
+        }  
+    }        
 
     public void flush() {
         if (channelStats != null) {
