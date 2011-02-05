@@ -20,22 +20,20 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.ChannelStats;
+import org.jumpmind.symmetric.statistic.ChannelStatsByPeriodMap;
 import org.jumpmind.symmetric.statistic.HostStats;
+import org.jumpmind.symmetric.statistic.HostStatsByPeriodMap;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -59,81 +57,12 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         Types.BIGINT, Types.BIGINT, Types.BIGINT });
     }
 
-    protected int round(int value) {
-        return 5 * new BigDecimal((double) value / 5d).setScale(2, BigDecimal.ROUND_HALF_DOWN)
-                .intValue();
-    }
-
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end,
             String nodeId, int periodSizeInMinutes) {
-        TreeMap<Date, Map<String, ChannelStats>> orderedMap = new TreeMap<Date, Map<String, ChannelStats>>();
         List<ChannelStats> list = jdbcTemplate.query(getSql("selectChannelStatsSql"),
-                new ChannelStatsMapper(), start, end, nodeId);
-        Iterator<ChannelStats> stats = list.iterator();
-        Calendar startCal = Calendar.getInstance();
-        startCal.setTime(start);
-        startCal.set(Calendar.SECOND, 0);
-        startCal.set(Calendar.MILLISECOND, 0);
-        startCal.set(Calendar.MINUTE, round(startCal.get(Calendar.MINUTE)));
-        Date periodStart = startCal.getTime();
-        Date periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
-        orderedMap.put(periodStart, new HashMap<String, ChannelStats>());
-        ChannelStats stat = null;
-        while (periodStart.before(end)) {
-            stat = stats.hasNext() && stat == null ? stats.next() : stat;
-            if (stat != null
-                    && (periodStart.equals(stat.getStartTime()) || periodStart.before(stat
-                            .getStartTime())) && periodEnd.after(stat.getStartTime())) {
-                Map<String, ChannelStats> map = orderedMap.get(periodStart);
-                ChannelStats existing = map.get(stat.getChannelId());
-                if (existing == null) {
-                    map.put(stat.getChannelId(), stat);
-                } else {
-                    existing.add(stat);
-                }
-                stat = null;
-            } else {
-                periodStart = periodEnd;
-                periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
-                orderedMap.put(periodStart, new HashMap<String, ChannelStats>());
-            }
-        }
-        return orderedMap;
-    }
-
-    public TreeMap<Date, HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId,
-            int periodSizeInMinutes) {
-        TreeMap<Date, HostStats> orderedMap = new TreeMap<Date, HostStats>();
-        List<HostStats> list = jdbcTemplate.query(getSql("selectHostStatsSql"),
-                new HostStatsMapper(), start, end, nodeId);
-        Iterator<HostStats> stats = list.iterator();
-        Calendar startCal = Calendar.getInstance();
-        startCal.setTime(start);
-        startCal.set(Calendar.SECOND, 0);
-        startCal.set(Calendar.MILLISECOND, 0);
-        startCal.set(Calendar.MINUTE, round(startCal.get(Calendar.MINUTE)));
-        Date periodStart = startCal.getTime();
-        Date periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
-        HostStats stat = null;
-        while (periodStart.before(end)) {
-            stat = stats.hasNext() && stat == null ? stats.next() : stat;
-            if (stat != null
-                    && (periodStart.equals(stat.getStartTime()) || periodStart.before(stat
-                            .getStartTime())) && periodEnd.after(stat.getStartTime())) {
-                HostStats existing = orderedMap.get(periodStart);
-                if (existing == null) {
-                    orderedMap.put(periodStart, stat);
-                } else {
-                    existing.add(stat);
-                }
-                stat = null;
-            } else {
-                periodStart = periodEnd;
-                periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
-            }
-        }
-        return orderedMap;
-    }
+                new ChannelStatsMapper(), start, end, nodeId);        
+        return new ChannelStatsByPeriodMap(start, end, list, periodSizeInMinutes);
+    }    
 
     public void save(HostStats stats) {
         jdbcTemplate.update(
@@ -153,6 +82,22 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, 
                         Types.BIGINT });
     }
+    
+
+    public TreeMap<Date, HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId,
+            int periodSizeInMinutes) {
+        List<HostStats> list = jdbcTemplate.query(getSql("selectHostStatsSql"),
+                new HostStatsMapper(), start, end, nodeId);
+        return new HostStatsByPeriodMap(start, end, list, periodSizeInMinutes);
+    }    
+    
+    public Date truncateToMinutes(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.SECOND, 0);
+        return cal.getTime();        
+    }
 
     class ChannelStatsMapper implements RowMapper<ChannelStats> {
         public ChannelStats mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -160,8 +105,8 @@ public class StatisticService extends AbstractService implements IStatisticServi
             stats.setNodeId(rs.getString(1));
             stats.setHostName(rs.getString(2));
             stats.setChannelId(rs.getString(3));
-            stats.setStartTime(DateUtils.truncate(rs.getTimestamp(4), Calendar.MILLISECOND));
-            stats.setEndTime(DateUtils.truncate(rs.getTimestamp(5), Calendar.MILLISECOND));
+            stats.setStartTime(truncateToMinutes(rs.getTimestamp(4)));
+            stats.setEndTime(truncateToMinutes(rs.getTimestamp(5)));
             stats.setDataRouted(rs.getLong(6));
             stats.setDataUnRouted(rs.getLong(7));
             stats.setDataEventInserted(rs.getLong(8));
@@ -182,9 +127,9 @@ public class StatisticService extends AbstractService implements IStatisticServi
         public HostStats mapRow(ResultSet rs, int rowNum) throws SQLException {
             HostStats stats = new HostStats();
             stats.setNodeId(rs.getString(1));
-            stats.setHostName(rs.getString(2));
-            stats.setStartTime(rs.getTimestamp(3));
-            stats.setEndTime(rs.getTimestamp(4));
+            stats.setHostName(rs.getString(2));            
+            stats.setStartTime(truncateToMinutes(rs.getTimestamp(3)));
+            stats.setEndTime(truncateToMinutes(rs.getTimestamp(4)));
             stats.setRestarted(rs.getLong(5));
             stats.setNodesPulled(rs.getLong(6));
             stats.setNodesPushed(rs.getLong(7));
