@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.statistic;
 
 import java.util.Date;
@@ -40,13 +41,13 @@ import org.jumpmind.symmetric.util.AppUtils;
  * @see IStatisticManager
  */
 public class StatisticManager implements IStatisticManager {
-    
+
     private static final String UNKNOWN = "Unknown";
 
     static final ILog log = LogFactory.getLog(StatisticManager.class);
 
     private Map<String, ChannelStats> channelStats = new HashMap<String, ChannelStats>();
-    
+
     private HostStats hostStats;
 
     protected INodeService nodeService;
@@ -62,12 +63,12 @@ public class StatisticManager implements IStatisticManager {
     private static final int NUMBER_OF_PERMITS = 1000;
 
     Semaphore channelStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
-    
+
     Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
     public StatisticManager() {
     }
-    
+
     protected void init() {
         incrementRestart();
     }
@@ -174,87 +175,87 @@ public class StatisticManager implements IStatisticManager {
             channelStatsLock.release();
         }
     }
-    
+
     public void incrementRestart() {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementRestarted(1);
         } finally {
             hostStatsLock.release();
-        }        
+        }
     }
-    
+
     public void incrementNodesPulled(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementNodesPulled(count);
         } finally {
             hostStatsLock.release();
-        }   
+        }
     }
-    
+
     public void incrementNodesPushed(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementNodesPushed(count);
         } finally {
             hostStatsLock.release();
-        }    
+        }
     }
-    
+
     public void incrementTotalNodesPulledTime(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementTotalNodesPullTime(count);
         } finally {
             hostStatsLock.release();
-        }    
+        }
     }
-    
+
     public void incrementTotalNodesPushedTime(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementTotalNodesPushTime(count);
         } finally {
             hostStatsLock.release();
-        }   
+        }
     }
-    
+
     public void incrementNodesRejected(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementNodesRejected(count);
         } finally {
             hostStatsLock.release();
-        }  
+        }
     }
-    
+
     public void incrementNodesRegistered(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementNodesRegistered(count);
         } finally {
             hostStatsLock.release();
-        }  
+        }
     }
-    
+
     public void incrementNodesLoaded(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementNodesLoaded(count);
         } finally {
             hostStatsLock.release();
-        }  
+        }
     }
-    
+
     public void incrementNodesDisabled(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementNodesDisabled(count);
         } finally {
             hostStatsLock.release();
-        }  
-    }    
+        }
+    }
 
     public void incrementPurgedBatchIncomingRows(long count) {
         hostStatsLock.acquireUninterruptibly();
@@ -262,8 +263,8 @@ public class StatisticManager implements IStatisticManager {
             getHostStats().incrementPurgedBatchIncomingRows(count);
         } finally {
             hostStatsLock.release();
-        }  
-    }    
+        }
+    }
 
     public void incrementPurgedBatchOutgoingRows(long count) {
         hostStatsLock.acquireUninterruptibly();
@@ -271,8 +272,8 @@ public class StatisticManager implements IStatisticManager {
             getHostStats().incrementPurgedBatchOutgoingRows(count);
         } finally {
             hostStatsLock.release();
-        }  
-    }    
+        }
+    }
 
     public void incrementPurgedDataRows(long count) {
         hostStatsLock.acquireUninterruptibly();
@@ -280,8 +281,8 @@ public class StatisticManager implements IStatisticManager {
             getHostStats().incrementPurgedDataRows(count);
         } finally {
             hostStatsLock.release();
-        }  
-    }    
+        }
+    }
 
     public void incrementPurgedDataEventRows(long count) {
         hostStatsLock.acquireUninterruptibly();
@@ -289,35 +290,35 @@ public class StatisticManager implements IStatisticManager {
             getHostStats().incrementPurgedDataEventRows(count);
         } finally {
             hostStatsLock.release();
-        }  
-    }    
-    
+        }
+    }
+
     public void incrementTriggersRemovedCount(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementTriggersRemovedCount(count);
         } finally {
             hostStatsLock.release();
-        }  
-    }    
-    
+        }
+    }
+
     public void incrementTriggersRebuiltCount(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementTriggersRebuiltCount(count);
         } finally {
             hostStatsLock.release();
-        }  
-    }    
-    
+        }
+    }
+
     public void incrementTriggersCreatedCount(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {
             getHostStats().incrementTriggersCreatedCount(count);
         } finally {
             hostStatsLock.release();
-        }  
-    }        
+        }
+    }
 
     public void flush() {
         if (channelStats != null) {
@@ -339,7 +340,7 @@ public class StatisticManager implements IStatisticManager {
                 channelStatsLock.release(NUMBER_OF_PERMITS);
             }
         }
-        
+
         if (hostStats != null) {
             hostStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
@@ -355,15 +356,23 @@ public class StatisticManager implements IStatisticManager {
             } finally {
                 hostStatsLock.release(NUMBER_OF_PERMITS);
             }
-        }        
+        }
     }
-    
+
     public Map<String, ChannelStats> getWorkingChannelStats() {
-        return new HashMap<String, ChannelStats>(channelStats);
+        if (channelStats != null) {
+            return new HashMap<String, ChannelStats>(channelStats);
+        } else {
+            return new HashMap<String, ChannelStats>();
+        }
     }
-    
+
     public HostStats getWorkingHostStats() {
-        return new HostStats(this.hostStats);
+        if (this.hostStats != null) {
+            return new HostStats(this.hostStats);
+        } else {
+            return new HostStats();
+        }
     }
 
     protected void resetChannelStats(boolean force) {
@@ -386,23 +395,26 @@ public class StatisticManager implements IStatisticManager {
         if (stats == null) {
             Node node = nodeService.getCachedIdentity();
             if (node != null) {
-                stats = new ChannelStats(node.getNodeId(), AppUtils.getServerId(), new Date(), null, channelId);
+                stats = new ChannelStats(node.getNodeId(), AppUtils.getServerId(), new Date(),
+                        null, channelId);
                 channelStats.put(channelId, stats);
             } else {
                 log.warn("StatisticNodeNotAvailableWarning");
-                stats = new ChannelStats(UNKNOWN, AppUtils.getServerId(), new Date(), null, channelId);
+                stats = new ChannelStats(UNKNOWN, AppUtils.getServerId(), new Date(), null,
+                        channelId);
             }
 
         }
         return stats;
     }
-    
+
     protected HostStats getHostStats() {
         resetChannelStats(false);
         if (hostStats == null) {
             Node node = nodeService.getCachedIdentity();
             if (node != null) {
-                hostStats = new HostStats(node.getNodeId(), AppUtils.getServerId(), new Date(), null);
+                hostStats = new HostStats(node.getNodeId(), AppUtils.getServerId(), new Date(),
+                        null);
             } else {
                 log.warn("StatisticNodeNotAvailableWarning");
                 hostStats = new HostStats(UNKNOWN, AppUtils.getServerId(), new Date(), null);
@@ -410,7 +422,7 @@ public class StatisticManager implements IStatisticManager {
 
         }
         return hostStats;
-    }    
+    }
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
