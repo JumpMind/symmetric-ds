@@ -428,31 +428,39 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     long bytesSentCount = 0;
                     int batchesSentCount = 0;
                     for (OutgoingBatch outgoingBatch : activeBatches) {
-                        currentBatch = outgoingBatch;
-                        outgoingBatch.setStatus(OutgoingBatch.Status.QY);
-                        outgoingBatch.setExtractCount(outgoingBatch.getExtractCount() + 1);
-                        outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-                        
-                        databaseExtract(node, outgoingBatch, handler);
-                        
-                        outgoingBatch.setStatus(OutgoingBatch.Status.SE);
-                        outgoingBatch.setSentCount(outgoingBatch.getSentCount() + 1);
-                        outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-                        
-                        fileWriter.close();                        
-                        networkTransfer(fileWriter.getReader(), networkWriter);                        
-                        fileWriter.delete();
-                        
-                        outgoingBatch.setStatus(OutgoingBatch.Status.LD);     
-                        outgoingBatch.setLoadCount(outgoingBatch.getLoadCount()+1);
-                        outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-                        
-                        bytesSentCount += outgoingBatch.getByteCount();
-                        batchesSentCount++;
-                        
-                        if (bytesSentCount >= MAX_BYTES_TO_SYNC) {
-                            log.info("DataExtractorReachedMaxNumberOfBytesToSync", batchesSentCount, bytesSentCount);
-                            break;
+                        try {
+                            currentBatch = outgoingBatch;
+                            outgoingBatch.setStatus(OutgoingBatch.Status.QY);
+                            outgoingBatch.setExtractCount(outgoingBatch.getExtractCount() + 1);
+                            outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+
+                            databaseExtract(node, outgoingBatch, handler);
+
+                            outgoingBatch.setStatus(OutgoingBatch.Status.SE);
+                            outgoingBatch.setSentCount(outgoingBatch.getSentCount() + 1);
+                            outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+
+                            fileWriter.close();
+                            networkTransfer(fileWriter.getReader(), networkWriter);
+                            fileWriter.delete();
+
+                            outgoingBatch.setStatus(OutgoingBatch.Status.LD);
+                            outgoingBatch.setLoadCount(outgoingBatch.getLoadCount() + 1);
+                            outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+
+                            bytesSentCount += outgoingBatch.getByteCount();
+                            batchesSentCount++;
+
+                            if (bytesSentCount >= MAX_BYTES_TO_SYNC) {
+                                log.info("DataExtractorReachedMaxNumberOfBytesToSync",
+                                        batchesSentCount, bytesSentCount);
+                                break;
+                            }
+                        } finally {
+                            // It doesn't hurt anything to call close and delete
+                            // a second time
+                            fileWriter.close();
+                            fileWriter.delete();
                         }
                     }
                 } catch (RuntimeException e) {
