@@ -6,7 +6,28 @@
     <packaging>pom</packaging>
     <version>2.2.0-SNAPSHOT</version>
     <name>parent</name>
+    <url>http://symmetricds.org</url>
+    <inceptionYear>2007</inceptionYear>
 
+    <description>
+        SymmetricDS is an open source database synchronization solution. It is platform-independent,
+        web-enabled, and database-agnostic. SymmetricDS was first built to replicate changes between 'retail store'
+        databases and ad centralized 'corporate' database.
+    </description>    
+
+    <licenses>
+        <license>
+            <name>LGPL</name>
+            <url>http://www.gnu.org/licenses/lgpl.txt</url>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>JumpMind, Inc.</name>
+        <url>http://www.jumpmind.com/</url>
+    </organization>
+        
     <properties>
         <version.springframwork>3.0.4.RELEASE</version.springframwork>
         <version.jetty>7.1.6.v20100715</version.jetty>
