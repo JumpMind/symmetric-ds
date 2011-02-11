@@ -18,19 +18,20 @@
         <menu name="About">
             <item name="Overview" href="/index.html" />
             <item name="Features" href="http://docs.codehaus.org/display/SYMMETRICDS/Features" />
-            <item name="News" href="http://docs.codehaus.org/display/SYMMETRICDS/News" />
             <item name="Roadmap" href="http://jira.codehaus.org/browse/SYMMETRICDS?report=com.atlassian.jira.plugin.system.project:roadmap-panel" />
             <item name="License" href="/license.html" />
             <item name="Team" href="/team-list.html" />
         </menu>
 
         <menu name="Documentation">
-            <item name="User Guides" href="getting_started.html" />
+            <item name="Project Docs" href="getting_started.html" />
             <item name="Wiki" href="http://docs.codehaus.org/display/SYMMETRICDS" />            
             <item name="Recent Changes" href="http://jira.codehaus.org/sr/jira.issueviews:searchrequest-printable/temp/SearchRequest.html?fixfor=-3&amp;pid=11906&amp;sorter/field=issuekey&amp;sorter/order=DESC&amp;sorter/field=fixVersions&amp;sorter/order=DESC&amp;tempMax=1000" />
         </menu>
 
         <menu name="Community">
+            <item name="Download"
+                href="http://sourceforge.net/project/showfiles.php?group_id=206470" />        
             <item name="SourceForge Project" href="http://sourceforge.net/projects/symmetricds/" />
             <item name="Codehaus Project" href="http://xircles.codehaus.org/projects/symmetricds" />
             <item name="Forums" href="http://sourceforge.net/forum/?group_id=206470" />
@@ -41,8 +42,6 @@
         </menu>
 
         <menu name="Code">
-            <item name="Download"
-                href="http://sourceforge.net/project/showfiles.php?group_id=206470" />
             <item name="Source Repository" href="http://sourceforge.net/svn/?group_id=206470" />
             <item name="Development Setup" href="http://docs.codehaus.org/display/SYMMETRICDS/Development+Setup" />
             <item name="Maven Repository" href="http://repository.codehaus.org/org/jumpmind/symmetric/" />
