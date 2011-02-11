@@ -36,8 +36,6 @@ import org.jumpmind.symmetric.ddl.model.Table;
 
 /**
  * Defines the trigger via which a table will be synchronized.
- *
- * 
  */
 public class Trigger implements Serializable {
 
