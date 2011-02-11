@@ -123,15 +123,6 @@
                     </reportSet>
                 </reportSets>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jxr-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/site</outputDirectory>
-                    <aggregate>true</aggregate>
-                </configuration>
-            </plugin>
         </plugins>
     </reporting>
 
