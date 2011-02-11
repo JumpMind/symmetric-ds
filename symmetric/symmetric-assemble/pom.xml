@@ -6,7 +6,15 @@
     <packaging>pom</packaging>
     <version>2.2.0-SNAPSHOT</version>
     <name>assemble</name>
-    
+        
+    <licenses>
+        <license>
+            <name>LGPL</name>
+            <url>http://www.gnu.org/licenses/lgpl.txt</url>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+        
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
