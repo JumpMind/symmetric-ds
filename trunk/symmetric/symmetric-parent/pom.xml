@@ -19,7 +19,7 @@
         <name>JumpMind, Inc.</name>
         <url>http://www.jumpmind.com/</url>
     </organization>
-        
+
     <properties>
         <version.springframwork>3.0.4.RELEASE</version.springframwork>
         <version.jetty>7.1.6.v20100715</version.jetty>
@@ -552,10 +552,10 @@
             </dependency>
             <!-- Required for jaybird -->
             <dependency>
-                <groupId>javax.resource</groupId>
-                <artifactId>connector</artifactId>
+                <groupId>org.apache.geronimo.specs</groupId>
+                <artifactId>geronimo-j2ee-connector_1.6_spec</artifactId>
                 <version>1.0</version>
-            </dependency>            
+            </dependency>
             <dependency>
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derby</artifactId>
