@@ -385,11 +385,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean refreshCache) {
         String myNodeGroupId = parameterService.getNodeGroupId();
         long triggerRouterCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
-        if (System.currentTimeMillis()-this.triggerRouterCacheTime > triggerRouterCacheTimeoutInMs) {
-           resetTriggerRouterCacheByNodeGroupId();
-        }
-        if (!triggerRouterCacheByNodeGroupId.containsKey(myNodeGroupId) || refreshCache ) {
+           
+        TriggerRoutersCache cache = triggerRouterCacheByNodeGroupId.get(myNodeGroupId);
+        if (cache == null || 
+                refreshCache || 
+                System.currentTimeMillis()-this.triggerRouterCacheTime > triggerRouterCacheTimeoutInMs) {
             synchronized (this) {
+                Map<String, TriggerRoutersCache> newTriggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();                
                 List<TriggerRouter> triggerRouters = getAllTriggerRoutersForCurrentNode(myNodeGroupId);
                 Map<String, List<TriggerRouter>> triggerRoutersByTriggerId = new HashMap<String, List<TriggerRouter>>(
                         triggerRouters.size());
@@ -405,11 +407,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     routers.put(triggerRouter.getRouter().getRouterId(), triggerRouter.getRouter());
                 }
 
-                triggerRouterCacheByNodeGroupId.put(myNodeGroupId, new TriggerRoutersCache(
+                newTriggerRouterCacheByNodeGroupId.put(myNodeGroupId, new TriggerRoutersCache(
                         triggerRoutersByTriggerId, routers));
+                this.triggerRouterCacheByNodeGroupId = newTriggerRouterCacheByNodeGroupId;
             }
         }
-        return triggerRouterCacheByNodeGroupId.get(myNodeGroupId);
+        return cache;
     }
 
     /**
@@ -548,9 +551,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
     
-    synchronized protected void resetTriggerRouterCacheByNodeGroupId() {
-        triggerRouterCacheByNodeGroupId.clear();
-        triggerRouterCacheTime = System.currentTimeMillis();
+    protected void resetTriggerRouterCacheByNodeGroupId() {
+        triggerRouterCacheTime = 0;
     }
 
     public void saveRouter(Router router) {
