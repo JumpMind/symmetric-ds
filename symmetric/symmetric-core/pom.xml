@@ -109,10 +109,10 @@
         </dependency>
         <!-- Required for jaybird -->
         <dependency>
-            <groupId>javax.resource</groupId>
-            <artifactId>connector</artifactId>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-j2ee-connector_1.6_spec</artifactId>
             <scope>provided</scope>
-        </dependency>        
+        </dependency>
     </dependencies>
 
 </project>
