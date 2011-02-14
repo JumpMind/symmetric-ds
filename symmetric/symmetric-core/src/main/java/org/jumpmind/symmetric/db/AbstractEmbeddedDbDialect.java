@@ -81,5 +81,9 @@ abstract public class AbstractEmbeddedDbDialect extends AbstractDbDialect implem
         sqlClause = sqlClause.replace("$(curTriggerValue).", "$(curTriggerValue)");
         return sqlClause.replace("'", "''");
     }
-
+    
+    @Override
+    public boolean escapesTemplatesForDatabaseInserts() {
+        return true;
+    }
 }

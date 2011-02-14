@@ -25,37 +25,37 @@
 				</property>
 				<property name="stringColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' when length($(tableAlias)."$(columnName)") = 0 then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' when length($(tableAlias)."$(columnName)") = 0 then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ]]>
 					</value>
 				</property>
 				<property name="clobColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar(32672)) || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar(32672)) || '"' end ]]>
 					</value>
 				</property>
 				<property name="blobColumnTemplate">
 					<value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else hex(cast($(tableAlias)."$(columnName)" as varchar(16336) for bit data)) end||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else hex(cast($(tableAlias)."$(columnName)" as varchar(16336) for bit data)) end]]>
 					</value>
 				</property>
 				<property name="numberColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char($(tableAlias)."$(columnName)")) || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char($(tableAlias)."$(columnName)")) || '"' end ]]>
 					</value>
 				</property>
 				<property name="datetimeColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char(year($(tableAlias)."$(columnName)")))||'-'||substr(digits(month($(tableAlias)."$(columnName)")),9)||'-'||substr(digits(day($(tableAlias)."$(columnName)")),9)||' '||substr(digits(hour($(tableAlias)."$(columnName)")),9)||':'||substr(digits(minute($(tableAlias)."$(columnName)")),9)||':'||substr(digits(second($(tableAlias)."$(columnName)")),9)||'.'||STRIP(char(microsecond($(tableAlias)."$(columnName)"))) || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char(year($(tableAlias)."$(columnName)")))||'-'||substr(digits(month($(tableAlias)."$(columnName)")),9)||'-'||substr(digits(day($(tableAlias)."$(columnName)")),9)||' '||substr(digits(hour($(tableAlias)."$(columnName)")),9)||':'||substr(digits(minute($(tableAlias)."$(columnName)")),9)||':'||substr(digits(second($(tableAlias)."$(columnName)")),9)||'.'||STRIP(char(microsecond($(tableAlias)."$(columnName)"))) || '"' end ]]>
 					</value>
 				</property>
                 <property name="dateColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char(year($(tableAlias)."$(columnName)")))||'-'||substr(digits(month($(tableAlias)."$(columnName)")),9)||'-'||substr(digits(day($(tableAlias)."$(columnName)")),9)|| '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char(year($(tableAlias)."$(columnName)")))||'-'||substr(digits(month($(tableAlias)."$(columnName)")),9)||'-'||substr(digits(day($(tableAlias)."$(columnName)")),9)|| '"' end ]]>
                     </value>
                 </property>
                 <property name="timeColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || substr(digits(hour($(tableAlias)."$(columnName)")),9)||':'||substr(digits(minute($(tableAlias)."$(columnName)")),9)||':'||substr(digits(second($(tableAlias)."$(columnName)")),9)|| '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || substr(digits(hour($(tableAlias)."$(columnName)")),9)||':'||substr(digits(minute($(tableAlias)."$(columnName)")),9)||':'||substr(digits(second($(tableAlias)."$(columnName)")),9)|| '"' end ]]>
                     </value>
                 </property>
 				<property name="triggerConcatCharacter" value="||" />

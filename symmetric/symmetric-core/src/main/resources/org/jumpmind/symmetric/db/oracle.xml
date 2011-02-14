@@ -105,37 +105,37 @@
                 </property>
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')),'"')) ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')),'"'))]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, to_clob(''), '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"') ||','||]]>
+                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, to_clob(''), '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"')]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, to_clob(''), '"'||$[sym.sync.table.prefix]_blob2clob($(tableAlias)."$(columnName)")||'"') ||','||]]>
+                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, to_clob(''), '"'||$[sym.sync.table.prefix]_blob2clob($(tableAlias)."$(columnName)")||'"')]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as number($[sym.oracle.template.precision]))||'"') ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as number($[sym.oracle.template.precision]))||'"')]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.FF3')),'"')) ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.FF3')),'"'))]]>
                     </value>
                 </property>               
                 <property name="dateColumnTemplate" >
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"')) ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"'))]]>
                     </value>
                 </property>
                 <property name="timeColumnTemplate" >
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"')) ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"'))]]>
                     </value>
                 </property>                
                 <property name="triggerConcatCharacter" value="||"/>

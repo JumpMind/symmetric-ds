@@ -9,7 +9,7 @@
     <bean id="h2StringTemplate" class="java.lang.String">
         <constructor-arg>
             <value>
-                <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($(tableAlias)"$(columnName)",''\'',''\\''),''"'',''\"'')||''"'' end ||'',''||]]>
+                <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($(tableAlias)"$(columnName)",''\'',''\\''),''"'',''\"'')||''"'' end]]>
             </value>
         </constructor-arg>
     </bean>
@@ -37,22 +37,22 @@
                 <property name="clobColumnTemplate" ref="h2StringTemplate" />
                 <property name="blobColumnTemplate">
                     <value>
-                         <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($[sym.sync.table.prefix]_BASE64_ENCODE($(tableAlias)"$(columnName)"),''\'',''\\''),''"'',''\"'')||''"'' end ||'',''||]]>
+                         <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($[sym.sync.table.prefix]_BASE64_ENCODE($(tableAlias)"$(columnName)"),''\'',''\\''),''"'',''\"'')||''"'' end]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||cast($(tableAlias)"$(columnName)" as varchar(50))||''"'' end ||'',''||]]>
+                        <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||cast($(tableAlias)"$(columnName)" as varchar(50))||''"'' end]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||formatdatetime($(tableAlias)"$(columnName)", ''yyyy-MM-dd HH:mm:ss.S'')||''"'' end ||'',''||]]>
+                        <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||formatdatetime($(tableAlias)"$(columnName)", ''yyyy-MM-dd HH:mm:ss.S'')||''"'' end]]>
                     </value>
                 </property>
                 <property name="booleanColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)"$(columnName)" is null then '''' when $(tableAlias)"$(columnName)" then ''"1"'' else ''"0"'' end||'',''||]]>
+                        <![CDATA[case when $(tableAlias)"$(columnName)" is null then '''' when $(tableAlias)"$(columnName)" then ''"1"'' else ''"0"'' end]]>
                     </value>
                 </property>
                 <property name="oldColumnPrefix" value="OLD_" />

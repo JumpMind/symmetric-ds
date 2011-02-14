@@ -24,27 +24,27 @@
 				</property>
 				<property name="stringColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ]]>
 					</value>
 				</property>
 				<property name="clobColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar(32672)) || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar(32672)) || '"' end ]]>
 					</value>
 				</property>
 				<property name="blobColumnTemplate">
 					<value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || hex(cast($(tableAlias)."$(columnName)" as varchar(16336) for bit data)) || '"' end||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || hex(cast($(tableAlias)."$(columnName)" as varchar(16336) for bit data)) || '"' end]]>
 					</value>
 				</property>
 				<property name="numberColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || trim(char($(tableAlias)."$(columnName)")) || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || trim(char($(tableAlias)."$(columnName)")) || '"' end ]]>
 					</value>
 				</property>
 				<property name="datetimeColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char(year(timestamp_iso($(tableAlias)."$(columnName)"))))||'-'||substr(digits(month(timestamp_iso($(tableAlias)."$(columnName)"))),9)||'-'||substr(digits(day(timestamp_iso($(tableAlias)."$(columnName)"))),9)||' '||substr(digits(hour(timestamp_iso($(tableAlias)."$(columnName)"))),9)||':'||substr(digits(minute(timestamp_iso($(tableAlias)."$(columnName)"))),9)||':'||substr(digits(second(timestamp_iso($(tableAlias)."$(columnName)"))),9)||'.'||rtrim(char(microsecond(timestamp_iso($(tableAlias)."$(columnName)")))) || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char(year(timestamp_iso($(tableAlias)."$(columnName)"))))||'-'||substr(digits(month(timestamp_iso($(tableAlias)."$(columnName)"))),9)||'-'||substr(digits(day(timestamp_iso($(tableAlias)."$(columnName)"))),9)||' '||substr(digits(hour(timestamp_iso($(tableAlias)."$(columnName)"))),9)||':'||substr(digits(minute(timestamp_iso($(tableAlias)."$(columnName)"))),9)||':'||substr(digits(second(timestamp_iso($(tableAlias)."$(columnName)"))),9)||'.'||rtrim(char(microsecond(timestamp_iso($(tableAlias)."$(columnName)")))) || '"' end ]]>
 					</value>
 				</property>
 				<property name="triggerConcatCharacter" value="||" />

@@ -78,37 +78,37 @@
                 </property>
                 <property name="stringColumnTemplate">
 		            <value>
-		                <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' + str_replace(str_replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') + '"' end +','+]]>
+		                <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' + str_replace(str_replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') + '"' end ]]>
 		            </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + str_replace(str_replace(cast($(origTableAlias)."$(columnName)" as varchar(16384)),'\','\\'),'"','\"') + '"' end +','+]]>
+                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + str_replace(str_replace(cast($(origTableAlias)."$(columnName)" as varchar(16384)),'\','\\'),'"','\"') + '"' end ]]>
                     </value>
                 </property>
                 <property name="emptyColumnTemplate">
                     <value>
-                        <![CDATA[ ''+','+]]>
+                        <![CDATA[ '']]>
                     </value>
                 </property>                
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + str_replace(str_replace(dbo.$[sym.sync.table.prefix]_base64_encode($(origTableAlias)."$(columnName)"),'\','\\'),'"','\"') + '"' end +','+]]>
+                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + str_replace(str_replace(dbo.$[sym.sync.table.prefix]_base64_encode($(origTableAlias)."$(columnName)"),'\','\\'),'"','\"') + '"' end ]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + cast($(tableAlias)."$(columnName)" as varchar) + '"') end+','+]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + cast($(tableAlias)."$(columnName)" as varchar) + '"') end]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + str_replace(convert(varchar,$(tableAlias)."$(columnName)",23),'T',' ') + '"') end +','+]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + str_replace(convert(varchar,$(tableAlias)."$(columnName)",23),'T',' ') + '"') end ]]>
                     </value>
                 </property>
                 <property name="booleanColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' when $(tableAlias)."$(columnName)" = 1 then '"1"' else '"0"' end +','+]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' when $(tableAlias)."$(columnName)" = 1 then '"1"' else '"0"' end ]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="+" />

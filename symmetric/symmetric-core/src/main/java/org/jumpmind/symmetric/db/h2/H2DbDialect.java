@@ -146,4 +146,5 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
+
 }

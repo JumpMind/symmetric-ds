@@ -296,4 +296,13 @@ public interface IDbDialect {
     
     public String massageDataExtractionSql(String sql, Channel channel);
     
+    public String massageForLob(String sql, Channel channel);
+    
+    /**
+     * Indicates that the dialect relies on SQL that is to be inserted into the database for use
+     * by embedded Java triggers.  H2 is an example dialect that needs this feature.
+     * @return
+     */
+    public boolean escapesTemplatesForDatabaseInserts();
+    
 }

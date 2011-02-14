@@ -9,7 +9,7 @@
     <bean id="hsqldb2StringTemplate" class="java.lang.String">
         <constructor-arg>
             <value>
-                <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"' end ||','||]]>
+                <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"' end ]]>
             </value>
         </constructor-arg>
     </bean>
@@ -64,22 +64,22 @@
                 <property name="clobColumnTemplate" ref="hsqldb2StringTemplate" />
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then ''else '"'||rawtohex($(tableAlias)."$(columnName)")||'"' end ||','||]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then ''else '"'||rawtohex($(tableAlias)."$(columnName)")||'"' end ]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||$(tableAlias)."$(columnName)"||'"' end ||','||]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||$(tableAlias)."$(columnName)"||'"' end ]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||$(tableAlias)."$(columnName)"||'"' end ||','||]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||$(tableAlias)."$(columnName)"||'"' end ]]>
                     </value>
                 </property>
                 <property name="booleanColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' when $(tableAlias)."$(columnName)" then '"1"' else '"0"' end||','||]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' when $(tableAlias)."$(columnName)" then '"1"' else '"0"' end]]>
                     </value>
                 </property>
                 <property name="oldTriggerValue" value="oldrow" />

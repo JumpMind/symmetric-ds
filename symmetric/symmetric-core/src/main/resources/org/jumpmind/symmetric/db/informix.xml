@@ -67,32 +67,32 @@
                 </property>
                 <property name="stringColumnTemplate">
                     <value>
-                        <![CDATA[rtrim(case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName), '\', '\\'), '"', '\"') || '"' end) ||','|| ]]>
+                        <![CDATA[rtrim(case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName), '\', '\\'), '"', '\"') || '"' end)  ]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA['' ||','|| ]]>
+                        <![CDATA[''  ]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA['' ||','|| ]]>
+                        <![CDATA[''  ]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $(tableAlias).$(columnName) || '"' end ||','|| ]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $(tableAlias).$(columnName) || '"' end  ]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $(tableAlias).$(columnName) || '"' end ||','|| ]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $(tableAlias).$(columnName) || '"' end  ]]>
                     </value>
                 </property>
                 <property name="booleanColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) then '"1"' else '"0"' end ||','|| ]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) then '"1"' else '"0"' end  ]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>

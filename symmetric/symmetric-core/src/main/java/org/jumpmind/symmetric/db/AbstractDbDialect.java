@@ -1533,4 +1533,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
             return sql;
         }
     }
+    
+    public String massageForLob(String sql, Channel channel) {
+        return sql;
+    }
+    
+    public boolean escapesTemplatesForDatabaseInserts() {
+        return false;
+    }
 }

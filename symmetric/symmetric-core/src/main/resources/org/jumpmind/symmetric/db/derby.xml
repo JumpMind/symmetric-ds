@@ -100,30 +100,30 @@
                         </entry>
                     </map>
                 </property>
-                <property name="emptyColumnTemplate" value="''||','||"/>        
+                <property name="emptyColumnTemplate" value="''"/>        
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[$[sym.sync.table.prefix]_escape($(tableAlias)."$(columnName)") ||','||]]>
+                        <![CDATA[$[sym.sync.table.prefix]_escape($(tableAlias)."$(columnName)") ]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[$[sym.sync.table.prefix]_clob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>
+                        <![CDATA[$[sym.sync.table.prefix]_clob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[$[sym.sync.table.prefix]_blob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>
+                        <![CDATA[$[sym.sync.table.prefix]_blob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char($(tableAlias)."$(columnName)")) || '"' end ||','||]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char($(tableAlias)."$(columnName)")) || '"' end ]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char($(tableAlias)."$(columnName)")) || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char($(tableAlias)."$(columnName)")) || '"' end ]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>
