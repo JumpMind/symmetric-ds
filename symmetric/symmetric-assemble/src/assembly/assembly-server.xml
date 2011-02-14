@@ -1,5 +1,5 @@
 <assembly>
-    <id>bin</id>
+    <id>server</id>
     <formats>
         <format>zip</format>
     </formats>
