@@ -31,7 +31,6 @@ import java.util.List;
 
 import javax.sql.rowset.serial.SerialBlob;
 
-import org.apache.commons.betwixt.digester.ConfigRule;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
