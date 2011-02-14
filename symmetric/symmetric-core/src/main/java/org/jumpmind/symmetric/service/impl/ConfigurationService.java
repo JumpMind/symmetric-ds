@@ -440,6 +440,15 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return map;
     }
+    
+    public Channel getChannel(String channelId) {
+        NodeChannel nodeChannel = getNodeChannel(channelId, false);
+        if (nodeChannel != null) {
+            return nodeChannel.getChannel();
+        } else {
+            return null;
+        }
+    }
 
     public ChannelMap getSuspendIgnoreChannelLists() {
         return getSuspendIgnoreChannelLists(nodeService.findIdentityNodeId());

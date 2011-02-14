@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.db;
 
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -40,22 +41,22 @@ abstract public class AbstractEmbeddedDbDialect extends AbstractDbDialect implem
      * When returning the raw SQL for use as SQL it needs to be un-escaped.
      */
     @Override
-    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory) {
-        String sql = super.createInitialLoadSqlFor(node, trigger, table, triggerHistory);
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory, Channel channel) {
+        String sql = super.createInitialLoadSqlFor(node, trigger, table, triggerHistory, channel);
         sql = sql.replace("''", "'");
         return sql;
     }
 
     @Override
-    public String createCsvDataSql(Trigger trigger, String whereClause) {
-        String sql = super.createCsvDataSql(trigger, whereClause);
+    public String createCsvDataSql(Trigger trigger, Channel channel, String whereClause) {
+        String sql = super.createCsvDataSql(trigger, channel, whereClause);
         sql = sql.replace("''", "'");
         return sql;
     }
 
     @Override
-    public String createCsvPrimaryKeySql(Trigger trigger, String whereClause) {
-        String sql = super.createCsvPrimaryKeySql(trigger, whereClause);
+    public String createCsvPrimaryKeySql(Trigger trigger, Channel channel, String whereClause) {
+        String sql = super.createCsvPrimaryKeySql(trigger, channel, whereClause);
         sql = sql.replace("''", "'");
         return sql;
     }

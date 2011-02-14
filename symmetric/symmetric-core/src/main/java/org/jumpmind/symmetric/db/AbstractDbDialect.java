@@ -294,28 +294,32 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return "null";
     }
 
-    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory) {
-        return sqlTemplate.createInitalLoadSql(node, this, trigger, table, triggerHistory).trim();
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory, Channel channel) {
+        return sqlTemplate.createInitalLoadSql(node, this, trigger, table, triggerHistory, channel).trim();
     }
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter) {
         return String.format(parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL), triggerRouter.qualifiedTargetTableName());
     }
 
-    public String createCsvDataSql(Trigger trigger, String whereClause) {
+    public String createCsvDataSql(Trigger trigger, Channel channel, String whereClause) {
         return sqlTemplate.createCsvDataSql(
                 this,
                 trigger,
-                getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
-                        .getSourceTableName(), true), whereClause).trim();
+                getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), 
+                trigger
+                        .getSourceTableName(), true),
+                        channel,
+                        whereClause).trim();
     }
 
-    public String createCsvPrimaryKeySql(Trigger trigger, String whereClause) {
+    public String createCsvPrimaryKeySql(Trigger trigger, Channel channel, String whereClause) {
         return sqlTemplate.createCsvPrimaryKeySql(
                 this,
                 trigger,
                 getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
-                        .getSourceTableName(), true), whereClause).trim();
+                        .getSourceTableName(), true), 
+                        channel, whereClause).trim();
     }
 
     public Table getTable(Trigger trigger, boolean useCache) {
@@ -755,7 +759,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * schema if the source schema is configured.
      */
     public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml,
-            final Trigger trigger, final TriggerHistory hist, final String tablePrefix,
+            final Trigger trigger, final TriggerHistory hist, final Channel channel, final String tablePrefix,
             final Table table) {
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
@@ -770,7 +774,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, con);
 
                     String triggerSql = sqlTemplate.createTriggerDDL(AbstractDbDialect.this, dml,
-                            trigger, hist, tablePrefix, table, defaultCatalog, defaultSchema);
+                            trigger, hist, channel, tablePrefix, table, defaultCatalog, defaultSchema);
 
                     if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                         Statement stmt = con.createStatement();
@@ -783,7 +787,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             throw ex;
                         }
                         String postTriggerDml = createPostTriggerDDL(dml, trigger, hist,
-                                tablePrefix, table);
+                                channel, tablePrefix, table);
                         if (postTriggerDml != null) {
                             try {
                                 stmt.executeUpdate(postTriggerDml);
@@ -816,9 +820,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
 
-    public String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist,
-            String tablePrefix, Table table) {
-        return sqlTemplate.createPostTriggerDDL(this, dml, trigger, hist, tablePrefix, table,
+    protected String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist,
+            Channel channel, String tablePrefix, Table table) {
+        return sqlTemplate.createPostTriggerDDL(this, dml, trigger, hist, channel, tablePrefix, table,
                 getDefaultCatalog(), getDefaultSchema());
     }
 
@@ -1056,14 +1060,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String getProductVersion() {
         return databaseProductVersion;
-    }
-
-    public String replaceTemplateVariables(DataEventType dml, Trigger trigger,
-            TriggerHistory history, String targetString) {
-        return sqlTemplate.replaceTemplateVariables(this, dml, trigger, history, tablePrefix,
-                getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
-                        .getSourceTableName(), true), getDefaultCatalog(), getDefaultSchema(),
-                targetString);
     }
 
     public boolean supportsGetGeneratedKeys() {
@@ -1517,6 +1513,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     public String massageDataExtractionSql(String sql, Channel channel) {
         return sql;
+    }
+    
+    public String massageLobColumn(String columnName, Channel channel) {
+        return columnName;
     }
     
     public String scrubSql(String sql) {

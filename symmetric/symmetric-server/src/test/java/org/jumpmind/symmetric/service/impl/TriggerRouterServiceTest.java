@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.sql.rowset.serial.SerialBlob;
 
+import org.apache.commons.betwixt.digester.ConfigRule;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -184,14 +185,15 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testInitialLoadSql() throws Exception {
-        ITriggerRouterService service = getTriggerRouterService();
-        TriggerRouter triggerRouter = service.getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true);
+        ITriggerRouterService triggerRouterService = getTriggerRouterService();
+        TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true);
 
         Table table = getDbDialect().getTable(triggerRouter.getTrigger().getSourceCatalogName(), triggerRouter.getTrigger().getSourceSchemaName(),
         		triggerRouter.getTrigger().getSourceTableName(), true);
 
         String sql = getDbDialect().createInitialLoadSqlFor(new Node("1", null, "1.0"),
-                triggerRouter, table, service.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId()));
+                triggerRouter, table, triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId())
+                , getConfigurationService().getChannel(triggerRouter.getTrigger().getChannelId()));
         List<String> csvStrings = getJdbcTemplate().queryForList(sql, String.class);
         assertTrue(csvStrings.size() > 0);
         String csvString = csvStrings.get(0);
