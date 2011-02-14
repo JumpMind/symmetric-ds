@@ -384,9 +384,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected TriggerRoutersCache getTriggerRoutersCacheForCurrentNode(
             boolean refreshCache) {
         String myNodeGroupId = parameterService.getNodeGroupId();
-        long triggerRouterCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
-           
-        TriggerRoutersCache cache = triggerRouterCacheByNodeGroupId.get(myNodeGroupId);
+        long triggerRouterCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);           
+        TriggerRoutersCache cache = triggerRouterCacheByNodeGroupId == null ? null : triggerRouterCacheByNodeGroupId.get(myNodeGroupId);
         if (cache == null || 
                 refreshCache || 
                 System.currentTimeMillis()-this.triggerRouterCacheTime > triggerRouterCacheTimeoutInMs) {
