@@ -46,7 +46,7 @@
                         <goals>
                             <goal>attached</goal>
                         </goals>
-                        <configuration>
+                        <configuration>                            
                             <descriptors>
                                 <descriptor>${basedir}/src/assembly/assembly-server.xml</descriptor>
                             </descriptors>
@@ -63,7 +63,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/src/assembly/assembly-client.xml</descriptor>
                             </descriptors>
-                            <finalName>symmetric-ds-${pom.version}</finalName>
+                            <finalName>symmetric-client-${pom.version}</finalName>
                         </configuration>
                     </execution>                    
                 </executions>
