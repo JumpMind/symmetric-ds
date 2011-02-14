@@ -425,7 +425,13 @@ public class SqlTemplate {
     private ColumnString buildColumnString(IDbDialect dialect, String origTableAlias, String tableAlias, String columnPrefix, Column[] columns, IDbDialect dbDialect, DataEventType dml, boolean isOld, Channel channel) {
         String columnsText = "";
         boolean isLob = false;
-        for (Column column : columns) {
+        
+        String lastCommandToken = dbDialect.escapesTemplatesForDatabaseInserts() ? 
+                (triggerConcatCharacter + "'',''" + triggerConcatCharacter) : 
+                (triggerConcatCharacter + "','" + triggerConcatCharacter);
+        
+        for(int i=0; i < columns.length; i++){
+            Column column = columns[i];
             if (column != null) {
                 String templateToUse = null;
                 switch (column.getTypeCode()) {
@@ -517,26 +523,19 @@ public class SqlTemplate {
                     throw new NotImplementedException();
                 }
                 
-                String formattedColumnName = String.format("%s%s", columnPrefix, column
-                        .getName());
+                String formattedColumnText = AppUtils.replace("columnName", String.format("%s%s", columnPrefix, column
+                        .getName()), templateToUse);
+                
+                if (isLob) {
+                    formattedColumnText = dbDialect.massageForLob(formattedColumnText, channel);
+                }
 
                 columnsText = columnsText
                         + "\n          "
-                        + AppUtils.replace("columnName", formattedColumnName, templateToUse);
+                        + formattedColumnText + lastCommandToken;
             }
 
-        }
-
-        String lastCommandToken = triggerConcatCharacter + "','" + triggerConcatCharacter;
-
-        if (columnsText.endsWith(lastCommandToken)) {
-            columnsText = columnsText.substring(0, columnsText.length() - lastCommandToken.length());
-        }
-        
-        // H2 (and maybe other embedded java triggers) escape the ' character so
-        // it may be inserted into the
-        // database as SQL that can be used by the trigger code.
-        lastCommandToken = triggerConcatCharacter + "'',''" + triggerConcatCharacter;
+        }        
 
         if (columnsText.endsWith(lastCommandToken)) {
             columnsText = columnsText.substring(0, columnsText.length() - lastCommandToken.length());

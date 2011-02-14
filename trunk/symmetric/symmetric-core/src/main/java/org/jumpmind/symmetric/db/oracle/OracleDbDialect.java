@@ -270,10 +270,19 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
         return sql;        
     }
+
+    @Override
+    public String massageForLob(String sql, Channel channel) {
+        if (channel != null && !channel.isContainsBigLob()) {
+           return String.format("dbms_lob.substr(%s, 4000, 1)", sql); 
+        } else {
+           return super.massageForLob(sql, channel);
+        }
+    }
     
     @Override
     protected String getDbSpecificDataHasChangedCondition() {
         return "var_row_data != var_old_data";
     }
-    
+ 
 }
