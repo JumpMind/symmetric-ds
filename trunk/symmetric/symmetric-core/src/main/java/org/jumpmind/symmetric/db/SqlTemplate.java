@@ -519,10 +519,6 @@ public class SqlTemplate {
                 
                 String formattedColumnName = String.format("%s%s", columnPrefix, column
                         .getName());
-                
-                if (isLob) {
-                    formattedColumnName = dbDialect.massageLobColumn(formattedColumnName, channel);
-                }
 
                 columnsText = columnsText
                         + "\n          "

@@ -296,6 +296,4 @@ public interface IDbDialect {
     
     public String massageDataExtractionSql(String sql, Channel channel);
     
-    public String massageLobColumn(String columnName, Channel channel);
-    
 }

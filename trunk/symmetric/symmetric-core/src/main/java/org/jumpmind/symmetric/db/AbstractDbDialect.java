@@ -1515,10 +1515,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return sql;
     }
     
-    public String massageLobColumn(String columnName, Channel channel) {
-        return columnName;
-    }
-    
     public String scrubSql(String sql) {
         Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
         if (replacementTokens != null) {
