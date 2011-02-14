@@ -409,6 +409,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 newTriggerRouterCacheByNodeGroupId.put(myNodeGroupId, new TriggerRoutersCache(
                         triggerRoutersByTriggerId, routers));
                 this.triggerRouterCacheByNodeGroupId = newTriggerRouterCacheByNodeGroupId;
+                cache = triggerRouterCacheByNodeGroupId == null ? null : triggerRouterCacheByNodeGroupId.get(myNodeGroupId);
             }
         }
         return cache;
