@@ -105,16 +105,16 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger,
-            TriggerHistory hist, String tablePrefix, Table table) {
+            TriggerHistory history, Channel channel, String tablePrefix, Table table) {
         try {
-            super.createTrigger(sqlBuffer, dml, trigger, hist, tablePrefix, table);
+            super.createTrigger(sqlBuffer, dml, trigger, history, channel, tablePrefix, table);
         } catch (BadSqlGrammarException ex) {
             if (ex.getSQLException().getErrorCode() == 4095) {
                 try {
                     // a trigger of the same name must already exist on a table
                     log.warn("TriggerAlreadyExists", jdbcTemplate.queryForMap(
                             "select * " + selectTriggerSql,
-                            new Object[] { hist.getTriggerNameForDmlType(dml), hist.getSourceTableName() }));
+                            new Object[] { history.getTriggerNameForDmlType(dml), history.getSourceTableName() }));
                 } catch (DataAccessException e) {
                 }
             }
@@ -269,6 +269,14 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             sql = StringUtils.replace(sql, "d.pk_data", "dbms_lob.substr(d.pk_data, 4000, 1 )");
         }
         return sql;        
+    }
+    
+    public String massageLobColumn(String columnName, Channel channel) {   
+        if (channel != null && !channel.isContainsBigLob()) {
+            return String.format("dbms_lob.substr(%s, 4000, 1 )", columnName);
+        } else {
+            return columnName;
+        }
     }
     
     @Override

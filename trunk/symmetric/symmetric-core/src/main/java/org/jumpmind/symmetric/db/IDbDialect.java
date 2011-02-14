@@ -44,7 +44,8 @@ import org.springframework.jdbc.support.lob.LobHandler;
  */
 public interface IDbDialect {
 
-    public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist,
+    public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, 
+            Trigger trigger, TriggerHistory hist, Channel channel, 
             String tablePrefix, Table table);
 
     /**
@@ -111,13 +112,13 @@ public interface IDbDialect {
 
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
-    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory);
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory, Channel channel);
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter);
 
-    public String createCsvDataSql(Trigger trig, String whereClause);
+    public String createCsvDataSql(Trigger trig, Channel channel, String whereClause);
 
-    public String createCsvPrimaryKeySql(Trigger trig, String whereClause);
+    public String createCsvPrimaryKeySql(Trigger trig, Channel channel, String whereClause);
 
     /**
      * @return true if blank characters are padded out
@@ -247,13 +248,6 @@ public interface IDbDialect {
      */
     public int getRouterDataPeekAheadCount();
 
-    /**
-     * Give access to the templating mechanism that is used for trigger
-     * creation.
-     */
-    public String replaceTemplateVariables(DataEventType dml, Trigger trigger, TriggerHistory history,
-            String targetString);
-
     public boolean supportsOpenCursorsAcrossCommit();
 
     /**
@@ -301,5 +295,7 @@ public interface IDbDialect {
     public boolean canGapsOccurInCapturedDataIds();
     
     public String massageDataExtractionSql(String sql, Channel channel);
+    
+    public String massageLobColumn(String columnName, Channel channel);
     
 }

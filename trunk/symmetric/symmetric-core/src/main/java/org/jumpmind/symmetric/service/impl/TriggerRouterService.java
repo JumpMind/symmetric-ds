@@ -850,7 +850,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         if (!triggerExists && triggerIsActive) {
-            dbDialect.createTrigger(sqlBuffer, dmlType, trigger, hist, tablePrefix, table);
+            dbDialect.createTrigger(sqlBuffer, dmlType, trigger, hist, configurationService.getChannel(trigger.getChannelId()), tablePrefix, table);
             if (triggerRemoved) {
                 statisticManager.incrementTriggersRebuiltCount(1);
             } else {
