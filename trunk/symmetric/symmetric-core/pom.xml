@@ -107,6 +107,12 @@
             <artifactId>jaybird</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Required for jaybird -->
+        <dependency>
+            <groupId>javax.resource</groupId>
+            <artifactId>connector</artifactId>
+            <scope>provided</scope>
+        </dependency>        
     </dependencies>
 
 </project>

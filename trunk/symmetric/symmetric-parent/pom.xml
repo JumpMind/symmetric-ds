@@ -550,6 +550,12 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <!-- Required for jaybird -->
+            <dependency>
+                <groupId>javax.resource</groupId>
+                <artifactId>connector</artifactId>
+                <version>1.0</version>
+            </dependency>            
             <dependency>
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derby</artifactId>
