@@ -29,7 +29,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.impl.NodeService;
 
 /**
- * 
+ * Default implementation of an {@link IOfflineClientListener}.  When the listener detects
+ * that sync has been disabled or registration is required, the local node identity is removed.
  */
 public class DefaultOfflineClientListener implements IOfflineClientListener, IBuiltInExtensionPoint {
     
