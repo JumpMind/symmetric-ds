@@ -21,6 +21,9 @@
 
 package org.jumpmind.symmetric.db.postgresql;
 
+import java.sql.Array;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Map;
 
@@ -214,4 +217,73 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return BinaryEncoding.BASE64;
     }
 
+    @Override
+    protected Array createArray(Column column, final String value) {
+        if (StringUtils.isNotBlank(value)) {
+
+            String jdbcTypeName = column.getJdbcTypeName();
+            if (jdbcTypeName.startsWith("_")) {
+                jdbcTypeName = jdbcTypeName.substring(1);
+            }
+            int jdbcBaseType = Types.VARCHAR;
+            if (jdbcTypeName.toLowerCase().contains("int")) {
+                jdbcBaseType = Types.INTEGER;
+            }
+                        
+            final String baseTypeName = jdbcTypeName;
+            final int baseType = jdbcBaseType;
+            return new Array() {
+                public String getBaseTypeName() {
+                    return baseTypeName;
+                }
+
+                public void free() throws SQLException {
+                }
+
+                public int getBaseType() {
+                    return baseType;
+                }
+
+                public Object getArray() {
+                    return null;
+                }
+
+                public Object getArray(Map<String, Class<?>> map) {
+                    return null;
+                }
+
+                public Object getArray(long index, int count) {
+                    return null;
+                }
+
+                public Object getArray(long index, int count, Map<String, Class<?>> map) {
+                    return null;
+                }
+
+                public ResultSet getResultSet() {
+                    return null;
+                }
+
+                public ResultSet getResultSet(Map<String, Class<?>> map) {
+                    return null;
+                }
+
+                public ResultSet getResultSet(long index, int count) {
+                    return null;
+                }
+
+                public ResultSet getResultSet(long index, int count, Map<String, Class<?>> map) {
+                    return null;
+                }
+
+                public String toString() {
+                    return value;
+                }
+            };
+        } else {
+            return null;
+        }
+    }
+
+    
 }

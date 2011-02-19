@@ -25,6 +25,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -578,6 +579,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         Column column = new Column();
         column.setName((String) values.get("COLUMN_NAME"));
         column.setDefaultValue((String) values.get("COLUMN_DEF"));
+        column.setJdbcTypeName((String)values.get("TYPE_NAME"));
         Integer jdbcType = overrideJdbcTypeForColumn(values);
         if (jdbcType != null) {
             column.setTypeCode(jdbcType);
@@ -622,9 +624,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         HashMap<String, Object> values = new HashMap<String, Object>();
         MetaDataColumnDescriptor descriptor;
         for (Iterator it = columnDescriptors.iterator(); it.hasNext(); values.put(descriptor
-                .getName(), descriptor.readColumn(resultSet)))
+                .getName(), descriptor.readColumn(resultSet))) {
             descriptor = (MetaDataColumnDescriptor) it.next();
-
+        }                
         return values;
     }
 
@@ -1184,6 +1186,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             }
                         } else if (type == Types.TIME) {
                             objectValue = new Time(getTime(value, TIME_PATTERNS));
+                        } else if (type == Types.ARRAY) {
+                            objectValue = createArray(column, value);
                         }
                     }
                     list.add(objectValue);
@@ -1196,6 +1200,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
         
         return list.toArray();
+    }
+    
+    
+    
+    protected Array createArray(Column column, final String value) {
+        return null;
     }
     
     public boolean isBlankCharColumnSpacePadded() {
