@@ -65,6 +65,8 @@ public class Column implements Cloneable, Serializable
     private int _scale;
     /** The default value. */
     private String _defaultValue;
+    
+    private String jdbcTypeName;
 
     /**
      * Returns the name of the column.
@@ -614,5 +616,13 @@ public class Column implements Cloneable, Serializable
         result.append("]");
 
         return result.toString();
+    }
+    
+    public void setJdbcTypeName(String jdbcTypeName) {
+        this.jdbcTypeName = jdbcTypeName;
+    }
+    
+    public String getJdbcTypeName() {
+        return jdbcTypeName;
     }
 }
