@@ -66,6 +66,8 @@ public class SqlTemplate {
     private String stringColumnTemplate;
 
     private String xmlColumnTemplate;
+    
+    private String arrayColumnTemplate;
 
     private String numberColumnTemplate;
 
@@ -454,6 +456,9 @@ public class SqlTemplate {
                 case Types.SQLXML:
                     templateToUse = xmlColumnTemplate;
                     break;
+                case Types.ARRAY:
+                    templateToUse = arrayColumnTemplate;
+                    break;
                 case Types.CLOB:
                     if (isOld && dbDialect.needsToSelectLobData()) {
                         templateToUse = emptyColumnTemplate;
@@ -638,6 +643,10 @@ public class SqlTemplate {
 
     public void setXmlColumnTemplate(String columnTemplate) {
         this.xmlColumnTemplate = columnTemplate;
+    }
+    
+    public void setArrayColumnTemplate(String arrayColumnTemplate) {
+        this.arrayColumnTemplate = arrayColumnTemplate;
     }
 
     public void setDatetimeColumnTemplate(String datetimeColumnTemplate) {
