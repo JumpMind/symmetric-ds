@@ -79,6 +79,11 @@
                         <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",$$\$$,$$\\$$),'"',$$\"$$) || '"' end ]]>
                     </value>
                 </property>
+                <property name="arrayColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace(cast($(tableAlias)."$(columnName)" as varchar),$$\$$,$$\\$$),'"',$$\"$$) || '"' end ]]>
+                    </value>
+                </property>                
                 <property name="xmlColumnTemplate" >
                     <value>
                         <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace(cast($(tableAlias)."$(columnName)" as varchar),$$\$$,$$\\$$),'"',$$\"$$) || '"' end ]]>
