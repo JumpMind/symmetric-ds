@@ -32,9 +32,10 @@ import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.symmetric.ddl.model.Column;
 
 /**
- * ,
+ * Builds a SQL DML statement
  */
 public class StatementBuilder {
+    
     public enum DmlType {
         INSERT, UPDATE, DELETE, UPDATE_NO_KEYS, COUNT
     };
