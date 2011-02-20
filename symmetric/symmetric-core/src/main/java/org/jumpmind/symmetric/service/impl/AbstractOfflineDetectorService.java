@@ -91,6 +91,9 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         boolean offline = false;
         if (ex != null) {
             Throwable cause = ExceptionUtils.getRootCause(ex);
+            if (cause == null) {
+                cause = ex;
+            }
             offline = cause instanceof SocketException || 
               cause instanceof ConnectException ||
               cause instanceof SocketTimeoutException ||
