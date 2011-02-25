@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+
 /**
  * 
  */
@@ -136,6 +138,15 @@ public class OutgoingBatches implements Serializable {
         }
         return false;
     }
+    
+    public boolean containsBatchesInError() {
+        for (OutgoingBatch b : batches) {
+            if (b.getStatus() == Status.ER) {
+                return true;
+            }
+        }
+        return false;
+    }    
 
     public List<OutgoingBatch> getBatchesForChannel(Channel channel) {
         List<OutgoingBatch> batchList = new ArrayList<OutgoingBatch>();
