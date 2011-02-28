@@ -101,7 +101,7 @@ public class DatabaseIO
      */
     protected InputSource getBetwixtMapping()
     {
-        return new InputSource(getClass().getResourceAsStream("/mapping.xml"));
+        return new InputSource(getClass().getResourceAsStream("mapping.xml"));
     }
     
     /**
