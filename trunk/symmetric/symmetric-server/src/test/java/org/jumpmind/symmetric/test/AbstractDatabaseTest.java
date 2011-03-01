@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -120,6 +121,10 @@ public class AbstractDatabaseTest extends AbstractTest {
 
     protected IOutgoingBatchService getOutgoingBatchService() {
         return AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, getSymmetricEngine());
+    }
+    
+    protected IIncomingBatchService getIncomingBatchService() {
+        return AppUtils.find(Constants.INCOMING_BATCH_SERVICE, getSymmetricEngine());
     }
 
     protected DataSource getDataSource() {

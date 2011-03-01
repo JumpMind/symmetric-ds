@@ -135,8 +135,6 @@
         <column name="unprocessed_count" type="BIGINT" default="0" description="" />        
         <column name="error_count" type="BIGINT" default="0" description="" />
     </table>
-
-
     -->
 
     <table name="channel" description="This table represents a category of data that can be synchronized independently of other channels. Channels allow control over the type of data flowing and prevents one type of synchronization from contending with another.">
@@ -329,25 +327,25 @@
         <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be newly created (NE), sent to a Node (SE), acknowledged as successful (OK), and error (ER)." />
         <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />               
         <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />        
-        <column name="byte_count" type="INTEGER" required="true" default="0"  description="The number of bytes that were sent as part of this batch." />
-        <column name="extract_count" type="INTEGER"  required="true" default="0"  description="The number of times this an attempt to extract this batch occurred." />
-        <column name="sent_count" type="INTEGER"  required="true" default="0"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
-        <column name="load_count" type="INTEGER"  required="true" default="0"  description="The number of times an attempt to load this batch occurred." />
-        <column name="data_event_count" type="INTEGER" required="true" default="0"  description="The number of data_events that are part of this batch." />
-        <column name="reload_event_count" type="INTEGER" required="true" default="0"  description="The number of reload events that are part of this batch." />
-        <column name="insert_event_count" type="INTEGER" required="true" default="0" description="The number of insert events that are part of this batch." />
-        <column name="update_event_count" type="INTEGER" required="true" default="0" description="The number of update events that are part of this batch." />
-        <column name="delete_event_count" type="INTEGER" required="true" default="0" description="The number of delete events that are part of this batch." />
-        <column name="other_event_count" type="INTEGER" required="true" default="0" description="The number of other event types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
-        <column name="router_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent creating this batch." />
-        <column name="network_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
-        <column name="filter_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
-        <column name="load_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
-        <column name="extract_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent extracting the data out of the source database." />
+        <column name="byte_count" type="BIGINT" required="true" default="0"  description="The number of bytes that were sent as part of this batch." />
+        <column name="extract_count" type="BIGINT"  required="true" default="0"  description="The number of times this an attempt to extract this batch occurred." />
+        <column name="sent_count" type="BIGINT"  required="true" default="0"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
+        <column name="load_count" type="BIGINT"  required="true" default="0"  description="The number of times an attempt to load this batch occurred." />
+        <column name="data_event_count" type="BIGINT" required="true" default="0"  description="The number of data_events that are part of this batch." />
+        <column name="reload_event_count" type="BIGINT" required="true" default="0"  description="The number of reload events that are part of this batch." />
+        <column name="insert_event_count" type="BIGINT" required="true" default="0" description="The number of insert events that are part of this batch." />
+        <column name="update_event_count" type="BIGINT" required="true" default="0" description="The number of update events that are part of this batch." />
+        <column name="delete_event_count" type="BIGINT" required="true" default="0" description="The number of delete events that are part of this batch." />
+        <column name="other_event_count" type="BIGINT" required="true" default="0" description="The number of other event types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
+        <column name="router_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent creating this batch." />
+        <column name="network_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
+        <column name="filter_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
+        <column name="load_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
+        <column name="extract_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent extracting the data out of the source database." />
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />
-        <column name="failed_data_id" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
+        <column name="failed_data_id" type="BIGINT" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
         <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
@@ -368,16 +366,16 @@
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The node_id of the source of the batch being loaded." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel_id of the batch being loaded." />
         <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be successfully loaded (OK) or error (ER)." />
-        <column name="network_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
-        <column name="filter_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
-        <column name="database_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
-        <column name="failed_row_number" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
-        <column name="byte_count" type="INTEGER" required="true" default="0" description="The number of bytes that were sent as part of this batch." />
-        <column name="statement_count" type="INTEGER" required="true" default="0" description="The number of statements run to load this batch." />
-        <column name="fallback_insert_count" type="INTEGER" required="true" default="0" description="The number of times an update was turned into an insert because the data was not already in the target database." />
-        <column name="fallback_update_count" type="INTEGER" required="true" default="0" description="The number of times an insert was turned into an update because a data row already existed in the target database." />
-        <column name="missing_delete_count" type="INTEGER" required="true" default="0" description="THe number of times a delete did not effect the database because the row was already deleted." />
-        <column name="skip_count" type="INTEGER" required="true" default="0" description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch" />
+        <column name="network_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
+        <column name="filter_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
+        <column name="database_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
+        <column name="failed_row_number" type="BIGINT" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
+        <column name="byte_count" type="BIGINT" required="true" default="0" description="The number of bytes that were sent as part of this batch." />
+        <column name="statement_count" type="BIGINT" required="true" default="0" description="The number of statements run to load this batch." />
+        <column name="fallback_insert_count" type="BIGINT" required="true" default="0" description="The number of times an update was turned into an insert because the data was not already in the target database." />
+        <column name="fallback_update_count" type="BIGINT" required="true" default="0" description="The number of times an insert was turned into an update because a data row already existed in the target database." />
+        <column name="missing_delete_count" type="BIGINT" required="true" default="0" description="THe number of times a delete did not effect the database because the row was already deleted." />
+        <column name="skip_count" type="BIGINT" required="true" default="0" description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch" />
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />
@@ -396,4 +394,74 @@
         <column name="locking_server_id" type="VARCHAR" size="255" description="The name of the server that currently has a lock.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
         <column name="lock_time" type="TIMESTAMP" description="The time a lock is aquired.  Use the cluster.lock.timeout.ms to specify a lock timeout period." />
     </table>
+    
+    <table name="alert_def" description="The definition of an alert">
+        <column name="alert_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" description="The node group that this alert is assigned to.  If assigned to all node groups, then this value should be 'ALL'" />
+        <column name="type" type="VARCHAR" size="50" required="true" description="The name of the type of alert." />
+        <column name="short_desc" type="VARCHAR" size="100" required="true" description="A short description of the alert"/>
+        <column name="severity" type="VARCHAR" size="10" required="true" description="The severity level of this alert.  Possible values are: CRITICAL, WARN and INFO." />
+        <column name="enabled" type="BOOLEANINT" size="1" default="0" description="Indicates whether this alert is currently enabled."/>
+        <column name="ack_required" type="BOOLEANINT" size="1" default="0" description="Indicates whether this alert requires acknowledgement."/>
+        <column name="start_time" type="TIME" description="The start time for the active window."/>
+        <column name="end_time" type="TIME" description="The end time for the active window.  Note that if the end_time is less than the start_time then the window crosses a day boundary."/>        
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+    </table>
+    
+    <table name="alert_def_param" description="Parameters that configure an specific alert type">
+        <column name="alert_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
+        <column name="param_key" type="VARCHAR" size="100" required="true" primaryKey="true" description="The name of the parameter."/>
+        <column name="param_value" type="LONGVARCHAR" description="The value of the parameter." />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+    </table>
+    
+    <table name="notifier_def" description="Defines a type of notification">
+        <column name="notifier_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
+        <column name="type" type="VARCHAR" size="50" required="true" description="The name of the type of notification." />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+    </table>    
+
+    <table name="notifier_def_param" description="Parameters that configure an specific notify type">
+        <column name="notifier_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
+        <column name="param_key" type="VARCHAR" size="100" required="true" primaryKey="true" description="The name of the parameter."/>
+        <column name="param_value" type="LONGVARCHAR" description="The value of the parameter." />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+    </table>
+    
+    <table name="alert_def_notifier" description="Defines a type of notification">
+        <column name="notifier_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
+        <column name="alert_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />
+        <column name="enabled" type="BOOLEANINT" size="1" default="0" description="Indicates whether this alert is currently enabled."/>
+        <column name="start_time" type="TIME" description="The start time for the active window."/>
+        <column name="end_time" type="TIME" description="The end time for the active window.  Note that if the end_time is less than the start_time then the window crosses a day boundary."/>
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+    </table>    
+    
+    <table name="alert_event" description="An actual alert">
+        <column name="alert_event_id" type="INTEGER" autoIncrement="true" primaryKey="true"  required="true"  description="Unique identifier for an alert event" />
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Reference to the node that created the alert" />
+        <column name="alert_def_id" type="VARCHAR" size="50" required="true"  description="Reference to the alert defintion" />    
+        <column name="message" type="VARCHAR" size="2000" required="true" description="Details about the alert"/>
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created" />
+        <column name="ack_time" type="TIMESTAMP" required="true"  description="Timestamp when a user acknowledged this alert" />
+        <column name="ack_by" type="VARCHAR" size="50" required="true" description="Who acknowledged the alert"/>
+    </table>
+    
+    <table name="alert_event_notifier" description="Record of notifications sent in response to the alert">
+        <column name="alert_event_id" type="INTEGER" primaryKey="true"  required="true"  description="Unique identifier for an alert event" />
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Reference to the node that created the alert" />
+        <column name="notifier_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />            
+        <column name="status" type="VARCHAR" size="50" required="true"  description="The current status of this notification" />    
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+    </table>
+        
 </database>

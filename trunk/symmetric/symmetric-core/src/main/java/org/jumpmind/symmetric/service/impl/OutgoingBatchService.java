@@ -111,12 +111,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                 outgoingBatch.getFailedDataId(),
                                 outgoingBatch.getLastUpdatedHostName(),
                                 outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() },
-                        new int[] { Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                                Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER,
-                                Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.TIMESTAMP,
+                        new int[] { Types.CHAR, Types.INTEGER, Types.INTEGER, Types.BIGINT,
+                                Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                                Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                                Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                                Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.INTEGER,
+                                Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP,
                                 Types.INTEGER });
     }
 

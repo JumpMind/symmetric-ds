@@ -35,8 +35,10 @@ import junit.framework.Assert;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IDataService;
@@ -137,6 +139,36 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(formatter.format(halfHourAgo.getTime()), formatter.format(nodeChannel
                 .getLastExtractedTime()));
 
+    }
+    
+    @Test
+    public void testInsertOutgoingBatchMaxSize() {        
+        OutgoingBatch batch = new OutgoingBatch();
+        batch.setStatus(Status.NE);
+        batch.setNodeId("XXXXX");
+        batch.setChannelId(TestConstants.TEST_CHANNEL_ID);
+        batch.setByteCount(Long.MAX_VALUE);
+        batch.setDataEventCount(Long.MAX_VALUE);
+        batch.setDeleteEventCount(Long.MAX_VALUE);
+        batch.setFailedDataId(Long.MAX_VALUE);
+        batch.setExtractCount(Long.MAX_VALUE);
+        batch.setExtractMillis(Long.MAX_VALUE);
+        batch.setFilterMillis(Long.MAX_VALUE);
+        batch.setInsertEventCount(Long.MAX_VALUE);
+        batch.setLoadCount(Long.MAX_VALUE);
+        batch.setLoadMillis(Long.MAX_VALUE);
+        batch.setNetworkMillis(Long.MAX_VALUE);
+        batch.setOtherEventCount(Long.MAX_VALUE);
+        batch.setReloadEventCount(Long.MAX_VALUE);
+        batch.setRouterMillis(Long.MAX_VALUE);
+        batch.setUpdateEventCount(Long.MAX_VALUE);
+        batch.setSentCount(Long.MAX_VALUE);
+        getOutgoingBatchService().insertOutgoingBatch(batch);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(new Node("XXXXX", TestConstants.TEST_ROOT_NODE_GROUP));
+        Assert.assertEquals(1, batches.getBatches().size());
+        batch.setBatchId(batches.getBatches().get(0).getBatchId());
+        batch.setStatus(Status.OK);
+        getOutgoingBatchService().updateOutgoingBatch(batch);
     }
 
     @Test
@@ -262,7 +294,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         history.setTriggerHistoryId(triggerHistoryId);
         Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", history, channelId, null, null);
         dataService.insertDataAndDataEventAndOutgoingBatch(data, nodeId, "", false);
-    }
+    }        
 
     protected int getBatchSize(final long batchId) {
         return (Integer) getJdbcTemplate().execute(new ConnectionCallback<Object>() {
