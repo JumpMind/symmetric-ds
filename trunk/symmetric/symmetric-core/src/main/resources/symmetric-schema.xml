@@ -447,7 +447,7 @@
     </table>    
     
     <table name="alert_event" description="An actual alert">
-        <column name="alert_event_id" type="INTEGER" autoIncrement="true" primaryKey="true"  required="true"  description="Unique identifier for an alert event" />
+        <column name="alert_event_id" type="INTEGER" primaryKey="true"  required="true"  description="Unique identifier for an alert event" />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Reference to the node that created the alert" />
         <column name="alert_def_id" type="VARCHAR" size="50" required="true"  description="Reference to the alert defintion" />    
         <column name="message" type="VARCHAR" size="2000" required="true" description="Details about the alert"/>
