@@ -92,9 +92,6 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * ,
- */
 abstract public class AbstractDbDialect implements IDbDialect {
 
     protected final ILog log = LogFactory.getLog(getClass());
@@ -830,7 +827,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void createTables(String xml) {
         StringReader reader = new StringReader(xml);
-        Database db = new DatabaseIO().read(reader);
+        DatabaseIO io = new DatabaseIO();
+        io.setValidateXml(false);
+        Database db = io.read(reader);
         platform.createTables(db, true, true);
     }
 
