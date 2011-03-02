@@ -201,6 +201,17 @@ public class TableTemplate {
         }
         return jdbcTemplate.queryForInt(st.getSql(), objectValues, st.getTypes());
     }
+    
+    public String getFullyQualifiedTableName() {
+        String tableName = table != null ? table.getName() : this.tableName;
+        if (!StringUtils.isBlank(schema)) {
+            tableName = schema + "." + tableName;
+        }
+        if (!StringUtils.isBlank(catalog)) {
+            tableName = catalog + "." + tableName;
+        }
+        return tableName;
+    }
 
     final private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type,
             String[] statementColumnNames) {
@@ -214,13 +225,8 @@ public class TableTemplate {
                 }
             }
 
-            String tableName = table.getName();
-            if (!StringUtils.isBlank(schema)) {
-                tableName = schema + "." + tableName;
-            }
-            if (!StringUtils.isBlank(catalog)) {
-                tableName = catalog + "." + tableName;
-            }
+            String tableName = getFullyQualifiedTableName();
+            
             st = new StatementBuilder(type, tableName, getColumnMetaData(keyNames),
                     getColumnMetaData(statementColumnNames),
                     getColumnMetaData(preFilteredColumnNames), dbDialect

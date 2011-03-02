@@ -836,7 +836,7 @@ public class Table implements Serializable, Cloneable
         result.append("; catalog=");
         result.append(getCatalog());
         result.append("; schema=");
-        result.append(getCatalog());
+        result.append(getSchema());
         result.append("; type=");
         result.append(getType());
         result.append("] columns:");

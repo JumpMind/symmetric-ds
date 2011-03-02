@@ -1006,7 +1006,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         URL url = AbstractDbDialect.class
         .getResource(resourceName);
         if (url != null) {
-            return new DatabaseIO().read(new InputStreamReader(url.openStream()));    
+            DatabaseIO io = new DatabaseIO();
+            io.setValidateXml(false);
+            return io.read(new InputStreamReader(url.openStream()));    
         } else {
             return new Database();
         }        
