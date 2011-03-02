@@ -163,6 +163,9 @@ public class SqlScript {
                                 	toExecute = AppUtils.replaceTokens(toExecute, replacementTokens);
                                 	// Empty SQL only seems to come from SybasePlatform
                                 	if (!toExecute.equals("")) {
+                                	    if (log.isDebugEnabled()) {
+                                	        log.debug("Message", toExecute);
+                                	    }
                                         st.execute(toExecute);
                                         count++;
 	                                    if (count % commitRate == 0) {
