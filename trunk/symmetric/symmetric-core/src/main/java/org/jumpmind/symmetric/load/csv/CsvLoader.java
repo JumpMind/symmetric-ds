@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -92,6 +94,8 @@ public class CsvLoader implements IDataLoader {
     protected boolean oldAutoCommitSetting;
     
     protected List<IBatchListener> batchListeners;
+    
+    private static Set<String> missingTables = new HashSet<String>();
 
     public void open(BufferedReader reader, DataSource dataSource, List<IBatchListener> batchListeners) throws IOException {
         try {
@@ -141,6 +145,17 @@ public class CsvLoader implements IDataLoader {
         load();
         // skipping is reset when a new batch_id is set
     }
+    
+    private void logTableIgnored() {
+        TableTemplate tableTemplate = context.getTableTemplate();
+        if (tableTemplate != null) {
+            String tableName = tableTemplate.getFullyQualifiedTableName();
+            if (!missingTables.contains(tableName)) {
+                log.warn("LoaderTableMissing", tableName);
+                missingTables.add(tableName);
+            }
+        }
+    }
 
     public void load() throws IOException {
         try {
@@ -152,6 +167,7 @@ public class CsvLoader implements IDataLoader {
             long ts = System.currentTimeMillis();
             prepareTableForDataLoad();
             while (csvReader.readRecord()) {
+                TableTemplate tableTemplate = context.getTableTemplate();
                 String[] tokens = csvReader.getValues();
                 if (tokens != null && tokens.length > 0 && tokens[0] != null) {
                     stats.incrementLineCount();
@@ -160,23 +176,29 @@ public class CsvLoader implements IDataLoader {
                     stats.incrementByteCount(numberOfBytes);
                     bytesCount += numberOfBytes;                     
                     if (tokens[0].equals(CsvConstants.INSERT)) {
-                        if (context.getTableTemplate() == null) {
+                        if (tableTemplate == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
-                        } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                        } else if (tableTemplate.isIgnoreThisTable()) {
+                            logTableIgnored();
+                        } else if (!context.isSkipping()) {
                             insert(tokens);
                             rowsProcessed++;
                         }
                     } else if (tokens[0].equals(CsvConstants.UPDATE)) {
-                        if (context.getTableTemplate() == null) {
+                        if (tableTemplate == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
-                        } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                        } else if (tableTemplate.isIgnoreThisTable()) {
+                            logTableIgnored();
+                        } else if (!context.isSkipping()) {
                             update(tokens);
                             rowsProcessed++;
                         }
                     } else if (tokens[0].equals(CsvConstants.DELETE)) {
-                        if (context.getTableTemplate() == null) {
+                        if (tableTemplate == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
-                        } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                        } else if (tableTemplate.isIgnoreThisTable()) {
+                            logTableIgnored();
+                        } else if (!context.isSkipping()) {
                             delete(tokens);
                             rowsProcessed++;
                         }
@@ -187,7 +209,7 @@ public class CsvLoader implements IDataLoader {
                     } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                         break;
                     } else if (tokens[0].equals(CsvConstants.SQL)) {
-                        if ((context.getTableTemplate() == null || !context.getTableTemplate().isIgnoreThisTable())
+                        if ((tableTemplate == null || !tableTemplate.isIgnoreThisTable())
                                 && !context.isSkipping()) {
                             runSql(tokens[1]);
                             rowsProcessed++;
