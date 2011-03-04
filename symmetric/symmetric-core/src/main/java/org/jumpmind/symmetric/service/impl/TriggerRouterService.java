@@ -908,22 +908,24 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         triggerName = triggerName.toUpperCase();
 
         if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
-            int duplicateCount = 0;
-            do {
-                if (duplicateCount == 0) {
-                    triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
-                } else {
-                    String duplicateSuffix = Integer.toString(duplicateCount);
-                    triggerName = triggerName.substring(0, triggerName.length()
-                            - duplicateSuffix.length())
-                            + duplicateSuffix;
-                }
-                duplicateCount++;
-            } while (isTriggerNameInUse(trigger.getTriggerId(), triggerName));
-
+            triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
             log.debug("TriggerNameTruncated", dml.name().toLowerCase(), trigger.getTriggerId(),
                     maxTriggerNameLength);
         }
+
+        int duplicateCount = 0;
+        while (isTriggerNameInUse(trigger.getTriggerId(), triggerName)) {
+            duplicateCount++;
+            String duplicateSuffix = Integer.toString(duplicateCount);
+            if (triggerName.length() + duplicateSuffix.length() > maxTriggerNameLength) {
+                triggerName = triggerName.substring(0,
+                        triggerName.length() - duplicateSuffix.length())
+                        + duplicateSuffix;
+            } else {
+                triggerName = triggerName + duplicateSuffix;
+            }
+        }
+
         return triggerName;
     }
 
