@@ -38,7 +38,7 @@ class StreamSQLDataCommand extends AbstractStreamDataCommand {
     }
     
     public boolean isTriggerHistoryRequired() {
-        return false;
+        return true;
     }
 
 }

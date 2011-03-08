@@ -176,9 +176,11 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_PORT_SERVER)) {
                 port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
             }
+            
             if (line.hasOption(OPTION_SECURE_PORT_SERVER)) {
                 securePort = new Integer(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
             }
+            
             if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
                 maxIdleTime = new Integer(line.getOptionValue(OPTION_MAX_IDLE_TIME));
             }
