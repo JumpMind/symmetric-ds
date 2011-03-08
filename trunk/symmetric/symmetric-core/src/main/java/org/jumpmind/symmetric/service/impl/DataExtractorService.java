@@ -161,19 +161,24 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 .getNodeGroupId(), node.getNodeGroupId());
         List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(StringUtils.isBlank(node
                 .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(), nodeGroupLink);
+        final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
+                .getSymmetricVersion());
+        
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
                 TriggerRouter triggerRouter = triggerRouters.get(i);
+                TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
                 StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, triggerRouter));
                 addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger().getSourceTableName(), sql);
-                CsvUtils.writeSql(sql.toString(), writer);
+                Data data = new Data(1, null, sql.toString(), DataEventType.SQL, triggerHistory.getSourceTableName(),
+                        null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null,
+                        null);
+                dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctx);
             }
         }
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
-                    .getSymmetricVersion());
             
             TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getTable(triggerRouter.getTrigger(),
                     false), triggerRouter.getTrigger());

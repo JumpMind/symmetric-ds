@@ -155,7 +155,7 @@ public class DataService extends AbstractService implements IDataService {
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql, boolean isLoad) {
         TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
                 .getTriggerId());
-        Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtils
+        Data data = new Data(history.getSourceTableName(), DataEventType.SQL, CsvUtils
                 .escapeCsvData(sql), null, history, trigger.getChannelId(), null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);

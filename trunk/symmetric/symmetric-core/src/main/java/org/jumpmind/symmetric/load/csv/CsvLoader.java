@@ -174,7 +174,7 @@ public class CsvLoader implements IDataLoader {
                     lineCount++;
                     long numberOfBytes = csvReader.getRawRecord().length();
                     stats.incrementByteCount(numberOfBytes);
-                    bytesCount += numberOfBytes;                     
+                    bytesCount += numberOfBytes;
                     if (tokens[0].equals(CsvConstants.INSERT)) {
                         if (tableTemplate == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
@@ -209,8 +209,11 @@ public class CsvLoader implements IDataLoader {
                     } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                         break;
                     } else if (tokens[0].equals(CsvConstants.SQL)) {
-                        if ((tableTemplate == null || !tableTemplate.isIgnoreThisTable())
-                                && !context.isSkipping()) {
+                        if (tableTemplate == null) {
+                            throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
+                        } else if (tableTemplate.isIgnoreThisTable()) {
+                            logTableIgnored();
+                        } else if (!context.isSkipping()) {
                             runSql(tokens[1]);
                             rowsProcessed++;
                         }
