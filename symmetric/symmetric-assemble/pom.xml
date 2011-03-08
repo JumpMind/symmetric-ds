@@ -71,6 +71,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
+                <version>2.2</version>
                 <configuration>
                     <siteDirectory>${basedir}/src/site</siteDirectory>
                     <templateFile>${basedir}/src/site/site.vm</templateFile>
