@@ -116,12 +116,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setChannelId(channelId);
             trigger.setSourceTableName(table.getName());
             trigger.setTriggerId(table.getName());
-            if (StringUtils.isNotBlank(table.getCatalog())) {
-                trigger.setSourceCatalogName(table.getCatalog());
-            }
-            if (StringUtils.isNotBlank(table.getSchema())) {
-                trigger.setSourceSchemaName(table.getSchema());
-            }
             trigger.setLastUpdateBy(lastUpdateBy);
             trigger.setLastUpdateTime(new Date());
             trigger.setCreateTime(new Date());
