@@ -166,33 +166,41 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, long startAtBatchId, final int maxRowsToRetrieve) {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("NODES", nodeIds);
-        params.put("CHANNELS", channels);
-        params.put("STATUSES", toStringList(statuses));
-        String startAtBatchIdSql = null;
-        if (startAtBatchId > 0) {
-            params.put("BATCH_ID", startAtBatchId);
-            startAtBatchIdSql = " and batch_id < :BATCH_ID ";
-        }
-        
-        NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(dataSource);
-        ResultSetExtractor<List<OutgoingBatch>> extractor = new ResultSetExtractor<List<OutgoingBatch>>() {
-            OutgoingBatchMapper rowMapper = new OutgoingBatchMapper();
-            public List<OutgoingBatch> extractData(ResultSet rs) throws SQLException, DataAccessException {
-                List<OutgoingBatch> list = new ArrayList<OutgoingBatch>(maxRowsToRetrieve);
-                int count = 0;
-                while (rs.next() && count < maxRowsToRetrieve) {
-                    list.add(rowMapper.mapRow(rs, ++count));
-                }
-                return list;
+        if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("NODES", nodeIds);
+            params.put("CHANNELS", channels);
+            params.put("STATUSES", toStringList(statuses));
+            String startAtBatchIdSql = null;
+            if (startAtBatchId > 0) {
+                params.put("BATCH_ID", startAtBatchId);
+                startAtBatchIdSql = " and batch_id < :BATCH_ID ";
             }
-        };
-        
-        List<OutgoingBatch> list = template.query(
-                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchByChannelAndStatusSql",
-                        startAtBatchIdSql, " order by batch_id desc"), new MapSqlParameterSource(params), extractor);
-        return list;
+
+            NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(dataSource);
+            ResultSetExtractor<List<OutgoingBatch>> extractor = new ResultSetExtractor<List<OutgoingBatch>>() {
+                OutgoingBatchMapper rowMapper = new OutgoingBatchMapper();
+
+                public List<OutgoingBatch> extractData(ResultSet rs) throws SQLException,
+                        DataAccessException {
+                    List<OutgoingBatch> list = new ArrayList<OutgoingBatch>(maxRowsToRetrieve);
+                    int count = 0;
+                    while (rs.next() && count < maxRowsToRetrieve) {
+                        list.add(rowMapper.mapRow(rs, ++count));
+                    }
+                    return list;
+                }
+            };
+
+            List<OutgoingBatch> list = template.query(
+                    getSql("selectOutgoingBatchPrefixSql",
+                            "selectOutgoingBatchByChannelAndStatusSql", startAtBatchIdSql,
+                            " order by batch_id desc"), new MapSqlParameterSource(params),
+                    extractor);
+            return list;
+        } else {
+            return new ArrayList<OutgoingBatch>(0);
+        }
     }
 
     protected List<String> toStringList(List<OutgoingBatch.Status> statuses) {

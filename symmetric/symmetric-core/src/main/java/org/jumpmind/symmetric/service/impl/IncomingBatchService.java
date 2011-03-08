@@ -76,29 +76,36 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve) {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("NODES", nodeIds);
-        params.put("CHANNELS", channels);
-        params.put("STATUSES", toStringList(statuses));
-        params.put("CREATE_TIME", startAtCreateTime);
-        
-        NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
-        ResultSetExtractor<List<IncomingBatch>> extractor = new ResultSetExtractor<List<IncomingBatch>>() {
-            IncomingBatchMapper rowMapper = new IncomingBatchMapper();
-            public List<IncomingBatch> extractData(ResultSet rs) throws SQLException, DataAccessException {
-                List<IncomingBatch> list = new ArrayList<IncomingBatch>(maxRowsToRetrieve);
-                int count = 0;
-                while (rs.next() && count < maxRowsToRetrieve) {
-                    list.add(rowMapper.mapRow(rs, ++count));
+        if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("NODES", nodeIds);
+            params.put("CHANNELS", channels);
+            params.put("STATUSES", toStringList(statuses));
+            params.put("CREATE_TIME", startAtCreateTime);
+
+            NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
+            ResultSetExtractor<List<IncomingBatch>> extractor = new ResultSetExtractor<List<IncomingBatch>>() {
+                IncomingBatchMapper rowMapper = new IncomingBatchMapper();
+
+                public List<IncomingBatch> extractData(ResultSet rs) throws SQLException,
+                        DataAccessException {
+                    List<IncomingBatch> list = new ArrayList<IncomingBatch>(maxRowsToRetrieve);
+                    int count = 0;
+                    while (rs.next() && count < maxRowsToRetrieve) {
+                        list.add(rowMapper.mapRow(rs, ++count));
+                    }
+                    return list;
                 }
-                return list;
-            }
-        };
-        
-        List<IncomingBatch> list = template.query(
-                getSql("selectIncomingBatchPrefixSql","listIncomingBatchesSql"), new MapSqlParameterSource(params), extractor);
-        return list;
-    }    
+            };
+
+            List<IncomingBatch> list = template.query(
+                    getSql("selectIncomingBatchPrefixSql", "listIncomingBatchesSql"),
+                    new MapSqlParameterSource(params), extractor);
+            return list;
+        } else {
+            return new ArrayList<IncomingBatch>(0);
+        }
+    }  
     
     protected List<String> toStringList(List<IncomingBatch.Status> statuses) {
         List<String> statusStrings = new ArrayList<String>(statuses.size());
