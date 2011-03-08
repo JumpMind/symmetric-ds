@@ -76,6 +76,21 @@
                     <siteDirectory>${basedir}/src/site</siteDirectory>
                     <templateFile>${basedir}/src/site/site.vm</templateFile>
                 </configuration>
+    <!-- Need to exclude commons-logging due to bug.
+         See:  http://jira.codehaus.org/browse/MSITE-459 -->
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-module-xhtml</artifactId>
+            <version>1.1.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.db.torque</groupId>
