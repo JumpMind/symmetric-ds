@@ -21,6 +21,7 @@ drop table sym_outgoing_batch;
 drop table sym_parameter;
 drop table sym_node_host_channel_stats;
 drop table sym_node_host_stats;
+drop table sym_node_host_job_stats;
 drop table sym_registration_redirect;
 drop table sym_registration_request;
 -- drop table sym_alert_def;

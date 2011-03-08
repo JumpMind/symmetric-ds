@@ -16,19 +16,27 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service;
 
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+
 /**
- * 
+ * Service API that is responsible for pushing data to the list of configured
+ * {@link Node}s that are configured to {@link NodeGroupLinkAction#P}
  */
 public interface IPushService {
 
     /**
-     * @return true if data was pushed successfully
+     * Attempt to push data, if any has been captured, to nodes that the
+     * captured data is targeted for.
+     * 
+     * @return RemoteNodeStatuses the status of the push attempt(s)
      */
-    public boolean pushData();
+    public RemoteNodeStatuses pushData();
 
 }

@@ -382,5 +382,9 @@ public class OutgoingBatch implements Serializable {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
+    
+    public long totalEventCount() {
+        return insertEventCount + updateEventCount + deleteEventCount + otherEventCount; 
+    }
 
 }

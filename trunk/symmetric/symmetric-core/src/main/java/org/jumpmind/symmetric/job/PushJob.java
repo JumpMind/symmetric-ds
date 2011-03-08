@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.service.IPushService;
 
 /**
- * 
+ * Background job that is responsible for pushing data to linked nodes.
  */
 public class PushJob extends AbstractJob {
 
@@ -38,8 +38,8 @@ public class PushJob extends AbstractJob {
     }
 
     @Override
-    public void doJob() throws Exception {
-        pushService.pushData();
+    public long doJob() throws Exception {
+        return pushService.pushData().getDataProcessedCount();
     }
 
 }

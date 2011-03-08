@@ -257,7 +257,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update("update test_customer set zip=? where customer_id=?", new Object[] { NEW_ZIP, 100 });
         rootJdbcTemplate.update("update test_customer set name=? where customer_id=?", new Object[] { NEW_NAME, 100 });
 
-        boolean didPullData = getClientEngine().pull();
+        boolean didPullData = getClientEngine().pull().wasDataProcessed();
         
         Assert.assertTrue(didPullData);
         
@@ -1134,7 +1134,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                         .warn("If you see this message more than once the root database isn't respecting the fact that auto commit is set to false!");
             }
             count++;
-        } while (getClientEngine().pull());
+        } while (getClientEngine().pull().wasDataProcessed());
         int newCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
         Assert.assertEquals(50, newCount - oldCount);
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,

@@ -27,11 +27,13 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.StandaloneSymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -65,6 +67,8 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
     private long lastExecutionTimeInMs;
 
     private long totalExecutionTimeInMs;
+    
+    private long lastExecutionProcessCount = 0;
 
     private long numberOfRuns;
 
@@ -82,9 +86,11 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
     
     private ScheduledFuture<?> scheduledJob;
     
-    private RandomTimeSlot randomTimeSlot;
+    private RandomTimeSlot randomTimeSlot;    
     
     private boolean autoStartConfigured;
+    
+    private IStatisticManager statisticManager;
 
     protected void init() {
         this.autoStartConfigured = parameterService.is(autoStartParameterName);
@@ -155,13 +161,14 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
                         running = true;
                         synchronized (this) {
                             ran = true;
-                            long ts = System.currentTimeMillis();
+                            long startTime = System.currentTimeMillis();
+                            long processCount = 0;
                             try {
                                 if (!requiresRegistration
                                         || (requiresRegistration && registrationService
                                                 .isRegisteredWithServer())) {
                                     hasNotRegisteredMessageBeenLogged = false;
-                                    doJob();
+                                    processCount = doJob();
                                 } else {
                                     if (!hasNotRegisteredMessageBeenLogged) {
                                         log.warn("SymmetricEngineNotRegistered", getName());
@@ -170,8 +177,13 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
                                 }
                             } finally {
                                 lastFinishTime = new Date();
-                                lastExecutionTimeInMs = System.currentTimeMillis() - ts;
+                                lastExecutionProcessCount = processCount;
+                                long endTime = System.currentTimeMillis();
+                                lastExecutionTimeInMs = endTime - startTime;
                                 totalExecutionTimeInMs += lastExecutionTimeInMs;
+                                if (lastExecutionProcessCount > 0 || lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+                                    statisticManager.addJobStats(jobName, startTime, endTime, lastExecutionProcessCount);
+                                }
                                 numberOfRuns++;
                                 running = false;
                             }
@@ -196,7 +208,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
         invoke(false);
     }
 
-    abstract void doJob() throws Exception;
+    abstract long doJob() throws Exception;
 
     public void setBeanName(final String beanName) {
         this.jobName = beanName;
@@ -245,6 +257,11 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
     @ManagedMetric(description = "The amount of time this job spent in execution during it's last run")
     public long getLastExecutionTimeInMs() {
         return lastExecutionTimeInMs;
+    }
+    
+    @ManagedMetric(description = "The count of elements this job processed during it's last run")
+    public long getLastExecutionProcessCount() {
+        return lastExecutionProcessCount;
     }
 
     @ManagedAttribute(description = "The last time this job completed execution")
@@ -304,5 +321,9 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
     
     public void setRandomTimeSlot(RandomTimeSlot randomTimeSlot) {
         this.randomTimeSlot = randomTimeSlot;
+    }
+    
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
     }
 }

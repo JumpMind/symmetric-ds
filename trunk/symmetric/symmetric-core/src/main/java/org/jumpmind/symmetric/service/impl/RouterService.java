@@ -131,14 +131,15 @@ public class RouterService extends AbstractService implements IRouterService {
     /**
      * This method will route data to specific nodes.
      */
-    synchronized public void routeData() {
+    synchronized public long routeData() {
+        long dataCount = -1l;
         if (clusterService.lock(ClusterConstants.ROUTE)) {
             try {          
                 insertInitialLoadEvents();
                 long ts = System.currentTimeMillis();
                 IDataToRouteGapDetector gapDetector = dataToRouteReaderFactory.getDataToRouteGapDetector();
                 gapDetector.beforeRouting();
-                int dataCount = routeDataForEachChannel();
+                dataCount = routeDataForEachChannel();
                 gapDetector.afterRouting();
                 ts = System.currentTimeMillis() - ts;
                 if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
@@ -148,6 +149,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 clusterService.unlock(ClusterConstants.ROUTE);
             }
         }
+        return dataCount;
     }
     
     protected void insertInitialLoadEvents() {

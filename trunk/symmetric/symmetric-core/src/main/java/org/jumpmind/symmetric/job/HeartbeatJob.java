@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataService;
 
 /**
- * 
+ * Background job that is responsible for updating this node's heart beat time.
  */
 public class HeartbeatJob extends AbstractJob {
 
@@ -35,13 +35,16 @@ public class HeartbeatJob extends AbstractJob {
     private IClusterService clusterService;
 
     @Override
-    public void doJob() throws Exception {
+    public long doJob() throws Exception {
         if (clusterService.lock(ClusterConstants.HEARTBEAT)) {
             try {
                 dataService.heartbeat(false);
+                return -1l;
             } finally {
                 clusterService.unlock(ClusterConstants.HEARTBEAT);
             }
+        } else {
+            return -1l;
         }
     }
 

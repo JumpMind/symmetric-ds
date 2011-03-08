@@ -55,6 +55,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
@@ -110,9 +111,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * Connect to the remote node and pull data. The acknowledgment of
      * commit/error status is sent separately after the data is processed.
      */
-    public boolean loadDataFromPull(Node remote)
+    public RemoteNodeStatus loadDataFromPull(Node remote)
             throws IOException {
-        boolean wasWorkDone = false;
+        RemoteNodeStatus status = new RemoteNodeStatus(remote != null ? remote.getNodeId() : null);
+        loadDataFromPull(remote, status);
+        return status;
+    }
+    
+    public void loadDataFromPull(Node remote, RemoteNodeStatus status) 
+            throws IOException {
         try {
             Node local = nodeService.findIdentity();
             if (local == null) {
@@ -139,6 +146,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
             List<IncomingBatch> list = loadDataAndReturnBatches(transport);
             if (list.size() > 0) {
+                status.updateIncomingStatus(list);
                 local = nodeService.findIdentity();
                 localSecurity = nodeService.findNodeSecurity(local.getNodeId());
                 if (StringUtils.isNotBlank(transport.getRedirectionUrl())) {
@@ -148,18 +156,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     remote.setSyncUrl(url);
                 }
                 sendAck(remote, local, localSecurity, list);
-                wasWorkDone = true;
             }
 
         } catch (RegistrationRequiredException e) {
             log.warn("RegistrationLost");
-            loadDataFromPull(null);
+            loadDataFromPull(null, status);
             nodeService.findIdentity(false);
-            wasWorkDone = true;
         } catch (MalformedURLException e) {
             log.error("URLConnectingFailure", remote.getNodeId(), remote.getSyncUrl());
+            throw e;
         }
-        return wasWorkDone;
     }
 
     /**

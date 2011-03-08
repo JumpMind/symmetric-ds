@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.route.IRouterContext;
  */
 public interface IRouterService extends ISqlProvider {
 
-    public void routeData();
+    public long routeData();
  
     public long getUnroutedDataCount();
     

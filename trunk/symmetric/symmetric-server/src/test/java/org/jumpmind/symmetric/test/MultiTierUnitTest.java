@@ -154,7 +154,7 @@ public class MultiTierUnitTest {
                 .assertNotSame(
                         "The root heartbeat time should not be the same as the updated client heartbeat time",
                         clientHeartbeatTimeAfter, rootHeartbeatTimeBefore);
-        while (region01Server.getEngine().push()) {
+        while (region01Server.getEngine().push().wasDataProcessed()) {
             // continue to push while there data to push
         }
         Date rootHeartbeatTimeAfter = homeJdbcTemplate.queryForObject(checkHeartbeatSql,

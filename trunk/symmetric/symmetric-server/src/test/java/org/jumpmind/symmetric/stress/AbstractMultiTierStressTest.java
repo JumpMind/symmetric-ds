@@ -110,7 +110,7 @@ abstract public class AbstractMultiTierStressTest {
                 12);
         w2.start();
         w1.start();
-        while (regionServer.getEngine().push() || !w2.done || !w1.done) {
+        while (regionServer.getEngine().push().wasDataProcessed() || !w2.done || !w1.done) {
             try {
                 Thread.sleep(5);
             } catch (Exception ex) {

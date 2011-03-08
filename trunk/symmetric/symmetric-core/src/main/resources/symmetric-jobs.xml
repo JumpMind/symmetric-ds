@@ -34,6 +34,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="registrationService" ref="registrationService" />
         <property name="taskScheduler" ref="symmetricScheduler" />
         <property name="randomTimeSlot" ref="randomTimeSlot"/>
+        <property name="statisticManager" ref="statisticManager"/>
     </bean>
 
     <bean id="job.routing" parent="job.abstract" class="org.jumpmind.symmetric.job.RouterJob">

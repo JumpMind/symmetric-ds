@@ -24,15 +24,17 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.service.INodeService;
 
 /**
- * 
+ * Background job that is responsible for checking on node health. It will disable nodes that
+ * have been offline for a configurable period of time.
  */
 public class WatchdogJob extends AbstractJob {
 
     private INodeService nodeService;
 
     @Override
-    public void doJob() throws Exception {
+    public long doJob() throws Exception {
         nodeService.checkForOfflineNodes();
+        return -1l;
     }
 
     public void setNodeService(INodeService nodeService) {

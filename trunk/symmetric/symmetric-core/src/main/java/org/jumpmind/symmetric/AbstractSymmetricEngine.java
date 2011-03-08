@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -312,7 +313,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         return getDataService().sendSQL(nodeId, catalogName, schemaName, tableName, sql, false);
     }
 
-    public boolean push() {
+    public RemoteNodeStatuses push() {
         return getPushService().pushData();
     }
 
@@ -324,7 +325,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         return getNodeService().getNodeStatus();
     }
 
-    public boolean pull() {
+    public RemoteNodeStatuses pull() {
         return getPullService().pullData();
     }
     

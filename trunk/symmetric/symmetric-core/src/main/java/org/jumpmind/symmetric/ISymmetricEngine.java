@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.job.RouterJob;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -101,9 +102,9 @@ public interface ISymmetricEngine {
      * Will perform a push the same way the {@link PushJob} would have.
      * 
      * @see IPushService#pushData()
-     * @return true if data was pushed successfully
+     * @return {@link RemoteNodeStatuses} 
      */
-    public boolean push();
+    public RemoteNodeStatuses push();
 
     /**
      * Call this to resync triggers
@@ -123,8 +124,9 @@ public interface ISymmetricEngine {
      * Will perform a pull the same way the {@link PullJob} would have.
      * 
      * @see IPullService#pullData()
+     * @return {@link RemoteNodeStatuses} 
      */
-    public boolean pull();
+    public RemoteNodeStatuses pull();
     
     /**
      * Route captured data the same way the {@link RouterJob} would have.

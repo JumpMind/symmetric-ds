@@ -56,5 +56,7 @@ public interface IOfflineClientListener extends IExtensionPoint {
      * @param remoteNode
      */
     public void registrationRequired(Node remoteNode);
+    
+    public void unknownError(Node remoteNode, Exception ex);
 
 }

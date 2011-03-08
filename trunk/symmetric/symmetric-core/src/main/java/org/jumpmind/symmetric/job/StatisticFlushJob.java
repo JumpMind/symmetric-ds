@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 /**
- * 
+ * Background job that is responsible for writing statistics to database tables.
  */
 public class StatisticFlushJob extends AbstractJob {
 
@@ -34,8 +34,9 @@ public class StatisticFlushJob extends AbstractJob {
     }
 
     @Override
-    public void doJob() throws Exception {
+    public long doJob() throws Exception {
         statisticManager.flush();
+        return -1l;
     }
 
     public void setStatisticManager(IStatisticManager statisticManager) {
