@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.statistic.ChannelStats;
 import org.jumpmind.symmetric.statistic.ChannelStatsByPeriodMap;
 import org.jumpmind.symmetric.statistic.HostStats;
 import org.jumpmind.symmetric.statistic.HostStatsByPeriodMap;
+import org.jumpmind.symmetric.statistic.JobStats;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -56,6 +57,21 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT });
     }
+    
+    public void save(JobStats stats) {
+        jdbcTemplate.update(
+                getSql("insertJobStatsSql"),
+                new Object[] { stats.getNodeId(), stats.getHostName(), stats.getJobName(),
+                        stats.getStartTime(), stats.getEndTime(), stats.getProcessedCount() }, new int[] {
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+                        Types.TIMESTAMP, Types.BIGINT }); 
+    }
+    
+    public List<JobStats> getJobStatsForPeriod(Date start, Date end,
+            String nodeId) {
+        return jdbcTemplate.query(getSql("selectChannelStatsSql"),
+                new JobStatsMapper(), start, end, nodeId);        
+    }  
 
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end,
             String nodeId, int periodSizeInMinutes) {
@@ -97,6 +113,19 @@ public class StatisticService extends AbstractService implements IStatisticServi
         cal.set(Calendar.MILLISECOND, 0);
         cal.set(Calendar.SECOND, 0);
         return cal.getTime();        
+    }
+    
+    class JobStatsMapper implements RowMapper<JobStats> {
+        public JobStats mapRow(ResultSet rs, int rowNum) throws SQLException {
+            JobStats stats = new JobStats();
+            stats.setNodeId(rs.getString(1));
+            stats.setHostName(rs.getString(2));
+            stats.setJobName(rs.getString(3));
+            stats.setStartTime(truncateToMinutes(rs.getTimestamp(4)));
+            stats.setEndTime(truncateToMinutes(rs.getTimestamp(5)));
+            stats.setProcessedCount(rs.getLong(6));
+            return stats;
+        }
     }
 
     class ChannelStatsMapper implements RowMapper<ChannelStats> {

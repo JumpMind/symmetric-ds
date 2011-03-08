@@ -32,13 +32,13 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public interface IPurgeService {
     
-    public void purge();
+    public long purge();
     
-    public void purgeDataGaps(Calendar retentionCutoff);
+    public long purgeDataGaps(Calendar retentionCutoff);
     
-    public void purgeOutgoing(Calendar retentionCutoff);
+    public long purgeOutgoing(Calendar retentionCutoff);
     
-    public void purgeIncoming(Calendar retentionCutoff);
+    public long purgeIncoming(Calendar retentionCutoff);
 
     @Transactional
     public void purgeAllIncomingEventsForNode(String nodeId);

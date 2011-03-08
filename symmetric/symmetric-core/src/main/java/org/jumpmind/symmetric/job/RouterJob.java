@@ -33,8 +33,8 @@ public class RouterJob extends AbstractJob {
     IRouterService routingService;
     
     @Override
-    void doJob() throws Exception {
-        routingService.routeData();
+    long doJob() throws Exception {
+        return routingService.routeData();
     }
     
     public void setRoutingService(IRouterService routingService) {

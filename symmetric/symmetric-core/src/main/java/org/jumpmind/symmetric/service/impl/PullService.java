@@ -27,6 +27,8 @@ import java.net.SocketException;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.RemoteNodeStatus;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -51,8 +53,8 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
     private IClusterService clusterService;
 
-    synchronized public boolean pullData() {
-        boolean dataPulled = false;
+    synchronized public RemoteNodeStatuses pullData() {
+        RemoteNodeStatuses statuses = new RemoteNodeStatuses();
         if (clusterService.lock(ClusterConstants.PULL)) {
             try {
                 // register if we haven't already been registered
@@ -61,39 +63,37 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 List<Node> nodes = nodeService.findNodesToPull();
                 if (nodes != null && nodes.size() > 0) {
                     for (Node node : nodes) {
+                        RemoteNodeStatus status = statuses.add(node);
                         String nodeName = " for " + node;
                         try {
                             log.debug("DataPulling", nodeName);
-                            if (dataLoaderService.loadDataFromPull(node)) {
+                            dataLoaderService.loadDataFromPull(node, status);
+                            if (status.getDataProcessed() > 0) {
                                 log.info("DataPulled", nodeName);
-                                dataPulled = true;
-                            } else {
-                                log.debug("DataPullingFailed", nodeName);
-
                             }
                         } catch (ConnectException ex) {
                             log.warn("TransportFailedConnectionUnavailable",
                                     (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
                                             .getSyncUrl()));
-                            fireOffline(ex, node);
+                            fireOffline(ex, node, status);
                         } catch (ConnectionRejectedException ex) {
                             log.warn("TransportFailedConnectionBusy");
-                            fireOffline(ex, node);
+                            fireOffline(ex, node, status);
                         } catch (AuthenticationException ex) {
                             log.warn("AuthenticationFailed");
-                            fireOffline(ex, node);
+                            fireOffline(ex, node, status);
                         } catch (SyncDisabledException ex) {
                             log.warn("SyncDisabled");
-                            fireOffline(ex, node);
+                            fireOffline(ex, node, status);
                         } catch (SocketException ex) {
                             log.warn("Message", ex.getMessage());
-                            fireOffline(ex, node);
+                            fireOffline(ex, node, status);
                         } catch (TransportException ex) {
                             log.warn("Message", ex.getMessage());
-                            fireOffline(ex, node);
+                            fireOffline(ex, node, status);
                         } catch (IOException ex) {
                             log.error(ex);
-                            fireOffline(ex, node);
+                            fireOffline(ex, node, status);
                         }
                     }
                 }
@@ -106,7 +106,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
             log.info("DataPullingFailedLock");
         }
 
-        return dataPulled;
+        return statuses;
     }
 
     public void setNodeService(INodeService nodeService) {

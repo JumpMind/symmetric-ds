@@ -15,6 +15,7 @@
         <property name="notificationService" ref="notificationService" />
         <property name="configurationService" ref="configurationService" />
         <property name="parameterService" ref="parameterService" />
+        <property name="recordStatistics" value="$[sym.statistic.record.enable]"/>
     </bean>
 
     <bean id="concurrentConnectionManager" class="org.jumpmind.symmetric.transport.ConcurrentConnectionManager">

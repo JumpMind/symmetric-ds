@@ -27,6 +27,9 @@ public class MockStatisticManager implements IStatisticManager {
     public void flush() {
     }
 
+    public void addJobStats(String jobName, long startTime, long endTime, long processedCount) {
+    }
+    
     public void incrementRestart() {
     }
 

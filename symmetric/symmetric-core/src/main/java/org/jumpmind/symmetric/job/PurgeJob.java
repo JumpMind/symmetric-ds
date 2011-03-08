@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.service.IPurgeService;
 
 /**
- * 
+ * Background job that is responsible for purging already synchronized data
  */
 public class PurgeJob extends AbstractJob {
 
@@ -34,8 +34,8 @@ public class PurgeJob extends AbstractJob {
     }
 
     @Override
-    public void doJob() throws Exception {
-        purgeService.purge();
+    public long doJob() throws Exception {
+        return purgeService.purge();
     }
 
     public void setPurgeService(IPurgeService service) {

@@ -30,6 +30,8 @@ import java.util.List;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.RemoteNodeStatus;
+import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
 import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -37,7 +39,7 @@ import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 
 /**
- * 
+ * Abstract service that provides help methods for detecting offline status.
  */
 public abstract class AbstractOfflineDetectorService extends AbstractService implements IOfflineDetectorService {
 
@@ -62,19 +64,27 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         }
     }
 
-    protected void fireOffline(Exception error, Node remoteNode) {
+    protected void fireOffline(Exception error, Node remoteNode, RemoteNodeStatus status) {
         if (offlineListeners != null) {
             for (IOfflineClientListener listener : offlineListeners) {
                 if (isOffline(error)) {
+                    status.setStatus(Status.OFFLINE);
                     listener.offline(remoteNode);
                 } else if (isBusy(error)) {
+                    status.setStatus(Status.BUSY);
                     listener.busy(remoteNode);
                 } else if (isNotAuthenticated(error)) {
+                    status.setStatus(Status.NOT_AUTHORIZED);
                     listener.notAuthenticated(remoteNode);
                 } else if (isSyncDisabled(error)) {
+                    status.setStatus(Status.SYNC_DISABLED);
                     listener.syncDisabled(remoteNode);
                 } else if (isRegistrationRequired(error)) {
+                    status.setStatus(Status.REGISTRATION_REQUIRED);
                     listener.registrationRequired(remoteNode);
+                } else {
+                    status.setStatus(Status.UNKNOWN_ERROR);
+                    listener.unknownError(remoteNode, error);
                 }
             }
         }

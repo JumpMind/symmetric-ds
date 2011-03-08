@@ -46,6 +46,9 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     public void notAuthenticated(Node remoteNode) {
         log.warn("AuthenticationFailed");
     }
+    
+    public void unknownError(Node remoteNode, Exception ex) {
+    }
 
     public void offline(Node remoteNode) {
         log.warn("TransportFailedConnectionUnavailable",

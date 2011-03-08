@@ -17,15 +17,14 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 
 /**
- * 
+ * Background job that pulls data from remote nodes and then loads it.
  */
 public class PullJob extends AbstractJob {
 
@@ -34,14 +33,16 @@ public class PullJob extends AbstractJob {
     private INodeService nodeService;
 
     @Override
-    public void doJob() throws Exception {
-        boolean dataPulled = pullService.pullData();
+    public long doJob() throws Exception {
+        RemoteNodeStatuses statuses = pullService.pullData();
 
         // Re-pull immediately if we are in the middle of an initial load
         // so that the initial load completes as quickly as possible.
-        while (nodeService.isDataLoadStarted() && dataPulled) {
-            dataPulled = pullService.pullData();
+        while (nodeService.isDataLoadStarted() && statuses.wasDataProcessed()) {
+            statuses = pullService.pullData();
         }
+        
+        return statuses.getDataProcessedCount();
     }
 
     public void setPullService(IPullService service) {

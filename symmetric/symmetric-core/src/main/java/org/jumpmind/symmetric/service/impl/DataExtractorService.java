@@ -390,7 +390,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return batches.getBatches();
     }
 
-    public boolean extract(Node node, IOutgoingTransport targetTransport) throws IOException {
+    public List<OutgoingBatch> extract(Node node, IOutgoingTransport targetTransport) throws IOException {
+        
+        List<OutgoingBatch> activeBatches = null;
+        
         IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
 
         if (!parameterService.is(ParameterConstants.START_ROUTE_JOB)) {
@@ -401,7 +404,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         if (batches.containsBatches()) {
 
-            List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, targetTransport
+            activeBatches = filterBatchesForExtraction(batches, targetTransport
                     .getSuspendIgnoreChannelLists(configurationService));
             
             if (activeBatches.size() > 0) {
@@ -497,13 +500,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     configurationService.saveNodeChannelControl(nodeChannel, false);
                 }
                 
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+            } 
+        } 
+
+        return activeBatches != null ? activeBatches : new ArrayList<OutgoingBatch>(0);
     }
 
     protected void networkTransfer(BufferedReader reader, BufferedWriter writer) throws IOException {

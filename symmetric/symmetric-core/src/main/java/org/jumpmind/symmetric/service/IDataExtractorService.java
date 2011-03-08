@@ -23,10 +23,12 @@ package org.jumpmind.symmetric.service;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.List;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -46,9 +48,9 @@ public interface IDataExtractorService {
             DataExtractorContext ctx, TriggerHistory triggerHistory);
 
     /**
-     * @return true if work was done or false if there was no work to do.
+     * @return a list of batches that were extracted
      */
-    public boolean extract(Node node, IOutgoingTransport transport) throws IOException;
+    public List<OutgoingBatch> extract(Node node, IOutgoingTransport transport) throws IOException;
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
             throws IOException;

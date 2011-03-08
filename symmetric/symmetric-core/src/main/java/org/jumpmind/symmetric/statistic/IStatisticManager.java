@@ -28,6 +28,8 @@ import java.util.Map;
  */
 public interface IStatisticManager {    
     public void flush();
+    
+    public void addJobStats(String jobName, long startTime, long endTime, long processedCount);
 
     public void incrementDataLoadedErrors(String channelId, long count);
 

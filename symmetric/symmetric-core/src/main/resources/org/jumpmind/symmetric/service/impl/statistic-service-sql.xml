@@ -53,7 +53,23 @@
                   from $[sym.sync.table.prefix]_node_host_stats
                where  start_time >= ? and end_time <= ? and node_id=? order by start_time asc
             ]]></value>
-        </entry>                   
+        </entry>   
+        <entry key="insertJobStatsSql">
+            <value><![CDATA[      
+               insert into $[sym.sync.table.prefix]_node_host_job_stats 
+                 (node_id, host_name, job_name, start_time, end_time,
+                  processed_count) 
+                values(?,?,?,?,?,?)
+            ]]></value>
+        </entry>        
+        <entry key="selectJobStatsSql">
+            <value><![CDATA[      
+               select node_id, host_name, job_name, start_time, end_time,
+                  processed_count 
+                  from $[sym.sync.table.prefix]_node_host_job_stats
+               where  start_time >= ? and end_time <= ? and node_id=? order by start_time asc
+            ]]></value>
+        </entry>
     </util:map>
 
 </beans>

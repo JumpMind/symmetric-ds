@@ -47,7 +47,7 @@ public class LoadFromClientIntegrationTest extends AbstractIntegrationTest {
         Assert.assertTrue(result, result.startsWith("Successfully opened initial load for node"));
         
         getClientEngine().route();
-        while (getClientEngine().push()) {
+        while (getClientEngine().push().wasDataProcessed()) {
             AppUtils.sleep(5);
         }
         Assert.assertEquals(0, getInitialLoadEnabled());

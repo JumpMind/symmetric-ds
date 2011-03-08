@@ -20,12 +20,14 @@
  */
 package org.jumpmind.symmetric.statistic;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
@@ -48,6 +50,8 @@ public class StatisticManager implements IStatisticManager {
 
     private Map<String, ChannelStats> channelStats = new HashMap<String, ChannelStats>();
 
+    private List<JobStats> jobStats = new ArrayList<JobStats>();
+
     private HostStats hostStats;
 
     protected INodeService nodeService;
@@ -66,11 +70,25 @@ public class StatisticManager implements IStatisticManager {
 
     Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
+    Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+
+    boolean recordStatistics = true;
+
     public StatisticManager() {
     }
 
     protected void init() {
         incrementRestart();
+    }
+
+    public void addJobStats(String jobName, long startTime, long endTime, long processedCount) {
+        jobStatsLock.acquireUninterruptibly();
+        try {
+            JobStats stats = new JobStats(jobName, startTime, endTime, processedCount);
+            jobStats.add(stats);
+        } finally {
+            jobStatsLock.release();
+        }
     }
 
     public void incrementDataRouted(String channelId, long count) {
@@ -83,7 +101,12 @@ public class StatisticManager implements IStatisticManager {
     }
 
     public void setDataUnRouted(String channelId, long count) {
-        getChannelStats(channelId).setDataUnRouted(count);
+        channelStatsLock.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).setDataUnRouted(count);
+        } finally {
+            channelStatsLock.release();
+        }
     }
 
     public void incrementDataExtracted(String channelId, long count) {
@@ -321,21 +344,24 @@ public class StatisticManager implements IStatisticManager {
     }
 
     public void flush() {
+        recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE);
         if (channelStats != null) {
             channelStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
-                Date endTime = new Date();
-                for (ChannelStats stats : channelStats.values()) {
-                    if (stats.getNodeId().equals(UNKNOWN)) {
-                        Node node = nodeService.getCachedIdentity();
-                        if (node != null) {
-                            stats.setNodeId(node.getNodeId());
+                if (recordStatistics) {
+                    Date endTime = new Date();
+                    for (ChannelStats stats : channelStats.values()) {
+                        if (stats.getNodeId().equals(UNKNOWN)) {
+                            Node node = nodeService.getCachedIdentity();
+                            if (node != null) {
+                                stats.setNodeId(node.getNodeId());
+                            }
                         }
+                        stats.setEndTime(endTime);
+                        statisticService.save(stats);
                     }
-                    stats.setEndTime(endTime);
-                    statisticService.save(stats);
-                    resetChannelStats(true);
                 }
+                resetChannelStats(true);
             } finally {
                 channelStatsLock.release(NUMBER_OF_PERMITS);
             }
@@ -344,17 +370,43 @@ public class StatisticManager implements IStatisticManager {
         if (hostStats != null) {
             hostStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
-                if (hostStats.getNodeId().equals(UNKNOWN)) {
-                    Node node = nodeService.getCachedIdentity();
-                    if (node != null) {
-                        hostStats.setNodeId(node.getNodeId());
+                if (recordStatistics) {
+                    if (hostStats.getNodeId().equals(UNKNOWN)) {
+                        Node node = nodeService.getCachedIdentity();
+                        if (node != null) {
+                            hostStats.setNodeId(node.getNodeId());
+                        }
                     }
+                    hostStats.setEndTime(new Date());
+                    statisticService.save(hostStats);
                 }
-                hostStats.setEndTime(new Date());
-                statisticService.save(hostStats);
                 hostStats = null;
             } finally {
                 hostStatsLock.release(NUMBER_OF_PERMITS);
+            }
+        }
+
+        if (jobStats != null) {
+            List<JobStats> toFlush = null;
+            jobStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
+            try {
+                toFlush = jobStats;
+                jobStats = new ArrayList<JobStats>();
+            } finally {
+                jobStatsLock.release(NUMBER_OF_PERMITS);
+            }
+
+            if (toFlush != null && recordStatistics) {
+                Node node = nodeService.getCachedIdentity();
+                if (node != null) {
+                    String nodeId = node.getNodeId();
+                    String serverId = AppUtils.getServerId();
+                    for (JobStats stats : toFlush) {
+                        stats.setNodeId(nodeId);
+                        stats.setHostName(serverId);
+                        statisticService.save(stats);
+                    }
+                }
             }
         }
     }
@@ -399,7 +451,6 @@ public class StatisticManager implements IStatisticManager {
                         null, channelId);
                 channelStats.put(channelId, stats);
             } else {
-                log.warn("StatisticNodeNotAvailableWarning");
                 stats = new ChannelStats(UNKNOWN, AppUtils.getServerId(), new Date(), null,
                         channelId);
             }
@@ -409,14 +460,12 @@ public class StatisticManager implements IStatisticManager {
     }
 
     protected HostStats getHostStats() {
-        resetChannelStats(false);
         if (hostStats == null) {
             Node node = nodeService.getCachedIdentity();
             if (node != null) {
                 hostStats = new HostStats(node.getNodeId(), AppUtils.getServerId(), new Date(),
                         null);
             } else {
-                log.warn("StatisticNodeNotAvailableWarning");
                 hostStats = new HostStats(UNKNOWN, AppUtils.getServerId(), new Date(), null);
             }
 
@@ -442,6 +491,10 @@ public class StatisticManager implements IStatisticManager {
 
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
+    }
+
+    public void setRecordStatistics(boolean recordStatistics) {
+        this.recordStatistics = recordStatistics;
     }
 
 }

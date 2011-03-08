@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 /**
- * 
+ * Background job that checks to see if triggers need to be regenerated.
  */
 public class SyncTriggersJob extends AbstractJob {
 
@@ -34,8 +34,9 @@ public class SyncTriggersJob extends AbstractJob {
     }
 
     @Override
-    public void doJob() throws Exception {
+    public long doJob() throws Exception {
         triggerRouterService.syncTriggers();
+        return -1l;
     }
 
     public void setTriggerRouterService(ITriggerRouterService triggerService) {

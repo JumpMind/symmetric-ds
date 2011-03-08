@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
+import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -267,7 +268,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             boolean errorOccurred = false;
             try {
                 log.info("NodeRegisterting", parameterService.getRegistrationUrl());
-                registered = dataLoaderService.loadDataFromPull(null);
+                registered = dataLoaderService.loadDataFromPull(null).getStatus() == Status.DATA_PROCESSED;
             } catch (ConnectException e) {
                 log.warn("NodeRegistertingFailedConnection");
             } catch (UnknownHostException e) {

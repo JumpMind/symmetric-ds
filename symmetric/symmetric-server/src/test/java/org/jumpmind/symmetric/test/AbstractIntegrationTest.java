@@ -122,7 +122,7 @@ public class AbstractIntegrationTest extends AbstractTest {
         int tries = 0;
         boolean pushed = false;
         while (!pushed && tries < 10) {
-            pushed = getClientEngine().push();
+            pushed = getClientEngine().push().wasDataProcessed();
             AppUtils.sleep(100);
             tries++;
         }
