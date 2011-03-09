@@ -94,6 +94,9 @@
     <entry key="deleteNodeGroupLinkSql">
       <value>delete from $[sym.sync.table.prefix]_node_group_link where source_node_group_id=? and target_node_group_id=?</value>
     </entry>    
+    <entry key="deleteNodeGroupSql">
+      <value>delete from $[sym.sync.table.prefix]_node_group where node_group_id=?</value>
+    </entry>    
     <entry key="deleteChannelSql">
       <value>delete from $[sym.sync.table.prefix]_channel where channel_id=?</value>
     </entry>

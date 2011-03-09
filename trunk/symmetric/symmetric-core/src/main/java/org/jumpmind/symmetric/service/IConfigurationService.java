@@ -42,6 +42,8 @@ public interface IConfigurationService {
     
     public void saveNodeGroupLink(NodeGroupLink link);
     
+    public void deleteNodeGroup(String nodeGroupId);
+    
     public void deleteNodeGroupLink(NodeGroupLink link);
     
     public List<NodeGroupLink> getNodeGroupLinks();
