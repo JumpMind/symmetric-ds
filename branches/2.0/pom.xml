@@ -228,7 +228,7 @@
         <springframework.version>3.0.1.RELEASE</springframework.version>
         <derby.version>10.5.3.0_1</derby.version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
-        <docbook.target>${basedir}/target/site/guide/2.x</docbook.target>
+        <docbook.target>${basedir}/target/site/guide/2.0</docbook.target>
         <docbook.build>${basedir}/target/docbook</docbook.build>
     </properties>
 
@@ -351,13 +351,31 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Use this command to deploy the maven site (instead of site:deploy):
+                 mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload -Dwagon.url=dav:https://dav.codehaus.org/symmetricds/  -Dwagon.fromDir=target/site -Dwagon.serverId=dav.codehaus.org
+              -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
+                <version>2.2</version>
                 <configuration>
                     <siteDirectory>${basedir}/src/site</siteDirectory>
                     <templateFile>src/site/site.vm</templateFile>
                 </configuration>
+                <!-- Need to exclude commons-logging due to bug. See: http://jira.codehaus.org/browse/MSITE-459 -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.doxia</groupId>
+                        <artifactId>doxia-module-xhtml</artifactId>
+                        <version>1.1.4</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>commons-logging</groupId>
+                                <artifactId>commons-logging</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.db.torque</groupId>
@@ -403,7 +421,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <destDir>apidocs-2</destDir>
+                    <destDir>apidocs-2.0</destDir>
                 </configuration>
             </plugin>
             <plugin>
