@@ -68,6 +68,9 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Use this command to deploy the maven site (instead of site:deploy):
+                 mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload -Dwagon.url=dav:https://dav.codehaus.org/symmetricds/  -Dwagon.fromDir=target/site -Dwagon.serverId=dav.codehaus.org
+              -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -91,7 +94,7 @@
                         </exclusions>
                     </dependency>
                 </dependencies>
-            </plugin>
+            </plugin>         
             <plugin>
                 <groupId>org.apache.db.torque</groupId>
                 <artifactId>torque-maven-plugin</artifactId>
