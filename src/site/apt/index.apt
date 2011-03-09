@@ -38,7 +38,7 @@ Overview
     * Embedded in an application
  
  SymmetricDS is written in Java and licensed as open source software under the 
- {{{license.html}GNU Lesser General Public License}} (LGPL).
+ {{{./license.html}GNU Lesser General Public License}} (LGPL).
 
 Background
  
