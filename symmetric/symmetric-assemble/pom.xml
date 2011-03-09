@@ -24,7 +24,7 @@
 
     <properties>
         <docbook.source>${basedir}/src/docbook</docbook.source>
-        <docbook.target>${basedir}/target/site/guide/2.x</docbook.target>
+        <docbook.target>${basedir}/target/site/guide/2.2</docbook.target>
         <docbook.build>${basedir}/target/docbook</docbook.build>
     </properties>
 
@@ -139,7 +139,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <destDir>apidocs-2</destDir>
+                    <destDir>apidocs-2.2</destDir>
                     <doctitle>SymmetricDS API ${project.version}</doctitle>
                 </configuration>
                 <reportSets>

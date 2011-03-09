@@ -19,7 +19,7 @@ Overview
 [images/n-tier-sync.gif]
  
  Synchronization can be configured to push data (trickle-back) or pull data (trickle-poll) at an interval.
- SymmetricDS allows for 2-tier and even n-tier synchronization, such as the following:
+ SymmetricDS allows for synchronization between two or more tiers of nodes, such as the following:
 
     * A farm of web server nodes fronting an enterprise-class general office database
     
@@ -38,7 +38,7 @@ Overview
     * Embedded in an application
  
  SymmetricDS is written in Java and licensed as open source software under the 
- {{{license.html}GNU Lesser General Public License}} (LGPL).
+ {{{./license.html}GNU Lesser General Public License}} (LGPL).
 
 Background
  
