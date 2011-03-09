@@ -97,6 +97,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
     
+    public void deleteNodeGroup(String nodeGroupId) {
+        jdbcTemplate.update(getSql("deleteNodeGroupSql"), nodeGroupId);
+    }
+    
     public void deleteNodeGroupLink(NodeGroupLink link) {
         jdbcTemplate.update(getSql("deleteNodeGroupLinkSql"), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
     }   
