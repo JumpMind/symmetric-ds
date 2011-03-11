@@ -51,7 +51,7 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
 
     private int countActivePurgeLocks() {
         return getJdbcTemplate().queryForInt(
-                "select count(*) from sym_lock where lock_id=? and lock_action=? and lock_time is not null",
-                new Object[] { ClusterConstants.COMMON_LOCK_ID, ClusterConstants.PURGE_INCOMING });
+                "select count(*) from sym_lock where lock_action=? and lock_time is not null",
+                new Object[] { ClusterConstants.PURGE_INCOMING });
     }
 }
