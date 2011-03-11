@@ -335,7 +335,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public void purge() {
         if (!Boolean.TRUE.toString().equalsIgnoreCase(getParameterService().getString(ParameterConstants.START_PURGE_JOB))) {
-            getPurgeService().purge();
+            getPurgeService().purgeOutgoing();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a purge if it is already scheduled.");
         }

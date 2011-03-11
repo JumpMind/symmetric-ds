@@ -20,6 +20,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 
@@ -43,6 +44,14 @@ public class PullJob extends AbstractJob {
         }
         
         return statuses.getDataProcessedCount();
+    }
+    
+    public String getClusterLockName() {
+        return ClusterConstants.PULL;
+    }
+    
+    public boolean isClusterable() {
+        return true;
     }
 
     public void setPullService(IPullService service) {

@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 /**
@@ -41,6 +42,14 @@ public class SyncTriggersJob extends AbstractJob {
 
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;
+    }
+    
+    public String getClusterLockName() {
+        return ClusterConstants.SYNCTRIGGERS;
+    }
+    
+    public boolean isClusterable() {
+        return true;
     }
 
 }

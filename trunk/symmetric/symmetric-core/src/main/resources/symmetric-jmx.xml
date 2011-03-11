@@ -19,7 +19,9 @@
                 <entry key="$[sym.engine.name]:name=RouterJob" value-ref="job.routing" />
                 <entry key="$[sym.engine.name]:name=PullJob" value-ref="job.pull" />
                 <entry key="$[sym.engine.name]:name=PushJob" value-ref="job.push" />
-                <entry key="$[sym.engine.name]:name=PurgeJob" value-ref="job.purge" />                
+                <entry key="$[sym.engine.name]:name=OutgoingPurgeJob" value-ref="job.purge.outgoing" />                
+                <entry key="$[sym.engine.name]:name=IncomingPurgeJob" value-ref="job.purge.incoming" />
+                <entry key="$[sym.engine.name]:name=DataGapPurgeJob" value-ref="job.purge.datagaps" />
                 <entry key="$[sym.engine.name]:name=Notifications" value-ref="notificationService" />
             </map>
         </property>

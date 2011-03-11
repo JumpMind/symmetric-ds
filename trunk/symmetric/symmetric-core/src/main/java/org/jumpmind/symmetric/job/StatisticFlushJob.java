@@ -42,4 +42,12 @@ public class StatisticFlushJob extends AbstractJob {
     public void setStatisticManager(IStatisticManager statisticManager) {
         this.statisticManager = statisticManager;
     }
+    
+    public String getClusterLockName() {
+        return "STATISTICS";
+    }
+    
+    public boolean isClusterable() {
+        return false;
+    }
 }

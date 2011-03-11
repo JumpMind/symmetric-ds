@@ -224,7 +224,7 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_PURGE)) {
                 testConnection(line);
                 ((IPurgeService) new StandaloneSymmetricEngine(propertiesFile).getApplicationContext().getBean(Constants.PURGE_SERVICE))
-                        .purge();
+                        .purgeOutgoing();
                 System.exit(0);
                 return;
             }

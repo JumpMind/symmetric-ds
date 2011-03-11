@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IPushService;
 
 /**
@@ -40,6 +41,14 @@ public class PushJob extends AbstractJob {
     @Override
     public long doJob() throws Exception {
         return pushService.pushData().getDataProcessedCount();
+    }
+    
+    public String getClusterLockName() {
+        return ClusterConstants.PUSH;
+    }
+    
+    public boolean isClusterable() {
+        return true;
     }
 
 }

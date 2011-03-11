@@ -17,35 +17,38 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.service.impl;
 
 import static org.jumpmind.symmetric.service.ClusterConstants.COMMON_LOCK_ID;
 import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
 import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
+import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_DATA_GAPS;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_INCOMING;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_OUTGOING;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_STATISTICS;
-import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_DATA_GAPS;
 import static org.jumpmind.symmetric.service.ClusterConstants.PUSH;
 import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
 import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
 
-
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 
+ * @see IClusterService
  */
 public class ClusterService extends AbstractService implements IClusterService {
 
@@ -90,6 +93,24 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void unlock(final String action) {
         unlock(action, COMMON_LOCK_ID);
     }
+    
+    public Map<String,Lock> findLocks() {
+        final Map<String, Lock> locks = new HashMap<String, Lock>();
+        jdbcTemplate.query(getSql("findLocksSql"), new RowMapper<Lock>() {
+            public Lock mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Lock lock = new Lock();
+                lock.setLockId(rs.getString(1));
+                lock.setLockAction(rs.getString(2));
+                lock.setLockingServerId(rs.getString(3));
+                lock.setLockTime(rs.getTimestamp(4));
+                lock.setLastLockingServerId(rs.getString(5));
+                lock.setLastLockTime(rs.getTimestamp(6));
+                locks.put(lock.getLockAction(), lock);
+                return lock;
+            }
+        });
+        return locks;
+    }
 
     protected boolean lock(final String action, final String id) {
         if (isClusteringEnabled()) {
@@ -112,14 +133,14 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected void unlock(final String action, final String id) {
         if (isClusteringEnabled()) {
-            int count = jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { id, action, serverId });
+            int count = jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { serverId, id, action, serverId });
             if (count == 0) {
                 log.warn("ClusterUnlockFailed", id, action, serverId);
             }
         }
     }
 
-    private boolean isClusteringEnabled() {
+    public boolean isClusteringEnabled() {
         return parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
     }
 

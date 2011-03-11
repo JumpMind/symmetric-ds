@@ -16,24 +16,36 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 
 /**
- * Background job that is responsible for checking on node health. It will disable nodes that
- * have been offline for a configurable period of time.
+ * Background job that is responsible for checking on node health. It will
+ * disable nodes that have been offline for a configurable period of time.
  */
 public class WatchdogJob extends AbstractJob {
 
     private INodeService nodeService;
 
+    private IClusterService clusterService;
+
     @Override
     public long doJob() throws Exception {
-        nodeService.checkForOfflineNodes();
+        if (clusterService.lock(ClusterConstants.WATCHDOG)) {
+            synchronized (this) {
+                try {
+                    nodeService.checkForOfflineNodes();
+                } finally {
+                    clusterService.unlock(ClusterConstants.WATCHDOG);
+                }
+            }
+        }
         return -1l;
     }
 
@@ -41,4 +53,15 @@ public class WatchdogJob extends AbstractJob {
         this.nodeService = nodeService;
     }
 
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
+    }
+
+    public String getClusterLockName() {
+        return ClusterConstants.WATCHDOG;
+    }
+
+    public boolean isClusterable() {
+        return true;
+    }
 }

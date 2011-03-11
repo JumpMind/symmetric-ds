@@ -131,6 +131,9 @@
         <column name="start_time" type="TIMESTAMP" required="true" primaryKey="true" description="" />
         <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true" description="" />        
         <column name="processed_count" type="BIGINT" default="0" description="" />
+        <index name="idx_node_host_job">
+            <index-column name="job_name"/>        
+        </index>        
     </table>
 
     <table name="channel" description="This table represents a category of data that can be synchronized independently of other channels. Channels allow control over the type of data flowing and prevents one type of synchronization from contending with another.">
@@ -389,6 +392,8 @@
         <column name="lock_action" type="VARCHAR" size="50" required="true" primaryKey="true" description="The process that needs a lock."/>
         <column name="locking_server_id" type="VARCHAR" size="255" description="The name of the server that currently has a lock.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
         <column name="lock_time" type="TIMESTAMP" description="The time a lock is aquired.  Use the cluster.lock.timeout.ms to specify a lock timeout period." />
+        <column name="last_lock_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
+        <column name="last_locking_server_id" type="VARCHAR" size="255"  description="The server id of the process that last did work on this batch." />
     </table>
     
     <!-- 

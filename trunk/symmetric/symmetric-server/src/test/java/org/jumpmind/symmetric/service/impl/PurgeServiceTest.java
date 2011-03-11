@@ -44,7 +44,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
     @Test
     public void testThatPurgeExecutes() {
         IPurgeService service = find(Constants.PURGE_SERVICE);
-        service.purge();
+        service.purgeOutgoing();
     }
 
     @Test

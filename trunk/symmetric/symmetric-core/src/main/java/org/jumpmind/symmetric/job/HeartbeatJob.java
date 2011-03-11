@@ -36,16 +36,24 @@ public class HeartbeatJob extends AbstractJob {
 
     @Override
     public long doJob() throws Exception {
-        if (clusterService.lock(ClusterConstants.HEARTBEAT)) {
+        if (clusterService.lock(getClusterLockName())) {
             try {
                 dataService.heartbeat(false);
                 return -1l;
             } finally {
-                clusterService.unlock(ClusterConstants.HEARTBEAT);
+                clusterService.unlock(getClusterLockName());
             }
         } else {
             return -1l;
         }
+    }
+    
+    public String getClusterLockName() {
+        return ClusterConstants.HEARTBEAT;
+    }
+    
+    public boolean isClusterable() {
+        return true;
     }
 
     public void setDataService(IDataService dataService) {

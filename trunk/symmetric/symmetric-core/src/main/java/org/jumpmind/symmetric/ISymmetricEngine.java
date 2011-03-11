@@ -26,7 +26,7 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.PullJob;
-import org.jumpmind.symmetric.job.PurgeJob;
+import org.jumpmind.symmetric.job.OutgoingPurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.job.RouterJob;
 import org.jumpmind.symmetric.model.NodeStatus;
@@ -135,9 +135,9 @@ public interface ISymmetricEngine {
 
     /**
      * This can be called to do a purge. It may be called only if the
-     * {@link PurgeJob} has not been enabled.
+     * {@link OutgoingPurgeJob} has not been enabled.
      * 
-     * @see IPurgeService#purge()
+     * @see IPurgeService#purgeOutgoing()
      */
     public void purge();
 
