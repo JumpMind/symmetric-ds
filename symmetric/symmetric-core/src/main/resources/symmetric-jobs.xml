@@ -19,7 +19,9 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                 <ref bean="job.routing" />
                 <ref bean="job.push" />
                 <ref bean="job.pull" />
-                <ref bean="job.purge" />
+                <ref bean="job.purge.outgoing" />
+                <ref bean="job.purge.incoming" />
+                <ref bean="job.purge.datagaps" />
                 <ref bean="job.stat.flush" />
                 <ref bean="job.synctriggers" />
                 <ref bean="job.heartbeat" />
@@ -54,10 +56,20 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="autoStartParameterName" value="start.pull.job" />
     </bean>
 
-    <bean id="job.purge" parent="job.abstract" class="org.jumpmind.symmetric.job.PurgeJob">
+    <bean id="job.purge.outgoing" parent="job.abstract" class="org.jumpmind.symmetric.job.OutgoingPurgeJob">
         <property name="purgeService" ref="purgeService" />
         <property name="autoStartParameterName" value="start.purge.job" />
     </bean>
+    
+    <bean id="job.purge.incoming" parent="job.abstract" class="org.jumpmind.symmetric.job.IncomingPurgeJob">
+        <property name="purgeService" ref="purgeService" />
+        <property name="autoStartParameterName" value="start.purge.job" />
+    </bean>
+    
+    <bean id="job.purge.datagaps" parent="job.abstract" class="org.jumpmind.symmetric.job.DataGapPurgeJob">
+        <property name="purgeService" ref="purgeService" />
+        <property name="autoStartParameterName" value="start.purge.job" />
+    </bean>        
 
     <bean id="job.stat.flush" parent="job.abstract" class="org.jumpmind.symmetric.job.StatisticFlushJob">
         <property name="statisticManager" ref="statisticManager" />
@@ -79,6 +91,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     <bean id="job.watchdog" parent="job.abstract" class="org.jumpmind.symmetric.job.WatchdogJob">
         <property name="requiresRegistration" value="false" />
         <property name="nodeService" ref="nodeService" />
+        <property name="clusterService" ref="clusterService" />
         <property name="autoStartParameterName" value="start.watchdog.job" />
     </bean>
 

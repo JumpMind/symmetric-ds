@@ -21,21 +21,30 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IPurgeService;
 
 /**
  * Background job that is responsible for purging already synchronized data
  */
-public class PurgeJob extends AbstractJob {
+public class IncomingPurgeJob extends AbstractJob {
 
     private IPurgeService purgeService;
 
-    public PurgeJob() {
+    public IncomingPurgeJob() {
     }
 
     @Override
     public long doJob() throws Exception {
-        return purgeService.purge();
+        return purgeService.purgeIncoming();        
+    }
+    
+    public String getClusterLockName() {
+        return ClusterConstants.PURGE_INCOMING;
+    }
+    
+    public boolean isClusterable() {
+        return true;
     }
 
     public void setPurgeService(IPurgeService service) {

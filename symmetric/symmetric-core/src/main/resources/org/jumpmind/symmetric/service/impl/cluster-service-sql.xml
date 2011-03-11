@@ -16,13 +16,17 @@
     </entry>
     <entry key="releaseLockSql">
       <value>
-        update $[sym.sync.table.prefix]_lock set lock_time=null where lock_id=? and lock_action=? and
+        update $[sym.sync.table.prefix]_lock set lock_time=null, last_lock_time=current_timestamp, last_locking_server_id=? where lock_id=? and lock_action=? and
         locking_server_id=?
       </value>
     </entry>
     <entry key="insertLockSql">
       <value>insert into $[sym.sync.table.prefix]_lock (lock_id, lock_action) values(?,?)</value>
     </entry>
+    <entry key="findLocksSql">
+      <value>select lock_id, lock_action, locking_server_id, lock_time, last_locking_server_id, last_lock_time 
+        from $[sym.sync.table.prefix]_lock</value>
+    </entry>    
   </util:map>
 
 </beans>

@@ -24,15 +24,19 @@ import java.util.Calendar;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * This service provides an API to kick off the purge process or 
- * call individual purge processes with specific dates.
+ * This service provides an API to kick off purge processes with or 
+ * without specific dates.
  * <p/>
  * This service will never purge data that has not been delivered to 
  * a target node that is still enabled.
  */
 public interface IPurgeService {
     
-    public long purge();
+    public long purgeOutgoing();
+    
+    public long purgeIncoming();
+    
+    public long purgeDataGaps();    
     
     public long purgeDataGaps(Calendar retentionCutoff);
     

@@ -60,15 +60,35 @@ public class PurgeService extends AbstractService implements IPurgeService {
     
     private IStatisticManager statisticManager;
 
-    public long purge() {
+    public long purgeOutgoing() {
         long rowsPurged = 0;
         if (nodeService.isRegistrationServer() || nodeService.getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED) {
             Calendar retentionCutoff = Calendar.getInstance();
             retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
             rowsPurged += purgeOutgoing(retentionCutoff);
+        } else {
+            log.warn("DataPurgeSkippingNoInitialLoad");
+        }
+        return rowsPurged;
+    }
+    
+    public long purgeIncoming() {
+        long rowsPurged = 0;
+        if (nodeService.isRegistrationServer() || nodeService.getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED) {
+            Calendar retentionCutoff = Calendar.getInstance();
+            retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
             rowsPurged += purgeIncoming(retentionCutoff);
+        } else {
+            log.warn("DataPurgeSkippingNoInitialLoad");
+        }
+        return rowsPurged;
+    }
 
-            retentionCutoff = Calendar.getInstance();
+    
+    public long purgeDataGaps() {
+        long rowsPurged = 0;
+        if (nodeService.isRegistrationServer() || nodeService.getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED) {
+            Calendar retentionCutoff = Calendar.getInstance();
             retentionCutoff.add(Calendar.MINUTE, -parameterService
                     .getInt(ParameterConstants.ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES));
             rowsPurged += purgeDataGaps(retentionCutoff);

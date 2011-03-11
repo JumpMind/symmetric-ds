@@ -16,48 +16,39 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License. 
- */
+ * under the License.  */
+
+
 package org.jumpmind.symmetric.job;
 
-import java.util.Date;
+import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.service.IPurgeService;
 
-public interface IJob {
+/**
+ * Background job that is responsible for purging already synchronized data
+ */
+public class DataGapPurgeJob extends AbstractJob {
 
-    public void start();
+    private IPurgeService purgeService;
 
-    public boolean stop();
+    public DataGapPurgeJob() {
+    }
 
-    public String getName();
+    @Override
+    public long doJob() throws Exception {
+        return purgeService.purgeDataGaps();        
+    }
     
-    public String getClusterLockName();
+    public String getClusterLockName() {
+        return ClusterConstants.PURGE_DATA_GAPS;
+    }
     
-    public boolean isClusterable();
+    public boolean isClusterable() {
+        return true;
+    }
 
-    public void pause();
-
-    public void unpause();
-
-    public boolean isPaused();
-
-    public boolean isStarted();
+    public void setPurgeService(IPurgeService service) {
+        this.purgeService = service;
+    }
     
-    public boolean isAutoStartConfigured();
-
-    public long getLastExecutionTimeInMs();
-
-    public Date getLastFinishTime();
-
-    public boolean isRunning();
-
-    public long getNumberOfRuns();
-
-    public long getTotalExecutionTimeInMs();
-
-    public long getAverageExecutionTimeInMs();
-
-    public String getCronExpression();
-
-    public long getTimeBetweenRunsInMs();
-
 }

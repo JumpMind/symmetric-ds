@@ -139,7 +139,7 @@ public class NodeManagementService {
     
     @ManagedOperation(description = "Run the purge process")
     public void purge() {
-        purgeService.purge();
+        purgeService.purgeOutgoing();
     }        
     
     @ManagedOperation(description = "Force the channel settings to be read from the database")

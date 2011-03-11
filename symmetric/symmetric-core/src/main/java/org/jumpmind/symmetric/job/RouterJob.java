@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IRouterService;
 
 
@@ -41,4 +42,11 @@ public class RouterJob extends AbstractJob {
         this.routingService = routingService;
     }
 
+    public String getClusterLockName() {
+        return ClusterConstants.ROUTE;
+    }
+    
+    public boolean isClusterable() {
+        return true;
+    }
 }

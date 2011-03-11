@@ -17,13 +17,16 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.service;
+
+import java.util.Map;
+
+import org.jumpmind.symmetric.model.Lock;
 
 
 /**
- * 
+ * Service API that is responsible for acquiring distributed locks for 
+ * clustered SymmetricDS nodes.
  */
 public interface IClusterService {
 
@@ -40,5 +43,9 @@ public interface IClusterService {
     public String getServerId();
     
     public void setServerId(String serverId);
+    
+    public boolean isClusteringEnabled();
+    
+    public Map<String,Lock> findLocks();
 
 }
