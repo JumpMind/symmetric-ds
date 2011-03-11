@@ -11,20 +11,20 @@
     <entry key="aquireLockSql">
       <value>
         update $[sym.sync.table.prefix]_lock set locking_server_id=?, lock_time=current_timestamp where
-        lock_id=? and lock_action=? and (lock_time is null or lock_time &lt; ? or locking_server_id=?)
+         lock_action=? and (lock_time is null or lock_time &lt; ? or locking_server_id=?)
       </value>
     </entry>
     <entry key="releaseLockSql">
       <value>
-        update $[sym.sync.table.prefix]_lock set lock_time=null, last_lock_time=current_timestamp, last_locking_server_id=? where lock_id=? and lock_action=? and
-        locking_server_id=?
+        update $[sym.sync.table.prefix]_lock set lock_time=null, last_lock_time=current_timestamp, last_locking_server_id=? 
+          where lock_action=? and locking_server_id=?
       </value>
     </entry>
     <entry key="insertLockSql">
-      <value>insert into $[sym.sync.table.prefix]_lock (lock_id, lock_action) values(?,?)</value>
+      <value>insert into $[sym.sync.table.prefix]_lock (lock_action) values(?)</value>
     </entry>
     <entry key="findLocksSql">
-      <value>select lock_id, lock_action, locking_server_id, lock_time, last_locking_server_id, last_lock_time 
+      <value>select lock_action, locking_server_id, lock_time, last_locking_server_id, last_lock_time 
         from $[sym.sync.table.prefix]_lock</value>
     </entry>    
   </util:map>

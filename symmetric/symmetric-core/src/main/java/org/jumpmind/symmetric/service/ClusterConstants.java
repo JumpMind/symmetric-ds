@@ -24,8 +24,6 @@ package org.jumpmind.symmetric.service;
  * 
  */
 public class ClusterConstants {
-
-    public static final String COMMON_LOCK_ID = "common";
     
     public static final String ROUTE = "ROUTE";
     public static final String PUSH = "PUSH";

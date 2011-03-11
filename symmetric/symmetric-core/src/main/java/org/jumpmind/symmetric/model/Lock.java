@@ -25,22 +25,15 @@ import java.util.Date;
 
 public class Lock implements Serializable {
 
+    public static final String STOPPED = "STOPPED";
+    
     private static final long serialVersionUID = 1L;
 
-    private String lockId;
     private String lockAction;
     private String lockingServerId;
     private Date lockTime;
     private Date lastLockTime;
     private String lastLockingServerId;
-
-    public String getLockId() {
-        return lockId;
-    }
-
-    public void setLockId(String lockId) {
-        this.lockId = lockId;
-    }
 
     public String getLockAction() {
         return lockAction;
