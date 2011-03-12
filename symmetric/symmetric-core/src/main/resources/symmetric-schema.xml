@@ -450,10 +450,10 @@
         <column name="alert_event_id" type="INTEGER" primaryKey="true"  required="true"  description="Unique identifier for an alert event" />
         <column name="node_id" type="VARCHAR" size="50" required="true" description="Reference to the node that created the alert" />
         <column name="alert_def_id" type="VARCHAR" size="50" required="true"  description="Reference to the alert defintion" />    
-        <column name="message" type="LONGVARCHAR" required="true" description="Details about the alert"/>
+        <column name="alert_message" type="LONGVARCHAR" required="true" description="Details about the alert"/>
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created" />
-        <column name="ack_time" type="TIMESTAMP" required="true"  description="Timestamp when a user acknowledged this alert" />
-        <column name="ack_by" type="VARCHAR" size="50" required="true" description="Who acknowledged the alert"/>
+        <column name="ack_time" type="TIMESTAMP" description="Timestamp when a user acknowledged this alert" />
+        <column name="ack_by" type="VARCHAR" size="50" description="Who acknowledged the alert"/>
     </table>
     
     <table name="alert_event_notifier" description="Record of notifications sent in response to the alert">
