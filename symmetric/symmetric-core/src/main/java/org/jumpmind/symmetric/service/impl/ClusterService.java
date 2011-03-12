@@ -85,7 +85,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         if (isClusteringEnabled()) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
                     (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
-            return lock(action, new Date(), timeout, serverId);
+            return lock(action, timeout, new Date(), serverId);
         } else {
             return true;
         }
