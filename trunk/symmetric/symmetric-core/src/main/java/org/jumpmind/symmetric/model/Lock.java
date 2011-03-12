@@ -38,6 +38,14 @@ public class Lock implements Serializable {
     public String getLockAction() {
         return lockAction;
     }
+    
+    public boolean isStopped() {
+       return STOPPED.equals(lockingServerId) && lockTime != null;
+    }
+    
+    public boolean isLockedByOther(String serverId) {
+        return lockTime != null  && lockingServerId != null && !lockingServerId.equals(serverId);
+    }
 
     public void setLockAction(String lockAction) {
         this.lockAction = lockAction;
