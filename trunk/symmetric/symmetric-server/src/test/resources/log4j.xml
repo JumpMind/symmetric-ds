@@ -47,6 +47,10 @@
         <priority value="ERROR" />
     </category>
     
+    <category name="org.jumpmind.symmetric.ddl">
+        <priority value="INFO" />
+    </category>
+    
     <category name="org.jumpmind.symmetric.db.SqlScript">
         <priority value="ERROR" />
     </category>
