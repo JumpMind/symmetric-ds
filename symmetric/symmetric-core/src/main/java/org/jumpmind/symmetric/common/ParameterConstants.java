@@ -20,8 +20,10 @@
 
 package org.jumpmind.symmetric.common;
 
+import org.jumpmind.symmetric.service.IParameterService;
+
 /**
- * 
+ * Constants that represent parameters that can be retrieved or saved via the {@link IParameterService} 
  */
 final public class ParameterConstants {
 

@@ -47,5 +47,9 @@ public interface IClusterService {
     public boolean isClusteringEnabled();
     
     public Map<String,Lock> findLocks();
+    
+    public void aquireInfiniteLock(String action);
+    
+    public void clearInfiniteLock(String action);
 
 }

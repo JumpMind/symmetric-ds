@@ -70,9 +70,6 @@ import org.jumpmind.symmetric.service.IRegistrationService;
  * the store_id would be the external_id of a node in the registration_redirect
  * table and the router_expression for trigger entry for the 'price' table would
  * be 'store_id=:REDIRECT_NODE' and the router_type would be 'column'.
- * 
- *
- * 
  */
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {
 

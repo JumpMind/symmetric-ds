@@ -17,14 +17,12 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.load;
 
 import java.util.Date;
 
 /**
- * ,
+ * Utility class used by the data loader to record statistics as data is being loaded.
  */
 public class DataLoaderStatistics implements IDataLoaderStatistics {
 

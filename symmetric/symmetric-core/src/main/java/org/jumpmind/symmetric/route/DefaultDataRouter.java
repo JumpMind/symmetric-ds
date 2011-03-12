@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 /**
- * 
+ * This data router will route data to all nodes that belong to the target node group
  */
 public class DefaultDataRouter extends AbstractDataRouter {
 

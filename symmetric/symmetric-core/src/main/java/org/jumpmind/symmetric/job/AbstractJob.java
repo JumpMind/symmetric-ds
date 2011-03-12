@@ -100,7 +100,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
     
     public boolean isAutoStartConfigured() {
         return autoStartConfigured;
-    }
+    }       
     
     public void start() {
         if (this.scheduledJob == null) {
