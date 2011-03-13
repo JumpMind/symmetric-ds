@@ -353,6 +353,9 @@ public class ModelComparator
 
         if (_platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != sourceColumn.getTypeCode())
         {
+            if (_log.isInfoEnabled()) {
+                _log.info("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed type codes from " + sourceColumn.getTypeCode() + " to " + targetColumn.getTypeCode());
+            }
             changes.add(new ColumnDataTypeChange(sourceTable, sourceColumn, targetColumn.getTypeCode()));
         }
 
@@ -362,12 +365,18 @@ public class ModelComparator
         if (sizeMatters &&
             !StringUtils.equals(sourceColumn.getSize(), targetColumn.getSize()))
         {
+            if (_log.isInfoEnabled()) {
+                _log.info("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed size from (" + sourceColumn.getSizeAsInt() + ","+sourceColumn.getScale() + ") to (" + targetColumn.getSizeAsInt() + ","+targetColumn.getScale() + ")");
+            }
             changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetColumn.getSizeAsInt(), targetColumn.getScale()));
         }
         else if (scaleMatters &&
             (!StringUtils.equals(sourceColumn.getSize(), targetColumn.getSize()) ||
              (sourceColumn.getScale() != targetColumn.getScale())))
         {
+            if (_log.isInfoEnabled()) {
+                _log.info("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed scale from (" + sourceColumn.getSizeAsInt() + ","+sourceColumn.getScale() + ") to (" + targetColumn.getSizeAsInt() + ","+targetColumn.getScale() + ")");
+            }
             changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetColumn.getSizeAsInt(), targetColumn.getScale()));
         }
 
@@ -377,18 +386,28 @@ public class ModelComparator
         if (((sourceDefaultValue == null) && (targetDefaultValue != null)) ||
             ((sourceDefaultValue != null) && !sourceDefaultValue.equals(targetDefaultValue)))
         {
+            if (_log.isInfoEnabled()) {
+                _log.info("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed default value from " + sourceColumn.getDefaultValue() + " to " + targetColumn.getDefaultValue());
+            }
             changes.add(new ColumnDefaultValueChange(sourceTable, sourceColumn, targetColumn.getDefaultValue()));
         }
 
         if (sourceColumn.isRequired() != targetColumn.isRequired())
         {
+            if (_log.isInfoEnabled()) {
+                _log.info("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed required status from " + sourceColumn.isRequired() + " to " + targetColumn.isRequired());
+            }
             changes.add(new ColumnRequiredChange(sourceTable, sourceColumn));
         }
+        
         if (sourceColumn.isAutoIncrement() != targetColumn.isAutoIncrement())
         {
+            if (_log.isInfoEnabled()) {
+                _log.info("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed auto increment status from " + sourceColumn.isAutoIncrement() + " to " + targetColumn.isAutoIncrement());
+            }
             changes.add(new ColumnAutoIncrementChange(sourceTable, sourceColumn));
         }
-
+ 
         return changes;
     }
 
