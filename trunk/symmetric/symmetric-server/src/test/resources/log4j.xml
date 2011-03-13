@@ -46,16 +46,12 @@
     <category name="org.jumpmind.symmetric.ddl.platform.derby">
         <priority value="ERROR" />
     </category>
-    
-    <category name="org.jumpmind.symmetric.ddl">
-        <priority value="INFO" />
-    </category>
-    
+
     <category name="org.jumpmind.symmetric.db.SqlScript">
         <priority value="ERROR" />
     </category>
     
-    <!-- Enable router stats     -->
+    <!-- To enable router stats set this to DEBUG     -->
     <category name="org.jumpmind.symmetric.service.impl.RouterService">
         <priority value="INFO" />
     </category>
