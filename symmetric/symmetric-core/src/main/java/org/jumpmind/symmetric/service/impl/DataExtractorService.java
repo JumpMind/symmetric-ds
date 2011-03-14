@@ -168,9 +168,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
                 TriggerRouter triggerRouter = triggerRouters.get(i);
                 TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
+                if (triggerHistory == null) {
+                    triggerHistory = new TriggerHistory(dbDialect.getTable(triggerRouter.getTrigger(),
+                            false), triggerRouter.getTrigger());
+                    triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
+                }
                 StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, triggerRouter));
                 addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger().getSourceTableName(), sql);
-                Data data = new Data(1, null, sql.toString(), DataEventType.SQL, triggerHistory.getSourceTableName(),
+                String sourceTable = triggerHistory.getSourceTableName();
+                Data data = new Data(1, null, sql.toString(), DataEventType.SQL, sourceTable,
                         null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null,
                         null);
                 dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctx);
@@ -179,16 +185,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            
-            TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getTable(triggerRouter.getTrigger(),
-                    false), triggerRouter.getTrigger());
-            triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
+            TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
+            if (triggerHistory == null) {
+                triggerHistory = new TriggerHistory(dbDialect.getTable(triggerRouter.getTrigger(),
+                        false), triggerRouter.getTrigger());
+                triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
+            }
             
             if (!triggerRouter.getTrigger().getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
                 writeInitialLoad(node, triggerRouter, triggerHistory, writer, ctx);
             } else {
-                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, triggerRouter.getTrigger()
-                        .getSourceTableName(), null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null,
+                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, triggerHistory.getSourceTableName(), null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null,
                         null);
                 dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctx);
             }

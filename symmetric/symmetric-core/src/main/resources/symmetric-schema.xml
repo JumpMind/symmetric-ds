@@ -444,7 +444,7 @@
         <column name="end_time" type="TIME" description="The end time for the active window.  Note that if the end_time is less than the start_time then the window crosses a day boundary."/>
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-    </table>    
+    </table>
     
     <table name="alert_event" description="An actual alert">
         <column name="alert_event_id" type="INTEGER" primaryKey="true"  required="true"  description="Unique identifier for an alert event" />
