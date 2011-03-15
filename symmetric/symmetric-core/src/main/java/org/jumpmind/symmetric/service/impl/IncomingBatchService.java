@@ -65,18 +65,25 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, Date startAtCreateTime) {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("NODES", nodeIds);
-        params.put("CHANNELS", channels);
-        params.put("STATUSES", toStringList(statuses));
-        params.put("CREATE_TIME", startAtCreateTime);
-        NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
-        return template.query(getSql("selectCreateTimePrefixSql","listIncomingBatchesSql"), params, new SingleColumnRowMapper<Date>());
+        if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
+                && statuses != null && statuses.size() > 0) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("NODES", nodeIds);
+            params.put("CHANNELS", channels);
+            params.put("STATUSES", toStringList(statuses));
+            params.put("CREATE_TIME", startAtCreateTime);
+            NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
+            return template.query(getSql("selectCreateTimePrefixSql", "listIncomingBatchesSql"),
+                    params, new SingleColumnRowMapper<Date>());
+        } else {
+            return new ArrayList<Date>(0);
+        }
     }
     
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve) {
-        if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
+        if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
+                && statuses != null && statuses.size() > 0) {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("NODES", nodeIds);
             params.put("CHANNELS", channels);
