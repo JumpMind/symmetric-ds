@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -335,7 +336,11 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             log.info("AutoConfigRegistrationService");
             String nodeGroupId = parameterService.getNodeGroupId();
             String nodeId = parameterService.getExternalId();
-            nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
+            try {
+                nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
+            } catch (DataIntegrityViolationException ex) {
+                log.warn("AutoConfigNodeIdAlreadyExists", nodeId);
+            }
             nodeService.insertNodeIdentity(nodeId);
             node = nodeService.findIdentity();
             node.setSyncUrl(parameterService.getSyncUrl());
