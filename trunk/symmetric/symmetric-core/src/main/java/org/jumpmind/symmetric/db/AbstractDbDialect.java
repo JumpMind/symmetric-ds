@@ -37,7 +37,6 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -152,14 +151,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     protected int queryTimeoutInSeconds = 300;
     
-    public static void main(String[] args) throws Exception {
-        String test = "2011-01-28 09:02:46.8634";
-        //String test = ""2011-01-28 08:41:49.813735000"";
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-        System.out.println(format.format(format.parse(test)));
-        System.out.println(DateUtils.parseDate(test, TIMESTAMP_PATTERNS));
-    }
-
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
         _defaultSizes.put(new Integer(1), "254");
