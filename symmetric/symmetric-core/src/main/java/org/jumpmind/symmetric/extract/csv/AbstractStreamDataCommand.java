@@ -17,8 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric.extract.csv;
 
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -27,5 +25,5 @@ import org.jumpmind.symmetric.util.CsvUtils;
 
 abstract class AbstractStreamDataCommand implements IStreamDataCommand {
     protected static final String DELIMITER = CsvUtils.DELIMITER;
-    protected ILog log = LogFactory.getLog(getClass());
+    protected final ILog log = LogFactory.getLog(getClass());
 }

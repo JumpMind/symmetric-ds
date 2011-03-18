@@ -24,20 +24,28 @@ package org.jumpmind.symmetric.extract.csv;
 import java.io.Writer;
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * 
+ * Command to stream an {@link CsvConstants#UPDATE} DML action
  */
 class StreamUpdateDataCommand extends AbstractStreamDataCommand {
 
-    public void execute(Writer out, Data data, String routerId, DataExtractorContext context) throws IOException {
-        context.incrementByteCount(CsvUtils.write(out, CsvConstants.UPDATE, DELIMITER, data.getRowData(), DELIMITER, data.getPkData()));
-        CsvUtils.writeLineFeed(out);
-        context.incrementDataEventCount();
+    public void execute(Writer out, Data data, String routerId, DataExtractorContext context)
+            throws IOException {
+        String rowData = data.getRowData();
+        if (!StringUtils.isBlank(rowData)) {
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.UPDATE, DELIMITER, rowData,
+                    DELIMITER, data.getPkData()));
+            CsvUtils.writeLineFeed(out);
+            context.incrementDataEventCount();
+        } else {
+            log.error("DataExtractorMissingRowData", data.getDataId());
+        }
     }
     
     public boolean isTriggerHistoryRequired() {

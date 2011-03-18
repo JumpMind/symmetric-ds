@@ -24,22 +24,27 @@ package org.jumpmind.symmetric.extract.csv;
 import java.io.Writer;
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * 
- *
- * 
+ * Command to stream an {@link CsvConstants#INSERT} DML action
  */
 class StreamInsertDataCommand extends AbstractStreamDataCommand {
 
     public void execute(Writer writer, Data data, String routerId, DataExtractorContext context) throws IOException {
-        context.incrementByteCount(CsvUtils.write(writer, CsvConstants.INSERT, DELIMITER, data.getRowData()));
-        CsvUtils.writeLineFeed(writer);
-        context.incrementDataEventCount();
+        String rowData = data.getRowData();
+        if (!StringUtils.isBlank(rowData)) {
+            context.incrementByteCount(CsvUtils.write(writer, CsvConstants.INSERT, DELIMITER,
+                    rowData));
+            CsvUtils.writeLineFeed(writer);
+            context.incrementDataEventCount();
+        } else {
+            log.error("DataExtractorMissingRowData", data.getDataId());
+        }
     }
     
     public boolean isTriggerHistoryRequired() {
