@@ -17,7 +17,6 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.config;
 
 import java.util.ArrayList;
@@ -28,8 +27,6 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 
 /**
  * Utility class to pair down a list of triggers.
- *
- * 
  */
 public class TriggerRouterSelector {
 

@@ -261,6 +261,11 @@
         delete from $[sym.sync.table.prefix]_trigger where trigger_id=?
       </value>
     </entry>
+    <entry key="deleteTriggerHistorySql">
+      <value>
+        delete from $[sym.sync.table.prefix]_trigger_hist where trigger_id=?
+      </value>
+    </entry>    
     <entry key="insertTriggerSql">
       <value>
         insert into $[sym.sync.table.prefix]_trigger
