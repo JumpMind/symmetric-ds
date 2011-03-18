@@ -24,22 +24,27 @@ package org.jumpmind.symmetric.extract.csv;
 import java.io.Writer;
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * 
- *
- * 
+ * Command to stream an {@link CsvConstants#DELETE} DML action
  */
 class StreamDeleteDataCommand extends AbstractStreamDataCommand {
 
-    public void execute(Writer out, Data data, String routerId, DataExtractorContext context) throws IOException {
-        context.incrementByteCount(CsvUtils.write(out, CsvConstants.DELETE, DELIMITER, data.getPkData()));
-        CsvUtils.writeLineFeed(out);
-        context.incrementDataEventCount();
+    public void execute(Writer out, Data data, String routerId, DataExtractorContext context)
+            throws IOException {
+        String rowData = data.getPkData();
+        if (!StringUtils.isBlank(rowData)) {
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.DELETE, DELIMITER, rowData));
+            CsvUtils.writeLineFeed(out);
+            context.incrementDataEventCount();
+        } else {
+            log.error("DataExtractorMissingPkData", data.getDataId());
+        }
     }
     
     public boolean isTriggerHistoryRequired() {
