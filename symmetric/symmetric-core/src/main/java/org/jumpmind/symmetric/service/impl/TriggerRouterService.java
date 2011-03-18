@@ -110,6 +110,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         jdbcTemplate.update(getSql("deleteTriggerSql"), trigger.getTriggerId());
     }
     
+    protected void deleteTriggerHistory(TriggerHistory history) {
+        jdbcTemplate.update(getSql("deleteTriggerHistorySql"), history.getTriggerHistoryId());
+    }
+    
     public void createTriggersOnChannelForTables(String channelId, Set<Table> tables, String lastUpdateBy) {
         for (Table table : tables) {
             Trigger trigger = new Trigger();
@@ -842,16 +846,30 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             insert(newTriggerHist);
             hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
         }
-
-        if (!triggerExists && triggerIsActive) {
-            dbDialect.createTrigger(sqlBuffer, dmlType, trigger, hist, configurationService.getChannel(trigger.getChannelId()), tablePrefix, table);
-            if (triggerRemoved) {
-                statisticManager.incrementTriggersRebuiltCount(1);
-            } else {
-                statisticManager.incrementTriggersCreatedCount(1);
+        
+        try {
+            if (!triggerExists && triggerIsActive) {
+                dbDialect
+                        .createTrigger(sqlBuffer, dmlType, trigger, hist,
+                                configurationService.getChannel(trigger.getChannelId()),
+                                tablePrefix, table);
+                if (triggerRemoved) {
+                    statisticManager.incrementTriggersRebuiltCount(1);
+                } else {
+                    statisticManager.incrementTriggersCreatedCount(1);
+                }
+            } else if (triggerRemoved) {
+                statisticManager.incrementTriggersRemovedCount(1);
             }
-        } else if (triggerRemoved) {
-            statisticManager.incrementTriggersRemovedCount(1);
+
+        } catch (RuntimeException ex) {
+            if (!dbDialect.doesTriggerExist(hist.getSourceCatalogName(),
+                    hist.getSourceSchemaName(), hist.getSourceTableName(),
+                    hist.getTriggerNameForDmlType(dmlType))) {
+                log.warn("TriggerHistCleanup", hist.getTriggerHistoryId());
+                deleteTriggerHistory(hist);
+            }
+            throw ex;
         }
 
         return hist;
