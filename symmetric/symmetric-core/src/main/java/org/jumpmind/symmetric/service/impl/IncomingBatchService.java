@@ -57,6 +57,10 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             return null;
         }
     }
+    
+    public int countIncomingBatchesInError() {
+        return jdbcTemplate.queryForInt(getSql("countIncomingBatchesErrorsSql"));
+    }    
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
         return (List<IncomingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
@@ -73,7 +77,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             params.put("STATUSES", toStringList(statuses));
             params.put("CREATE_TIME", startAtCreateTime);
             NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
-            return template.query(getSql("selectCreateTimePrefixSql", "listIncomingBatchesSql"),
+            return template.query(getSql("selectCreateTimePrefixSql", containsOnlyErrorStatus(statuses) ? 
+                    "listIncomingBatchesInErrorSql" : "listIncomingBatchesSql"),
                     params, new SingleColumnRowMapper<Date>());
         } else {
             return new ArrayList<Date>(0);
@@ -106,13 +111,18 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             };
 
             List<IncomingBatch> list = template.query(
-                    getSql("selectIncomingBatchPrefixSql", "listIncomingBatchesSql"),
+                    getSql("selectIncomingBatchPrefixSql", containsOnlyErrorStatus(statuses) ? 
+                            "listIncomingBatchesInErrorSql" : "listIncomingBatchesSql"),
                     new MapSqlParameterSource(params), extractor);
             return list;
         } else {
             return new ArrayList<IncomingBatch>(0);
         }
     }  
+    
+    protected boolean containsOnlyErrorStatus(List<IncomingBatch.Status> statuses) {
+        return statuses.size() == 1 && statuses.get(0) == IncomingBatch.Status.ER;
+    }    
     
     protected List<String> toStringList(List<IncomingBatch.Status> statuses) {
         List<String> statusStrings = new ArrayList<String>(statuses.size());
@@ -180,11 +190,16 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public int updateIncomingBatch(JdbcTemplate template, IncomingBatch batch) {
         int count = 0;
         if (batch.isPersistable()) {
+            if (batch.getStatus() == IncomingBatch.Status.ER) {
+                batch.setErrorFlag(true);
+            } else if (batch.getStatus() == IncomingBatch.Status.OK) {
+                batch.setErrorFlag(false);
+            }
             batch.setLastUpdatedHostName(AppUtils.getServerId());
             batch.setLastUpdatedTime(new Date());
             count = template.update(
                     getSql("updateIncomingBatchSql"),
-                    new Object[] { batch.getStatus().toString(), batch.getNetworkMillis(),
+                    new Object[] { batch.getStatus().toString(), batch.isErrorFlag() ? 1 : 0, batch.getNetworkMillis(),
                             batch.getFilterMillis(), batch.getDatabaseMillis(),
                             batch.getFailedRowNumber(), batch.getByteCount(),
                             batch.getStatementCount(), batch.getFallbackInsertCount(),
@@ -203,7 +218,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setBatchId(rs.getLong(1));
             batch.setNodeId(rs.getString(2));
             batch.setChannelId(rs.getString(3));
-            batch.setStatus(IncomingBatch.Status.valueOf(rs.getString(4)));
+            batch.setStatus(IncomingBatch.Status.valueOf(rs.getString(4)));            
             batch.setNetworkMillis(rs.getLong(5));
             batch.setFilterMillis(rs.getLong(6));
             batch.setDatabaseMillis(rs.getLong(7));
@@ -220,6 +235,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setLastUpdatedHostName(rs.getString(18));
             batch.setLastUpdatedTime(rs.getTimestamp(19));
             batch.setCreateTime(rs.getTimestamp(20));
+            batch.setErrorFlag(rs.getBoolean(21));
             return batch;
         }
     }

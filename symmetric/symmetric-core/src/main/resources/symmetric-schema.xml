@@ -364,7 +364,8 @@
         <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true"  description="The id of the outgoing_batch that is being loaded." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The node_id of the source of the batch being loaded." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel_id of the batch being loaded." />
-        <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be successfully loaded (OK) or error (ER)." />
+        <column name="status" type="CHAR" size="2"  description="The current status of the batch can be loading (LD), successfully loaded (OK), in error (ER) or skipped (SK)" />
+        <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
         <column name="network_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
         <column name="filter_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
         <column name="database_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
@@ -385,6 +386,9 @@
             <index-column name="create_time" />
             <index-column name="status" />
         </index>
+        <index name="idx_ib_in_error">
+            <index-column name="error_flag" />
+        </index>         
     </table>
     
     <table name="lock" description="Contains semaphores that are set when processes run, so that only one server can run a process at a time.  Enable this feature by using the cluster.lock.during.xxxx parameters.">

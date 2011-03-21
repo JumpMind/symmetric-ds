@@ -32,6 +32,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public interface IIncomingBatchService {
 
+    public int countIncomingBatchesInError();
+    
     public IncomingBatch findIncomingBatch(long batchId, String nodeId);
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows);

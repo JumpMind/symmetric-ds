@@ -41,6 +41,8 @@ public class IncomingBatch implements Serializable {
 
     private Status status;
     
+    private boolean errorFlag;
+    
     private long byteCount;
 
     private long networkMillis;
@@ -277,6 +279,14 @@ public class IncomingBatch implements Serializable {
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
+    }
+    
+    public void setErrorFlag(boolean errorFlag) {
+        this.errorFlag = errorFlag;
+    }
+    
+    public boolean isErrorFlag() {
+        return errorFlag;
     }
     
     @Override
