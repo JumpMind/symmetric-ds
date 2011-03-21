@@ -26,6 +26,7 @@ import java.util.Set;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.util.AbstractVersion;
 
 /**
  * This is a router that is tied to the trigger table. It prevents triggers from
@@ -40,7 +41,7 @@ public class TriggerDataRouter extends AbstractDataRouter {
             for (Node node : nodes) {
                 String version = node.getSymmetricVersion();
                 if (version != null) {
-                    int max = Version.parseVersion(version)[Version.MAJOR_INDEX];
+                    int max = Version.parseVersion(version)[AbstractVersion.MAJOR_INDEX];
                     if (max >= 2) {
                         nodeIds.add(node.getNodeId());
                     }
