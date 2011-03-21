@@ -395,6 +395,7 @@
         <column name="last_locking_server_id" type="VARCHAR" size="255"  description="The server id of the process that last did work on this batch." />
     </table>
     
+    <!-- 
     <table name="alert_def" description="The definition of an alert">
         <column name="alert_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
         <column name="node_group_id" type="VARCHAR" size="50" required="true" description="The node group that this alert is assigned to.  If assigned to all node groups, then this value should be 'ALL'" />
@@ -463,5 +464,7 @@
         <column name="status" type="VARCHAR" size="50" required="true"  description="The current status of this notification" />    
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
     </table>
+    
+    -->
         
 </database>
