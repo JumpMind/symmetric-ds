@@ -63,10 +63,6 @@
             <url>http://download.java.net/maven/glassfish</url>
         </repository>
         <repository>
-            <id>xerial repo</id>
-            <url>http://www.xerial.org/maven/repository/artifact</url>
-        </repository>
-        <repository>
             <id>snapshot</id>
             <url>http://snapshots.repository.codehaus.org</url>
         </repository>
@@ -594,11 +590,6 @@
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${version.h2}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.xerial</groupId>
-                <artifactId>sqlite-jdbc</artifactId>
-                <version>3.6.20.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
