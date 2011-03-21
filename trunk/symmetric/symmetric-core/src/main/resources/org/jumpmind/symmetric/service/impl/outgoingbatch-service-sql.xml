@@ -43,6 +43,9 @@
     <entry key="selectOutgoingBatchByChannelAndStatusSql">
       <value>where node_id in (:NODES) and channel_id in (:CHANNELS) and status in (:STATUSES)</value>
     </entry>
+    <entry key="selectOutgoingBatchByChannelWithErrorSql">
+      <value>where node_id in (:NODES) and channel_id in (:CHANNELS) and error_flag=1</value>
+    </entry>    
     <entry key="findOutgoingBatchSql">
       <value>
         where batch_id=?

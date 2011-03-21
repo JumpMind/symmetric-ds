@@ -142,8 +142,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public OutgoingBatch findOutgoingBatch(long batchId) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
-                getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"), new Object[] { batchId },
-                new int[] { Types.INTEGER }, new OutgoingBatchMapper());
+                getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
+                new Object[] { batchId }, new int[] { Types.INTEGER }, new OutgoingBatchMapper());
         if (list != null && list.size() > 0) {
             return list.get(0);
         } else {
@@ -154,7 +154,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public int countOutgoingBatchesInError() {
         return jdbcTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
     }
-    
+
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses) {
         if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
@@ -162,14 +162,16 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             params.put("NODES", nodeIds);
             params.put("CHANNELS", channels);
             params.put("STATUSES", toStringList(statuses));
-            return new SimpleJdbcTemplate(dataSource).queryForInt(
-                    getSql("selectCountBatchesPrefixSql",
-                            "selectOutgoingBatchByChannelAndStatusSql"), params);
+            return new SimpleJdbcTemplate(dataSource)
+                    .queryForInt(
+                            getSql("selectCountBatchesPrefixSql",
+                                    containsOnlyErrorStatus(statuses) ? "selectOutgoingBatchByChannelWithErrorSql"
+                                            : "selectOutgoingBatchByChannelAndStatusSql"), params);
         } else {
             return 0;
         }
     }
-    
+
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, long startAtBatchId, final int maxRowsToRetrieve) {
         if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
@@ -198,15 +200,21 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 }
             };
 
-            List<OutgoingBatch> list = template.query(
-                    getSql("selectOutgoingBatchPrefixSql",
-                            "selectOutgoingBatchByChannelAndStatusSql", startAtBatchIdSql,
-                            " order by batch_id desc"), new MapSqlParameterSource(params),
-                    extractor);
+            List<OutgoingBatch> list = template
+                    .query(getSql(
+                            "selectOutgoingBatchPrefixSql",
+                            containsOnlyErrorStatus(statuses) ? "selectOutgoingBatchByChannelWithErrorSql"
+                                    : "selectOutgoingBatchByChannelAndStatusSql",
+                            startAtBatchIdSql, " order by batch_id desc"),
+                            new MapSqlParameterSource(params), extractor);
             return list;
         } else {
             return new ArrayList<OutgoingBatch>(0);
         }
+    }
+
+    protected boolean containsOnlyErrorStatus(List<OutgoingBatch.Status> statuses) {
+        return statuses.size() == 1 && statuses.get(0) == OutgoingBatch.Status.ER;
     }
 
     protected List<String> toStringList(List<OutgoingBatch.Status> statuses) {
@@ -228,10 +236,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         long ts = System.currentTimeMillis();
 
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
-                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"), new Object[] { node.getNodeId(),
-                        OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.QY.toString(),
-                        OutgoingBatch.Status.SE.toString(), OutgoingBatch.Status.LD.toString(),
-                        OutgoingBatch.Status.ER.toString() }, new OutgoingBatchMapper());
+                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"), new Object[] {
+                        node.getNodeId(), OutgoingBatch.Status.NE.toString(),
+                        OutgoingBatch.Status.QY.toString(), OutgoingBatch.Status.SE.toString(),
+                        OutgoingBatch.Status.LD.toString(), OutgoingBatch.Status.ER.toString() },
+                new OutgoingBatchMapper());
 
         OutgoingBatches batches = new OutgoingBatches(list);
 
@@ -262,15 +271,17 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId) {
         OutgoingBatches batches = new OutgoingBatches();
-        batches.setBatches(jdbcTemplate.query(getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchRangeSql"), new Object[] {
-                startBatchId, endBatchId }, new OutgoingBatchMapper()));
+        batches.setBatches(jdbcTemplate.query(
+                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchRangeSql"),
+                new Object[] { startBatchId, endBatchId }, new OutgoingBatchMapper()));
         return batches;
     }
 
     public OutgoingBatches getOutgoingBatchErrors(int maxRows) {
         OutgoingBatches batches = new OutgoingBatches();
-        batches.setBatches(jdbcTemplate.query(new MaxRowsStatementCreator(
-                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper()));
+        batches.setBatches(jdbcTemplate.query(
+                new MaxRowsStatementCreator(getSql("selectOutgoingBatchPrefixSql",
+                        "selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper()));
         return batches;
     }
 
@@ -317,7 +328,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             statusList.add(status.name());
         }
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("STATUS_LIST", statusList);        
+        params.put("STATUS_LIST", statusList);
         return getSimpleTemplate().query(getSql("selectOutgoingBatchSummaryByStatusSql"),
                 new OutgoingBatchSummaryMapper(), params);
     }
