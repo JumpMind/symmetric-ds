@@ -24,13 +24,13 @@ drop table sym_node_host_stats;
 drop table sym_node_host_job_stats;
 drop table sym_registration_redirect;
 drop table sym_registration_request;
-drop table sym_alert_def_notifier;
-drop table sym_alert_event_notifier;
-drop table sym_alert_event;
-drop table sym_alert_def_param; 
-drop table sym_alert_def;
-drop table sym_notifier_def_param;
-drop table sym_notifier_def; 
+--drop table sym_alert_def_notifier;
+--drop table sym_alert_event_notifier;
+--drop table sym_alert_event;
+--drop table sym_alert_def_param; 
+--drop table sym_alert_def;
+--drop table sym_notifier_def_param;
+--drop table sym_notifier_def; 
 
 
 
