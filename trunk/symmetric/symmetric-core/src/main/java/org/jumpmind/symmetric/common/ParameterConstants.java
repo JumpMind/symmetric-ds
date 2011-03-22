@@ -16,18 +16,25 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.common;
 
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * Constants that represent parameters that can be retrieved or saved via the {@link IParameterService} 
+ * Constants that represent parameters that can be retrieved or saved via the
+ * {@link IParameterService}
  */
 final public class ParameterConstants {
 
+    static final ILog log = LogFactory.getLog(ParameterConstants.class);
+
     public static final String ALL = "ALL";
+
     private ParameterConstants() {
     }
 
@@ -46,7 +53,7 @@ final public class ParameterConstants {
     public final static String JOB_SYNCTRIGGERS_AFTER_MIDNIGHT_MIN = "job.synctriggers.aftermidnight.minutes";
 
     public final static String REGISTRATION_NUMBER_OF_ATTEMPTS = "registration.number.of.attempts";
-    
+
     public final static String REGISTRATION_URL = "registration.url";
     public final static String SYNC_URL = "sync.url";
     public final static String ENGINE_NAME = "engine.name";
@@ -67,10 +74,10 @@ final public class ParameterConstants {
     public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
 
     public final static String INITIAL_LOAD_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
-    public final static String INITIAL_LOAD_DELETE_FIRST_SQL =     "initial.load.delete.first.sql";
+    public final static String INITIAL_LOAD_DELETE_FIRST_SQL = "initial.load.delete.first.sql";
     public final static String INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
     public final static String INITIAL_LOAD_USE_RELOAD_CHANNEL = "initial.load.use.reload.channel";
-    
+
     public final static String STREAM_TO_FILE_ENABLED = "stream.to.file.enabled";
     public final static String STREAM_TO_FILE_THRESHOLD = "stream.to.file.threshold.bytes";
 
@@ -85,7 +92,7 @@ final public class ParameterConstants {
     public final static String ROUTING_STALE_DATA_ID_GAP_TIME = "routing.stale.dataid.gap.time.ms";
     public final static String ROUTING_DATA_READER_TYPE = "routing.data.reader.type";
     public final static String ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES = "routing.data.reader.type.gap.retention.period.minutes";
-    
+
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
     public final static String DATA_LOADER_ENABLED = "dataloader.enable";
     public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "num.of.ack.retries";
@@ -101,9 +108,9 @@ final public class ParameterConstants {
 
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
     public final static String DATA_EXTRACTOR_OLD_DATA_ENABLED = "dataextractor.old.data.enable";
-    
+
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
-    
+
     public final static String DATA_ID_INCREMENT_BY = "data.id.increment.by";
 
     public final static String TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED = "http.manual.redirects.enabled";
@@ -121,12 +128,12 @@ final public class ParameterConstants {
     public final static String TRANSPORT_HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
     public final static String TRANSPORT_HTTPS_ALLOW_SELF_SIGNED_CERTS = "https.allow.self.signed.certs";
 
-    public final static String CACHE_TIMEOUT_NODE_SECURITY_IN_MS = "cache.node.security.time.ms"; 
-    public final static String CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS = "cache.trigger.router.time.ms";    
+    public final static String CACHE_TIMEOUT_NODE_SECURITY_IN_MS = "cache.node.security.time.ms";
+    public final static String CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS = "cache.trigger.router.time.ms";
     public final static String CACHE_TIMEOUT_CHANNEL_IN_MS = "cache.channel.time.ms";
-    
+
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
-    
+
     public final static String DBPOOL_URL = "db.url";
     public final static String DBPOOL_DRIVER = "db.driver";
     public final static String DBPOOL_USER = "db.user";
@@ -150,12 +157,12 @@ final public class ParameterConstants {
     public final static String JMX_LINE_FEED = "jmx.line.feed";
 
     public final static String IP_FILTERS = "ip.filters";
-    
+
     public final static String WEB_BATCH_SERVLET_ENABLE = "web.batch.servlet.enable";
-    
+
     public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
-    public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC ="heartbeat.sync.on.push.period.sec";
-    
+    public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC = "heartbeat.sync.on.push.period.sec";
+
     public final static String STATISTIC_RECORD_ENABLE = "statistic.record.enable";
-    
+
 }
