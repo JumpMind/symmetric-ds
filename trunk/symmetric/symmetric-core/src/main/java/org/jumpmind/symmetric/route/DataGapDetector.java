@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.route;
 
@@ -63,85 +64,79 @@ public class DataGapDetector implements IDataToRouteGapDetector {
         this.dbDialect = dbDialect;
         this.sqlProvider = sqlProvider;
     }
-    
+
     public void afterRouting() {
     }
 
     /**
-     * Always make sure sym_data_gap is up to date to make sure that we don't dual route data.
+     * Always make sure sym_data_gap is up to date to make sure that we don't
+     * dual route data.
      */
-    public void beforeRouting() {        
+    public void beforeRouting() {
         long ts = System.currentTimeMillis();
-        List<DataGap> gaps = dataService.findDataGaps();
+        final List<DataGap> gaps = dataService.findDataGaps();
         long lastDataId = -1;
-        final int dataIdIncrementBy = parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
+        final int dataIdIncrementBy = parameterService
+                .getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
+        final long maxDataToSelect = parameterService
+                .getInt(ParameterConstants.ROUTING_MAX_DATA_TO_PROCESS_PER_CHANNEL);
         for (final DataGap dataGap : gaps) {
-            
+            final boolean lastGap = dataGap.equals(gaps.get(gaps.size()-1));            
             String sql = sqlProvider.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
-            Object[] params = new Object[] {dataGap.getStartId(), dataGap.getEndId()};
-            if (dataGap.getEndId() == DataGap.OPEN_END_ID) {
-                sql = sqlProvider.getSql("selectDistinctDataIdFromDataEventSql");
-                params = new Object[] {dataGap.getStartId()-1};                
-            }
-            
-            lastDataId = jdbcTemplate.query(
-                    sql, params,
-                    new ResultSetExtractor<Long>() {
-                        public Long extractData(ResultSet rs) throws SQLException,
-                                DataAccessException {
-                            List<DataGap> newGaps = new ArrayList<DataGap>();
-                            boolean foundAtLeastOneDataId = false;
-                            long lastDataId = -1;
-                            while (rs.next()) {
-                                foundAtLeastOneDataId = true;
-                                long dataId = rs.getLong(1);
-                                if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
-                                        && lastDataId != dataId) {
-                                    // found a gap
-                                    newGaps.add(new DataGap(lastDataId+1, dataId-1));
-                                } 
-                                lastDataId = dataId;
-                            }
+            Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
+            lastDataId = jdbcTemplate.query(sql, params, new ResultSetExtractor<Long>() {
+                public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
+                    List<DataGap> newGaps = new ArrayList<DataGap>();
+                    long lastDataId = -1;
+                    while (rs.next()) {
+                        long dataId = rs.getLong(1);
+                        if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
+                                && lastDataId != dataId) {
+                            // found a gap
+                            newGaps.add(new DataGap(lastDataId + 1, dataId - 1));                            
+                        }
+                        lastDataId = dataId;
+                    }
 
-                            if (foundAtLeastOneDataId) {
-                                dataService.updateDataGap(dataGap, DataGap.Status.FL);
-                            } else {
-                                if (dataGap.getEndId() != DataGap.OPEN_END_ID
-                                        && dataService.countDataInRange(dataGap.getStartId() - 1,
-                                                dataGap.getEndId() + 1) == 0) {
-                                    if (dbDialect.supportsTransactionViews()) {
-                                        Date createTime = dataService
-                                        .findCreateTimeOfData(
-                                                dataGap.getEndId() + 1);
-                                        if (createTime != null && !dbDialect
-                                                .areDatabaseTransactionsPendingSince(createTime.getTime() + 5000)) {
-                                            if (dataService.countDataInRange(dataGap.getStartId() - 1,
-                                                    dataGap.getEndId() + 1) == 0) {
-                                                log.info("RouterSkippingDataIdsNoTransactions",
-                                                        dataGap.getStartId(), dataGap.getEndId());
-                                                dataService.updateDataGap(dataGap, DataGap.Status.SK);
-                                            }
-                                        }
-                                    } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
-                                        log.info("RouterSkippingDataIdsGapExpired",
+                    if (lastDataId != -1) {
+                        dataService.updateDataGap(dataGap, DataGap.Status.OK);
+                    } else if (!lastGap) {
+                        if (dataService.countDataInRange(dataGap.getStartId() - 1,
+                                dataGap.getEndId() + 1) == 0) {
+                            if (dbDialect.supportsTransactionViews()) {
+                                Date createTime = dataService.findCreateTimeOfData(dataGap
+                                        .getEndId() + 1);
+                                if (createTime != null
+                                        && !dbDialect
+                                                .areDatabaseTransactionsPendingSince(createTime
+                                                        .getTime() + 5000)) {
+                                    if (dataService.countDataInRange(dataGap.getStartId() - 1,
+                                            dataGap.getEndId() + 1) == 0) {
+                                        log.info("RouterSkippingDataIdsNoTransactions",
                                                 dataGap.getStartId(), dataGap.getEndId());
                                         dataService.updateDataGap(dataGap, DataGap.Status.SK);
                                     }
                                 }
+                            } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
+                                log.info("RouterSkippingDataIdsGapExpired", dataGap.getStartId(),
+                                        dataGap.getEndId());
+                                dataService.updateDataGap(dataGap, DataGap.Status.SK);
                             }
-
-                            for (DataGap dataGap : newGaps) {
-                                dataService.insertDataGap(dataGap);
-                            }
-
-                            return lastDataId;
                         }
+                    }
 
-                    });
+                    for (DataGap dataGap : newGaps) {
+                        dataService.insertDataGap(dataGap);
+                    }
+
+                    return lastDataId;
+                }
+
+            });
         }
-        
-        if (lastDataId > 0) {
-            dataService.insertDataGap(new DataGap(lastDataId + 1, DataGap.OPEN_END_ID));
+
+        if (lastDataId != -1) {
+            dataService.insertDataGap(new DataGap(lastDataId + 1, lastDataId + maxDataToSelect));
         }
 
         long updateTimeInMs = System.currentTimeMillis() - ts;

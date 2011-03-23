@@ -549,12 +549,18 @@ public class DataService extends AbstractService implements IDataService {
     
     public List<DataGap> findDataGaps() {
         List<DataGap> gaps = findDataGapsByStatus(DataGap.Status.GP);
-        if (gaps.size() == 0) {
-            gaps = new ArrayList<DataGap>(1);
-            gaps.add(new DataGap(0, DataGap.OPEN_END_ID));
+        if (gaps.size() == 0) {            
+            final long maxDataToSelect = parameterService.getInt(ParameterConstants.ROUTING_MAX_DATA_TO_PROCESS_PER_CHANNEL);
+            long maxDataId = findMaxDataEventDataId()+1;
+            insertDataGap(new DataGap(maxDataId, maxDataId+maxDataToSelect));
+            gaps = findDataGaps();
         }
         return gaps;
 
+    }
+    
+    public long findMaxDataEventDataId() {
+        return jdbcTemplate.queryForLong(getSql("selectMaxDataEventDataIdSql"));
     }
 
     public void insertDataGap(DataGap gap) {

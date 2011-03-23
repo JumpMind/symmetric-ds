@@ -26,13 +26,11 @@ public class DataGap implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
-    public enum Status {GP,SK,FL};
+    public enum Status {GP,SK,OK};
     
-    public final static long OPEN_END_ID = -1;
-    
-    long startId;
-    long endId;
-    Date createTime;
+    private long startId;
+    private long endId;
+    private Date createTime;
 
     public DataGap(long startId, long endId) {
         this.startId = startId;

@@ -57,10 +57,5 @@ public class DataRefRouteReader extends AbstractDataToRouteReader {
         ps.setLong(2, dataRef.getRefDataId());
         return ps;
     }
-    
-    @Override
-    protected PreparedStatement prepareSecondaryStatement(Connection c) throws SQLException {     
-        return prepareStatment(c);
-    }
 
 }

@@ -23,6 +23,11 @@
         where o.batch_id = ?
       </value>
     </entry>  
+    <entry key="selectMaxDataEventDataIdSql">
+      <value>
+        select max(data_id) from $[sym.sync.table.prefix]_data_event
+      </value>
+    </entry>     
     <entry key="countDataInRangeSql">
       <value><![CDATA[
         select count(*) from $[sym.sync.table.prefix]_data where data_id > ? and data_id < ?
