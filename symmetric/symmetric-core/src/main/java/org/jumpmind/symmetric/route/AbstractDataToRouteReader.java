@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ISqlProvider;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -114,12 +113,6 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
      */
     abstract protected PreparedStatement prepareStatment(Connection c) throws SQLException;
 
-    /**
-     * If the first SQL statement becomes too unwieldy, offer the opportunity to use a less efficient
-     * but more likely to execute query.
-     */
-    abstract protected PreparedStatement prepareSecondaryStatement(Connection c) throws SQLException;
-
     protected String getSql(String sqlName, Channel channel) {
         String select = sqlProvider.getSql(sqlName);
         if (!channel.isUseOldDataToRoute()) {
@@ -136,20 +129,13 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
 
     public void run() {
         try {
-            execute(true);
+            execute();
         } catch (Throwable ex) {
             log.error(ex);
-            if (ex instanceof BadSqlGrammarException) {
-                try {
-                    execute(false);
-                } catch (Throwable ex2) {
-                    log.error(ex2);
-                }
-            }
         }
     }
 
-    protected void execute(final boolean firstTry) {
+    protected void execute() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);
         jdbcTemplate.execute(new ConnectionCallback<Integer>() {
             public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
@@ -162,11 +148,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                        c.setAutoCommit(false);
                     }
                     String channelId = context.getChannel().getChannelId();
-                    if (firstTry) {
-                        ps = prepareStatment(c);
-                    } else {
-                        ps = prepareSecondaryStatement(c);
-                    }
+                    ps = prepareStatment(c);
                     long ts = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long executeTimeInMs = System.currentTimeMillis()-ts;
