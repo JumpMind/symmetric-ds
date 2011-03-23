@@ -905,7 +905,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
     
     protected void resetGaps() {
-        getJdbcTemplate().update("update sym_data_gap set status=? where end_id != -1", DataGap.STATUS.FL.name());
+        getJdbcTemplate().update("update sym_data_gap set status=? where end_id != -1", DataGap.Status.FL.name());
     }
 
     protected void resetBatches() {

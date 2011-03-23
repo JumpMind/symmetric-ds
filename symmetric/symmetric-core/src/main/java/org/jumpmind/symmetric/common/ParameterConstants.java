@@ -18,12 +18,18 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-
 package org.jumpmind.symmetric.common;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.DefaultParameterParser;
+import org.jumpmind.symmetric.util.DefaultParameterParser.ParameterMetaData;
 
 /**
  * Constants that represent parameters that can be retrieved or saved via the
@@ -34,6 +40,8 @@ final public class ParameterConstants {
     static final ILog log = LogFactory.getLog(ParameterConstants.class);
 
     public static final String ALL = "ALL";
+    
+    private static Map<String, ParameterMetaData> parameterMetaData = new DefaultParameterParser().parse();
 
     private ParameterConstants() {
     }
@@ -165,4 +173,16 @@ final public class ParameterConstants {
 
     public final static String STATISTIC_RECORD_ENABLE = "statistic.record.enable";
 
+    public static Map<String, ParameterMetaData> getParameterMetaData() {
+        return parameterMetaData;
+    }
+    
+    public static Set<String> getAllParameterTags() {
+        TreeSet<String> tags = new TreeSet<String>();
+        Collection<ParameterMetaData> meta = parameterMetaData.values();
+        for (ParameterMetaData parameterMetaData : meta) {
+            tags.addAll(parameterMetaData.getTags());
+        }
+        return tags;
+    }
 }
