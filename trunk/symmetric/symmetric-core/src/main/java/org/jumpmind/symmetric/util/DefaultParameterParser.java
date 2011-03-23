@@ -22,11 +22,11 @@ package org.jumpmind.symmetric.util;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -44,7 +44,7 @@ public class DefaultParameterParser {
     }
 
     public Map<String, ParameterMetaData> parse() {
-        Map<String, ParameterMetaData> metaData = new HashMap<String, DefaultParameterParser.ParameterMetaData>();
+        Map<String, ParameterMetaData> metaData = new TreeMap<String, DefaultParameterParser.ParameterMetaData>();
         try {
             @SuppressWarnings("unchecked")
             List<String> lines = IOUtils.readLines(getClass().getResourceAsStream(

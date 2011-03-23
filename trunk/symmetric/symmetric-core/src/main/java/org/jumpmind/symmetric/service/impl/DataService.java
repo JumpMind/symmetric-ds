@@ -538,7 +538,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
     
-    public List<DataGap> findDataGapsByStatus(DataGap.STATUS status) {
+    public List<DataGap> findDataGapsByStatus(DataGap.Status status) {
         return getSimpleTemplate().query(getSql("findDataGapsByStatusSql"),
                 new RowMapper<DataGap>() {
                     public DataGap mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -548,7 +548,7 @@ public class DataService extends AbstractService implements IDataService {
     }
     
     public List<DataGap> findDataGaps() {
-        List<DataGap> gaps = findDataGapsByStatus(DataGap.STATUS.GP);
+        List<DataGap> gaps = findDataGapsByStatus(DataGap.Status.GP);
         if (gaps.size() == 0) {
             gaps = new ArrayList<DataGap>(1);
             gaps.add(new DataGap(0, DataGap.OPEN_END_ID));
@@ -558,12 +558,12 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataGap(DataGap gap) {
-        jdbcTemplate.update(getSql("insertDataGapSql"), new Object[] { DataGap.STATUS.GP.name(),
+        jdbcTemplate.update(getSql("insertDataGapSql"), new Object[] { DataGap.Status.GP.name(),
                 AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER });
     }
 
-    public void updateDataGap(DataGap gap, DataGap.STATUS status) {
+    public void updateDataGap(DataGap gap, DataGap.Status status) {
         jdbcTemplate.update(
                 getSql("updateDataGapSql"),
                 new Object[] { status.name(), AppUtils.getHostName(), gap.getStartId(),

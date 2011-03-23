@@ -104,7 +104,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                             }
 
                             if (foundAtLeastOneDataId) {
-                                dataService.updateDataGap(dataGap, DataGap.STATUS.FL);
+                                dataService.updateDataGap(dataGap, DataGap.Status.FL);
                             } else {
                                 if (dataGap.getEndId() != DataGap.OPEN_END_ID
                                         && dataService.countDataInRange(dataGap.getStartId() - 1,
@@ -119,13 +119,13 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                                                     dataGap.getEndId() + 1) == 0) {
                                                 log.info("RouterSkippingDataIdsNoTransactions",
                                                         dataGap.getStartId(), dataGap.getEndId());
-                                                dataService.updateDataGap(dataGap, DataGap.STATUS.SK);
+                                                dataService.updateDataGap(dataGap, DataGap.Status.SK);
                                             }
                                         }
                                     } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
                                         log.info("RouterSkippingDataIdsGapExpired",
                                                 dataGap.getStartId(), dataGap.getEndId());
-                                        dataService.updateDataGap(dataGap, DataGap.STATUS.SK);
+                                        dataService.updateDataGap(dataGap, DataGap.Status.SK);
                                     }
                                 }
                             }

@@ -95,7 +95,7 @@ public interface IDataService {
 
     public DataRef getDataRef();
     
-    public List<DataGap> findDataGapsByStatus(DataGap.STATUS status);
+    public List<DataGap> findDataGapsByStatus(DataGap.Status status);
     
     public List<DataGap> findDataGaps();
 
@@ -130,7 +130,7 @@ public interface IDataService {
     
     public void insertDataGap(DataGap gap);
     
-    public void updateDataGap(DataGap gap, DataGap.STATUS status);
+    public void updateDataGap(DataGap gap, DataGap.Status status);
     
     public long findMaxDataId();
 

@@ -26,7 +26,7 @@ public class DataGap implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
-    public enum STATUS {GP,SK,FL};
+    public enum Status {GP,SK,FL};
     
     public final static long OPEN_END_ID = -1;
     
