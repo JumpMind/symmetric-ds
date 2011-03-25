@@ -273,6 +273,10 @@ public class ParameterService extends AbstractService implements IParameterServi
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {
         return jdbcTemplate.query(getSql("selectParametersByKeySql"), new DatabaseParameterMapper(), paramKey);
     }
+    
+    public Map<String,String> getDatabaseParametersByNodeGroupId(String nodeGroupId) {
+        return rereadDatabaseParameters(ParameterConstants.ALL, nodeGroupId);
+    }
 
     protected String getWithHostName(String paramKey) {
         String value = getString(paramKey);
