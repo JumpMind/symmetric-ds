@@ -20,6 +20,8 @@
 
 package org.jumpmind.symmetric.test;
 
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
@@ -45,6 +47,48 @@ public class AbstractIntegrationTest extends AbstractTest {
     protected JdbcTemplate rootJdbcTemplate;
     protected JdbcTemplate clientJdbcTemplate;
     protected static boolean standalone = true;
+    
+    protected void printHelpfulDebugInfo(JdbcTemplate jdbc) {        
+        int count = 10;
+        System.out.println("********** PRINTING DEBUG INFO ");
+        
+        System.out.println("********** DATA");
+        for (Map<String, Object> item : jdbc.queryForList("select * from sym_data order by data_id desc")) {
+            System.out.println(item);
+            if (count-- == 0) {
+                break;
+            }
+        }
+        
+        count = 10;
+        System.out.println("********** EVENT");
+        for (Map<String, Object> item : jdbc.queryForList("select * from sym_data_event order by data_id desc")) {
+            System.out.println(item);
+            if (count-- == 0) {
+                break;
+            }
+        }
+        
+        count = 10;
+        System.out.println("********** OUTGOING BATCH");
+        for (Map<String, Object> item : jdbc.queryForList("select * from sym_outgoing_batch order by batch_id desc")) {
+            System.out.println(item);
+            if (count-- == 0) {
+                break;
+            }
+        }
+        
+        count = 10;
+        System.out.println("********** GAP");
+        for (Map<String, Object> item : jdbc.queryForList("select * from sym_data_gap order by start_id desc")) {
+            System.out.println(item);
+            if (count-- == 0) {
+                break;
+            }
+        }
+        
+        System.out.println("********** DONE");
+    }
 
     public void init(String client, String root) {
         this.client = client;
