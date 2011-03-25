@@ -215,7 +215,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             NodeGroupLink nodeGroupLink) {
         int initialLoadOrder = 1;
         String majorVersion = getMajorVersion(version);
-        List<String> tables = rootConfigChannelTableNames.get(majorVersion);
+        List<String> tables = new ArrayList<String>(rootConfigChannelTableNames.get(majorVersion));
         if (extraConfigTables != null) {
             for (IExtraConfigTables extraTables : extraConfigTables) {
                 tables.addAll(extraTables.provideTableNames());
@@ -396,6 +396,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 refreshCache || 
                 System.currentTimeMillis()-this.triggerRouterCacheTime > triggerRouterCacheTimeoutInMs) {
             synchronized (this) {
+                this.triggerRouterCacheTime = System.currentTimeMillis();
                 Map<String, TriggerRoutersCache> newTriggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();                
                 List<TriggerRouter> triggerRouters = getAllTriggerRoutersForCurrentNode(myNodeGroupId);
                 Map<String, List<TriggerRouter>> triggerRoutersByTriggerId = new HashMap<String, List<TriggerRouter>>(
