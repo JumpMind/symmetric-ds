@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ext.IExtraConfigTables;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
@@ -79,6 +80,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private TriggerFailureListener failureListener = new TriggerFailureListener();
     
     private IStatisticManager statisticManager;
+    
+    private List<IExtraConfigTables> extraConfigTables = new ArrayList<IExtraConfigTables>();
     
     /**
      * Cache the history for performance. History never changes and does not
@@ -213,6 +216,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         int initialLoadOrder = 1;
         String majorVersion = getMajorVersion(version);
         List<String> tables = rootConfigChannelTableNames.get(majorVersion);
+        if (extraConfigTables != null) {
+            for (IExtraConfigTables extraTables : extraConfigTables) {
+                tables.addAll(extraTables.provideTableNames());
+            }
+        }
         List<TriggerRouter> triggers = new ArrayList<TriggerRouter>(tables.size());
         for (int j = 0; j < tables.size(); j++) {
             String tableName = tables.get(j);
@@ -1109,6 +1117,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             this.triggerCreationListeners = new ArrayList<ITriggerCreationListener>();
         }
         this.triggerCreationListeners.add(l);
+    }
+    
+    public void addExtraConfigTables(IExtraConfigTables extension) {
+        this.extraConfigTables.add(extension);
     }
 
     public Map<Trigger, Exception> getFailedTriggers() {

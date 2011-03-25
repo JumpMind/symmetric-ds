@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ext.IExtraConfigTables;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
@@ -123,6 +124,8 @@ public interface ITriggerRouterService {
     public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always);
     
     public void addTriggerCreationListeners(ITriggerCreationListener l);
+    
+    public void addExtraConfigTables(IExtraConfigTables extension);
 
     public Map<Trigger, Exception> getFailedTriggers();
 
