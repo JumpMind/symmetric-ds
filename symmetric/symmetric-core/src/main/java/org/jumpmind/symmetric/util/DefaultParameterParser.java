@@ -38,6 +38,7 @@ public class DefaultParameterParser {
     private static final String COMMENT = "# ";
     private static final String DATABASE_OVERRIDABLE = "DatabaseOverridable:";
     private static final String TAGS = "Tags:";
+    private static final String TYPE = "Type:";
     final ILog log = LogFactory.getLog(getClass());
 
     public DefaultParameterParser() {
@@ -65,6 +66,10 @@ public class DefaultParameterParser {
                         for (String tag : tags) {
                             currentMetaData.addTag(tag.trim());
                         }
+                    } else if (line.contains(TYPE)) {
+                        String type = line.substring(
+                                line.indexOf(TYPE) + TYPE.length());
+                        currentMetaData.setType(type.trim());
                     } else {
                         currentMetaData.appendDescription(line);
                     }
@@ -85,12 +90,24 @@ public class DefaultParameterParser {
 
     public static class ParameterMetaData implements Serializable {
 
+        public static final String TYPE_BOOLEAN = "boolean";
+        public static final String TYPE_INT = "integer";
+        
         private static final long serialVersionUID = 1L;
         private String key;
         private String description;
         private Set<String> tags = new HashSet<String>();
         private boolean databaseOverridable;
         private String defaultValue;
+        private String type = "";
+        
+        public void setType(String type) {
+            this.type = type;
+        }
+        
+        public String getType() {
+            return type;
+        }
 
         public String getKey() {
             return key;
@@ -138,6 +155,14 @@ public class DefaultParameterParser {
             } else {
                 description = description + value;
             }
+        }
+        
+        public boolean isBooleanType() {
+            return type != null && type.equals(TYPE_BOOLEAN);
+        }
+        
+        public boolean isIntType() {
+            return type != null && type.equals(TYPE_INT);
         }
         
         public void addTag (String tag) {

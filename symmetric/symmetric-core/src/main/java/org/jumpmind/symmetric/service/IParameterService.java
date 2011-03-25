@@ -67,6 +67,8 @@ public interface IParameterService {
     public Date getLastTimeParameterWereCached();
     
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey);
+    
+    public Map<String,String> getDatabaseParametersByNodeGroupId(String nodeGroupId);
 
     public Map<String, String> getAllParameters();
 

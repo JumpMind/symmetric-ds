@@ -25,7 +25,7 @@
         select param_key, param_value from $[sym.sync.table.prefix]_parameter where external_id=? and
         node_group_id=?
       </value>
-    </entry>
+    </entry>    
     <entry key="selectParametersByKeySql">
       <value>
         select param_key, param_value, external_id, node_group_id from $[sym.sync.table.prefix]_parameter where param_key=?
