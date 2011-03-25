@@ -337,10 +337,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "101", 1, "STK", "110000065", 3, 3.33 });
 
-        clientPush();
+        boolean pushedData = clientPush();               
 
+        Assert.assertTrue("Client data was not batched and pushed", pushedData);
         assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "101" }).size(), 1,
-                "The order record wasn't sync'd when it should have.");
+                "The inserted test_order_header client row was not synchronized.");
 
         IConfigurationService rootConfigurationService = findOnRoot(Constants.CONFIG_SERVICE);
         IOutgoingBatchService clientOutgoingBatchService = findOnClient(Constants.OUTGOING_BATCH_SERVICE);
