@@ -269,6 +269,10 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
             nodeService.addOfflineServerListener((IOfflineServerListener) ext);
         }        
         
+        if (ext instanceof IExtraConfigTables) {
+            triggerRouterService.addExtraConfigTables((IExtraConfigTables)ext);
+        }
+        
         return installed;
     }   
 
