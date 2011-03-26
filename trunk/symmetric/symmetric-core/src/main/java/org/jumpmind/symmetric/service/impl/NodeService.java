@@ -209,6 +209,10 @@ public class NodeService extends AbstractService implements INodeService {
     public void deleteNodeSecurity(String nodeId) {
         jdbcTemplate.update(getSql("deleteNodeSecuritySql"), new Object[] { nodeId });
     }
+    
+    public void deleteNode(String nodeId) {
+        jdbcTemplate.update(getSql("deleteNodeSql"), new Object[] { nodeId });
+    }
 
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();

@@ -73,6 +73,8 @@ public interface INodeService {
 
     public void deleteNodeSecurity(String nodeId);
 
+    public void deleteNode(String nodeId); 
+    
     public String findSymmetricVersion();
 
     public String findIdentityNodeId();

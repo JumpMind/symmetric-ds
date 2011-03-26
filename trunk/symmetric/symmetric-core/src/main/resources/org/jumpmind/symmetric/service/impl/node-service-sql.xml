@@ -101,6 +101,11 @@
         delete from $[sym.sync.table.prefix]_node_security where node_id = ?
       </value>
     </entry>
+    <entry key="deleteNodeSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_node where node_id = ?
+      </value>
+    </entry>    
     <entry key="findNodeIdentitySql">
       <value>
         inner join $[sym.sync.table.prefix]_node_identity i on c.node_id =
