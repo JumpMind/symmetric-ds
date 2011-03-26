@@ -46,6 +46,9 @@ public class MockNodeService implements INodeService {
         return null;
     }
     
+    public void deleteNode(String nodeId) {
+    }
+    
     public List<String> findAllExternalIds() {
         return null;
     }
