@@ -362,11 +362,18 @@ public class ModelComparator
         boolean sizeMatters  = _platformInfo.hasSize(sourceColumn.getTypeCode());
         boolean scaleMatters = _platformInfo.hasPrecisionAndScale(sourceColumn.getTypeCode());
 
+        String targetSize = targetColumn.getSize();
+        if (targetSize == null) {
+            Integer defaultSize = _platformInfo.getDefaultSize(_platformInfo.getTargetJdbcType(targetColumn.getTypeCode()));
+            if (defaultSize != null) {
+                targetSize = defaultSize.toString();
+            }
+        }
         if (sizeMatters &&
-            !StringUtils.equals(sourceColumn.getSize(), targetColumn.getSize()))
+            !StringUtils.equals(sourceColumn.getSize(), targetSize))
         {
             if (_log.isDebugEnabled()) {
-                _log.debug("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed size from (" + sourceColumn.getSizeAsInt() + ","+sourceColumn.getScale() + ") to (" + targetColumn.getSizeAsInt() + ","+targetColumn.getScale() + ")");
+                _log.debug("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed size from (" + sourceColumn.getSizeAsInt() + ") to (" + targetColumn.getSizeAsInt() +  ")");
             }
             changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetColumn.getSizeAsInt(), targetColumn.getScale()));
         }
