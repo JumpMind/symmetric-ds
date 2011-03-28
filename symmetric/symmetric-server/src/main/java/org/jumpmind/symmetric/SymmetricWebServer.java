@@ -160,12 +160,6 @@ public class SymmetricWebServer {
 
         server.setConnectors(getConnectors(port, securePort, mode));
         setupBasicAuthIfNeeded(server);
-
-        // Configure JMX for Jetty
-//        MBeanContainer mbContainer=new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-//        server.getContainer().addEventListener(mbContainer);
-//        server.addBean(mbContainer);
-//        mbContainer.addBean(Log.getLog());
         
         webapp = new WebAppContext();
         webapp.setContextPath(webHome);
@@ -184,6 +178,12 @@ public class SymmetricWebServer {
             int httpJmxPort = port != 0 ? port + 1 : securePort + 1;
             registerHttpJmxAdaptor(httpJmxPort);
         }
+        
+        do {
+            AppUtils.sleep(50);
+        } while (getEngine() == null);
+        
+        getEngine().getDeploymentType().setWebServerRegistered(true);
 
         if (join) {
             server.join();

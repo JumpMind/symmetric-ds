@@ -76,6 +76,8 @@ public class Node implements Serializable {
     private int batchToSendCount;
     
     private int batchInErrorCount;
+    
+    private String deploymentType;
 
     public Node() {
     }
@@ -225,6 +227,14 @@ public class Node implements Serializable {
     
     public int getBatchToSendCount() {
         return batchToSendCount;
+    }
+    
+    public void setDeploymentType(String deploymentType) {
+        this.deploymentType = deploymentType;
+    }
+    
+    public String getDeploymentType() {
+        return deploymentType;
     }
     
     public boolean isVersionGreaterThanOrEqualTo(int... targetVersion) {

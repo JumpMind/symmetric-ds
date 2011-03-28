@@ -31,6 +31,7 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -236,7 +237,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         jdbcTemplate = AppUtils.find(Constants.JDBC_TEMPLATE, this);
         
         IExtensionPointManager extMgr = (IExtensionPointManager)this.applicationContext.getBean(Constants.EXTENSION_MANAGER);
-        extMgr.register();        
+        extMgr.register(); 
+        
+        getDeploymentType().setEngineRegistered(true);
     }
     
     protected abstract ApplicationContext createContext(ApplicationContext parentContext);
@@ -470,6 +473,10 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public INodeService getNodeService() {
         return AppUtils.find(Constants.NODE_SERVICE, this);
+    }
+    
+    public DeploymentType getDeploymentType() {
+        return AppUtils.find(Constants.DEPLOYMENT_TYPE, this);
     }
 
     public IRegistrationService getRegistrationService() {

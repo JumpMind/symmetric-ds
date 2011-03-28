@@ -148,6 +148,8 @@ final public class Constants {
     public static final String COMPRESSION_FILTER = "compressionFilter";
 
     public static final String NODE_CONCURRENCY_FILTER = "nodeConcurrencyFilter";
+    
+    public static final String DEPLOYMENT_TYPE = "deploymentType";
 
     public static final String CONCURRENT_CONNECTION_MANGER = "concurrentConnectionManager";
 
