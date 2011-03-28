@@ -5,6 +5,8 @@
 
     <import resource="classpath*:/org/jumpmind/symmetric/service/impl/*-service-sql.xml" />
 
+    <bean id="deploymentType" class="org.jumpmind.symmetric.common.DeploymentType" />
+    
     <bean id="bandwidthService" class="org.jumpmind.symmetric.service.impl.BandwidthService">
         <property name="parameterService" ref="parameterService" />
     </bean>
@@ -120,6 +122,7 @@
     </bean>
 
     <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService" scope="singleton" parent="abstractService">
+        <property name="deploymentType" ref="deploymentType"/>
         <property name="sql" ref="dataServiceSql" />
         <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="nodeService" ref="nodeService" />

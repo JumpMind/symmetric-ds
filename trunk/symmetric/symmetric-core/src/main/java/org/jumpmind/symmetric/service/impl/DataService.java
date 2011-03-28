@@ -43,6 +43,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -93,6 +94,8 @@ import org.springframework.transaction.support.TransactionCallback;
  */
 public class DataService extends AbstractService implements IDataService {
 
+    private DeploymentType deploymentType;
+    
     private ITriggerRouterService triggerRouterService;
 
     private INodeService nodeService;
@@ -682,6 +685,7 @@ public class DataService extends AbstractService implements IDataService {
                 log.info("NodeVersionUpdating");
                 Calendar now = Calendar.getInstance();
                 now.set(Calendar.MILLISECOND, 0);
+                me.setDeploymentType(deploymentType.getDeploymentType());
                 me.setHeartbeatTime(now.getTime());
                 me.setTimezoneOffset(AppUtils.getTimezoneOffset());
                 me.setSymmetricVersion(Version.version());
@@ -881,5 +885,8 @@ public class DataService extends AbstractService implements IDataService {
     public void setStatisticManager(IStatisticManager statisticManager) {
         this.statisticManager = statisticManager;
     }
-    
+ 
+    public void setDeploymentType(DeploymentType deploymentType) {
+        this.deploymentType = deploymentType;
+    }
 }

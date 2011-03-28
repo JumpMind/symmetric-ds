@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -70,7 +71,7 @@ public class SymmetricServlet extends AbstractServlet {
 
     private static final ILog log = LogFactory.getLog(SymmetricServlet.class);
 
-    private List<IServletExtension> servlets;
+    private List<IServletExtension> servlets;    
 
     @Override
     protected ILog getLog() {
@@ -82,6 +83,8 @@ public class SymmetricServlet extends AbstractServlet {
         super.init(config);
         servlets = new ArrayList<IServletExtension>();
         ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
+        DeploymentType deploymentType = ctx.getBean(DeploymentType.class);
+        deploymentType.setServletRegistered(true);
         final Map<String, IServletExtension> servletBeans = new LinkedHashMap<String, IServletExtension>();
         servletBeans.putAll(ctx.getBeansOfType(IServletExtension.class));
         if (ctx.getParent() != null) {
