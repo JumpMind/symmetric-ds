@@ -58,11 +58,12 @@ public class H2Platform extends PlatformImplBase implements Platform {
         info.addNativeTypeMapping(Types.NULL, "BINARY", Types.BINARY);
         info.addNativeTypeMapping(Types.REF, "BINARY", Types.BINARY);
         info.addNativeTypeMapping(Types.STRUCT, "BINARY", Types.BINARY);
-        info.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);
+        info.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);        
 
         info.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BIT);
         info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.TINYINT);
         info.addNativeTypeMapping(Types.SMALLINT, "SMALLINT", Types.SMALLINT);
+        info.addNativeTypeMapping(Types.DECIMAL, "DECIMAL", Types.DECIMAL);
         info.addNativeTypeMapping(Types.BINARY, "BINARY", Types.BINARY);
         info.addNativeTypeMapping(Types.BLOB, "BLOB", Types.BLOB);
         info.addNativeTypeMapping(Types.CLOB, "CLOB", Types.CLOB);

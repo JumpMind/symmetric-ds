@@ -101,4 +101,17 @@ public class H2ModelReader extends JdbcModelReader {
         String name = index.getName();
         return name != null && name.startsWith("PRIMARY_KEY_");
     }
+    
+    @Override
+    protected Table readTable(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
+        Table table = super.readTable(metaData, values);
+
+        if (table != null) {
+            // H2 does not return the auto increment status in the meta data
+            determineAutoIncrementFromResultSetMetaData(table, table.getPrimaryKeyColumns());
+        }
+
+        return table;
+    }
 }
