@@ -310,6 +310,7 @@ public class DatabaseIO
         {
             writer.writeXmlDeclaration("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + LocalEntityResolver.DTD_PREFIX + "\">");
             writer.write(model);
+            writer.flush();
         }
         catch (Exception ex)
         {
