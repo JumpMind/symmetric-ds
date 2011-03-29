@@ -4,7 +4,7 @@
     <artifactId>symmetric-build</artifactId>
     <packaging>pom</packaging>
     <version>2.2.0-SNAPSHOT</version>
-    <name>Symmetric Build</name>
+    <name>build</name>
 
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
