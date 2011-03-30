@@ -71,7 +71,7 @@ public class TestOracle8Platform extends TestPlatformBase
             "    \"COL_DISTINCT\"        BLOB,\n"+
             "    \"COL_DOUBLE\"          DOUBLE PRECISION,\n"+
             "    \"COL_FLOAT\"           FLOAT,\n"+
-            "    \"COL_INTEGER\"         INTEGER,\n"+
+            "    \"COL_INTEGER\"         NUMBER,\n"+
             "    \"COL_JAVA_OBJECT\"     BLOB,\n"+
             "    \"COL_LONGVARBINARY\"   BLOB,\n"+
             "    \"COL_LONGVARCHAR\"     CLOB,\n"+
@@ -107,7 +107,7 @@ public class TestOracle8Platform extends TestPlatformBase
             "CREATE TABLE \"constraints\"\n"+
             "(\n"+
             "    \"COL_PK\"               VARCHAR2(32),\n"+
-            "    \"COL_PK_AUTO_INCR\"     INTEGER,\n"+
+            "    \"COL_PK_AUTO_INCR\"     NUMBER,\n"+
             "    \"COL_NOT_NULL\"         RAW(100) NOT NULL,\n"+
             "    \"COL_NOT_NULL_DEFAULT\" DOUBLE PRECISION DEFAULT -2.0 NOT NULL,\n"+
             "    \"COL_DEFAULT\"          CHAR(4) DEFAULT 'test',\n"+
@@ -133,7 +133,7 @@ public class TestOracle8Platform extends TestPlatformBase
             "CREATE TABLE \"table1\"\n"+
             "(\n"+
             "    \"COL_PK_1\"    VARCHAR2(32) NOT NULL,\n"+
-            "    \"COL_PK_2\"    INTEGER,\n"+
+            "    \"COL_PK_2\"    NUMBER,\n"+
             "    \"COL_INDEX_1\" RAW(100) NOT NULL,\n"+
             "    \"COL_INDEX_2\" DOUBLE PRECISION NOT NULL,\n"+
             "    \"COL_INDEX_3\" CHAR(4),\n"+
@@ -143,15 +143,15 @@ public class TestOracle8Platform extends TestPlatformBase
             "CREATE UNIQUE INDEX \"testindex2\" ON \"table1\" (\"COL_INDEX_3\", \"COL_INDEX_1\");\n"+
             "CREATE TABLE \"table2\"\n"+
             "(\n"+
-            "    \"COL_PK\"   INTEGER,\n"+
-            "    \"COL_FK_1\" INTEGER,\n"+
+            "    \"COL_PK\"   NUMBER,\n"+
+            "    \"COL_FK_1\" NUMBER,\n"+
             "    \"COL_FK_2\" VARCHAR2(32) NOT NULL,\n"+
             "    PRIMARY KEY (\"COL_PK\")\n"+
             ");\n"+
             "CREATE TABLE \"table3\"\n"+
             "(\n"+
             "    \"COL_PK\" VARCHAR2(16),\n"+
-            "    \"COL_FK\" INTEGER NOT NULL,\n"+
+            "    \"COL_FK\" NUMBER NOT NULL,\n"+
             "    PRIMARY KEY (\"COL_PK\")\n"+
             ");\n"+
             "ALTER TABLE \"table2\" ADD CONSTRAINT \"table2_FK_COL_F_OL_FK_2_table1\" FOREIGN KEY (\"COL_FK_1\", \"COL_FK_2\") REFERENCES \"table1\" (\"COL_PK_2\", \"COL_PK_1\");\n"+
@@ -168,7 +168,7 @@ public class TestOracle8Platform extends TestPlatformBase
             "DROP TABLE \"escapedcharacters\" CASCADE CONSTRAINTS;\n"+
             "CREATE TABLE \"escapedcharacters\"\n"+
             "(\n"+
-            "    \"COL_PK\"   INTEGER,\n"+
+            "    \"COL_PK\"   NUMBER,\n"+
             "    \"COL_TEXT\" VARCHAR2(128) DEFAULT '\'\'',\n"+
             "    PRIMARY KEY (\"COL_PK\")\n"+
             ");\n",
