@@ -351,7 +351,7 @@ public class ModelComparator
     {
         ArrayList changes = new ArrayList();
 
-        if (_platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != sourceColumn.getTypeCode())
+        if (targetColumn.getTypeCode() != sourceColumn.getTypeCode() && _platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != sourceColumn.getTypeCode())
         {
             if (_log.isDebugEnabled()) {
                 _log.debug("The " + sourceColumn.getName() + " column on the " + sourceTable.getName() + " table changed type codes from " + sourceColumn.getTypeCode() + " to " + targetColumn.getTypeCode());
