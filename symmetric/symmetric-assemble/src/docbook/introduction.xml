@@ -26,7 +26,7 @@
             </para>
             <para>
                 SymmetricDS supports synchronization across different database platforms through the concept of <emphasis>Database
-                Dialects</emphasis>. A Database Dialect is an abstraction layer that SymmetricDS interacts with to insulated the main synchronization
+                Dialects</emphasis>. A Database Dialect is an abstraction layer that SymmetricDS uses to insulate the main synchronization
                 logic from database-specific implementation details.
             </para>
             <para>
@@ -38,9 +38,9 @@
         </section>
         <section id="background">
             <title>Background</title>
-            <para>The idea of SymmetricDS was born from a real-word need. Several of the original developers were, several years
+            <para>The idea of SymmetricDS was born from a real-world need. Several of the original developers were, several years
                 ago, implementing a commercial Point of Sale (POS) system for a large retailer. The development team came to the
-                conclusion that that the software available for trickling back transactions to corporate headquarters 
+                conclusion that the software available for trickling back transactions to corporate headquarters 
                 (frequently known as the 'central office' or 'general office')
                 did not meet the
                 project needs. The list of project requirements made finding the ideal solution difficult:</para>
