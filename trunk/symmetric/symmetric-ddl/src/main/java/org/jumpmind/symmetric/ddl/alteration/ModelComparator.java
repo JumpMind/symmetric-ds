@@ -360,7 +360,7 @@ public class ModelComparator
         }
 
         boolean sizeMatters  = _platformInfo.hasSize(sourceColumn.getTypeCode());
-        boolean scaleMatters = _platformInfo.hasPrecisionAndScale(sourceColumn.getTypeCode());
+        boolean scaleMatters = _platformInfo.hasPrecisionAndScale(sourceColumn.getTypeCode()) && sourceColumn.getScale() >= 0;
 
         String targetSize = targetColumn.getSize();
         if (targetSize == null) {
