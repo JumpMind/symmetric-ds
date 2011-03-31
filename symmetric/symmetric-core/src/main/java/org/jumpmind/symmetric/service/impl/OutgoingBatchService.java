@@ -237,9 +237,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"), new Object[] {
-                        node.getNodeId(), OutgoingBatch.Status.NE.toString(),
-                        OutgoingBatch.Status.QY.toString(), OutgoingBatch.Status.SE.toString(),
-                        OutgoingBatch.Status.LD.toString(), OutgoingBatch.Status.ER.toString() },
+                        node.getNodeId(), OutgoingBatch.Status.NE.name(),
+                        OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
+                        OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name() },
                 new OutgoingBatchMapper());
 
         OutgoingBatches batches = new OutgoingBatches(list);

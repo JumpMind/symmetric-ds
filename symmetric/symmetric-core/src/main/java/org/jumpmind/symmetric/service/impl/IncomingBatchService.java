@@ -171,7 +171,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             jdbcTemplate.update(
                     getSql("insertIncomingBatchSql"),
                     new Object[] { Long.valueOf(batch.getBatchId()), batch.getNodeId(),
-                            batch.getChannelId(), batch.getStatus().toString(),
+                            batch.getChannelId(), batch.getStatus().name(),
                             batch.getNetworkMillis(), batch.getFilterMillis(),
                             batch.getDatabaseMillis(), batch.getFailedRowNumber(),
                             batch.getByteCount(), batch.getStatementCount(),
@@ -199,7 +199,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setLastUpdatedTime(new Date());
             count = template.update(
                     getSql("updateIncomingBatchSql"),
-                    new Object[] { batch.getStatus().toString(), batch.isErrorFlag() ? 1 : 0, batch.getNetworkMillis(),
+                    new Object[] { batch.getStatus().name(), batch.isErrorFlag() ? 1 : 0, batch.getNetworkMillis(),
                             batch.getFilterMillis(), batch.getDatabaseMillis(),
                             batch.getFailedRowNumber(), batch.getByteCount(),
                             batch.getStatementCount(), batch.getFallbackInsertCount(),
