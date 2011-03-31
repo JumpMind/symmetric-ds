@@ -30,7 +30,18 @@ public class IncomingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        LD, OK, ER, SK;
+        LD("Loading"), OK("Ok"), ER("Error"), SK("Skippped");
+        
+        private String description;
+        
+        Status (String desc) {
+            this.description = desc;
+        }
+        
+        @Override
+        public String toString() {
+            return description;
+        }
     }
 
     private long batchId;

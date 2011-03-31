@@ -37,7 +37,18 @@ public class OutgoingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        RT, NE, QY, SE, LD, ER, OK, IG;
+        RT("Routing"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), ER("Error"), OK("Ok"), IG("Ignored");
+        
+        private String description;
+        
+        Status(String description) {
+            this.description = description;
+        }
+        
+        @Override
+        public String toString() {
+            return description;
+        }
     }
 
     private long batchId;
