@@ -34,6 +34,11 @@ public class DeploymentType {
     private boolean professionalRegistered;
     private boolean mobileRegistered;
     private boolean webServerRegistered;
+    
+    public DeploymentType() {
+        webServerRegistered = System.getProperty(Constants.PROP_STANDALONE_WEB, "false").equals("true");
+        System.getProperties().remove(Constants.PROP_STANDALONE_WEB);
+    }
 
     public void setEngineRegistered(boolean engineRegistered) {
         this.engineRegistered = engineRegistered;

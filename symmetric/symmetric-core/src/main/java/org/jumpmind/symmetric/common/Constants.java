@@ -26,6 +26,8 @@ final public class Constants {
 
     private Constants() {
     }
+    
+    public static final String PROP_STANDALONE_WEB = "standalone.web";
 
     public static final String PLEASE_SET_ME = "please set me";
     
