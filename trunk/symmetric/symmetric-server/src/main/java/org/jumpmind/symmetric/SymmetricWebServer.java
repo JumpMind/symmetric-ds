@@ -62,7 +62,7 @@ public class SymmetricWebServer {
 
     protected static final ILog log = LogFactory.getLog(SymmetricWebServer.class);
     
-    protected static final String DEFAULT_WEBAPP_DIR = "../web";
+    protected static final String DEFAULT_WEBAPP_DIR = "../web";    
 
     /**
      * The type of HTTP connection to create for this SymmetricDS web server
@@ -156,6 +156,10 @@ public class SymmetricWebServer {
     }
 
     public SymmetricWebServer start(int port, int securePort, Mode mode) throws Exception {
+        
+        // indicate to the app that we are in standalone mode
+        System.setProperty(Constants.PROP_STANDALONE_WEB, "true");
+        
         server = new Server();
 
         server.setConnectors(getConnectors(port, securePort, mode));
@@ -165,7 +169,6 @@ public class SymmetricWebServer {
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime/1000);
-        
         server.setHandler(webapp);
 
         if (!StringUtils.isBlank(propertiesFile)) {
@@ -179,13 +182,8 @@ public class SymmetricWebServer {
             registerHttpJmxAdaptor(httpJmxPort);
         }
         
-        do {
-            AppUtils.sleep(50);
-        } while (getEngine() == null);
-        
-        getEngine().getDeploymentType().setWebServerRegistered(true);
-
         if (join) {
+            log.info("WebServerAboutToJoin");
             server.join();
         }
 
