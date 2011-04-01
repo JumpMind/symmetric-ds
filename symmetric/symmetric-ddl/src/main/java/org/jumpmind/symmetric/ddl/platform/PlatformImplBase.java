@@ -69,7 +69,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
     /** Whether script mode is on. */
     private boolean _scriptModeOn;
     /** Whether SQL comments are generated or not. */
-    private boolean _sqlCommentsOn = true;
+    private boolean _sqlCommentsOn = false;
     /** Whether delimited identifiers are used or not. */
     private boolean _delimitedIdentifierModeOn;
     /** Whether identity override is enabled. */
@@ -289,7 +289,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
                 
                 if (_log.isDebugEnabled())
                 {
-                    _log.debug("About to execute SQL " + command);
+                    _log.debug("Executing SQL: " + command);
                 }
                 try
                 {
