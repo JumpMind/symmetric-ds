@@ -958,33 +958,6 @@ public class TestDatabaseIO extends TestCase
     }
 
     /**
-     * Tests that an exception is generated when an index references an undefined column.
-     */
-    public void testUndefinedIndexColumn()
-    {
-        try
-        {
-            readModel(
-                "<database name='test'>\n" +
-                "  <table name='TableWidthIndex'>\n" +
-                "    <column name='id'\n" +
-                "            type='INTEGER'\n" +
-                "            primaryKey='true'\n" +
-                "            required='true'/>\n" +
-                "    <index name='test index'>\n" +
-                "      <index-column name='id'/>\n" +
-                "      <index-column name='value'/>\n" +
-                "    </index>\n" +
-                "  </table>\n" +
-                "</database>");
-
-            fail();
-        }
-        catch (ModelException ex)
-        {}
-    }
-
-    /**
      * Tests that an exception is generated when the database element has no name attribute.
      */
     public void testDatabaseWithoutName()
@@ -1120,32 +1093,6 @@ public class TestDatabaseIO extends TestCase
                 "    <column name='id'\n" +
                 "            primaryKey='true'\n" +
                 "            required='true'/>\n" +
-                "  </table>\n" +
-                "</database>");
-
-            fail();
-        }
-        catch (ModelException ex)
-        {}
-    }
-
-    /**
-     * Tests that an exception is generated when the a unique index references an undefined column.
-     */
-    public void testUndefinedUniqueColumn()
-    {
-        try
-        {
-            readModel(
-                "<database name='test'>\n" +
-                "  <table name='TableWidthUnique'>\n" +
-                "    <column name='id'\n" +
-                "            type='INTEGER'\n" +
-                "            primaryKey='true'\n" +
-                "            required='true'/>\n" +
-                "    <unique>\n" +
-                "      <unique-column name='value'/>\n" +
-                "    </unique>\n" +
                 "  </table>\n" +
                 "</database>");
 
