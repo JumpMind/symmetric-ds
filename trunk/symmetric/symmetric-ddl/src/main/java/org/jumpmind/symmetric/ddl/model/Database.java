@@ -381,15 +381,7 @@ public class Database implements Serializable, Cloneable
                 {
                     IndexColumn indexColumn = index.getColumn(indexColumnIdx);
                     Column      column      = curTable.findColumn(indexColumn.getName(), true);
-
-                    if (column == null)
-                    {
-                        throw new ModelException("The index "+indexDesc+" in table "+curTable.getName()+" references the undefined column "+indexColumn.getName());
-                    }
-                    else
-                    {
-                        indexColumn.setColumn(column);
-                    }
+                    indexColumn.setColumn(column);
                 }
             }
         }
