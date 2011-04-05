@@ -711,32 +711,24 @@ values
 ]]></programlisting>
         </para>   
     </section>  
-    </section>  
     </section>
-    
-       <section id="configuration-registration">
-        <title>Opening Registration</title>
+     <section id="configuration-trigger-router">
+        <title>Trigger / Router Mappings</title>
         <para>
-        Node registration is the act of setting up a new <xref linkend="table_node" xrefstyle="table"/> and
-         <xref linkend="table_node_security" xrefstyle="table"/> so that when the new node is brought online
-         it is allowed to join the system.  Nodes are only allowed to register if rows exist for the
-         node and the <literal>registration_enabled</literal> flag is set to 1.  If the <literal>auto.registration</literal>
-         SymmetricDS property is set to true, then when a node attempts to register, if registration
-         has not already occurred, the node will automatically be registered.
-       </para>
-       <para> 
-        SymmetricDS allows you to have multiple nodes with the same <literal>external_id</literal>.  Out of the box, openRegistration 
-        will open a new registration if a registration already exists for a node with the same external_id.  A new 
-        registration means a new node with a new <literal>node_id</literal> and the same <literal>external_id</literal> will be created.  
-        If you want to re-register the same node you can use the <literal>reOpenRegistration()</literal> JMX
-        method which takes a <literal>node_id</literal> as an argument.
+        Two important controls can be configured for a specific Trigger / Router combination: Initial Load and Ping Back.
+         The parameters for these can be found in the Trigger / Router mapping table,
+        <xref linkend="table_trigger_router" xrefstyle="table"/>.
         </para>
-    </section>
-    
-     <section id="configuration-initial-load">
+       
+        <section id="configuration-initial-load">
         <title>Initial Load</title>
         <para>
             An initial load is the process of seeding tables at a target node with data from its parent node.
+            When a node connects and data is extracted, after it is registered and if an initial load was requested, each table that is configured to synchronize to the target node
+              group will be given a reload event in the order defined by the end user.  A SQL statement is run against each table to get the data load that will be streamed to the target node.  
+              The selected data is filtered through the configured router for the table being loaded.  If the data set is going to be large, then SQL criteria can optionally be provided to pair 
+              down the data that is selected out of the database.
+            </para><para>
             An initial load can not occur until after a node is registered.  An initial load is 
             requested by setting the <literal>initial_load_enabled</literal> column on <xref linkend="table_node_security" xrefstyle="table"/> to
             <emphasis>1</emphasis> on the row for the target node in the parent node's database.  The next time the 
@@ -748,24 +740,32 @@ values
             target node is set to a non null value.
         </para>
         <para>
-            Reload batches are inserted in order according to the <literal>initial_load_order</literal> column on
+            An initial load is accomplished by inserting reload batches in a defined order according to the <literal>initial_load_order</literal> column on
             <xref linkend="table_trigger_router" xrefstyle="table"/>.  Initial load data is always queried from the 
             source database table.  All data is passed through the configured router to filter out data that 
             might not be targeted at a node.  
         </para>
         <para>    
-            A more efficient way to subset the data for a load is to provide an
-            <literal>initial_load_select</literal> clause on <xref linkend="table_trigger_router" xrefstyle="table"/>.
+            An efficient way to select a subset of data from a table for an initial load is to provide an
+            <literal>initial_load_select</literal> clause on <xref linkend="table_trigger_router" xrefstyle="table"/>.            
+            This clause, if present, is applied as a <literal>where</literal> clause to the SQL used to select the data to be loaded.
             If an <literal>initial_load_select</literal> clause is provided, data will <emphasis>not</emphasis> be passed through the 
             configured router during initial load.  In cases where custom routing is done using a feature like <xref linkend="configuration-relational-router">Relational Routing</xref>,
             an <literal>initial_load_select</literal> clause will always need to be provided because the router would not
-            function properly with initial load data. 
+            function properly with initial load data.   
+        </para>
+        <para>
+        One example of the use of an initial load select would be if you wished to only load data created more recently than the start of year 2011.  Say, for example,
+        the column <literal>created_time</literal> contains the creation date.  Your <literal>initial_load_select</literal> would read
+        <literal>created_time > ts {'2011-01-01 00:00:00.0000'}</literal> (using whatever timestamp format works for your database).  This
+        then gets applied as a <literal>where</literal> clause when selecting data from the table.
         </para>
         <important>
             <para>
             When providing an <literal>initial_load_select</literal> be sure to test out the criteria against production data in a query browser.  Do an explain plan to make sure you are properly using indexes.
             </para>
-        </important>            
+        </important>      
+        </section>      
      <section id="configuration-dead-triggers">
         <title>Dead Triggers</title>
            <para>
@@ -825,10 +825,42 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
    ]]></programlisting>
         </para>
     </section>
+    
+      <section id="configuration-trigger-router-ping-back">
+           <title>Enabling "Ping Back"</title>
+           
+           <para>
+           As discussed in <xref linkend="defining-data-changes-trigger-routers-ping-back"/> SymmetricDS, by default, avoids circular
+           data changes.   When a trigger fires as a result of SymmetricDS itself (such as the case when sync on incoming batch is set),
+           it records the originating source node of the data change in <literal>source_node_id</literal>.
+           During routing, if routing results in sending the data back to the originating source node, the data is not routed by default.
+           If instead you wish to route the data back to the originating node, you can set the <literal>ping_back_enabled</literal>
+           column for the needed particular trigger / router combination.  This will cause the router to "ping" the data back to the originating
+           node when it usually would not. 
+           </para>
+        </section>
+    </section>
+     </section>  
+       <section id="configuration-registration">
+        <title>Opening Registration</title>
+        <para>
+        Node registration is the act of setting up a new <xref linkend="table_node" xrefstyle="table"/> and
+         <xref linkend="table_node_security" xrefstyle="table"/> so that when the new node is brought online
+         it is allowed to join the system.  Nodes are only allowed to register if rows exist for the
+         node and the <literal>registration_enabled</literal> flag is set to 1.  If the <literal>auto.registration</literal>
+         SymmetricDS property is set to true, then when a node attempts to register, if registration
+         has not already occurred, the node will automatically be registered.
+       </para>
+       <para> 
+        SymmetricDS allows you to have multiple nodes with the same <literal>external_id</literal>.  Out of the box, openRegistration 
+        will open a new registration if a registration already exists for a node with the same external_id.  A new 
+        registration means a new node with a new <literal>node_id</literal> and the same <literal>external_id</literal> will be created.  
+        If you want to re-register the same node you can use the <literal>reOpenRegistration()</literal> JMX
+        method which takes a <literal>node_id</literal> as an argument.
+        </para>
     </section>
     
-   
-     <section id="configuration-bi-direction-sync">
+       <section id="configuration-bi-direction-sync">
         <title>Bi-Directional Synchronization</title>
         <para>
             SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing 
@@ -895,8 +927,6 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         </para>
     </section>
        
-   
-   
         
     <!--  Jobs? -->
     <section id="configuration-jobs">
