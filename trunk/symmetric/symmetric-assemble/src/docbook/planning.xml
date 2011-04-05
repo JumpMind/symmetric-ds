@@ -212,7 +212,7 @@
       
         <para> SymmetricDS uses <emphasis>database triggers</emphasis> to capture and record changes to be synchronized to other nodes. Based on the configuration you provide, SymmetricDS
         creates the needed database triggers automatically for you.  There is a great deal of flexibility in terms of defining the exact conditions under which a data change is captured.
-        Each trigger you define has a corresponding table associated with it.  In addition, each trigger can specify:
+        SymmetricDS triggers are defined in a table named <xref linkend="table_trigger" xrefstyle="table"/>.  Each trigger you define is for a particular table associated.  Each trigger can also specify:
            <itemizedlist>
                 <listitem>whether to install a trigger for updates, inserts, and/or deletes</listitem>
                 <listitem>conditions on which an insert, update, and/or delete fires</listitem>
@@ -231,8 +231,9 @@
        <section id="defining-data-changes-routers">
           <title>Defining Routers</title>
       
-         <para>The triggers that have been defined in the previous section only define <emphasis>when</emphasis>data changes are to be captured
-         for synchronization.  They do not define <emphasis>where</emphasis> the data changes are to be sent to.  Routers, plus a mapping between Triggers and Routers,
+         <para>The triggers that have been defined in the previous section only define <emphasis>when</emphasis> data changes are to be captured
+         for synchronization.  They do not define <emphasis>where</emphasis> the data changes are to be sent to.  Routers, plus a mapping between Triggers and Routers 
+         (<xref linkend="table_trigger_router" xrefstyle="table"/>),
          define the process for determining which nodes receive the data changes.
          </para>
          
@@ -247,7 +248,7 @@
         <para> 
             Now we are ready to discuss Routers.  The router itself is what defines the configuration of where to send a data change.  Each Router
             you define can be associated with or assigned to any number of Triggers through a join table that defines the relationship.
-            For each router you define, you will need to specify:
+            Routers are defined the SymmetricDS table named <xref linkend="table_router" xrefstyle="table"/>.  For each router you define, you will need to specify:
             <itemizedlist>
                 <listitem>the target table on the destination node to route the data</listitem>
                 <listitem>the source node group and target node group for the nodes to route the data to</listitem>
@@ -280,22 +281,31 @@
              
        
         <section id="defining-data-changes-trigger-routers">
-          <title>Planning Initial Loads</title>
+          <title>Mapping Triggers to Routers</title>
           
-          <para>The mapping between Triggers and Routers defines more than just the many-to-many relationship between your Triggers and your Routers.  It also defines
-          how initial loads can occur, so now is a good time to plan how your <emphasis>Initial Loads</emphasis> will work.
-          SymmetricDS provides the ability to "load" or "seed" a nodes database with specific sets of data from its parent node.  This concept is known as an <emphasis>Initial Load</emphasis> of
-          data and is used to start off most synchronization scenarios.  Using our retail example, consider a new store being opened.  Initially, you would like to pre-populate
-          a store database with all the item, pricing, and tax data for that specific store.  This is achieved through an initial load.  
-          </para>
-          <para>When a node connects and data is extracted, after it is registered and if an initial load was requested, each table that is configured to synchronize to the target node
-          group will be given a reload event in the order defined by the end user.  A SQL statement is run against each table to get the data load that will be streamed to the target node.  
-          The selected data is filtered through the configured router for the table being loaded.  If the data set is going to be large, then SQL criteria can optionally be provided to pair 
-          down the data that is selected out of the database.
-          </para>                    
+          <para>The mapping between Triggers and Routers, found in the table  <xref linkend="table_trigger_router" xrefstyle="table"/>, 
+          defines configuration specific to a particular Trigger and Router combination.</para>
+
+            <section id="defining-data-changes-trigger-routers-initial-load">
+              <title>Planning Initial Loads</title>             
+                  <para>The Trigger Router mapping, among other things, defines how initial loads can occur, so now is a good time to plan how your <emphasis>Initial Loads</emphasis> will work.
+                  SymmetricDS provides the ability to "load" or "seed" a node's database with specific sets of data from its parent node.  This concept is known as an <emphasis>Initial Load</emphasis> of
+                  data and is used to start off most synchronization scenarios.  Using our retail example, consider a new store being opened.  Initially, you would like to pre-populate
+                  a store database with all the item, pricing, and tax data for that specific store.  This is achieved through an initial load.  
+                  A part of your planning, be sure to consider which tables, if any, will need to be loaded initially. SymmetricDS can also perform
+                  an initial load on a table with just a subset of data.  Initial Loads are further discussed in <xref linkend="configuration-initial-load"/>.</para>
+           </section>    
+              
+           <section id="defining-data-changes-trigger-routers-ping-back">
+              <title>Circular References and "Ping Back"</title>             
+                  <para>
+                  When routing data, SymmetricDS by default checks each data change and will not route a data change back to a node if it originated the change to begin with.  This prevents the possibility
+                  of data changes resulting in an infinite loop of changes under certain circumstances.  You may find that, for some reason,
+                  you need SymmetricDS to go ahead and send the data back to the originating node - a "ping back".  As part of the planning process, consider whether you have a special case for needing ping back.  
+                  Ping Back control is further discussed in <xref linkend="configuration-trigger-router-ping-back"/>.
+                  </para>     
+          </section>               
       </section>
-      
-    </section>
       <section id="planning-registration">
           <title>Planning for Registering Nodes</title>
           <para>
@@ -311,6 +321,7 @@
                </itemizedlist>
           </para>
     </section>
+</section>
 
     
  
