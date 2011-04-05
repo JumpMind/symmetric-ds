@@ -49,8 +49,9 @@
         <para>
             This User Guide introduces SymmetricDS and its uses for data synchronization. It is
             intended for users who want to be quickly familiarized with the software, configure it,
-            and use its many features.
+            and use its many features.  This version of the guide was generated on <?dbtimestamp format="Y-m-d"?> at <?dbtimestamp format="H:M:S"?>.
         </para>
+        
     </preface>
 
     <xi:include href="introduction.xml" />
