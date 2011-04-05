@@ -31,7 +31,7 @@
 
         <menu name="Software">
             <item name="Download"
-                href="http://sourceforge.net/project/showfiles.php?group_id=206470" />  
+                href="http://sourceforge.net/projects/symmetricds/files/latest" />  
             <item name="Source Repository" href="http://sourceforge.net/svn/?group_id=206470" />
             <item name="Development Setup" href="http://docs.codehaus.org/display/SYMMETRICDS/Development+Setup" />
             <item name="Maven Repository" href="http://repository.codehaus.org/org/jumpmind/symmetric/" />
@@ -51,8 +51,6 @@
         <menu name="Community">          
             <item name="SourceForge Project" href="http://sourceforge.net/projects/symmetricds/" />
             <item name="Codehaus Project" href="http://xircles.codehaus.org/projects/symmetricds" />
-            <item name="SymmetricDS on Twitter" href="http://www.twitter.com/symmetricds" />
-            <item name="SymmetricDS on Facebook" href="https://www.facebook.com/pages/SymmetricDS/231313396029" />                        
         </menu>
     </body>
 </project>
