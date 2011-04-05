@@ -21,6 +21,10 @@
                 <firstname>Mark</firstname>
                 <surname>Hanes</surname>
             </author>
+            <author>
+                <firstname>Greg</firstname>
+                <surname>Wilmer</surname>
+            </author>
         </authorgroup>
         <edition>Version 2.2 for SymmetricDS 2</edition>
         <copyright>
