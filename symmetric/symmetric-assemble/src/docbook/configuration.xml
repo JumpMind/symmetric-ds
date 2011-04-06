@@ -737,7 +737,7 @@ values
         </para>
         <para>
             SymmetricDS recognizes that an initial load has completed when the <literal>initial_load_time</literal> column on the
-            target node is set to a non null value.
+            target node is set to a non-null value.
         </para>
         <para>
             An initial load is accomplished by inserting reload batches in a defined order according to the <literal>initial_load_order</literal> column on

@@ -288,9 +288,9 @@
 
             <section id="defining-data-changes-trigger-routers-initial-load">
               <title>Planning Initial Loads</title>             
-                  <para>The Trigger Router mapping, among other things, defines how initial loads can occur, so now is a good time to plan how your <emphasis>Initial Loads</emphasis> will work.
-                  SymmetricDS provides the ability to "load" or "seed" a node's database with specific sets of data from its parent node.  This concept is known as an <emphasis>Initial Load</emphasis> of
-                  data and is used to start off most synchronization scenarios.  Using our retail example, consider a new store being opened.  Initially, you would like to pre-populate
+                  <para>SymmetricDS provides the ability to "load" or "seed" a node's database with specific sets of data from its parent node.  This concept is known as an <emphasis>Initial Load</emphasis> of
+                  data and is used to start off most synchronization scenarios.  The Trigger Router mapping defines how initial loads can occur, so now is a good time to plan how your <emphasis>Initial Loads</emphasis> will work.
+                  Using our retail example, consider a new store being opened.  Initially, you would like to pre-populate
                   a store database with all the item, pricing, and tax data for that specific store.  This is achieved through an initial load.  
                   A part of your planning, be sure to consider which tables, if any, will need to be loaded initially. SymmetricDS can also perform
                   an initial load on a table with just a subset of data.  Initial Loads are further discussed in <xref linkend="configuration-initial-load"/>.</para>
