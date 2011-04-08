@@ -1073,7 +1073,16 @@ public class JdbcModelReader
                 }
             }
         } catch(SQLException ex) {
-            _log.warn("Failed to run the query: '" + query + "' to determine auto increment columns.  This is probably not harmful, but should be fixedx.");
+            StringBuilder msg = new StringBuilder("Failed to determine auto increment columns using this query: '" + query + "'.  This is probably not harmful, but should be fixed.  ");
+            msg.append("\n");
+            msg.append(table.toString()); 
+            if (columnsToCheck != null) {
+                for (Column col : columnsToCheck) {
+                    msg.append("\n");
+                    msg.append(col.toString());
+                }
+            }
+            _log.warn(msg);
         }
     }
 
