@@ -1073,7 +1073,7 @@ public class JdbcModelReader
                 }
             }
         } catch(SQLException ex) {
-            _log.warn("Failed to run the query: " + query + " to determine auto increment columns.  This is probably not harmful, but should be fixedx.");
+            _log.warn("Failed to run the query: '" + query + "' to determine auto increment columns.  This is probably not harmful, but should be fixedx.");
         }
     }
 
