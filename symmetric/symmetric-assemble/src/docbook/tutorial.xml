@@ -44,7 +44,7 @@
             <step>
                 <para>
                     Download the
-                    <ulink url="https://sourceforge.net/projects/symmetricds/files/">symmetric-ds-2.x.x.zip</ulink>
+                    <ulink url="https://sourceforge.net/projects/symmetricds/files/">symmetric-ds-2.x.x-server.zip</ulink>
                     file from
                     <ulink url="http://www.symmetricds.org/">http://www.symmetricds.org/</ulink>
                 </para>
@@ -52,7 +52,7 @@
             <step>
                 <para>
                     Unzip the file in any directory you choose. This will create a
-                    <filename class="directory">symmetric-ds-2.x.x</filename>
+                    <filename class="directory">symmetric-ds-2.x.x-server</filename>
                     subdirectory, which corresponds to the version you downloaded.
                 </para>
             </step>
