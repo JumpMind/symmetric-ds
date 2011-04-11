@@ -213,9 +213,42 @@
         be sent to, the Route Job is also responsible for determing how much data will be batched together for transport. 
         It is a single background task that inserts into <xref linkend="table_data_event" xrefstyle="table"/> 
         and <xref linkend="table_outgoing_batch" xrefstyle="table"/>.  
-        
-      </para>
+     </para>
+     <para>
+     The first step in the Route Job is to determine what data needs routed.  On the surface, this step seems simple: assign
+     sequential data ids for each data row as it's inserted and keep track of which data id was last routed and start from there.  The difficulty arises, however, due to the fact that 
+     there can be multiple transactions inserting into <xref linkend="table_data" xrefstyle="table"/> simultaneously.
+     As such, a given section of rows in the  <xref linkend="table_data" xrefstyle="table"/> table may actually contain "gaps" in the data ids when the Route Job is executing.
+     Most of these gaps are only temporarily and fill in at some point after routing.  Still the Route Job needs to
+     remember to route the filled-in gaps and route them in the future.  Worse yet, some of these gaps are actually permanent and result from
+     a transaction that is rolled back for some reason.  In this case, the Route Job must continue to watch
+     for the gap to fill in and will, in fact, eventually give up and assume the gap is permanent.  All of this
+     must be done in some fashion that guarantees that gaps are routed when they fill in while also keeping
+     routing as efficient as possible.
+     </para>
+     <para>
+     SymmetricDS handles the issue of data gaps by making use of a table, <xref linkend="table_data_gap" xrefstyle="table"/>, to record
+     gaps found in the data ids in <xref linkend="table_data_gap" xrefstyle="table"/>.  For a brand new instance of SymmetricDS, this table is empty
+     and SymmetricDS creates a gap starting from data id of zero and ending with a very large number.
      
+     At the start of a Route Job, the list of valid gaps (status of 'GP') is collected, and each gap is evaluated in turn.
+     If a gap is sufficiently old, the gap
+     is marked as skipped (status of 'SK') and will no longer be evaluated in future Route Jobs (note that the 'last' gap (the one with the highest starting data id) is never
+     expired).  If not skipped, then  <xref linkend="table_data_event" xrefstyle="table"/> is searched for data ids present in the gap.
+     If one or more data ids is found in <xref linkend="table_data_event" xrefstyle="table"/>, then the current gap is marked with a status
+     of OK, and new gap(s) are created to represent the data ids still missing in the gap's range.  This process is done for
+     all gaps.  If the very last gap contained data, a new gap starting from the highest data id and ending with a very large number is then created.
+     This process has resulted in an updated list of gaps which may contain new data to be routed.
+     </para>
+     <para>Routing itself, the process of figuring out which data changes are to be sent to which nodes, then takes place by looking 
+     for data ids  in <xref linkend="table_data" xrefstyle="table"/> that are fall in the ranges of the gaps in <xref linkend="table_data_gap" xrefstyle="table"/>.
+     The Route Job will batch and route a maximum number of data ids per channel (set through a property called  <literal>routing.max.data.to.process.per.channel</literal>), after which routing is
+     finished.
+     Each data id is "routed" by determining the list of nodes which should receive the data.  Data changes are batched
+     and recorded in <xref linkend="table_data_event" xrefstyle="table"/>, and then the list of batches going to particular nodes
+     are recorded in <xref linkend="table_outgoing_batch" xrefstyle="table"/>.  Note that data ids that are routed to <emphasis>no</emphasis> nodes are still batched
+     and recorded, but the corresponding entries in <xref linkend="table_outgoing_batch" xrefstyle="table"/> will contain a node id of -1.
+     </para> 
      </section>
      <section id='controlling-synchronization'>
         <title>Controlling Synchronization Frequency</title>
