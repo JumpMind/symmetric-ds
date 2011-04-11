@@ -79,7 +79,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
         final int dataIdIncrementBy = parameterService
                 .getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
         final long maxDataToSelect = parameterService
-                .getInt(ParameterConstants.ROUTING_MAX_DATA_TO_PROCESS_PER_CHANNEL);
+                .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         for (final DataGap dataGap : gaps) {
             final boolean lastGap = dataGap.equals(gaps.get(gaps.size()-1));            
             String sql = sqlProvider.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
