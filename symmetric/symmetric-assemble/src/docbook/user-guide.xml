@@ -62,7 +62,7 @@
     <xi:include href="tutorial.xml" />
     <xi:include href="planning.xml" />
     <xi:include href="configuration.xml" />
-    <xi:include href="deployment.xml" />
+    <xi:include href="advanced-topics.xml" />
     <xi:include href="extensions.xml" />
     <xi:include href="administration.xml" />
     <xi:include href="symmetric-schema.xml" />
