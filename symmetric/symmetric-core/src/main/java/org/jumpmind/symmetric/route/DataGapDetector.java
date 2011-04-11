@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.route;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -40,7 +39,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
 /**
- * 
+ * Responsible for managing gaps in data ids to ensure that all captured
+ * data is routed for delivery to other nodes.
  */
 public class DataGapDetector implements IDataToRouteGapDetector {
 
@@ -86,18 +86,17 @@ public class DataGapDetector implements IDataToRouteGapDetector {
             Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
             lastDataId = jdbcTemplate.query(sql, params, new ResultSetExtractor<Long>() {
                 public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
-                    List<DataGap> newGaps = new ArrayList<DataGap>();
                     long lastDataId = -1;
                     while (rs.next()) {
                         long dataId = rs.getLong(1);
                         if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
                                 && lastDataId != dataId) {
                             // found a gap
-                            newGaps.add(new DataGap(lastDataId + 1, dataId - 1));                            
+                            dataService.insertDataGap(new DataGap(lastDataId + 1, dataId - 1));
                         }
                         lastDataId = dataId;
                     }
-
+                    
                     if (lastDataId != -1) {
                         dataService.updateDataGap(dataGap, DataGap.Status.OK);
                     } else if (!lastGap) {
@@ -125,9 +124,6 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                         }
                     }
 
-                    for (DataGap dataGap : newGaps) {
-                        dataService.insertDataGap(dataGap);
-                    }
 
                     return lastDataId;
                 }
