@@ -79,6 +79,12 @@
             the assigned region as the <literal>registration_node_id</literal>.  When a workstation at the store registers, the root server send an HTTP redirect to the <literal>sync_url</literal> of the node 
             that matches the <literal>registration_node_id</literal>. 
         </para>
+        <important>
+            <para>Please see <xref linkend="configuration-initial-load" /> for important details around initial loads
+            and registration when using registration redirect.
+            </para>
+            </important>
+            
     </section>
     </section>
 </section>

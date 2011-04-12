@@ -114,6 +114,9 @@
                 </listitem>
             </varlistentry>
         </variablelist>
+        <important><para>
+        Note that a <emphasis>registration server node</emphasis> is defined as one whose <literal>registration.url</literal> is either (a) blank, or (b)
+        identical to its <literal>sync.url</literal>.</para></important>
         <para>
             When deploying to an application server, it is common for database connection pools
             to be found in the Java naming directory (JNDI).  In this case, set the following property:
@@ -728,13 +731,23 @@ values
               group will be given a reload event in the order defined by the end user.  A SQL statement is run against each table to get the data load that will be streamed to the target node.  
               The selected data is filtered through the configured router for the table being loaded.  If the data set is going to be large, then SQL criteria can optionally be provided to pair 
               down the data that is selected out of the database.
-            </para><para>
+            </para>
+            <para>
             An initial load can not occur until after a node is registered.  An initial load is 
             requested by setting the <literal>initial_load_enabled</literal> column on <xref linkend="table_node_security" xrefstyle="table"/> to
             <emphasis>1</emphasis> on the row for the target node in the parent node's database.  The next time the 
             target node synchronizes, reload batches will be inserted.  At the same time reload batches 
             are inserted, all previously pending batches for the node are marked as successfully sent.    
         </para>
+         <important>
+            <para>
+            Note that if the parent node that a node is registering with is <emphasis>not</emphasis> a registration server node 
+            (as can happen with a registration redirect or certain non-tree structure node configurations)
+            the parent node's <xref linkend="table_node_security" xrefstyle="table"/> entry must exist at the parent node and have a non-null value for
+            column <literal>initial_load_time</literal>.  Nodes can't be registered to non-registration-server nodes without this value being set one way or another (i.e.,
+            manually, or as a result of an initial load occuring at the parent node).
+            </para>
+        </important>   
         <para>
             SymmetricDS recognizes that an initial load has completed when the <literal>initial_load_time</literal> column on the
             target node is set to a non-null value.
@@ -764,7 +777,8 @@ values
             <para>
             When providing an <literal>initial_load_select</literal> be sure to test out the criteria against production data in a query browser.  Do an explain plan to make sure you are properly using indexes.
             </para>
-        </important>      
+        </important>  
+            
         </section>      
      <section id="configuration-dead-triggers">
         <title>Dead Triggers</title>
