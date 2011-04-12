@@ -64,7 +64,7 @@
                     <property name="channelId" value="reload" />
                     <property name="processingOrder" value="1" />
                     <property name="maxBatchSize" value="1" />
-                    <property name="maxBatchToSend" value="10" />
+                    <property name="maxBatchToSend" value="100" />
                     <property name="enabled" value="true" />
                 </bean>
             </list>
