@@ -21,13 +21,11 @@ Overview
  Synchronization can be configured to push data or pull data on a periodic basis.
  SymmetricDS allows for synchronization between two or more tiers of nodes, as might be needed in the following scenarios:
 
-    * A farm of web server nodes fronting an enterprise-class general office database
-    
-    * A handful of regional servers for synchronizing from the general office to remote geographical areas
+    * A handful of regional servers synchronizing from the general office to remote geographical areas
      
-    * 10(s) of Point of Sale (POS) register nodes using an embedded database to sync with a store server
+    * Dozens of Point of Sale (POS) register nodes using an embedded database to sync with a store server
     
-    * 1000(s) of store server nodes using a departmental class database to sync with a regional node
+    * Thousands of store server nodes using a departmental class database to sync with a regional node
     
  
  Deployment options include the following:
@@ -47,5 +45,7 @@ Background
  ago, implementing a commercial Point of Sale (POS) system for a large retailer. The development team came to the
  conclusion that the software available for trickling back transactions to corporate headquarters 
  (frequently known as the 'central office' or 'general office') did not meet the project needs. The developers started 
- an open-source project, now known as SymmetricDS, to build a generalized, flexible software product that would meet
- the needs for the project and for others with similar needs.
+ an open-source project, now known as SymmetricDS, to build a generalized, flexible software product that would allow 
+ scalable replication across heterogeneous databases for the project and for others with similar needs.  Over the years,
+ SymmetricDS has been used very successfully in a variety of domains, including but not limited to retail,
+ medical, and telecommunications, and in installations with just a few nodes to tens of thousands of nodes.
