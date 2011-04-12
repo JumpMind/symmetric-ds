@@ -27,7 +27,7 @@ package org.jumpmind.symmetric.ddl.platform.db2;
 public class Db2v8Platform extends Db2Platform
 {
     /** Database name of this platform. */
-    public static final String[] DATABASENAMES = {"DB2v8","DB2/LINUX9"};
+    public static final String[] DATABASENAMES = {"DB2v8","DB2/LINUX9","DB2"};
 
     /**
      * Creates a new platform instance.

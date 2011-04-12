@@ -24,9 +24,10 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.ddl.platform.axion.AxionPlatform;
 import org.jumpmind.symmetric.ddl.platform.cloudscape.CloudscapePlatform;
-import org.jumpmind.symmetric.ddl.platform.db2.Db2Platform;
 import org.jumpmind.symmetric.ddl.platform.db2.Db2v8Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
@@ -58,6 +59,9 @@ import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
  */
 public class PlatformFactory
 {
+    /** The log for this platform. */
+    private static final Log _log = LogFactory.getLog(PlatformFactory.class);
+    
     /** The database name -> platform map. */
     private static Map<String,Class<? extends Platform>> _platforms = null;
 
@@ -124,9 +128,15 @@ public class PlatformFactory
      */
     public static synchronized Platform createNewPlatformInstance(DataSource dataSource) throws DdlUtilsException
     {
-        Platform platform = createNewPlatformInstance(PlatformUtils.determineDatabaseNameVersion(dataSource));
+        String nameVersion = PlatformUtils.determineDatabaseNameVersion(dataSource);
+        Platform platform = createNewPlatformInstance(nameVersion);
         if (platform == null) {
-            platform = createNewPlatformInstance(PlatformUtils.determineDatabaseType(dataSource));
+            String dbType = PlatformUtils.determineDatabaseType(dataSource);
+            _log.warn("The name/version pair returned for the database, "
+                    + nameVersion
+                    + ",  was not mapped to a known database platform.  Defaulting to using just the database type of "
+                    + dbType);
+            platform = createNewPlatformInstance(dbType);
         }
         platform.setDataSource(dataSource);
         return platform;
@@ -177,7 +187,6 @@ public class PlatformFactory
         addPlatform(_platforms, InformixPlatform.DATABASENAME,    InformixPlatform.class);
         addPlatform(_platforms, AxionPlatform.DATABASENAME,       AxionPlatform.class);
         addPlatform(_platforms, CloudscapePlatform.DATABASENAME,  CloudscapePlatform.class);
-        addPlatform(_platforms, Db2Platform.DATABASENAME,         Db2Platform.class);
         addPlatform(_platforms, Db2v8Platform.DATABASENAMES,       Db2v8Platform.class);
         addPlatform(_platforms, DerbyPlatform.DATABASENAME,       DerbyPlatform.class);
         addPlatform(_platforms, FirebirdPlatform.DATABASENAME,    FirebirdPlatform.class);
