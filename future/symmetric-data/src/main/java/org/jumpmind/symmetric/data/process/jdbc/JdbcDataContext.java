@@ -1,8 +1,8 @@
-package org.jumpmind.symmetric.data.jdbc;
+package org.jumpmind.symmetric.data.process.jdbc;
 
 import java.sql.Connection;
 
-import org.jumpmind.symmetric.data.DataContext;
+import org.jumpmind.symmetric.data.process.DataContext;
 
 public class JdbcDataContext extends DataContext {
 

@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.model;
+package org.jumpmind.symmetric.data.model;
 
 import java.util.HashMap;
 
@@ -13,7 +13,7 @@ public class Parameters extends HashMap<String, String> {
             try {
                 returnValue = Long.parseLong(value);
             } catch (NumberFormatException ex) {
-                 // TODO log error
+                // TODO log error
             }
         }
         return returnValue;
