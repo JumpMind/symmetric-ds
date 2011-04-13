@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.model;
+package org.jumpmind.symmetric.data.model;
 
 public class Batch {
 
@@ -6,19 +6,19 @@ public class Batch {
     protected boolean initialLoad;
     protected long batchId;
     protected String channelId;
-    
+
     public String getSourceNodeId() {
         return sourceNodeId;
     }
-    
+
     public long getBatchId() {
         return batchId;
     }
-    
+
     public String getChannelId() {
         return channelId;
     }
-    
+
     public boolean isInitialLoad() {
         return initialLoad;
     }

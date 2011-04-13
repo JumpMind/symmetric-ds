@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.data.sql;
+package org.jumpmind.symmetric.data.process.sql;
 
 public class DataIntegrityViolationException extends DataException {
 

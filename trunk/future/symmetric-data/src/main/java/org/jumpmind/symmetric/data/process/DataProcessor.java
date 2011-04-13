@@ -1,8 +1,8 @@
-package org.jumpmind.symmetric.data;
+package org.jumpmind.symmetric.data.process;
 
-import org.jumpmind.symmetric.ddl.model.Table;
-import org.jumpmind.symmetric.model.Batch;
-import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.data.model.Batch;
+import org.jumpmind.symmetric.data.model.Data;
+import org.jumpmind.symmetric.data.model.Table;
 
 public class DataProcessor {
 

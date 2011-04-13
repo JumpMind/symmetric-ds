@@ -1,7 +1,7 @@
-package org.jumpmind.symmetric.data;
+package org.jumpmind.symmetric.data.process;
 
-import org.jumpmind.symmetric.common.BinaryEncoding;
-import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.data.common.BinaryEncoding;
+import org.jumpmind.symmetric.data.model.Data;
 
 public interface IDataWriter<T extends DataContext> {
 

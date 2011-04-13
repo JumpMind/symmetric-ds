@@ -1,12 +1,12 @@
-package org.jumpmind.symmetric.data.jdbc;
+package org.jumpmind.symmetric.data.process.jdbc;
 
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.common.BinaryEncoding;
-import org.jumpmind.symmetric.data.IDataWriter;
-import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.data.common.BinaryEncoding;
+import org.jumpmind.symmetric.data.model.Data;
+import org.jumpmind.symmetric.data.process.IDataWriter;
 
 public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
 
