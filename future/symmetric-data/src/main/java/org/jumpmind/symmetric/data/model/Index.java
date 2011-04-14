@@ -1,114 +1,122 @@
 package org.jumpmind.symmetric.data.model;
 
-import java.io.Serializable;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import java.util.ArrayList;
 
 /**
- * Represents an index definition for a table which may be either unique or
- * non-unique.
+ * Base class for indices.
  */
-public interface Index extends Cloneable, Serializable {
-    /**
-     * Determines whether this index is unique or not.
-     * 
-     * @return <code>true</code> if the index is an unique one
-     */
-    public boolean isUnique();
+public abstract class Index {
+    /** The name of the index. */
+    protected String _name;
+
+    /** The columns making up the index. */
+    protected ArrayList<IndexColumn> _columns = new ArrayList<IndexColumn>();
+
+    abstract public String toVerboseString();
+
+    abstract public boolean isUnique();
 
     /**
-     * Returns the name of the index.
-     * 
-     * @return The name
+     * {@inheritDoc}
      */
-    public String getName();
+    public String getName() {
+        return _name;
+    }
 
     /**
-     * Sets the name of the index.
-     * 
-     * @param name
-     *            The name
+     * {@inheritDoc}
      */
-    public void setName(String name);
+    public void setName(String name) {
+        _name = name;
+    }
 
     /**
-     * Returns the number of columns that make up this index.
-     * 
-     * @return The number of index columns
+     * {@inheritDoc}
      */
-    public int getColumnCount();
+    public int getColumnCount() {
+        return _columns.size();
+    }
 
     /**
-     * Returns the indicated column making up this index.
-     * 
-     * @param idx
-     *            The index of the column
-     * @return The column
+     * {@inheritDoc}
      */
-    public IndexColumn getColumn(int idx);
+    public IndexColumn getColumn(int idx) {
+        return (IndexColumn) _columns.get(idx);
+    }
 
     /**
-     * Returns the columns that make up this index.
-     * 
-     * @return The columns
+     * {@inheritDoc}
      */
-    public IndexColumn[] getColumns();
+    public IndexColumn[] getColumns() {
+        return (IndexColumn[]) _columns.toArray(new IndexColumn[_columns.size()]);
+    }
 
     /**
-     * Determines whether this index includes the given column.
-     * 
-     * @param column
-     *            The column to check for
-     * @return <code>true</code> if the column is included in this index
+     * {@inheritDoc}
      */
-    public boolean hasColumn(Column column);
+    public boolean hasColumn(Column column) {
+        for (int idx = 0; idx < _columns.size(); idx++) {
+            IndexColumn curColumn = getColumn(idx);
+
+            if (column.equals(curColumn.getColumn())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
-     * Adds a column that makes up this index.
-     * 
-     * @param column
-     *            The column to add
+     * {@inheritDoc}
      */
-    public void addColumn(IndexColumn column);
+    public void addColumn(IndexColumn column) {
+        if (column != null) {
+            for (int idx = 0; idx < _columns.size(); idx++) {
+                IndexColumn curColumn = getColumn(idx);
+
+                if (curColumn.getOrdinalPosition() > column.getOrdinalPosition()) {
+                    _columns.add(idx, column);
+                    return;
+                }
+            }
+            _columns.add(column);
+        }
+    }
 
     /**
-     * Removes the given index column from this index.
-     * 
-     * @param column
-     *            The column to remove
+     * {@inheritDoc}
      */
-    public void removeColumn(IndexColumn column);
+    public void removeColumn(IndexColumn column) {
+        _columns.remove(column);
+    }
 
     /**
-     * Removes the column at the specified position in this index.
-     * 
-     * @param idx
-     *            The position of the index column to remove
+     * {@inheritDoc}
      */
-    public void removeColumn(int idx);
+    public void removeColumn(int idx) {
+        _columns.remove(idx);
+    }
 
     /**
-     * Clones this index.
-     * 
-     * @return The clone
-     * @throws CloneNotSupportedException
-     *             If the cloning did fail
+     * {@inheritDoc}
      */
-    public Object clone() throws CloneNotSupportedException;
-
-    /**
-     * Compares this index to the given one while ignoring the case of
-     * identifiers.
-     * 
-     * @param otherIndex
-     *            The other index
-     * @return <code>true</code> if this index is equal (ignoring case) to the
-     *         given one
-     */
-    public boolean equalsIgnoreCase(Index otherIndex);
-
-    /**
-     * Returns a verbose string representation of this index.
-     * 
-     * @return The string representation
-     */
-    public String toVerboseString();
+    public abstract Object clone() throws CloneNotSupportedException;
 }
