@@ -853,7 +853,7 @@ public class JdbcModelReader
      * @param tableName The name of the table from which to retrieve FK information
      * @return The foreign keys
      */
-    protected Collection<String> readForeignKeys(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
+    protected Collection<ForeignKey> readForeignKeys(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
         Map       fks    = new ListOrderedMap();
         ResultSet fkData = null;
