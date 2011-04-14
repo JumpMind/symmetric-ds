@@ -2,8 +2,8 @@ package org.jumpmind.symmetric.jdbc.db.oracle;
 
 import java.sql.Types;
 
-import org.jumpmind.symmetric.data.common.StringUtils;
-import org.jumpmind.symmetric.data.db.PlatformInfo;
+import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.db.PlatformInfo;
 import org.jumpmind.symmetric.jdbc.db.AbstractJdbcPlatform;
 import org.jumpmind.symmetric.jdbc.sql.Template;
 

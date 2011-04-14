@@ -8,8 +8,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.data.db.IPlatform;
-import org.jumpmind.symmetric.data.process.sql.DataException;
+import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.process.sql.DataException;
 import org.jumpmind.symmetric.jdbc.db.oracle.OraclePlatform;
 
 public class JdbcPlatformFactory {

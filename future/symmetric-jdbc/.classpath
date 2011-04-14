@@ -2,6 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_19"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/symmetric-data"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/symmetric3-core"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

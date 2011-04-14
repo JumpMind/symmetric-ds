@@ -39,22 +39,22 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.data.common.Log;
-import org.jumpmind.symmetric.data.common.LogFactory;
-import org.jumpmind.symmetric.data.common.LogLevel;
-import org.jumpmind.symmetric.data.common.StringUtils;
-import org.jumpmind.symmetric.data.db.IPlatform;
-import org.jumpmind.symmetric.data.db.PlatformInfo;
-import org.jumpmind.symmetric.data.model.Column;
-import org.jumpmind.symmetric.data.model.Database;
-import org.jumpmind.symmetric.data.model.ForeignKey;
-import org.jumpmind.symmetric.data.model.Index;
-import org.jumpmind.symmetric.data.model.IndexColumn;
-import org.jumpmind.symmetric.data.model.NonUniqueIndex;
-import org.jumpmind.symmetric.data.model.Reference;
-import org.jumpmind.symmetric.data.model.Table;
-import org.jumpmind.symmetric.data.model.UniqueIndex;
-import org.jumpmind.symmetric.data.process.sql.DataException;
+import org.jumpmind.symmetric.core.common.Log;
+import org.jumpmind.symmetric.core.common.LogFactory;
+import org.jumpmind.symmetric.core.common.LogLevel;
+import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.db.PlatformInfo;
+import org.jumpmind.symmetric.core.model.Column;
+import org.jumpmind.symmetric.core.model.Database;
+import org.jumpmind.symmetric.core.model.ForeignKey;
+import org.jumpmind.symmetric.core.model.Index;
+import org.jumpmind.symmetric.core.model.IndexColumn;
+import org.jumpmind.symmetric.core.model.NonUniqueIndex;
+import org.jumpmind.symmetric.core.model.Reference;
+import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.model.UniqueIndex;
+import org.jumpmind.symmetric.core.process.sql.DataException;
 import org.jumpmind.symmetric.jdbc.sql.IConnectionCallback;
 import org.jumpmind.symmetric.jdbc.sql.Template;
 

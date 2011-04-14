@@ -17,12 +17,12 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.data.common.LogLevel;
-import org.jumpmind.symmetric.data.db.IPlatform;
-import org.jumpmind.symmetric.data.model.Column;
-import org.jumpmind.symmetric.data.model.Index;
-import org.jumpmind.symmetric.data.model.Table;
-import org.jumpmind.symmetric.data.model.TypeMap;
+import org.jumpmind.symmetric.core.common.LogLevel;
+import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.model.Column;
+import org.jumpmind.symmetric.core.model.Index;
+import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.jdbc.db.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.jdbc.db.JdbcModelReader;
 

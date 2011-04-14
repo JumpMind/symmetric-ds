@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.data.process.sql.DataException;
+import org.jumpmind.symmetric.core.process.sql.DataException;
 
 public class Template {
     

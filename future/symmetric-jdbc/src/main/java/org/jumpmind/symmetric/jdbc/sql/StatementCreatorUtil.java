@@ -29,9 +29,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.symmetric.data.common.Log;
-import org.jumpmind.symmetric.data.common.LogFactory;
-import org.jumpmind.symmetric.data.common.LogLevel;
+import org.jumpmind.symmetric.core.common.Log;
+import org.jumpmind.symmetric.core.common.LogFactory;
+import org.jumpmind.symmetric.core.common.LogLevel;
 
 public abstract class StatementCreatorUtil {
 
