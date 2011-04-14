@@ -120,7 +120,7 @@ public class TestDB2Platform extends TestPlatformBase
     {
         assertEqualsIgnoringWhitespaces(
             "ALTER TABLE \"table3\" DROP CONSTRAINT \"testfk\";\n"+
-            "ALTER TABLE \"table2\" DROP CONSTRAINT \"table2_FK_2_table1\";\n"+
+            "ALTER TABLE \"table2\" DROP CONSTRAINT \"table2_FK_COL_FK_1_COL_FK_2_table1\";\n"+
             "DROP TABLE \"table3\";\n"+
             "DROP TABLE \"table2\";\n"+
             "DROP TABLE \"table1\";\n"+
@@ -148,7 +148,7 @@ public class TestDB2Platform extends TestPlatformBase
             "    \"COL_FK\" INTEGER NOT NULL,\n"+
             "    PRIMARY KEY (\"COL_PK\")\n"+
             ");\n"+
-            "ALTER TABLE \"table2\" ADD CONSTRAINT \"table2_FK_2_table1\" FOREIGN KEY (\"COL_FK_1\", \"COL_FK_2\") REFERENCES \"table1\" (\"COL_PK_2\", \"COL_PK_1\");\n"+
+            "ALTER TABLE \"table2\" ADD CONSTRAINT \"table2_FK_COL_FK_1_COL_FK_2_table1\" FOREIGN KEY (\"COL_FK_1\", \"COL_FK_2\") REFERENCES \"table1\" (\"COL_PK_2\", \"COL_PK_1\");\n"+
             "ALTER TABLE \"table3\" ADD CONSTRAINT \"testfk\" FOREIGN KEY (\"COL_FK\") REFERENCES \"table2\" (\"COL_PK\");\n",
             createTestDatabase(TABLE_CONSTRAINT_TEST_SCHEMA));
     }
