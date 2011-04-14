@@ -564,7 +564,7 @@ public class JdbcModelReader {
     /**
      * Returns a new {@link Table} object.
      */
-    protected Table readTable(String catalogName, String schemaName, String tblName, 
+    public Table readTable(String catalogName, String schemaName, String tblName, 
             boolean caseSensitive, boolean makeAllColumnsPKsIfNoneFound) {
         Table table = readTableCaseSensitive(catalogName, schemaName, tblName, makeAllColumnsPKsIfNoneFound);
 
