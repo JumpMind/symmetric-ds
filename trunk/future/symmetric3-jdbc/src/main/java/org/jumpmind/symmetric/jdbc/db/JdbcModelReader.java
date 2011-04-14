@@ -60,43 +60,41 @@ import org.jumpmind.symmetric.jdbc.sql.Template;
 
 /**
  * An utility class to create a Database model from a live database.
- * 
- * @version $Revision: 543392 $
  */
 public class JdbcModelReader {
     /** The Log to which logging calls will be made. */
-    protected final Log _log = LogFactory.getLog(getClass());
+    protected final Log log = LogFactory.getLog(getClass());
 
     /** The descriptors for the relevant columns in the table meta data. */
-    private final List<MetaDataColumnDescriptor> _columnsForTable;
+    private final List<MetaDataColumnDescriptor> columnsForTable;
     /** The descriptors for the relevant columns in the table column meta data. */
-    private final List<MetaDataColumnDescriptor> _columnsForColumn;
+    private final List<MetaDataColumnDescriptor> columnsForColumn;
     /** The descriptors for the relevant columns in the primary key meta data. */
-    private final List<MetaDataColumnDescriptor> _columnsForPK;
+    private final List<MetaDataColumnDescriptor> columnsForPK;
     /** The descriptors for the relevant columns in the foreign key meta data. */
-    private final List<MetaDataColumnDescriptor> _columnsForFK;
+    private final List<MetaDataColumnDescriptor> columnsForFK;
     /** The descriptors for the relevant columns in the index meta data. */
-    private final List<MetaDataColumnDescriptor> _columnsForIndex;
+    private final List<MetaDataColumnDescriptor> columnsForIndex;
 
     /** The platform that this model reader belongs to. */
-    private IPlatform _platform;
+    private IPlatform platform;
     /**
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
      * must support).
      */
-    private HashMap<Integer, String> _defaultSizes = new HashMap<Integer, String>();
+    private HashMap<Integer, String> defaultSizes = new HashMap<Integer, String>();
     /** The default database catalog to read. */
-    private String _defaultCatalogPattern = "%";
+    private String defaultCatalogPattern = "%";
     /** The default database schema(s) to read. */
-    private String _defaultSchemaPattern = "%";
+    private String defaultSchemaPattern = "%";
     /** The default pattern for reading all tables. */
-    private String _defaultTablePattern = "%";
+    private String defaultTablePattern = "%";
     /** The default pattern for reading all columns. */
-    private String _defaultColumnPattern;
+    private String defaultColumnPattern;
     /** The table types to recognize per default. */
-    private String[] _defaultTableTypes = { "TABLE" };
+    private String[] defaultTableTypes = { "TABLE" };
     /** The active connection while reading a database model. */
-    private Connection _connection;
+    private Connection connection;
     
     private DataSource dataSource;
 
@@ -107,28 +105,28 @@ public class JdbcModelReader {
      *            The plaftform this builder belongs to
      */
     public JdbcModelReader(IPlatform platform, DataSource dataSource) {
-        _platform = platform;
+        this.platform = platform;
         this.dataSource = dataSource;
 
-        _defaultSizes.put(new Integer(Types.CHAR), "254");
-        _defaultSizes.put(new Integer(Types.VARCHAR), "254");
-        _defaultSizes.put(new Integer(Types.LONGVARCHAR), "254");
-        _defaultSizes.put(new Integer(Types.BINARY), "254");
-        _defaultSizes.put(new Integer(Types.VARBINARY), "254");
-        _defaultSizes.put(new Integer(Types.LONGVARBINARY), "254");
-        _defaultSizes.put(new Integer(Types.INTEGER), "32");
-        _defaultSizes.put(new Integer(Types.BIGINT), "64");
-        _defaultSizes.put(new Integer(Types.REAL), "7,0");
-        _defaultSizes.put(new Integer(Types.FLOAT), "15,0");
-        _defaultSizes.put(new Integer(Types.DOUBLE), "15,0");
-        _defaultSizes.put(new Integer(Types.DECIMAL), "15,15");
-        _defaultSizes.put(new Integer(Types.NUMERIC), "15,15");
+        defaultSizes.put(new Integer(Types.CHAR), "254");
+        defaultSizes.put(new Integer(Types.VARCHAR), "254");
+        defaultSizes.put(new Integer(Types.LONGVARCHAR), "254");
+        defaultSizes.put(new Integer(Types.BINARY), "254");
+        defaultSizes.put(new Integer(Types.VARBINARY), "254");
+        defaultSizes.put(new Integer(Types.LONGVARBINARY), "254");
+        defaultSizes.put(new Integer(Types.INTEGER), "32");
+        defaultSizes.put(new Integer(Types.BIGINT), "64");
+        defaultSizes.put(new Integer(Types.REAL), "7,0");
+        defaultSizes.put(new Integer(Types.FLOAT), "15,0");
+        defaultSizes.put(new Integer(Types.DOUBLE), "15,0");
+        defaultSizes.put(new Integer(Types.DECIMAL), "15,15");
+        defaultSizes.put(new Integer(Types.NUMERIC), "15,15");
 
-        _columnsForTable = initColumnsForTable();
-        _columnsForColumn = initColumnsForColumn();
-        _columnsForPK = initColumnsForPK();
-        _columnsForFK = initColumnsForFK();
-        _columnsForIndex = initColumnsForIndex();
+        columnsForTable = initColumnsForTable();
+        columnsForColumn = initColumnsForColumn();
+        columnsForPK = initColumnsForPK();
+        columnsForFK = initColumnsForFK();
+        columnsForIndex = initColumnsForIndex();
     }
 
     /**
@@ -137,7 +135,7 @@ public class JdbcModelReader {
      * @return The platform
      */
     public IPlatform getPlatform() {
-        return _platform;
+        return platform;
     }
 
     /**
@@ -146,7 +144,7 @@ public class JdbcModelReader {
      * @return The platform settings
      */
     public PlatformInfo getPlatformInfo() {
-        return _platform.getPlatformInfo();
+        return platform.getPlatformInfo();
     }
 
     /**
@@ -160,10 +158,10 @@ public class JdbcModelReader {
     protected List<MetaDataColumnDescriptor> initColumnsForTable() {
         List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
 
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("TABLE_TYPE", Types.VARCHAR, "UNKNOWN"));
-        result.add(new MetaDataColumnDescriptor("TABLE_CAT", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("TABLE_SCHEM", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("TABLENAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("TABLETYPE", Types.VARCHAR, "UNKNOWN"));
+        result.add(new MetaDataColumnDescriptor("TABLECAT", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("TABLESCHEM", Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("REMARKS", Types.VARCHAR));
 
         return result;
@@ -180,22 +178,22 @@ public class JdbcModelReader {
     protected List<MetaDataColumnDescriptor> initColumnsForColumn() {
         List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
 
-        // As suggested by Alexandre Borgoltz, we're reading the COLUMN_DEF
+        // As suggested by Alexandre Borgoltz, we're reading the COLUMNDEF
         // first because Oracle
         // has problems otherwise (it seemingly requires a LONG column to be the
         // first to be read)
         // See also DDLUTILS-29
-        result.add(new MetaDataColumnDescriptor("COLUMN_DEF", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("COLUMNDEF", Types.VARCHAR));
         // we're also reading the table name so that a model reader impl can
         // filter manually
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("DATA_TYPE", Types.INTEGER, new Integer(
+        result.add(new MetaDataColumnDescriptor("TABLENAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("COLUMNNAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("DATATYPE", Types.INTEGER, new Integer(
                 java.sql.Types.OTHER)));
-        result.add(new MetaDataColumnDescriptor("NUM_PREC_RADIX", Types.INTEGER, new Integer(10)));
-        result.add(new MetaDataColumnDescriptor("DECIMAL_DIGITS", Types.INTEGER, new Integer(0)));
-        result.add(new MetaDataColumnDescriptor("COLUMN_SIZE", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("IS_NULLABLE", Types.VARCHAR, "YES"));
+        result.add(new MetaDataColumnDescriptor("NUMPRECRADIX", Types.INTEGER, new Integer(10)));
+        result.add(new MetaDataColumnDescriptor("DECIMALDIGITS", Types.INTEGER, new Integer(0)));
+        result.add(new MetaDataColumnDescriptor("COLUMNSIZE", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("ISNULLABLE", Types.VARCHAR, "YES"));
         result.add(new MetaDataColumnDescriptor("REMARKS", Types.VARCHAR));
 
         return result;
@@ -212,13 +210,13 @@ public class JdbcModelReader {
     protected List<MetaDataColumnDescriptor> initColumnsForPK() {
         List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
 
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("COLUMNNAME", Types.VARCHAR));
         // we're also reading the table name so that a model reader impl can
         // filter manually
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("TABLENAME", Types.VARCHAR));
         // the name of the primary key is currently only interesting to the pk
         // index name resolution
-        result.add(new MetaDataColumnDescriptor("PK_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("PKNAME", Types.VARCHAR));
 
         return result;
     }
@@ -234,14 +232,14 @@ public class JdbcModelReader {
     protected List<MetaDataColumnDescriptor> initColumnsForFK() {
         List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
 
-        result.add(new MetaDataColumnDescriptor("PKTABLE_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("PKTABLENAME", Types.VARCHAR));
         // we're also reading the table name so that a model reader impl can
         // filter manually
-        result.add(new MetaDataColumnDescriptor("FKTABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("KEY_SEQ", Types.TINYINT, new Short((short) 0)));
-        result.add(new MetaDataColumnDescriptor("FK_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("PKCOLUMN_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("FKCOLUMN_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("FKTABLENAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("KEYSEQ", Types.TINYINT, new Short((short) 0)));
+        result.add(new MetaDataColumnDescriptor("FKNAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("PKCOLUMNNAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("FKCOLUMNNAME", Types.VARCHAR));
 
         return result;
     }
@@ -257,14 +255,14 @@ public class JdbcModelReader {
     protected List<MetaDataColumnDescriptor> initColumnsForIndex() {
         List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
 
-        result.add(new MetaDataColumnDescriptor("INDEX_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("INDEXNAME", Types.VARCHAR));
         // we're also reading the table name so that a model reader impl can
         // filter manually
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("NON_UNIQUE", Types.BIT, Boolean.TRUE));
-        result.add(new MetaDataColumnDescriptor("ORDINAL_POSITION", Types.TINYINT, new Short(
+        result.add(new MetaDataColumnDescriptor("TABLENAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("NONUNIQUE", Types.BIT, Boolean.TRUE));
+        result.add(new MetaDataColumnDescriptor("ORDINALPOSITION", Types.TINYINT, new Short(
                 (short) 0)));
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("COLUMNNAME", Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("TYPE", Types.TINYINT));
 
         return result;
@@ -276,7 +274,7 @@ public class JdbcModelReader {
      * @return The default catalog(s)
      */
     public String getDefaultCatalogPattern() {
-        return _defaultCatalogPattern;
+        return defaultCatalogPattern;
     }
 
     /**
@@ -286,7 +284,7 @@ public class JdbcModelReader {
      *            The catalog(s)
      */
     public void setDefaultCatalogPattern(String catalogPattern) {
-        _defaultCatalogPattern = catalogPattern;
+        defaultCatalogPattern = catalogPattern;
     }
 
     /**
@@ -295,7 +293,7 @@ public class JdbcModelReader {
      * @return The default schema(s)
      */
     public String getDefaultSchemaPattern() {
-        return _defaultSchemaPattern;
+        return defaultSchemaPattern;
     }
 
     /**
@@ -305,7 +303,7 @@ public class JdbcModelReader {
      *            The schema(s)
      */
     public void setDefaultSchemaPattern(String schemaPattern) {
-        _defaultSchemaPattern = schemaPattern;
+        defaultSchemaPattern = schemaPattern;
     }
 
     /**
@@ -315,7 +313,7 @@ public class JdbcModelReader {
      * @return The table pattern
      */
     public String getDefaultTablePattern() {
-        return _defaultTablePattern;
+        return defaultTablePattern;
     }
 
     /**
@@ -325,7 +323,7 @@ public class JdbcModelReader {
      *            The table pattern
      */
     public void setDefaultTablePattern(String tablePattern) {
-        _defaultTablePattern = tablePattern;
+        defaultTablePattern = tablePattern;
     }
 
     /**
@@ -335,7 +333,7 @@ public class JdbcModelReader {
      * @return The column pattern
      */
     public String getDefaultColumnPattern() {
-        return _defaultColumnPattern;
+        return defaultColumnPattern;
     }
 
     /**
@@ -345,7 +343,7 @@ public class JdbcModelReader {
      *            The column pattern
      */
     public void setDefaultColumnPattern(String columnPattern) {
-        _defaultColumnPattern = columnPattern;
+        defaultColumnPattern = columnPattern;
     }
 
     /**
@@ -354,7 +352,7 @@ public class JdbcModelReader {
      * @return The default table types
      */
     public String[] getDefaultTableTypes() {
-        return _defaultTableTypes;
+        return defaultTableTypes;
     }
 
     /**
@@ -366,7 +364,7 @@ public class JdbcModelReader {
      *            The table types
      */
     public void setDefaultTableTypes(String[] types) {
-        _defaultTableTypes = types;
+        defaultTableTypes = types;
     }
 
     /**
@@ -376,7 +374,7 @@ public class JdbcModelReader {
      * @return The column descriptors
      */
     protected List<MetaDataColumnDescriptor> getColumnsForTable() {
-        return _columnsForTable;
+        return columnsForTable;
     }
 
     /**
@@ -386,7 +384,7 @@ public class JdbcModelReader {
      * @return The column descriptors
      */
     protected List<MetaDataColumnDescriptor> getColumnsForColumn() {
-        return _columnsForColumn;
+        return columnsForColumn;
     }
 
     /**
@@ -396,7 +394,7 @@ public class JdbcModelReader {
      * @return The column descriptors
      */
     protected List<MetaDataColumnDescriptor> getColumnsForPK() {
-        return _columnsForPK;
+        return columnsForPK;
     }
 
     /**
@@ -406,7 +404,7 @@ public class JdbcModelReader {
      * @return The column descriptors
      */
     protected List<MetaDataColumnDescriptor> getColumnsForFK() {
-        return _columnsForFK;
+        return columnsForFK;
     }
 
     /**
@@ -416,7 +414,7 @@ public class JdbcModelReader {
      * @return The column descriptors
      */
     protected List<MetaDataColumnDescriptor> getColumnsForIndex() {
-        return _columnsForIndex;
+        return columnsForIndex;
     }
 
     /**
@@ -427,7 +425,7 @@ public class JdbcModelReader {
      *         connection
      */
     protected Connection getConnection() {
-        return _connection;
+        return connection;
     }
 
     /**
@@ -476,13 +474,13 @@ public class JdbcModelReader {
                     catalog = db.getName();
                 }
             } catch (Exception ex) {
-                _log.log(LogLevel.INFO, ex, "Cannot determine the catalog name from connection.");
+                log.log(LogLevel.INFO, ex, "Cannot determine the catalog name from connection.");
             }
         } else {
             db.setName(name);
         }
         try {
-            _connection = connection;
+            this.connection = connection;
             db.addTables(readTables(catalog, schema, tableTypes));
             // Note that we do this here instead of in readTable since platforms
             // may redefine the
@@ -492,7 +490,7 @@ public class JdbcModelReader {
                 sortForeignKeys(db);
             }
         } finally {
-            _connection = null;
+            connection = null;
         }
         db.initialize();
         return db;
@@ -519,7 +517,7 @@ public class JdbcModelReader {
         try {
             DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
 
-            metaData.setMetaData(_connection.getMetaData());
+            metaData.setMetaData(connection.getMetaData());
             metaData.setCatalog(catalog == null ? getDefaultCatalogPattern() : catalog);
             metaData.setSchemaPattern(schemaPattern == null ? getDefaultSchemaPattern()
                     : schemaPattern);
@@ -600,8 +598,8 @@ public class JdbcModelReader {
             // If we don't provide a default schema or catalog, then on some
             // databases multiple results will be found in the metadata from
             // multiple schemas/catalogs
-            final String schema = StringUtils.isBlank(schemaName) ? _platform.getDefaultSchema() : schemaName;
-            final String catalog = StringUtils.isBlank(catalogName) ? _platform.getDefaultCatalog()
+            final String schema = StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName;
+            final String catalog = StringUtils.isBlank(catalogName) ? platform.getDefaultCatalog()
                     : catalogName;
             table = (Table) new Template(dataSource).execute(new IConnectionCallback<Table>() {
                 public Table execute(Connection c) throws SQLException {
@@ -612,9 +610,9 @@ public class JdbcModelReader {
                     metaData.setSchemaPattern(schema);
                     metaData.setTableTypes(null);
                     String tableName = tblName;
-                    if (_platform.getPlatformInfo().isStoresUpperCaseNamesInCatalog()) {
+                    if (platform.getPlatformInfo().isStoresUpperCaseNamesInCatalog()) {
                         tableName = tblName.toUpperCase();
-                    } else if (_platform.getPlatformInfo().isStoresLowerCaseNamesInCatalog()) {
+                    } else if (platform.getPlatformInfo().isStoresLowerCaseNamesInCatalog()) {
                         tableName = tblName.toLowerCase();
                     }
 
@@ -638,7 +636,7 @@ public class JdbcModelReader {
                 }
             });
         } catch (DataException ex) {
-            _log.log(LogLevel.WARN, ex);
+            log.log(LogLevel.WARN, ex);
         }
 
         return table;
@@ -673,16 +671,16 @@ public class JdbcModelReader {
      */
     protected Table readTable(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
-        String tableName = (String) values.get("TABLE_NAME");
+        String tableName = (String) values.get("TABLENAME");
         Table table = null;
 
         if ((tableName != null) && (tableName.length() > 0)) {
             table = new Table();
 
             table.setName(tableName);
-            table.setType((String) values.get("TABLE_TYPE"));
-            table.setCatalog((String) values.get("TABLE_CAT"));
-            table.setSchema((String) values.get("TABLE_SCHEM"));
+            table.setType((String) values.get("TABLETYPE"));
+            table.setCatalog((String) values.get("TABLECAT"));
+            table.setSchema((String) values.get("TABLESCHEM"));
             table.setDescription((String) values.get("REMARKS"));
 
             table.addColumns(readColumns(metaData, tableName));
@@ -898,16 +896,16 @@ public class JdbcModelReader {
             throws SQLException {
         Column column = new Column();
 
-        column.setName((String) values.get("COLUMN_NAME"));
-        column.setDefaultValue((String) values.get("COLUMN_DEF"));
-        column.setTypeCode(((Integer) values.get("DATA_TYPE")).intValue());
-        column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
+        column.setName((String) values.get("COLUMNNAME"));
+        column.setDefaultValue((String) values.get("COLUMNDEF"));
+        column.setTypeCode(((Integer) values.get("DATATYPE")).intValue());
+        column.setPrecisionRadix(((Integer) values.get("NUMPRECRADIX")).intValue());
 
-        String size = (String) values.get("COLUMN_SIZE");
-        int scale = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
+        String size = (String) values.get("COLUMNSIZE");
+        int scale = ((Integer) values.get("DECIMALDIGITS")).intValue();
 
         if (size == null) {
-            size = (String) _defaultSizes.get(new Integer(column.getTypeCode()));
+            size = (String) defaultSizes.get(new Integer(column.getTypeCode()));
         }
         // we're setting the size after the precision and radix in case
         // the database prefers to return them in the size value
@@ -918,7 +916,7 @@ public class JdbcModelReader {
             // a scale specification)
             column.setScale(scale);
         }
-        column.setRequired("NO".equalsIgnoreCase(((String) values.get("IS_NULLABLE")).trim()));
+        column.setRequired("NO".equalsIgnoreCase(((String) values.get("ISNULLABLE")).trim()));
         column.setDescription((String) values.get("REMARKS"));
         return column;
     }
@@ -965,7 +963,7 @@ public class JdbcModelReader {
      */
     protected String readPrimaryKeyName(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
-        return (String) values.get("COLUMN_NAME");
+        return (String) values.get("COLUMNNAME");
     }
 
     /**
@@ -1011,21 +1009,21 @@ public class JdbcModelReader {
      */
     protected void readForeignKey(DatabaseMetaDataWrapper metaData, Map<String, Object> values,
             Map<String, ForeignKey> knownFks) throws SQLException {
-        String fkName = (String) values.get("FK_NAME");
+        String fkName = (String) values.get("FKNAME");
         ForeignKey fk = (ForeignKey) knownFks.get(fkName);
 
         if (fk == null) {
             fk = new ForeignKey(fkName);
-            fk.setForeignTableName((String) values.get("PKTABLE_NAME"));
+            fk.setForeignTableName((String) values.get("PKTABLENAME"));
             knownFks.put(fkName, fk);
         }
 
         Reference ref = new Reference();
 
-        ref.setForeignColumnName((String) values.get("PKCOLUMN_NAME"));
-        ref.setLocalColumnName((String) values.get("FKCOLUMN_NAME"));
-        if (values.containsKey("KEY_SEQ")) {
-            ref.setSequenceValue(((Short) values.get("KEY_SEQ")).intValue());
+        ref.setForeignColumnName((String) values.get("PKCOLUMNNAME"));
+        ref.setLocalColumnName((String) values.get("FKCOLUMNNAME"));
+        if (values.containsKey("KEYSEQ")) {
+            ref.setSequenceValue(((Short) values.get("KEYSEQ")).intValue());
         }
         fk.addReference(ref);
     }
@@ -1080,13 +1078,13 @@ public class JdbcModelReader {
             return;
         }
 
-        String indexName = (String) values.get("INDEX_NAME");
+        String indexName = (String) values.get("INDEXNAME");
 
         if (indexName != null) {
             Index index = (Index) knownIndices.get(indexName);
 
             if (index == null) {
-                if (((Boolean) values.get("NON_UNIQUE")).booleanValue()) {
+                if (((Boolean) values.get("NONUNIQUE")).booleanValue()) {
                     index = new NonUniqueIndex();
                 } else {
                     index = new UniqueIndex();
@@ -1098,9 +1096,9 @@ public class JdbcModelReader {
 
             IndexColumn indexColumn = new IndexColumn();
 
-            indexColumn.setName((String) values.get("COLUMN_NAME"));
-            if (values.containsKey("ORDINAL_POSITION")) {
-                indexColumn.setOrdinalPosition(((Short) values.get("ORDINAL_POSITION")).intValue());
+            indexColumn.setName((String) values.get("COLUMNNAME"));
+            if (values.containsKey("ORDINALPOSITION")) {
+                indexColumn.setOrdinalPosition(((Short) values.get("ORDINALPOSITION")).intValue());
             }
             index.addColumn(indexColumn);
         }
@@ -1202,7 +1200,7 @@ public class JdbcModelReader {
                     msg.append(col.toString());
                 }
             }
-            _log.log(LogLevel.WARN, msg.toString());
+            log.log(LogLevel.WARN, msg.toString());
         }
     }
 
