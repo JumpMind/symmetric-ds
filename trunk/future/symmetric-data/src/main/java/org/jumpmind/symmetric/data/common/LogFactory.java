@@ -1,0 +1,47 @@
+package org.jumpmind.symmetric.data.common;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class LogFactory {
+
+    private static Class<?> logClass;
+
+    private static Map<Class<?>, Log> logs = new HashMap<Class<?>, Log>();
+
+    static {
+        String clazzName = System.getProperty("org.jumpmind.symmmetric.data.common.ILog",
+                "org.jumpmind.symmmetric.data.common.DefaultLog");
+        try {
+            logClass = Class.forName(clazzName);
+            Object log = logClass.newInstance();
+            if (!(log instanceof Log)) {
+                throw new ClassCastException(log.getClass().getName() + " was not an instance of "
+                        + Log.class.getName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            logClass = DefaultLog.class;
+        }
+    }
+
+    public static Log getLog(Class<?> clazz) {
+        Log log = logs.get(clazz);
+        if (log == null) {
+            synchronized (logs) {
+                log = logs.get(clazz);
+                if (log == null) {
+                    try {
+                        log = (Log) logClass.newInstance();
+                    } catch (Exception e) {
+                        log = new DefaultLog();
+                    }
+
+                    log.setClass(clazz);
+                    logs.put(clazz, log);
+                }
+            }
+        }
+        return log;
+    }
+}
