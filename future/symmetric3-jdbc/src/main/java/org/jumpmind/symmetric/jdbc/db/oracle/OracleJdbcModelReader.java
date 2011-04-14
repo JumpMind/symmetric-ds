@@ -285,7 +285,7 @@ public class OracleJdbcModelReader extends JdbcModelReader {
 
                     readIndex(metaData, values, indices);
                 } else {
-                    _log.log(LogLevel.WARN, "Skipping index %s of type %s", name, type);
+                    log.log(LogLevel.WARN, "Skipping index %s of type %s", name, type);
                 }
             }
         } finally {
