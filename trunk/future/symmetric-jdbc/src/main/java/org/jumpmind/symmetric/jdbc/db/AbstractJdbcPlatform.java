@@ -2,8 +2,8 @@ package org.jumpmind.symmetric.jdbc.db;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.data.db.AbstractPlatform;
-import org.jumpmind.symmetric.data.model.Table;
+import org.jumpmind.symmetric.core.db.AbstractPlatform;
+import org.jumpmind.symmetric.core.model.Table;
 
 abstract public class AbstractJdbcPlatform extends AbstractPlatform {
 
