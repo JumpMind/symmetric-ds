@@ -72,7 +72,8 @@
     <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="db2zSeriesProductVersion" value="$[sym.db2.zseries.version]" />
-        <property name="queryTimeout" value="$[sym.db.sql.query.timeout.seconds]"/>        
+        <property name="queryTimeout" value="$[sym.db.sql.query.timeout.seconds]"/>   
+        <property name="forceDelimitedIdentifierModeOn" value="$[sym.db.force.delimited.identifier.mode.on]"/>     
     </bean>    
 
 </beans>
