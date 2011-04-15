@@ -66,12 +66,18 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     private BeanFactory beanFactory;
     
     private int queryTimeout;
+    
+    private boolean forceDelimitedIdentifierModeOn = false;
 
     public IDbDialect getObject() throws Exception {
 
         waitForAvailableDatabase();
 
-        Platform pf = PlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());        
+        Platform pf = PlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
+        
+        if (forceDelimitedIdentifierModeOn) {
+            pf.setDelimitedIdentifierModeOn(true);
+        }
 
         AbstractDbDialect dialect = null;
 
@@ -172,5 +178,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     public void setQueryTimeout(int queryTimeout) {
         this.queryTimeout = queryTimeout;
     }
-
+    
+    public void setForceDelimitedIdentifierModeOn(boolean forceDelimitedIdentifierModeOn) {
+        this.forceDelimitedIdentifierModeOn = forceDelimitedIdentifierModeOn;
+    }
 }
