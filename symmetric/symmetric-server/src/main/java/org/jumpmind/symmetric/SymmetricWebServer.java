@@ -64,6 +64,10 @@ public class SymmetricWebServer {
     
     protected static final String DEFAULT_WEBAPP_DIR = "../web";    
 
+    public static final int DEFAULT_HTTP_PORT = 31415;
+    
+    public static final int DEFAULT_HTTPS_PORT = 31417;
+    
     /**
      * The type of HTTP connection to create for this SymmetricDS web server
      */
