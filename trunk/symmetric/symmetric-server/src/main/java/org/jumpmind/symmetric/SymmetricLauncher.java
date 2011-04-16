@@ -157,8 +157,8 @@ public class SymmetricLauncher {
         try {
             CommandLine line = parser.parse(options, args);
 
-            int port = 31415;
-            int securePort = 31417;
+            int port = SymmetricWebServer.DEFAULT_HTTP_PORT;
+            int securePort = SymmetricWebServer.DEFAULT_HTTPS_PORT;
             int maxIdleTime = 900000;
             String propertiesFile = null;
             boolean noNio = false;
