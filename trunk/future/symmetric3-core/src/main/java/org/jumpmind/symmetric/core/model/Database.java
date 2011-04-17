@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.jumpmind.symmetric.core.process.sql.DataException;
+import org.jumpmind.symmetric.core.db.DbException;
 
 /**
  * Represents the database model, ie. the tables in the database. It also
@@ -52,14 +52,14 @@ public class Database implements Serializable, Cloneable {
      * @param otherDb
      *            The other database model
      */
-    public void mergeWith(Database otherDb) throws DataException {
+    public void mergeWith(Database otherDb) throws DbException {
         for (Iterator<Table> it = otherDb._tables.iterator(); it.hasNext();) {
             Table table = it.next();
 
             if (findTable(table.getName()) != null) {
                 // TODO: It might make more sense to log a warning and overwrite
                 // the table (or merge them) ?
-                throw new DataException("Cannot merge the models because table " + table.getName()
+                throw new DbException("Cannot merge the models because table " + table.getName()
                         + " already defined in this model");
             }
             try {
@@ -225,7 +225,7 @@ public class Database implements Serializable, Cloneable {
      * elements are valid (table and columns have a name, foreign keys rference
      * existing tables etc.)
      */
-    public void initialize() throws DataException {
+    public void initialize() throws DbException {
         // we have to setup
         // * target tables in foreign keys
         // * columns in foreign key references
@@ -238,17 +238,17 @@ public class Database implements Serializable, Cloneable {
         int tableIdx = 0;
 
         if ((getName() == null) || (getName().length() == 0)) {
-            throw new DataException("The database model has no name");
+            throw new DbException("The database model has no name");
         }
 
         for (Iterator<Table> tableIt = _tables.iterator(); tableIt.hasNext(); tableIdx++) {
             Table curTable = tableIt.next();
 
             if ((curTable.getName() == null) || (curTable.getName().length() == 0)) {
-                throw new DataException("The table nr. " + tableIdx + " has no name");
+                throw new DbException("The table nr. " + tableIdx + " has no name");
             }
             if (namesOfProcessedTables.contains(curTable.getName())) {
-                throw new DataException("There are multiple tables with the name "
+                throw new DbException("There are multiple tables with the name "
                         + curTable.getName());
             }
             namesOfProcessedTables.add(curTable.getName());
@@ -261,22 +261,22 @@ public class Database implements Serializable, Cloneable {
                 Column column = curTable.getColumn(idx);
 
                 if ((column.getName() == null) || (column.getName().length() == 0)) {
-                    throw new DataException("The column nr. " + idx + " in table "
+                    throw new DbException("The column nr. " + idx + " in table "
                             + curTable.getName() + " has no name");
                 }
                 if (namesOfProcessedColumns.contains(column.getName())) {
-                    throw new DataException("There are multiple column with the name "
+                    throw new DbException("There are multiple column with the name "
                             + column.getName() + " in the table " + curTable.getName());
                 }
                 namesOfProcessedColumns.add(column.getName());
 
                 if ((column.getType() == null) || (column.getType().length() == 0)) {
-                    throw new DataException("The column nr. " + idx + " in table "
+                    throw new DbException("The column nr. " + idx + " in table "
                             + curTable.getName() + " has no type");
                 }
                 if ((column.getTypeCode() == Types.OTHER)
                         && !"OTHER".equalsIgnoreCase(column.getType())) {
-                    throw new DataException("The column nr. " + idx + " in table "
+                    throw new DbException("The column nr. " + idx + " in table "
                             + curTable.getName() + " has an unknown type " + column.getType());
                 }
                 namesOfProcessedColumns.add(column.getName());
@@ -289,7 +289,7 @@ public class Database implements Serializable, Cloneable {
 
                 if (fkName.length() > 0) {
                     if (namesOfProcessedFks.contains(fkName)) {
-                        throw new DataException("There are multiple foreign keys in table "
+                        throw new DbException("There are multiple foreign keys in table "
                                 + curTable.getName() + " with the name " + fkName);
                     }
                     namesOfProcessedFks.add(fkName);
@@ -299,7 +299,7 @@ public class Database implements Serializable, Cloneable {
                     Table targetTable = findTable(fk.getForeignTableName(), true);
 
                     if (targetTable == null) {
-                        throw new DataException("The foreignkey " + fkDesc + " in table "
+                        throw new DbException("The foreignkey " + fkDesc + " in table "
                                 + curTable.getName() + " references the undefined table "
                                 + fk.getForeignTableName());
                     } else {
@@ -313,7 +313,7 @@ public class Database implements Serializable, Cloneable {
                         Column localColumn = curTable.findColumn(ref.getLocalColumnName(), true);
 
                         if (localColumn == null) {
-                            throw new DataException("The foreignkey " + fkDesc + " in table "
+                            throw new DbException("The foreignkey " + fkDesc + " in table "
                                     + curTable.getName()
                                     + " references the undefined local column "
                                     + ref.getLocalColumnName());
@@ -326,7 +326,7 @@ public class Database implements Serializable, Cloneable {
                                 ref.getForeignColumnName(), true);
 
                         if (foreignColumn == null) {
-                            throw new DataException("The foreignkey " + fkDesc + " in table "
+                            throw new DbException("The foreignkey " + fkDesc + " in table "
                                     + curTable.getName()
                                     + " references the undefined local column "
                                     + ref.getForeignColumnName() + " in table "
@@ -344,7 +344,7 @@ public class Database implements Serializable, Cloneable {
 
                 if (indexName.length() > 0) {
                     if (namesOfProcessedIndices.contains(indexName)) {
-                        throw new DataException("There are multiple indices in table "
+                        throw new DbException("There are multiple indices in table "
                                 + curTable.getName() + " with the name " + indexName);
                     }
                     namesOfProcessedIndices.add(indexName);

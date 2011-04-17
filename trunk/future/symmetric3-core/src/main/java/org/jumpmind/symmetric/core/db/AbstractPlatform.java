@@ -5,14 +5,14 @@ import org.jumpmind.symmetric.core.model.Table;
 abstract public class AbstractPlatform implements IPlatform {
 
     private PlatformInfo platformInfo = new PlatformInfo();
-    
+
     protected String defaultSchema;
-    
+
     protected String defaultCatalog;
 
     public PlatformInfo getPlatformInfo() {
         return platformInfo;
-    }    
+    }
 
     /**
      * Returns the constraint name. This method takes care of length limitations
@@ -72,28 +72,28 @@ abstract public class AbstractPlatform implements IPlatform {
         if (((startCut == 0) || (name.charAt(startCut - 1) != '_'))
                 && ((startCut + delta + 1 == originalLength) || (name.charAt(startCut + delta + 1) != '_'))) {
             // just to make sure that there isn't already a '_' right before or
-            // right
-            // after the cutting place (which would look odd with an aditional
-            // one)
+            // right after the cutting place (which would look odd with an
+            // additional one)
             result.append("_");
         }
         result.append(name.substring(startCut + delta + 1, originalLength));
         return result.toString();
     }
-    
+
     public String getDefaultCatalog() {
         return defaultCatalog;
     }
-    
+
     public String getDefaultSchema() {
         return defaultSchema;
     }
-    
+
     public void setDefaultCatalog(String defaultCatalog) {
         this.defaultCatalog = defaultCatalog;
     }
-    
+
     public void setDefaultSchema(String defaultSchema) {
         this.defaultSchema = defaultSchema;
     }
+    
 }

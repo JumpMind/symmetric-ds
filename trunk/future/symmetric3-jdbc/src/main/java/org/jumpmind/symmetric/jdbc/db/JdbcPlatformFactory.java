@@ -8,8 +8,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.core.db.DbException;
 import org.jumpmind.symmetric.core.db.IPlatform;
-import org.jumpmind.symmetric.core.process.sql.DataException;
 import org.jumpmind.symmetric.jdbc.db.oracle.OraclePlatform;
 
 public class JdbcPlatformFactory {
@@ -45,12 +45,12 @@ public class JdbcPlatformFactory {
         try {
             return platformClass != null ? (AbstractJdbcPlatform) platformClass.newInstance() : null;
         } catch (Exception ex) {
-            throw new DataException("Could not create platform for database " + databaseName, ex);
+            throw new DbException("Could not create platform for database " + databaseName, ex);
         }
     }
 
     public static String lookupPlatformId(DataSource dataSource, boolean includeVersion)
-            throws DataException {
+            throws DbException {
         Connection connection = null;
 
         try {
@@ -66,7 +66,7 @@ public class JdbcPlatformFactory {
 
             return productString;
         } catch (SQLException ex) {
-            throw new DataException(
+            throw new DbException(
                     "Error while reading the database metadata: " + ex.getMessage(), ex);
         } finally {
             if (connection != null) {

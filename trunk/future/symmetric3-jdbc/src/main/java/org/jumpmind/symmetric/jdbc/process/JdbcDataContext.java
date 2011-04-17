@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.core.process.jdbc;
+package org.jumpmind.symmetric.jdbc.process;
 
 import java.sql.Connection;
 
