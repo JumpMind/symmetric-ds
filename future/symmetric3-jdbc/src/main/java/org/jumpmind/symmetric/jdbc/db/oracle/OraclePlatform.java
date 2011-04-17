@@ -11,6 +11,9 @@ public class OraclePlatform extends AbstractJdbcPlatform {
 
     public static String PLATFORMID = "Oracle";
 
+    protected static final int[] DATA_INTEGRITY_SQL_ERROR_CODES = { 1, 1400, 1722, 2291, 2292,
+            12899 };
+
     public OraclePlatform() {
         PlatformInfo info = getPlatformInfo();
 
@@ -51,19 +54,24 @@ public class OraclePlatform extends AbstractJdbcPlatform {
         info.setDefaultSize(Types.VARCHAR, 254);
         info.setDefaultSize(Types.BINARY, 254);
         info.setDefaultSize(Types.VARBINARY, 254);
-        
+
         info.setStoresUpperCaseNamesInCatalog(true);
-        
+
         this.jdbcModelReader = new OracleJdbcModelReader(this, dataSource);
 
     }
-    
+
     @Override
     public String getDefaultSchema() {
         if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) new Template(dataSource).queryForObject(
+            this.defaultSchema = (String) new Template(this, dataSource).queryForObject(
                     "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
         }
         return defaultSchema;
+    }
+    
+    @Override
+    protected int[] getDataIntegritySqlErrorCodes() {
+        return DATA_INTEGRITY_SQL_ERROR_CODES;
     }
 }

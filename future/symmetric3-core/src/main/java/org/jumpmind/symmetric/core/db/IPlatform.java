@@ -43,4 +43,6 @@ public interface IPlatform {
      * @return The shortened version
      */
     public String shortenName(String name, int desiredLength);
+    
+    public boolean isDataIntegrityException(Exception ex);
 }

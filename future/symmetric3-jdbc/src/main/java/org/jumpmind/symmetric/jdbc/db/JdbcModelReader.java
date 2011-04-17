@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.db.DbException;
 import org.jumpmind.symmetric.core.db.IPlatform;
 import org.jumpmind.symmetric.core.db.PlatformInfo;
 import org.jumpmind.symmetric.core.model.Column;
@@ -54,7 +55,6 @@ import org.jumpmind.symmetric.core.model.NonUniqueIndex;
 import org.jumpmind.symmetric.core.model.Reference;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.UniqueIndex;
-import org.jumpmind.symmetric.core.process.sql.DataException;
 import org.jumpmind.symmetric.jdbc.sql.IConnectionCallback;
 import org.jumpmind.symmetric.jdbc.sql.Template;
 
@@ -601,7 +601,7 @@ public class JdbcModelReader {
             final String schema = StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName;
             final String catalog = StringUtils.isBlank(catalogName) ? platform.getDefaultCatalog()
                     : catalogName;
-            table = (Table) new Template(dataSource).execute(new IConnectionCallback<Table>() {
+            table = (Table) new Template(platform, dataSource).execute(new IConnectionCallback<Table>() {
                 public Table execute(Connection c) throws SQLException {
                     Table table = null;
                     DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
@@ -635,7 +635,7 @@ public class JdbcModelReader {
                     return table;
                 }
             });
-        } catch (DataException ex) {
+        } catch (DbException ex) {
             log.log(LogLevel.WARN, ex);
         }
 
