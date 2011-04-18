@@ -103,12 +103,14 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                         if (dataService.countDataInRange(dataGap.getStartId() - 1,
                                 dataGap.getEndId() + 1) == 0) {
                             if (dbDialect.supportsTransactionViews()) {
+                                long transactionViewClockSyncThresholdInMs = 
+                                    parameterService.getLong(ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS, 60000);
                                 Date createTime = dataService.findCreateTimeOfData(dataGap
                                         .getEndId() + 1);
                                 if (createTime != null
                                         && !dbDialect
                                                 .areDatabaseTransactionsPendingSince(createTime
-                                                        .getTime() + 5000)) {
+                                                        .getTime() + transactionViewClockSyncThresholdInMs)) {
                                     if (dataService.countDataInRange(dataGap.getStartId() - 1,
                                             dataGap.getEndId() + 1) == 0) {
                                         log.info("RouterSkippingDataIdsNoTransactions",
