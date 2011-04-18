@@ -79,6 +79,7 @@
         <property name="sql" ref="routerServiceSql" />
         <property name="routers" ref="routers" />
         <property name="batchAlgorithms" ref="batchAlgorithms"/>
+        <property name="transactionViewClockSyncThresholdInMs" value="$[sym.oracle.transaction.view.clock.sync.threshold.ms]"/>
         <property name="dataService" ref="dataService" />
         <property name="nodeService" ref="nodeService" />
         <property name="triggerRouterService" ref="triggerRouterService" />

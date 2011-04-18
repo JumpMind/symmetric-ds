@@ -85,6 +85,8 @@ public class RouterService extends AbstractService implements IRouterService {
     private Map<String, IDataRouter> routers;
 
     private Map<String, IBatchAlgorithm> batchAlgorithms;
+    
+    private long transactionViewClockSyncThresholdInMs = 5000;
 
     transient ExecutorService readThread = Executors.newSingleThreadExecutor();
 
@@ -229,7 +231,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                     if (dbDialect.supportsTransactionViews()) {
                                         if (!dbDialect
                                                 .areDatabaseTransactionsPendingSince(dataService
-                                                        .findCreateTimeOfData(dataId).getTime() + 5000)) {
+                                                        .findCreateTimeOfData(dataId).getTime() + transactionViewClockSyncThresholdInMs)) {
                                             if (dataService.countDataInRange(lastDataId, dataId) == 0) {
                                                 log.info("RouterSkippingDataIdsNoTransactions",
                                                         lastDataId, dataId);
@@ -472,4 +474,9 @@ public class RouterService extends AbstractService implements IRouterService {
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;
     }
+    
+    public void setTransactionViewClockSyncThresholdInMs(
+			long transactionViewClockSyncThresholdInMs) {
+		this.transactionViewClockSyncThresholdInMs = transactionViewClockSyncThresholdInMs;
+	}
 }
