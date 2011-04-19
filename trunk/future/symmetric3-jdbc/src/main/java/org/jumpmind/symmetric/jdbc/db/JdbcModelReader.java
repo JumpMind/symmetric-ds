@@ -541,7 +541,7 @@ public class JdbcModelReader {
 
             Collections.sort(tables, new Comparator<Table>() {
                 public int compare(Table obj1, Table obj2) {
-                    return collator.compare(obj1.getName().toUpperCase(), obj2.getName()
+                    return collator.compare(obj1.getTableName().toUpperCase(), obj2.getTableName()
                             .toUpperCase());
                 }
             });
@@ -564,25 +564,25 @@ public class JdbcModelReader {
     /**
      * Returns a new {@link Table} object.
      */
-    public Table readTable(String catalogName, String schemaName, String tblName, 
+    public Table readTable(String catalogName, String schemaName, String tableName, 
             boolean caseSensitive, boolean makeAllColumnsPKsIfNoneFound) {
-        Table table = readTableCaseSensitive(catalogName, schemaName, tblName, makeAllColumnsPKsIfNoneFound);
+        Table table = readTableCaseSensitive(catalogName, schemaName, tableName, makeAllColumnsPKsIfNoneFound);
 
             if (table == null && !caseSensitive) {
                 table = readTableCaseSensitive(StringUtils.upperCase(catalogName), StringUtils
-                        .upperCase(schemaName), StringUtils.upperCase(tblName), makeAllColumnsPKsIfNoneFound);
+                        .upperCase(schemaName), StringUtils.upperCase(tableName), makeAllColumnsPKsIfNoneFound);
                 if (table == null) {
                     table = readTableCaseSensitive(StringUtils.lowerCase(catalogName), StringUtils
-                            .lowerCase(schemaName), StringUtils.lowerCase(tblName), makeAllColumnsPKsIfNoneFound);
+                            .lowerCase(schemaName), StringUtils.lowerCase(tableName), makeAllColumnsPKsIfNoneFound);
                     if (table == null) {
                         table = readTableCaseSensitive(catalogName, schemaName, StringUtils
-                                .upperCase(tblName), makeAllColumnsPKsIfNoneFound);
+                                .upperCase(tableName), makeAllColumnsPKsIfNoneFound);
                         if (table == null) {
                             table = readTableCaseSensitive(catalogName, schemaName, StringUtils
-                                    .lowerCase(tblName), makeAllColumnsPKsIfNoneFound);
+                                    .lowerCase(tableName), makeAllColumnsPKsIfNoneFound);
                             if (table == null) {
                                 table = readTableCaseSensitive(catalogName, schemaName,
-                                        getPlatformTableName(catalogName, schemaName, tblName), makeAllColumnsPKsIfNoneFound);
+                                        getPlatformTableName(catalogName, schemaName, tableName), makeAllColumnsPKsIfNoneFound);
                             }
                         }
                     }
@@ -677,10 +677,10 @@ public class JdbcModelReader {
         if ((tableName != null) && (tableName.length() > 0)) {
             table = new Table();
 
-            table.setName(tableName);
+            table.setTableName(tableName);
             table.setType((String) values.get("TABLETYPE"));
-            table.setCatalog((String) values.get("TABLECAT"));
-            table.setSchema((String) values.get("TABLESCHEM"));
+            table.setCatalogName((String) values.get("TABLECAT"));
+            table.setSchemaName((String) values.get("TABLESCHEM"));
             table.setDescription((String) values.get("REMARKS"));
 
             table.addColumns(readColumns(metaData, tableName));
@@ -1163,14 +1163,14 @@ public class JdbcModelReader {
             }
             query.append(" FROM ");
 
-            if (table.getCatalog() != null && !table.getCatalog().trim().equals("")) {
-                appendIdentifier(query, table.getCatalog());
+            if (table.getCatalogName() != null && !table.getCatalogName().trim().equals("")) {
+                appendIdentifier(query, table.getCatalogName());
                 query.append(catalogSeparator);
             }
-            if (table.getSchema() != null && !table.getSchema().trim().equals("")) {
-                appendIdentifier(query, table.getSchema()).append(".");
+            if (table.getSchemaName() != null && !table.getSchemaName().trim().equals("")) {
+                appendIdentifier(query, table.getSchemaName()).append(".");
             }
-            appendIdentifier(query, table.getName()).append(" t WHERE 1 = 0");
+            appendIdentifier(query, table.getTableName()).append(" t WHERE 1 = 0");
 
             Statement stmt = null;
             try {

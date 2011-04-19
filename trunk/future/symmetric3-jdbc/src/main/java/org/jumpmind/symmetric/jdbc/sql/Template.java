@@ -36,7 +36,6 @@ public class Template {
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
         return execute(new IConnectionCallback<T>() {
             @SuppressWarnings("unchecked")
-            @Override
             public T execute(Connection con) throws SQLException {
                 T result = null;
                 PreparedStatement ps = null;
@@ -59,7 +58,6 @@ public class Template {
 
     public void testConnection() {
         execute(new IConnectionCallback<Boolean>() {
-            @Override
             public Boolean execute(Connection con) throws SQLException {
                 return true;
             }

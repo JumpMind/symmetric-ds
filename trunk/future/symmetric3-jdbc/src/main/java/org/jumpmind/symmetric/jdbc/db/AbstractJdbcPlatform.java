@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.AbstractPlatform;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 
 abstract public class AbstractJdbcPlatform extends AbstractPlatform {
@@ -13,12 +14,27 @@ abstract public class AbstractJdbcPlatform extends AbstractPlatform {
 
     protected JdbcModelReader jdbcModelReader;
 
-    @Override
-    public Table findTable(String catalog, String schema, String tableName) {
-        return null;
+    public Table findTable(String catalogName, String schemaName, String tableName,
+            boolean useCache, Parameters parameters) {
+        Table cachedTable = cachedModel.findTable(catalogName, schemaName, tableName);
+        if (cachedTable == null || !useCache) {
+            Table justReadTable = jdbcModelReader.readTable(catalogName, schemaName, tableName,
+                    parameters.is(Parameters.DB_METADATA_IGNORE_CASE, true),
+                    parameters.is(Parameters.DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND, false));
+            if (cachedTable != null) {
+                cachedModel.removeTable(cachedTable);
+            }
+
+            if (justReadTable != null) {
+                cachedModel.addTable(justReadTable);
+            }
+
+            cachedTable = justReadTable;
+        }
+        return cachedTable;
     }
 
-    public java.util.List<Table> findTables(String catalog, String schema) {
+    public java.util.List<Table> findTables(String catalog, String schema, Parameters parameters) {
         return null;
     };
 
@@ -30,7 +46,6 @@ abstract public class AbstractJdbcPlatform extends AbstractPlatform {
         return dataSource;
     }
 
-    @Override
     public boolean isDataIntegrityException(Exception ex) {
         boolean integrityError = false;
         if (ex instanceof SQLException) {

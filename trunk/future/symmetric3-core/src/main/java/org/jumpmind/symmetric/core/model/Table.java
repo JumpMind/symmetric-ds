@@ -9,6 +9,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jumpmind.symmetric.core.common.StringUtils;
+
 /**
  * Represents a relational database table
  */
@@ -17,36 +19,36 @@ public class Table implements Serializable, Cloneable {
     private static final long serialVersionUID = 1L;
 
     /** The catalog of this table as read from the database. */
-    private String _catalog = null;
+    private String catalogName = null;
 
     /** The table's schema. */
-    private String _schema = null;
+    private String schemaName = null;
 
     /** The name. */
-    private String _name = null;
+    private String tableName = null;
 
     /** A description of the table. */
-    private String _description = null;
+    private String description = null;
 
     /** The table's type as read from the database. */
-    private String _type = null;
+    private String type = null;
 
     /** The columns in this table. */
-    private ArrayList<Column> _columns = new ArrayList<Column>();
+    private ArrayList<Column> columns = new ArrayList<Column>();
 
     /** The foreign keys associated to this table. */
-    private ArrayList<ForeignKey> _foreignKeys = new ArrayList<ForeignKey>();
+    private ArrayList<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
 
     /** The indices applied to this table. */
-    private ArrayList<Index> _indices = new ArrayList<Index>();
+    private ArrayList<Index> indices = new ArrayList<Index>();
 
     /**
      * Returns the catalog of this table as read from the database.
      * 
      * @return The catalog
      */
-    public String getCatalog() {
-        return _catalog;
+    public String getCatalogName() {
+        return catalogName;
     }
 
     /**
@@ -55,8 +57,8 @@ public class Table implements Serializable, Cloneable {
      * @param catalog
      *            The catalog
      */
-    public void setCatalog(String catalog) {
-        _catalog = catalog;
+    public void setCatalogName(String catalog) {
+        this.catalogName = catalog;
     }
 
     /**
@@ -64,8 +66,8 @@ public class Table implements Serializable, Cloneable {
      * 
      * @return The schema
      */
-    public String getSchema() {
-        return _schema;
+    public String getSchemaName() {
+        return schemaName;
     }
 
     /**
@@ -74,8 +76,8 @@ public class Table implements Serializable, Cloneable {
      * @param schema
      *            The schema
      */
-    public void setSchema(String schema) {
-        _schema = schema;
+    public void setSchemaName(String schema) {
+        this.schemaName = schema;
     }
 
     /**
@@ -84,7 +86,7 @@ public class Table implements Serializable, Cloneable {
      * @return The type
      */
     public String getType() {
-        return _type;
+        return type;
     }
 
     /**
@@ -94,7 +96,7 @@ public class Table implements Serializable, Cloneable {
      *            The type
      */
     public void setType(String type) {
-        _type = type;
+        this.type = type;
     }
 
     /**
@@ -102,8 +104,8 @@ public class Table implements Serializable, Cloneable {
      * 
      * @return The name
      */
-    public String getName() {
-        return _name;
+    public String getTableName() {
+        return tableName;
     }
 
     /**
@@ -112,8 +114,8 @@ public class Table implements Serializable, Cloneable {
      * @param name
      *            The name
      */
-    public void setName(String name) {
-        _name = name;
+    public void setTableName(String name) {
+        this.tableName = name;
     }
 
     /**
@@ -122,7 +124,7 @@ public class Table implements Serializable, Cloneable {
      * @return The description
      */
     public String getDescription() {
-        return _description;
+        return description;
     }
 
     /**
@@ -132,7 +134,7 @@ public class Table implements Serializable, Cloneable {
      *            The description
      */
     public void setDescription(String description) {
-        _description = description;
+        this.description = description;
     }
 
     /**
@@ -141,7 +143,7 @@ public class Table implements Serializable, Cloneable {
      * @return The number of columns
      */
     public int getColumnCount() {
-        return _columns.size();
+        return columns.size();
     }
 
     /**
@@ -152,7 +154,7 @@ public class Table implements Serializable, Cloneable {
      * @return The column at this position
      */
     public Column getColumn(int idx) {
-        return (Column) _columns.get(idx);
+        return (Column) columns.get(idx);
     }
 
     /**
@@ -161,7 +163,7 @@ public class Table implements Serializable, Cloneable {
      * @return The columns
      */
     public Column[] getColumns() {
-        return (Column[]) _columns.toArray(new Column[_columns.size()]);
+        return (Column[]) columns.toArray(new Column[columns.size()]);
     }
 
     /**
@@ -172,7 +174,7 @@ public class Table implements Serializable, Cloneable {
      */
     public void addColumn(Column column) {
         if (column != null) {
-            _columns.add(column);
+            columns.add(column);
         }
     }
 
@@ -186,7 +188,7 @@ public class Table implements Serializable, Cloneable {
      */
     public void addColumn(int idx, Column column) {
         if (column != null) {
-            _columns.add(idx, column);
+            columns.add(idx, column);
         }
     }
 
@@ -202,9 +204,9 @@ public class Table implements Serializable, Cloneable {
     public void addColumn(Column previousColumn, Column column) {
         if (column != null) {
             if (previousColumn == null) {
-                _columns.add(0, column);
+                columns.add(0, column);
             } else {
-                _columns.add(_columns.indexOf(previousColumn), column);
+                columns.add(columns.indexOf(previousColumn), column);
             }
         }
     }
@@ -229,7 +231,7 @@ public class Table implements Serializable, Cloneable {
      */
     public void removeColumn(Column column) {
         if (column != null) {
-            _columns.remove(column);
+            columns.remove(column);
         }
     }
 
@@ -240,7 +242,7 @@ public class Table implements Serializable, Cloneable {
      *            The index of the column to remove
      */
     public void removeColumn(int idx) {
-        _columns.remove(idx);
+        columns.remove(idx);
     }
 
     /**
@@ -249,7 +251,7 @@ public class Table implements Serializable, Cloneable {
      * @return The number of foreign keys
      */
     public int getForeignKeyCount() {
-        return _foreignKeys.size();
+        return foreignKeys.size();
     }
 
     /**
@@ -260,7 +262,7 @@ public class Table implements Serializable, Cloneable {
      * @return The foreign key
      */
     public ForeignKey getForeignKey(int idx) {
-        return (ForeignKey) _foreignKeys.get(idx);
+        return (ForeignKey) foreignKeys.get(idx);
     }
 
     /**
@@ -269,7 +271,7 @@ public class Table implements Serializable, Cloneable {
      * @return The foreign keys
      */
     public ForeignKey[] getForeignKeys() {
-        return (ForeignKey[]) _foreignKeys.toArray(new ForeignKey[_foreignKeys.size()]);
+        return (ForeignKey[]) foreignKeys.toArray(new ForeignKey[foreignKeys.size()]);
     }
 
     /**
@@ -280,7 +282,7 @@ public class Table implements Serializable, Cloneable {
      */
     public void addForeignKey(ForeignKey foreignKey) {
         if (foreignKey != null) {
-            _foreignKeys.add(foreignKey);
+            foreignKeys.add(foreignKey);
         }
     }
 
@@ -294,7 +296,7 @@ public class Table implements Serializable, Cloneable {
      */
     public void addForeignKey(int idx, ForeignKey foreignKey) {
         if (foreignKey != null) {
-            _foreignKeys.add(idx, foreignKey);
+            foreignKeys.add(idx, foreignKey);
         }
     }
 
@@ -318,7 +320,7 @@ public class Table implements Serializable, Cloneable {
      */
     public void removeForeignKey(ForeignKey foreignKey) {
         if (foreignKey != null) {
-            _foreignKeys.remove(foreignKey);
+            foreignKeys.remove(foreignKey);
         }
     }
 
@@ -329,7 +331,7 @@ public class Table implements Serializable, Cloneable {
      *            The index of the foreign key to remove
      */
     public void removeForeignKey(int idx) {
-        _foreignKeys.remove(idx);
+        foreignKeys.remove(idx);
     }
 
     /**
@@ -338,7 +340,7 @@ public class Table implements Serializable, Cloneable {
      * @return The number of indices
      */
     public int getIndexCount() {
-        return _indices.size();
+        return indices.size();
     }
 
     /**
@@ -349,7 +351,7 @@ public class Table implements Serializable, Cloneable {
      * @return The index
      */
     public Index getIndex(int idx) {
-        return (Index) _indices.get(idx);
+        return (Index) indices.get(idx);
     }
 
     /**
@@ -360,7 +362,7 @@ public class Table implements Serializable, Cloneable {
      */
     public void addIndex(Index index) {
         if (index != null) {
-            _indices.add(index);
+            indices.add(index);
         }
     }
 
@@ -374,7 +376,7 @@ public class Table implements Serializable, Cloneable {
      */
     public void addIndex(int idx, Index index) {
         if (index != null) {
-            _indices.add(idx, index);
+            indices.add(idx, index);
         }
     }
 
@@ -396,7 +398,7 @@ public class Table implements Serializable, Cloneable {
      * @return The indices
      */
     public Index[] getIndices() {
-        return (Index[]) _indices.toArray(new Index[_indices.size()]);
+        return (Index[]) indices.toArray(new Index[indices.size()]);
     }
 
     /**
@@ -407,7 +409,7 @@ public class Table implements Serializable, Cloneable {
      */
     public void removeIndex(Index index) {
         if (index != null) {
-            _indices.remove(index);
+            indices.remove(index);
         }
     }
 
@@ -418,7 +420,7 @@ public class Table implements Serializable, Cloneable {
      *            The position of the index to remove
      */
     public void removeIndex(int idx) {
-        _indices.remove(idx);
+        indices.remove(idx);
     }
 
     /**
@@ -428,7 +430,7 @@ public class Table implements Serializable, Cloneable {
      * @return <code>true</code> if there are one or more primary key columns
      */
     public boolean hasPrimaryKey() {
-        for (Iterator<Column> it = _columns.iterator(); it.hasNext();) {
+        for (Iterator<Column> it = columns.iterator(); it.hasNext();) {
             Column column = it.next();
 
             if (column.isPrimaryKey()) {
@@ -463,7 +465,7 @@ public class Table implements Serializable, Cloneable {
      * @return The column or <code>null</code> if there is no such column
      */
     public Column findColumn(String name, boolean caseSensitive) {
-        for (Iterator<Column> it = _columns.iterator(); it.hasNext();) {
+        for (Iterator<Column> it = columns.iterator(); it.hasNext();) {
             Column column = (Column) it.next();
 
             if (caseSensitive) {
@@ -489,7 +491,7 @@ public class Table implements Serializable, Cloneable {
     public int getColumnIndex(Column column) {
         int idx = 0;
 
-        for (Iterator<Column> it = _columns.iterator(); it.hasNext(); idx++) {
+        for (Iterator<Column> it = columns.iterator(); it.hasNext(); idx++) {
             if (column == it.next()) {
                 return idx;
             }
@@ -581,12 +583,17 @@ public class Table implements Serializable, Cloneable {
     public List<Column> getPrimaryKeyColumns() {
         List<Column> found = new ArrayList<Column>();
 
-        for (Column column : _columns) {
+        for (Column column : columns) {
             if (column.isPrimaryKey()) {
                 found.add(column);
             }
         }
         return found;
+    }
+    
+    public Column[] getPrimaryKeyColumnsArray() {
+        List<Column> columns = getPrimaryKeyColumns();
+        return columns.toArray(new Column[columns.size()]);
     }
 
     /**
@@ -598,7 +605,7 @@ public class Table implements Serializable, Cloneable {
     public List<Column> getAutoIncrementColumns() {
         List<Column> found = new ArrayList<Column>();
 
-        for (Column column : _columns) {
+        for (Column column : columns) {
             if (column.isAutoIncrement()) {
                 found.add(column);
             }
@@ -613,10 +620,10 @@ public class Table implements Serializable, Cloneable {
      *            Whether case matters
      */
     public void sortForeignKeys(final boolean caseSensitive) {
-        if (!_foreignKeys.isEmpty()) {
+        if (!foreignKeys.isEmpty()) {
             final Collator collator = Collator.getInstance();
 
-            Collections.sort(_foreignKeys, new Comparator<ForeignKey>() {
+            Collections.sort(foreignKeys, new Comparator<ForeignKey>() {
                 public int compare(ForeignKey obj1, ForeignKey obj2) {
                     String fk1Name = obj1.getName();
                     String fk2Name = obj2.getName();
@@ -631,22 +638,49 @@ public class Table implements Serializable, Cloneable {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    public void reOrderColumns(Column[] targetOrder, boolean copyPrimaryKeys) {
+        ArrayList<Column> orderedColumns = new ArrayList<Column>(targetOrder.length);
+        for (int i = 0; i < targetOrder.length; i++) {
+            String name = targetOrder[i].getName();
+            for (Column column : columns) {
+                if (column.getName().equalsIgnoreCase(name)) {
+                    orderedColumns.add(i, column);
+                    if (copyPrimaryKeys) {
+                        column.setPrimaryKey(targetOrder[i].isPrimaryKey());
+                    }
+                    break;
+                }
+            }
+        }
+        columns = orderedColumns;
+    }
+
+    public String getFullyQualifiedTableName() {
+        String fullTableName = this.tableName;
+        if (!StringUtils.isBlank(schemaName)) {
+            fullTableName = schemaName + "." + fullTableName;
+        }
+        if (!StringUtils.isBlank(catalogName)) {
+            fullTableName = catalogName + "." + fullTableName;
+        }
+        return fullTableName;
+    }
+
     @SuppressWarnings("unchecked")
-    public Object clone() throws CloneNotSupportedException {
-        Table result = (Table) super.clone();
-
-        result._catalog = _catalog;
-        result._schema = _schema;
-        result._name = _name;
-        result._type = _type;
-        result._columns = (ArrayList<Column>) _columns.clone();
-        result._foreignKeys = (ArrayList<ForeignKey>) _foreignKeys.clone();
-        result._indices = (ArrayList<Index>) _indices.clone();
-
-        return result;
+    public Table copy() {
+        try {
+            Table result = (Table) super.clone();
+            result.catalogName = catalogName;
+            result.schemaName = schemaName;
+            result.tableName = tableName;
+            result.type = type;
+            result.columns = (ArrayList<Column>) columns.clone();
+            result.foreignKeys = (ArrayList<ForeignKey>) foreignKeys.clone();
+            result.indices = (ArrayList<Index>) indices.clone();
+            return result;
+        } catch (CloneNotSupportedException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     /**
@@ -656,7 +690,7 @@ public class Table implements Serializable, Cloneable {
         StringBuffer result = new StringBuffer();
 
         result.append("Table [name=");
-        result.append(getName());
+        result.append(getTableName());
         result.append("; ");
         result.append(getColumnCount());
         result.append(" columns]");
@@ -673,11 +707,11 @@ public class Table implements Serializable, Cloneable {
         StringBuffer result = new StringBuffer();
 
         result.append("Table [name=");
-        result.append(getName());
+        result.append(getTableName());
         result.append("; catalog=");
-        result.append(getCatalog());
+        result.append(getCatalogName());
         result.append("; schema=");
-        result.append(getSchema());
+        result.append(getSchemaName());
         result.append("; type=");
         result.append(getType());
         result.append("] columns:");

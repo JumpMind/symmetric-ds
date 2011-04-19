@@ -56,6 +56,7 @@ public class OraclePlatform extends AbstractJdbcPlatform {
         info.setDefaultSize(Types.VARBINARY, 254);
 
         info.setStoresUpperCaseNamesInCatalog(true);
+        info.setDateOverridesToTimestamp(true);
 
         this.jdbcModelReader = new OracleJdbcModelReader(this, dataSource);
 

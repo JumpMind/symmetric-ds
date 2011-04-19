@@ -77,7 +77,7 @@ public class ForeignKey implements Cloneable {
      */
     public void setForeignTable(Table foreignTable) {
         this.foreignTable = foreignTable;
-        this.foreignTableName = (foreignTable == null ? null : foreignTable.getName());
+        this.foreignTableName = (foreignTable == null ? null : foreignTable.getTableName());
     }
 
     /**
@@ -98,7 +98,7 @@ public class ForeignKey implements Cloneable {
      *            The table name
      */
     public void setForeignTableName(String foreignTableName) {
-        if ((foreignTable != null) && !foreignTable.getName().equals(foreignTableName)) {
+        if ((foreignTable != null) && !foreignTable.getTableName().equals(foreignTableName)) {
             foreignTable = null;
         }
         this.foreignTableName = foreignTableName;

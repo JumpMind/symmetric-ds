@@ -23,8 +23,10 @@ import java.io.Serializable;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.jumpmind.symmetric.core.db.DbException;
 
@@ -34,6 +36,7 @@ import org.jumpmind.symmetric.core.db.DbException;
  * objects stored in the tables.
  */
 public class Database implements Serializable, Cloneable {
+    
     private static final long serialVersionUID = -1L;
 
     /** The name of the database model. */
@@ -44,6 +47,8 @@ public class Database implements Serializable, Cloneable {
     private String _version;
     /** The tables. */
     private ArrayList<Table> _tables = new ArrayList<Table>();
+    
+    private Map<String, Integer> tableIndexCache = new HashMap<String, Integer>();    
 
     /**
      * Adds all tables from the other database to this database. Note that the
@@ -56,17 +61,13 @@ public class Database implements Serializable, Cloneable {
         for (Iterator<Table> it = otherDb._tables.iterator(); it.hasNext();) {
             Table table = it.next();
 
-            if (findTable(table.getName()) != null) {
+            if (findTable(table.getTableName()) != null) {
                 // TODO: It might make more sense to log a warning and overwrite
                 // the table (or merge them) ?
-                throw new DbException("Cannot merge the models because table " + table.getName()
+                throw new DbException("Cannot merge the models because table " + table.getTableName()
                         + " already defined in this model");
             }
-            try {
-                addTable((Table) table.clone());
-            } catch (CloneNotSupportedException ex) {
-                // won't happen
-            }
+            addTable(table.copy());
         }
     }
 
@@ -244,14 +245,14 @@ public class Database implements Serializable, Cloneable {
         for (Iterator<Table> tableIt = _tables.iterator(); tableIt.hasNext(); tableIdx++) {
             Table curTable = tableIt.next();
 
-            if ((curTable.getName() == null) || (curTable.getName().length() == 0)) {
+            if ((curTable.getTableName() == null) || (curTable.getTableName().length() == 0)) {
                 throw new DbException("The table nr. " + tableIdx + " has no name");
             }
-            if (namesOfProcessedTables.contains(curTable.getName())) {
+            if (namesOfProcessedTables.contains(curTable.getTableName())) {
                 throw new DbException("There are multiple tables with the name "
-                        + curTable.getName());
+                        + curTable.getTableName());
             }
-            namesOfProcessedTables.add(curTable.getName());
+            namesOfProcessedTables.add(curTable.getTableName());
 
             namesOfProcessedColumns.clear();
             namesOfProcessedFks.clear();
@@ -262,22 +263,22 @@ public class Database implements Serializable, Cloneable {
 
                 if ((column.getName() == null) || (column.getName().length() == 0)) {
                     throw new DbException("The column nr. " + idx + " in table "
-                            + curTable.getName() + " has no name");
+                            + curTable.getTableName() + " has no name");
                 }
                 if (namesOfProcessedColumns.contains(column.getName())) {
                     throw new DbException("There are multiple column with the name "
-                            + column.getName() + " in the table " + curTable.getName());
+                            + column.getName() + " in the table " + curTable.getTableName());
                 }
                 namesOfProcessedColumns.add(column.getName());
 
                 if ((column.getType() == null) || (column.getType().length() == 0)) {
                     throw new DbException("The column nr. " + idx + " in table "
-                            + curTable.getName() + " has no type");
+                            + curTable.getTableName() + " has no type");
                 }
                 if ((column.getTypeCode() == Types.OTHER)
                         && !"OTHER".equalsIgnoreCase(column.getType())) {
                     throw new DbException("The column nr. " + idx + " in table "
-                            + curTable.getName() + " has an unknown type " + column.getType());
+                            + curTable.getTableName() + " has an unknown type " + column.getType());
                 }
                 namesOfProcessedColumns.add(column.getName());
             }
@@ -290,7 +291,7 @@ public class Database implements Serializable, Cloneable {
                 if (fkName.length() > 0) {
                     if (namesOfProcessedFks.contains(fkName)) {
                         throw new DbException("There are multiple foreign keys in table "
-                                + curTable.getName() + " with the name " + fkName);
+                                + curTable.getTableName() + " with the name " + fkName);
                     }
                     namesOfProcessedFks.add(fkName);
                 }
@@ -300,7 +301,7 @@ public class Database implements Serializable, Cloneable {
 
                     if (targetTable == null) {
                         throw new DbException("The foreignkey " + fkDesc + " in table "
-                                + curTable.getName() + " references the undefined table "
+                                + curTable.getTableName() + " references the undefined table "
                                 + fk.getForeignTableName());
                     } else {
                         fk.setForeignTable(targetTable);
@@ -314,7 +315,7 @@ public class Database implements Serializable, Cloneable {
 
                         if (localColumn == null) {
                             throw new DbException("The foreignkey " + fkDesc + " in table "
-                                    + curTable.getName()
+                                    + curTable.getTableName()
                                     + " references the undefined local column "
                                     + ref.getLocalColumnName());
                         } else {
@@ -327,10 +328,10 @@ public class Database implements Serializable, Cloneable {
 
                         if (foreignColumn == null) {
                             throw new DbException("The foreignkey " + fkDesc + " in table "
-                                    + curTable.getName()
+                                    + curTable.getTableName()
                                     + " references the undefined local column "
                                     + ref.getForeignColumnName() + " in table "
-                                    + fk.getForeignTable().getName());
+                                    + fk.getForeignTable().getTableName());
                         } else {
                             ref.setForeignColumn(foreignColumn);
                         }
@@ -345,7 +346,7 @@ public class Database implements Serializable, Cloneable {
                 if (indexName.length() > 0) {
                     if (namesOfProcessedIndices.contains(indexName)) {
                         throw new DbException("There are multiple indices in table "
-                                + curTable.getName() + " with the name " + indexName);
+                                + curTable.getTableName() + " with the name " + indexName);
                     }
                     namesOfProcessedIndices.add(indexName);
                 }
@@ -388,17 +389,68 @@ public class Database implements Serializable, Cloneable {
             Table table = iter.next();
 
             if (caseSensitive) {
-                if (table.getName().equals(name)) {
+                if (table.getTableName().equals(name)) {
                     return table;
                 }
             } else {
-                if (table.getName().equalsIgnoreCase(name)) {
+                if (table.getTableName().equalsIgnoreCase(name)) {
                     return table;
                 }
             }
         }
         return null;
     }
+    
+    /**
+     * Catalog & Schema aware finder
+     */
+    public Table findTable(String catalogName, String schemaName, String tableName,
+            boolean caseSensitive) {
+        String cacheKey = catalogName + "." + schemaName + "." + tableName + "." + caseSensitive;
+        Integer tableIndex = tableIndexCache.get(cacheKey);
+        if (tableIndex != null) {
+            if (tableIndex < getTableCount()) {
+                Table table = getTable(tableIndex);
+                if (doesMatch(table, catalogName, schemaName, tableName, caseSensitive)) {
+                    return table;
+                }
+            }
+        }
+
+        Table[] tables = getTables();
+        for (int i = 0; i < tables.length; i++) {
+            Table table = tables[i];
+            if (doesMatch(table, catalogName, schemaName, tableName, caseSensitive)) {
+                tableIndexCache.put(cacheKey, i);
+                return table;
+            }
+        }
+        return null;
+    }
+
+    private boolean doesMatch(Table table, String catalogName, String schemaName, String tableName,
+            boolean caseSensitive) {
+        if (caseSensitive) {
+            return ((catalogName == null || (catalogName != null && catalogName.equals(table
+                    .getCatalogName())))
+                    && (schemaName == null || (schemaName != null && schemaName.equals(table
+                            .getSchemaName()))) && table.getTableName().equals(tableName));
+        } else {
+            return ((catalogName == null || (catalogName != null && catalogName
+                    .equalsIgnoreCase(table.getCatalogName())))
+                    && (schemaName == null || (schemaName != null && schemaName
+                            .equalsIgnoreCase(table.getSchemaName()))) && table.getTableName()
+                    .equalsIgnoreCase(tableName));
+        }
+    }
+
+    public Table findTable(String catalogName, String schemaName, String tableName) {
+        return findTable(catalogName, schemaName, tableName, false);
+    }
+
+    public void resetTableIndexCache() {
+        tableIndexCache.clear();
+    }    
 
     /**
      * {@inheritDoc}
