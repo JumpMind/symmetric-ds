@@ -66,6 +66,12 @@
         <priority value="DEBUG"/> 
      </category>
     -->    
+    
+    <!-- Show statement parameters
+     <category name="org.springframework.jdbc.core.StatementCreatorUtils"> 
+        <priority value="TRACE"/> 
+     </category>
+      -->
 
     <root>
         <priority value="WARN" />
