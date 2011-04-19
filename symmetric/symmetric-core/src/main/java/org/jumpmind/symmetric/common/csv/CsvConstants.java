@@ -22,7 +22,7 @@
 package org.jumpmind.symmetric.common.csv;
 
 /**
- * ,
+ * Constants used in the SymmetricDS CSV-based protocol
  */
 final public class CsvConstants {
 

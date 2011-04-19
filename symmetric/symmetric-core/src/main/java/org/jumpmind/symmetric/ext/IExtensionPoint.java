@@ -20,7 +20,7 @@
 package org.jumpmind.symmetric.ext;
 
 /**
- * 
+ * This is a marker interface that identifies ways that SymmetricDS can be extended.
  */
 public interface IExtensionPoint {
 
