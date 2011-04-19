@@ -1,13 +1,13 @@
 package org.jumpmind.symmetric.jdbc.tools;
 
 import java.io.File;
-import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.io.IoUtils;
-import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.jdbc.tools.copy.TableCopyProperties;
+import org.jumpmind.symmetric.jdbc.tools.copy.TableToCopy;
 
 public class TableCopy {
 
@@ -19,7 +19,7 @@ public class TableCopy {
         this.target = target;
     }
 
-    public void copy(LinkedHashMap<Table, String> tables) {
+    public void copy(List<TableToCopy> tables) {
 
     }
 

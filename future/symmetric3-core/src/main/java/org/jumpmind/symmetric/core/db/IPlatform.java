@@ -2,15 +2,21 @@ package org.jumpmind.symmetric.core.db;
 
 import java.util.List;
 
+import org.jumpmind.symmetric.core.common.BinaryEncoding;
+import org.jumpmind.symmetric.core.model.Column;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 
 public interface IPlatform {
 
     public PlatformInfo getPlatformInfo();
 
-    public Table findTable(String catalog, String schema, String tableName);
+    public Table findTable(String catalogName, String schemaName, String tableName, boolean useCached, Parameters parameters);
 
-    public List<Table> findTables(String catalog, String schema);
+    public List<Table> findTables(String catalogName, String schemaName, Parameters parameters);
+    
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
+            Column[] orderedMetaData);
     
     public String getDefaultCatalog();
     

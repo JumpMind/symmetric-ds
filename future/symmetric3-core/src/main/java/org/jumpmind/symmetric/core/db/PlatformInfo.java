@@ -36,6 +36,10 @@ public class PlatformInfo {
     
     /** The Log to which logging calls will be made. */
     private final Log log = LogFactory.getLog(PlatformInfo.class);
+    
+    private boolean dateOverridesToTimestamp = false;
+    
+    private String identifierQuoteString = "\"";
 
     /** Whether delimited identifiers are used or not. */
     private boolean delimitedIdentifierModeOn = false;
@@ -1153,5 +1157,21 @@ public class PlatformInfo {
     
     public boolean isStoresUpperCaseNamesInCatalog() {
         return storesUpperCaseNamesInCatalog;
+    }
+    
+    public boolean isDateOverridesToTimestamp() {
+        return dateOverridesToTimestamp;
+    }
+    
+    public void setDateOverridesToTimestamp(boolean dateOverridesToTimestamp) {
+        this.dateOverridesToTimestamp = dateOverridesToTimestamp;
+    }
+    
+    public String getIdentifierQuoteString() {
+        return identifierQuoteString;
+    }
+    
+    public void setIdentifierQuoteString(String identifierQuoteString) {
+        this.identifierQuoteString = identifierQuoteString;
     }
 }

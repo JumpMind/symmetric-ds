@@ -15,6 +15,7 @@ public class DataProcessor {
         DataContext readerContext = dataReader.createDataContext();
         DataContext writerContext = dataWriter.createDataContext();
         dataReader.open(readerContext);
+        boolean dataWriterOpened = false;
         Batch batch = null;
         do {
             batch = dataReader.nextBatch(readerContext);
@@ -24,6 +25,10 @@ public class DataProcessor {
                 boolean processBatch = listener.batchBegin(batch);
                 if (processBatch) {
                     writerContext.setBatch(batch);
+                    if (!dataWriterOpened) {
+                        writerContext.setBinaryEncoding(readerContext.getBinaryEncoding());                        
+                        dataWriter.open(writerContext);
+                    }
                     dataWriter.startBatch(writerContext);
                 }
                 dataRow += forEachTableInBatch(processBatch, batch, readerContext, writerContext);
@@ -46,7 +51,7 @@ public class DataProcessor {
                 readerContext.setSourceTable(table);
                 if (processBatch) {
                     writerContext.setSourceTable(table);
-                    dataWriter.switchTables(writerContext);
+                    processBatch |= dataWriter.switchTables(writerContext);
                 }
                 dataRow += forEachDataInTable(processBatch, batch, readerContext, writerContext);
             }
