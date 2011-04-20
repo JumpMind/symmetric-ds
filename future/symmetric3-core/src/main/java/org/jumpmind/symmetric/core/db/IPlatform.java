@@ -4,12 +4,17 @@ import java.util.List;
 
 import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.model.Column;
+import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 
 public interface IPlatform {    
 
     public PlatformInfo getPlatformInfo();
+    
+    public String getAlterScriptFor(Table... tables);
+    
+    public Database findDatabase(String catalogName, String schemaName);
     
     public Table findTable(String tableName, Parameters parameters);
 
@@ -23,6 +28,8 @@ public interface IPlatform {
     public String getDefaultCatalog();
     
     public String getDefaultSchema();
+    
+    public SqlBuilder getSqlBuilder();
 
     /**
      * Returns the constraint name. This method takes care of length limitations

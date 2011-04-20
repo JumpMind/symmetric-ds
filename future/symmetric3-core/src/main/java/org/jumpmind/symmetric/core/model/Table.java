@@ -45,6 +45,23 @@ public class Table implements Serializable, Cloneable {
     /** The indices applied to this table. */
     private ArrayList<Index> indices = new ArrayList<Index>();
 
+    public Table() {
+
+    }
+
+    public Table(String name) {
+        this.setTableName(name);
+    }
+
+    public Table(String name, Column... columns) {
+        this(name);
+        if (columns != null) {
+            for (Column column : columns) {
+                addColumn(column);
+            }
+        }
+    }
+
     /**
      * Returns the catalog of this table as read from the database.
      * 
@@ -544,21 +561,20 @@ public class Table implements Serializable, Cloneable {
     }
 
     /**
-     * Finds the foreign key in this table that is equal to the supplied foreign key.
+     * Finds the foreign key in this table that is equal to the supplied foreign
+     * key.
      * 
-     * @param key           The foreign key to search for
-     * @param caseSensitive Whether case matters for the names
+     * @param key
+     *            The foreign key to search for
+     * @param caseSensitive
+     *            Whether case matters for the names
      * @return The found foreign key
      */
-    public ForeignKey findForeignKey(ForeignKey key, boolean caseSensitive)
-    {
-        for (int idx = 0; idx < getForeignKeyCount(); idx++)
-        {
+    public ForeignKey findForeignKey(ForeignKey key, boolean caseSensitive) {
+        for (int idx = 0; idx < getForeignKeyCount(); idx++) {
             ForeignKey fk = getForeignKey(idx);
 
-            if ((caseSensitive  && fk.equals(key)) ||
-                (!caseSensitive && fk.equalsIgnoreCase(key)))
-            {
+            if ((caseSensitive && fk.equals(key)) || (!caseSensitive && fk.equalsIgnoreCase(key))) {
                 return fk;
             }
         }

@@ -4,6 +4,7 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.core.db.h2.H2SqlBuilder;
 import org.jumpmind.symmetric.jdbc.db.AbstractJdbcPlatform;
 
 public class H2Platform extends AbstractJdbcPlatform {
@@ -40,7 +41,14 @@ public class H2Platform extends AbstractJdbcPlatform {
         platformInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         platformInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
+        platformInfo.setStoresUpperCaseNamesInCatalog(true);
+        platformInfo.setDateOverridesToTimestamp(false);
+        platformInfo.setEmptyStringNulled(false);
+        platformInfo.setBlankCharColumnSpacePadded(true);
+        platformInfo.setNonBlankCharColumnSpacePadded(false);
+        
         this.jdbcModelReader = new H2JdbcModelReader(this, dataSource);
+        this.sqlBuilder = new H2SqlBuilder(this);
 
     }
 

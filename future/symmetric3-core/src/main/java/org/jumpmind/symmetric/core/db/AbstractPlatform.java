@@ -40,6 +40,12 @@ abstract public class AbstractPlatform implements IPlatform {
     protected String defaultSchema;
 
     protected String defaultCatalog;
+    
+    protected SqlBuilder sqlBuilder;
+
+    public SqlBuilder getSqlBuilder() {
+        return sqlBuilder;
+    }
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData) {

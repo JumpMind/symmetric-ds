@@ -185,6 +185,20 @@ public class Database implements Serializable, Cloneable {
             _tables.add(idx, table);
         }
     }
+    
+    /**
+     * Adds the given tables.
+     * 
+     * @param tables
+     *            The tables to add
+     */
+    public void addTables(Table[] tables) {
+        if (tables != null) {
+            for (Table table : tables) {
+                addTable(table);
+            }
+        }
+    }
 
     /**
      * Adds the given tables.

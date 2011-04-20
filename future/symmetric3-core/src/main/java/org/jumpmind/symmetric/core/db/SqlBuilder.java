@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.symmetric.core.common.ClassUtils;
 import org.jumpmind.symmetric.core.common.CollectionUtils;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
@@ -60,6 +61,7 @@ import org.jumpmind.symmetric.core.db.alter.RemoveIndexChange;
 import org.jumpmind.symmetric.core.db.alter.RemovePrimaryKeyChange;
 import org.jumpmind.symmetric.core.db.alter.RemoveTableChange;
 import org.jumpmind.symmetric.core.db.alter.TableChange;
+import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.ForeignKey;
@@ -86,31 +88,37 @@ import org.jumpmind.symmetric.core.model.TypeMap;
  */
 public abstract class SqlBuilder {
     /** The line separator for in between sql commands. */
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
+    private static final String LINESEPARATOR = System.getProperty("line.separator", "\n");
+
     /** The placeholder for the size value in the native type spec. */
-    protected static final String SIZE_PLACEHOLDER = "{0}";
+    protected static final String SIZEPLACEHOLDER = "{0}";
 
     /** The Log to which logging calls will be made. */
-    protected final Log _log = LogFactory.getLog(SqlBuilder.class);
+    protected final Log log = LogFactory.getLog(SqlBuilder.class);
 
     /** The platform that this builder belongs to. */
-    private IPlatform _platform;
+    private IPlatform platform;
+
     /** The current Writer used to output the SQL to. */
-    private Writer _writer;
+    private Writer writer;
+
     /** The indentation used to indent commands. */
-    private String _indent = "    ";
+    private String indent = "    ";
+
     /** An optional locale specification for number and date formatting. */
-    private String _valueLocale;
+    private String valueLocale;
+
     /** The date formatter. */
-    private DateFormat _valueDateFormat;
+    private DateFormat valueDateFormat;
+
     /** The date time formatter. */
-    private DateFormat _valueTimeFormat;
+    private DateFormat valueTimeFormat;
+
     /** The number formatter. */
-    private NumberFormat _valueNumberFormat;
-    /** Helper object for dealing with default values. */
+    private NumberFormat valueNumberFormat;
 
     /** The character sequences that need escaping. */
-    private Map<String, String> _charSequencesToEscape = new LinkedHashMap<String, String>();
+    private Map<String, String> charSequencesToEscape = new LinkedHashMap<String, String>();
 
     //
     // Configuration
@@ -123,7 +131,7 @@ public abstract class SqlBuilder {
      *            The platform this builder belongs to
      */
     public SqlBuilder(IPlatform platform) {
-        _platform = platform;
+        this.platform = platform;
     }
 
     /**
@@ -132,7 +140,7 @@ public abstract class SqlBuilder {
      * @return The platform
      */
     public IPlatform getPlatform() {
-        return _platform;
+        return platform;
     }
 
     /**
@@ -141,7 +149,7 @@ public abstract class SqlBuilder {
      * @return The info object
      */
     public PlatformInfo getPlatformInfo() {
-        return _platform.getPlatformInfo();
+        return platform.getPlatformInfo();
     }
 
     /**
@@ -150,7 +158,7 @@ public abstract class SqlBuilder {
      * @return The writer
      */
     public Writer getWriter() {
-        return _writer;
+        return writer;
     }
 
     /**
@@ -160,7 +168,7 @@ public abstract class SqlBuilder {
      *            The writer
      */
     public void setWriter(Writer writer) {
-        _writer = writer;
+        this.writer = writer;
     }
 
     /**
@@ -169,7 +177,7 @@ public abstract class SqlBuilder {
      * @return The indentation string
      */
     public String getIndent() {
-        return _indent;
+        return indent;
     }
 
     /**
@@ -179,7 +187,7 @@ public abstract class SqlBuilder {
      *            The indentation string
      */
     public void setIndent(String indent) {
-        _indent = indent;
+        this.indent = indent;
     }
 
     /**
@@ -190,7 +198,7 @@ public abstract class SqlBuilder {
      * @return The locale or <code>null</code> if default formatting is used
      */
     public String getValueLocale() {
-        return _valueLocale;
+        return valueLocale;
     }
 
     /**
@@ -200,7 +208,7 @@ public abstract class SqlBuilder {
      * 
      * @param localeStr
      *            The new locale or <code>null</code> if default formatting
-     *            should be used; Format is "language[_country[_variant]]"
+     *            should be used; Format is "language[country[variant]]"
      */
     public void setValueLocale(String localeStr) {
         if (localeStr != null) {
@@ -231,14 +239,14 @@ public abstract class SqlBuilder {
                     locale = new Locale(language);
                 }
 
-                _valueLocale = localeStr;
+                valueLocale = localeStr;
                 setValueDateFormat(DateFormat.getDateInstance(DateFormat.SHORT, locale));
                 setValueTimeFormat(DateFormat.getTimeInstance(DateFormat.SHORT, locale));
                 setValueNumberFormat(NumberFormat.getNumberInstance(locale));
                 return;
             }
         }
-        _valueLocale = null;
+        valueLocale = null;
         setValueDateFormat(null);
         setValueTimeFormat(null);
         setValueNumberFormat(null);
@@ -250,7 +258,7 @@ public abstract class SqlBuilder {
      * @return The date format object or null if no locale is set
      */
     protected DateFormat getValueDateFormat() {
-        return _valueDateFormat;
+        return valueDateFormat;
     }
 
     /**
@@ -260,7 +268,7 @@ public abstract class SqlBuilder {
      *            The date format object
      */
     protected void setValueDateFormat(DateFormat format) {
-        _valueDateFormat = format;
+        valueDateFormat = format;
     }
 
     /**
@@ -269,7 +277,7 @@ public abstract class SqlBuilder {
      * @return The time format object or null if no locale is set
      */
     protected DateFormat getValueTimeFormat() {
-        return _valueTimeFormat;
+        return valueTimeFormat;
     }
 
     /**
@@ -279,7 +287,7 @@ public abstract class SqlBuilder {
      *            The time format object
      */
     protected void setValueTimeFormat(DateFormat format) {
-        _valueTimeFormat = format;
+        valueTimeFormat = format;
     }
 
     /**
@@ -288,7 +296,7 @@ public abstract class SqlBuilder {
      * @return The number format object or null if no locale is set
      */
     protected NumberFormat getValueNumberFormat() {
-        return _valueNumberFormat;
+        return valueNumberFormat;
     }
 
     /**
@@ -299,7 +307,7 @@ public abstract class SqlBuilder {
      *            The number format object
      */
     protected void setValueNumberFormat(NumberFormat format) {
-        _valueNumberFormat = format;
+        valueNumberFormat = format;
     }
 
     /**
@@ -311,7 +319,7 @@ public abstract class SqlBuilder {
      *            The escaped version
      */
     protected void addEscapedCharSequence(String charSequence, String escapedVersion) {
-        _charSequencesToEscape.put(charSequence, escapedVersion);
+        charSequencesToEscape.put(charSequence, escapedVersion);
     }
 
     /**
@@ -369,7 +377,7 @@ public abstract class SqlBuilder {
      * @param database
      *            The database model
      */
-    public void createTables(Database database) throws IOException {
+    public void createTables(Database database) {
         createTables(database, true);
     }
 
@@ -382,7 +390,7 @@ public abstract class SqlBuilder {
      * @param dropTables
      *            Whether to drop tables before creating them
      */
-    public void createTables(Database database, boolean dropTables) throws IOException {
+    public void createTables(Database database, boolean dropTables) {
         if (dropTables) {
             dropTables(database);
         }
@@ -413,7 +421,7 @@ public abstract class SqlBuilder {
      *            The parameters used in the creation of new tables. Note that
      *            for existing tables, the parameters won't be applied
      */
-    public void alterDatabase(Database currentModel, Database desiredModel) throws IOException {
+    public void alterDatabase(Database currentModel, Database desiredModel) {
         ModelComparator comparator = new ModelComparator(getPlatformInfo(), getPlatformInfo()
                 .isDelimitedIdentifierModeOn());
         List<ModelChange> changes = comparator.compare(currentModel, desiredModel);
@@ -434,13 +442,11 @@ public abstract class SqlBuilder {
                 for (Class<?> type : changeTypes) {
                     if (type.isAssignableFrom(modelChange.getClass())) {
                         try {
-                            Method method = this.getClass().getMethod(
-                                    "processChange",
-                                    new Class<?>[] { Database.class, Database.class,
-                                            modelChange.getClass() });
+                            Method method = ClassUtils.findMethod(this.getClass(), "processChange",
+                                    Database.class, Database.class, modelChange.getClass());
                             if (method != null) {
                                 method.invoke(this, new Object[] { currentModel, desiredModel,
-                                        modelChange.getClass() });
+                                        modelChange });
                             }
                         } catch (RuntimeException e) {
                             throw e;
@@ -495,7 +501,7 @@ public abstract class SqlBuilder {
      *            for existing tables, the parameters won't be applied
      */
     protected void processChanges(Database currentModel, Database desiredModel,
-            List<ModelChange> changes) throws IOException {
+            List<ModelChange> changes) {
 
         // 1st pass: removing external constraints and indices
         applyForSelectedChanges(currentModel, desiredModel, changes, new Class<?>[] {
@@ -536,9 +542,8 @@ public abstract class SqlBuilder {
      * @param change
      *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, ModelChange change)
-            throws IOException {
-        _log.log(LogLevel.WARN, "Change of type " + change.getClass() + " was not handled");
+    protected void processChange(Database currentModel, Database desiredModel, ModelChange change) {
+        log.log(LogLevel.WARN, "Change of type " + change.getClass() + " was not handled");
     }
 
     /**
@@ -555,7 +560,7 @@ public abstract class SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveForeignKeyChange change) throws IOException {
+            RemoveForeignKeyChange change) {
         writeExternalForeignKeyDropStmt(change.getChangedTable(), change.getForeignKey());
         change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
     }
@@ -574,7 +579,7 @@ public abstract class SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveIndexChange change) throws IOException {
+            RemoveIndexChange change) {
         writeExternalIndexDropStmt(change.getChangedTable(), change.getIndex());
         change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
     }
@@ -593,7 +598,7 @@ public abstract class SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveTableChange change) throws IOException {
+            RemoveTableChange change) {
         dropTable(change.getChangedTable());
         change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
     }
@@ -611,8 +616,7 @@ public abstract class SqlBuilder {
      * @param change
      *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, AddTableChange change)
-            throws IOException {
+    protected void processChange(Database currentModel, Database desiredModel, AddTableChange change) {
         createTable(desiredModel, change.getNewTable());
         change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
     }
@@ -631,7 +635,7 @@ public abstract class SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddForeignKeyChange change) throws IOException {
+            AddForeignKeyChange change) {
         writeExternalForeignKeyCreateStmt(desiredModel, change.getChangedTable(),
                 change.getNewForeignKey());
         change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
@@ -650,8 +654,7 @@ public abstract class SqlBuilder {
      * @param change
      *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, AddIndexChange change)
-            throws IOException {
+    protected void processChange(Database currentModel, Database desiredModel, AddIndexChange change) {
         writeExternalIndexCreateStmt(change.getChangedTable(), change.getNewIndex());
         change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
     }
@@ -670,7 +673,7 @@ public abstract class SqlBuilder {
      *            The change objects
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Collection<TableChange> changes) throws IOException {
+            Collection<TableChange> changes) {
         LinkedHashMap<String, List<TableChange>> changesPerTable = new LinkedHashMap<String, List<TableChange>>();
         LinkedHashMap<String, List<ForeignKey>> unchangedFKs = new LinkedHashMap<String, List<ForeignKey>>();
         boolean caseSensitive = getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn();
@@ -838,7 +841,7 @@ public abstract class SqlBuilder {
      *            The change objects for this table
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            String tableName, List<TableChange> changes) throws IOException {
+            String tableName, List<TableChange> changes) {
         Table sourceTable = currentModel.findTable(tableName, getPlatformInfo()
                 .isDelimitedIdentifierModeOn());
         Table targetTable = desiredModel.findTable(tableName, getPlatformInfo()
@@ -882,7 +885,7 @@ public abstract class SqlBuilder {
                     if (addColumnChange.getNewColumn().isRequired()
                             && !addColumnChange.getNewColumn().isAutoIncrement()
                             && (addColumnChange.getNewColumn().getDefaultValue() == null)) {
-                        _log.log(LogLevel.WARN, "Data cannot be retained in table "
+                        log.log(LogLevel.WARN, "Data cannot be retained in table "
                                 + change.getChangedTable().getTableName()
                                 + " because of the addition of the required column "
                                 + addColumnChange.getNewColumn().getName());
@@ -932,7 +935,7 @@ public abstract class SqlBuilder {
      *            The change objects for the target table
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes) throws IOException {
+            Table sourceTable, Table targetTable, List<TableChange> changes) {
         if (changes.size() == 1) {
             TableChange change = changes.get(0);
 
@@ -956,13 +959,12 @@ public abstract class SqlBuilder {
      *            The target table
      * @return The temporary table
      */
-    protected Table getTemporaryTableFor(Database targetModel, Table targetTable)
-            throws IOException {
+    protected Table getTemporaryTableFor(Database targetModel, Table targetTable) {
         Table table = new Table();
 
         table.setCatalogName(targetTable.getCatalogName());
         table.setSchemaName(targetTable.getSchemaName());
-        table.setTableName(targetTable.getTableName() + "_");
+        table.setTableName(targetTable.getTableName() + "");
         table.setType(targetTable.getType());
         for (int idx = 0; idx < targetTable.getColumnCount(); idx++) {
             try {
@@ -986,7 +988,7 @@ public abstract class SqlBuilder {
      * @param parameters
      *            Additional platform-specific parameters for the table creation
      */
-    protected void createTemporaryTable(Database database, Table table) throws IOException {
+    protected void createTemporaryTable(Database database, Table table) {
         createTable(database, table);
     }
 
@@ -999,7 +1001,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void dropTemporaryTable(Database database, Table table) throws IOException {
+    protected void dropTemporaryTable(Database database, Table table) {
         dropTable(table);
     }
 
@@ -1016,8 +1018,7 @@ public abstract class SqlBuilder {
      *            The target table
      * @return The table
      */
-    protected Table getRealTargetTableFor(Database targetModel, Table sourceTable, Table targetTable)
-            throws IOException {
+    protected Table getRealTargetTableFor(Database targetModel, Table sourceTable, Table targetTable) {
         Table table = new Table();
 
         table.setCatalogName(targetTable.getCatalogName());
@@ -1061,7 +1062,7 @@ public abstract class SqlBuilder {
      * @param targetTable
      *            The target table
      */
-    protected void writeCopyDataStatement(Table sourceTable, Table targetTable) throws IOException {
+    protected void writeCopyDataStatement(Table sourceTable, Table targetTable) {
         LinkedHashMap<Column, Column> columns = new LinkedHashMap<Column, Column>();
 
         for (int idx = 0; idx < sourceTable.getColumnCount(); idx++) {
@@ -1109,7 +1110,7 @@ public abstract class SqlBuilder {
      * @param targetColumn
      *            The target column
      */
-    protected void writeCastExpression(Column sourceColumn, Column targetColumn) throws IOException {
+    protected void writeCastExpression(Column sourceColumn, Column targetColumn) {
         printIdentifier(getColumnName(sourceColumn));
     }
 
@@ -1124,7 +1125,7 @@ public abstract class SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddPrimaryKeyChange change) throws IOException {
+            AddPrimaryKeyChange change) {
         writeExternalPrimaryKeysCreateStmt(change.getChangedTable(), change.getPrimaryKeyColumns());
         change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
     }
@@ -1208,7 +1209,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    public void createTable(Database database, Table table) throws IOException {
+    public void createTable(Database database, Table table) {
         writeTableCreationStmt(database, table);
         writeTableCreationStmtEnding(table);
 
@@ -1227,7 +1228,7 @@ public abstract class SqlBuilder {
      * @param database
      *            The database
      */
-    public void createExternalForeignKeys(Database database) throws IOException {
+    public void createExternalForeignKeys(Database database) {
         for (int idx = 0; idx < database.getTableCount(); idx++) {
             createExternalForeignKeys(database, database.getTable(idx));
         }
@@ -1241,7 +1242,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    public void createExternalForeignKeys(Database database, Table table) throws IOException {
+    public void createExternalForeignKeys(Database database, Table table) {
         if (!getPlatformInfo().isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
                 writeExternalForeignKeyCreateStmt(database, table, table.getForeignKey(idx));
@@ -1255,7 +1256,7 @@ public abstract class SqlBuilder {
      * @param database
      *            The database
      */
-    public void dropTables(Database database) throws IOException {
+    public void dropTables(Database database) {
         // we're dropping the external foreignkeys first
         for (int idx = database.getTableCount() - 1; idx >= 0; idx--) {
             Table table = database.getTable(idx);
@@ -1290,7 +1291,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    public void dropTable(Database database, Table table) throws IOException {
+    public void dropTable(Database database, Table table) {
         // we're dropping the foreignkeys to the table first
         for (int idx = database.getTableCount() - 1; idx >= 0; idx--) {
             Table otherTable = database.getTable(idx);
@@ -1317,7 +1318,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table to drop
      */
-    public void dropTable(Table table) throws IOException {
+    public void dropTable(Table table) {
         print("DROP TABLE ");
         printIdentifier(getTableName(table));
         printEndOfStatement();
@@ -1329,7 +1330,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    public void dropExternalForeignKeys(Table table) throws IOException {
+    public void dropExternalForeignKeys(Table table) {
         if (!getPlatformInfo().isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
                 writeExternalForeignKeyDropStmt(table, table.getForeignKey(idx));
@@ -1620,11 +1621,11 @@ public abstract class SqlBuilder {
         result.append(name.substring(0, startCut));
         if (((startCut == 0) || (name.charAt(startCut - 1) != '_'))
                 && ((startCut + delta + 1 == originalLength) || (name.charAt(startCut + delta + 1) != '_'))) {
-            // just to make sure that there isn't already a '_' right before or
+            // just to make sure that there isn't already a '' right before or
             // right
             // after the cutting place (which would look odd with an aditional
             // one)
-            result.append("_");
+            result.append("");
         }
         result.append(name.substring(startCut + delta + 1, originalLength));
         return result.toString();
@@ -1648,7 +1649,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeTableComment(Table table) throws IOException {
+    protected void writeTableComment(Table table) {
         printComment("-----------------------------------------------------------------------");
         printComment(getTableName(table));
         printComment("-----------------------------------------------------------------------");
@@ -1662,7 +1663,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table being altered
      */
-    protected void writeTableAlterStmt(Table table) throws IOException {
+    protected void writeTableAlterStmt(Table table) {
         print("ALTER TABLE ");
         printlnIdentifier(getTableName(table));
         printIndent();
@@ -1678,7 +1679,7 @@ public abstract class SqlBuilder {
      * @param parameters
      *            Additional platform-specific parameters for the table creation
      */
-    protected void writeTableCreationStmt(Database database, Table table) throws IOException {
+    protected void writeTableCreationStmt(Database database, Table table) {
         print("CREATE TABLE ");
         printlnIdentifier(getTableName(table));
         println("(");
@@ -1707,7 +1708,7 @@ public abstract class SqlBuilder {
      * @param parameters
      *            Additional platform-specific parameters for the table creation
      */
-    protected void writeTableCreationStmtEnding(Table table) throws IOException {
+    protected void writeTableCreationStmtEnding(Table table) {
         printEndOfStatement();
     }
 
@@ -1717,7 +1718,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeColumns(Table table) throws IOException {
+    protected void writeColumns(Table table) {
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
             printIndent();
             writeColumn(table, table.getColumn(idx));
@@ -1735,7 +1736,7 @@ public abstract class SqlBuilder {
      *            The column
      * @return The column name
      */
-    protected String getColumnName(Column column) throws IOException {
+    protected String getColumnName(Column column) {
         return shortenName(column.getName(), getMaxColumnNameLength());
     }
 
@@ -1747,7 +1748,7 @@ public abstract class SqlBuilder {
      * @param column
      *            The column
      */
-    protected void writeColumn(Table table, Column column) throws IOException {
+    protected void writeColumn(Table table, Column column) {
         // see comments in columnsDiffer about null/"" defaults
         printIdentifier(getColumnName(column));
         print(" ");
@@ -1785,7 +1786,7 @@ public abstract class SqlBuilder {
      */
     protected String getSqlType(Column column) {
         String nativeType = getNativeType(column);
-        int sizePos = nativeType.indexOf(SIZE_PLACEHOLDER);
+        int sizePos = nativeType.indexOf(SIZEPLACEHOLDER);
         StringBuffer sqlType = new StringBuffer();
 
         sqlType.append(sizePos >= 0 ? nativeType.substring(0, sizePos) : nativeType);
@@ -1808,8 +1809,7 @@ public abstract class SqlBuilder {
                 sqlType.append(")");
             }
         }
-        sqlType.append(sizePos >= 0 ? nativeType.substring(sizePos + SIZE_PLACEHOLDER.length())
-                : "");
+        sqlType.append(sizePos >= 0 ? nativeType.substring(sizePos + SIZEPLACEHOLDER.length()) : "");
 
         return sqlType.toString();
     }
@@ -1837,7 +1837,7 @@ public abstract class SqlBuilder {
      */
     protected String getBareNativeType(Column column) {
         String nativeType = getNativeType(column);
-        int sizePos = nativeType.indexOf(SIZE_PLACEHOLDER);
+        int sizePos = nativeType.indexOf(SIZEPLACEHOLDER);
 
         return sizePos >= 0 ? nativeType.substring(0, sizePos) : nativeType;
     }
@@ -1864,7 +1864,7 @@ public abstract class SqlBuilder {
     protected String escapeStringValue(String value) {
         String result = value;
 
-        for (Iterator<Map.Entry<String, String>> it = _charSequencesToEscape.entrySet().iterator(); it
+        for (Iterator<Map.Entry<String, String>> it = charSequencesToEscape.entrySet().iterator(); it
                 .hasNext();) {
             Map.Entry<String, String> entry = it.next();
 
@@ -1900,7 +1900,7 @@ public abstract class SqlBuilder {
      * @param column
      *            The column
      */
-    protected void writeColumnDefaultValueStmt(Table table, Column column) throws IOException {
+    protected void writeColumnDefaultValueStmt(Table table, Column column) {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
@@ -1930,7 +1930,7 @@ public abstract class SqlBuilder {
      * @param column
      *            The column
      */
-    protected void writeColumnDefaultValue(Table table, Column column) throws IOException {
+    protected void writeColumnDefaultValue(Table table, Column column) {
         printDefaultValue(getNativeDefaultValue(column), column.getTypeCode());
     }
 
@@ -1942,7 +1942,7 @@ public abstract class SqlBuilder {
      * @param typeCode
      *            The type code to write the default value for
      */
-    protected void printDefaultValue(Object defaultValue, int typeCode) throws IOException {
+    protected void printDefaultValue(Object defaultValue, int typeCode) {
         if (defaultValue != null) {
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode);
 
@@ -1965,21 +1965,21 @@ public abstract class SqlBuilder {
      * @param column
      *            The column
      */
-    protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException {
+    protected void writeColumnAutoIncrementStmt(Table table, Column column) {
         print("IDENTITY");
     }
 
     /**
      * Prints that a column is nullable.
      */
-    protected void writeColumnNullableStmt() throws IOException {
+    protected void writeColumnNullableStmt() {
         print("NULL");
     }
 
     /**
      * Prints that a column is not nullable.
      */
-    protected void writeColumnNotNullableStmt() throws IOException {
+    protected void writeColumnNotNullableStmt() {
         print("NOT NULL");
     }
 
@@ -2058,7 +2058,7 @@ public abstract class SqlBuilder {
 
             for (int idx = 0; idx < fk.getReferenceCount(); idx++) {
                 name.append(fk.getReference(idx).getLocalColumnName());
-                name.append("_");
+                name.append("");
             }
             name.append(fk.getForeignTableName());
             fkName = getConstraintName(null, table, "FK", name.toString());
@@ -2066,7 +2066,7 @@ public abstract class SqlBuilder {
         fkName = shortenName(fkName, getMaxForeignKeyNameLength());
 
         if (needsName) {
-            _log.log(LogLevel.WARN, "Encountered a foreign key in table " + table.getTableName()
+            log.log(LogLevel.WARN, "Encountered a foreign key in table " + table.getTableName()
                     + " that has no name. "
                     + "DdlUtils will use the auto-generated and shortened name " + fkName
                     + " instead.");
@@ -2095,13 +2095,13 @@ public abstract class SqlBuilder {
 
         if (prefix != null) {
             result.append(prefix);
-            result.append("_");
+            result.append("");
         }
         result.append(table.getTableName());
-        result.append("_");
+        result.append("");
         result.append(secondPart);
         if (suffix != null) {
-            result.append("_");
+            result.append("");
             result.append(suffix);
         }
         return shortenName(result.toString(), getMaxConstraintNameLength());
@@ -2113,7 +2113,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeEmbeddedPrimaryKeysStmt(Table table) throws IOException {
+    protected void writeEmbeddedPrimaryKeysStmt(Table table) {
         Column[] primaryKeyColumns = table.getPrimaryKeyColumnsArray();
 
         if ((primaryKeyColumns.length > 0) && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
@@ -2131,8 +2131,7 @@ public abstract class SqlBuilder {
      * @param primaryKeyColumns
      *            The primary key columns
      */
-    protected void writeExternalPrimaryKeysCreateStmt(Table table, Column[] primaryKeyColumns)
-            throws IOException {
+    protected void writeExternalPrimaryKeysCreateStmt(Table table, Column[] primaryKeyColumns) {
         if ((primaryKeyColumns.length > 0) && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
             print("ALTER TABLE ");
             printlnIdentifier(getTableName(table));
@@ -2166,7 +2165,7 @@ public abstract class SqlBuilder {
      * @param primaryKeyColumns
      *            The primary columns
      */
-    protected void writePrimaryKeyStmt(Table table, Column[] primaryKeyColumns) throws IOException {
+    protected void writePrimaryKeyStmt(Table table, Column[] primaryKeyColumns) {
         print("PRIMARY KEY (");
         for (int idx = 0; idx < primaryKeyColumns.length; idx++) {
             printIdentifier(getColumnName(primaryKeyColumns[idx]));
@@ -2195,7 +2194,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeExternalIndicesCreateStmt(Table table) throws IOException {
+    protected void writeExternalIndicesCreateStmt(Table table) {
         for (int idx = 0; idx < table.getIndexCount(); idx++) {
             Index index = table.getIndex(idx);
 
@@ -2212,7 +2211,7 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeEmbeddedIndicesStmt(Table table) throws IOException {
+    protected void writeEmbeddedIndicesStmt(Table table) {
         if (getPlatformInfo().isIndicesSupported()) {
             for (int idx = 0; idx < table.getIndexCount(); idx++) {
                 printStartOfEmbeddedStatement();
@@ -2229,10 +2228,10 @@ public abstract class SqlBuilder {
      * @param index
      *            The index
      */
-    protected void writeExternalIndexCreateStmt(Table table, Index index) throws IOException {
+    protected void writeExternalIndexCreateStmt(Table table, Index index) {
         if (getPlatformInfo().isIndicesSupported()) {
             if (index.getName() == null) {
-                _log.log(LogLevel.WARN, "Cannot write unnamed index " + index);
+                log.log(LogLevel.WARN, "Cannot write unnamed index " + index);
             } else {
                 print("CREATE");
                 if (index.isUnique()) {
@@ -2275,7 +2274,7 @@ public abstract class SqlBuilder {
      * @param index
      *            The index
      */
-    protected void writeEmbeddedIndexCreateStmt(Table table, Index index) throws IOException {
+    protected void writeEmbeddedIndexCreateStmt(Table table, Index index) {
         if ((index.getName() != null) && (index.getName().length() > 0)) {
             print(" CONSTRAINT ");
             printIdentifier(getIndexName(index));
@@ -2314,7 +2313,7 @@ public abstract class SqlBuilder {
      * @param index
      *            The index to drop
      */
-    public void writeExternalIndexDropStmt(Table table, Index index) throws IOException {
+    public void writeExternalIndexDropStmt(Table table, Index index) {
         if (getPlatformInfo().isAlterTableForDropUsed()) {
             writeTableAlterStmt(table);
         }
@@ -2335,12 +2334,12 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeEmbeddedForeignKeysStmt(Database database, Table table) throws IOException {
+    protected void writeEmbeddedForeignKeysStmt(Database database, Table table) {
         for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
             ForeignKey key = table.getForeignKey(idx);
 
             if (key.getForeignTableName() == null) {
-                _log.log(LogLevel.WARN, "Foreign key table is null for key " + key);
+                log.log(LogLevel.WARN, "Foreign key table is null for key " + key);
             } else {
                 printStartOfEmbeddedStatement();
                 if (getPlatformInfo().isEmbeddedForeignKeysNamed()) {
@@ -2369,10 +2368,9 @@ public abstract class SqlBuilder {
      * @param key
      *            The foreign key
      */
-    protected void writeExternalForeignKeyCreateStmt(Database database, Table table, ForeignKey key)
-            throws IOException {
+    protected void writeExternalForeignKeyCreateStmt(Database database, Table table, ForeignKey key) {
         if (key.getForeignTableName() == null) {
-            _log.log(LogLevel.WARN, "Foreign key table is null for key " + key);
+            log.log(LogLevel.WARN, "Foreign key table is null for key " + key);
         } else {
             writeTableAlterStmt(table);
 
@@ -2395,7 +2393,7 @@ public abstract class SqlBuilder {
      * @param key
      *            The foreign key
      */
-    protected void writeLocalReferences(ForeignKey key) throws IOException {
+    protected void writeLocalReferences(ForeignKey key) {
         for (int idx = 0; idx < key.getReferenceCount(); idx++) {
             if (idx > 0) {
                 print(", ");
@@ -2410,7 +2408,7 @@ public abstract class SqlBuilder {
      * @param key
      *            The foreign key
      */
-    protected void writeForeignReferences(ForeignKey key) throws IOException {
+    protected void writeForeignReferences(ForeignKey key) {
         for (int idx = 0; idx < key.getReferenceCount(); idx++) {
             if (idx > 0) {
                 print(", ");
@@ -2428,8 +2426,7 @@ public abstract class SqlBuilder {
      * @param foreignKey
      *            The foreign key
      */
-    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey)
-            throws IOException {
+    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey) {
         writeTableAlterStmt(table);
         print("DROP CONSTRAINT ");
         printIdentifier(getForeignKeyName(table, foreignKey));
@@ -2446,7 +2443,7 @@ public abstract class SqlBuilder {
      * @param text
      *            The comment text
      */
-    protected void printComment(String text) throws IOException {
+    protected void printComment(String text) {
         if (getPlatformInfo().isSqlCommentsOn()) {
             print(getPlatformInfo().getCommentPrefix());
             // Some databases insist on a space after the prefix
@@ -2461,7 +2458,7 @@ public abstract class SqlBuilder {
     /**
      * Prints the start of an embedded statement.
      */
-    protected void printStartOfEmbeddedStatement() throws IOException {
+    protected void printStartOfEmbeddedStatement() {
         println(",");
         printIndent();
     }
@@ -2470,7 +2467,7 @@ public abstract class SqlBuilder {
      * Prints the end of statement text, which is typically a semi colon
      * followed by a carriage return.
      */
-    protected void printEndOfStatement() throws IOException {
+    protected void printEndOfStatement() {
         // TODO: It might make sense to use a special writer which stores the
         // individual
         // statements separately (the end of a statement is identified by this
@@ -2482,8 +2479,8 @@ public abstract class SqlBuilder {
     /**
      * Prints a newline.
      */
-    protected void println() throws IOException {
-        print(LINE_SEPARATOR);
+    protected void println() {
+        print(LINESEPARATOR);
     }
 
     /**
@@ -2492,8 +2489,12 @@ public abstract class SqlBuilder {
      * @param text
      *            The text to print
      */
-    protected void print(String text) throws IOException {
-        _writer.write(text);
+    protected void print(String text) {
+        try {
+            writer.write(text);
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
     }
 
     /**
@@ -2521,7 +2522,7 @@ public abstract class SqlBuilder {
      * @param identifier
      *            The identifier
      */
-    protected void printIdentifier(String identifier) throws IOException {
+    protected void printIdentifier(String identifier) {
         print(getDelimitedIdentifier(identifier));
     }
 
@@ -2532,7 +2533,7 @@ public abstract class SqlBuilder {
      * @param identifier
      *            The identifier
      */
-    protected void printlnIdentifier(String identifier) throws IOException {
+    protected void printlnIdentifier(String identifier) {
         println(getDelimitedIdentifier(identifier));
     }
 
@@ -2542,7 +2543,7 @@ public abstract class SqlBuilder {
      * @param text
      *            The text to print
      */
-    protected void println(String text) throws IOException {
+    protected void println(String text) {
         print(text);
         println();
     }
@@ -2550,15 +2551,15 @@ public abstract class SqlBuilder {
     /**
      * Prints the characters used to indent SQL.
      */
-    protected void printIndent() throws IOException {
+    protected void printIndent() {
         print(getIndent());
     }
 
     /**
      * Creates a reasonably unique identifier only consisting of hexadecimal
      * characters and underscores. It looks like
-     * <code>d578271282b42fce__2955b56e_107df3fbc96__8000</code> and is 48
-     * characters long.
+     * <code>d578271282b42fce2955b56e107df3fbc968000</code> and is 48 characters
+     * long.
      * 
      * @return The identifier
      */
