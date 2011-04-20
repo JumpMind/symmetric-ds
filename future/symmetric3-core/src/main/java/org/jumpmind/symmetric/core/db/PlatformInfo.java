@@ -37,6 +37,8 @@ public class PlatformInfo {
     /** The Log to which logging calls will be made. */
     private final Log log = LogFactory.getLog(PlatformInfo.class);
     
+    private boolean sqlCommentsOn = false;
+    
     private boolean dateOverridesToTimestamp = false;
     
     private String identifierQuoteString = "\"";
@@ -47,6 +49,12 @@ public class PlatformInfo {
     private boolean storesUpperCaseNamesInCatalog = false;
     
     private boolean storesLowerCaseNamesInCatalog = false;
+    
+    private boolean emptyStringNulled = false;
+    
+    private boolean blankCharColumnSpacePadded = false;
+    
+    private boolean nonBlankCharColumnSpacePadded = false;
     
     /**
      * Whether the database requires the explicit stating of NULL as the default
@@ -1174,4 +1182,38 @@ public class PlatformInfo {
     public void setIdentifierQuoteString(String identifierQuoteString) {
         this.identifierQuoteString = identifierQuoteString;
     }
+    
+    public void setBlankCharColumnSpacePadded(boolean blankCharColumnSpacePadded) {
+        this.blankCharColumnSpacePadded = blankCharColumnSpacePadded;
+    }
+
+    public boolean isBlankCharColumnSpacePadded() {
+        return blankCharColumnSpacePadded;
+    }
+
+    public void setEmptyStringNulled(boolean emptyStringNulled) {
+        this.emptyStringNulled = emptyStringNulled;
+    }
+
+    public boolean isEmptyStringNulled() {
+        return emptyStringNulled;
+    }
+    
+    public void setNonBlankCharColumnSpacePadded(boolean nonBlankCharColumnSpacePadded) {
+        this.nonBlankCharColumnSpacePadded = nonBlankCharColumnSpacePadded;
+    }
+
+    public boolean isNonBlankCharColumnSpacePadded() {
+        return nonBlankCharColumnSpacePadded;
+    }
+
+
+    public boolean isSqlCommentsOn() {
+        return sqlCommentsOn;
+    }
+    
+    public void setSqlCommentsOn(boolean sqlCommentsOn) {
+        this.sqlCommentsOn = sqlCommentsOn;
+    }
+    
 }

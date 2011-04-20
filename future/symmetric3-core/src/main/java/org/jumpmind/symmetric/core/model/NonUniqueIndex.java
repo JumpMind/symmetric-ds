@@ -21,21 +21,20 @@ package org.jumpmind.symmetric.core.model;
 
 import java.util.ArrayList;
 
+import org.jumpmind.symmetric.core.common.EqualsBuilder;
+import org.jumpmind.symmetric.core.common.HashCodeBuilder;
+
 /**
  * Represents an index definition for a table.
- * 
- * @version $Revision: 289996 $
  */
-public class NonUniqueIndex extends Index
-{
+public class NonUniqueIndex extends Index {
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -3591499395114850301L;
 
     /**
      * {@inheritDoc}
      */
-    public boolean isUnique()
-    {
+    public boolean isUnique() {
         return false;
     }
 
@@ -43,22 +42,63 @@ public class NonUniqueIndex extends Index
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public Object clone() throws CloneNotSupportedException
-    {
+    public Object clone() throws CloneNotSupportedException {
         NonUniqueIndex result = new NonUniqueIndex();
 
-        result._name    = _name;
-        result._columns = (ArrayList<IndexColumn>)_columns.clone();
+        result._name = _name;
+        result._columns = (ArrayList<IndexColumn>) _columns.clone();
 
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof NonUniqueIndex) {
+            NonUniqueIndex other = (NonUniqueIndex) obj;
+
+            return new EqualsBuilder().append(_name, other._name).append(_columns, other._columns)
+                    .isEquals();
+        } else {
+            return false;
+        }
+    }
 
     /**
      * {@inheritDoc}
      */
-    public String toString()
-    {
+    public boolean equalsIgnoreCase(Index other) {
+        if (other instanceof NonUniqueIndex) {
+            NonUniqueIndex otherIndex = (NonUniqueIndex) other;
+
+            boolean checkName = (_name != null) && (_name.length() > 0)
+                    && (otherIndex._name != null) && (otherIndex._name.length() > 0);
+
+            if ((!checkName || _name.equalsIgnoreCase(otherIndex._name))
+                    && (getColumnCount() == otherIndex.getColumnCount())) {
+                for (int idx = 0; idx < getColumnCount(); idx++) {
+                    if (!getColumn(idx).equalsIgnoreCase(otherIndex.getColumn(idx))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(_name).append(_columns).toHashCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String toString() {
         StringBuffer result = new StringBuffer();
 
         result.append("Index [name=");
@@ -73,15 +113,13 @@ public class NonUniqueIndex extends Index
     /**
      * {@inheritDoc}
      */
-    public String toVerboseString()
-    {
+    public String toVerboseString() {
         StringBuffer result = new StringBuffer();
 
         result.append("Index [");
         result.append(getName());
         result.append("] columns:");
-        for (int idx = 0; idx < getColumnCount(); idx++)
-        {
+        for (int idx = 0; idx < getColumnCount(); idx++) {
             result.append(" ");
             result.append(getColumn(idx).toString());
         }

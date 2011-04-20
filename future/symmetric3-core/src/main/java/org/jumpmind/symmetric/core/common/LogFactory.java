@@ -37,7 +37,7 @@ public class LogFactory {
                         log = new DefaultLog();
                     }
 
-                    log.setClass(clazz);
+                    log.initialize(clazz);
                     logs.put(clazz, log);
                 }
             }

@@ -11,7 +11,11 @@ abstract public class Log {
     
     public abstract void log(LogLevel level, Throwable error);
     
-    protected void setClass(Class<?> clazz) {
+    public abstract void debug(String msg);
+    
+    public abstract boolean isDebugEnabled();    
+    
+    protected void initialize(Class<?> clazz) {
         this.clazz = clazz;
     }
 

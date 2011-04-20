@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.jdbc.db;
 
+import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -10,42 +11,36 @@ import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.DbException;
 import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.jdbc.db.h2.H2Platform;
 import org.jumpmind.symmetric.jdbc.db.oracle.OraclePlatform;
 
 public class JdbcPlatformFactory {
 
     private static Map<String, Class<? extends IPlatform>> platforms = null;
 
-    public static IPlatform createPlatform(DataSource dataSource) {
+    public static IJdbcPlatform createPlatform(DataSource dataSource) {
         String platformId = lookupPlatformId(dataSource, true);
-        AbstractJdbcPlatform platform = createNewPlatformInstance(platformId);
+        AbstractJdbcPlatform platform = createNewPlatformInstance(platformId, dataSource);
         if (platform == null) {
             platformId = lookupPlatformId(dataSource, false);
-            platform = createNewPlatformInstance(platformId);
-        }
-        
-        if (platform != null) {
-            platform.setDataSource(dataSource);
+            platform = createNewPlatformInstance(platformId, dataSource);
         }
         return platform;
     }
 
-    /**
-     * Creates a new platform for the given (case insensitive) platform
-     * identifier or returns null if the database is not recognized.
-     * 
-     * @param databaseName
-     *            The name of the database (case is not important)
-     * @return The platform or <code>null</code> if the database is not
-     *         supported
-     */
-    public static AbstractJdbcPlatform createNewPlatformInstance(String databaseName) {
+    private static AbstractJdbcPlatform createNewPlatformInstance(String databaseName,
+            DataSource dataSource) {
         Class<? extends IPlatform> platformClass = getPlatforms().get(databaseName.toLowerCase());
 
-        try {
-            return platformClass != null ? (AbstractJdbcPlatform) platformClass.newInstance() : null;
-        } catch (Exception ex) {
-            throw new DbException("Could not create platform for database " + databaseName, ex);
+        if (platformClass != null) {
+            try {
+                Constructor<?> constructor = platformClass.getConstructor(DataSource.class);
+                return (AbstractJdbcPlatform) constructor.newInstance(dataSource);
+            } catch (Exception ex) {
+                throw new DbException("Could not create platform for database " + databaseName, ex);
+            }
+        } else {
+            return null;
         }
     }
 
@@ -66,8 +61,8 @@ public class JdbcPlatformFactory {
 
             return productString;
         } catch (SQLException ex) {
-            throw new DbException(
-                    "Error while reading the database metadata: " + ex.getMessage(), ex);
+            throw new DbException("Error while reading the database metadata: " + ex.getMessage(),
+                    ex);
         } finally {
             if (connection != null) {
                 try {
@@ -88,7 +83,8 @@ public class JdbcPlatformFactory {
 
     private static synchronized Map<String, Class<? extends IPlatform>> registerPlatforms() {
         Map<String, Class<? extends IPlatform>> platforms = new HashMap<String, Class<? extends IPlatform>>();
-        platforms.put(OraclePlatform.PLATFORMID, OraclePlatform.class);
+        platforms.put("oracle", OraclePlatform.class);
+        platforms.put("h2", H2Platform.class);
         return platforms;
     }
 

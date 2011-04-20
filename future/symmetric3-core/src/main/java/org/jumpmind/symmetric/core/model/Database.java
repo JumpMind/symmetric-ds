@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jumpmind.symmetric.core.common.EqualsBuilder;
+import org.jumpmind.symmetric.core.common.HashCodeBuilder;
 import org.jumpmind.symmetric.core.db.DbException;
 
 /**
@@ -467,6 +469,36 @@ public class Database implements Serializable, Cloneable {
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof Database)
+        {
+            Database other = (Database)obj;
+
+            // Note that this compares case sensitive
+            return new EqualsBuilder().append(_name,   other._name)
+                                      .append(_tables, other._tables)
+                                      .isEquals();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int hashCode()
+    {
+        return new HashCodeBuilder(17, 37).append(_name)
+                                          .append(_tables)
+                                          .toHashCode();
+    }
+    
     /**
      * {@inheritDoc}
      */

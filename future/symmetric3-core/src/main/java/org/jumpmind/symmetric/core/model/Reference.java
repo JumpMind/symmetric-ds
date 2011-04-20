@@ -2,6 +2,8 @@ package org.jumpmind.symmetric.core.model;
 
 import java.io.Serializable;
 
+import org.jumpmind.symmetric.core.common.EqualsBuilder;
+
 /**
  * Represents a reference between a column in the local table and a column in
  * another table.
@@ -11,15 +13,15 @@ public class Reference implements Cloneable, Serializable {
     private static final long serialVersionUID = 6062467640266171664L;
 
     /** The sequence value within the key. */
-    private int _sequenceValue;
+    private int sequenceValue;
     /** The local column. */
-    private Column _localColumn;
+    private Column localColumn;
     /** The foreign column. */
-    private Column _foreignColumn;
+    private Column foreignColumn;
     /** The name of the local column. */
-    private String _localColumnName;
+    private String localColumnName;
     /** The name of the foreign column. */
-    private String _foreignColumnName;
+    private String foreignColumnName;
 
     /**
      * Creates a new, empty reference.
@@ -46,7 +48,7 @@ public class Reference implements Cloneable, Serializable {
      * @return The sequence value
      */
     public int getSequenceValue() {
-        return _sequenceValue;
+        return sequenceValue;
     }
 
     /**
@@ -57,7 +59,7 @@ public class Reference implements Cloneable, Serializable {
      *            The sequence value
      */
     public void setSequenceValue(int sequenceValue) {
-        _sequenceValue = sequenceValue;
+        this.sequenceValue = sequenceValue;
     }
 
     /**
@@ -66,7 +68,7 @@ public class Reference implements Cloneable, Serializable {
      * @return The local column
      */
     public Column getLocalColumn() {
-        return _localColumn;
+        return localColumn;
     }
 
     /**
@@ -76,8 +78,8 @@ public class Reference implements Cloneable, Serializable {
      *            The local column
      */
     public void setLocalColumn(Column localColumn) {
-        _localColumn = localColumn;
-        _localColumnName = (localColumn == null ? null : localColumn.getName());
+        this.localColumn = localColumn;
+        localColumnName = (localColumn == null ? null : localColumn.getName());
     }
 
     /**
@@ -86,7 +88,7 @@ public class Reference implements Cloneable, Serializable {
      * @return The foreign column
      */
     public Column getForeignColumn() {
-        return _foreignColumn;
+        return foreignColumn;
     }
 
     /**
@@ -96,8 +98,8 @@ public class Reference implements Cloneable, Serializable {
      *            The foreign column
      */
     public void setForeignColumn(Column foreignColumn) {
-        _foreignColumn = foreignColumn;
-        _foreignColumnName = (foreignColumn == null ? null : foreignColumn.getName());
+        this.foreignColumn = foreignColumn;
+        foreignColumnName = (foreignColumn == null ? null : foreignColumn.getName());
     }
 
     /**
@@ -106,7 +108,7 @@ public class Reference implements Cloneable, Serializable {
      * @return The column name
      */
     public String getLocalColumnName() {
-        return _localColumnName;
+        return localColumnName;
     }
 
     /**
@@ -118,10 +120,10 @@ public class Reference implements Cloneable, Serializable {
      *            The column name
      */
     public void setLocalColumnName(String localColumnName) {
-        if ((_localColumn != null) && !_localColumn.getName().equals(localColumnName)) {
-            _localColumn = null;
+        if ((localColumn != null) && !localColumn.getName().equals(localColumnName)) {
+            localColumn = null;
         }
-        _localColumnName = localColumnName;
+        this.localColumnName = localColumnName;
     }
 
     /**
@@ -130,7 +132,7 @@ public class Reference implements Cloneable, Serializable {
      * @return The column name
      */
     public String getForeignColumnName() {
-        return _foreignColumnName;
+        return foreignColumnName;
     }
 
     /**
@@ -142,10 +144,10 @@ public class Reference implements Cloneable, Serializable {
      *            The column name
      */
     public void setForeignColumnName(String foreignColumnName) {
-        if ((_foreignColumn != null) && !_foreignColumn.getName().equals(foreignColumnName)) {
-            _foreignColumn = null;
+        if ((foreignColumn != null) && !foreignColumn.getName().equals(foreignColumnName)) {
+            foreignColumn = null;
         }
-        _foreignColumnName = foreignColumnName;
+        this.foreignColumnName = foreignColumnName;
     }
 
     /**
@@ -154,10 +156,24 @@ public class Reference implements Cloneable, Serializable {
     public Object clone() throws CloneNotSupportedException {
         Reference result = (Reference) super.clone();
 
-        result._localColumnName = _localColumnName;
-        result._foreignColumnName = _foreignColumnName;
+        result.localColumnName = localColumnName;
+        result.foreignColumnName = foreignColumnName;
 
         return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof Reference) {
+            Reference other = (Reference) obj;
+
+            return new EqualsBuilder().append(localColumnName, other.localColumnName)
+                    .append(foreignColumnName, other.foreignColumnName).isEquals();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -170,8 +186,8 @@ public class Reference implements Cloneable, Serializable {
      *         the given one
      */
     public boolean equalsIgnoreCase(Reference otherRef) {
-        return (otherRef != null) && _localColumnName.equalsIgnoreCase(otherRef._localColumnName)
-                && _foreignColumnName.equalsIgnoreCase(otherRef._foreignColumnName);
+        return (otherRef != null) && localColumnName.equalsIgnoreCase(otherRef.localColumnName)
+                && foreignColumnName.equalsIgnoreCase(otherRef.foreignColumnName);
     }
 
     /**

@@ -1,11 +1,16 @@
 package org.jumpmind.symmetric.jdbc.tools;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.io.IoUtils;
+import org.jumpmind.symmetric.core.model.Parameters;
+import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
+import org.jumpmind.symmetric.jdbc.db.JdbcPlatformFactory;
 import org.jumpmind.symmetric.jdbc.tools.copy.TableCopyProperties;
 import org.jumpmind.symmetric.jdbc.tools.copy.TableToCopy;
 
@@ -29,8 +34,20 @@ public class TableCopy {
             File propFile = new File(args[0]);
             if (propFile.exists() && !propFile.isDirectory()) {
                 TableCopyProperties properties = new TableCopyProperties(propFile);
-                DataSource targetDataSource = properties.getTargetDataSource();
-                DataSource sourceDataSource = properties.getTargetDataSource();
+                DataSource source = properties.getTargetDataSource();
+                DataSource target = properties.getTargetDataSource();
+                TableCopy copier = new TableCopy(source, target);
+                IJdbcPlatform platform = JdbcPlatformFactory.createPlatform(source);
+                String[] tableNames = properties.getTables();
+                Parameters parameters = new Parameters(properties);
+                List<TableToCopy> tablesToCopy = new ArrayList<TableToCopy>();
+                for (String tableName : tableNames) {
+                    Table table = platform.findTable(tableName, parameters);
+                    String condition = properties.getConditionForTable(tableName);
+                    tablesToCopy.add(new TableToCopy(table, condition));
+                }
+                copier.copy(tablesToCopy);
+                
             }
         } else {
             System.err

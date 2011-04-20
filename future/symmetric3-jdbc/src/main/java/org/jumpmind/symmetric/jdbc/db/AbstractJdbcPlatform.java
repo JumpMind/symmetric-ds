@@ -7,12 +7,21 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.core.db.AbstractPlatform;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.jdbc.sql.ILobHandler;
 
-abstract public class AbstractJdbcPlatform extends AbstractPlatform {
+abstract public class AbstractJdbcPlatform extends AbstractPlatform implements IJdbcPlatform {
 
     protected DataSource dataSource;
 
     protected JdbcModelReader jdbcModelReader;
+
+    public AbstractJdbcPlatform(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public Table findTable(String tableName, Parameters parameters) {
+        return findTable(null, null, tableName, false, parameters);
+    }
 
     public Table findTable(String catalogName, String schemaName, String tableName,
             boolean useCache, Parameters parameters) {
@@ -59,6 +68,10 @@ abstract public class AbstractJdbcPlatform extends AbstractPlatform {
             }
         }
         return integrityError;
+    }
+
+    public ILobHandler getLobHandler() {
+        return null;
     }
 
     abstract protected int[] getDataIntegritySqlErrorCodes();

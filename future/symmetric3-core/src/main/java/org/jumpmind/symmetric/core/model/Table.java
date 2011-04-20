@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jumpmind.symmetric.core.common.EqualsBuilder;
+import org.jumpmind.symmetric.core.common.HashCodeBuilder;
 import org.jumpmind.symmetric.core.common.StringUtils;
 
 /**
@@ -541,18 +544,21 @@ public class Table implements Serializable, Cloneable {
     }
 
     /**
-     * Finds the foreign key in this table that is equal to the supplied foreign
-     * key.
+     * Finds the foreign key in this table that is equal to the supplied foreign key.
      * 
-     * @param key
-     *            The foreign key to search for
+     * @param key           The foreign key to search for
+     * @param caseSensitive Whether case matters for the names
      * @return The found foreign key
      */
-    public ForeignKey findForeignKey(ForeignKey key) {
-        for (int idx = 0; idx < getForeignKeyCount(); idx++) {
+    public ForeignKey findForeignKey(ForeignKey key, boolean caseSensitive)
+    {
+        for (int idx = 0; idx < getForeignKeyCount(); idx++)
+        {
             ForeignKey fk = getForeignKey(idx);
 
-            if (fk.equals(key)) {
+            if ((caseSensitive  && fk.equals(key)) ||
+                (!caseSensitive && fk.equalsIgnoreCase(key)))
+            {
                 return fk;
             }
         }
@@ -590,7 +596,7 @@ public class Table implements Serializable, Cloneable {
         }
         return found;
     }
-    
+
     public Column[] getPrimaryKeyColumnsArray() {
         List<Column> columns = getPrimaryKeyColumns();
         return columns.toArray(new Column[columns.size()]);
@@ -681,6 +687,37 @@ public class Table implements Serializable, Cloneable {
         } catch (CloneNotSupportedException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof Table) {
+            Table other = (Table) obj;
+
+            // Note that this compares case sensitive
+            return new EqualsBuilder()
+                    .append(catalogName, other.catalogName)
+                    .append(schemaName, other.schemaName)
+                    .append(tableName, other.tableName)
+                    .append(columns, other.columns)
+                    .append(new HashSet<ForeignKey>(foreignKeys),
+                            new HashSet<ForeignKey>(other.foreignKeys))
+                    .append(new HashSet<Index>(indices), new HashSet<Index>(other.indices))
+                    .isEquals();
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(tableName).append(catalogName).append(schemaName)
+                .append(columns).append(new HashSet<ForeignKey>(foreignKeys))
+                .append(new HashSet<Index>(indices)).toHashCode();
     }
 
     /**

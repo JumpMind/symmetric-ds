@@ -1,7 +1,9 @@
 package org.jumpmind.symmetric.core.common;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 abstract public class CollectionUtils {
 
@@ -117,5 +119,18 @@ abstract public class CollectionUtils {
         }
         return (T[]) array.clone();
     }    
+    
+    
+    public static <T> List<T> selectList(Class<T> collectionType, Class<?>[] candidateTypes, Collection<?> collection) {
+        List<T> list = new ArrayList<T>();
+        for (Object object : collection) {
+            for (Class<?> type : candidateTypes) {
+                if (type.isAssignableFrom(object.getClass())) {
+                    list.add((T)object);
+                }
+            }
+        }
+        return list;
+    }
     
 }

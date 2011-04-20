@@ -26,6 +26,9 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 
+import org.jumpmind.symmetric.core.common.EqualsBuilder;
+import org.jumpmind.symmetric.core.common.HashCodeBuilder;
+
 /**
  * Represents a column in the database model.
  * 
@@ -465,6 +468,67 @@ public class Column implements Cloneable, Serializable {
         result._sizeAsInt = _sizeAsInt;
 
         return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof Column)
+        {
+            Column        other      = (Column)obj;
+            EqualsBuilder comparator = new EqualsBuilder();
+
+            // Note that this compares case sensitive
+            comparator.append(_name,                   other._name);
+            comparator.append(_primaryKey,             other._primaryKey);
+            comparator.append(_required,               other._required);
+            comparator.append(_autoIncrement,          other._autoIncrement);
+            comparator.append(_typeCode,               other._typeCode);
+            comparator.append(getParsedDefaultValue(), other.getParsedDefaultValue());
+
+            // comparing the size makes only sense for types where it is relevant
+            if ((_typeCode == Types.NUMERIC) || (_typeCode == Types.DECIMAL))
+            {
+                comparator.append(_size,  other._size);
+                comparator.append(_scale, other._scale);
+            }
+            else if ((_typeCode == Types.CHAR) || (_typeCode == Types.VARCHAR) ||
+                     (_typeCode == Types.BINARY) || (_typeCode == Types.VARBINARY))
+            {
+                comparator.append(_size, other._size);
+            }
+
+            return comparator.isEquals();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int hashCode()
+    {
+        HashCodeBuilder builder = new HashCodeBuilder(17, 37);
+
+        builder.append(_name);
+        builder.append(_primaryKey);
+        builder.append(_required);
+        builder.append(_autoIncrement);
+        builder.append(_typeCode);
+        builder.append(_type);
+        builder.append(_scale);
+        builder.append(getParsedDefaultValue());
+        if (!TypeMap.isNumericType(_typeCode))
+        {
+            builder.append(_size);
+        }
+        
+        return builder.toHashCode();
     }
 
     /**
