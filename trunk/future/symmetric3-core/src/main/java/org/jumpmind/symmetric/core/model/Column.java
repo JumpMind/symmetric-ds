@@ -35,49 +35,71 @@ import org.jumpmind.symmetric.core.common.HashCodeBuilder;
  * @version $Revision: 463305 $
  */
 public class Column implements Cloneable, Serializable {
+    
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -6226348998874210093L;
 
     /** The name of the column. */
-    private String _name;
+    private String name;
     /**
      * The java name of the column (optional and unused by DdlUtils, for Torque
      * compatibility).
      */
-    private String _javaName;
+    private String javaName;
+
     /** The column's description. */
-    private String _description;
+    private String description;
+
     /** Whether the column is a primary key column. */
-    private boolean _primaryKey;
+    private boolean primaryKey;
+
     /**
      * Whether the column is required, ie. it must not contain <code>NULL</code>
      * .
      */
-    private boolean _required;
+    private boolean required;
+
     /** Whether the column's value is incremented automatically. */
-    private boolean _autoIncrement;
+    private boolean autoIncrement;
+
     /** The JDBC type code, one of the constants in {@link java.sql.Types}. */
-    private int _typeCode;
+    private int typeCode;
+
     /** The name of the JDBC type. */
-    private String _type;
+    private String type;
+
     /** The size of the column for JDBC types that require/support this. */
-    private String _size;
+    private String size;
+
     /** The size of the column for JDBC types that require/support this. */
-    private Integer _sizeAsInt;
+    private Integer sizeAsInt;
+
     /** The scale of the column for JDBC types that require/support this. */
-    private int _scale;
+    private int scale;
+
     /** The default value. */
-    private String _defaultValue;
+    private String defaultValue;
 
     private String jdbcTypeName;
-
+    
+    public Column() {     
+    }
+    
+    public Column(String name, String type, String size, boolean autoincrement, boolean required) {
+        setName(name);
+        setType(type);
+        setSize(size);
+        setAutoIncrement(autoincrement);
+        setRequired(required);
+    }
+    
     /**
      * Returns the name of the column.
      * 
      * @return The name
      */
     public String getName() {
-        return _name;
+        return name;
     }
 
     /**
@@ -87,7 +109,7 @@ public class Column implements Cloneable, Serializable {
      *            The name
      */
     public void setName(String name) {
-        _name = name;
+        this.name = name;
     }
 
     /**
@@ -97,7 +119,7 @@ public class Column implements Cloneable, Serializable {
      * @return The java name
      */
     public String getJavaName() {
-        return _javaName;
+        return javaName;
     }
 
     /**
@@ -108,7 +130,7 @@ public class Column implements Cloneable, Serializable {
      *            The java name
      */
     public void setJavaName(String javaName) {
-        _javaName = javaName;
+        this.javaName = javaName;
     }
 
     /**
@@ -117,7 +139,7 @@ public class Column implements Cloneable, Serializable {
      * @return The description
      */
     public String getDescription() {
-        return _description;
+        return description;
     }
 
     /**
@@ -127,7 +149,7 @@ public class Column implements Cloneable, Serializable {
      *            The description
      */
     public void setDescription(String description) {
-        _description = description;
+        this.description = description;
     }
 
     /**
@@ -136,7 +158,7 @@ public class Column implements Cloneable, Serializable {
      * @return <code>true</code> if this column is a primary key column
      */
     public boolean isPrimaryKey() {
-        return _primaryKey;
+        return primaryKey;
     }
 
     /**
@@ -146,7 +168,7 @@ public class Column implements Cloneable, Serializable {
      *            <code>true</code> if this column is a primary key column
      */
     public void setPrimaryKey(boolean primaryKey) {
-        _primaryKey = primaryKey;
+        this.primaryKey = primaryKey;
     }
 
     /**
@@ -156,7 +178,7 @@ public class Column implements Cloneable, Serializable {
      * @return <code>true</code> if this column is a required column
      */
     public boolean isRequired() {
-        return _required;
+        return required;
     }
 
     /**
@@ -167,7 +189,7 @@ public class Column implements Cloneable, Serializable {
      *            <code>true</code> if this column is a required column
      */
     public void setRequired(boolean required) {
-        _required = required;
+        this.required = required;
     }
 
     /**
@@ -176,7 +198,7 @@ public class Column implements Cloneable, Serializable {
      * @return <code>true</code> if this column is an auto-increment column
      */
     public boolean isAutoIncrement() {
-        return _autoIncrement;
+        return autoIncrement;
     }
 
     /**
@@ -186,7 +208,7 @@ public class Column implements Cloneable, Serializable {
      *            <code>true</code> if this column is an auto-increment column
      */
     public void setAutoIncrement(boolean autoIncrement) {
-        _autoIncrement = autoIncrement;
+        this.autoIncrement = autoIncrement;
     }
 
     /**
@@ -196,7 +218,7 @@ public class Column implements Cloneable, Serializable {
      * @return The type code
      */
     public int getTypeCode() {
-        return _typeCode;
+        return typeCode;
     }
 
     /**
@@ -207,11 +229,11 @@ public class Column implements Cloneable, Serializable {
      *            The type code
      */
     public void setTypeCode(int typeCode) {
-        _type = TypeMap.getJdbcTypeName(typeCode);
-        if (_type == null) {
+        this.type = TypeMap.getJdbcTypeName(typeCode);
+        if (this.type == null) {
             throw new RuntimeException("Unknown JDBC type code " + typeCode);
         }
-        _typeCode = typeCode;
+        this.typeCode = typeCode;
     }
 
     /**
@@ -220,7 +242,7 @@ public class Column implements Cloneable, Serializable {
      * @return The type
      */
     public String getType() {
-        return _type;
+        return type;
     }
 
     /**
@@ -235,10 +257,10 @@ public class Column implements Cloneable, Serializable {
         if (typeCode == null) {
             throw new RuntimeException("Unknown JDBC type " + type);
         } else {
-            _typeCode = typeCode.intValue();
+            this.typeCode = typeCode.intValue();
             // we get the corresponding string value from the TypeMap in order
             // to detect extension types which we don't want in the model
-            _type = TypeMap.getJdbcTypeName(_typeCode);
+            this.type = TypeMap.getJdbcTypeName(typeCode);
         }
     }
 
@@ -284,7 +306,7 @@ public class Column implements Cloneable, Serializable {
      * @return The size
      */
     public String getSize() {
-        return _size;
+        return size;
     }
 
     /**
@@ -293,7 +315,7 @@ public class Column implements Cloneable, Serializable {
      * @return The size as an integer
      */
     public int getSizeAsInt() {
-        return _sizeAsInt == null ? 0 : _sizeAsInt.intValue();
+        return sizeAsInt == null ? 0 : sizeAsInt.intValue();
     }
 
     /**
@@ -307,18 +329,18 @@ public class Column implements Cloneable, Serializable {
         if (size != null) {
             int pos = size.indexOf(",");
 
-            _size = size;
+            this.size = size;
             if (pos < 0) {
-                _scale = 0;
-                _sizeAsInt = new Integer(_size);
+                this.scale = 0;
+                this.sizeAsInt = new Integer(size);
             } else {
-                _sizeAsInt = new Integer(size.substring(0, pos));
-                _scale = Integer.parseInt(size.substring(pos + 1));
+                this.sizeAsInt = new Integer(size.substring(0, pos));
+                this.scale = Integer.parseInt(size.substring(pos + 1));
             }
         } else {
-            _size = null;
-            _sizeAsInt = null;
-            _scale = 0;
+            this.size = null;
+            this.sizeAsInt = null;
+            this.scale = 0;
         }
     }
 
@@ -328,7 +350,7 @@ public class Column implements Cloneable, Serializable {
      * @return The scale
      */
     public int getScale() {
-        return _scale;
+        return scale;
     }
 
     /**
@@ -350,11 +372,11 @@ public class Column implements Cloneable, Serializable {
      *            The scale
      */
     public void setSizeAndScale(int size, int scale) {
-        _sizeAsInt = new Integer(size);
-        _scale = scale;
-        _size = String.valueOf(size);
+        sizeAsInt = new Integer(size);
+        this.scale = scale;
+        this.size = String.valueOf(size);
         if (scale > 0) {
-            _size += "," + _scale;
+            this.size += "," + scale;
         }
     }
 
@@ -374,8 +396,8 @@ public class Column implements Cloneable, Serializable {
      *            The precision radix
      */
     public void setPrecisionRadix(int precisionRadix) {
-        _sizeAsInt = new Integer(precisionRadix);
-        _size = String.valueOf(precisionRadix);
+        sizeAsInt = new Integer(precisionRadix);
+        size = String.valueOf(precisionRadix);
     }
 
     /**
@@ -384,7 +406,7 @@ public class Column implements Cloneable, Serializable {
      * @return The default value
      */
     public String getDefaultValue() {
-        return _defaultValue;
+        return defaultValue;
     }
 
     /**
@@ -395,35 +417,35 @@ public class Column implements Cloneable, Serializable {
      * @return The parsed default value
      */
     public Object getParsedDefaultValue() {
-        if ((_defaultValue != null) && (_defaultValue.length() > 0)) {
+        if ((defaultValue != null) && (defaultValue.length() > 0)) {
             try {
-                switch (_typeCode) {
+                switch (typeCode) {
                 case Types.TINYINT:
                 case Types.SMALLINT:
-                    return new Short(_defaultValue);
+                    return new Short(defaultValue);
                 case Types.INTEGER:
-                    return new Integer(_defaultValue);
+                    return new Integer(defaultValue);
                 case Types.BIGINT:
-                    return new Long(_defaultValue);
+                    return new Long(defaultValue);
                 case Types.DECIMAL:
                 case Types.NUMERIC:
-                    return new BigDecimal(_defaultValue);
+                    return new BigDecimal(defaultValue);
                 case Types.REAL:
-                    return new Float(_defaultValue);
+                    return new Float(defaultValue);
                 case Types.DOUBLE:
                 case Types.FLOAT:
-                    return new Double(_defaultValue);
+                    return new Double(defaultValue);
                 case Types.DATE:
-                    return Date.valueOf(_defaultValue);
+                    return Date.valueOf(defaultValue);
                 case Types.TIME:
-                    return Time.valueOf(_defaultValue);
+                    return Time.valueOf(defaultValue);
                 case Types.TIMESTAMP:
-                    return Timestamp.valueOf(_defaultValue);
+                    return Timestamp.valueOf(defaultValue);
                 case Types.BIT:
-                    return TypeMap.convertToBoolean(_defaultValue);
+                    return TypeMap.convertToBoolean(defaultValue);
                 default:
-                    if (_typeCode == TypeMap.determineBooleanTypeCode()) {
-                        return TypeMap.convertToBoolean(_defaultValue);
+                    if (typeCode == TypeMap.determineBooleanTypeCode()) {
+                        return TypeMap.convertToBoolean(defaultValue);
                     }
                     break;
                 }
@@ -433,7 +455,7 @@ public class Column implements Cloneable, Serializable {
                 return null;
             }
         }
-        return _defaultValue;
+        return defaultValue;
     }
 
     /**
@@ -445,7 +467,7 @@ public class Column implements Cloneable, Serializable {
      *            The default value
      */
     public void setDefaultValue(String defaultValue) {
-        _defaultValue = defaultValue;
+        this.defaultValue = defaultValue;
     }
 
     /**
@@ -454,18 +476,18 @@ public class Column implements Cloneable, Serializable {
     public Object clone() throws CloneNotSupportedException {
         Column result = (Column) super.clone();
 
-        result._name = _name;
-        result._javaName = _javaName;
-        result._primaryKey = _primaryKey;
-        result._required = _required;
-        result._autoIncrement = _autoIncrement;
-        result._typeCode = _typeCode;
-        result._type = _type;
-        result._size = _size;
-        result._defaultValue = _defaultValue;
-        result._scale = _scale;
-        result._size = _size;
-        result._sizeAsInt = _sizeAsInt;
+        result.name = name;
+        result.javaName = javaName;
+        result.primaryKey = primaryKey;
+        result.required = required;
+        result.autoIncrement = autoIncrement;
+        result.typeCode = typeCode;
+        result.type = type;
+        result.size = size;
+        result.defaultValue = defaultValue;
+        result.scale = scale;
+        result.size = size;
+        result.sizeAsInt = sizeAsInt;
 
         return result;
     }
@@ -473,37 +495,31 @@ public class Column implements Cloneable, Serializable {
     /**
      * {@inheritDoc}
      */
-    public boolean equals(Object obj)
-    {
-        if (obj instanceof Column)
-        {
-            Column        other      = (Column)obj;
+    public boolean equals(Object obj) {
+        if (obj instanceof Column) {
+            Column other = (Column) obj;
             EqualsBuilder comparator = new EqualsBuilder();
 
             // Note that this compares case sensitive
-            comparator.append(_name,                   other._name);
-            comparator.append(_primaryKey,             other._primaryKey);
-            comparator.append(_required,               other._required);
-            comparator.append(_autoIncrement,          other._autoIncrement);
-            comparator.append(_typeCode,               other._typeCode);
+            comparator.append(name, other.name);
+            comparator.append(primaryKey, other.primaryKey);
+            comparator.append(required, other.required);
+            comparator.append(autoIncrement, other.autoIncrement);
+            comparator.append(typeCode, other.typeCode);
             comparator.append(getParsedDefaultValue(), other.getParsedDefaultValue());
 
-            // comparing the size makes only sense for types where it is relevant
-            if ((_typeCode == Types.NUMERIC) || (_typeCode == Types.DECIMAL))
-            {
-                comparator.append(_size,  other._size);
-                comparator.append(_scale, other._scale);
-            }
-            else if ((_typeCode == Types.CHAR) || (_typeCode == Types.VARCHAR) ||
-                     (_typeCode == Types.BINARY) || (_typeCode == Types.VARBINARY))
-            {
-                comparator.append(_size, other._size);
+            // comparing the size makes only sense for types where it is
+            // relevant
+            if ((typeCode == Types.NUMERIC) || (typeCode == Types.DECIMAL)) {
+                comparator.append(size, other.size);
+                comparator.append(scale, other.scale);
+            } else if ((typeCode == Types.CHAR) || (typeCode == Types.VARCHAR)
+                    || (typeCode == Types.BINARY) || (typeCode == Types.VARBINARY)) {
+                comparator.append(size, other.size);
             }
 
             return comparator.isEquals();
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
@@ -511,23 +527,21 @@ public class Column implements Cloneable, Serializable {
     /**
      * {@inheritDoc}
      */
-    public int hashCode()
-    {
+    public int hashCode() {
         HashCodeBuilder builder = new HashCodeBuilder(17, 37);
 
-        builder.append(_name);
-        builder.append(_primaryKey);
-        builder.append(_required);
-        builder.append(_autoIncrement);
-        builder.append(_typeCode);
-        builder.append(_type);
-        builder.append(_scale);
+        builder.append(name);
+        builder.append(primaryKey);
+        builder.append(required);
+        builder.append(autoIncrement);
+        builder.append(typeCode);
+        builder.append(type);
+        builder.append(scale);
         builder.append(getParsedDefaultValue());
-        if (!TypeMap.isNumericType(_typeCode))
-        {
-            builder.append(_size);
+        if (!TypeMap.isNumericType(typeCode)) {
+            builder.append(size);
         }
-        
+
         return builder.toHashCode();
     }
 

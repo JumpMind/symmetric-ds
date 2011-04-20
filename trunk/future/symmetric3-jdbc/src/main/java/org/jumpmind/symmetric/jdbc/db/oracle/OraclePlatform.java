@@ -5,6 +5,7 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.db.oracle.OracleSqlBuilder;
 import org.jumpmind.symmetric.jdbc.db.AbstractJdbcPlatform;
 import org.jumpmind.symmetric.jdbc.sql.Template;
 
@@ -61,6 +62,7 @@ public class OraclePlatform extends AbstractJdbcPlatform {
         platformInfo.setNonBlankCharColumnSpacePadded(true);
 
         this.jdbcModelReader = new OracleJdbcModelReader(this, dataSource);
+        this.sqlBuilder = new OracleSqlBuilder(this);
 
     }
 

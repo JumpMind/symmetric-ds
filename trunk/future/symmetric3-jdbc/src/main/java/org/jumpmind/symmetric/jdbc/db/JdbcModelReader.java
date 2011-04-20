@@ -62,17 +62,22 @@ import org.jumpmind.symmetric.jdbc.sql.Template;
  * An utility class to create a Database model from a live database.
  */
 public class JdbcModelReader {
+
     /** The Log to which logging calls will be made. */
     protected final Log log = LogFactory.getLog(getClass());
 
     /** The descriptors for the relevant columns in the table meta data. */
     private final List<MetaDataColumnDescriptor> columnsForTable;
+
     /** The descriptors for the relevant columns in the table column meta data. */
     private final List<MetaDataColumnDescriptor> columnsForColumn;
+
     /** The descriptors for the relevant columns in the primary key meta data. */
     private final List<MetaDataColumnDescriptor> columnsForPK;
+
     /** The descriptors for the relevant columns in the foreign key meta data. */
     private final List<MetaDataColumnDescriptor> columnsForFK;
+
     /** The descriptors for the relevant columns in the index meta data. */
     private final List<MetaDataColumnDescriptor> columnsForIndex;
 
@@ -83,20 +88,25 @@ public class JdbcModelReader {
      * must support).
      */
     private HashMap<Integer, String> defaultSizes = new HashMap<Integer, String>();
+
     /** The default database catalog to read. */
     private String defaultCatalogPattern = "%";
+
     /** The default database schema(s) to read. */
     private String defaultSchemaPattern = "%";
+
     /** The default pattern for reading all tables. */
     private String defaultTablePattern = "%";
+
     /** The default pattern for reading all columns. */
     private String defaultColumnPattern;
+
     /** The table types to recognize per default. */
     private String[] defaultTableTypes = { "TABLE" };
-    /** The active connection while reading a database model. */
-    private Connection connection;
-    
-    private DataSource dataSource;
+
+    protected DataSource dataSource;
+
+    protected Template template;
 
     /**
      * Creates a new model reader instance.
@@ -107,6 +117,7 @@ public class JdbcModelReader {
     public JdbcModelReader(IJdbcPlatform platform, DataSource dataSource) {
         this.platform = platform;
         this.dataSource = dataSource;
+        this.template = new Template(dataSource);
 
         defaultSizes.put(new Integer(Types.CHAR), "254");
         defaultSizes.put(new Integer(Types.VARCHAR), "254");
@@ -418,40 +429,8 @@ public class JdbcModelReader {
     }
 
     /**
-     * Returns the active connection. Note that this is only set during a call
-     * to {@link #readTables(String, String, String[])}.
+     * Reads the database model
      * 
-     * @return The connection or <code>null</code> if there is no active
-     *         connection
-     */
-    protected Connection getConnection() {
-        return connection;
-    }
-
-    /**
-     * Reads the database model from the given connection.
-     * 
-     * @param connection
-     *            The connection
-     * @param name
-     *            The name of the resulting database; <code>null</code> when the
-     *            default name (the catalog) is desired which might be
-     *            <code>null</code> itself though
-     * @return The database model
-     */
-    public Database getDatabase(Connection connection, String name) throws SQLException {
-        return getDatabase(connection, name, null, null, null);
-    }
-
-    /**
-     * Reads the database model from the given connection.
-     * 
-     * @param connection
-     *            The connection
-     * @param name
-     *            The name of the resulting database; <code>null</code> when the
-     *            default name (the catalog) is desired which might be
-     *            <code>null</code> itself though
      * @param catalog
      *            The catalog to acess in the database; use <code>null</code>
      *            for the default value
@@ -463,37 +442,28 @@ public class JdbcModelReader {
      *            list for the default ones
      * @return The database model
      */
-    public Database getDatabase(Connection connection, String name, String catalog, String schema,
-            String[] tableTypes) throws SQLException {
-        Database db = new Database();
-
-        if (name == null) {
-            try {
-                db.setName(connection.getCatalog());
-                if (catalog == null) {
-                    catalog = db.getName();
+    public Database getDatabase(final String catalog, final String schema, final String[] tableTypes) {
+        return template.execute(new IConnectionCallback<Database>() {
+            public Database execute(Connection con) throws SQLException {
+                Database db = new Database();
+                try {
+                    db.setName(con.getCatalog());
+                } catch (Exception ex) {
+                    log.log(LogLevel.INFO, ex, "Cannot determine the catalog name from connection.");
                 }
-            } catch (Exception ex) {
-                log.log(LogLevel.INFO, ex, "Cannot determine the catalog name from connection.");
+                db.addTables(readTables(con, catalog, schema, tableTypes));
+                
+                // Note that we do this here instead of in readTable since
+                // platforms may redefine the readTable method whereas it is
+                // highly unlikely that this method gets redefined
+                if (getPlatform().getPlatformInfo().isForeignKeysSorted()) {
+                    sortForeignKeys(db);
+                }
+                db.initialize();
+                return db;
             }
-        } else {
-            db.setName(name);
-        }
-        try {
-            this.connection = connection;
-            db.addTables(readTables(catalog, schema, tableTypes));
-            // Note that we do this here instead of in readTable since platforms
-            // may redefine the
-            // readTable method whereas it is highly unlikely that this method
-            // gets redefined
-            if (getPlatform().getPlatformInfo().isForeignKeysSorted()) {
-                sortForeignKeys(db);
-            }
-        } finally {
-            connection = null;
-        }
-        db.initialize();
-        return db;
+        });
+
     }
 
     /**
@@ -510,8 +480,8 @@ public class JdbcModelReader {
      *            list for the default ones
      * @return The tables
      */
-    protected Collection<Table> readTables(String catalog, String schemaPattern, String[] tableTypes)
-            throws SQLException {
+    protected Collection<Table> readTables(Connection connection, String catalog,
+            String schemaPattern, String[] tableTypes) throws SQLException {
         ResultSet tableData = null;
 
         try {
@@ -530,7 +500,7 @@ public class JdbcModelReader {
 
             while (tableData.next()) {
                 Map<String, Object> values = readColumns(tableData, getColumnsForTable());
-                Table table = readTable(metaData, values);
+                Table table = readTable(connection, metaData, values);
 
                 if (table != null) {
                     tables.add(table);
@@ -552,45 +522,49 @@ public class JdbcModelReader {
             }
         }
     }
-    
+
     protected String getPlatformTableName(String catalogName, String schemaName, String tblName) {
         return tblName;
     }
-    
+
     protected String getTableNamePattern(String tableName) {
         return tableName;
     }
-    
+
     /**
      * Returns a new {@link Table} object.
      */
-    public Table readTable(String catalogName, String schemaName, String tableName, 
+    public Table readTable(String catalogName, String schemaName, String tableName,
             boolean caseSensitive, boolean makeAllColumnsPKsIfNoneFound) {
-        Table table = readTableCaseSensitive(catalogName, schemaName, tableName, makeAllColumnsPKsIfNoneFound);
+        Table table = readTableCaseSensitive(catalogName, schemaName, tableName,
+                makeAllColumnsPKsIfNoneFound);
 
-            if (table == null && !caseSensitive) {
-                table = readTableCaseSensitive(StringUtils.upperCase(catalogName), StringUtils
-                        .upperCase(schemaName), StringUtils.upperCase(tableName), makeAllColumnsPKsIfNoneFound);
+        if (table == null && !caseSensitive) {
+            table = readTableCaseSensitive(StringUtils.upperCase(catalogName),
+                    StringUtils.upperCase(schemaName), StringUtils.upperCase(tableName),
+                    makeAllColumnsPKsIfNoneFound);
+            if (table == null) {
+                table = readTableCaseSensitive(StringUtils.lowerCase(catalogName),
+                        StringUtils.lowerCase(schemaName), StringUtils.lowerCase(tableName),
+                        makeAllColumnsPKsIfNoneFound);
                 if (table == null) {
-                    table = readTableCaseSensitive(StringUtils.lowerCase(catalogName), StringUtils
-                            .lowerCase(schemaName), StringUtils.lowerCase(tableName), makeAllColumnsPKsIfNoneFound);
+                    table = readTableCaseSensitive(catalogName, schemaName,
+                            StringUtils.upperCase(tableName), makeAllColumnsPKsIfNoneFound);
                     if (table == null) {
-                        table = readTableCaseSensitive(catalogName, schemaName, StringUtils
-                                .upperCase(tableName), makeAllColumnsPKsIfNoneFound);
+                        table = readTableCaseSensitive(catalogName, schemaName,
+                                StringUtils.lowerCase(tableName), makeAllColumnsPKsIfNoneFound);
                         if (table == null) {
-                            table = readTableCaseSensitive(catalogName, schemaName, StringUtils
-                                    .lowerCase(tableName), makeAllColumnsPKsIfNoneFound);
-                            if (table == null) {
-                                table = readTableCaseSensitive(catalogName, schemaName,
-                                        getPlatformTableName(catalogName, schemaName, tableName), makeAllColumnsPKsIfNoneFound);
-                            }
+                            table = readTableCaseSensitive(catalogName, schemaName,
+                                    getPlatformTableName(catalogName, schemaName, tableName),
+                                    makeAllColumnsPKsIfNoneFound);
                         }
                     }
                 }
             }
+        }
         return table;
-    }            
-    
+    }
+
     protected Table readTableCaseSensitive(String catalogName, String schemaName,
             final String tblName, final boolean makeAllColumnsPKsIfNoneFound) {
         Table table = null;
@@ -598,50 +572,52 @@ public class JdbcModelReader {
             // If we don't provide a default schema or catalog, then on some
             // databases multiple results will be found in the metadata from
             // multiple schemas/catalogs
-            final String schema = StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName;
+            final String schema = StringUtils.isBlank(schemaName) ? platform.getDefaultSchema()
+                    : schemaName;
             final String catalog = StringUtils.isBlank(catalogName) ? platform.getDefaultCatalog()
                     : catalogName;
-            table = (Table) new Template(platform, dataSource).execute(new IConnectionCallback<Table>() {
-                public Table execute(Connection c) throws SQLException {
-                    Table table = null;
-                    DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
-                    metaData.setMetaData(c.getMetaData());
-                    metaData.setCatalog(catalog);
-                    metaData.setSchemaPattern(schema);
-                    metaData.setTableTypes(null);
-                    String tableName = tblName;
-                    if (platform.getPlatformInfo().isStoresUpperCaseNamesInCatalog()) {
-                        tableName = tblName.toUpperCase();
-                    } else if (platform.getPlatformInfo().isStoresLowerCaseNamesInCatalog()) {
-                        tableName = tblName.toLowerCase();
-                    }
+            table = (Table) new Template(platform, dataSource)
+                    .execute(new IConnectionCallback<Table>() {
+                        public Table execute(Connection c) throws SQLException {
+                            Table table = null;
+                            DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
+                            metaData.setMetaData(c.getMetaData());
+                            metaData.setCatalog(catalog);
+                            metaData.setSchemaPattern(schema);
+                            metaData.setTableTypes(null);
+                            String tableName = tblName;
+                            if (platform.getPlatformInfo().isStoresUpperCaseNamesInCatalog()) {
+                                tableName = tblName.toUpperCase();
+                            } else if (platform.getPlatformInfo().isStoresLowerCaseNamesInCatalog()) {
+                                tableName = tblName.toLowerCase();
+                            }
 
-                    ResultSet tableData = null;
-                    try {
-                        tableData = metaData.getTables(getTableNamePattern(tableName));
-                        while (tableData != null && tableData.next()) {
-                            Map<String, Object> values = readColumns(tableData,
-                                    initColumnsForTable());
-                            table = readTable(metaData, values);
+                            ResultSet tableData = null;
+                            try {
+                                tableData = metaData.getTables(getTableNamePattern(tableName));
+                                while (tableData != null && tableData.next()) {
+                                    Map<String, Object> values = readColumns(tableData,
+                                            initColumnsForTable());
+                                    table = readTable(c, metaData, values);
+                                }
+                            } finally {
+                                Template.close(tableData);
+                            }
+
+                            if (makeAllColumnsPKsIfNoneFound) {
+                                makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
+                            }
+
+                            return table;
                         }
-                    } finally {
-                        Template.close(tableData);
-                    }
-
-                    if (makeAllColumnsPKsIfNoneFound) {
-                        makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
-                    }
-
-                    return table;
-                }
-            });
+                    });
         } catch (DbException ex) {
             log.log(LogLevel.WARN, ex);
         }
 
         return table;
     }
-    
+
     /**
      * Treat tables with no primary keys as a table with all primary keys.
      */
@@ -655,8 +631,7 @@ public class JdbcModelReader {
                 }
             }
         }
-    }    
-    
+    }
 
     /**
      * Reads the next table from the meta data.
@@ -669,7 +644,7 @@ public class JdbcModelReader {
      * @return The table or <code>null</code> if the result set row did not
      *         contain a valid table
      */
-    protected Table readTable(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+    protected Table readTable(Connection c, DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         String tableName = (String) values.get("TABLENAME");
         Table table = null;
@@ -685,7 +660,7 @@ public class JdbcModelReader {
 
             table.addColumns(readColumns(metaData, tableName));
             table.addForeignKeys(readForeignKeys(metaData, tableName));
-            table.addIndices(readIndices(metaData, tableName));
+            table.addIndices(readIndices(c, metaData, tableName));
 
             Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
 
@@ -764,8 +739,8 @@ public class JdbcModelReader {
 
         for (int columnIdx = 0; columnIdx < fk.getReferenceCount(); columnIdx++) {
             String name = fk.getReference(columnIdx).getLocalColumnName();
-            Column localColumn = table
-                    .findColumn(name, getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn());
+            Column localColumn = table.findColumn(name, getPlatform().getPlatformInfo()
+                    .isDelimitedIdentifierModeOn());
 
             if (mustBeUnique && !localColumn.isPrimaryKey()) {
                 mustBeUnique = false;
@@ -1037,7 +1012,7 @@ public class JdbcModelReader {
      *            The name of the table
      * @return The list of indices
      */
-    protected Collection<Index> readIndices(DatabaseMetaDataWrapper metaData, String tableName)
+    protected Collection<Index> readIndices(Connection c, DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
         Map<String, Index> indices = new LinkedHashMap<String, Index>();
         ResultSet indexData = null;
@@ -1110,7 +1085,7 @@ public class JdbcModelReader {
      * @param resultSet
      *            The result set
      * @param columnDescriptors
-     *            The dscriptors of the columns to read
+     *            The descriptors of the columns to read
      * @return The read values keyed by the column name
      */
     protected Map<String, Object> readColumns(ResultSet resultSet,
@@ -1123,11 +1098,6 @@ public class JdbcModelReader {
             values.put(descriptor.getName(), descriptor.readColumn(resultSet));
         }
         return values;
-    }
-
-    protected void determineAutoIncrementFromResultSetMetaData(Table table,
-            final Column columnsToCheck[]) throws SQLException {
-        determineAutoIncrementFromResultSetMetaData(getConnection(), table, columnsToCheck);
     }
 
     protected void determineAutoIncrementFromResultSetMetaData(Connection conn, Table table,
@@ -1223,7 +1193,8 @@ public class JdbcModelReader {
      */
     protected void sortForeignKeys(Database model) {
         for (int tableIdx = 0; tableIdx < model.getTableCount(); tableIdx++) {
-            model.getTable(tableIdx).sortForeignKeys(getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn());
+            model.getTable(tableIdx).sortForeignKeys(
+                    getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn());
         }
     }
 

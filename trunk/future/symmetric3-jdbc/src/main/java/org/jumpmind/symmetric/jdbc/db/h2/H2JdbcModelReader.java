@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.jdbc.db.h2;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,13 +76,13 @@ public class H2JdbcModelReader extends JdbcModelReader {
     }
     
     @Override
-    protected Table readTable(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+    protected Table readTable(Connection c, DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
-        Table table = super.readTable(metaData, values);
+        Table table = super.readTable(c, metaData, values);
 
         if (table != null) {
             // H2 does not return the auto increment status in the meta data
-            determineAutoIncrementFromResultSetMetaData(table, table.getPrimaryKeyColumnsArray());
+            determineAutoIncrementFromResultSetMetaData(c, table, table.getPrimaryKeyColumnsArray());
         }
 
         return table;

@@ -37,6 +37,8 @@ public class PlatformInfo {
     /** The Log to which logging calls will be made. */
     private final Log log = LogFactory.getLog(PlatformInfo.class);
     
+    private boolean scriptModeOn = false;
+    
     private boolean sqlCommentsOn = false;
     
     private boolean dateOverridesToTimestamp = false;
@@ -1215,5 +1217,12 @@ public class PlatformInfo {
     public void setSqlCommentsOn(boolean sqlCommentsOn) {
         this.sqlCommentsOn = sqlCommentsOn;
     }
+
+    public void setScriptModeOn(boolean scriptModeOn) {
+        this.scriptModeOn = scriptModeOn;
+    }
     
+    public boolean isScriptModeOn() {
+        return scriptModeOn;
+    }
 }

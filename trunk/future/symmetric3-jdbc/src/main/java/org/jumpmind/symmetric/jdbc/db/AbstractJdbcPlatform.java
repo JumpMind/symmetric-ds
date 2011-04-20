@@ -1,10 +1,12 @@
 package org.jumpmind.symmetric.jdbc.db;
 
+import java.io.StringWriter;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.AbstractPlatform;
+import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.jdbc.sql.ILobHandler;
@@ -17,6 +19,26 @@ abstract public class AbstractJdbcPlatform extends AbstractPlatform implements I
 
     public AbstractJdbcPlatform(DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+    
+    public Database findDatabase(String catalogName, String schemaName) {
+        return jdbcModelReader.getDatabase(catalogName, schemaName, null);
+    }
+    
+    public String getAlterScriptFor(Table... tables) {
+        StringWriter writer = new StringWriter();
+        sqlBuilder.setWriter(writer);
+        Database desiredModel = new Database();
+        desiredModel.addTables(tables);
+        
+        Database currentModel = new Database();
+        for (Table table : tables) {
+            currentModel.addTable(jdbcModelReader.readTable(table.getCatalogName(), table.getSchemaName(), table.getTableName(), false, false));
+        }
+                
+        sqlBuilder.alterDatabase(currentModel, desiredModel);
+
+        return writer.toString();
     }
 
     public Table findTable(String tableName, Parameters parameters) {
