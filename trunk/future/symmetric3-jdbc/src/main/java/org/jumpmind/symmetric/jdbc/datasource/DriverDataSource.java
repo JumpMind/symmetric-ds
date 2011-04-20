@@ -47,15 +47,14 @@ import java.util.Properties;
  * @since 2.5.5
  * @see DriverManagerDataSource
  */
-public class SimpleDriverDataSource extends AbstractDriverBasedDataSource {
+public class DriverDataSource extends AbstractDriverBasedDataSource {
 
 	private Driver driver;
-
 
 	/**
 	 * Constructor for bean-style configuration.
 	 */
-	public SimpleDriverDataSource() {
+	public DriverDataSource() {
 	}
 
 	/**
@@ -64,7 +63,7 @@ public class SimpleDriverDataSource extends AbstractDriverBasedDataSource {
 	 * @param url the JDBC URL to use for accessing the DriverManager
 	 * @see java.sql.Driver#connect(String, java.util.Properties)
 	 */
-	public SimpleDriverDataSource(Driver driver, String url) {
+	public DriverDataSource(Driver driver, String url) {
 		setDriver(driver);
 		setUrl(url);
 	}
@@ -77,7 +76,7 @@ public class SimpleDriverDataSource extends AbstractDriverBasedDataSource {
 	 * @param password the JDBC password to use for accessing the DriverManager
 	 * @see java.sql.Driver#connect(String, java.util.Properties)
 	 */
-	public SimpleDriverDataSource(Driver driver, String url, String username, String password) {
+	public DriverDataSource(Driver driver, String url, String username, String password) {
 		setDriver(driver);
 		setUrl(url);
 		setUsername(username);
@@ -91,7 +90,7 @@ public class SimpleDriverDataSource extends AbstractDriverBasedDataSource {
 	 * @param conProps JDBC connection properties
 	 * @see java.sql.Driver#connect(String, java.util.Properties)
 	 */
-	public SimpleDriverDataSource(Driver driver, String url, Properties conProps) {
+	public DriverDataSource(Driver driver, String url, Properties conProps) {
 		setDriver(driver);
 		setUrl(url);
 		setConnectionProperties(conProps);

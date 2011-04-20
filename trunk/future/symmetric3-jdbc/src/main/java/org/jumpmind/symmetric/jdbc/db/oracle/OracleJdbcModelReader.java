@@ -18,12 +18,12 @@ import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.LogLevel;
-import org.jumpmind.symmetric.core.db.IPlatform;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.jdbc.db.DatabaseMetaDataWrapper;
+import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
 import org.jumpmind.symmetric.jdbc.db.JdbcModelReader;
 
 public class OracleJdbcModelReader extends JdbcModelReader {
@@ -46,7 +46,7 @@ public class OracleJdbcModelReader extends JdbcModelReader {
      * @param platform
      *            The platform that this model reader belongs to
      */
-    public OracleJdbcModelReader(IPlatform platform, DataSource dataSource) {
+    public OracleJdbcModelReader(IJdbcPlatform platform, DataSource dataSource) {
         super(platform, dataSource);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);

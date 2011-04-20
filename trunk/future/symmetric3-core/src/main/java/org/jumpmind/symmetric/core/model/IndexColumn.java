@@ -21,6 +21,9 @@ package org.jumpmind.symmetric.core.model;
 
 import java.io.Serializable;
 
+import org.jumpmind.symmetric.core.common.EqualsBuilder;
+import org.jumpmind.symmetric.core.common.HashCodeBuilder;
+
 /**
  * Represents a column of an index in the database model.
  */
@@ -156,36 +159,49 @@ public class IndexColumn implements Cloneable, Serializable {
         return result;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof IndexColumn)
+        {
+            IndexColumn other = (IndexColumn)obj;
+
+            return new EqualsBuilder().append(name, other.name)
+                                      .append(size, other.size)
+                                      .isEquals();
+        }
+        else
+        {
             return false;
-        if (getClass() != obj.getClass())
-            return false;
-        IndexColumn other = (IndexColumn) obj;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (size == null) {
-            if (other.size != null)
-                return false;
-        } else if (!size.equals(other.size))
-            return false;
-        return true;
+        }
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((size == null) ? 0 : size.hashCode());
-        return result;
+    /**
+     * Compares this index column to the given one while ignoring the case of identifiers.
+     * 
+     * @param other The other index column
+     * @return <code>true</code> if this index column is equal (ignoring case) to the given one
+     */
+    public boolean equalsIgnoreCase(IndexColumn other)
+    {
+        return new EqualsBuilder().append(name.toUpperCase(), other.name.toUpperCase())
+                                  .append(size, other.size)
+                                  .isEquals();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int hashCode()
+    {
+        return new HashCodeBuilder(17, 37).append(name)
+                                          .append(size)
+                                          .toHashCode();
+    }
+
+
 
     /**
      * {@inheritDoc}

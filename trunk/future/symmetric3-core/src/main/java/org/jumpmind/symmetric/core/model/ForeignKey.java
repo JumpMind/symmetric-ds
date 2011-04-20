@@ -1,8 +1,12 @@
 package org.jumpmind.symmetric.core.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+
+import org.jumpmind.symmetric.core.common.EqualsBuilder;
+import org.jumpmind.symmetric.core.common.HashCodeBuilder;
 
 /**
  * Represents a database foreign key.
@@ -257,6 +261,79 @@ public class ForeignKey implements Cloneable {
         }
 
         return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof ForeignKey) {
+            ForeignKey otherFk = (ForeignKey) obj;
+
+            // Note that this compares case sensitive
+            // Note also that we can simply compare the references regardless of
+            // their order
+            // (which is irrelevant for fks) because they are contained in a set
+            EqualsBuilder builder = new EqualsBuilder();
+
+            if ((name != null) && (name.length() > 0) && (otherFk.name != null)
+                    && (otherFk.name.length() > 0)) {
+                builder.append(name, otherFk.name);
+            }
+            return builder.append(foreignTableName, otherFk.foreignTableName)
+                    .append(references, otherFk.references).isEquals();
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Compares this foreign key to the given one while ignoring the case of
+     * identifiers.
+     * 
+     * @param otherFk
+     *            The other foreign key
+     * @return <code>true</code> if this foreign key is equal (ignoring case) to
+     *         the given one
+     */
+    public boolean equalsIgnoreCase(ForeignKey otherFk) {
+        boolean checkName = (name != null) && (name.length() > 0) && (otherFk.name != null)
+                && (otherFk.name.length() > 0);
+
+        if ((!checkName || name.equalsIgnoreCase(otherFk.name))
+                && foreignTableName.equalsIgnoreCase(otherFk.foreignTableName)) {
+            HashSet<Reference> otherRefs = new HashSet<Reference>();
+
+            otherRefs.addAll(otherFk.references);
+            for (Iterator<Reference> it = references.iterator(); it.hasNext();) {
+                Reference curLocalRef = (Reference) it.next();
+                boolean found = false;
+
+                for (Iterator<Reference> otherIt = otherRefs.iterator(); otherIt.hasNext();) {
+                    Reference curOtherRef = (Reference) otherIt.next();
+
+                    if (curLocalRef.equalsIgnoreCase(curOtherRef)) {
+                        otherIt.remove();
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+            return otherRefs.isEmpty();
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(name).append(foreignTableName).append(references)
+                .toHashCode();
     }
 
     /**

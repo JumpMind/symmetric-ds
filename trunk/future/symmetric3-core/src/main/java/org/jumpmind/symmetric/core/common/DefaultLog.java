@@ -7,6 +7,12 @@ public class DefaultLog extends Log {
 
     Logger logger;
 
+    @Override
+    protected void initialize(Class<?> clazz) {
+        super.initialize(clazz);
+        logger = Logger.getLogger(clazz.getName());
+    }
+
     public void log(LogLevel level, String msg, Object... params) {
         log(level, null, msg, params);
     }
@@ -15,12 +21,18 @@ public class DefaultLog extends Log {
         log(level, error, null);
     }
 
-    public void log(LogLevel level, Throwable error, String msg, Object... params) {
-        if (logger == null) {
-            logger = Logger.getLogger(clazz.getName());
-        }
+    @Override
+    public void debug(String msg) {
+        log(LogLevel.DEBUG, msg);
+    }
 
-        Level loggerLevel = null;
+    @Override
+    public boolean isDebugEnabled() {
+        return logger.isLoggable(Level.FINE);
+    }
+
+    public void log(LogLevel level, Throwable error, String msg, Object... params) {
+        Level loggerLevel = Level.SEVERE;
 
         switch (level) {
         case DEBUG:
@@ -31,9 +43,6 @@ public class DefaultLog extends Log {
             break;
         case WARN:
             loggerLevel = Level.WARNING;
-            break;
-        default:
-            loggerLevel = Level.SEVERE;
             break;
         }
 

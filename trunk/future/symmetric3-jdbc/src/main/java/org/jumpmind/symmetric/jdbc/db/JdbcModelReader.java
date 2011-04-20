@@ -77,7 +77,7 @@ public class JdbcModelReader {
     private final List<MetaDataColumnDescriptor> columnsForIndex;
 
     /** The platform that this model reader belongs to. */
-    private IPlatform platform;
+    private IJdbcPlatform platform;
     /**
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
      * must support).
@@ -102,9 +102,9 @@ public class JdbcModelReader {
      * Creates a new model reader instance.
      * 
      * @param platform
-     *            The plaftform this builder belongs to
+     *            The platform this builder belongs to
      */
-    public JdbcModelReader(IPlatform platform, DataSource dataSource) {
+    public JdbcModelReader(IJdbcPlatform platform, DataSource dataSource) {
         this.platform = platform;
         this.dataSource = dataSource;
 

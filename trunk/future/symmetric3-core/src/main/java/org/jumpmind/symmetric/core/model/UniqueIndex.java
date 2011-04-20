@@ -21,6 +21,8 @@ package org.jumpmind.symmetric.core.model;
 
 import java.util.ArrayList;
 
+import org.jumpmind.symmetric.core.common.EqualsBuilder;
+
 /**
  * Provides compatibility with Torque-style xml with separate &lt;index&gt; and
  * &lt;unique&gt; tags, but adds no functionality.  All indexes are treated the
@@ -52,6 +54,62 @@ public class UniqueIndex extends Index
         result._columns = (ArrayList<IndexColumn>)_columns.clone();
         return result;
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof UniqueIndex)
+        {
+            UniqueIndex other = (UniqueIndex)obj;
+
+            return new EqualsBuilder().append(_name,    other._name)
+                                      .append(_columns, other._columns)
+                                      .isEquals();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equalsIgnoreCase(Index other)
+    {
+        if (other instanceof UniqueIndex)
+        {
+            UniqueIndex otherIndex = (UniqueIndex)other;
+
+            boolean checkName = (_name != null) && (_name.length() > 0) &&
+                                (otherIndex._name != null) && (otherIndex._name.length() > 0);
+
+            if ((!checkName || _name.equalsIgnoreCase(otherIndex._name)) &&
+                (getColumnCount() == otherIndex.getColumnCount()))
+            {
+                for (int idx = 0; idx < getColumnCount(); idx++)
+                {
+                    if (!getColumn(idx).equalsIgnoreCase(otherIndex.getColumn(idx)))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int hashCode()
+    {
+        return _columns.hashCode();
+    }
+    
 
     /**
      * {@inheritDoc}

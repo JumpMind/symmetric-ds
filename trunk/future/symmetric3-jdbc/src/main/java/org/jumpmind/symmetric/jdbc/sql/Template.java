@@ -9,24 +9,24 @@ import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.DbException;
 import org.jumpmind.symmetric.core.db.DbIntegrityViolationException;
-import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
 import org.jumpmind.symmetric.jdbc.db.JdbcPlatformFactory;
 
 public class Template {
 
     protected DataSource dataSource;
-    protected IPlatform platform;
+    protected IJdbcPlatform platform;
 
     public Template(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public Template(IPlatform platform, DataSource dataSource) {
+    public Template(IJdbcPlatform platform, DataSource dataSource) {
         this.dataSource = dataSource;
         this.platform = platform;
     }
 
-    public IPlatform getPlatform() {
+    public IJdbcPlatform getPlatform() {
         if (this.platform == null) {
             this.platform = JdbcPlatformFactory.createPlatform(dataSource);
         }
@@ -43,7 +43,7 @@ public class Template {
                 try {
                     ps = con.prepareStatement(sql);
                     StatementCreatorUtil.setValues(ps, args);
-                    rs = ps.executeQuery(sql);
+                    rs = ps.executeQuery();
                     if (rs.next()) {
                         result = (T) rs.getObject(1);
                     }
@@ -52,6 +52,27 @@ public class Template {
                     close(ps);
                 }
                 return result;
+            }
+        });
+    }
+    
+    public int update(String sql) {
+        return update(sql, null, null);
+    }
+    
+    public int update(final String sql, final Object[] values, final int[] types) {
+        return execute(new IConnectionCallback<Integer>() {
+            public Integer execute(Connection con) throws SQLException {
+                PreparedStatement ps = null;
+                try {
+                    ps = con.prepareStatement(sql);
+                    if (values != null) {
+                        StatementCreatorUtil.setValues(ps, values, types, getPlatform().getLobHandler());
+                    }
+                    return ps.executeUpdate();
+                } finally {
+                    close(ps);
+                }
             }
         });
     }

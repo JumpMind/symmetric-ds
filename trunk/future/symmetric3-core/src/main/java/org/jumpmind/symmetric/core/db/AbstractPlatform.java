@@ -51,7 +51,7 @@ abstract public class AbstractPlatform implements IPlatform {
             try {
                 if (column != null) {
                     int type = column.getTypeCode();
-                    if ((value == null || (isEmptyStringNulled() && value.equals("")))
+                    if ((value == null || (platformInfo.isEmptyStringNulled() && value.equals("")))
                             && column.isRequired() && column.isOfTextType()) {
                         objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                     }
@@ -63,8 +63,8 @@ abstract public class AbstractPlatform implements IPlatform {
                             objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
                         } else if (type == Types.CHAR) {
                             String charValue = value.toString();
-                            if ((StringUtils.isBlank(charValue) && isBlankCharColumnSpacePadded()) || 
-                                (!StringUtils.isBlank(charValue) && isNonBlankCharColumnSpacePadded())) {
+                            if ((StringUtils.isBlank(charValue) && platformInfo.isBlankCharColumnSpacePadded()) || 
+                                (!StringUtils.isBlank(charValue) && platformInfo.isNonBlankCharColumnSpacePadded())) {
                                 objectValue = StringUtils.rightPad(value.toString(), column
                                         .getSizeAsInt(), ' ');
                             }

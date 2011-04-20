@@ -9,7 +9,6 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.db.DbException;
-import org.jumpmind.symmetric.core.db.IPlatform;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.DataEventType;
@@ -19,8 +18,10 @@ import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.IColumnFilter;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
+import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
 import org.jumpmind.symmetric.jdbc.sql.StatementBuilder;
 import org.jumpmind.symmetric.jdbc.sql.StatementBuilder.DmlType;
+import org.jumpmind.symmetric.jdbc.sql.Template;
 
 public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
 
@@ -28,7 +29,7 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
 
     protected DataSource dataSource;
 
-    protected IPlatform platform;
+    protected IJdbcPlatform platform;
 
     protected Parameters parameters;
 
@@ -36,7 +37,9 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
 
     protected List<IDataFilter<DataContext>> dataFilters;
 
-    public JdbcDataWriter(DataSource dataSource, IPlatform platform, Parameters parameters,
+    protected Template template;
+
+    public JdbcDataWriter(DataSource dataSource, IJdbcPlatform platform, Parameters parameters,
             List<IColumnFilter<DataContext>> columnFilters,
             List<IDataFilter<DataContext>> dataFilters) {
         this.dataSource = dataSource;
@@ -44,6 +47,7 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
         this.parameters = parameters != null ? parameters : new Parameters();
         this.columnFilters = columnFilters;
         this.dataFilters = dataFilters;
+        this.template = new Template(dataSource);
     }
 
     public JdbcDataContext createDataContext() {
@@ -91,22 +95,21 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
             StatementBuilder st = getStatementBuilder(DmlType.INSERT, ctx, data);
             execute(ctx, st, data);
         }
-        
+
         // check if an early commit needs to happen
     }
-    
+
     protected int execute(JdbcDataContext ctx, StatementBuilder st, Data data) {
-        Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(), data.toParsedRowData(), st
-                .getMetaData(true));
+        Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(),
+                data.toParsedRowData(), st.getMetaData(true));
         if (columnFilters != null) {
             for (IColumnFilter<DataContext> columnFilter : columnFilters) {
                 objectValues = columnFilter.filterColumnsValues(ctx, ctx.getTargetTable(),
                         objectValues);
             }
         }
-        return jdbcTemplate.update(st.getSql(), new ArgTypePreparedStatementSetter(objectValues, st
-                .getTypes(), dbDialect.getLobHandler()));
-    }    
+        return template.update(st.getSql(), objectValues, st.getTypes());
+    }
 
     final private StatementBuilder getStatementBuilder(DmlType dmlType, JdbcDataContext ctx,
             Data data) {

@@ -20,5 +20,6 @@ public class TableCopyPropertiesTest {
         TableCopyProperties properties = new TableCopyProperties("src/test/resources/test-tablecopy.properties");
         DataSource dataSource = properties.getTargetDataSource();
         Template template = new Template(dataSource);
+        template.update("create table test (test varchar(100))");
     }
 }

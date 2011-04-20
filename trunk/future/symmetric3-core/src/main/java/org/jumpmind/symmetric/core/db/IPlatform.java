@@ -7,9 +7,11 @@ import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 
-public interface IPlatform {
+public interface IPlatform {    
 
     public PlatformInfo getPlatformInfo();
+    
+    public Table findTable(String tableName, Parameters parameters);
 
     public Table findTable(String catalogName, String schemaName, String tableName, boolean useCached, Parameters parameters);
 
