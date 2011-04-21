@@ -34,6 +34,14 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
         return dataProcessed;
     }
     
+    public boolean wasBatchProcessed() {
+        boolean batchProcessed = false;
+        for (RemoteNodeStatus status : this) {
+            batchProcessed |= status.getBatchesProcessed() > 0;
+        }
+        return batchProcessed;
+    }
+    
     public long getDataProcessedCount() {
         long dataProcessed = size() > 0 ? 0 : -1l;
         for (RemoteNodeStatus status : this) {
