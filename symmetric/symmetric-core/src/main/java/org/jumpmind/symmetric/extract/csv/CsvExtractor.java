@@ -112,16 +112,12 @@ public class CsvExtractor extends CsvExtractor16 {
         if (StringUtils.isNotBlank(catalogName)) {
             String externalId = parameterService.getExternalId();
             try {
-                catalogName = String.format(catalogName, Double.parseDouble(externalId));
+                catalogName = String.format(catalogName, Long.parseLong(externalId));
             } catch (NumberFormatException ex) {
                 catalogName = String.format(catalogName, externalId);
             }
         }
         return catalogName;
-    }
-    
-    public static void main(String[] args) {
-        System.out.println(String.format("%05d", "1"));
     }
 
     public void setTriggerRouterService(ITriggerRouterService triggerRouterService) {
