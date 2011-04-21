@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.extract.csv;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
@@ -92,18 +93,35 @@ public class CsvExtractor extends CsvExtractor16 {
     protected void writeTable(Data data, String routerId, Writer out, DataExtractorContext context) throws IOException {
         // TODO Add property and write the source schema and the source catalog if set
         Router router = triggerRouterService.getActiveRouterByIdForCurrentNode(routerId, false);
-        String schemaName = (router == null || router.getTargetSchemaName() == null) ? "" : router
-                .getTargetSchemaName();
+        String schemaName = router == null ? "" : getTargetName(router
+                .getTargetSchemaName());
         context.incrementByteCount(CsvUtils.write(out, CsvConstants.SCHEMA, ", ", schemaName));
         CsvUtils.writeLineFeed(out);
-        String catalogName = (router == null || router.getTargetCatalogName() == null) ? "" : router
-                .getTargetCatalogName();
+        String catalogName = router == null ? "" : getTargetName(router
+                .getTargetCatalogName());
         context.incrementByteCount(CsvUtils.write(out, CsvConstants.CATALOG, ", ", catalogName));
         CsvUtils.writeLineFeed(out);
-        String tableName = (router == null || router.getTargetTableName() == null) ? data.getTableName() : router
-                .getTargetTableName();
+        String tableName = (router == null || router.getTargetTableName() == null) ? data.getTableName() : 
+            getTargetName(router.getTargetTableName());
         context.incrementByteCount(CsvUtils.write(out, CsvConstants.TABLE, ", ", tableName));
         CsvUtils.writeLineFeed(out);
+    }
+    
+    protected String getTargetName(String name) {
+        String catalogName = name == null ? "" : name;
+        if (StringUtils.isNotBlank(catalogName)) {
+            String externalId = parameterService.getExternalId();
+            try {
+                catalogName = String.format(catalogName, Double.parseDouble(externalId));
+            } catch (NumberFormatException ex) {
+                catalogName = String.format(catalogName, externalId);
+            }
+        }
+        return catalogName;
+    }
+    
+    public static void main(String[] args) {
+        System.out.println(String.format("%05d", "1"));
     }
 
     public void setTriggerRouterService(ITriggerRouterService triggerRouterService) {
