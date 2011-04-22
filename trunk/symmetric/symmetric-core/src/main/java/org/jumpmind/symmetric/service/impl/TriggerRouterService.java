@@ -212,7 +212,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public List<TriggerRouter> getTriggerRoutersForRegistration(String version,
-            NodeGroupLink nodeGroupLink) {
+            NodeGroupLink nodeGroupLink, String... tablesToExclude) {
         int initialLoadOrder = 1;
         String majorVersion = getMajorVersion(version);
         List<String> tables = new ArrayList<String>(rootConfigChannelTableNames.get(majorVersion));
@@ -221,6 +221,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 tables.addAll(extraTables.provideTableNames());
             }
         }
+        
+        if (tablesToExclude != null) {
+            for (String tableToExclude : tablesToExclude) {
+                String tablename = TableConstants.getTableName(tablePrefix, tableToExclude);
+                if (!tables.remove(tablename)) {
+                    if (!tables.remove(tablename.toUpperCase())) {
+                        tables.remove(tablename.toLowerCase());
+                    }
+                }
+            }
+        }
+        
         List<TriggerRouter> triggers = new ArrayList<TriggerRouter>(tables.size());
         for (int j = 0; j < tables.size(); j++) {
             String tableName = tables.get(j);

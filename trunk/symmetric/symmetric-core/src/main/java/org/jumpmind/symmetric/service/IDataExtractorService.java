@@ -38,11 +38,11 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
  */
 public interface IDataExtractorService {
 
-    public void extractConfiguration(Node node, Writer writer, DataExtractorContext ctx) throws IOException;
+    public void extractConfiguration(Node node, Writer writer, DataExtractorContext ctx, String... tablesToExclude) throws IOException;
     
-    public void extractConfigurationStandalone(Node node, OutputStream out) throws IOException;
+    public void extractConfigurationStandalone(Node node, OutputStream out, String... tablesToExclude) throws IOException;
 
-    public void extractConfigurationStandalone(Node node, Writer out) throws IOException;
+    public void extractConfigurationStandalone(Node node, Writer out, String... tablesToExclude) throws IOException;
     
     public void extractInitialLoadWithinBatchFor(Node node, TriggerRouter trigger, Writer writer,
             DataExtractorContext ctx, TriggerHistory triggerHistory);
