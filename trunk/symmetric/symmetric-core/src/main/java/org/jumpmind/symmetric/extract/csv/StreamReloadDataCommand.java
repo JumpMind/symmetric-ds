@@ -33,9 +33,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 /**
- * 
- *
- * 
+ * Extract an initial load according to a reload command event.
  */
 class StreamReloadDataCommand extends AbstractStreamDataCommand {
 
