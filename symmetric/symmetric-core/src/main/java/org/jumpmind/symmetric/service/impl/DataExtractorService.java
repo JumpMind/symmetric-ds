@@ -116,8 +116,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * @see DataExtractorService#extractConfigurationStandalone(Node,
      *      Writer)
      */
-    public void extractConfigurationStandalone(Node node, OutputStream out) throws IOException {
-        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out));
+    public void extractConfigurationStandalone(Node node, OutputStream out, String... tablesToExclude) throws IOException {
+        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out), tablesToExclude);
     }
 
     /**
@@ -127,7 +127,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * load for some reason on the client the batch status will NOT reflect the
      * failure.
      */
-    public void extractConfigurationStandalone(Node node, Writer writer) throws IOException {
+    public void extractConfigurationStandalone(Node node, Writer writer, String... tablesToExclude) throws IOException {
         try {
             OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG, Status.NE);
             if (Version.isOlderThanVersion(node.getSymmetricVersion(),
@@ -147,7 +147,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             
             dataExtractor.begin(batch, writer);
 
-            extractConfiguration(node, writer, ctxCopy);
+            extractConfiguration(node, writer, ctxCopy, tablesToExclude);
 
             dataExtractor.commit(batch, writer);
 
@@ -156,11 +156,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    public void extractConfiguration(Node node, Writer writer, DataExtractorContext ctx) throws IOException {
+    public void extractConfiguration(Node node, Writer writer, DataExtractorContext ctx, String... tablesToExclude) throws IOException {
         NodeGroupLink nodeGroupLink = new NodeGroupLink(parameterService
                 .getNodeGroupId(), node.getNodeGroupId());
         List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(StringUtils.isBlank(node
-                .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(), nodeGroupLink);
+                .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(), nodeGroupLink, tablesToExclude);
         final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
                 .getSymmetricVersion());
         
