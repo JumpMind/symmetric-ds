@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.util;
 
 import java.io.File;
@@ -47,18 +48,17 @@ import bsh.Interpreter;
  * General application utility methods
  */
 public class AppUtils {
-    
+
     private static String UNKNOWN = "unknown";
 
     private static ILog log = LogFactory.getLog(AppUtils.class);
-    
+
     private static final String SYM_TEMP_SUFFIX = ".sym.tmp";
 
     private static String serverId;
 
-    private static FastDateFormat timezoneFormatter = FastDateFormat
-            .getInstance("Z");
-    
+    private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
+
     private static Pattern pattern = Pattern.compile("\\$\\((.+?)\\)");
 
     /**
@@ -67,8 +67,7 @@ public class AppUtils {
      */
     public static String getServerId() {
         if (StringUtils.isBlank(serverId)) {
-            serverId = System.getProperty(
-                    "runtime.symmetric.cluster.server.id", null);
+            serverId = System.getProperty("runtime.symmetric.cluster.server.id", null);
             if (StringUtils.isBlank(serverId)) {
                 // JBoss uses this system property to identify a server in a
                 // cluster
@@ -109,28 +108,31 @@ public class AppUtils {
         return ipAddress;
     }
 
-    public static String replace(String prop, String replaceWith,
-            String sourceString) {
-        return StringUtils
-                .replace(sourceString, "$(" + prop + ")", replaceWith);
-    }  
-    
+    public static String replace(String prop, String replaceWith, String sourceString) {
+        return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
+    }
+
     public static String replaceTokens(String text, Map<String, String> replacements) {
-        Matcher matcher = pattern.matcher(text);
-        StringBuffer buffer = new StringBuffer();
-        while (matcher.find()) {
-            String[] match = matcher.group(1).split("\\|");
-            String replacement = replacements.get(match[0]);
-            if (replacement != null) {
-                matcher.appendReplacement(buffer, "");
-                if (match.length == 2) {
-                    replacement = formatString(match[1], replacement);
+        if (replacements != null && replacements.size() > 0) {
+            Matcher matcher = pattern.matcher(text);
+            StringBuffer buffer = new StringBuffer();
+            while (matcher.find()) {
+                String[] match = matcher.group(1).split("\\|");
+                String replacement = replacements.get(match[0]);
+                if (replacement != null) {
+                    matcher.appendReplacement(buffer, "");
+                    if (match.length == 2) {
+                        replacement = formatString(match[1], replacement);
+                    }
+                    buffer.append(replacement);
                 }
-                buffer.append(replacement);
             }
+            matcher.appendTail(buffer);
+            return buffer.toString();
+        } else {
+            return text;
         }
-        matcher.appendTail(buffer);
-        return buffer.toString();
+
     }
 
     public static String formatString(String format, String arg) {
@@ -167,7 +169,7 @@ public class AppUtils {
      * name.
      * 
      * @see Constants
-     */    
+     */
     @SuppressWarnings("unchecked")
     public static <T> T find(String name, ISymmetricEngine engine) {
         return (T) engine.getApplicationContext().getBean(name);
@@ -179,16 +181,17 @@ public class AppUtils {
     public static File createTempFile(String token) throws IOException {
         return File.createTempFile(token + ".", SYM_TEMP_SUFFIX);
     }
-    
+
     /**
-     * Clean up files created by {@link #createTempFile(String)}.  This only be called
-     * while the engine is not synchronizing!
+     * Clean up files created by {@link #createTempFile(String)}. This only be
+     * called while the engine is not synchronizing!
      */
     @SuppressWarnings("unchecked")
     public static void cleanupTempFiles() {
         try {
             File tmp = File.createTempFile("temp.", SYM_TEMP_SUFFIX);
-            Iterator<File> it = FileUtils.iterateFiles(tmp.getParentFile(), new String[] { SYM_TEMP_SUFFIX }, true);
+            Iterator<File> it = FileUtils.iterateFiles(tmp.getParentFile(),
+                    new String[] { SYM_TEMP_SUFFIX }, true);
             int deletedCount = 0;
             while (it.hasNext()) {
                 FileUtils.forceDelete(it.next());
@@ -211,8 +214,7 @@ public class AppUtils {
     public static Date getLocalDateForOffset(String timezoneOffset) {
         long currentTime = System.currentTimeMillis();
         int myOffset = TimeZone.getDefault().getOffset(currentTime);
-        int theirOffset = TimeZone.getTimeZone("GMT" + timezoneOffset)
-                .getOffset(currentTime);
+        int theirOffset = TimeZone.getTimeZone("GMT" + timezoneOffset).getOffset(currentTime);
         return new Date(currentTime - myOffset + theirOffset);
     }
 
@@ -232,8 +234,9 @@ public class AppUtils {
     }
 
     /**
-     * Attempt to close all the connections to a database that a DataSource has.  This method 
-     * should not be relied upon as it only works with certain {@link DataSource} implementations.
+     * Attempt to close all the connections to a database that a DataSource has.
+     * This method should not be relied upon as it only works with certain
+     * {@link DataSource} implementations.
      */
     public static void resetDataSource(DataSource ds) {
         if (ds instanceof BasicDataSource) {
@@ -244,16 +247,16 @@ public class AppUtils {
                 log.warn(ex);
             }
         }
-    }   
-    
+    }
+
     public static boolean isSystemPropertySet(String propName, boolean defaultValue) {
-        return "true".equalsIgnoreCase(System.getProperty(propName, Boolean.toString(defaultValue)));
-    }    
-    
-    
+        return "true"
+                .equalsIgnoreCase(System.getProperty(propName, Boolean.toString(defaultValue)));
+    }
+
     public static void runBsh(String script) {
         try {
-            Interpreter interpreter =  new Interpreter();
+            Interpreter interpreter = new Interpreter();
             interpreter.eval(script);
         } catch (EvalError e) {
             throw new RuntimeException(e);
