@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
@@ -110,12 +111,7 @@ public class CsvExtractor extends CsvExtractor16 {
     protected String getTargetName(String name) {
         String catalogName = name == null ? "" : name;
         if (StringUtils.isNotBlank(catalogName)) {
-            String externalId = parameterService.getExternalId();
-            try {
-                catalogName = String.format(catalogName, Long.parseLong(externalId));
-            } catch (NumberFormatException ex) {
-                catalogName = String.format(catalogName, externalId);
-            }
+            catalogName = AppUtils.replaceTokens(catalogName, parameterService.getReplacementValues());
         }
         return catalogName;
     }
