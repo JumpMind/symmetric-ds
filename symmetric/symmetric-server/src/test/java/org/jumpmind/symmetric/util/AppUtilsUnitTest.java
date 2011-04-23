@@ -21,6 +21,8 @@
 package org.jumpmind.symmetric.util;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
@@ -40,6 +42,16 @@ public class AppUtilsUnitTest {
         Assert.assertTrue(nearZero + " was the left over ms",  Math.abs(nearZero) < 1000);
         nearZero = plusFour.getTime() - minusFour.getTime() - DateUtils.MILLIS_PER_HOUR * 8;
         Assert.assertTrue(nearZero + " was the left over ms", Math.abs(nearZero) < 1000);
+    }
+    
+    @Test
+    public void testReplaceTokens() {
+        Assert.assertEquals("test", AppUtils.replaceTokens("test", null));
+        Assert.assertEquals("test", AppUtils.replaceTokens("test", new HashMap<String, String>()));
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("test", "1");
+        Assert.assertEquals("test1", AppUtils.replaceTokens("test$(test)", params ));
+        Assert.assertEquals("test0001", AppUtils.replaceTokens("test$(test|%04d)", params ));
     }
 
 }
