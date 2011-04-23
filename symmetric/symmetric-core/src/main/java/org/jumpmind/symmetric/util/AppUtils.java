@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -56,6 +58,8 @@ public class AppUtils {
 
     private static FastDateFormat timezoneFormatter = FastDateFormat
             .getInstance("Z");
+    
+    private static Pattern pattern = Pattern.compile("\\$\\((.+?)\\)");
 
     /**
      * Get a unique identifier that represents the JVM instance this server is
@@ -109,16 +113,35 @@ public class AppUtils {
             String sourceString) {
         return StringUtils
                 .replace(sourceString, "$(" + prop + ")", replaceWith);
-    }
-
-    public static String replaceTokens(String original, Map<String, String> replacementTokens) {
-        if (replacementTokens != null) {
-            for (Object key : replacementTokens.keySet()) {
-                original = original.replaceAll(key.toString(), replacementTokens.get(key));
+    }  
+    
+    public static String replaceTokens(String text, Map<String, String> replacements) {
+        Matcher matcher = pattern.matcher(text);
+        StringBuffer buffer = new StringBuffer();
+        while (matcher.find()) {
+            String[] match = matcher.group(1).split("\\|");
+            String replacement = replacements.get(match[0]);
+            if (replacement != null) {
+                matcher.appendReplacement(buffer, "");
+                if (match.length == 2) {
+                    replacement = formatString(match[1], replacement);
+                }
+                buffer.append(replacement);
             }
         }
-        return original;
-    }    
+        matcher.appendTail(buffer);
+        return buffer.toString();
+    }
+
+    public static String formatString(String format, String arg) {
+        if (format.indexOf("d") >= 0 || format.indexOf("u") >= 0 || format.indexOf("i") >= 0) {
+            return String.format(format, Long.parseLong(arg));
+        } else if (format.indexOf("e") >= 0 || format.indexOf("f") >= 0) {
+            return String.format(format, Double.valueOf(arg));
+        } else {
+            return String.format(format, arg);
+        }
+    }
 
     /**
      * This method will return the timezone in RFC822 format. </p> The format

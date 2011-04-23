@@ -303,6 +303,13 @@ public class ParameterService extends AbstractService implements IParameterServi
         return url; 
     }
     
+    public Map<String, String> getReplacementValues() {
+        Map<String,String> replacementValues = new HashMap<String, String>(2);
+        replacementValues.put("externalId", getExternalId());
+        replacementValues.put("nodeGroupId", getNodeGroupId());
+        return replacementValues;
+    }
+    
     class DatabaseParameterMapper implements RowMapper<DatabaseParameter> {
         public DatabaseParameter mapRow(ResultSet rs, int rowNum) throws SQLException {            
             return new DatabaseParameter(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4));

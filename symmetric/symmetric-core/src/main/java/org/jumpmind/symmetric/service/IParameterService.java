@@ -83,6 +83,8 @@ public interface IParameterService {
      * Get the external id for this instance
      */
     public String getExternalId();
+    
+    public Map<String,String> getReplacementValues();
 
     /**
      * Provide the url used to register at to get initial configuration
