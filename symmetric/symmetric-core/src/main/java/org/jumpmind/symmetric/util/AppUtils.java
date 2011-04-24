@@ -112,26 +112,32 @@ public class AppUtils {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }
 
-    public static String replaceTokens(String text, Map<String, String> replacements) {
+    public static String replaceTokens(String text, Map<String, String> replacements,
+            boolean matchUsingPrefixSuffix) {
         if (replacements != null && replacements.size() > 0) {
-            Matcher matcher = pattern.matcher(text);
-            StringBuffer buffer = new StringBuffer();
-            while (matcher.find()) {
-                String[] match = matcher.group(1).split("\\|");
-                String replacement = replacements.get(match[0]);
-                if (replacement != null) {
-                    matcher.appendReplacement(buffer, "");
-                    if (match.length == 2) {
-                        replacement = formatString(match[1], replacement);
+            if (matchUsingPrefixSuffix) {
+                Matcher matcher = pattern.matcher(text);
+                StringBuffer buffer = new StringBuffer();
+                while (matcher.find()) {
+                    String[] match = matcher.group(1).split("\\|");
+                    String replacement = replacements.get(match[0]);
+                    if (replacement != null) {
+                        matcher.appendReplacement(buffer, "");
+                        if (match.length == 2) {
+                            replacement = formatString(match[1], replacement);
+                        }
+                        buffer.append(replacement);
                     }
-                    buffer.append(replacement);
+                }
+                matcher.appendTail(buffer);
+                text = buffer.toString();
+            } else {
+                for (Object key : replacements.keySet()) {
+                    text = text.replaceAll(key.toString(), replacements.get(key));
                 }
             }
-            matcher.appendTail(buffer);
-            return buffer.toString();
-        } else {
-            return text;
         }
+        return text;
 
     }
 

@@ -111,7 +111,7 @@ public class CsvExtractor extends CsvExtractor16 {
     protected String getTargetName(String name) {
         String catalogName = name == null ? "" : name;
         if (StringUtils.isNotBlank(catalogName)) {
-            catalogName = AppUtils.replaceTokens(catalogName, parameterService.getReplacementValues());
+            catalogName = AppUtils.replaceTokens(catalogName, parameterService.getReplacementValues(), true);
         }
         return catalogName;
     }
