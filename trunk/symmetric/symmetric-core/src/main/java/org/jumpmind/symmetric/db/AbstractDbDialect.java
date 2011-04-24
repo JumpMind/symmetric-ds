@@ -1470,7 +1470,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public long getDatabaseTime() {
         try {
             String sql = "select current_timestamp from " + tablePrefix + "_node_identity";
-            sql = AppUtils.replaceTokens(sql, getSqlScriptReplacementTokens());
+            sql = AppUtils.replaceTokens(sql, getSqlScriptReplacementTokens(), false);
             return jdbcTemplate.queryForObject(sql, java.util.Date.class).getTime();
 
         } catch (Exception ex) {
@@ -1522,7 +1522,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
         if (replacementTokens != null) {
             return AppUtils.replaceTokens(sql,
-                    replacementTokens).trim();
+                    replacementTokens, false).trim();
         } else {
             return sql;
         }

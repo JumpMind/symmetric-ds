@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
@@ -65,7 +66,7 @@ public class SqlScript {
     private Map<String, String> replacementTokens;
 
     private String fileName = "memory";
-    
+
     private String lineDeliminator;
 
     public SqlScript(URL url, DataSource ds) {
@@ -81,25 +82,13 @@ public class SqlScript {
     }
 
     @SuppressWarnings("unchecked")
-    public SqlScript(URL url, DataSource ds, boolean failOnError,
-            String delimiter, Map<String, String> replacementTokens) {
+    public SqlScript(URL url, DataSource ds, boolean failOnError, String delimiter,
+            Map<String, String> replacementTokens) {
         try {
             fileName = url.getFile();
             fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
             log.info("ScriptLoading", fileName);
-            init(IOUtils.readLines(new InputStreamReader(url.openStream(),
-                    "UTF-8")), ds, failOnError, delimiter, replacementTokens);
-        } catch (IOException ex) {
-            log.error(ex);
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public SqlScript(String sqlScript, DataSource ds, boolean failOnError,
-            String delimiter, Map<String, String> replacementTokens) {
-        try {
-            init(IOUtils.readLines(new StringReader(sqlScript)), ds,
+            init(IOUtils.readLines(new InputStreamReader(url.openStream(), "UTF-8")), ds,
                     failOnError, delimiter, replacementTokens);
         } catch (IOException ex) {
             log.error(ex);
@@ -107,8 +96,19 @@ public class SqlScript {
         }
     }
 
-    private void init(List<String> sqlScript, DataSource ds,
-            boolean failOnError, String delimiter,
+    @SuppressWarnings("unchecked")
+    public SqlScript(String sqlScript, DataSource ds, boolean failOnError, String delimiter,
+            Map<String, String> replacementTokens) {
+        try {
+            init(IOUtils.readLines(new StringReader(sqlScript)), ds, failOnError, delimiter,
+                    replacementTokens);
+        } catch (IOException ex) {
+            log.error(ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void init(List<String> sqlScript, DataSource ds, boolean failOnError, String delimiter,
             Map<String, String> replacementTokens) {
         this.script = sqlScript;
         this.dataSource = ds;
@@ -128,14 +128,14 @@ public class SqlScript {
     }
 
     public void execute() {
-        execute(false);    
+        execute(false);
     }
-    
+
     public void execute(final boolean autoCommit) {
         JdbcTemplate template = new JdbcTemplate(this.dataSource);
         template.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection connection)
-                    throws SQLException, DataAccessException {
+            public Object doInConnection(Connection connection) throws SQLException,
+                    DataAccessException {
                 Statement st = null;
                 int lineCount = 0;
 
@@ -153,38 +153,34 @@ public class SqlScript {
                                 if (sql.length() > 0) {
                                     sql.append("\n");
                                 }
-                                sql.append(line.substring(0, line
-                                        .lastIndexOf(delimiter)).trim());
+                                sql.append(line.substring(0, line.lastIndexOf(delimiter)).trim());
                                 String toExecute = sql.toString();
                                 if (StringUtils.isNotBlank(lineDeliminator)) {
                                     toExecute = toExecute.replaceAll(lineDeliminator, "\n");
                                 }
                                 try {
-                                	toExecute = AppUtils.replaceTokens(toExecute, replacementTokens);
-                                	// Empty SQL only seems to come from SybasePlatform
-                                	if (!toExecute.equals("")) {
-                                	    if (log.isDebugEnabled()) {
-                                	        log.debug("Message", toExecute);
-                                	    }
+                                    toExecute = AppUtils.replaceTokens(toExecute,
+                                            replacementTokens, true);
+                                    // Empty SQL only seems to come from
+                                    // SybasePlatform
+                                    if (!toExecute.equals("")) {
+                                        if (log.isDebugEnabled()) {
+                                            log.debug("Message", toExecute);
+                                        }
                                         st.execute(toExecute);
                                         count++;
-	                                    if (count % commitRate == 0) {
-	                                        connection.commit();
-	                                    }
-                                	}
+                                        if (count % commitRate == 0) {
+                                            connection.commit();
+                                        }
+                                    }
                                 } catch (SQLException e) {
                                     if (failOnError) {
-                                        log
-                                                .error("SqlError", e, sql
-                                                        .toString());
+                                        log.error("SqlError", e, sql.toString());
                                         throw e;
                                     } else {
-                                        if (e.getErrorCode() != 942
-                                                && e.getErrorCode() != 2289) {
-                                            log.warn("Sql", e.getMessage()
-                                                    + ": " + sql.toString());
-                                        } else if (sql.toString().toLowerCase()
-                                                .startsWith("drop")) {
+                                        if (e.getErrorCode() != 942 && e.getErrorCode() != 2289) {
+                                            log.warn("Sql", e.getMessage() + ": " + sql.toString());
+                                        } else if (sql.toString().toLowerCase().startsWith("drop")) {
                                             notFoundCount++;
                                         }
                                     }
@@ -239,7 +235,7 @@ public class SqlScript {
     public void setCommitRate(int commitRate) {
         this.commitRate = commitRate;
     }
-    
+
     public void setLineDeliminator(String lineDeliminator) {
         this.lineDeliminator = lineDeliminator;
     }
