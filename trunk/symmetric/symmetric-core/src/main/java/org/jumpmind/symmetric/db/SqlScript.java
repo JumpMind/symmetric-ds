@@ -160,7 +160,7 @@ public class SqlScript {
                                 }
                                 try {
                                     toExecute = AppUtils.replaceTokens(toExecute,
-                                            replacementTokens, true);
+                                            replacementTokens, false);
                                     // Empty SQL only seems to come from
                                     // SybasePlatform
                                     if (!toExecute.equals("")) {
