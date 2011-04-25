@@ -263,7 +263,7 @@
     </entry>
     <entry key="deleteTriggerHistorySql">
       <value>
-        delete from $[sym.sync.table.prefix]_trigger_hist where trigger_id=?
+        delete from $[sym.sync.table.prefix]_trigger_hist where trigger_hist_id=?
       </value>
     </entry>    
     <entry key="insertTriggerSql">
