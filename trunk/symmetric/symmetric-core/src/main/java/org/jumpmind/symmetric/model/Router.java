@@ -203,8 +203,8 @@ public class Router implements Serializable {
     
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Router) {
-            return routerId == ((Router) obj).routerId;
+        if (obj instanceof Router && routerId != null) {
+            return routerId.equals(((Router) obj).routerId);
 
         } else {
             return false;
