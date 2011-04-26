@@ -421,11 +421,10 @@ public class Trigger implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Trigger) {
-            return triggerId == ((Trigger) obj).triggerId;
-
+        if (obj instanceof Trigger && triggerId != null) {
+            return triggerId.equals(((Trigger) obj).triggerId);
         } else {
-            return false;
+            return super.equals(obj);
         }
     }
 
