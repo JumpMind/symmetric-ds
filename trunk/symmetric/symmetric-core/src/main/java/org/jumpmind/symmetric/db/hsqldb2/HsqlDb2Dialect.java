@@ -55,22 +55,11 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
         final String dropSql = String.format("DROP TRIGGER %s", triggerName);
         logSql(dropSql, sqlBuffer);
 
-        final String dropTable = String.format("DROP TABLE IF EXISTS %s_CONFIG", triggerName);
-        logSql(dropTable, sqlBuffer);
-
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
                 int count = jdbcTemplate.update(dropSql);
                 if (count > 0) {
                     log.info("TriggerDropped", triggerName);
-                }
-            } catch (Exception e) {
-                log.warn("TriggerDropError", triggerName, e.getMessage());
-            }
-            try {
-                int count = jdbcTemplate.update(dropTable);
-                if (count > 0) {
-                    log.info("TableDropped", triggerName);
                 }
             } catch (Exception e) {
                 log.warn("TriggerDropError", triggerName, e.getMessage());
