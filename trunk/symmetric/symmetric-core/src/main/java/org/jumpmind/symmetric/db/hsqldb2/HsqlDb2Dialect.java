@@ -45,10 +45,7 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
             String tableName, String triggerName) {
         boolean exists = (jdbcTemplate.queryForInt(
                 "select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
-                new Object[] { triggerName }) > 0)
-                || (jdbcTemplate.queryForInt(
-                        "select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
-                        new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
+                new Object[] { triggerName }) > 0);
         return exists;
     }
     
