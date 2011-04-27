@@ -211,12 +211,6 @@ public class SqlTemplate {
 
         ddl = AppUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
 
-        ddl = AppUtils.replace("defaultSchema",
-                resolveSchemaAndCatalogs && defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "."
-                        : "", ddl);
-        ddl = AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
-                && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", ddl);
-
         ddl = AppUtils.replace("triggerName", history.getTriggerNameForDmlType(dml), ddl);
         ddl = AppUtils.replace("prefixName", tablePrefix, ddl);
         ddl = AppUtils.replace("channelName", trigger.getChannelId(), ddl);
@@ -251,6 +245,13 @@ public class SqlTemplate {
         Column[] columns = trigger.orderColumnsForTable(metaData);
         ColumnString columnString = buildColumnString(dialect, ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns, dialect, dml, false, channel);
         ddl = AppUtils.replace("columns", columnString.toString(), ddl);
+        
+        ddl = AppUtils.replace("defaultSchema",
+                resolveSchemaAndCatalogs && defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "."
+                        : "", ddl);
+        ddl = AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
+                && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", ddl);
+        
         ddl = AppUtils.replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
                 ddl);
         ddl = AppUtils.replace("oldColumns", buildColumnString(dialect, ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml, true, channel).toString(), ddl);
