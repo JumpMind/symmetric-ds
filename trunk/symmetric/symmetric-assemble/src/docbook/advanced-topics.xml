@@ -629,6 +629,11 @@ public class StartSymmetricEngine {
         </section>
     </section> 
     
+    <section id="running-service">
+    <title>Running SymmetricDS as a Service</title>
+        <para>
+    SymmetricDS can be configured to start and run as a service in both Windows and *nix platforms.
+    </para>
     <section id="running-service-windows">
         <title>Running as a Windows Service</title>
         <para>
@@ -662,7 +667,7 @@ net stop symmetric</programlisting>
         </para>
     </section>
     <section id="running-service-unix">
-        <title>Running as a Nix Service</title>
+        <title>Running as a *nix Service</title>
         <para>
             SymmetricDS uses the
             <ulink url="http://wrapper.tanukisoftware.org/">Java Service Wrapper</ulink>
@@ -716,6 +721,7 @@ net stop symmetric</programlisting>
 /etc/init.d/sym_service status
             </programlisting>
         </para>    
+    </section>
     </section>
         <section id="clustering">
         <title>Clustering</title>

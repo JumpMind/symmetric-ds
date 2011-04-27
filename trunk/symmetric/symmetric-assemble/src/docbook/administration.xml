@@ -7,6 +7,149 @@
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Administration</title>
+    
+    <section id="solving-synchronization-issues">
+        <title>Solving Synchronization Issues</title>
+       
+       <para>
+       By design, whenever SymmetricDS encounters an issue with a synchronization, the batch containing the error is marked as being in
+       an error state, and all subsequent batches <emphasis>for that particular channel to that particular node</emphasis> are held and not
+       synchronized until the error batch is resolved.  SymmetricDS will retry the batch in error until the situation creating the
+       error is resolved (or the data for the batch itself is changed).
+       </para>
+       
+        <section id="solving-synchronization-issues-analysis">
+        <title>Analyzing the Issue</title>
+       
+       <para>
+       The first step in analyzing the cause of a failed batch is to locate information about the data in the batch, starting with  
+       either <xref linkend="table_outgoing_batch" xrefstyle="table"/> or <xref linkend="table_incoming_batch" xrefstyle="table"/>.
+       We'll use outgoing batches for the examples below.  To locate batches in error, use:
+       <programlisting>select * from sym_outgoing_batch where error_flag=1;</programlisting>       
+       Several useful pieces of information are available from this query:
+       <itemizedlist>
+       <listitem>
+       The batch number of the failed batch, available in column <literal>BATCH_ID</literal>.
+       </listitem>       
+       <listitem>
+       The node to which the batch is being sent, available in column <literal>NODE_ID</literal>.
+       </listitem>
+       <listitem>
+       The channel to which the batch belongs, available in column <literal>CHANNEL_ID</literal>. 
+       All subsequent batches on this channel to this node will be held until the error condition is resolved.
+       </listitem>
+       <listitem>
+       The specific data id in the batch which is causing the failure, available in column <literal>FAILED_DATA_ID</literal>.
+       </listitem>       
+       <listitem>
+       Any SQL message, SQL State, and SQL Codes being returned during the synchronization attempt, available in columns <literal>SQL_MESSAGE</literal>,
+       <literal>SQL_STATE</literal>, and <literal>SQL_CODE</literal>, respectively.
+       </listitem>
+       </itemizedlist>
+       </para>
+       <note>
+       Using the <literal>error_flag</literal> on the batch table, as shown above, is more reliable than using the
+       <literal>status</literal> column.  The status column can change from 'ER' to a different status temporarily as
+       the batch is retried.
+       </note>
+       <note>The query above will also show you any recent batches that
+       were originally in error and were changed to be manually skipped.  See the end of  <xref linkend="solving-synchronization-issues-resolution" /> for more details.
+       </note>
+       <para>
+       To get a full picture of the batch, you can query for information representing the complete 
+       list of all data changes associated with the failed batch by joining
+       <xref linkend="table_data" xrefstyle="table"/> and  <xref linkend="table_data_event" xrefstyle="table"/>, such as:
+       <programlisting>select * from sym_data where data_id in 
+        (select data_id from sym_data_event where batch_id='XXXXXX');</programlisting> 
+       where XXXXXX is the batch id of the failing batch.
+       </para>
+       <para>
+       This query returns a wealth of information about each data change in a batch, including:
+       <itemizedlist>
+       <listitem>
+       The table involved in each data change, available in column <literal>TABLE_NAME</literal>,</listitem>
+       <listitem>
+       The event type (Update [U], Insert [I], or Delete [D]), available in column <literal>EVENT_TYPE</literal>,
+       </listitem>
+       <listitem>
+       A comma separated list of the new data and (optionally) the old data, available in columns <literal>ROW_DATA</literal> and 
+       <literal>OLD_DATA</literal>, respectively.
+       </listitem>
+       <listitem>
+       The primary key data, available in column <literal>PK_DATA</literal>
+       </listitem>
+       <listitem>
+       The channel id, trigger history information, transaction id if available, and other information.
+       </listitem>
+       </itemizedlist>
+       </para>
+       <para>
+       More importantly, if you narrow your query to just the failed data id you can determine the exact data change that is causing the failure:       
+       <programlisting>select * from sym_data where data_id in 
+        (select failed_data_id from sym_outgoing_batch where batch_id='XXXXX');</programlisting>
+       where XXXXXX is the batch that is failing.
+       </para>
+       <para>The queries above usually yield enough information to be able to determine why a
+       particular batch is failing. Common reasons a batch might be failing include:
+            <itemizedlist>
+            <listitem>
+            The schema at the destination has a column that is not nullable yet the source
+            has the column defined as nullable and a data change was sent with the column as null.</listitem>
+            <listitem>
+            A foreign key constraint at the destination is preventing an insertion or update, which could be caused from
+            data being deleted at the destination or the foreign key constraint is not in place at the source.
+            </listitem>
+            <listitem>
+            The data size of a column on the destination is smaller than the data size in the source, and data that
+            is too large for the destination has been synced.
+            </listitem>
+            </itemizedlist>
+            </para>
+                   
+    </section>
+            <section id="solving-synchronization-issues-resolution">
+            <title>Resolving the Issue</title>
+            
+            <para>
+            Once you have decided upon the cause of the issue, you'll have to decide the best course of action to fix the issue.  If, for example,
+            the problem is due to a database schema mismatch, one possible solution would be to alter the destination database
+            in such a way that the SQL error no longer occurs.  Whatever approach you take to remedy the issue, once you have
+            made the change, on the next push or pull SymmetricDS will retry the batch
+            and the channel's data will start flowing again.            
+            </para>
+            <para>
+            If you have instead decided that the batch itself is wrong, or does not need synchronized, or you wish to remove a 
+            particular data change from a batch, you do have the option of changing the data associated with the batch directly.
+           
+            <warning>
+            Be cautious when using the following two approaches to resolve synchronization issues.  By far, the
+            best approach to solving a synchronization error is to resolve what is truly causing the
+            error at the destination database.  Skipping a batch or removing a data id as discussed below should be your
+            solution of last resort, since doing so results in differences between the source and destination databases.
+            </warning>
+            
+            Now that you've read the warning, if you <emphasis>still</emphasis> want to change the batch
+            data itself, you do have several options, including:
+            <itemizedlist>
+                <listitem>Causing SymmetricDS to skip the batch completely.  This is accomplished by setting the
+                batch's status to 'OK', as in:
+                <programlisting>update sym_outgoing_batch set status='OK' where batch_id='XXXXXX'</programlisting>
+                where XXXXXX is the failing batch. On the next pull or push, SymmetricDS will skip this batch since
+                it now thinks the batch has already been synchronized.  Note that you can still distinguish between successful
+                batches and ones that you've artificially marked as 'OK', since the <literal>error_flag</literal> column on
+                the failed batch will still be set to '1' (in error).
+                </listitem>
+                <listitem>
+                Removing the failing data id from the batch by deleting the corresponding row in <xref linkend="table_data_event" xrefstyle="table"/>.
+                Eliminating the data id from the list of data ids in the batch will cause future synchronization attempts
+                of the batch to no longer include that particular data change as part of the batch.  For example:
+                  <programlisting>delete from sym_data_event where batch_id='XXXXXX' and data_id='YYYYYY'</programlisting>
+                where XXXXXX is the failing batch and YYYYYY is the data id to longer be included in the batch.
+                </listitem>
+            </itemizedlist>
+            </para>
+   </section>
+   </section>
     <section id="changing-triggers">
         <title>Changing Triggers</title>
         <para>
@@ -138,8 +281,17 @@ where source_table_name = 'price_changes';
                     <xref linkend="table_incoming_batch" xrefstyle="table"/>
                 </listitem>
                 <listitem>
-                   <xref linkend="table_statistic" xrefstyle="table"/>
-                </listitem>                
+                    <xref linkend="table_data_gap" xrefstyle="table"/>
+                </listitem>
+                <listitem>
+                   <xref linkend="table_node_host_stats" xrefstyle="table"/>
+                </listitem>     
+                <listitem>
+                   <xref linkend="table_node_host_channel_stats" xrefstyle="table"/>
+                </listitem>  
+                <listitem>
+                   <xref linkend="table_node_host_job_stats" xrefstyle="table"/>
+                </listitem>                   
             </itemizedlist>
             The purge job is enabled by the <literal>start.purge.job</literal> SymmetricDS property.  The job runs periodically according to the 
             <literal>job.purge.period.time.ms</literal> property.  The default period is to run every ten minutes.  
@@ -159,22 +311,6 @@ where source_table_name = 'price_changes';
         </para>
         
     </section>
-    <section id="debugging-issues">
-        <title>Debugging Issues</title>
-    </section>
-    
-    <section id="querying-for-errors">
-        <title>Querying for Errors</title>
-    </section>
-    
-    <section id="fixing-errors">
-        <title>Fixing Errors</title>
-    </section>
-    
-    <section id="measuring-performance">
-        <title>Measuring Performance</title>
-    </section>
-  
     
     
  
