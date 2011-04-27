@@ -73,23 +73,7 @@ public class SqlTemplate {
 
     private String datetimeColumnTemplate;
     
-    private String timeColumnTemplate;
-    
-    public String getTimeColumnTemplate() {
-        return timeColumnTemplate;
-    }
-
-    public void setTimeColumnTemplate(String timeColumnTemplate) {
-        this.timeColumnTemplate = timeColumnTemplate;
-    }
-
-    public String getDateColumnTemplate() {
-        return dateColumnTemplate;
-    }
-
-    public void setDateColumnTemplate(String dateColumnTemplate) {
-        this.dateColumnTemplate = dateColumnTemplate;
-    }
+    private String timeColumnTemplate;    
 
     private String dateColumnTemplate;
 
@@ -128,8 +112,24 @@ public class SqlTemplate {
         sql = AppUtils.replace("groupId", node.getNodeGroupId(), sql);
         sql = AppUtils.replace("externalId", node.getExternalId(), sql);
         sql = AppUtils.replace("nodeId", node.getNodeId(), sql);
+        sql = replaceDefaultSchemaAndCatalog(dialect, triggerRouter.getTrigger(), sql);
 
         return sql;
+    }
+    
+    protected String replaceDefaultSchemaAndCatalog(IDbDialect dbDialect, Trigger trigger, String sql) {
+        String defaultCatalog = dbDialect.getDefaultCatalog();
+        String defaultSchema = dbDialect.getDefaultSchema();
+        
+        boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
+        || trigger.getSourceSchemaName() != null;
+        
+        sql = AppUtils.replace("defaultSchema",
+                resolveSchemaAndCatalogs && defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "."
+                        : "", sql);
+        
+        return AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
+                && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", sql);
     }
 
     public String createCsvDataSql(IDbDialect dialect, Trigger trig, Table metaData, Channel channel, String whereClause) {
@@ -246,11 +246,7 @@ public class SqlTemplate {
         ColumnString columnString = buildColumnString(dialect, ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns, dialect, dml, false, channel);
         ddl = AppUtils.replace("columns", columnString.toString(), ddl);
         
-        ddl = AppUtils.replace("defaultSchema",
-                resolveSchemaAndCatalogs && defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "."
-                        : "", ddl);
-        ddl = AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
-                && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", ddl);
+        replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
         
         ddl = AppUtils.replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
                 ddl);
@@ -753,6 +749,22 @@ public class SqlTemplate {
             return null;
         }
     }
+    
+    public String getTimeColumnTemplate() {
+        return timeColumnTemplate;
+    }
+
+    public void setTimeColumnTemplate(String timeColumnTemplate) {
+        this.timeColumnTemplate = timeColumnTemplate;
+    }
+
+    public String getDateColumnTemplate() {
+        return dateColumnTemplate;
+    }
+
+    public void setDateColumnTemplate(String dateColumnTemplate) {
+        this.dateColumnTemplate = dateColumnTemplate;
+    }    
     
     private class ColumnString {
         
