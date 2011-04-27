@@ -30,6 +30,7 @@ import java.util.Iterator;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -859,5 +860,16 @@ public class Table implements Serializable, Cloneable
         }
 
         return result.toString();
+    }
+    
+    public String getFullyQualifiedTableName() {
+        String tableName = _name;
+        if (!StringUtils.isBlank(_schema)) {
+            tableName = _schema + "." + tableName;
+        }
+        if (!StringUtils.isBlank(_catalog)) {
+            tableName = _catalog + "." + tableName;
+        }
+        return tableName;
     }
 }

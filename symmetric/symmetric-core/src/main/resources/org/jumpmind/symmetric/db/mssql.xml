@@ -83,7 +83,7 @@
                 </property>                
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace(dbo.$[sym.sync.table.prefix]_base64_encode($(origTableAlias)."$(columnName)"),'\','\\'),'"','\"') + '"' end ]]>
+                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace($(defaultCatalog)dbo.$[sym.sync.table.prefix]_base64_encode($(origTableAlias)."$(columnName)"),'\','\\'),'"','\"') + '"' end ]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
