@@ -63,5 +63,5 @@ public class AppUtilsUnitTest {
         Assert.assertEquals(afterSql, AppUtils.replaceTokens(beforeSql, replacementTokens, false));
         
     }
-
+    
 }

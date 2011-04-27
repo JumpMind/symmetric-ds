@@ -183,10 +183,8 @@ public class SymmetricServlet extends AbstractServlet {
         if (servlet != null) {
             try {
                 servlet.service(req, res);
-            } catch (IOException e) {
-                logException(req, e, false);
             } catch (Exception e) {
-                logException(req, e, true);
+                logException(req, e, !(e instanceof IOException));
                 if (!res.isCommitted()) {
                     if (res instanceof HttpServletResponse) {
                         ((HttpServletResponse) res).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

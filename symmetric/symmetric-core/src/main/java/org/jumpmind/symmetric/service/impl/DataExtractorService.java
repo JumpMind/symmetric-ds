@@ -479,7 +479,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             fileWriter.delete();
                         }
                     }
-                } catch (RuntimeException e) {
+                } catch (Exception e) {
                     SQLException se = unwrapSqlException(e);
                     if (currentBatch != null) {
                         statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(),
@@ -497,7 +497,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else {
                         log.error("BatchStatusLoggingFailed", e);
                     }
-                    throw e;
+                    
+                    if (e instanceof RuntimeException) {
+                        throw (RuntimeException)e;
+                    } else if (e instanceof IOException) {
+                        throw (IOException)e;
+                    } else {
+                        throw new RuntimeException(e);
+                    }
 
                 } finally {
                     handler.done();
@@ -558,6 +565,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
                 } while (nextLine != null);
+                
+                writer.flush();
+                
             } finally {
                 IOUtils.closeQuietly(reader);
                 if (!StringUtils.isBlank(channelId)) {
