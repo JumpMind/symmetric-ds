@@ -204,7 +204,7 @@ public class AppUtils {
                 deletedCount++;
             }
             if (deletedCount > 1) {
-                log.warn("CleanStrandedTempFiles");
+                log.warn("CleanStrandedTempFiles", deletedCount);
             }
         } catch (Exception ex) {
             log.error(ex);
