@@ -246,7 +246,7 @@ public class SqlTemplate {
         ColumnString columnString = buildColumnString(dialect, ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns, dialect, dml, false, channel);
         ddl = AppUtils.replace("columns", columnString.toString(), ddl);
         
-        replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
+        ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
         
         ddl = AppUtils.replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
                 ddl);
