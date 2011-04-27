@@ -159,8 +159,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 Map<String, NodeSecurity> nodeSecurities = nodeService.findAllNodeSecurity(false);
                 if (nodeSecurities != null) {
                     for (NodeSecurity security : nodeSecurities.values()) {
-                        if (security.isInitialLoadEnabled()
-                                && (security.getRegistrationTime() != null || security.getNodeId()
+                        if (!security.getNodeId().equals(identity.getNodeId()) && 
+                                security.isInitialLoadEnabled() && 
+                                (security.getRegistrationTime() != null || security.getNodeId()
                                         .equals(identity.getCreatedAtNodeId()))) {
                             long ts = System.currentTimeMillis();
                             dataService.insertReloadEvents(nodeService.findNode(security
