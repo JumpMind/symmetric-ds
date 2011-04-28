@@ -204,7 +204,7 @@ public class AppUtils {
                     FileUtils.forceDelete(it.next());
                     deletedCount++;
                 } catch (Exception ex) {
-                    log.error(ex);
+                    log.error(ex.getMessage());
                 }
             }
             if (deletedCount > 1) {
