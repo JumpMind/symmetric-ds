@@ -455,14 +455,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             fileWriter.reset();
                             
                             File previouslyExtracted = extractedBatchesHandle.get(currentBatch.getBatchId());
-                            if (previouslyExtracted == null) {
+                            if (previouslyExtracted != null && previouslyExtracted.exists()) {
+                                log.info("DataExtractorUsingAlreadyExtractedBatch", currentBatch.getBatchId());
+                                fileWriter.setFile(previouslyExtracted);
+                            } else {
                                 outgoingBatch.setStatus(OutgoingBatch.Status.QY);
                                 outgoingBatch.setExtractCount(outgoingBatch.getExtractCount() + 1);
                                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
                                 databaseExtract(node, outgoingBatch, handler);
-                            } else {
-                                log.info("DataExtractorUsingAlreadyExtractedBatch", currentBatch.getBatchId());
-                                fileWriter.setFile(previouslyExtracted);
                             }
                             outgoingBatch.setStatus(OutgoingBatch.Status.SE);
                             outgoingBatch.setSentCount(outgoingBatch.getSentCount() + 1);
