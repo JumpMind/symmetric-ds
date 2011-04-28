@@ -45,6 +45,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
@@ -545,15 +546,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return activeBatches != null ? activeBatches : new ArrayList<OutgoingBatch>(0);
     }
 
-    protected void networkTransfer(BufferedReader reader, BufferedWriter writer) throws IOException {
+    protected void networkTransfer(BufferedReader reader, BufferedWriter writer) throws IOException {        
         if (reader != null && writer != null) {
+            CsvReader csvReader = new CsvReader(reader);
             String channelId = null;
             long lineCount = 0;
             long byteCount = 0;
             try {
                 String nextLine = null;
-                do {
-                    nextLine = reader.readLine();
+                while (csvReader.readRecord()) {
+                    nextLine = csvReader.getRawRecord();
                     if (nextLine != null) {
                         lineCount++;
                         byteCount += nextLine.length();
@@ -584,11 +586,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             }
                         }
                     }
-                } while (nextLine != null);
+                }
                 
                 writer.flush();
                 
             } finally {
+                csvReader.close();
                 IOUtils.closeQuietly(reader);
                 if (!StringUtils.isBlank(channelId)) {
                     if (byteCount > 0) {
