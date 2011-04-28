@@ -429,11 +429,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 
                 Writer extractWriter = null;
                 BufferedWriter networkWriter = null;
+                
+                boolean streamToFileEnabled = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
 
                 ThresholdFileWriter fileWriter = new ThresholdFileWriter(parameterService
                         .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "extract");
 
-                if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
+                if (streamToFileEnabled) {
                     extractWriter = new BufferedWriter(fileWriter);
                     networkWriter = targetTransport.open();
                 } else {
@@ -463,7 +465,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 outgoingBatch.setStatus(OutgoingBatch.Status.QY);
                                 outgoingBatch.setExtractCount(outgoingBatch.getExtractCount() + 1);
                                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-                                databaseExtract(node, outgoingBatch, handler);
+                                databaseExtract(node, outgoingBatch, handler, networkWriter);
                             }
                             outgoingBatch.setStatus(OutgoingBatch.Status.SE);
                             outgoingBatch.setSentCount(outgoingBatch.getSentCount() + 1);
@@ -610,12 +612,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * Allow a handler callback to do the work so we can route the extracted
      * data to other types of handlers for processing.
      */
-    protected void databaseExtract(Node node, OutgoingBatch batch, final IExtractListener handler)
+    protected void databaseExtract(Node node, OutgoingBatch batch, final IExtractListener handler, BufferedWriter keepaliveWriter)
             throws IOException {
         batch.resetStats();
         long ts = System.currentTimeMillis();
         handler.startBatch(batch);
-        selectEventDataToExtract(handler, batch);
+        selectEventDataToExtract(handler, batch, keepaliveWriter);
         handler.endBatch(batch);
         batch.setExtractMillis(System.currentTimeMillis() - ts);
     }
@@ -650,7 +652,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     handler.init();
                     for (final OutgoingBatch batch : batches.getBatches()) {
                         handler.startBatch(batch);
-                        selectEventDataToExtract(handler, batch);
+                        selectEventDataToExtract(handler, batch, null);
                         handler.endBatch(batch);
                     }
                 } finally {
@@ -662,10 +664,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return false;
     }
 
-    private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch) {
-        dataService.handleDataSelect(batch.getBatchId(), -1, batch.getChannelId(), false, new IModelRetrievalHandler<Data, String>() {            
+    private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch, final BufferedWriter keepAliveWriter) {
+        final long flushForKeepAliveInMs = parameterService.getLong(ParameterConstants.DATA_EXTRACTOR_FLUSH_FOR_KEEP_ALIVE, 120000);
+        dataService.handleDataSelect(batch.getBatchId(), -1, batch.getChannelId(), false, new IModelRetrievalHandler<Data, String>() {        
+            long lastKeepAliveFlush = System.currentTimeMillis();
             public boolean retrieved(Data data, String routerId, int count) throws IOException {
                 handler.dataExtracted(data, routerId);
+                if (System.currentTimeMillis()-lastKeepAliveFlush > flushForKeepAliveInMs && keepAliveWriter != null) {
+                    CsvUtils.write(keepAliveWriter, CsvConstants.NODEID, CsvUtils.DELIMITER, batch.getNodeId());
+                    CsvUtils.writeLineFeed(keepAliveWriter);  
+                    keepAliveWriter.flush();
+                    lastKeepAliveFlush = System.currentTimeMillis();
+                }                
                 return true;
             }
         });
