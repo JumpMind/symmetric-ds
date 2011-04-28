@@ -1169,7 +1169,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         } else if (type == Types.BOOLEAN) {
                             objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
                         } else if (type == Types.BLOB || type == Types.LONGVARBINARY
-                                || type == Types.BINARY || type == Types.VARBINARY) {
+                                || type == Types.BINARY || type == Types.VARBINARY ||
+                                // SQLServer ntext type
+                                type == -10) {
                             if (encoding == BinaryEncoding.NONE) {
                                 objectValue = value.getBytes();
                             } else if (encoding == BinaryEncoding.BASE64) {
