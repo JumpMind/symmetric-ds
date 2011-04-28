@@ -42,17 +42,15 @@ import org.jumpmind.symmetric.util.AppUtils;
  */
 public class ThresholdFileWriter extends Writer {
 
-    File file;
+    private File file;
     
-    String tempFileCategory;
+    private String tempFileCategory;
 
-    BufferedWriter fileWriter;
-    
-    BufferedReader fileReader;
+    private BufferedWriter fileWriter;
 
-    StringBuilder buffer;
+    private StringBuilder buffer;
 
-    long threshhold;
+    private long threshhold;
 
     /**
      * @param threshold The number of bytes at which to start writing to a file
@@ -73,6 +71,14 @@ public class ThresholdFileWriter extends Writer {
         this.tempFileCategory = tempFileCategory;
         this.buffer = new StringBuilder();
         this.threshhold = threshold;
+    }
+    
+    public File getFile() {
+        return file;
+    }
+    
+    public void setFile(File file) {
+        this.file = file;
     }
 
     @Override
@@ -115,10 +121,17 @@ public class ThresholdFileWriter extends Writer {
         }
     }
     
+    public void reset() {
+        this.file = null;
+        this.fileWriter =  null;
+        buffer.setLength(0);
+    }
+    
     public void delete() {
         if (file != null && file.exists()) {
             file.delete();
         }
+        file = null;
         buffer.setLength(0);
     }
 
