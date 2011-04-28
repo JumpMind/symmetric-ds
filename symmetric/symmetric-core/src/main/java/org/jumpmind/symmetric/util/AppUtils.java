@@ -200,8 +200,12 @@ public class AppUtils {
                     new String[] { SYM_TEMP_SUFFIX }, true);
             int deletedCount = 0;
             while (it.hasNext()) {
-                FileUtils.forceDelete(it.next());
-                deletedCount++;
+                try {
+                    FileUtils.forceDelete(it.next());
+                    deletedCount++;
+                } catch (Exception ex) {
+                    log.error(ex);
+                }
             }
             if (deletedCount > 1) {
                 log.warn("CleanStrandedTempFiles", deletedCount);
