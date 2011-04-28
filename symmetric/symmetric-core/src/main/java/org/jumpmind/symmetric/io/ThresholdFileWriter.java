@@ -37,8 +37,6 @@ import org.jumpmind.symmetric.util.AppUtils;
  * Write to an internal buffer up until the threshold. When the threshold is
  * reached, flush the buffer to the file and write to the file from that point
  * forward.
- *
- * 
  */
 public class ThresholdFileWriter extends Writer {
 
