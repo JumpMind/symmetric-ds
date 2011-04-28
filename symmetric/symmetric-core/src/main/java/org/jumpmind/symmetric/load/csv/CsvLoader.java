@@ -359,7 +359,7 @@ public class CsvLoader implements IDataLoader {
         if (continueToLoad) {
             boolean enableFallbackUpdate = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
             boolean enableFallbackSavepoint = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_SAVEPOINT);
-            Object savepoint = null;
+            Object savepoint = null;            
             try {
                 stats.startTimer();
                 if (enableFallbackUpdate && dbDialect.requiresSavepointForFallback()) {
@@ -382,7 +382,7 @@ public class CsvLoader implements IDataLoader {
                     stats.incrementFallbackUpdateCount();
                     rows = context.getTableTemplate().update(context, columnValues, keyValues);
                     if (rows == 0) {
-                        throw new SymmetricException("LoaderFallbackUpdateFailed", e, context.getTableName(), ArrayUtils
+                        throw new SymmetricException("LoaderFallbackUpdateFailed", e, context.getTableTemplate().getTable().toVerboseString(), ArrayUtils
                                 .toString(tokens), ArrayUtils.toString(keyValues));
                     }
                 } else {
