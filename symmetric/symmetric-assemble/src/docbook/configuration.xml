@@ -340,17 +340,31 @@ values
             is associated with a <xref linkend="table_router" xrefstyle="table"/> whose <literal>source_node_group_id</literal> matches the node group id of the current node.
         </para>
         <para>
+        When determining whether a data change has occurred or not, by defalt the triggers will
+        record a change even if the data was updated to the same value(s) they were originally.
+        For example, a data change will be captured if an update of one column in a row
+        updated the value to the same value it already was.
+        There is a global property, <literal>trigger.update.capture.changed.data.only.enabled</literal> (false by default),
+        that allows you to override this behavior. When set to true, SymmetricDS will only capture a change if
+        the data has truly changed (i.e., when the new column data is not equal to the old column data).
+        </para>
+        <important>
+        The property <literal>trigger.update.capture.changed.data.only.enabled</literal> 
+        is currently only supported in the MySQL and Oracle dialects.
+        </important>
+        
+        <para>
             The following SQL statement defines a trigger that will capture data for a table named "item"
             whenever data is inserted, updated, or deleted. The trigger is assigned to a channel also called 'item'.            
             <programlisting>
 <![CDATA[insert into SYM_TRIGGER 
-  (trigger_id,source_table_name,channel_id,last_update_time,create_time)
-values
-  ('item', 'item', 'item', current_timestamp, current_timestamp);
+    (trigger_id,source_table_name,channel_id,last_update_time,create_time)
+  values
+    ('item', 'item', 'item', current_timestamp, current_timestamp);
 ]]></programlisting>
         </para>
         
-        <warning>
+        <important>
         <para>
             Note that many databases allow for multiple triggers of the same type to be defined.  
             Each database defines the order in which the triggers fire differently.  If you have
@@ -358,7 +372,7 @@ values
             your database documentation to determine if there will be issues with
             the ordering of the triggers.
         </para>
-    </warning>
+    </important>
     </section>
     <section id="configuration-router">
     <title>Router</title>    
