@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -30,8 +31,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
@@ -111,6 +114,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private List<IExtractorFilter> extractorFilters;
     
     private IStatisticManager statisticManager;
+    
+    private Map<Long, File> extractedBatchesHandle = new HashMap<Long, File>();
 
     /**
      * @see DataExtractorService#extractConfigurationStandalone(Node,
@@ -446,19 +451,31 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     for (OutgoingBatch outgoingBatch : activeBatches) {
                         try {
                             currentBatch = outgoingBatch;
-                            outgoingBatch.setStatus(OutgoingBatch.Status.QY);
-                            outgoingBatch.setExtractCount(outgoingBatch.getExtractCount() + 1);
-                            outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-
-                            databaseExtract(node, outgoingBatch, handler);
-
+                            
+                            fileWriter.reset();
+                            
+                            File previouslyExtracted = extractedBatchesHandle.get(currentBatch.getBatchId());
+                            if (previouslyExtracted == null) {
+                                outgoingBatch.setStatus(OutgoingBatch.Status.QY);
+                                outgoingBatch.setExtractCount(outgoingBatch.getExtractCount() + 1);
+                                outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                                databaseExtract(node, outgoingBatch, handler);
+                            } else {
+                                log.info("DataExtractorUsingAlreadyExtractedBatch", currentBatch.getBatchId());
+                                fileWriter.setFile(previouslyExtracted);
+                            }
                             outgoingBatch.setStatus(OutgoingBatch.Status.SE);
                             outgoingBatch.setSentCount(outgoingBatch.getSentCount() + 1);
                             outgoingBatchService.updateOutgoingBatch(outgoingBatch);
 
-                            fileWriter.close();
+                            File file  = fileWriter.getFile();
+                            if (file != null) {
+                                extractedBatchesHandle.put(currentBatch.getBatchId(), file);
+                            }
+                            
+                            fileWriter.close();                            
+                            
                             networkTransfer(fileWriter.getReader(), networkWriter);
-                            fileWriter.delete();
 
                             outgoingBatch.setStatus(OutgoingBatch.Status.LD);
                             outgoingBatch.setLoadCount(outgoingBatch.getLoadCount() + 1);
@@ -472,11 +489,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         batchesSentCount, bytesSentCount);
                                 break;
                             }
+                            
+                            extractedBatchesHandle.remove(currentBatch.getBatchId());
+                            fileWriter.delete();
                         } finally {
                             // It doesn't hurt anything to call close and delete
                             // a second time
                             fileWriter.close();
-                            fileWriter.delete();
+
                         }
                     }
                 } catch (Exception e) {
