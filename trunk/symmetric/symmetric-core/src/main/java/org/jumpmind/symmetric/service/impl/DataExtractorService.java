@@ -550,7 +550,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected void networkTransfer(BufferedReader reader, BufferedWriter writer) throws IOException {        
         if (reader != null && writer != null) {
-            CsvReader csvReader = new CsvReader(reader);
+            CsvReader csvReader = CsvUtils.getCsvReader(reader);
             String channelId = null;
             long lineCount = 0;
             long byteCount = 0;
