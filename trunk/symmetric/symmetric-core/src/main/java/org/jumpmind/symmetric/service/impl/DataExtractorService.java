@@ -665,13 +665,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch, final BufferedWriter keepAliveWriter) {
-        final long flushForKeepAliveInMs = parameterService.getLong(ParameterConstants.DATA_EXTRACTOR_FLUSH_FOR_KEEP_ALIVE, 120000);
+        final long flushForKeepAliveInMs = parameterService.getLong(ParameterConstants.DATA_EXTRACTOR_FLUSH_FOR_KEEP_ALIVE, 60000);
         dataService.handleDataSelect(batch.getBatchId(), -1, batch.getChannelId(), false, new IModelRetrievalHandler<Data, String>() {        
             long lastKeepAliveFlush = System.currentTimeMillis();
+            String nodeId = nodeService.findIdentityNodeId();
             public boolean retrieved(Data data, String routerId, int count) throws IOException {
                 handler.dataExtracted(data, routerId);
                 if (System.currentTimeMillis()-lastKeepAliveFlush > flushForKeepAliveInMs && keepAliveWriter != null) {
-                    CsvUtils.write(keepAliveWriter, CsvConstants.NODEID, CsvUtils.DELIMITER, batch.getNodeId());
+                    CsvUtils.write(keepAliveWriter, CsvConstants.NODEID, CsvUtils.DELIMITER, nodeId);
                     CsvUtils.writeLineFeed(keepAliveWriter);  
                     keepAliveWriter.flush();
                     lastKeepAliveFlush = System.currentTimeMillis();
