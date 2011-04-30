@@ -63,7 +63,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
-        if (getMajorVersion() >= 8 && getMinorVersion() >= 3) {
+        if (getMajorVersion() > 8 || (getMajorVersion() >= 8 && getMinorVersion() >= 3)) {
             log.info("TransactionIDSupportEnabling");
             supportsTransactionId = true;
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;
