@@ -1,6 +1,43 @@
 <html>
 <body>
 <h1>
+Version 2.2.3
+</h1>        
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-419'>SYMMETRICDS-419</a>] -         Sql Server blob sync across catalogs does not work because the base 64 encoding function is not fully qualified.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-420'>SYMMETRICDS-420</a>] -         Sql Server sync of tables with identity columns doesn&#39;t work when syncing across catalogs.  Table name isn&#39;t fully qualified.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-421'>SYMMETRICDS-421</a>] -         The logic for determining support for Postgres transaction identifiers is flawed
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-422'>SYMMETRICDS-422</a>] -         Line feed characters (\r and \n) can get corrupted during transfer depending on the character and the os
+</li>
+</ul>
+    
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-417'>SYMMETRICDS-417</a>] -         Allow for token substitution in target table names, schema names and catalog names
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-424'>SYMMETRICDS-424</a>] -         Keep http connection alive during long file extracts
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-425'>SYMMETRICDS-425</a>] -         default the java.io.tmpdir to ../tmp for the standalone install
+</li>
+</ul>
+        
+<h2>        Task
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-385'>SYMMETRICDS-385</a>] -         Better document SYM_OUTGOING_BATCH and error recovery in Users Guide
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-418'>SYMMETRICDS-418</a>] -         Document trigger.update.capture.changed.data.only.enabled
+</li>
+</ul>
+
+<h1>
 Version 2.2.2
 </h1>        
 
