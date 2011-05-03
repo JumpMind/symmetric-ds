@@ -176,6 +176,8 @@ final public class ParameterConstants {
     public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC = "heartbeat.sync.on.push.period.sec";
 
     public final static String STATISTIC_RECORD_ENABLE = "statistic.record.enable";
+    
+    public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
