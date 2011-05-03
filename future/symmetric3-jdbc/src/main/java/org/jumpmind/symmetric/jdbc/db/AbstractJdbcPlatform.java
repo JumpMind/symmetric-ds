@@ -9,7 +9,9 @@ import org.jumpmind.symmetric.core.db.AbstractPlatform;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.jdbc.sql.ILobHandler;
+import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
 abstract public class AbstractJdbcPlatform extends AbstractPlatform implements IJdbcPlatform {
 
@@ -21,9 +23,13 @@ abstract public class AbstractJdbcPlatform extends AbstractPlatform implements I
         this.dataSource = dataSource;
     }
     
+    public ISqlConnection getSqlConnection() {
+        return new JdbcSqlConnection(this, dataSource);
+    }
+    
     public Database findDatabase(String catalogName, String schemaName) {
         return jdbcModelReader.getDatabase(catalogName, schemaName, null);
-    }
+    }    
     
     public String getAlterScriptFor(Table... tables) {
         StringWriter writer = new StringWriter();
@@ -52,6 +58,7 @@ abstract public class AbstractJdbcPlatform extends AbstractPlatform implements I
             Table justReadTable = jdbcModelReader.readTable(catalogName, schemaName, tableName,
                     parameters.is(Parameters.DB_METADATA_IGNORE_CASE, true),
                     parameters.is(Parameters.DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND, false));
+            
             if (cachedTable != null) {
                 cachedModel.removeTable(cachedTable);
             }

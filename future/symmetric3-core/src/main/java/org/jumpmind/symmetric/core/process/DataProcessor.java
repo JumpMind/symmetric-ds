@@ -4,16 +4,31 @@ import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
 
-public class DataProcessor {
+public class DataProcessor<T extends DataContext> {
 
-    protected IDataReader<DataContext> dataReader;
-    protected IDataWriter<DataContext> dataWriter;
+    protected IDataReader<T> dataReader;
+    protected IDataWriter<T> dataWriter;
     protected IDataProcessorListener listener;
     protected IDataWriterErrorHandler errorHandler;
 
+    public DataProcessor() {
+    }
+
+    public DataProcessor(IDataReader<T> dataReader, IDataWriter<T> dataWriter) {
+        this(dataReader, dataWriter, null, null);
+    }
+
+    public DataProcessor(IDataReader<T> dataReader, IDataWriter<T> dataWriter,
+            IDataProcessorListener listener, IDataWriterErrorHandler errorHandler) {
+        this.dataReader = dataReader;
+        this.dataWriter = dataWriter;
+        this.listener = listener;
+        this.errorHandler = errorHandler;
+    }
+
     public void process() {
-        DataContext readerContext = dataReader.createDataContext();
-        DataContext writerContext = dataWriter.createDataContext();
+        T readerContext = dataReader.createDataContext();
+        T writerContext = dataWriter.createDataContext();
         dataReader.open(readerContext);
         boolean dataWriterOpened = false;
         Batch batch = null;
@@ -26,7 +41,7 @@ public class DataProcessor {
                 if (processBatch) {
                     writerContext.setBatch(batch);
                     if (!dataWriterOpened) {
-                        writerContext.setBinaryEncoding(readerContext.getBinaryEncoding());                        
+                        writerContext.setBinaryEncoding(readerContext.getBinaryEncoding());
                         dataWriter.open(writerContext);
                     }
                     dataWriter.startBatch(writerContext);
@@ -41,8 +56,8 @@ public class DataProcessor {
         } while (batch != null);
     }
 
-    protected int forEachTableInBatch(boolean processBatch, Batch batch, DataContext readerContext,
-            DataContext writerContext) {
+    protected int forEachTableInBatch(boolean processBatch, Batch batch, T readerContext,
+            T writerContext) {
         int dataRow = 0;
         Table table = null;
         do {
@@ -59,8 +74,8 @@ public class DataProcessor {
         return dataRow;
     }
 
-    protected int forEachDataInTable(boolean processBatch, Batch batch, DataContext readerContext,
-            DataContext writerContext) {
+    protected int forEachDataInTable(boolean processBatch, Batch batch, T readerContext,
+            T writerContext) {
         int dataRow = 0;
         Data data = null;
         do {

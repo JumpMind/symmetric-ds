@@ -1,7 +1,14 @@
 package org.jumpmind.symmetric.core.common;
 
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
 public class StringUtils {
 
+    private static Pattern pattern = Pattern.compile("\\$\\((.+?)\\)");
+    
     /**
      * <p>The maximum size to which the padding constant(s) can expand.</p>
      */
@@ -157,6 +164,26 @@ public class StringUtils {
         }
         return true;
     }
+    
+    /**
+     * <p>Checks if a String is not empty (""), not null and not whitespace only.</p>
+     *
+     * <pre>
+     * StringUtils.isNotBlank(null)      = false
+     * StringUtils.isNotBlank("")        = false
+     * StringUtils.isNotBlank(" ")       = false
+     * StringUtils.isNotBlank("bob")     = true
+     * StringUtils.isNotBlank("  bob  ") = true
+     * </pre>
+     *
+     * @param str  the String to check, may be null
+     * @return <code>true</code> if the String is
+     *  not empty and not null and not whitespace
+     * @since 2.0
+     */
+    public static boolean isNotBlank(String str) {
+        return !StringUtils.isBlank(str);
+    }    
     
     /**
      * <p>Converts a String to upper case as per {@link String#toUpperCase()}.</p>
@@ -370,5 +397,45 @@ public class StringUtils {
      */
     public static boolean equalsIgnoreCase(String str1, String str2) {
         return str1 == null ? str2 == null : str1.equalsIgnoreCase(str2);
-    }    
+    }   
+
+    public static String replaceTokens(String text, Map<String, String> replacements,
+            boolean matchUsingPrefixSuffix) {
+        if (replacements != null && replacements.size() > 0) {
+            if (matchUsingPrefixSuffix) {
+                Matcher matcher = pattern.matcher(text);
+                StringBuffer buffer = new StringBuffer();
+                while (matcher.find()) {
+                    String[] match = matcher.group(1).split("\\|");
+                    String replacement = replacements.get(match[0]);
+                    if (replacement != null) {
+                        matcher.appendReplacement(buffer, "");
+                        if (match.length == 2) {
+                            replacement = formatString(match[1], replacement);
+                        }
+                        buffer.append(replacement);
+                    }
+                }
+                matcher.appendTail(buffer);
+                text = buffer.toString();
+            } else {
+                for (Object key : replacements.keySet()) {
+                    text = text.replaceAll(key.toString(), replacements.get(key));
+                }
+            }
+        }
+        return text;
+
+    }
+
+    public static String formatString(String format, String arg) {
+        if (format.indexOf("d") >= 0 || format.indexOf("u") >= 0 || format.indexOf("i") >= 0) {
+            return String.format(format, Long.parseLong(arg));
+        } else if (format.indexOf("e") >= 0 || format.indexOf("f") >= 0) {
+            return String.format(format, Double.valueOf(arg));
+        } else {
+            return String.format(format, arg);
+        }
+    }
+    
 }

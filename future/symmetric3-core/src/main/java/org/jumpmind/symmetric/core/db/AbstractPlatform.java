@@ -20,11 +20,12 @@ import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.sql.SqlScript;
 
 abstract public class AbstractPlatform implements IPlatform {
 
     protected final Log log = LogFactory.getLog(getClass());
-    
+
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
     public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S",
@@ -32,19 +33,25 @@ abstract public class AbstractPlatform implements IPlatform {
 
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
             "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
-    
+
     protected PlatformInfo platformInfo = new PlatformInfo();
 
     protected Database cachedModel = new Database();
-    
+
     protected String defaultSchema;
 
     protected String defaultCatalog;
-    
+
     protected SqlBuilder sqlBuilder;
 
     public SqlBuilder getSqlBuilder() {
         return sqlBuilder;
+    }
+
+    public void alter(boolean failOnError, Table... tables) {
+        String alterSql = getAlterScriptFor(tables);
+        SqlScript script = new SqlScript(alterSql, this, failOnError, ";", null);
+        script.execute();
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
@@ -69,10 +76,12 @@ abstract public class AbstractPlatform implements IPlatform {
                             objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
                         } else if (type == Types.CHAR) {
                             String charValue = value.toString();
-                            if ((StringUtils.isBlank(charValue) && platformInfo.isBlankCharColumnSpacePadded()) || 
-                                (!StringUtils.isBlank(charValue) && platformInfo.isNonBlankCharColumnSpacePadded())) {
-                                objectValue = StringUtils.rightPad(value.toString(), column
-                                        .getSizeAsInt(), ' ');
+                            if ((StringUtils.isBlank(charValue) && platformInfo
+                                    .isBlankCharColumnSpacePadded())
+                                    || (!StringUtils.isBlank(charValue) && platformInfo
+                                            .isNonBlankCharColumnSpacePadded())) {
+                                objectValue = StringUtils.rightPad(value.toString(),
+                                        column.getSizeAsInt(), ' ');
                             }
                         } else if (type == Types.INTEGER || type == Types.SMALLINT
                                 || type == Types.BIT) {
@@ -103,19 +112,19 @@ abstract public class AbstractPlatform implements IPlatform {
                     list.add(objectValue);
                 }
             } catch (Exception ex) {
-                log.log(LogLevel.ERROR, "Could not convert a value of %s for column %s of type %s", value, column.getName(),
-                        column.getType());
+                log.log(LogLevel.ERROR, "Could not convert a value of %s for column %s of type %s",
+                        value, column.getName(), column.getType());
                 throw new RuntimeException(ex);
             }
         }
-        
+
         return list.toArray();
     }
-    
+
     protected Array createArray(Column column, final String value) {
         return null;
     }
-       
+
     final private java.util.Date getDate(String value, String[] pattern) {
         try {
             return DateUtils.parseDate(value, pattern);
@@ -128,8 +137,6 @@ abstract public class AbstractPlatform implements IPlatform {
         return getDate(value, pattern).getTime();
     }
 
-
-    
     public PlatformInfo getPlatformInfo() {
         return platformInfo;
     }
@@ -199,7 +206,7 @@ abstract public class AbstractPlatform implements IPlatform {
         result.append(name.substring(startCut + delta + 1, originalLength));
         return result.toString();
     }
-    
+
     public void resetCachedTableModel() {
         synchronized (this.getClass()) {
             this.cachedModel.resetTableIndexCache();
@@ -210,7 +217,7 @@ abstract public class AbstractPlatform implements IPlatform {
                 }
             }
         }
-    }    
+    }
 
     public String getDefaultCatalog() {
         return defaultCatalog;
@@ -227,5 +234,5 @@ abstract public class AbstractPlatform implements IPlatform {
     public void setDefaultSchema(String defaultSchema) {
         this.defaultSchema = defaultSchema;
     }
-    
+
 }

@@ -7,12 +7,15 @@ import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.sql.ISqlConnection;
 
 public interface IPlatform {    
 
     public PlatformInfo getPlatformInfo();
     
     public String getAlterScriptFor(Table... tables);
+    
+    public void alter(boolean failOnError, Table... tables);
     
     public Database findDatabase(String catalogName, String schemaName);
     
@@ -30,6 +33,8 @@ public interface IPlatform {
     public String getDefaultSchema();
     
     public SqlBuilder getSqlBuilder();
+    
+    public ISqlConnection getSqlConnection();
 
     /**
      * Returns the constraint name. This method takes care of length limitations

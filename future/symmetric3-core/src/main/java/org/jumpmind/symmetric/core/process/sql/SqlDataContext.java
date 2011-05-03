@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.jdbc.process;
+package org.jumpmind.symmetric.core.process.sql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,9 +10,9 @@ import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.DataEventType;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataContext;
-import org.jumpmind.symmetric.jdbc.sql.StatementBuilder;
+import org.jumpmind.symmetric.core.sql.StatementBuilder;
 
-public class JdbcDataContext extends DataContext {
+public class SqlDataContext extends DataContext {
 
     protected Connection connection;
 

@@ -85,12 +85,13 @@ public class Column implements Cloneable, Serializable {
     public Column() {     
     }
     
-    public Column(String name, String type, String size, boolean autoincrement, boolean required) {
+    public Column(String name, String type, String size, boolean autoincrement, boolean required, boolean primaryKey) {
         setName(name);
         setType(type);
         setSize(size);
         setAutoIncrement(autoincrement);
         setRequired(required);
+        setPrimaryKey(primaryKey);
     }
     
     /**

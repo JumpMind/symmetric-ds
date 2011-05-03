@@ -41,7 +41,6 @@ public class H2Platform extends AbstractJdbcPlatform {
         platformInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         platformInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
-        platformInfo.setStoresUpperCaseNamesInCatalog(true);
         platformInfo.setDateOverridesToTimestamp(false);
         platformInfo.setEmptyStringNulled(false);
         platformInfo.setBlankCharColumnSpacePadded(true);

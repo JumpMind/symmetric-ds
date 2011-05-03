@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.jdbc.tools.copy;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.io.FileUtils;
-import org.jumpmind.symmetric.jdbc.sql.Template;
+import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 import org.junit.Test;
 
 public class TableCopyPropertiesTest {
@@ -19,7 +19,7 @@ public class TableCopyPropertiesTest {
         FileUtils.deleteDirectory("target/h2");
         TableCopyProperties properties = new TableCopyProperties("src/test/resources/test-tablecopy.properties");
         DataSource dataSource = properties.getTargetDataSource();
-        Template template = new Template(dataSource);
+        JdbcSqlConnection template = new JdbcSqlConnection(dataSource);
         template.update("create table test (test varchar(100))");
     }
 }
