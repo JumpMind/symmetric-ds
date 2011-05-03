@@ -1,16 +1,16 @@
-package org.jumpmind.symmetric.jdbc.tools.copy;
+package org.jumpmind.symmetric.core.process.sql;
 
 import org.jumpmind.symmetric.core.model.Table;
 
-public class TableToCopy {
+public class TableToRead {
 
     private Table table;
     private String condition;
 
-    public TableToCopy() {
+    public TableToRead() {
     }
 
-    public TableToCopy(Table table, String condition) {
+    public TableToRead(Table table, String condition) {
         this.table = table;
         this.condition = condition;
     }

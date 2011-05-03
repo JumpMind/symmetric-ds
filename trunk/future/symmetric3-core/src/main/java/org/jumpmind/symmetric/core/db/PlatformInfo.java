@@ -47,11 +47,7 @@ public class PlatformInfo {
 
     /** Whether delimited identifiers are used or not. */
     private boolean delimitedIdentifierModeOn = false;
-    
-    private boolean storesUpperCaseNamesInCatalog = false;
-    
-    private boolean storesLowerCaseNamesInCatalog = false;
-    
+       
     private boolean emptyStringNulled = false;
     
     private boolean blankCharColumnSpacePadded = false;
@@ -1151,23 +1147,7 @@ public class PlatformInfo {
     
     public boolean isDelimitedIdentifierModeOn() {
         return delimitedIdentifierModeOn;
-    }
-    
-    public void setStoresLowerCaseNamesInCatalog(boolean storesLowerCaseNamesInCatalog) {
-        this.storesLowerCaseNamesInCatalog = storesLowerCaseNamesInCatalog;
-    }
-    
-    public void setStoresUpperCaseNamesInCatalog(boolean storesUpperCaseNamesInCatalog) {
-        this.storesUpperCaseNamesInCatalog = storesUpperCaseNamesInCatalog;
-    }
-    
-    public boolean isStoresLowerCaseNamesInCatalog() {
-        return storesLowerCaseNamesInCatalog;
-    }
-    
-    public boolean isStoresUpperCaseNamesInCatalog() {
-        return storesUpperCaseNamesInCatalog;
-    }
+    }    
     
     public boolean isDateOverridesToTimestamp() {
         return dateOverridesToTimestamp;

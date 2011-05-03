@@ -4,33 +4,51 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.core.common.Log;
+import org.jumpmind.symmetric.core.common.LogFactory;
+import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.db.DbException;
 import org.jumpmind.symmetric.core.db.DbIntegrityViolationException;
+import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
 import org.jumpmind.symmetric.jdbc.db.JdbcPlatformFactory;
 
-public class Template {
+public class JdbcSqlConnection implements ISqlConnection {
+
+    static final Log log = LogFactory.getLog(JdbcSqlConnection.class);
 
     protected DataSource dataSource;
+
     protected IJdbcPlatform platform;
 
-    public Template(DataSource dataSource) {
+    public JdbcSqlConnection(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public Template(IJdbcPlatform platform, DataSource dataSource) {
+    public JdbcSqlConnection(IJdbcPlatform platform, DataSource dataSource) {
         this.dataSource = dataSource;
         this.platform = platform;
     }
 
-    public IJdbcPlatform getPlatform() {
+    public IPlatform getPlatform() {
         if (this.platform == null) {
             this.platform = JdbcPlatformFactory.createPlatform(dataSource);
         }
         return this.platform;
+    }
+
+    public int queryForInt(String sql) {
+        Number number = queryForObject(sql, Number.class);
+        if (number != null) {
+            return number.intValue();
+        } else {
+            return 0;
+        }
     }
 
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
@@ -55,11 +73,11 @@ public class Template {
             }
         });
     }
-    
+
     public int update(String sql) {
         return update(sql, null, null);
     }
-    
+
     public int update(final String sql, final Object[] values, final int[] types) {
         return execute(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
@@ -67,11 +85,59 @@ public class Template {
                 try {
                     ps = con.prepareStatement(sql);
                     if (values != null) {
-                        StatementCreatorUtil.setValues(ps, values, types, getPlatform().getLobHandler());
+                        StatementCreatorUtil.setValues(ps, values, types,
+                                ((IJdbcPlatform) getPlatform()).getLobHandler());
                     }
                     return ps.executeUpdate();
                 } finally {
                     close(ps);
+                }
+            }
+        });
+    }
+
+    public int update(String... sql) {
+        return update(true, true, -1, sql);
+    }
+
+    public int update(final boolean autoCommit, final boolean failOnError, final int commitRate,
+            final String... sql) {
+        return execute(new IConnectionCallback<Integer>() {
+            public Integer execute(Connection con) throws SQLException {
+                int updateCount = 0;
+                boolean oldAutoCommitSetting = con.getAutoCommit();
+                Statement stmt = null;
+                try {
+                    con.setAutoCommit(autoCommit);
+                    stmt = con.createStatement();
+                    int statementCount = 0;
+                    for (String statement : sql) {
+                        try {
+                            updateCount += stmt.executeUpdate(statement);
+                            statementCount++;
+                            if (statementCount % commitRate == 0 && !autoCommit) {
+                                con.commit();
+                            }
+                        } catch (SQLException ex) {
+                            if (!failOnError) {
+                                log.log(LogLevel.WARN, "%s.  Failed to execute: %s.",
+                                        ex.getMessage(), sql);
+                            }
+                        }
+                    }
+
+                    if (!autoCommit) {
+                        con.commit();
+                    }
+                    return updateCount;
+                } catch (SQLException ex) {
+                    if (!autoCommit) {
+                        con.rollback();
+                    }
+                    throw ex;
+                } finally {
+                    close(stmt);
+                    con.setAutoCommit(oldAutoCommitSetting);
                 }
             }
         });
@@ -115,6 +181,15 @@ public class Template {
         }
     }
 
+    public static void close(Statement stmt) {
+        try {
+            if (stmt != null) {
+                stmt.close();
+            }
+        } catch (SQLException ex) {
+        }
+    }
+
     public static void close(Connection c) {
         try {
             if (c != null) {
@@ -124,7 +199,7 @@ public class Template {
         }
     }
 
-    public DbException translate(SQLException ex) {
+    public DbException translate(Exception ex) {
         if (getPlatform().isDataIntegrityException(ex)) {
             return new DbIntegrityViolationException(ex);
         } else {

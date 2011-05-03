@@ -7,7 +7,7 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.oracle.OracleSqlBuilder;
 import org.jumpmind.symmetric.jdbc.db.AbstractJdbcPlatform;
-import org.jumpmind.symmetric.jdbc.sql.Template;
+import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
 public class OraclePlatform extends AbstractJdbcPlatform {
 
@@ -55,7 +55,6 @@ public class OraclePlatform extends AbstractJdbcPlatform {
         platformInfo.setDefaultSize(Types.BINARY, 254);
         platformInfo.setDefaultSize(Types.VARBINARY, 254);
 
-        platformInfo.setStoresUpperCaseNamesInCatalog(true);
         platformInfo.setDateOverridesToTimestamp(true);
         platformInfo.setEmptyStringNulled(true);
         platformInfo.setBlankCharColumnSpacePadded(true);
@@ -69,7 +68,7 @@ public class OraclePlatform extends AbstractJdbcPlatform {
     @Override
     public String getDefaultSchema() {
         if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) new Template(this, dataSource).queryForObject(
+            this.defaultSchema = (String) new JdbcSqlConnection(this, dataSource).queryForObject(
                     "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
         }
         return defaultSchema;

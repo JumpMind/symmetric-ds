@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.core.io;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -7,6 +8,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 abstract public class IoUtils {
 
@@ -52,6 +55,37 @@ abstract public class IoUtils {
             }
         } catch (IOException ioe) {
             // ignore
+        }
+    }
+
+    /**
+     * Get the contents of a <code>Reader</code> as a list of Strings, one entry
+     * per line.
+     * <p>
+     * This method buffers the input internally, so there is no need to use a
+     * <code>BufferedReader</code>.
+     * 
+     * @param input
+     *            the <code>Reader</code> to read from, not null
+     * @return the list of Strings, never null
+     * @throws NullPointerException
+     *             if the input is null
+     * @throws IoException
+     *             if an I/O error occurs
+     * @since Commons IO 1.1
+     */
+    public static List<String> readLines(Reader input) {
+        try {
+            BufferedReader reader = new BufferedReader(input);
+            List<String> list = new ArrayList<String>();
+            String line = reader.readLine();
+            while (line != null) {
+                list.add(line);
+                line = reader.readLine();
+            }
+            return list;
+        } catch (IOException ex) {
+            throw new IoException(ex);
         }
     }
 

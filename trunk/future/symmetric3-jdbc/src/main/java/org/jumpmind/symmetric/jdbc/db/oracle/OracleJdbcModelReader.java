@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.jdbc.db.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
 import org.jumpmind.symmetric.jdbc.db.JdbcModelReader;
-import org.jumpmind.symmetric.jdbc.sql.Template;
+import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
 public class OracleJdbcModelReader extends JdbcModelReader {
 
@@ -211,8 +211,8 @@ public class OracleJdbcModelReader extends JdbcModelReader {
                 return false;
             }
             // we have a trigger, so lets check the sequence
-            Template.close(resultSet);
-            Template.close(prepStmt);
+            JdbcSqlConnection.close(resultSet);
+            JdbcSqlConnection.close(prepStmt);
 
             prepStmt = c.prepareStatement("SELECT * FROM user_sequences WHERE sequence_name = ?");
             prepStmt.setString(1, seqName);
@@ -220,8 +220,8 @@ public class OracleJdbcModelReader extends JdbcModelReader {
             resultSet = prepStmt.executeQuery();
             return resultSet.next();
         } finally {
-            Template.close(resultSet);
-            Template.close(prepStmt);
+            JdbcSqlConnection.close(resultSet);
+            JdbcSqlConnection.close(prepStmt);
         }
     }
 

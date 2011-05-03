@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.jdbc.process;
+package org.jumpmind.symmetric.core.process.sql;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -9,6 +9,7 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.db.DbException;
+import org.jumpmind.symmetric.core.db.IPlatform;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.DataEventType;
@@ -18,18 +19,17 @@ import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.IColumnFilter;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
-import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
-import org.jumpmind.symmetric.jdbc.sql.StatementBuilder;
-import org.jumpmind.symmetric.jdbc.sql.StatementBuilder.DmlType;
-import org.jumpmind.symmetric.jdbc.sql.Template;
+import org.jumpmind.symmetric.core.sql.ISqlConnection;
+import org.jumpmind.symmetric.core.sql.StatementBuilder;
+import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
 
-public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
+public class SqlDataWriter implements IDataWriter<SqlDataContext> {
 
     final Log log = LogFactory.getLog(getClass());
 
     protected DataSource dataSource;
 
-    protected IJdbcPlatform platform;
+    protected IPlatform platform;
 
     protected Parameters parameters;
 
@@ -37,9 +37,9 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
 
     protected List<IDataFilter<DataContext>> dataFilters;
 
-    protected Template template;
+    protected ISqlConnection template;
 
-    public JdbcDataWriter(DataSource dataSource, IJdbcPlatform platform, Parameters parameters,
+    public SqlDataWriter(DataSource dataSource, IPlatform platform, Parameters parameters,
             List<IColumnFilter<DataContext>> columnFilters,
             List<IDataFilter<DataContext>> dataFilters) {
         this.dataSource = dataSource;
@@ -47,14 +47,14 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
         this.parameters = parameters != null ? parameters : new Parameters();
         this.columnFilters = columnFilters;
         this.dataFilters = dataFilters;
-        this.template = new Template(dataSource);
+        this.template = platform.getSqlConnection();
     }
 
-    public JdbcDataContext createDataContext() {
-        return new JdbcDataContext();
+    public SqlDataContext createDataContext() {
+        return new SqlDataContext();
     }
 
-    public void open(JdbcDataContext context) {
+    public void open(SqlDataContext context) {
         try {
             context.setConnection(dataSource.getConnection());
             context.setOldAutoCommitValue(context.getConnection().getAutoCommit());
@@ -64,7 +64,7 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
         }
     }
 
-    public boolean switchTables(JdbcDataContext context) {
+    public boolean switchTables(SqlDataContext context) {
         Table sourceTable = context.getSourceTable();
         if (sourceTable != null) {
             Table targetTable = platform.findTable(sourceTable.getCatalogName(),
@@ -87,10 +87,10 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
 
     }
 
-    public void startBatch(JdbcDataContext context) {
+    public void startBatch(SqlDataContext context) {
     }
 
-    public void writeData(Data data, JdbcDataContext ctx) {
+    public void writeData(Data data, SqlDataContext ctx) {
         if (data.getEventType() == DataEventType.INSERT) {
             StatementBuilder st = getStatementBuilder(DmlType.INSERT, ctx, data);
             execute(ctx, st, data);
@@ -99,7 +99,7 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
         // check if an early commit needs to happen
     }
 
-    protected int execute(JdbcDataContext ctx, StatementBuilder st, Data data) {
+    protected int execute(SqlDataContext ctx, StatementBuilder st, Data data) {
         Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(),
                 data.toParsedRowData(), st.getMetaData(true));
         if (columnFilters != null) {
@@ -111,7 +111,7 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
         return template.update(st.getSql(), objectValues, st.getTypes());
     }
 
-    final private StatementBuilder getStatementBuilder(DmlType dmlType, JdbcDataContext ctx,
+    final private StatementBuilder getStatementBuilder(DmlType dmlType, SqlDataContext ctx,
             Data data) {
         Table targetTable = ctx.getTargetTable();
         Column[] statementColumns = targetTable.getColumns();
@@ -139,11 +139,11 @@ public class JdbcDataWriter implements IDataWriter<JdbcDataContext> {
         return st;
     }
 
-    public void close(JdbcDataContext context) {
+    public void close(SqlDataContext context) {
         context.close();
     }
 
-    public void finishBatch(JdbcDataContext context) {
+    public void finishBatch(SqlDataContext context) {
         context.commit();
     }
 

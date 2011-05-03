@@ -22,6 +22,11 @@ public class DefaultLog extends Log {
     }
 
     @Override
+    public void error(Throwable ex) {
+        log(LogLevel.ERROR, ex);
+    }
+
+    @Override
     public void debug(String msg) {
         log(LogLevel.DEBUG, msg);
     }

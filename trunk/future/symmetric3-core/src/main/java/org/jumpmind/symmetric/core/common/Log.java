@@ -13,7 +13,9 @@ abstract public class Log {
     
     public abstract void debug(String msg);
     
-    public abstract boolean isDebugEnabled();    
+    public abstract boolean isDebugEnabled();
+    
+    public abstract void error(Throwable ex);
     
     protected void initialize(Class<?> clazz) {
         this.clazz = clazz;
