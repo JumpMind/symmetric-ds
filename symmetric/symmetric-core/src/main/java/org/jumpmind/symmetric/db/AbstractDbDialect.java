@@ -85,6 +85,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -452,6 +453,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     return table;
                 }
             });
+        } catch (DataAccessResourceFailureException ex) {
+            log.debug("Message", ex.getMessage());
         } catch (TransientDataAccessResourceException ex) {
             log.debug("Message", ex.getMessage());
         }

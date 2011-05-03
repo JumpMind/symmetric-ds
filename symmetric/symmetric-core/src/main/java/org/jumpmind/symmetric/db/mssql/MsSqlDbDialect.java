@@ -251,8 +251,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public boolean storesUpperCaseNamesInCatalog() {
-        return true;
-    }
+        return parameterService.is(ParameterConstants.STORES_UPPERCASE_NAMES_IN_CATALOG, true);
+    }    
 
     public boolean needsToSelectLobData() {
         return true;
