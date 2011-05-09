@@ -6,22 +6,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.ForeignKey;
 import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.jdbc.db.DatabaseMetaDataWrapper;
-import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
+import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
 import org.jumpmind.symmetric.jdbc.db.JdbcModelReader;
 import org.jumpmind.symmetric.jdbc.db.MetaDataColumnDescriptor;
 
 public class H2JdbcModelReader extends JdbcModelReader {
 
-    public H2JdbcModelReader(IJdbcPlatform platform, DataSource dataSource) {
-        super(platform, dataSource);
+    public H2JdbcModelReader(IJdbcDbPlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }

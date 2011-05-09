@@ -286,6 +286,10 @@ abstract public class TriggerBuilder {
                 && defaultCatalog != null && defaultCatalog.length() > 0 ? defaultCatalog + "."
                 : "", sql);
     }
+    
+    public String createTableExtractSql(TableToExtract tableToExtract, boolean supportsBigLobs) {
+        return createTableExtractSql(tableToExtract, null, supportsBigLobs);
+    }
 
     public String createTableExtractSql(TableToExtract tableToExtract,
             Map<String, String> replacementTokens, boolean supportsBigLobs) {

@@ -59,8 +59,9 @@ public class OracleDbPlatform extends AbstractJdbcDbPlatform {
         platformInfo.setEmptyStringNulled(true);
         platformInfo.setBlankCharColumnSpacePadded(true);
         platformInfo.setNonBlankCharColumnSpacePadded(true);
-
-        this.jdbcModelReader = new OracleJdbcModelReader(this, dataSource);
+        platformInfo.setRequiresAutoCommitFalseToSetFetchSize(false);
+        
+        this.jdbcModelReader = new OracleJdbcModelReader(this);
         this.sqlBuilder = new OracleSqlBuilder(this);
 
     }

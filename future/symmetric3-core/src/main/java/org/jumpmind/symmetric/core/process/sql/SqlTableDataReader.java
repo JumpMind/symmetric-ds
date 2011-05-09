@@ -1,10 +1,13 @@
 package org.jumpmind.symmetric.core.process.sql;
 
 import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.TriggerBuilder;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.IDataReader;
+import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
 import org.jumpmind.symmetric.core.sql.mapper.DataMapper;
 
@@ -15,15 +18,15 @@ public class SqlTableDataReader implements IDataReader<SqlDataContext> {
     };
 
     protected TableToExtract tableToRead;
-    protected IDbPlatform platform;
+    protected IDbPlatform dbPlatform;
     protected Batch batch;
     protected Status status = Status.New;
     protected ISqlReadCursor<Data> readCursor;
 
-    public SqlTableDataReader(IDbPlatform platform, Batch batch, TableToExtract tableToRead) {
-        validateArgs(platform, batch, tableToRead);
+    public SqlTableDataReader(IDbPlatform dbPlatform, Batch batch, TableToExtract tableToRead) {
+        validateArgs(dbPlatform, batch, tableToRead);
         this.tableToRead = tableToRead;
-        this.platform = platform;
+        this.dbPlatform = dbPlatform;
         this.batch = batch;
     }
 
@@ -66,9 +69,11 @@ public class SqlTableDataReader implements IDataReader<SqlDataContext> {
         Data data = null;
         if (status == Status.TableStarted) {
             status = Status.DataStarted;
-            // TODO sql template?
-            this.readCursor = this.platform.getSqlConnection().queryForObject(null,
-                    new DataMapper());
+            ISqlConnection connection = this.dbPlatform.getSqlConnection();
+            TriggerBuilder triggerBuilder = this.dbPlatform.getTriggerBuilder();
+            String sql = triggerBuilder.createTableExtractSql(tableToRead, this.dbPlatform
+                    .getParameters().is(Parameters.DB_SUPPORT_BIG_LOBS, false));
+            this.readCursor = connection.query(sql, new DataMapper());
         }
         if (readCursor != null) {
             data = readCursor.next();

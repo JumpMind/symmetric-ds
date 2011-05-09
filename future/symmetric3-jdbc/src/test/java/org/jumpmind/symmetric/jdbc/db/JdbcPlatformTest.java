@@ -27,17 +27,17 @@ public class JdbcPlatformTest {
 
     @Test
     public void testJdbcPlatformFactory() {
-        IJdbcPlatform platform = getPlatform();
+        IJdbcDbPlatform platform = getPlatform();
         Assert.assertNotNull(platform);
     }
     
-    protected IJdbcPlatform getPlatform() {
+    protected IJdbcDbPlatform getPlatform() {
         return JdbcDbPlatformFactory.createPlatform(dataSource);
     }
     
     @Test
     public void testCreateTable() {
-        IJdbcPlatform platform = getPlatform();
+        IJdbcDbPlatform platform = getPlatform();
         Table table = new Table("test",
                 new Column("test_id", TypeMap.NUMERIC, "10,2", false, true, true));
         ISqlConnection sqlConnection = platform.getSqlConnection();

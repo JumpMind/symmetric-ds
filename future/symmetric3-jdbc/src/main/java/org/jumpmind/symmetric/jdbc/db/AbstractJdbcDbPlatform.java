@@ -13,17 +13,15 @@ import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.jdbc.sql.ILobHandler;
 import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
-abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implements IJdbcPlatform {
+abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implements IJdbcDbPlatform {
 
     protected DataSource dataSource;
 
-    protected JdbcModelReader jdbcModelReader;
-    
-    protected Parameters parameters;
+    protected JdbcModelReader jdbcModelReader;   
 
     public AbstractJdbcDbPlatform(DataSource dataSource, Parameters parameters) {
+        super(parameters);
         this.dataSource = dataSource;
-        this.parameters = parameters == null ? new Parameters() : parameters;
     }
     
     public ISqlConnection getSqlConnection() {
