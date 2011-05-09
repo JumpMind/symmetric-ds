@@ -9,9 +9,9 @@ import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
 
-public interface IPlatform {    
-
-    public PlatformInfo getPlatformInfo();
+public interface IDbPlatform {    
+    
+    public DbPlatformInfo getPlatformInfo();
     
     public String getAlterScriptFor(Table... tables);
     
@@ -35,6 +35,8 @@ public interface IPlatform {
     public SqlBuilder getSqlBuilder();
     
     public ISqlConnection getSqlConnection();
+    
+    public TriggerBuilder getTriggerBuilder();
 
     /**
      * Returns the constraint name. This method takes care of length limitations

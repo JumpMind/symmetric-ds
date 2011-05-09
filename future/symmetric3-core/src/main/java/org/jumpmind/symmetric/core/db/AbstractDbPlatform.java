@@ -22,7 +22,7 @@ import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.sql.SqlScript;
 
-abstract public class AbstractPlatform implements IPlatform {
+abstract public class AbstractDbPlatform implements IDbPlatform {
 
     protected final Log log = LogFactory.getLog(getClass());
 
@@ -34,7 +34,7 @@ abstract public class AbstractPlatform implements IPlatform {
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
             "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
 
-    protected PlatformInfo platformInfo = new PlatformInfo();
+    protected DbPlatformInfo platformInfo = new DbPlatformInfo();
 
     protected Database cachedModel = new Database();
 
@@ -43,6 +43,12 @@ abstract public class AbstractPlatform implements IPlatform {
     protected String defaultCatalog;
 
     protected SqlBuilder sqlBuilder;
+    
+    protected TriggerBuilder triggerBuilder;
+    
+    public TriggerBuilder getTriggerBuilder() {
+        return triggerBuilder;
+    }
 
     public SqlBuilder getSqlBuilder() {
         return sqlBuilder;
@@ -137,7 +143,7 @@ abstract public class AbstractPlatform implements IPlatform {
         return getDate(value, pattern).getTime();
     }
 
-    public PlatformInfo getPlatformInfo() {
+    public DbPlatformInfo getPlatformInfo() {
         return platformInfo;
     }
 

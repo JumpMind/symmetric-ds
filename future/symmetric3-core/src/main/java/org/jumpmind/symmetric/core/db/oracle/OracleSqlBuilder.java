@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.db.SqlBuilder;
 import org.jumpmind.symmetric.core.db.alter.AddColumnChange;
 import org.jumpmind.symmetric.core.db.alter.AddPrimaryKeyChange;
@@ -61,7 +61,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      * @param platform
      *            The platform this builder belongs to
      */
-    public OracleSqlBuilder(IPlatform platform) {
+    public OracleSqlBuilder(IDbPlatform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
 

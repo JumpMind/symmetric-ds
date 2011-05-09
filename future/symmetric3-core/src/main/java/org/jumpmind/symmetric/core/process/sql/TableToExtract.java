@@ -2,15 +2,15 @@ package org.jumpmind.symmetric.core.process.sql;
 
 import org.jumpmind.symmetric.core.model.Table;
 
-public class TableToRead {
+public class TableToExtract {
 
     private Table table;
     private String condition;
 
-    public TableToRead() {
+    public TableToExtract() {
     }
 
-    public TableToRead(Table table, String condition) {
+    public TableToExtract(Table table, String condition) {
         this.table = table;
         this.condition = condition;
     }

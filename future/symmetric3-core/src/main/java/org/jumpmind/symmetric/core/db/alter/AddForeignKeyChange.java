@@ -19,10 +19,10 @@ package org.jumpmind.symmetric.core.db.alter;
  * under the License.
  */
 
-import org.jumpmind.symmetric.core.db.DbException;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.ForeignKey;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.sql.DbException;
 
 /**
  * Represents the addition of a foreign key to a table. Note that for simplicity

@@ -30,7 +30,7 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.core.common.EqualsBuilder;
 import org.jumpmind.symmetric.core.common.HashCodeBuilder;
-import org.jumpmind.symmetric.core.db.DbException;
+import org.jumpmind.symmetric.core.sql.DbException;
 
 /**
  * Represents the database model, ie. the tables in the database. It also

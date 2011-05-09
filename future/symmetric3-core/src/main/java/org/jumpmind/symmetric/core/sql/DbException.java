@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.core.db;
+package org.jumpmind.symmetric.core.sql;
 
 public class DbException extends RuntimeException {
 

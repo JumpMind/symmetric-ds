@@ -70,6 +70,7 @@ import org.jumpmind.symmetric.core.model.IndexColumn;
 import org.jumpmind.symmetric.core.model.Reference;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
+import org.jumpmind.symmetric.core.sql.DbException;
 
 /**
  * This class is a collection of Strategy methods for creating the DDL required
@@ -83,10 +84,9 @@ import org.jumpmind.symmetric.core.model.TypeMap;
  * technology such as Velocity if it requires. Though often that can be quite
  * complex when attempting to reuse code across many databases. Hopefully only a
  * small amount code needs to be changed on a per database basis.
- * 
- * @version $Revision: 518498 $
  */
 public abstract class SqlBuilder {
+
     /** The line separator for in between sql commands. */
     private static final String LINESEPARATOR = System.getProperty("line.separator", "\n");
 
@@ -97,7 +97,7 @@ public abstract class SqlBuilder {
     protected final Log log = LogFactory.getLog(SqlBuilder.class);
 
     /** The platform that this builder belongs to. */
-    private IPlatform platform;
+    private IDbPlatform platform;
 
     /** The current Writer used to output the SQL to. */
     private Writer writer;
@@ -130,7 +130,7 @@ public abstract class SqlBuilder {
      * @param platform
      *            The platform this builder belongs to
      */
-    public SqlBuilder(IPlatform platform) {
+    public SqlBuilder(IDbPlatform platform) {
         this.platform = platform;
     }
 
@@ -139,7 +139,7 @@ public abstract class SqlBuilder {
      * 
      * @return The platform
      */
-    public IPlatform getPlatform() {
+    public IDbPlatform getPlatform() {
         return platform;
     }
 
@@ -148,7 +148,7 @@ public abstract class SqlBuilder {
      * 
      * @return The info object
      */
-    public PlatformInfo getPlatformInfo() {
+    public DbPlatformInfo getPlatformInfo() {
         return platform.getPlatformInfo();
     }
 
@@ -2566,4 +2566,5 @@ public abstract class SqlBuilder {
     protected String createUniqueIdentifier() {
         return new UID().toString().replace(':', '_').replace('-', '_');
     }
+    
 }

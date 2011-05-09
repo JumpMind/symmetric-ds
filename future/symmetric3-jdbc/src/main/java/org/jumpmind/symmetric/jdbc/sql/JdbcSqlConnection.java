@@ -11,34 +11,35 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
-import org.jumpmind.symmetric.core.db.DbException;
-import org.jumpmind.symmetric.core.db.DbIntegrityViolationException;
-import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.model.Parameters;
+import org.jumpmind.symmetric.core.sql.DbException;
+import org.jumpmind.symmetric.core.sql.DbIntegrityViolationException;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
+import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
+import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
 import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
-import org.jumpmind.symmetric.jdbc.db.JdbcPlatformFactory;
+import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
 
 public class JdbcSqlConnection implements ISqlConnection {
 
     static final Log log = LogFactory.getLog(JdbcSqlConnection.class);
 
-    protected DataSource dataSource;
 
     protected IJdbcPlatform platform;
+    
+    protected Parameters parameters;
 
     public JdbcSqlConnection(DataSource dataSource) {
-        this.dataSource = dataSource;
+        this.platform = JdbcDbPlatformFactory.createPlatform(dataSource);
     }
 
-    public JdbcSqlConnection(IJdbcPlatform platform, DataSource dataSource) {
-        this.dataSource = dataSource;
+    public JdbcSqlConnection(IJdbcPlatform platform, Parameters parameters) {
         this.platform = platform;
+        this.parameters = parameters;
     }
 
-    public IPlatform getPlatform() {
-        if (this.platform == null) {
-            this.platform = JdbcPlatformFactory.createPlatform(dataSource);
-        }
+    public IDbPlatform getPlatform() {
         return this.platform;
     }
 
@@ -49,6 +50,17 @@ public class JdbcSqlConnection implements ISqlConnection {
         } else {
             return 0;
         }
+    }
+    
+    public <T> ISqlReadCursor<T> queryForObject(String sql, ISqlRowMapper<T> mapper) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public <T> ISqlReadCursor<T> queryForObject(String sql, ISqlRowMapper<T> mapper,
+            Object[] values, int[] types) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
@@ -154,7 +166,7 @@ public class JdbcSqlConnection implements ISqlConnection {
     public <T> T execute(IConnectionCallback<T> callback) {
         Connection c = null;
         try {
-            c = dataSource.getConnection();
+            c = this.platform.getDataSource().getConnection();
             return callback.execute(c);
         } catch (SQLException ex) {
             throw translate(ex);
