@@ -9,8 +9,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.core.db.DbException;
 import org.jumpmind.symmetric.core.io.IoException;
+import org.jumpmind.symmetric.core.sql.DbException;
 import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
 public class DriverDataSourceProperties extends Properties {

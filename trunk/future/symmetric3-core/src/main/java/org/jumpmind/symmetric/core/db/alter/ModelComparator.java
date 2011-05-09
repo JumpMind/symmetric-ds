@@ -26,7 +26,7 @@ import java.util.List;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.PlatformInfo;
+import org.jumpmind.symmetric.core.db.DbPlatformInfo;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.ForeignKey;
@@ -46,7 +46,7 @@ public class ModelComparator {
     private final Log log = LogFactory.getLog(ModelComparator.class);
 
     /** The platform information. */
-    private PlatformInfo platformInfo;
+    private DbPlatformInfo platformInfo;
     /** Whether comparison is case sensitive. */
     private boolean caseSensitive;
 
@@ -58,7 +58,7 @@ public class ModelComparator {
      * @param caseSensitive
      *            Whether comparison is case sensitive
      */
-    public ModelComparator(PlatformInfo platformInfo, boolean caseSensitive) {
+    public ModelComparator(DbPlatformInfo platformInfo, boolean caseSensitive) {
         this.platformInfo = platformInfo;
         this.caseSensitive = caseSensitive;
     }

@@ -6,43 +6,44 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.io.IoUtils;
+import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataProcessor;
 import org.jumpmind.symmetric.core.process.sql.SqlDataContext;
 import org.jumpmind.symmetric.core.process.sql.SqlDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlTableDataReader;
-import org.jumpmind.symmetric.core.process.sql.TableToRead;
-import org.jumpmind.symmetric.jdbc.db.JdbcPlatformFactory;
+import org.jumpmind.symmetric.core.process.sql.TableToExtract;
+import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
 import org.jumpmind.symmetric.jdbc.tools.copy.TableCopyProperties;
 
 public class TableCopy {
 
     protected DataSource source;
     protected DataSource target;
-    protected IPlatform targetPlatform;
-    protected IPlatform sourcePlatform;
+    protected IDbPlatform targetPlatform;
+    protected IDbPlatform sourcePlatform;
     protected Parameters parameters;
-    protected List<TableToRead> tablesToRead;
+    protected List<TableToExtract> tablesToRead;
 
     public TableCopy(TableCopyProperties properties) {
         this.source = properties.getSourceDataSource();
-        this.sourcePlatform = JdbcPlatformFactory.createPlatform(source);
+        this.sourcePlatform = JdbcDbPlatformFactory.createPlatform(source);
 
         this.target = properties.getTargetDataSource();
-        this.targetPlatform = JdbcPlatformFactory.createPlatform(target);
+        this.targetPlatform = JdbcDbPlatformFactory.createPlatform(target);
 
         this.parameters = new Parameters(properties);
 
         String[] tableNames = properties.getTables();
 
-        List<TableToRead> tablesToCopy = new ArrayList<TableToRead>();
+        List<TableToExtract> tablesToCopy = new ArrayList<TableToExtract>();
         for (String tableName : tableNames) {
             Table table = sourcePlatform.findTable(tableName, parameters);
             String condition = properties.getConditionForTable(tableName);
-            tablesToCopy.add(new TableToRead(table, condition));
+            tablesToCopy.add(new TableToExtract(table, condition));
         }
     }
 
@@ -50,37 +51,39 @@ public class TableCopy {
         this.copy(tablesToRead);
     }
 
-    public void copy(List<TableToRead> tables) {
-        SqlTableDataReader reader = new SqlTableDataReader(this.sourcePlatform, tables);
-        SqlDataWriter writer = new SqlDataWriter(this.target, this.targetPlatform, parameters,
-                null, null);
-        DataProcessor<SqlDataContext> processor = new DataProcessor<SqlDataContext>(reader,
-                writer);
-        processor.process();
-
+    public void copy(List<TableToExtract> tables) {
+        for (TableToExtract tableToRead : tables) {
+            SqlTableDataReader reader = new SqlTableDataReader(this.sourcePlatform, new Batch(),
+                    tableToRead);
+            SqlDataWriter writer = new SqlDataWriter(this.target, this.targetPlatform, parameters,
+                    null, null);
+            DataProcessor<SqlDataContext> processor = new DataProcessor<SqlDataContext>(reader,
+                    writer);
+            processor.process();
+        }
     }
-    
+
     public Parameters getParameters() {
         return parameters;
     }
-    
+
     public DataSource getSource() {
         return source;
     }
-    
-    public IPlatform getSourcePlatform() {
+
+    public IDbPlatform getSourcePlatform() {
         return sourcePlatform;
     }
-    
-    public List<TableToRead> getTablesToRead() {
+
+    public List<TableToExtract> getTablesToRead() {
         return tablesToRead;
     }
-    
+
     public DataSource getTarget() {
         return target;
     }
-    
-    public IPlatform getTargetPlatform() {
+
+    public IDbPlatform getTargetPlatform() {
         return targetPlatform;
     }
 

@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.core.db.AbstractPlatform;
+import org.jumpmind.symmetric.core.db.AbstractDbPlatform;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
@@ -13,18 +13,25 @@ import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.jdbc.sql.ILobHandler;
 import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
-abstract public class AbstractJdbcPlatform extends AbstractPlatform implements IJdbcPlatform {
+abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implements IJdbcPlatform {
 
     protected DataSource dataSource;
 
     protected JdbcModelReader jdbcModelReader;
+    
+    protected Parameters parameters;
 
-    public AbstractJdbcPlatform(DataSource dataSource) {
+    public AbstractJdbcDbPlatform(DataSource dataSource, Parameters parameters) {
         this.dataSource = dataSource;
+        this.parameters = parameters == null ? new Parameters() : parameters;
     }
     
     public ISqlConnection getSqlConnection() {
-        return new JdbcSqlConnection(this, dataSource);
+        return getJdbcSqlConnection();
+    }
+    
+    public JdbcSqlConnection getJdbcSqlConnection() {
+        return new JdbcSqlConnection(this, parameters);
     }
     
     public Database findDatabase(String catalogName, String schemaName) {

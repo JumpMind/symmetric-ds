@@ -5,15 +5,17 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.h2.H2SqlBuilder;
-import org.jumpmind.symmetric.jdbc.db.AbstractJdbcPlatform;
+import org.jumpmind.symmetric.core.db.h2.H2TriggerBuilder;
+import org.jumpmind.symmetric.core.model.Parameters;
+import org.jumpmind.symmetric.jdbc.db.AbstractJdbcDbPlatform;
 
-public class H2Platform extends AbstractJdbcPlatform {
+public class H2DbPlatform extends AbstractJdbcDbPlatform {
 
     protected static final int[] DATA_INTEGRITY_SQL_ERROR_CODES = { 22003, 22012, 22025, 23000,
             23001, 90005 };
 
-    public H2Platform(DataSource dataSource) {
-        super(dataSource);
+    public H2DbPlatform(DataSource dataSource, Parameters parameters) {
+        super(dataSource, parameters);
 
         platformInfo.setNonPKIdentityColumnsSupported(false);
         platformInfo.setIdentityOverrideAllowed(false);
@@ -48,6 +50,7 @@ public class H2Platform extends AbstractJdbcPlatform {
         
         this.jdbcModelReader = new H2JdbcModelReader(this, dataSource);
         this.sqlBuilder = new H2SqlBuilder(this);
+        this.triggerBuilder = new H2TriggerBuilder(this);
 
     }
 

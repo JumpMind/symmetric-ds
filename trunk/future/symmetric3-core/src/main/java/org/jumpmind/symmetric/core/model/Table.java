@@ -678,14 +678,18 @@ public class Table implements Serializable, Cloneable {
     }
 
     public String getFullyQualifiedTableName() {
-        String fullTableName = this.tableName;
+        return getQualifiedTablePrefix() + this.tableName;
+    }
+    
+    public String getQualifiedTablePrefix() {
+        String fullyQualified = "";
         if (!StringUtils.isBlank(schemaName)) {
-            fullTableName = schemaName + "." + fullTableName;
+            fullyQualified = schemaName + "." + fullyQualified;
         }
         if (!StringUtils.isBlank(catalogName)) {
-            fullTableName = catalogName + "." + fullTableName;
+            fullyQualified = catalogName + "." + fullyQualified;
         }
-        return fullTableName;
+        return fullyQualified;
     }
 
     @SuppressWarnings("unchecked")

@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.io.IoUtils;
 
 /**
@@ -51,7 +51,7 @@ public class SqlScript {
 
     private List<String> statements;
 
-    private IPlatform platform;
+    private IDbPlatform platform;
 
     private int commitRate = 10000;
 
@@ -63,19 +63,19 @@ public class SqlScript {
 
     private String lineDeliminator;
 
-    public SqlScript(URL url, IPlatform platform) {
+    public SqlScript(URL url, IDbPlatform platform) {
         this(url, platform, true, QUERY_ENDS, null);
     }
 
-    public SqlScript(URL url, IPlatform platform, boolean failOnError) {
+    public SqlScript(URL url, IDbPlatform platform, boolean failOnError) {
         this(url, platform, failOnError, QUERY_ENDS, null);
     }
 
-    public SqlScript(URL url, IPlatform platform, String delimiter) {
+    public SqlScript(URL url, IDbPlatform platform, String delimiter) {
         this(url, platform, true, delimiter, null);
     }
 
-    public SqlScript(URL url, IPlatform platform, boolean failOnError, String delimiter,
+    public SqlScript(URL url, IDbPlatform platform, boolean failOnError, String delimiter,
             Map<String, String> replacementTokens) {
         try {
             fileName = url.getFile();
@@ -89,13 +89,13 @@ public class SqlScript {
         }
     }
 
-    public SqlScript(String sqlScript, IPlatform platform, boolean failOnError, String delimiter,
+    public SqlScript(String sqlScript, IDbPlatform platform, boolean failOnError, String delimiter,
             Map<String, String> replacementTokens) {
         init(IoUtils.readLines(new StringReader(sqlScript)), platform, failOnError, delimiter,
                 replacementTokens);
     }
 
-    private void init(List<String> sqlScript, IPlatform platform, boolean failOnError,
+    private void init(List<String> sqlScript, IDbPlatform platform, boolean failOnError,
             String delimiter, Map<String, String> replacementTokens) {
         this.statements = parseLines(sqlScript);
         this.platform = platform;

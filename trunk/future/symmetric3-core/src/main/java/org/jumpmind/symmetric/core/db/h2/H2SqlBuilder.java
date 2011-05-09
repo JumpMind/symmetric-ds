@@ -31,8 +31,7 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.DbException;
-import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.db.SqlBuilder;
 import org.jumpmind.symmetric.core.db.alter.AddColumnChange;
 import org.jumpmind.symmetric.core.db.alter.ColumnAutoIncrementChange;
@@ -47,6 +46,7 @@ import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
+import org.jumpmind.symmetric.core.sql.DbException;
 
 
 /**
@@ -56,7 +56,7 @@ import org.jumpmind.symmetric.core.model.TypeMap;
  */
 public class H2SqlBuilder extends SqlBuilder {
 
-    public H2SqlBuilder(IPlatform platform) {
+    public H2SqlBuilder(IDbPlatform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }

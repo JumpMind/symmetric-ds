@@ -32,7 +32,7 @@ public class JdbcPlatformTest {
     }
     
     protected IJdbcPlatform getPlatform() {
-        return JdbcPlatformFactory.createPlatform(dataSource);
+        return JdbcDbPlatformFactory.createPlatform(dataSource);
     }
     
     @Test

@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.core.common;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -7,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class StringUtils {
 
-    private static Pattern pattern = Pattern.compile("\\$\\((.+?)\\)");
+    private static Pattern TOKEN_REPLACEMENT_PATTERN = Pattern.compile("\\$\\((.+?)\\)");
     
     /**
      * <p>The maximum size to which the padding constant(s) can expand.</p>
@@ -397,13 +398,19 @@ public class StringUtils {
      */
     public static boolean equalsIgnoreCase(String str1, String str2) {
         return str1 == null ? str2 == null : str1.equalsIgnoreCase(str2);
-    }   
+    }
+    
+    public static String replaceTokens(String tokenName, String replacementValue, String originalText) {
+        Map<String, String> replacements = new HashMap<String, String>(1);
+        replacements.put(tokenName, replacementValue);
+        return replaceTokens(originalText, replacements, true);
+    }
 
     public static String replaceTokens(String text, Map<String, String> replacements,
             boolean matchUsingPrefixSuffix) {
         if (replacements != null && replacements.size() > 0) {
             if (matchUsingPrefixSuffix) {
-                Matcher matcher = pattern.matcher(text);
+                Matcher matcher = TOKEN_REPLACEMENT_PATTERN.matcher(text);
                 StringBuffer buffer = new StringBuffer();
                 while (matcher.find()) {
                     String[] match = matcher.group(1).split("\\|");
@@ -437,5 +444,39 @@ public class StringUtils {
             return String.format(format, arg);
         }
     }
+    
+    /**
+     * <p>Checks if the String contains only unicode digits.
+     * A decimal point is not a unicode digit and returns false.</p>
+     *
+     * <p><code>null</code> will return <code>false</code>.
+     * An empty String ("") will return <code>true</code>.</p>
+     *
+     * <pre>
+     * StringUtils.isNumeric(null)   = false
+     * StringUtils.isNumeric("")     = true
+     * StringUtils.isNumeric("  ")   = false
+     * StringUtils.isNumeric("123")  = true
+     * StringUtils.isNumeric("12 3") = false
+     * StringUtils.isNumeric("ab2c") = false
+     * StringUtils.isNumeric("12-3") = false
+     * StringUtils.isNumeric("12.3") = false
+     * </pre>
+     *
+     * @param str  the String to check, may be null
+     * @return <code>true</code> if only contains digits, and is non-null
+     */
+    public static boolean isNumeric(String str) {
+        if (str == null) {
+            return false;
+        }
+        int sz = str.length();
+        for (int i = 0; i < sz; i++) {
+            if (Character.isDigit(str.charAt(i)) == false) {
+                return false;
+            }
+        }
+        return true;
+    }    
     
 }

@@ -6,16 +6,16 @@ import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.oracle.OracleSqlBuilder;
-import org.jumpmind.symmetric.jdbc.db.AbstractJdbcPlatform;
-import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
+import org.jumpmind.symmetric.core.model.Parameters;
+import org.jumpmind.symmetric.jdbc.db.AbstractJdbcDbPlatform;
 
-public class OraclePlatform extends AbstractJdbcPlatform {
+public class OracleDbPlatform extends AbstractJdbcDbPlatform {
 
     protected static final int[] DATA_INTEGRITY_SQL_ERROR_CODES = { 1, 1400, 1722, 2291, 2292,
             12899 };
 
-    public OraclePlatform(DataSource dataSource) {
-        super(dataSource);
+    public OracleDbPlatform(DataSource dataSource, Parameters parameters) {
+        super(dataSource, parameters);
         
         platformInfo.setMaxIdentifierLength(30);
         platformInfo.setIdentityStatusReadingSupported(false);
@@ -68,7 +68,7 @@ public class OraclePlatform extends AbstractJdbcPlatform {
     @Override
     public String getDefaultSchema() {
         if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) new JdbcSqlConnection(this, dataSource).queryForObject(
+            this.defaultSchema = (String) getJdbcSqlConnection().queryForObject(
                     "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
         }
         return defaultSchema;

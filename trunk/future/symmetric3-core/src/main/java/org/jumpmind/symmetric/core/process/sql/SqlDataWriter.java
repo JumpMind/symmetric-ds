@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric.core.process.sql;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -8,8 +7,7 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
-import org.jumpmind.symmetric.core.db.DbException;
-import org.jumpmind.symmetric.core.db.IPlatform;
+import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.DataEventType;
@@ -19,7 +17,6 @@ import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.IColumnFilter;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
-import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.StatementBuilder;
 import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
 
@@ -29,7 +26,7 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
 
     protected DataSource dataSource;
 
-    protected IPlatform platform;
+    protected IDbPlatform platform;
 
     protected Parameters parameters;
 
@@ -37,9 +34,7 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
 
     protected List<IDataFilter<DataContext>> dataFilters;
 
-    protected ISqlConnection template;
-
-    public SqlDataWriter(DataSource dataSource, IPlatform platform, Parameters parameters,
+    public SqlDataWriter(DataSource dataSource, IDbPlatform platform, Parameters parameters,
             List<IColumnFilter<DataContext>> columnFilters,
             List<IDataFilter<DataContext>> dataFilters) {
         this.dataSource = dataSource;
@@ -47,7 +42,6 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
         this.parameters = parameters != null ? parameters : new Parameters();
         this.columnFilters = columnFilters;
         this.dataFilters = dataFilters;
-        this.template = platform.getSqlConnection();
     }
 
     public SqlDataContext createDataContext() {
@@ -55,13 +49,13 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
     }
 
     public void open(SqlDataContext context) {
-        try {
-            context.setConnection(dataSource.getConnection());
-            context.setOldAutoCommitValue(context.getConnection().getAutoCommit());
-            context.getConnection().setAutoCommit(false);
-        } catch (SQLException ex) {
-            throw new DbException(ex);
-        }
+//        try {
+//            context.setConnection(dataSource.getConnection());
+//            context.setOldAutoCommitValue(context.getConnection().getAutoCommit());
+//            context.getConnection().setAutoCommit(false);
+//        } catch (SQLException ex) {
+//            throw new DbException(ex);
+//        }
     }
 
     public boolean switchTables(SqlDataContext context) {
@@ -108,7 +102,7 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
                         objectValues);
             }
         }
-        return template.update(st.getSql(), objectValues, st.getTypes());
+        return platform.getSqlConnection().update(st.getSql(), objectValues, st.getTypes());
     }
 
     final private StatementBuilder getStatementBuilder(DmlType dmlType, SqlDataContext ctx,
@@ -140,11 +134,11 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
     }
 
     public void close(SqlDataContext context) {
-        context.close();
+        //context.close();
     }
 
     public void finishBatch(SqlDataContext context) {
-        context.commit();
+        //context.commit();
     }
 
 }
