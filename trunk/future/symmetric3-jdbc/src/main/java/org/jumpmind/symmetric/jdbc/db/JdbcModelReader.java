@@ -37,14 +37,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.db.DbPlatformInfo;
+import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.ForeignKey;
@@ -82,7 +80,7 @@ public class JdbcModelReader {
     private final List<MetaDataColumnDescriptor> columnsForIndex;
 
     /** The platform that this model reader belongs to. */
-    private IJdbcPlatform platform;
+    private IJdbcDbPlatform platform;
     /**
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
      * must support).
@@ -104,8 +102,6 @@ public class JdbcModelReader {
     /** The table types to recognize per default. */
     private String[] defaultTableTypes = { "TABLE" };
 
-    protected DataSource dataSource;
-
     protected JdbcSqlConnection connection;
 
     /**
@@ -114,10 +110,9 @@ public class JdbcModelReader {
      * @param platform
      *            The platform this builder belongs to
      */
-    public JdbcModelReader(IJdbcPlatform platform, DataSource dataSource) {
+    public JdbcModelReader(IJdbcDbPlatform platform) {
         this.platform = platform;
-        this.dataSource = dataSource;
-        this.connection = new JdbcSqlConnection(dataSource);
+        this.connection = new JdbcSqlConnection(platform.getDataSource());
 
         defaultSizes.put(new Integer(Types.CHAR), "254");
         defaultSizes.put(new Integer(Types.VARCHAR), "254");

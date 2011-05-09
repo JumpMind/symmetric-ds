@@ -39,7 +39,7 @@ public class DbPlatformInfo {
     
     private boolean scriptModeOn = false;
     
-    private boolean sqlCommentsOn = false;
+    private boolean sqlCommentsOn = false;     
     
     private boolean dateOverridesToTimestamp = false;
     
@@ -204,6 +204,8 @@ public class DbPlatformInfo {
 
     /** The text separating individual sql commands. */
     private String sqlCommandDelimiter = ";";
+    
+    private boolean requiresAutoCommitFalseToSetFetchSize = false;
 
     /** Contains non-default mappings from jdbc to native types. */
     private HashMap<Integer, String> nativeTypes = new HashMap<Integer, String>();
@@ -1204,5 +1206,14 @@ public class DbPlatformInfo {
     
     public boolean isScriptModeOn() {
         return scriptModeOn;
+    }
+    
+    public void setRequiresAutoCommitFalseToSetFetchSize(
+            boolean requiresAutoCommitFalseToSetFetchSize) {
+        this.requiresAutoCommitFalseToSetFetchSize = requiresAutoCommitFalseToSetFetchSize;
+    }
+    
+    public boolean isRequiresAutoCommitFalseToSetFetchSize() {
+        return requiresAutoCommitFalseToSetFetchSize;
     }
 }

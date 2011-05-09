@@ -19,6 +19,7 @@ import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.sql.SqlScript;
 
@@ -45,6 +46,17 @@ abstract public class AbstractDbPlatform implements IDbPlatform {
     protected SqlBuilder sqlBuilder;
     
     protected TriggerBuilder triggerBuilder;
+    
+    protected Parameters parameters;
+    
+    public AbstractDbPlatform(Parameters parameters) {
+        this.parameters = parameters == null ? new Parameters() : parameters;
+
+    }
+    
+    public Parameters getParameters() {
+        return parameters;
+    }
     
     public TriggerBuilder getTriggerBuilder() {
         return triggerBuilder;

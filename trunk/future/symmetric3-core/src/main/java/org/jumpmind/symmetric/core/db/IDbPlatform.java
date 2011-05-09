@@ -13,6 +13,8 @@ public interface IDbPlatform {
     
     public DbPlatformInfo getPlatformInfo();
     
+    public Parameters getParameters();
+    
     public String getAlterScriptFor(Table... tables);
     
     public void alter(boolean failOnError, Table... tables);

@@ -7,7 +7,7 @@ import org.jumpmind.symmetric.core.db.IDbPlatform;
  */
 public interface ISqlConnection {
 
-    public IDbPlatform getPlatform();
+    public IDbPlatform getDbPlatform();
 
     public <T> T queryForObject(String sql, Class<T> clazz, Object... args);
 
@@ -21,10 +21,10 @@ public interface ISqlConnection {
 
     public int update(String sql, Object[] values, int[] types);
 
-    public <T> ISqlReadCursor<T> queryForObject(String sql, ISqlRowMapper<T> mapper,
+    public <T> ISqlReadCursor<T> query(String sql, ISqlRowMapper<T> mapper,
             Object[] values, int[] types);
 
-    public <T> ISqlReadCursor<T> queryForObject(String sql, ISqlRowMapper<T> mapper);
+    public <T> ISqlReadCursor<T> query(String sql, ISqlRowMapper<T> mapper);
 
     public void testConnection();
 

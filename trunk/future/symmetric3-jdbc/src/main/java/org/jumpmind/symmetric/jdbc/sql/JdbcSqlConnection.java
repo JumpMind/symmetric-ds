@@ -1,10 +1,15 @@
 package org.jumpmind.symmetric.jdbc.sql;
 
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -18,29 +23,28 @@ import org.jumpmind.symmetric.core.sql.DbIntegrityViolationException;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
 import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
-import org.jumpmind.symmetric.jdbc.db.IJdbcPlatform;
+import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
 import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
 
 public class JdbcSqlConnection implements ISqlConnection {
 
     static final Log log = LogFactory.getLog(JdbcSqlConnection.class);
 
+    protected IJdbcDbPlatform dbPlatform;
 
-    protected IJdbcPlatform platform;
-    
     protected Parameters parameters;
 
     public JdbcSqlConnection(DataSource dataSource) {
-        this.platform = JdbcDbPlatformFactory.createPlatform(dataSource);
+        this.dbPlatform = JdbcDbPlatformFactory.createPlatform(dataSource);
     }
 
-    public JdbcSqlConnection(IJdbcPlatform platform, Parameters parameters) {
-        this.platform = platform;
+    public JdbcSqlConnection(IJdbcDbPlatform platform, Parameters parameters) {
+        this.dbPlatform = platform;
         this.parameters = parameters;
     }
 
-    public IDbPlatform getPlatform() {
-        return this.platform;
+    public IDbPlatform getDbPlatform() {
+        return this.dbPlatform;
     }
 
     public int queryForInt(String sql) {
@@ -51,16 +55,14 @@ public class JdbcSqlConnection implements ISqlConnection {
             return 0;
         }
     }
-    
-    public <T> ISqlReadCursor<T> queryForObject(String sql, ISqlRowMapper<T> mapper) {
-        // TODO Auto-generated method stub
-        return null;
+
+    public <T> ISqlReadCursor<T> query(String sql, ISqlRowMapper<T> mapper) {
+        return query(sql, mapper, null, null);
     }
-    
-    public <T> ISqlReadCursor<T> queryForObject(String sql, ISqlRowMapper<T> mapper,
-            Object[] values, int[] types) {
-        // TODO Auto-generated method stub
-        return null;
+
+    public <T> ISqlReadCursor<T> query(String sql, ISqlRowMapper<T> mapper, Object[] values,
+            int[] types) {
+        return new JdbcSqlReadCursor<T>(sql, values, types, mapper, this.dbPlatform);
     }
 
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
@@ -98,7 +100,7 @@ public class JdbcSqlConnection implements ISqlConnection {
                     ps = con.prepareStatement(sql);
                     if (values != null) {
                         StatementCreatorUtil.setValues(ps, values, types,
-                                ((IJdbcPlatform) getPlatform()).getLobHandler());
+                                ((IJdbcDbPlatform) getDbPlatform()).getLobHandler());
                     }
                     return ps.executeUpdate();
                 } finally {
@@ -166,13 +168,107 @@ public class JdbcSqlConnection implements ISqlConnection {
     public <T> T execute(IConnectionCallback<T> callback) {
         Connection c = null;
         try {
-            c = this.platform.getDataSource().getConnection();
+            c = this.dbPlatform.getDataSource().getConnection();
             return callback.execute(c);
         } catch (SQLException ex) {
             throw translate(ex);
         } finally {
             close(c);
         }
+    }
+
+    public static Map<String, Object> getMapForRow(ResultSet rs) throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        Map<String, Object> mapOfColValues = new HashMap<String, Object>();
+        for (int i = 1; i <= columnCount; i++) {
+            String key = JdbcSqlConnection.lookupColumnName(rsmd, i);
+            Object obj = JdbcSqlConnection.getResultSetValue(rs, i);
+            mapOfColValues.put(key, obj);
+        }
+        return mapOfColValues;
+    }
+
+    /**
+     * Determine the column name to use. The column name is determined based on
+     * a lookup using ResultSetMetaData.
+     * <p>
+     * This method implementation takes into account recent clarifications
+     * expressed in the JDBC 4.0 specification:
+     * <p>
+     * <i>columnLabel - the label for the column specified with the SQL AS
+     * clause. If the SQL AS clause was not specified, then the label is the
+     * name of the column</i>.
+     * 
+     * @return the column name to use
+     * @param resultSetMetaData
+     *            the current meta data to use
+     * @param columnIndex
+     *            the index of the column for the look up
+     * @throws SQLException
+     *             in case of lookup failure
+     */
+    public static String lookupColumnName(ResultSetMetaData resultSetMetaData, int columnIndex)
+            throws SQLException {
+        String name = resultSetMetaData.getColumnLabel(columnIndex);
+        if (name == null || name.length() < 1) {
+            name = resultSetMetaData.getColumnName(columnIndex);
+        }
+        return name;
+    }
+
+    /**
+     * Retrieve a JDBC column value from a ResultSet, using the most appropriate
+     * value type. The returned value should be a detached value object, not
+     * having any ties to the active ResultSet: in particular, it should not be
+     * a Blob or Clob object but rather a byte array respectively String
+     * representation.
+     * <p>
+     * Uses the <code>getObject(index)</code> method, but includes additional
+     * "hacks" to get around Oracle 10g returning a non-standard object for its
+     * TIMESTAMP datatype and a <code>java.sql.Date</code> for DATE columns
+     * leaving out the time portion: These columns will explicitly be extracted
+     * as standard <code>java.sql.Timestamp</code> object.
+     * 
+     * @param rs
+     *            is the ResultSet holding the data
+     * @param index
+     *            is the column index
+     * @return the value object
+     * @throws SQLException
+     *             if thrown by the JDBC API
+     * @see java.sql.Blob
+     * @see java.sql.Clob
+     * @see java.sql.Timestamp
+     */
+    public static Object getResultSetValue(ResultSet rs, int index) throws SQLException {
+        Object obj = rs.getObject(index);
+        String className = null;
+        if (obj != null) {
+            className = obj.getClass().getName();
+        }
+        if (obj instanceof Blob) {
+            obj = rs.getBytes(index);
+        } else if (obj instanceof Clob) {
+            obj = rs.getString(index);
+        } else if (className != null
+                && ("oracle.sql.TIMESTAMP".equals(className) || "oracle.sql.TIMESTAMPTZ"
+                        .equals(className))) {
+            obj = rs.getTimestamp(index);
+        } else if (className != null && className.startsWith("oracle.sql.DATE")) {
+            String metaDataClassName = rs.getMetaData().getColumnClassName(index);
+            if ("java.sql.Timestamp".equals(metaDataClassName)
+                    || "oracle.sql.TIMESTAMP".equals(metaDataClassName)) {
+                obj = rs.getTimestamp(index);
+            } else {
+                obj = rs.getDate(index);
+            }
+        } else if (obj != null && obj instanceof java.sql.Date) {
+            if ("java.sql.Timestamp".equals(rs.getMetaData().getColumnClassName(index))) {
+                obj = rs.getTimestamp(index);
+            }
+        }
+        return obj;
     }
 
     public static void close(ResultSet rs) {
@@ -202,6 +298,17 @@ public class JdbcSqlConnection implements ISqlConnection {
         }
     }
 
+    public static void close(boolean autoCommitValue, Connection c) {
+        try {
+            if (c != null) {
+                c.setAutoCommit(autoCommitValue);
+            }
+        } catch (SQLException ex) {
+        } finally {
+            close(c);
+        }
+    }
+
     public static void close(Connection c) {
         try {
             if (c != null) {
@@ -212,7 +319,7 @@ public class JdbcSqlConnection implements ISqlConnection {
     }
 
     public DbException translate(Exception ex) {
-        if (getPlatform().isDataIntegrityException(ex)) {
+        if (getDbPlatform().isDataIntegrityException(ex)) {
             return new DbIntegrityViolationException(ex);
         } else {
             return new DbException(ex);

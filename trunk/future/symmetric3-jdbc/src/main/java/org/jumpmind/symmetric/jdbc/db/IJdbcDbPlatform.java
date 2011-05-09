@@ -6,7 +6,7 @@ import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.jdbc.sql.ILobHandler;
 import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
-public interface IJdbcPlatform extends IDbPlatform {
+public interface IJdbcDbPlatform extends IDbPlatform {
 
     public ILobHandler getLobHandler();  
     
