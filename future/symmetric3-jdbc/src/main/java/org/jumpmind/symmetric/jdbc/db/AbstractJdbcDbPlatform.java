@@ -29,7 +29,7 @@ abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implemen
     }
     
     public JdbcSqlConnection getJdbcSqlConnection() {
-        return new JdbcSqlConnection(this, parameters);
+        return new JdbcSqlConnection(this);
     }
     
     public Database findDatabase(String catalogName, String schemaName) {
@@ -52,12 +52,12 @@ abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implemen
         return writer.toString();
     }
 
-    public Table findTable(String tableName, Parameters parameters) {
-        return findTable(null, null, tableName, false, parameters);
+    public Table findTable(String tableName) {
+        return findTable(null, null, tableName, false);
     }
 
     public Table findTable(String catalogName, String schemaName, String tableName,
-            boolean useCache, Parameters parameters) {
+            boolean useCache) {
         Table cachedTable = cachedModel.findTable(catalogName, schemaName, tableName);
         if (cachedTable == null || !useCache) {
             Table justReadTable = jdbcModelReader.readTable(catalogName, schemaName, tableName,
@@ -77,7 +77,7 @@ abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implemen
         return cachedTable;
     }
 
-    public java.util.List<Table> findTables(String catalog, String schema, Parameters parameters) {
+    public java.util.List<Table> findTables(String catalog, String schema) {
         return null;
     };
 

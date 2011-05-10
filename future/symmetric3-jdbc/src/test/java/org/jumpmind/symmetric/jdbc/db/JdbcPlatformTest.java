@@ -1,39 +1,22 @@
 package org.jumpmind.symmetric.jdbc.db;
 
-import javax.sql.DataSource;
-
 import junit.framework.Assert;
 
+import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.io.FileUtils;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
-import org.jumpmind.symmetric.jdbc.datasource.DriverDataSourceProperties;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class JdbcPlatformTest {
-
-    protected static DataSource dataSource;
-
-    @BeforeClass
-    public static void setupDataSource() {
-        FileUtils.deleteDirectory("target/h2");
-        dataSource = new DriverDataSourceProperties("src/test/resources/test-jdbc.properties")
-                .getDataSource();
-    }
+public class JdbcPlatformTest extends AbstractDatabaseTest {
 
     @Test
     public void testJdbcPlatformFactory() {
         IJdbcDbPlatform platform = getPlatform();
         Assert.assertNotNull(platform);
-    }
-    
-    protected IJdbcDbPlatform getPlatform() {
-        return JdbcDbPlatformFactory.createPlatform(dataSource);
-    }
+    }    
     
     @Test
     public void testCreateTable() {

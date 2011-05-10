@@ -8,7 +8,9 @@ import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
 public class DataMapper implements ISqlRowMapper<Data> {
 
     public Data mapRow(Map<String, Object> row) {
-        return null;
+        Data data = new Data();
+        data.setRowData((String)row.get("ROW_DATA"));
+        return data;
     }
     
 }

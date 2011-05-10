@@ -5,12 +5,25 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.db.TriggerBuilder;
+import org.jumpmind.symmetric.core.process.sql.TableToExtract;
 import org.jumpmind.symmetric.core.sql.SqlConstants;
 
 public class H2TriggerBuilder extends TriggerBuilder {
 
     public H2TriggerBuilder(IDbPlatform dbPlatform) {
         super(dbPlatform);
+    }
+
+    @Override
+    public String createTableExtractSql(TableToExtract tableToExtract,
+            Map<String, String> replacementTokens, boolean supportsBigLobs) {
+        return super.createTableExtractSql(tableToExtract, replacementTokens, supportsBigLobs)
+                .replace("''", "'");
+    }
+
+    @Override
+    protected String getInitialLoadTableAlias() {
+        return "t.";
     }
 
     @Override
@@ -40,7 +53,7 @@ public class H2TriggerBuilder extends TriggerBuilder {
 
     @Override
     protected String getInitialLoadSql() {
-        return "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)";
+        return "select $(columns) as ROW_DATA from $(schemaName)$(tableName) t where $(whereClause)";
     }
 
     @Override

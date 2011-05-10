@@ -21,11 +21,11 @@ public interface IDbPlatform {
     
     public Database findDatabase(String catalogName, String schemaName);
     
-    public Table findTable(String tableName, Parameters parameters);
+    public Table findTable(String tableName);
 
-    public Table findTable(String catalogName, String schemaName, String tableName, boolean useCached, Parameters parameters);
+    public Table findTable(String catalogName, String schemaName, String tableName, boolean useCached);
 
-    public List<Table> findTables(String catalogName, String schemaName, Parameters parameters);
+    public List<Table> findTables(String catalogName, String schemaName);
     
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData);

@@ -112,7 +112,7 @@ public class JdbcModelReader {
      */
     public JdbcModelReader(IJdbcDbPlatform platform) {
         this.platform = platform;
-        this.connection = new JdbcSqlConnection(platform.getDataSource());
+        this.connection = new JdbcSqlConnection(platform);
 
         defaultSizes.put(new Integer(Types.CHAR), "254");
         defaultSizes.put(new Integer(Types.VARCHAR), "254");

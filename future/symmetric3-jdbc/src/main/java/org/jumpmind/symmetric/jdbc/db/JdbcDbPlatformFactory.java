@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.sql.DbException;
 import org.jumpmind.symmetric.jdbc.db.h2.H2DbPlatform;
 import org.jumpmind.symmetric.jdbc.db.oracle.OracleDbPlatform;
@@ -18,24 +19,24 @@ public class JdbcDbPlatformFactory {
 
     private static Map<String, Class<? extends IDbPlatform>> platforms = null;
 
-    public static IJdbcDbPlatform createPlatform(DataSource dataSource) {
+    public static IJdbcDbPlatform createPlatform(DataSource dataSource, Parameters parameters) {
         String platformId = lookupPlatformId(dataSource, true);
-        AbstractJdbcDbPlatform platform = createNewPlatformInstance(platformId, dataSource);
+        AbstractJdbcDbPlatform platform = createNewPlatformInstance(platformId, dataSource, parameters);
         if (platform == null) {
             platformId = lookupPlatformId(dataSource, false);
-            platform = createNewPlatformInstance(platformId, dataSource);
+            platform = createNewPlatformInstance(platformId, dataSource, parameters);
         }
         return platform;
     }
 
     private static AbstractJdbcDbPlatform createNewPlatformInstance(String databaseName,
-            DataSource dataSource) {
+            DataSource dataSource, Parameters parameters) {
         Class<? extends IDbPlatform> platformClass = getPlatforms().get(databaseName.toLowerCase());
 
         if (platformClass != null) {
             try {
-                Constructor<?> constructor = platformClass.getConstructor(DataSource.class);
-                return (AbstractJdbcDbPlatform) constructor.newInstance(dataSource);
+                Constructor<?> constructor = platformClass.getConstructor(DataSource.class, Parameters.class);
+                return (AbstractJdbcDbPlatform) constructor.newInstance(dataSource, parameters);
             } catch (Exception ex) {
                 throw new DbException("Could not create platform for database " + databaseName, ex);
             }

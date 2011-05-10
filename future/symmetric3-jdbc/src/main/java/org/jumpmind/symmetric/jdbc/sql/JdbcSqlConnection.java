@@ -32,15 +32,12 @@ public class JdbcSqlConnection implements ISqlConnection {
 
     protected IJdbcDbPlatform dbPlatform;
 
-    protected Parameters parameters;
-
     public JdbcSqlConnection(DataSource dataSource) {
-        this.dbPlatform = JdbcDbPlatformFactory.createPlatform(dataSource);
+        this.dbPlatform = JdbcDbPlatformFactory.createPlatform(dataSource, new Parameters());
     }
 
-    public JdbcSqlConnection(IJdbcDbPlatform platform, Parameters parameters) {
+    public JdbcSqlConnection(IJdbcDbPlatform platform) {
         this.dbPlatform = platform;
-        this.parameters = parameters;
     }
 
     public IDbPlatform getDbPlatform() {
