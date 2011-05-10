@@ -403,15 +403,15 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter trigger = triggerRouterService.getTriggerRouterForTableForCurrentNode(
+        Set<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouterForTableForCurrentNode(
                 catalogName, schemaName, tableName, true);
-        if (trigger == null) {
+        if (triggerRouters == null || triggerRouters.size() == 0) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node "
                     + sourceNode.getNodeGroupId();
         }
 
-        insertSqlEvent(targetNode, trigger.getTrigger(), sql, isLoad);
+        insertSqlEvent(targetNode, triggerRouters.iterator().next().getTrigger(), sql, isLoad);
         // TODO message bundle
         return "Successfully create SQL event for node " + targetNode.getNodeId();
     }
@@ -431,23 +431,24 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForTableForCurrentNode(
+        Set<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouterForTableForCurrentNode(
                 catalogName, schemaName, tableName, true);
-        if (triggerRouter == null) {
+        if (triggerRouters == null || triggerRouters.size() == 0) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node "
                     + sourceNode.getNodeGroupId();
         }
 
-        if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
-            String xml = dbDialect.getCreateTableXML(triggerRouter);
-            insertCreateEvent(targetNode, triggerRouter, xml, true);
-        } else if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
-            insertPurgeEvent(targetNode, triggerRouter, true);
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
+                String xml = dbDialect.getCreateTableXML(triggerRouter);
+                insertCreateEvent(targetNode, triggerRouter, xml, true);
+            } else if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
+                insertPurgeEvent(targetNode, triggerRouter, true);
+            }
+
+            insertReloadEvent(targetNode, triggerRouter, overrideInitialLoadSelect);
         }
-
-        insertReloadEvent(targetNode, triggerRouter, overrideInitialLoadSelect);
-
         // TODO message bundle
         return "Successfully created event to reload table " + tableName + " for node "
                 + targetNode.getNodeId();
@@ -465,10 +466,10 @@ public class DataService extends AbstractService implements IDataService {
                 .getNodeGroupId());
         for (NodeGroupLink nodeGroupLink : links) {
             if (nodeGroupLink.getDataEventAction() == NodeGroupLinkAction.P) {
-                TriggerRouter triggerRouter = triggerRouterService
+                Set<TriggerRouter> triggerRouters = triggerRouterService
                         .getTriggerRouterForTableForCurrentNode(nodeGroupLink, null, null, tableName, false);
-                if (triggerRouter != null) {
-                    Data data = createData(triggerRouter.getTrigger(), String.format(
+                if (triggerRouters != null && triggerRouters.size() > 0) {
+                    Data data = createData(triggerRouters.iterator().next().getTrigger(), String.format(
                             " t.node_id = '%s'", node.getNodeId()));
                     if (data != null) {
                         insertData(data);
@@ -489,10 +490,10 @@ public class DataService extends AbstractService implements IDataService {
     public Data createData(String catalogName, String schemaName, String tableName,
             String whereClause) {
         Data data = null;
-        TriggerRouter trigger = triggerRouterService.getTriggerRouterForTableForCurrentNode(
+        Set<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouterForTableForCurrentNode(
                 catalogName, schemaName, tableName, false);
-        if (trigger != null) {
-            data = createData(trigger.getTrigger(), whereClause);
+        if (triggerRouters != null && triggerRouters.size() > 0) {
+            data = createData(triggerRouters.iterator().next().getTrigger(), whereClause);
         }
         return data;
     }

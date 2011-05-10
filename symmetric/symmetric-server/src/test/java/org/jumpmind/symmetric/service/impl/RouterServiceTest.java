@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -873,8 +874,9 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
-        TriggerRouter trigger = getTriggerRouterService().getTriggerRouterForTableForCurrentNode(null, null, tableName, true);
-        if (trigger == null) {
+        TriggerRouter trigger = null;
+        Set<TriggerRouter> triggerRouters = getTriggerRouterService().getTriggerRouterForTableForCurrentNode(null, null, tableName, true);
+        if (triggerRouters == null || triggerRouters.size() == 0) {
             trigger = new TriggerRouter();
             trigger.getTrigger().setSourceTableName(tableName);
             trigger.getRouter().getNodeGroupLink().setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
@@ -884,6 +886,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             } else {
                 trigger.getTrigger().setChannelId(TestConstants.TEST_CHANNEL_ID);
             }
+        } else {
+            trigger = triggerRouters.iterator().next();
         }
         return trigger;
     }
