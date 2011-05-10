@@ -62,7 +62,7 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
         Table sourceTable = context.getSourceTable();
         if (sourceTable != null) {
             Table targetTable = platform.findTable(sourceTable.getCatalogName(),
-                    sourceTable.getSchemaName(), sourceTable.getTableName(), true, parameters)
+                    sourceTable.getSchemaName(), sourceTable.getTableName(), true)
                     .copy();
             if (targetTable != null) {
                 targetTable.reOrderColumns(sourceTable.getColumns(),

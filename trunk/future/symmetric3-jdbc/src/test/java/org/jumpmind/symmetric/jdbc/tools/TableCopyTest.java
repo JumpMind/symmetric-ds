@@ -5,6 +5,7 @@ import junit.framework.Assert;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.io.FileUtils;
 import org.jumpmind.symmetric.core.model.Column;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
@@ -22,10 +23,10 @@ public class TableCopyTest {
         FileUtils.deleteDirectory("target/h2");
         tableCopyProperties = new TableCopyProperties(
                 "src/test/resources/test-tablecopy.properties");
-        IDbPlatform sourcePlatform = JdbcDbPlatformFactory.createPlatform(tableCopyProperties
-                .getSourceDataSource());
-        IDbPlatform targetPlatform = JdbcDbPlatformFactory.createPlatform(tableCopyProperties
-                .getTargetDataSource());
+        IDbPlatform sourcePlatform = JdbcDbPlatformFactory.createPlatform(
+                tableCopyProperties.getSourceDataSource(), new Parameters(tableCopyProperties));
+        IDbPlatform targetPlatform = JdbcDbPlatformFactory.createPlatform(
+                tableCopyProperties.getTargetDataSource(), new Parameters(tableCopyProperties));
         Table[] tables = {
                 new Table("table1", new Column("table_id", TypeMap.NUMERIC, "10,2", false, true,
                         true)),

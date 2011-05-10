@@ -29,7 +29,7 @@ public class H2DbPlatform extends AbstractJdbcDbPlatform {
         platformInfo.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);
 
         platformInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BIT);
-        ;
+        
         platformInfo.addNativeTypeMapping(Types.NUMERIC, "DECIMAL", Types.DECIMAL);
         platformInfo.addNativeTypeMapping(Types.BINARY, "BINARY", Types.BINARY);
         platformInfo.addNativeTypeMapping(Types.BLOB, "BLOB", Types.BLOB);

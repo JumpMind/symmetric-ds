@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.core.process.sql;
 
+import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.db.TriggerBuilder;
 import org.jumpmind.symmetric.core.model.Batch;
@@ -41,7 +42,7 @@ public class SqlTableDataReader implements IDataReader<SqlDataContext> {
         if (tableToRead == null) {
             nullMsg += TableToExtract.class.getName() + " must not be null.  ";
         }
-        if (nullMsg != null) {
+        if (StringUtils.isNotBlank(nullMsg)) {
             throw new NullPointerException(nullMsg);
         }
     }

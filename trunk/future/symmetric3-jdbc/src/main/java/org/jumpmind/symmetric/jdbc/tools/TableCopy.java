@@ -29,19 +29,19 @@ public class TableCopy {
     protected List<TableToExtract> tablesToRead;
 
     public TableCopy(TableCopyProperties properties) {
+        this.parameters = new Parameters(properties);
+        
         this.source = properties.getSourceDataSource();
-        this.sourcePlatform = JdbcDbPlatformFactory.createPlatform(source);
+        this.sourcePlatform = JdbcDbPlatformFactory.createPlatform(source, parameters);
 
         this.target = properties.getTargetDataSource();
-        this.targetPlatform = JdbcDbPlatformFactory.createPlatform(target);
-
-        this.parameters = new Parameters(properties);
+        this.targetPlatform = JdbcDbPlatformFactory.createPlatform(target, parameters);
 
         String[] tableNames = properties.getTables();
 
         List<TableToExtract> tablesToCopy = new ArrayList<TableToExtract>();
         for (String tableName : tableNames) {
-            Table table = sourcePlatform.findTable(tableName, parameters);
+            Table table = sourcePlatform.findTable(tableName);
             String condition = properties.getConditionForTable(tableName);
             tablesToCopy.add(new TableToExtract(table, condition));
         }
