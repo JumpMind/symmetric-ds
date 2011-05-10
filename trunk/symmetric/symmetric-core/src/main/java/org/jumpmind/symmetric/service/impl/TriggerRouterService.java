@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -288,22 +289,23 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 "selectTriggerRoutersColumnList","selectTriggerRoutersSql", sql);
     }
     
-    public TriggerRouter getTriggerRouterForTableForCurrentNode(String catalogName, String schemaName, String tableName, boolean refreshCache) {
+    public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(String catalogName, String schemaName, String tableName, boolean refreshCache) {
         return getTriggerRouterForTableForCurrentNode(null, catalogName, schemaName, tableName, refreshCache);
     }
     
-    public TriggerRouter getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache) {
+    public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache) {
         TriggerRoutersCache cache = getTriggerRoutersCacheForCurrentNode(refreshCache);
         Collection<List<TriggerRouter>> triggerRouters = cache.triggerRoutersByTriggerId.values();
+        HashSet<TriggerRouter> returnList = new HashSet<TriggerRouter>();
         for (List<TriggerRouter> list : triggerRouters) {
             for (TriggerRouter triggerRouter : list) {                
                 if (isMatch(link, triggerRouter) && 
                         isMatch(catalogName, schemaName, tableName, triggerRouter.getTrigger())) {
-                    return triggerRouter;
+                    returnList.add(triggerRouter);
                 }
             }
         }
-        return null;
+        return returnList;
     }
     
     protected boolean isMatch(NodeGroupLink link, TriggerRouter router) {

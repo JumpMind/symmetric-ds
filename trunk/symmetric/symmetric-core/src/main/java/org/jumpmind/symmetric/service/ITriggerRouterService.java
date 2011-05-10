@@ -93,9 +93,9 @@ public interface ITriggerRouterService {
     
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId);
 
-    public TriggerRouter getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache);
+    public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache);
     
-    public TriggerRouter getTriggerRouterForTableForCurrentNode(String catalog, String schema, String tableName, boolean refreshCache); 
+    public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(String catalog, String schema, String tableName, boolean refreshCache); 
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId);
 

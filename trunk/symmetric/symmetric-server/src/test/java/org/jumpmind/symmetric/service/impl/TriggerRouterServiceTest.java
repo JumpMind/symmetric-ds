@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service.impl;
 
@@ -73,15 +73,17 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
             + "values(?,?,?,?,?,?,?,?)"; // '\\\\','\"','\"1\"',null,null,1,1,1)";
 
-    public final static int[] INSERT_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-            Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
+    public final static int[] INSERT_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR,
+            Types.VARCHAR, Types.TIMESTAMP, Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
 
-    public final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, Boolean.TRUE, 1, 1 };
+    public final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null,
+            Boolean.TRUE, 1, 1 };
 
-    public final static Object[] INSERT2_VALUES = new Object[] { "here", "here", "1", null, null, Boolean.TRUE, 1, 1 };
+    public final static Object[] INSERT2_VALUES = new Object[] { "here", "here", "1", null, null,
+            Boolean.TRUE, 1, 1 };
 
-    public final static Object[] INSERT3_VALUES = new Object[] { "inactive", "inactive", "0", null, null, Boolean.TRUE,
-            1, 1 };
+    public final static Object[] INSERT3_VALUES = new Object[] { "inactive", "inactive", "0", null,
+            null, Boolean.TRUE, 1, 1 };
 
     public final static String EXPECTED_INSERT1_CSV_ENDSWITH = "\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,\"1\",\"1\",\"1\"";
 
@@ -89,21 +91,23 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     public final static String UNEXPECTED_INSERT3_CSV_ENDSWITH = "\"inactive\",\"inactive\",\"0\",,,\"1\",\"1\"";
 
-    public final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='" + TEST_TRIGGERS_TABLE
-            + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
+    public final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='"
+            + TEST_TRIGGERS_TABLE + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
 
     public static final String insertSyncIncomingBatchSql = "insert into test_sync_incoming_batch (id, data) values (?, ?)";
 
     public TriggerRouterServiceTest() throws Exception {
         super();
     }
-    
-    @Test 
+
+    @Test
     public void testReplaceCharactersForTriggerName() {
         TriggerRouterService triggerRouterService = new TriggerRouterService();
-        Assert.assertEquals("123456_54321", triggerRouterService.replaceCharsForTriggerName("123456_54321"));
-        Assert.assertEquals("tst_1234_rght_n", triggerRouterService.replaceCharsForTriggerName("test_1234_right::_on"));
-        
+        Assert.assertEquals("123456_54321",
+                triggerRouterService.replaceCharsForTriggerName("123456_54321"));
+        Assert.assertEquals("tst_1234_rght_n",
+                triggerRouterService.replaceCharsForTriggerName("test_1234_right::_on"));
+
     }
 
     @Test
@@ -117,22 +121,22 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         int origCount = getTriggerHistTableRowCount();
 
         Thread.sleep(1000);
-        
+
         Calendar lastUpdateTime = Calendar.getInstance();
 
         // force the triggers to rebuild
         int expectedCount = origCount
                 + getJdbcTemplate()
-                        .update(
-                                "update sym_trigger set last_update_time=? where trigger_id in (select trigger_id from sym_trigger_router where router_id in (select router_id from sym_router where source_node_group_id=?))",
-                                new Object[] { lastUpdateTime.getTime(), TestConstants.TEST_ROOT_NODE_GROUP });
+                        .update("update sym_trigger set last_update_time=? where trigger_id in (select trigger_id from sym_trigger_router where router_id in (select router_id from sym_router where source_node_group_id=?))",
+                                new Object[] { lastUpdateTime.getTime(),
+                                        TestConstants.TEST_ROOT_NODE_GROUP });
 
         service.syncTriggers();
 
-        Assert.assertEquals("Wrong trigger_hist row count. The original count was " + origCount + ".", expectedCount,
-                getTriggerHistTableRowCount());
+        Assert.assertEquals("Wrong trigger_hist row count. The original count was " + origCount
+                + ".", expectedCount, getTriggerHistTableRowCount());
     }
-    
+
     @Test
     public void testSchemaSyncNoChanges() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();
@@ -144,17 +148,18 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         Thread.sleep(1000);
 
         getConfigurationService().autoConfigDatabase(true);
-        
+
         service.syncTriggers();
 
-        Assert.assertEquals("Wrong trigger_hist row count.  No new triggers should have been generated.", origCount,
-                getTriggerHistTableRowCount());
-    }    
+        Assert.assertEquals(
+                "Wrong trigger_hist row count.  No new triggers should have been generated.",
+                origCount, getTriggerHistTableRowCount());
+    }
 
     private int getTriggerHistTableRowCount() {
         return getJdbcTemplate().queryForInt("select count(*) from sym_trigger_hist");
     }
-    
+
     @Test
     public void testGetRouterById() throws Exception {
         Router router = getTriggerRouterService().getRouterById("3000");
@@ -185,14 +190,21 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testInitialLoadSql() throws Exception {
         ITriggerRouterService triggerRouterService = getTriggerRouterService();
-        TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true);
+        TriggerRouter triggerRouter = triggerRouterService
+                .getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true)
+                .iterator().next();
 
-        Table table = getDbDialect().getTable(triggerRouter.getTrigger().getSourceCatalogName(), triggerRouter.getTrigger().getSourceSchemaName(),
-        		triggerRouter.getTrigger().getSourceTableName(), true);
+        Table table = getDbDialect().getTable(triggerRouter.getTrigger().getSourceCatalogName(),
+                triggerRouter.getTrigger().getSourceSchemaName(),
+                triggerRouter.getTrigger().getSourceTableName(), true);
 
-        String sql = getDbDialect().createInitialLoadSqlFor(new Node("1", null, "1.0"),
-                triggerRouter, table, triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId())
-                , getConfigurationService().getChannel(triggerRouter.getTrigger().getChannelId()));
+        String sql = getDbDialect().createInitialLoadSqlFor(
+                new Node("1", null, "1.0"),
+                triggerRouter,
+                table,
+                triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
+                        .getTriggerId()),
+                getConfigurationService().getChannel(triggerRouter.getTrigger().getChannelId()));
         List<String> csvStrings = getJdbcTemplate().queryForList(sql, String.class);
         assertTrue(csvStrings.size() > 0);
         String csvString = csvStrings.get(0);
@@ -203,7 +215,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
                 + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
-    
+
     @Test
     public void testCaptureOnlyChangedData() throws Exception {
         boolean oldvalue = getParameterService().is(
@@ -214,9 +226,11 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             if (!Constants.ALWAYS_TRUE_CONDITION
                     .equals(getDbDialect().getDataHasChangedCondition())) {
                 forceRebuildOfTrigers();
-                Assert.assertTrue(getJdbcTemplate().queryForInt("select count(*) from " + TEST_TRIGGERS_TABLE) > 0);
+                Assert.assertTrue(getJdbcTemplate().queryForInt(
+                        "select count(*) from " + TEST_TRIGGERS_TABLE) > 0);
                 int dataCount = countData();
-                getJdbcTemplate().update("update " + TEST_TRIGGERS_TABLE + " set string_one_value=string_one_value");
+                getJdbcTemplate().update(
+                        "update " + TEST_TRIGGERS_TABLE + " set string_one_value=string_one_value");
                 Assert.assertEquals(dataCount, countData());
             }
         } finally {
@@ -230,18 +244,23 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     public void testExcludedColumnsFunctionality() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        assertEquals(
-                1,
-                jdbcTemplate
-                        .update("update sym_trigger set excluded_column_names='BOOLEAN_VALUE', last_update_time=? "
-                                + TEST_TRIGGER_WHERE_CLAUSE, new Object[] { new Date(System.currentTimeMillis() + 60000)}));
+        assertEquals(1, jdbcTemplate.update(
+                "update sym_trigger set excluded_column_names='BOOLEAN_VALUE', last_update_time=? "
+                        + TEST_TRIGGER_WHERE_CLAUSE,
+                new Object[] { new Date(System.currentTimeMillis() + 60000) }));
 
         service.syncTriggers();
 
-        TriggerRouter triggerRouter = service.getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true);
-        assertEquals(jdbcTemplate.queryForInt("select count(*) from sym_trigger_hist where trigger_id='"
-                + triggerRouter.getTrigger().getTriggerId() + "' and inactive_time is null"), 1,
-                "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
+        TriggerRouter triggerRouter = service
+                .getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true)
+                .iterator().next();
+        assertEquals(
+                jdbcTemplate
+                        .queryForInt("select count(*) from sym_trigger_hist where trigger_id='"
+                                + triggerRouter.getTrigger().getTriggerId()
+                                + "' and inactive_time is null"),
+                1, "We expected only one active record in the trigger_hist table for "
+                        + TEST_TRIGGERS_TABLE);
 
         assertEquals(1, insert(INSERT2_VALUES, jdbcTemplate, getDbDialect()));
 
@@ -288,8 +307,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
             ITriggerRouterService triggerService = getTriggerRouterService();
             triggerService.syncTriggers();
-            Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()
-                    .size());
+            Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService
+                    .getFailedTriggers().size());
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_1);
             String csvString = getNextDataRow();
             Assert.assertEquals(EXPECTED_INSERT_ORALCE_BINARY_TYPE_1, csvString);
@@ -313,11 +332,12 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
             ITriggerRouterService triggerService = getTriggerRouterService();
             triggerService.syncTriggers();
-            Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()
-                    .size());
-            
+            Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService
+                    .getFailedTriggers().size());
+
             getJdbcTemplate().execute(new ConnectionCallback<Object>() {
-                public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                public Object doInConnection(Connection conn) throws SQLException,
+                        DataAccessException {
                     conn.setAutoCommit(false);
                     PreparedStatement ps = conn.prepareStatement(INSERT_POSTGRES_BINARY_TYPE_1);
                     ps.setBlob(1, new SerialBlob("test 1 2 3".getBytes()));
@@ -327,7 +347,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
                 }
             });
             String csvString = getNextDataRow();
-            Assert.assertEquals(EXPECTED_INSERT_POSTGRES_BINARY_TYPE_1, csvString);            
+            Assert.assertEquals(EXPECTED_INSERT_POSTGRES_BINARY_TYPE_1, csvString);
         }
     }
 
@@ -337,10 +357,11 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         if (dialect instanceof DerbyDbDialect) {
             try {
                 getJdbcTemplate().update("drop table test_derby_binary_types");
-            } catch (Exception e)
-            { }
-            getJdbcTemplate().update("create table test_derby_binary_types (id integer, data VARCHAR (100) FOR BIT DATA, data2 CHAR(12) FOR BIT DATA)");
-            
+            } catch (Exception e) {
+            }
+            getJdbcTemplate()
+                    .update("create table test_derby_binary_types (id integer, data VARCHAR (100) FOR BIT DATA, data2 CHAR(12) FOR BIT DATA)");
+
             TriggerRouter trouter = new TriggerRouter();
             Trigger trigger = trouter.getTrigger();
             trigger.setSourceTableName("test_derby_binary_types");
@@ -352,12 +373,13 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
             ITriggerRouterService triggerService = getTriggerRouterService();
             triggerService.syncTriggers();
-            Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()
-                    .size());
-            
-            getJdbcTemplate().update("insert into test_derby_binary_types values (?, ?, ?)", new Object[] {23, "test 1 2 3".getBytes(), "test 1 2 3".getBytes()});
+            Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService
+                    .getFailedTriggers().size());
+
+            getJdbcTemplate().update("insert into test_derby_binary_types values (?, ?, ?)",
+                    new Object[] { 23, "test 1 2 3".getBytes(), "test 1 2 3".getBytes() });
             String csvString = getNextDataRow();
-            Assert.assertEquals("\"23\",\"dGVzdCAxIDIgMw==\",\"dGVzdCAxIDIgMyAg\"", csvString);            
+            Assert.assertEquals("\"23\",\"dGVzdCAxIDIgMw==\",\"dGVzdCAxIDIgMyAg\"", csvString);
         }
     }
 
@@ -375,7 +397,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     }
 
     public static int insert(Object[] values, JdbcTemplate jdbcTemplate, IDbDialect dbDialect) {
-        return jdbcTemplate.update(INSERT, filterValues(values, dbDialect), filterTypes(INSERT_TYPES, dbDialect));
+        return jdbcTemplate.update(INSERT, filterValues(values, dbDialect),
+                filterTypes(INSERT_TYPES, dbDialect));
     }
 
     protected static Object[] filterValues(Object[] values, IDbDialect dbDialect) {
@@ -393,8 +416,10 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     private String getNextDataRow() {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        return jdbcTemplate.queryForObject(
-                "select row_data from sym_data where data_id = (select max(data_id) from sym_data)", String.class);
+        return jdbcTemplate
+                .queryForObject(
+                        "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
+                        String.class);
 
     }
 
