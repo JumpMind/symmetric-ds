@@ -41,7 +41,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 public class InetAddressFilterTest extends AbstractWebTest {
     public static final String[] HTTP_METHODS = { "GET", "POST", "DELETE", "PUT", "TRACE", "OPTIONS" };
 
-    public static final String[] URIS = { "/ack", "/push", "/pull" };
+    public static final String[] URIS = { "/sync/ack", "/sync/push", "/sync/pull" };
 
     public static final String COMBO_ADDRESS_FILTER = "105.100-10.5.15, 206.123.*.90, 184.*.209.210-99, 64-1.78.81.*, 164-120.*.181-50.*, 15-10.240-155.181-50.211-2";
 
