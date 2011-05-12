@@ -72,8 +72,6 @@ public class StatisticManager implements IStatisticManager {
 
     Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
-    boolean recordStatistics = true;
-
     public StatisticManager() {
     }
 
@@ -344,7 +342,7 @@ public class StatisticManager implements IStatisticManager {
     }
 
     public void flush() {
-        recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE, false);
+        boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE, false);
         if (channelStats != null) {
             channelStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
@@ -491,10 +489,6 @@ public class StatisticManager implements IStatisticManager {
 
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
-    }
-
-    public void setRecordStatistics(boolean recordStatistics) {
-        this.recordStatistics = recordStatistics;
     }
 
 }
