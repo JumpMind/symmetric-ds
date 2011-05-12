@@ -99,7 +99,7 @@ public class SymmetricServlet extends AbstractServlet {
         }
 
         if (servlets.size() == 0) {
-            log.error("ServletNoneFound");
+            log.error("ServletNoneFound");            
         }
     }
 
@@ -199,6 +199,9 @@ public class SymmetricServlet extends AbstractServlet {
             if (req instanceof HttpServletRequest) {
                 HttpServletRequest httpRequest = (HttpServletRequest) req;
                 log.error("ServletNotFoundToHandleRequest", normalizeRequestUri(httpRequest));
+                if (res instanceof HttpServletResponse) {
+                    ((HttpServletResponse) res).sendRedirect("/");
+                }
             }
         }
     }
