@@ -39,8 +39,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * This simply makes sure the SymmetricFilter is setup correctly.
- *
- * 
  */
 @RunWith(Parameterized.class)
 public class SymmetricRegistrationRequiredTest extends AbstractSymmetricFilterTest {
@@ -58,15 +56,14 @@ public class SymmetricRegistrationRequiredTest extends AbstractSymmetricFilterTe
         final Map<String, String> badAuthentication = new HashMap<String, String>();
         badAuthentication.put(WebConstants.SECURITY_TOKEN, BAD_SECURITY_TOKEN);
         badAuthentication.put(WebConstants.NODE_ID, BAD_NODE_ID);
-        return Arrays.asList(new Object[][] { { "GET", "/ack", badAuthentication },
-                { "GET", "/pull", badAuthentication }, { "GET", "/push", badAuthentication } });
+        return Arrays.asList(new Object[][] { { "GET", "/sync/ack", badAuthentication },
+                { "GET", "/sync/pull", badAuthentication }, { "GET", "/sync/push", badAuthentication } });
     }
 
     @Test
     public void testAuthenticationFilterRegistrationRequired() throws Exception {
         final SymmetricFilter filter = new SymmetricFilter();
         filter.init(new MockFilterConfig(servletContext));
-
         final MockHttpServletRequest request = TestSetupUtil.createMockHttpServletRequest(servletContext, method, uri,
                 parameters);
         final MockHttpServletResponse response = new MockHttpServletResponse();

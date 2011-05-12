@@ -56,17 +56,17 @@ public class AuthenticationFilterTest extends AbstractSymmetricFilterTest {
         final Map<String, String> goodAuthentication = new HashMap<String, String>();
         goodAuthentication.put(WebConstants.SECURITY_TOKEN, MockNodeService.GOOD_SECURITY_TOKEN);
         goodAuthentication.put(WebConstants.NODE_ID, MockNodeService.GOOD_NODE_ID);
-        return Arrays.asList(new Object[][] { { "GET", "/ack", goodAuthentication }, { "POST", "/ack", goodAuthentication },
-                { "PUT", "/ack", goodAuthentication }, { "DELETE", "/ack", goodAuthentication },
-                { "TRACE", "/ack", goodAuthentication }, { "OPTIONS", "/ack", goodAuthentication },
-                { "HEAD", "/ack", goodAuthentication }, { "GET", "/pull", goodAuthentication },
-                { "POST", "/pull", goodAuthentication }, { "PUT", "/pull", goodAuthentication },
-                { "DELETE", "/pull", goodAuthentication }, { "TRACE", "/pull", goodAuthentication },
-                { "OPTIONS", "/pull", goodAuthentication }, { "HEAD", "/pull", goodAuthentication },
-                { "GET", "/push", goodAuthentication }, { "POST", "/push", goodAuthentication },
-                { "PUT", "/push", goodAuthentication }, { "DELETE", "/push", goodAuthentication },
-                { "TRACE", "/push", goodAuthentication }, { "OPTIONS", "/push", goodAuthentication },
-                { "HEAD", "/push", goodAuthentication } });
+        return Arrays.asList(new Object[][] { { "GET", "/sync/ack", goodAuthentication }, { "POST", "/sync/ack", goodAuthentication },
+                { "PUT", "/sync/ack", goodAuthentication }, { "DELETE", "/sync/ack", goodAuthentication },
+                { "TRACE", "/sync/ack", goodAuthentication }, { "OPTIONS", "/sync/ack", goodAuthentication },
+                { "HEAD", "/sync/ack", goodAuthentication }, { "GET", "/sync/pull", goodAuthentication },
+                { "POST", "/sync/pull", goodAuthentication }, { "PUT", "/sync/pull", goodAuthentication },
+                { "DELETE", "/sync/pull", goodAuthentication }, { "TRACE", "/sync/pull", goodAuthentication },
+                { "OPTIONS", "/sync/pull", goodAuthentication }, { "HEAD", "/sync/pull", goodAuthentication },
+                { "GET", "/sync/push", goodAuthentication }, { "POST", "/sync/push", goodAuthentication },
+                { "PUT", "/sync/push", goodAuthentication }, { "DELETE", "/sync/push", goodAuthentication },
+                { "TRACE", "/sync/push", goodAuthentication }, { "OPTIONS", "/sync/push", goodAuthentication },
+                { "HEAD", "/sync/push", goodAuthentication } });
     }
 
     @Test

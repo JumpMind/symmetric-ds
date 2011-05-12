@@ -41,8 +41,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * This simply makes sure the SymmetricFilter is setup correctly.
- *
- * 
  */
 @RunWith(Parameterized.class)
 public class SymmetricForbiddenFilterTest extends AbstractSymmetricFilterTest {
@@ -58,25 +56,25 @@ public class SymmetricForbiddenFilterTest extends AbstractSymmetricFilterTest {
         emptyAuthentication.put(WebConstants.SECURITY_TOKEN, "");
         emptyAuthentication.put(WebConstants.NODE_ID, "");
 
-        return Arrays.asList(new Object[][] { { "GET", "/ack", null }, { "GET", "/ack/", null },
-                { "GET", "/ack/more", null }, { "GET", "/ack?name=value", null },
-                { "GET", "/ack?name=value&name=value", null },
-                { "GET", String.format("/ack?%s=1&%s=2", WebConstants.SECURITY_TOKEN, WebConstants.NODE_ID), null },
-                { "GET", "/ack", emptyAuthentication }, { "PUT", "/ack", null }, { "POST", "/ack", null },
-                { "DELETE", "/ack", null }, { "TRACE", "/ack", null }, { "OPTIONS", "/ack", null },
-                { "HEAD", "/ack", null }, { "GET", "/pull", null }, { "GET", "/pull/", null },
-                { "GET", "/pull/more", null }, { "GET", "/pull?name=value", null },
-                { "GET", "/pull?name=value&name=value", null },
-                { "GET", String.format("/pull?%s=1&%s=2", WebConstants.SECURITY_TOKEN, WebConstants.NODE_ID), null },
-                { "GET", "/pull", emptyAuthentication }, { "PUT", "/pull", null }, { "POST", "/pull", null },
-                { "DELETE", "/pull", null }, { "TRACE", "/pull", null }, { "OPTIONS", "/pull", null },
-                { "HEAD", "/pull", null }, { "GET", "/push", null }, { "GET", "/push/", null },
-                { "GET", "/push/more", null }, { "GET", "/push?name=value", null },
-                { "GET", "/push?name=value&name=value", null },
-                { "GET", String.format("/push?%s=1&%s=2", WebConstants.SECURITY_TOKEN, WebConstants.NODE_ID), null },
-                { "GET", "/push", emptyAuthentication }, { "PUT", "/push", null }, { "POST", "/push", null },
-                { "DELETE", "/push", null }, { "TRACE", "/push", null }, { "OPTIONS", "/push", null },
-                { "HEAD", "/push", null }, });
+        return Arrays.asList(new Object[][] { { "GET", "/sync/ack", null }, { "GET", "/sync/ack/", null },
+                { "GET", "/sync/ack/more", null }, { "GET", "/sync/ack?name=value", null },
+                { "GET", "/sync/ack?name=value&name=value", null },
+                { "GET", String.format("/sync/ack?%s=1&%s=2", WebConstants.SECURITY_TOKEN, WebConstants.NODE_ID), null },
+                { "GET", "/sync/ack", emptyAuthentication }, { "PUT", "/sync/ack", null }, { "POST", "/sync/ack", null },
+                { "DELETE", "/sync/ack", null }, { "TRACE", "/sync/ack", null }, { "OPTIONS", "/sync/ack", null },
+                { "HEAD", "/sync/ack", null }, { "GET", "/sync/pull", null }, { "GET", "/sync/pull/", null },
+                { "GET", "/sync/pull/more", null }, { "GET", "/sync/pull?name=value", null },
+                { "GET", "/sync/pull?name=value&name=value", null },
+                { "GET", String.format("/sync/pull?%s=1&%s=2", WebConstants.SECURITY_TOKEN, WebConstants.NODE_ID), null },
+                { "GET", "/sync/pull", emptyAuthentication }, { "PUT", "/sync/pull", null }, { "POST", "/sync/pull", null },
+                { "DELETE", "/sync/pull", null }, { "TRACE", "/sync/pull", null }, { "OPTIONS", "/sync/pull", null },
+                { "HEAD", "/sync/pull", null }, { "GET", "/sync/push", null }, { "GET", "/sync/push/", null },
+                { "GET", "/sync/push/more", null }, { "GET", "/sync/push?name=value", null },
+                { "GET", "/sync/push?name=value&name=value", null },
+                { "GET", String.format("/sync/push?%s=1&%s=2", WebConstants.SECURITY_TOKEN, WebConstants.NODE_ID), null },
+                { "GET", "/sync/push", emptyAuthentication }, { "PUT", "/sync/push", null }, { "POST", "/sync/push", null },
+                { "DELETE", "/sync/push", null }, { "TRACE", "/sync/push", null }, { "OPTIONS", "/sync/push", null },
+                { "HEAD", "/sync/push", null }, });
     }
 
     @Test
