@@ -14,8 +14,8 @@
         <constructor-arg>
             <list>
                 <value>classpath:/symmetric-default.properties</value>
+                <value>classpath:/symmetric-console-default.properties</value>                
                 <value>file:../conf/symmetric.properties</value>
-                <value>classpath:/symmetric-console-default.properties</value>
                 <value>classpath:/symmetric.properties</value>
                 <value>classpath:/symmetric-override.properties</value>
                 <value>file:${user.home}/.symmetric/symmetric-override.properties</value>
