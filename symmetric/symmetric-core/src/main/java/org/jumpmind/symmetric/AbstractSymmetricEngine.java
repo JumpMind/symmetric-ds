@@ -379,7 +379,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         boolean isRegistrationServer = getNodeService().isRegistrationServer();
         
         boolean isSelfConfigurable = isRegistrationServer && 
-        (getParameterService().is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND) || 
+        (getParameterService().is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false) || 
          StringUtils.isNotBlank(getParameterService().getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT))); 
         
         Table symNodeTable = dbDialect.getTable(dbDialect.getDefaultCatalog(), dbDialect.getDefaultSchema(), TableConstants.getTableName(dbDialect.getTablePrefix(), TableConstants.SYM_NODE), false);

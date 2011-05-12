@@ -332,7 +332,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
 
         if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())
-                && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND)) {
+                && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
             log.info("AutoConfigRegistrationService");
             String nodeGroupId = parameterService.getNodeGroupId();
             String nodeId = parameterService.getExternalId();
