@@ -15,10 +15,17 @@ values (900, 11000001, 0.10, 1, 0);
 --
 -- Nodes
 --
+delete from sym_node_group_link;
+delete from sym_node_group;
+delete from sym_node_identity;
+delete from sym_node_security;
+delete from sym_node;
+
 insert into sym_node_group (node_group_id, description) 
 values ('corp', 'Central Office');
 insert into sym_node_group (node_group_id, description) 
 values ('store', 'Store');
+
 
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action)
 values ('store', 'corp', 'P');

@@ -39,11 +39,8 @@ import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.MovedContextHandler;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -86,7 +83,7 @@ public class SymmetricWebServer {
 
     protected boolean createJmxServer = true;
 
-    protected String webHome = "/sync";
+    protected String webHome = "/";
 
     protected int maxIdleTime = 7200000;
 
@@ -176,15 +173,8 @@ public class SymmetricWebServer {
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime/1000);
-
-        MovedContextHandler movedHandler = new MovedContextHandler();
-        movedHandler.setContextPath("/");
-        movedHandler.setNewContextURL(webHome);
-
-        ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[] { movedHandler, webapp });
         
-        server.setHandler(contexts);
+        server.setHandler(webapp);
 
         if (!StringUtils.isBlank(propertiesFile)) {
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);    
