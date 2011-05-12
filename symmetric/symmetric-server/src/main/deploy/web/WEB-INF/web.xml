@@ -5,9 +5,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     version="2.5">
 
     <display-name>SymmetricDS</display-name>
-    
-    <description>
-    </description>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
@@ -36,7 +33,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 
     <servlet-mapping>
         <servlet-name>SymmetricServlet</servlet-name>
-        <url-pattern>/*</url-pattern>        
+        <url-pattern>/sync/*</url-pattern>        
     </servlet-mapping>
 
 </web-app>
