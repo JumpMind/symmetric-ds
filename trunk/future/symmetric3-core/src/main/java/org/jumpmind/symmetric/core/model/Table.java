@@ -49,8 +49,14 @@ public class Table implements Serializable, Cloneable {
 
     }
 
-    public Table(String name) {
-        this.setTableName(name);
+    public Table(String catalogName, String schemaName, String tableName) {
+        this.setCatalogName(catalogName);
+        this.setSchemaName(schemaName);
+        this.setTableName(tableName);
+    }
+    
+    public Table(String tableName) {
+        this.setTableName(tableName);
     }
 
     public Table(String name, Column... columns) {

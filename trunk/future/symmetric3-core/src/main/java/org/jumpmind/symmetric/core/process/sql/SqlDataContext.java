@@ -11,33 +11,7 @@ import org.jumpmind.symmetric.core.sql.StatementBuilder;
 
 public class SqlDataContext extends DataContext {
 
-    protected boolean oldAutoCommitValue;
-
-    protected Table targetTable;
-
-    protected long uncommittedRows = 0;
-
     protected Map<String, Map<DataEventType, StatementBuilder>> statements = new HashMap<String, Map<DataEventType, StatementBuilder>>();
-
-    public void setOldAutoCommitValue(boolean oldAutoCommitValue) {
-        this.oldAutoCommitValue = oldAutoCommitValue;
-    }
-
-    public boolean isOldAutoCommitValue() {
-        return oldAutoCommitValue;
-    }
-
-    public void setTargetTable(Table targetTable) {
-        this.targetTable = targetTable;
-    }
-
-    public Table getTargetTable() {
-        return targetTable;
-    }
-
-    public void incrementUncommittedRows() {
-        uncommittedRows++;
-    }
 
     public StatementBuilder getStatementBuilder(Table table, Data data) {
         StatementBuilder builder = null;

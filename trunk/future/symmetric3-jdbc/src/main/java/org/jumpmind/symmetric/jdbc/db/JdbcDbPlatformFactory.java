@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.model.Parameters;
-import org.jumpmind.symmetric.core.sql.DbException;
+import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.jdbc.db.h2.H2DbPlatform;
 import org.jumpmind.symmetric.jdbc.db.oracle.OracleDbPlatform;
 
@@ -38,7 +38,7 @@ public class JdbcDbPlatformFactory {
                 Constructor<?> constructor = platformClass.getConstructor(DataSource.class, Parameters.class);
                 return (AbstractJdbcDbPlatform) constructor.newInstance(dataSource, parameters);
             } catch (Exception ex) {
-                throw new DbException("Could not create platform for database " + databaseName, ex);
+                throw new SqlException("Could not create platform for database " + databaseName, ex);
             }
         } else {
             return null;
@@ -46,7 +46,7 @@ public class JdbcDbPlatformFactory {
     }
 
     public static String lookupPlatformId(DataSource dataSource, boolean includeVersion)
-            throws DbException {
+            throws SqlException {
         Connection connection = null;
 
         try {
@@ -62,7 +62,7 @@ public class JdbcDbPlatformFactory {
 
             return productString;
         } catch (SQLException ex) {
-            throw new DbException("Error while reading the database metadata: " + ex.getMessage(),
+            throw new SqlException("Error while reading the database metadata: " + ex.getMessage(),
                     ex);
         } finally {
             if (connection != null) {

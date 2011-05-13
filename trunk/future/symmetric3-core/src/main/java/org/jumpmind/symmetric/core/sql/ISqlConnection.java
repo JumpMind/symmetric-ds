@@ -28,6 +28,8 @@ public interface ISqlConnection {
 
     public void testConnection();
 
-    public DbException translate(Exception ex);
+    public SqlException translate(Exception ex);
+    
+    public ISqlTransaction startSqlTransaction();
 
 }

@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.core.db.alter;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.sql.DbException;
+import org.jumpmind.symmetric.core.sql.SqlException;
 
 /**
  * Represents the addition of a column to a table.
@@ -115,7 +115,7 @@ public class AddColumnChange extends TableChangeImplBase {
         try {
             newColumn = (Column) _newColumn.clone();
         } catch (CloneNotSupportedException ex) {
-            throw new DbException(ex);
+            throw new SqlException(ex);
         }
 
         Table table = database.findTable(getChangedTable().getTableName(), caseSensitive);
