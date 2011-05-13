@@ -528,6 +528,8 @@ public class SqlTemplate {
                 String formattedColumnText = AppUtils.replace("columnName", String.format("%s%s", columnPrefix, column
                         .getName()), templateToUse);
                 
+                formattedColumnText = AppUtils.replace("masterCollation", dbDialect.getMasterCollation(), formattedColumnText);
+                
                 if (isLob) {
                     formattedColumnText = dbDialect.massageForLob(formattedColumnText, channel);
                 }

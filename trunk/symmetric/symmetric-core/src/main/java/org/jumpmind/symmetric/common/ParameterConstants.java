@@ -178,6 +178,8 @@ final public class ParameterConstants {
     public final static String STATISTIC_RECORD_ENABLE = "statistic.record.enable";
     
     public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";
+    
+    public final static String DB_MASTER_COLLATION = "db.master.collation";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
