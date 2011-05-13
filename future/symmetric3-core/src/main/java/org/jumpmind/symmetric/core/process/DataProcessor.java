@@ -37,7 +37,7 @@ public class DataProcessor<T extends DataContext> {
             if (batch != null) {
                 int dataRow = 0;
                 readerContext.setBatch(batch);
-                boolean processBatch = listener.batchBegin(batch);
+                boolean processBatch = listener == null ? true : listener.batchBegin(batch);
                 if (processBatch) {
                     writerContext.setBatch(batch);
                     if (!dataWriterOpened) {
@@ -48,9 +48,13 @@ public class DataProcessor<T extends DataContext> {
                 }
                 dataRow += forEachTableInBatch(processBatch, batch, readerContext, writerContext);
                 if (processBatch) {
-                    listener.batchBeforeCommit(batch);
+                    if (listener != null) {
+                        listener.batchBeforeCommit(batch);
+                    }
                     dataWriter.finishBatch(writerContext);
-                    listener.batchCommit(batch);
+                    if (listener != null) {
+                        listener.batchCommit(batch);
+                    }
                 }
             }
         } while (batch != null);
@@ -63,9 +67,9 @@ public class DataProcessor<T extends DataContext> {
         do {
             table = dataReader.nextTable(readerContext);
             if (table != null) {
-                readerContext.setSourceTable(table);
+                readerContext.setTable(table);
                 if (processBatch) {
-                    writerContext.setSourceTable(table);
+                    writerContext.setTable(table);
                     processBatch |= dataWriter.switchTables(writerContext);
                 }
                 dataRow += forEachDataInTable(processBatch, batch, readerContext, writerContext);

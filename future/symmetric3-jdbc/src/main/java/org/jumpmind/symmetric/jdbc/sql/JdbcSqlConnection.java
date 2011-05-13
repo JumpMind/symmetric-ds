@@ -18,8 +18,9 @@ import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.model.Parameters;
-import org.jumpmind.symmetric.core.sql.DbException;
-import org.jumpmind.symmetric.core.sql.DbIntegrityViolationException;
+import org.jumpmind.symmetric.core.sql.ISqlTransaction;
+import org.jumpmind.symmetric.core.sql.SqlException;
+import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
 import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
@@ -61,6 +62,13 @@ public class JdbcSqlConnection implements ISqlConnection {
             int[] types) {
         return new JdbcSqlReadCursor<T>(sql, values, types, mapper, this.dbPlatform);
     }
+    
+    public ISqlTransaction startSqlTransaction() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    
 
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
         return execute(new IConnectionCallback<T>() {
@@ -315,11 +323,11 @@ public class JdbcSqlConnection implements ISqlConnection {
         }
     }
 
-    public DbException translate(Exception ex) {
+    public SqlException translate(Exception ex) {
         if (getDbPlatform().isDataIntegrityException(ex)) {
-            return new DbIntegrityViolationException(ex);
+            return new DataIntegrityViolationException(ex);
         } else {
-            return new DbException(ex);
+            return new SqlException(ex);
         }
     }
 

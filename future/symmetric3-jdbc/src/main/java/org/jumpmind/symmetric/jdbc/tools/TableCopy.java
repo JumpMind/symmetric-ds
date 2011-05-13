@@ -7,6 +7,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.TableNotFoundException;
 import org.jumpmind.symmetric.core.io.IoUtils;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Parameters;
@@ -30,7 +31,7 @@ public class TableCopy {
 
     public TableCopy(TableCopyProperties properties) {
         this.parameters = new Parameters(properties);
-        
+
         this.source = properties.getSourceDataSource();
         this.sourcePlatform = JdbcDbPlatformFactory.createPlatform(source, parameters);
 
@@ -39,11 +40,15 @@ public class TableCopy {
 
         String[] tableNames = properties.getTables();
 
-        List<TableToExtract> tablesToCopy = new ArrayList<TableToExtract>();
+        tablesToRead = new ArrayList<TableToExtract>();
         for (String tableName : tableNames) {
             Table table = sourcePlatform.findTable(tableName);
-            String condition = properties.getConditionForTable(tableName);
-            tablesToCopy.add(new TableToExtract(table, condition));
+            if (table != null) {
+                String condition = properties.getConditionForTable(tableName);
+                tablesToRead.add(new TableToExtract(table, condition));
+            } else {
+                throw new TableNotFoundException(tableName);
+            }
         }
     }
 

@@ -46,7 +46,7 @@ import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
-import org.jumpmind.symmetric.core.sql.DbException;
+import org.jumpmind.symmetric.core.sql.SqlException;
 
 
 /**
@@ -246,7 +246,7 @@ public class H2SqlBuilder extends SqlBuilder {
         if (parsedDefault != null) {
             if (!getPlatformInfo().isDefaultValuesForLongTypesSupported()
                     && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
-                throw new DbException(
+                throw new SqlException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
             }
             // we write empty default value strings only if the type is not a

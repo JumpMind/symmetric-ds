@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.core.db.alter;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.sql.DbException;
+import org.jumpmind.symmetric.core.sql.SqlException;
 
 /**
  * Represents the addition of an index to a table.
@@ -64,7 +64,7 @@ public class AddIndexChange extends TableChangeImplBase {
         try {
             newIndex = (Index) _newIndex.clone();
         } catch (CloneNotSupportedException ex) {
-            throw new DbException(ex);
+            throw new SqlException(ex);
         }
         database.findTable(getChangedTable().getTableName(), caseSensitive).addIndex(newIndex);
     }

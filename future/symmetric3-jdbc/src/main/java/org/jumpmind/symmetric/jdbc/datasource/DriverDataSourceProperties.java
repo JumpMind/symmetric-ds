@@ -10,7 +10,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.io.IoException;
-import org.jumpmind.symmetric.core.sql.DbException;
+import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
 public class DriverDataSourceProperties extends Properties {
@@ -67,7 +67,7 @@ public class DriverDataSourceProperties extends Properties {
         msg.append("\ndb." + name + ".url=" + url);
         msg.append("\ndb." + name + ".username=" + username);
         msg.append("\ndb." + name + ".password=" + password);
-        return new DbException(msg.toString(), ex);
+        return new SqlException(msg.toString(), ex);
     }
 
     public void load(File file) {

@@ -52,7 +52,7 @@ import org.jumpmind.symmetric.core.model.NonUniqueIndex;
 import org.jumpmind.symmetric.core.model.Reference;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.UniqueIndex;
-import org.jumpmind.symmetric.core.sql.DbException;
+import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.jdbc.sql.IConnectionCallback;
 import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
@@ -599,7 +599,7 @@ public class JdbcModelReader {
                             return table;
                         }
                     });
-        } catch (DbException ex) {
+        } catch (SqlException ex) {
             log.log(LogLevel.WARN, ex);
         }
 

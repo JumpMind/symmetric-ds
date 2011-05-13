@@ -70,7 +70,7 @@ import org.jumpmind.symmetric.core.model.IndexColumn;
 import org.jumpmind.symmetric.core.model.Reference;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
-import org.jumpmind.symmetric.core.sql.DbException;
+import org.jumpmind.symmetric.core.sql.SqlException;
 
 /**
  * This class is a collection of Strategy methods for creating the DDL required
@@ -722,7 +722,7 @@ public abstract class SqlBuilder {
         try {
             copyOfCurrentModel = (Database) currentModel.clone();
         } catch (CloneNotSupportedException ex) {
-            throw new DbException(ex);
+            throw new SqlException(ex);
         }
 
         for (Iterator<Map.Entry<String, List<TableChange>>> tableChangeIt = changesPerTable
@@ -970,7 +970,7 @@ public abstract class SqlBuilder {
             try {
                 table.addColumn((Column) targetTable.getColumn(idx).clone());
             } catch (CloneNotSupportedException ex) {
-                throw new DbException(ex);
+                throw new SqlException(ex);
             }
         }
 
@@ -1029,7 +1029,7 @@ public abstract class SqlBuilder {
             try {
                 table.addColumn((Column) targetTable.getColumn(idx).clone());
             } catch (CloneNotSupportedException ex) {
-                throw new DbException(ex);
+                throw new SqlException(ex);
             }
         }
 
@@ -1764,7 +1764,7 @@ public abstract class SqlBuilder {
         }
         if (column.isAutoIncrement() && !getPlatformInfo().isDefaultValueUsedForIdentitySpec()) {
             if (!getPlatformInfo().isNonPKIdentityColumnsSupported() && !column.isPrimaryKey()) {
-                throw new DbException(
+                throw new SqlException(
                         "Column "
                                 + column.getName()
                                 + " in table "
@@ -1906,7 +1906,7 @@ public abstract class SqlBuilder {
         if (parsedDefault != null) {
             if (!getPlatformInfo().isDefaultValuesForLongTypesSupported()
                     && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
-                throw new DbException(
+                throw new SqlException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
             }
             // we write empty default value strings only if the type is not a
@@ -2199,7 +2199,7 @@ public abstract class SqlBuilder {
             Index index = table.getIndex(idx);
 
             if (!index.isUnique() && !getPlatformInfo().isIndicesSupported()) {
-                throw new DbException("Platform does not support non-unique indices");
+                throw new SqlException("Platform does not support non-unique indices");
             }
             writeExternalIndexCreateStmt(table, index);
         }
@@ -2250,7 +2250,7 @@ public abstract class SqlBuilder {
                     if (col == null) {
                         // would get null pointer on next line anyway, so throw
                         // exception
-                        throw new DbException("Invalid column '" + idxColumn.getName()
+                        throw new SqlException("Invalid column '" + idxColumn.getName()
                                 + "' on index " + index.getName() + " for table "
                                 + table.getTableName());
                     }
@@ -2293,7 +2293,7 @@ public abstract class SqlBuilder {
             if (col == null) {
                 // would get null pointer on next line anyway, so throw
                 // exception
-                throw new DbException("Invalid column '" + idxColumn.getName() + "' on index "
+                throw new SqlException("Invalid column '" + idxColumn.getName() + "' on index "
                         + index.getName() + " for table " + table.getTableName());
             }
             if (idx > 0) {

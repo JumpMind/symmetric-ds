@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.core.db.alter;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.ForeignKey;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.sql.DbException;
+import org.jumpmind.symmetric.core.sql.SqlException;
 
 /**
  * Represents the addition of a foreign key to a table. Note that for simplicity
@@ -68,7 +68,7 @@ public class AddForeignKeyChange extends TableChangeImplBase {
             newFK.setForeignTable(database.findTable(_newForeignKey.getForeignTableName(),
                     caseSensitive));
         } catch (CloneNotSupportedException ex) {
-            throw new DbException(ex);
+            throw new SqlException(ex);
         }
         database.findTable(getChangedTable().getTableName()).addForeignKey(newFK);
     }

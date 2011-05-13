@@ -61,7 +61,7 @@ abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implemen
         Table cachedTable = cachedModel.findTable(catalogName, schemaName, tableName);
         if (cachedTable == null || !useCache) {
             Table justReadTable = jdbcModelReader.readTable(catalogName, schemaName, tableName,
-                    parameters.is(Parameters.DB_METADATA_IGNORE_CASE, true),
+                    !parameters.is(Parameters.DB_METADATA_IGNORE_CASE, true),
                     parameters.is(Parameters.DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND, false));
             
             if (cachedTable != null) {

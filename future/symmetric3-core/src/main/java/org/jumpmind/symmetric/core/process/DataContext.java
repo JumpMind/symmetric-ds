@@ -11,7 +11,7 @@ public class DataContext {
 
     protected Batch batch;
 
-    protected Table sourceTable;
+    protected Table table;
 
     protected BinaryEncoding binaryEncoding = BinaryEncoding.NONE;
 
@@ -33,12 +33,12 @@ public class DataContext {
         this.context = context;
     }
 
-    public void setSourceTable(Table table) {
-        this.sourceTable = table;
+    public void setTable(Table table) {
+        this.table = table;
     }
 
-    public Table getSourceTable() {
-        return sourceTable;
+    public Table getTable() {
+        return table;
     }
 
     public void setBinaryEncoding(BinaryEncoding binaryEncoding) {
