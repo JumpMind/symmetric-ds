@@ -143,6 +143,10 @@ public class SymmetricLauncher {
     private static final String OPTION_CREATE_WAR = "create-war";
 
     private static final String MESSAGE_BUNDLE = "Launcher.Option.";
+    
+    private static final String OPTION_KEYSTORE_PASSWORD ="keystore-password";
+    
+    private static final String OPTION_KEYSTORE_TYPE ="keystore-type";
 
     protected static SymmetricWebServer webServer;
 
@@ -181,6 +185,14 @@ public class SymmetricLauncher {
                 securePort = new Integer(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
             }
             
+            if (line.hasOption(OPTION_KEYSTORE_PASSWORD)) {
+                System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD, line.getOptionValue(OPTION_KEYSTORE_PASSWORD));
+             }
+             
+            if (line.hasOption(OPTION_KEYSTORE_TYPE)) {
+                System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, line.getOptionValue(OPTION_KEYSTORE_TYPE));
+            }
+             
             if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
                 maxIdleTime = new Integer(line.getOptionValue(OPTION_MAX_IDLE_TIME));
             }
@@ -316,7 +328,7 @@ public class SymmetricLauncher {
                 new StandaloneSymmetricEngine(propertiesFile).start();
                 return;
             }
-
+            
             if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER)
                     || line.hasOption(OPTION_START_MIXED_SERVER)) {
                 webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join, noNio, noDirectBuffer);
@@ -483,6 +495,12 @@ public class SymmetricLauncher {
         addOption(options, "w", OPTION_CREATE_WAR, true);
         
         addOption(options, "x", OPTION_EXPORT_SCHEMA, true);
+
+        addOption(options, "y", OPTION_ENCRYPT_TEXT, true);
+
+        addOption(options, "ksp", OPTION_KEYSTORE_PASSWORD, true);
+        
+        addOption(options, "kst", OPTION_KEYSTORE_TYPE, true);
 
         return options;
     }
