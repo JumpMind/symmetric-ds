@@ -238,6 +238,7 @@ public class SymmetricWebServer {
     protected Connector[] getConnectors(int port, int securePort, Mode mode) {
         ArrayList<Connector> connectors = new ArrayList<Connector>();
         String keyStoreFile = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
+        String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE);
 
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
             Connector connector = null;
@@ -260,6 +261,10 @@ public class SymmetricWebServer {
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
             ((SslSocketConnector) connector).setKeystore(keyStoreFile);
             ((SslSocketConnector) connector).setKeyPassword(keyStorePassword);
+            if (keyStoreType!=null) {
+                ((SslSocketConnector) connector).setKeystoreType(keyStoreType);
+            }
+
             ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
             connector.setPort(securePort);
             connector.setHost(host);
