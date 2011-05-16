@@ -234,13 +234,27 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      */
     public OutgoingBatches getOutgoingBatches(Node node) {
         long ts = System.currentTimeMillis();
-
+        final int maxNumberOfBatchesToSelect = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
-                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"), new Object[] {
-                        node.getNodeId(), OutgoingBatch.Status.NE.name(),
+                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"),
+                new Object[] { node.getNodeId(), OutgoingBatch.Status.NE.name(),
                         OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                         OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name() },
-                new OutgoingBatchMapper());
+                new ResultSetExtractor<List<OutgoingBatch>>() {
+                    RowMapper<OutgoingBatch> mapper = new OutgoingBatchMapper();
+
+                    public List<OutgoingBatch> extractData(ResultSet rs) throws SQLException {
+                        List<OutgoingBatch> results = new ArrayList<OutgoingBatch>();
+                        int rowNum = 0;
+                        while (rs.next()) {
+                            results.add(this.mapper.mapRow(rs, rowNum++));
+                            if (rowNum >= maxNumberOfBatchesToSelect) {
+                                break;
+                            }
+                        }
+                        return results;
+                    }
+                });
 
         OutgoingBatches batches = new OutgoingBatches(list);
 
@@ -346,6 +360,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     class OutgoingBatchMapper implements RowMapper<OutgoingBatch> {
+        public OutgoingBatchMapper() {
+
+        }
+
         public OutgoingBatch mapRow(ResultSet rs, int num) throws SQLException {
             OutgoingBatch batch = new OutgoingBatch();
             batch.setNodeId(rs.getString(1));
