@@ -118,7 +118,8 @@ final public class ParameterConstants {
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
     public final static String DATA_EXTRACTOR_FLUSH_FOR_KEEP_ALIVE = "dataextractor.keepalive.period.ms";
     public final static String DATA_EXTRACTOR_OLD_DATA_ENABLED = "dataextractor.old.data.enable";
-
+    public final static String OUTGOING_BATCH_MAX_BATCHES_TO_SELECT = "outgoing.batches.max.to.select";
+    
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
     
     public final static String DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS = "oracle.transaction.view.clock.sync.threshold.ms";
