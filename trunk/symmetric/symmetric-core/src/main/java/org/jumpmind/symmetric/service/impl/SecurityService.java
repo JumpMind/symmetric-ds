@@ -97,7 +97,7 @@ public class SecurityService extends AbstractService implements ISecurityService
         return entry.getSecretKey();
     }
 
-    private KeyStore getKeyStore(String password) throws Exception {
+    protected KeyStore getKeyStore(String password) throws Exception {
         KeyStore ks = KeyStore.getInstance(SecurityConstants.KEYSTORE_TYPE);
         FileInputStream is = new FileInputStream(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
         ks.load(is, password.toCharArray());
@@ -105,7 +105,7 @@ public class SecurityService extends AbstractService implements ISecurityService
         return ks;
     }
 
-    private void saveKeyStore(KeyStore ks, String password) throws Exception {
+    protected void saveKeyStore(KeyStore ks, String password) throws Exception {
         FileOutputStream os = new FileOutputStream(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
         ks.store(os, password.toCharArray());
         os.close();

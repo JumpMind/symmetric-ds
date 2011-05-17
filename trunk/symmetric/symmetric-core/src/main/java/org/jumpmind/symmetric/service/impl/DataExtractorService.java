@@ -94,6 +94,8 @@ import org.springframework.jdbc.support.JdbcUtils;
  */
 public class DataExtractorService extends AbstractService implements IDataExtractorService, BeanFactoryAware {
 
+    final static long MS_PASSED_BEFORE_BATCH_REQUERIED = 5000;
+    
     private IOutgoingBatchService outgoingBatchService;
 
     private IRouterService routingService;
@@ -408,10 +410,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return batches.getBatches();
     }
 
-    public List<OutgoingBatch> extract(Node node, IOutgoingTransport targetTransport) throws IOException {
-        
+    public List<OutgoingBatch> extract(Node node, IOutgoingTransport targetTransport)
+            throws IOException {
+
         List<OutgoingBatch> activeBatches = null;
-        
+
         IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
 
         if (!parameterService.is(ParameterConstants.START_ROUTE_JOB)) {
@@ -419,21 +422,24 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node);
-        
+        long batchesSelectedAtMs = System.currentTimeMillis();
+
         if (batches.containsBatches()) {
 
-            activeBatches = filterBatchesForExtraction(batches, targetTransport
-                    .getSuspendIgnoreChannelLists(configurationService));
-            
+            activeBatches = filterBatchesForExtraction(batches,
+                    targetTransport.getSuspendIgnoreChannelLists(configurationService));
+
             if (activeBatches.size() > 0) {
-                
+
                 Writer extractWriter = null;
                 BufferedWriter networkWriter = null;
-                
-                boolean streamToFileEnabled = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
 
-                ThresholdFileWriter fileWriter = new ThresholdFileWriter(parameterService
-                        .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "extract");
+                boolean streamToFileEnabled = parameterService
+                        .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+
+                ThresholdFileWriter fileWriter = new ThresholdFileWriter(
+                        parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD),
+                        "extract");
 
                 if (streamToFileEnabled) {
                     extractWriter = new BufferedWriter(fileWriter);
@@ -442,59 +448,91 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     extractWriter = targetTransport.open();
                 }
 
-                ExtractStreamHandler handler = createExtractStreamHandler(dataExtractor, extractWriter);
+                ExtractStreamHandler handler = createExtractStreamHandler(dataExtractor,
+                        extractWriter);
 
                 handler.init();
 
                 OutgoingBatch currentBatch = null;
                 try {
-                    final long MAX_BYTES_TO_SYNC = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+                    final long maxBytesToSync = parameterService
+                            .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
                     long bytesSentCount = 0;
                     int batchesSentCount = 0;
                     for (OutgoingBatch outgoingBatch : activeBatches) {
                         try {
+                            if (System.currentTimeMillis() - batchesSelectedAtMs > MS_PASSED_BEFORE_BATCH_REQUERIED) {                                
+                                outgoingBatch = outgoingBatchService.findOutgoingBatch(currentBatch
+                                        .getBatchId());
+                            }
+
                             currentBatch = outgoingBatch;
-                            
-                            fileWriter.reset();
-                            
-                            File previouslyExtracted = extractedBatchesHandle.get(currentBatch.getBatchId());
-                            if (previouslyExtracted != null && previouslyExtracted.exists()) {
-                                log.info("DataExtractorUsingAlreadyExtractedBatch", currentBatch.getBatchId());
-                                fileWriter.setFile(previouslyExtracted);
-                            } else {
-                                outgoingBatch.setStatus(OutgoingBatch.Status.QY);
-                                outgoingBatch.setExtractCount(outgoingBatch.getExtractCount() + 1);
-                                outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-                                databaseExtract(node, outgoingBatch, handler, networkWriter);
+
+                            if (outgoingBatch.getStatus() != Status.OK) {
+                                fileWriter.reset();
+                                File previouslyExtracted = extractedBatchesHandle.get(currentBatch
+                                        .getBatchId());
+                                if (previouslyExtracted != null && previouslyExtracted.exists()) {
+                                    log.info("DataExtractorUsingAlreadyExtractedBatch",
+                                            currentBatch.getBatchId());
+                                    fileWriter.setFile(previouslyExtracted);
+                                } else {
+                                    outgoingBatch.setStatus(OutgoingBatch.Status.QY);
+                                    outgoingBatch
+                                            .setExtractCount(outgoingBatch.getExtractCount() + 1);
+                                    outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                                    databaseExtract(node, outgoingBatch, handler, networkWriter);
+                                }
+
+                                if (System.currentTimeMillis()
+                                        - outgoingBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
+                                    outgoingBatch = outgoingBatchService
+                                            .findOutgoingBatch(currentBatch.getBatchId());
+                                    currentBatch = outgoingBatch;
+                                }
+                                if (outgoingBatch.getStatus() != Status.OK) {
+                                    outgoingBatch.setStatus(OutgoingBatch.Status.SE);
+                                    outgoingBatch.setSentCount(outgoingBatch.getSentCount() + 1);
+                                    outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+
+                                    File file = fileWriter.getFile();
+                                    if (file != null) {
+                                        extractedBatchesHandle.put(currentBatch.getBatchId(), file);
+                                    }
+
+                                    fileWriter.close();
+
+                                    networkTransfer(fileWriter.getReader(), networkWriter);
+
+                                    if (System.currentTimeMillis()
+                                            - outgoingBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
+                                        outgoingBatch = outgoingBatchService
+                                                .findOutgoingBatch(currentBatch.getBatchId());
+                                        currentBatch = outgoingBatch;
+                                    }
+                                    if (outgoingBatch.getStatus() != Status.OK) {
+                                        outgoingBatch.setStatus(OutgoingBatch.Status.LD);
+                                        outgoingBatch
+                                                .setLoadCount(outgoingBatch.getLoadCount() + 1);
+                                        outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+
+                                        bytesSentCount += outgoingBatch.getByteCount();
+                                        batchesSentCount++;
+
+                                        if (bytesSentCount >= maxBytesToSync) {
+                                            log.info("DataExtractorReachedMaxNumberOfBytesToSync",
+                                                    batchesSentCount, bytesSentCount);
+                                            break;
+                                        }
+
+                                    }
+                                }
+
                             }
-                            outgoingBatch.setStatus(OutgoingBatch.Status.SE);
-                            outgoingBatch.setSentCount(outgoingBatch.getSentCount() + 1);
-                            outgoingBatchService.updateOutgoingBatch(outgoingBatch);
 
-                            File file  = fileWriter.getFile();
-                            if (file != null) {
-                                extractedBatchesHandle.put(currentBatch.getBatchId(), file);
-                            }
-                            
-                            fileWriter.close();                            
-                            
-                            networkTransfer(fileWriter.getReader(), networkWriter);
-
-                            outgoingBatch.setStatus(OutgoingBatch.Status.LD);
-                            outgoingBatch.setLoadCount(outgoingBatch.getLoadCount() + 1);
-                            outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-
-                            bytesSentCount += outgoingBatch.getByteCount();
-                            batchesSentCount++;
-
-                            if (bytesSentCount >= MAX_BYTES_TO_SYNC) {
-                                log.info("DataExtractorReachedMaxNumberOfBytesToSync",
-                                        batchesSentCount, bytesSentCount);
-                                break;
-                            }
-                            
                             extractedBatchesHandle.remove(currentBatch.getBatchId());
                             fileWriter.delete();
+
                         } finally {
                             // It doesn't hurt anything to call close and delete
                             // a second time
@@ -520,11 +558,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else {
                         log.error("BatchStatusLoggingFailed", e);
                     }
-                    
+
                     if (e instanceof RuntimeException) {
-                        throw (RuntimeException)e;
+                        throw (RuntimeException) e;
                     } else if (e instanceof IOException) {
-                        throw (IOException)e;
+                        throw (IOException) e;
                     } else {
                         throw new RuntimeException(e);
                     }
@@ -541,9 +579,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     nodeChannel.setLastExtractedTime(now.getTime());
                     configurationService.saveNodeChannelControl(nodeChannel, false);
                 }
-                
-            } 
-        } 
+
+            }
+        }
 
         return activeBatches != null ? activeBatches : new ArrayList<OutgoingBatch>(0);
     }
