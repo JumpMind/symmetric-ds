@@ -17,10 +17,12 @@ public interface ISqlTransaction {
     /**
      * Each time the SQL changes it needs to be submitted for preparation
      */
-    public void prepare(String sql, int flushSize);
+    public void prepare(String sql, int flushSize, boolean useBatching);
     
     public <T> int update(T marker, Object[] values, int[] types);
     
-    public <T> List<T> getFailedMarkers();
+    public int flush();
+    
+    public <T> List<T> getUnflushedMarkers();
     
 }

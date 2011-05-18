@@ -18,15 +18,16 @@ import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.model.Parameters;
-import org.jumpmind.symmetric.core.sql.ISqlTransaction;
-import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
 import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
+import org.jumpmind.symmetric.core.sql.ISqlTransaction;
+import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
 import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
 
+// TODO make sure connection timeouts are set properly
 public class JdbcSqlConnection implements ISqlConnection {
 
     static final Log log = LogFactory.getLog(JdbcSqlConnection.class);
@@ -42,6 +43,10 @@ public class JdbcSqlConnection implements ISqlConnection {
     }
 
     public IDbPlatform getDbPlatform() {
+        return this.dbPlatform;
+    }
+
+    public IJdbcDbPlatform getJdbcDbPlatform() {
         return this.dbPlatform;
     }
 
@@ -62,13 +67,10 @@ public class JdbcSqlConnection implements ISqlConnection {
             int[] types) {
         return new JdbcSqlReadCursor<T>(sql, values, types, mapper, this.dbPlatform);
     }
-    
+
     public ISqlTransaction startSqlTransaction() {
-        // TODO Auto-generated method stub
-        return null;
+        return new JdbcSqlTransaction(this);
     }
-    
-    
 
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
         return execute(new IConnectionCallback<T>() {

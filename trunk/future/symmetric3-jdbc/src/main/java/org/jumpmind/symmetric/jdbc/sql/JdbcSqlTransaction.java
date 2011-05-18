@@ -1,13 +1,12 @@
 package org.jumpmind.symmetric.jdbc.sql;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
-import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
 
 /**
@@ -21,18 +20,29 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     protected PreparedStatement pstmt;
 
-    protected ISqlConnection sqlConnection;
+    protected JdbcSqlConnection sqlConnection;
 
-    public JdbcSqlTransaction(DataSource dataSource, JdbcSqlConnection sqlConnection) {
+    protected int numberOfRowsBeforeBatchFlush = 1000;
+
+    protected boolean oldAutoCommitValue;
+
+    protected List<Object> markers = new ArrayList<Object>();
+
+    public JdbcSqlTransaction(JdbcSqlConnection sqlConnection) {
         try {
-            this.dbConnection = dataSource.getConnection();
+            this.sqlConnection = sqlConnection;
+            this.dbConnection = sqlConnection.getJdbcDbPlatform().getDataSource().getConnection();
+            this.oldAutoCommitValue = this.dbConnection.getAutoCommit();
+            this.dbConnection.setAutoCommit(false);
         } catch (SQLException ex) {
             throw sqlConnection.translate(ex);
         }
     }
 
     public void setUseBatching(boolean useBatching) {
-        this.useBatching = useBatching;
+        if (dbConnection != null) {
+            this.useBatching = useBatching && supportsBatchUpdates(dbConnection);
+        }
     }
 
     public boolean isUseBatching() {
@@ -43,14 +53,11 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         if (dbConnection != null) {
             try {
                 if (pstmt != null && useBatching) {
-                    pstmt.executeBatch();
+                    flush();
                 }
                 dbConnection.commit();
-
             } catch (SQLException ex) {
-
-            } finally {
-                dbConnection = null;
+                throw sqlConnection.translate(ex);
             }
         }
     }
@@ -60,9 +67,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             try {
                 dbConnection.rollback();
             } catch (SQLException ex) {
-
-            } finally {
-                dbConnection = null;
+                // do nothing
             }
         }
     }
@@ -70,28 +75,104 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     public void close() {
         if (dbConnection != null) {
             try {
+                dbConnection.setAutoCommit(this.oldAutoCommitValue);
+            } catch (SQLException ex) {
+                // do nothing
+            }
+            try {
                 dbConnection.close();
             } catch (SQLException ex) {
-
+                // do nothing
             } finally {
                 dbConnection = null;
             }
         }
     }
 
-    public void prepare(String sql, int flushSize) {
-        // TODO Auto-generated method stub
-
+    public int flush() {
+        int rowsUpdated = 0;
+        if (markers.size() > 0 && pstmt != null) {
+            try {
+                int[] updates = pstmt.executeBatch();
+                for (int i : updates) {
+                    rowsUpdated += i;
+                }
+                markers.clear();
+            } catch (SQLException ex) {
+                throw sqlConnection.translate(ex);
+            }
+        }
+        return rowsUpdated;
     }
 
-    public <T> int update(T marker, Object[] values, int[] types) {
-        // TODO Auto-generated method stub
-        return 0;
+    public void prepare(String sql, int flushSize, boolean useBatching) {
+        try {
+            if (this.markers.size() > 0) {
+                throw new IllegalStateException(
+                        "Cannot prepare a new batch before the last batch has been flushed.");
+            }
+            setUseBatching(useBatching);
+            this.numberOfRowsBeforeBatchFlush = flushSize;
+            pstmt = dbConnection.prepareStatement(sql);
+        } catch (SQLException ex) {
+            throw sqlConnection.translate(ex);
+        }
     }
 
-    public <T> List<T> getFailedMarkers() {
-        // TODO Auto-generated method stub
-        return null;
+    public int update(Object marker, Object[] values, int[] types) {
+        int rowsUpdated = 0;
+        try {
+            StatementCreatorUtil.setValues(pstmt, values, types, sqlConnection.getJdbcDbPlatform()
+                    .getLobHandler());
+            if (useBatching) {
+                if (marker == null) {
+                    marker = new Integer(markers.size() + 1);
+                }
+                markers.add(marker);
+                pstmt.addBatch();
+                if (markers.size() >= numberOfRowsBeforeBatchFlush) {
+                    rowsUpdated = flush();
+                }
+            } else {
+                rowsUpdated = pstmt.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw sqlConnection.translate(ex);
+        }
+        return rowsUpdated;
+    }
+
+    public List<Object> getUnflushedMarkers() {
+        return markers;
+    }
+
+    /**
+     * Return whether the given JDBC driver supports JDBC 2.0 batch updates.
+     * <p>
+     * Typically invoked right before execution of a given set of statements: to
+     * decide whether the set of SQL statements should be executed through the
+     * JDBC 2.0 batch mechanism or simply in a traditional one-by-one fashion.
+     * <p>
+     * Logs a warning if the "supportsBatchUpdates" methods throws an exception
+     * and simply returns <code>false</code> in that case.
+     * 
+     * @param con
+     *            the Connection to check
+     * @return whether JDBC 2.0 batch updates are supported
+     * @see java.sql.DatabaseMetaData#supportsBatchUpdates()
+     */
+    public static boolean supportsBatchUpdates(Connection con) {
+        try {
+            DatabaseMetaData dbmd = con.getMetaData();
+            if (dbmd != null) {
+                if (dbmd.supportsBatchUpdates()) {
+                    return true;
+                }
+            }
+        } catch (SQLException ex) {
+        } catch (AbstractMethodError err) {
+        }
+        return false;
     }
 
 }
