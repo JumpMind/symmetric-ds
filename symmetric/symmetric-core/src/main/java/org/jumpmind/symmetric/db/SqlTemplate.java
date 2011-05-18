@@ -233,10 +233,6 @@ public class SqlTemplate {
         ddl = AppUtils.replace("sourceNodeExpression", dialect.getSourceNodeExpression(), ddl);
         
         String syncTriggersExpression = dialect.getSyncTriggersExpression();
-        syncTriggersExpression = AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
-                && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", syncTriggersExpression);
-        syncTriggersExpression = AppUtils.replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
-                && defaultSchema.length() > 0 ? defaultSchema + "." : "", syncTriggersExpression);
         ddl = AppUtils.replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? Constants.ALWAYS_TRUE_CONDITION
                 : syncTriggersExpression, ddl);
         ddl = AppUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
@@ -280,7 +276,10 @@ public class SqlTemplate {
         ddl = AppUtils.replace("newColumnPrefix", newColumnPrefix, ddl);
         ddl = AppUtils.replace("oldColumnPrefix", oldColumnPrefix, ddl);
         ddl = AppUtils.replace("prefixName", tablePrefix, ddl);
-        
+        ddl = AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
+                && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", ddl);
+        ddl = AppUtils.replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
+                && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
         switch (dml) {
         case DELETE:
             ddl = AppUtils.replace("curTriggerValue", oldTriggerValue, ddl);
