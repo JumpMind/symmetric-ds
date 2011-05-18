@@ -55,10 +55,10 @@
                                 ]]>
                             </value>
                         </entry>
-                        <entry key="fn_sym_largeobject">
+                        <entry key="largeobject">
                             <value>
                                 <![CDATA[                                 
-                                CREATE OR REPLACE FUNCTION $(defaultSchema)fn_sym_largeobject(objectId oid) RETURNS text AS $$
+                                CREATE OR REPLACE FUNCTION $(defaultSchema)$(functionName)(objectId oid) RETURNS text AS $$
                                 DECLARE
                                   encodedBlob text;
                                 BEGIN
@@ -101,7 +101,7 @@
                 </property>
                 <property name="wrappedBlobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || fn_sym_largeobject($(tableAlias)."$(columnName)") || '"' end ]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || $(defaultSchema)$(prefixName)_largeobject($(tableAlias)."$(columnName)") || '"' end ]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
