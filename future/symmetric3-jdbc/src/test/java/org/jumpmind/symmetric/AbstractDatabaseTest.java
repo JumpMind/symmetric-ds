@@ -20,11 +20,16 @@ abstract public class AbstractDatabaseTest {
 
     static protected IJdbcDbPlatform platform;
 
+    protected static IJdbcDbPlatform getPlatform() {
+        return getPlatform(true);
+    }
+
     protected static IJdbcDbPlatform getPlatform(boolean useExisting) {
         IJdbcDbPlatform result = null;
         if (useExisting) {
             if (platform == null) {
-                platform = JdbcDbPlatformFactory.createPlatform(createDataSource(), new Parameters());
+                platform = JdbcDbPlatformFactory.createPlatform(createDataSource(),
+                        new Parameters());
             }
             result = platform;
         } else {
@@ -37,11 +42,11 @@ abstract public class AbstractDatabaseTest {
     public static void setupDataSource() {
         FileUtils.deleteDirectory("target/h2");
         platform = getPlatform(false);
-    }        
-    
+    }
+
     protected static DataSource createDataSource() {
         return new DriverDataSourceProperties("src/test/resources/test-jdbc.properties")
-        .getDataSource();
+                .getDataSource();
     }
 
     protected Table buildTestTable() {
@@ -52,6 +57,10 @@ abstract public class AbstractDatabaseTest {
         String alterSql = platform.getAlterScriptFor(table);
         sqlConnection.update(alterSql);
         return platform.findTable(table.getTableName());
+    }
+
+    protected void delete(String tableName) {
+        getPlatform(true).getSqlConnection().update(String.format("delete from %s", tableName));
     }
 
     protected void insertTestTableRows(int count) {
@@ -69,12 +78,20 @@ abstract public class AbstractDatabaseTest {
         return connection.queryForInt(String.format("select count(*) from %s", tableName));
     }
 
-    protected int insert(int numberToInsert, int numberToStartAt, ISqlTransaction transaction) {
+    protected void prepareInsertIntoTestTable(ISqlTransaction transaction, String tableName,
+            int flushAt, boolean batchMode) {
+        transaction.prepare(
+                String.format("insert into %s (TEST_ID, TEST_TEXT) values(?, ?)", tableName),
+                flushAt, batchMode);
+    }
+
+    protected int batchInsertIntoTestTable(int numberToInsert, int numberToStartAt,
+            ISqlTransaction transaction) {
         int updatedCount = 0;
         for (int i = 0; i < numberToInsert; i++) {
-            updatedCount += transaction.update(numberToStartAt + i,
-                    new Object[] { Integer.toString(numberToStartAt + i) },
-                    new int[] { Types.INTEGER });
+            updatedCount += transaction.update(numberToStartAt + i, new Object[] {
+                    numberToStartAt + i, Integer.toString(numberToStartAt + i) }, new int[] {
+                    Types.INTEGER, Types.VARCHAR });
         }
         return updatedCount;
     }

@@ -12,7 +12,7 @@ import org.jumpmind.symmetric.jdbc.db.AbstractJdbcDbPlatform;
 public class H2DbPlatform extends AbstractJdbcDbPlatform {
 
     protected static final int[] DATA_INTEGRITY_SQL_ERROR_CODES = { 22003, 22012, 22025, 23000,
-            23001, 90005 };
+            23001, 23505, 90005 };
 
     public H2DbPlatform(DataSource dataSource, Parameters parameters) {
         super(dataSource, parameters);

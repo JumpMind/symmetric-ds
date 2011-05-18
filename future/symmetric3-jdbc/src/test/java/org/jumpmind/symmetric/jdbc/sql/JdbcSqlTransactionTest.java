@@ -5,6 +5,7 @@ import junit.framework.Assert;
 import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
 import org.junit.Before;
@@ -17,8 +18,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
     @Before
     public void cleanupTestTable() {
         testTable = buildTestTable();
-        getPlatform(true).getSqlConnection().update(
-                String.format("delete from %s", testTable.getTableName()));
+        delete(testTable.getTableName());
     }
 
     @Test
@@ -27,36 +27,101 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
         ISqlConnection connection = platform.getSqlConnection();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 10;
-        transaction.prepare(
-                String.format("insert into %s (TEST_TEXT) values(?)", testTable.getTableName()),
-                flushAt, true);
-        Assert.assertEquals(0, insert(5, 1, transaction));
+        prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
+        Assert.assertEquals(0, batchInsertIntoTestTable(5, 1, transaction));
         Assert.assertEquals(5, transaction.flush());
-        Assert.assertEquals(flushAt, insert(flushAt, 6, transaction));
-        //Assert.assertEquals(0, count(testTable.getTableName()));
-
+        Assert.assertEquals(flushAt, batchInsertIntoTestTable(flushAt, 6, transaction));
+        // it would be nice to be able to test that the rows are not yet
+        // committed, but in single connection databases the database is still
+        // locked at this point.
+        // Assert.assertEquals(0, count(testTable.getTableName()));
+        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
         transaction.commit();
         transaction.close();
 
         Assert.assertEquals(15, count(testTable.getTableName()));
     }
-    
+
     @Test
     public void testRollbackBatchInserts() {
         IDbPlatform platform = getPlatform(true);
         ISqlConnection connection = platform.getSqlConnection();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 11;
-        transaction.prepare(
-                String.format("insert into %s (TEST_TEXT) values(?)", testTable.getTableName()),
-                flushAt, true);
-        Assert.assertEquals(flushAt, insert(12, 1, transaction));
+        prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
+        Assert.assertEquals(flushAt, batchInsertIntoTestTable(12, 1, transaction));
+        Assert.assertEquals(1, transaction.getUnflushedMarkers().size());
         Assert.assertEquals(1, transaction.flush());
-
+        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
         transaction.rollback();
         transaction.close();
 
         Assert.assertEquals(0, count(testTable.getTableName()));
-    }    
+    }
+
+    @Test
+    public void testDataIntegrityViolationInBatchMode() {
+        IDbPlatform platform = getPlatform(true);
+        ISqlConnection connection = platform.getSqlConnection();
+        ISqlTransaction transaction = connection.startSqlTransaction();
+        int flushAt = 10;
+        prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
+        Assert.assertEquals(flushAt, batchInsertIntoTestTable(10, 1, transaction));
+        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
+        prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
+        try {
+            Assert.assertEquals(0, batchInsertIntoTestTable(2, 11, transaction));
+            Assert.assertEquals(0, batchInsertIntoTestTable(5, 9, transaction));
+            transaction.flush();
+            Assert.fail("This should have failed");
+        } catch (DataIntegrityViolationException ex) {
+            Assert.assertEquals(4, transaction.getUnflushedMarkers().size());
+        }
+
+        transaction.commit();
+        Assert.assertEquals(13, count(testTable.getTableName()));
+    }
+
+    @Test
+    public void testNonBatchSuccessfulUpdates() {
+        IDbPlatform platform = getPlatform(true);
+        ISqlConnection connection = platform.getSqlConnection();
+        ISqlTransaction transaction = connection.startSqlTransaction();
+        prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, false);
+        Assert.assertEquals(5, batchInsertIntoTestTable(5, 1, transaction));
+        Assert.assertEquals(0, transaction.flush());
+        Assert.assertEquals(5, batchInsertIntoTestTable(5, 6, transaction));
+        // it would be nice to be able to test that the rows are not yet
+        // committed, but in single connection databases the database is still
+        // locked at this point.
+        // Assert.assertEquals(0, count(testTable.getTableName()));
+        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
+        transaction.commit();
+        transaction.close();
+
+        Assert.assertEquals(10, count(testTable.getTableName()));
+    }
+
+    @Test
+    public void testDataIntegrityViolationInNonBatchMode() {
+        IDbPlatform platform = getPlatform(true);
+        ISqlConnection connection = platform.getSqlConnection();
+        ISqlTransaction transaction = connection.startSqlTransaction();
+        prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, true);
+        Assert.assertEquals(10, batchInsertIntoTestTable(10, 1, transaction));
+        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
+        prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, true);
+        try {
+            Assert.assertEquals(2, batchInsertIntoTestTable(2, 11, transaction));
+            Assert.assertEquals(0, batchInsertIntoTestTable(5, 9, transaction));
+            Assert.fail("This should have failed");
+        } catch (DataIntegrityViolationException ex) {
+
+        }
+
+        Assert.assertEquals(5, batchInsertIntoTestTable(5, 13, transaction));
+        transaction.commit();
+        Assert.assertEquals(17, count(testTable.getTableName()));
+    }
 
 }
