@@ -211,8 +211,7 @@ public class SqlTemplate {
 
         ddl = AppUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
 
-        ddl = AppUtils.replace("triggerName", history.getTriggerNameForDmlType(dml), ddl);
-        ddl = AppUtils.replace("prefixName", tablePrefix, ddl);
+        ddl = AppUtils.replace("triggerName", history.getTriggerNameForDmlType(dml), ddl);        
         ddl = AppUtils.replace("channelName", trigger.getChannelId(), ddl);
         ddl = AppUtils.replace("triggerHistoryId", Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
         String triggerExpression = dialect.getTransactionTriggerExpression(defaultCatalog, defaultSchema, trigger);
@@ -280,6 +279,8 @@ public class SqlTemplate {
         ddl = AppUtils.replace("oldTriggerValue", oldTriggerValue, ddl);
         ddl = AppUtils.replace("newColumnPrefix", newColumnPrefix, ddl);
         ddl = AppUtils.replace("oldColumnPrefix", oldColumnPrefix, ddl);
+        ddl = AppUtils.replace("prefixName", tablePrefix, ddl);
+        
         switch (dml) {
         case DELETE:
             ddl = AppUtils.replace("curTriggerValue", oldTriggerValue, ddl);
