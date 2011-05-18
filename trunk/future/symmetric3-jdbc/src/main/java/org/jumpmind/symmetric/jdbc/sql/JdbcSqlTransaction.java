@@ -1,10 +1,12 @@
 package org.jumpmind.symmetric.jdbc.sql;
 
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
@@ -98,11 +100,27 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     rowsUpdated += i;
                 }
                 markers.clear();
+            } catch (BatchUpdateException ex) {
+                removeMarkersThatWereSuccessful(ex);
+                throw sqlConnection.translate(ex);
             } catch (SQLException ex) {
                 throw sqlConnection.translate(ex);
             }
         }
         return rowsUpdated;
+    }
+    
+    protected void removeMarkersThatWereSuccessful(BatchUpdateException ex) {
+        int[] updateCounts = ex.getUpdateCounts();
+        Iterator<Object> it = markers.iterator();
+        int index = 0;
+        while (it.hasNext()) {
+            it.next();
+            if (updateCounts[index] > 0) {
+                it.remove();
+            }
+            index++;
+        }
     }
 
     public void prepare(String sql, int flushSize, boolean useBatching) {
