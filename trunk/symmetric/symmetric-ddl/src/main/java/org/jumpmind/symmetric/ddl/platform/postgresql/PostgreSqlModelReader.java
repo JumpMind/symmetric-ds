@@ -211,12 +211,15 @@ public class PostgreSqlModelReader extends JdbcModelReader
 
         if (valueEnd > 0)
         {
-            return defaultValue.substring(0, valueEnd);
+            defaultValue = defaultValue.substring(0, valueEnd);
         }
         else
         {
-            return defaultValue;
+            if (defaultValue.startsWith("(") && defaultValue.endsWith(")")) {
+                defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+            }           
         }
+        return defaultValue;
     }
     
     /**
