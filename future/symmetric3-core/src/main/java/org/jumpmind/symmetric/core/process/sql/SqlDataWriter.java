@@ -122,7 +122,7 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
             if (data.getEventType() == DataEventType.INSERT) {
                 StatementBuilder st = getStatementBuilder(DmlType.INSERT, ctx, data);
                 if (this.lastDataEvent != DataEventType.INSERT) {
-                    transaction.prepare(st.getSql(), this.maxRowsBeforeBatchFlush);
+                    transaction.prepare(st.getSql(), this.maxRowsBeforeBatchFlush, this.useBatching);
                 }
                 execute(ctx, st, data);
             }
@@ -140,13 +140,16 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
         } catch (DataIntegrityViolationException ex) {
             if (transaction.isUseBatching() && isCorrectForIntegrityViolation(data)) {
                 // if we were in batch mode, then resubmit in non batch mode so
-                // we
-                // can fallback.
-                transaction.setUseBatching(false);
-                List<Data> failed = transaction.getFailedMarkers();
-                // decrement stats?
-                for (Data data2 : failed) {
-                    writeData(data2, ctx);
+                // we can fallback.
+                try {
+                    transaction.setUseBatching(false);
+                    List<Data> failed = transaction.getUnflushedMarkers();
+                    // decrement stats?
+                    for (Data data2 : failed) {
+                        writeData(data2, ctx);
+                    }
+                } finally {
+                    transaction.setUseBatching(true);
                 }
             } else if (isCorrectForIntegrityViolation(data)) {
                 // fallback if enabled

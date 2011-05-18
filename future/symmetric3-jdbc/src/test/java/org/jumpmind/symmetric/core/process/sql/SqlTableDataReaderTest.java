@@ -15,7 +15,7 @@ public class SqlTableDataReaderTest extends AbstractDatabaseTest {
         Table testTable = buildTestTable();
         insertTestTableRows(100);
         TableToExtract tableToExtract = new TableToExtract(testTable, "");
-        SqlTableDataReader reader = new SqlTableDataReader(getPlatform(), new Batch(),
+        SqlTableDataReader reader = new SqlTableDataReader(getPlatform(true), new Batch(),
                 tableToExtract);
         SqlDataContext ctx = reader.createDataContext();
         reader.open(ctx);
