@@ -136,10 +136,11 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getDefaultSchema() {
-        if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
+        String defaultSchema = super.getDefaultSchema();
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
         }
-        return this.defaultSchema;
+        return defaultSchema;
     }
 
     @Override

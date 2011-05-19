@@ -71,8 +71,8 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
             if (functions[i].endsWith(this.functionTemplateKeySuffix)) {
                 String funcName = tablePrefix + "_"
                         + functions[i].substring(0, functions[i].length() - this.functionTemplateKeySuffix.length());
-                if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName, defaultSchema)) == 0) {
-                    jdbcTemplate.update(sqlTemplate.getFunctionSql(functions[i], funcName, defaultSchema));
+                if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName, getDefaultSchema())) == 0) {
+                    jdbcTemplate.update(sqlTemplate.getFunctionSql(functions[i], funcName, getDefaultSchema()));
                     log.info("FunctionInstalled", funcName);
                 }
             }

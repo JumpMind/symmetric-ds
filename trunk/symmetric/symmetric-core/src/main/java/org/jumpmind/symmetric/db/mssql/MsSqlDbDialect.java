@@ -243,10 +243,11 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getDefaultSchema() {
-        if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
+        String defaultSchema = super.getDefaultSchema();
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
         }
-        return this.defaultSchema;
+        return defaultSchema;
     }
 
     @Override

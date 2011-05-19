@@ -127,7 +127,8 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getDefaultSchema() {
-        if (StringUtils.isBlank(this.defaultSchema)) {
+        String defaultSchema = super.getDefaultSchema();
+        if (StringUtils.isBlank(defaultSchema)) {
             defaultSchema = (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
         }
         return defaultSchema;

@@ -745,7 +745,7 @@ public class SqlTemplate {
             String ddl = AppUtils.replace("functionName", functionName, functionInstalledSql);
             ddl = AppUtils.replace("version", Version.versionWithUnderscores(), ddl);
             ddl = AppUtils.replace("defaultSchema",
-                    defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
+                    defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema : "", ddl);
             return ddl;
         } else {
             return null;
