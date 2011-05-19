@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.core.common;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-public class ClassUtils {
+public abstract class ClassUtils {
 
     public static ClassLoader getDefaultClassLoader() {
         ClassLoader cl = null;

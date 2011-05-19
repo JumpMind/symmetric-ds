@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-abstract public class CollectionUtils {
+public abstract class CollectionUtils {
 
     /** 
      * Adds all elements in the array to the given collection.

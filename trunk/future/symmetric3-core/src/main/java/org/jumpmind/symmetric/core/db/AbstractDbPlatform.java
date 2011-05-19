@@ -65,6 +65,13 @@ abstract public class AbstractDbPlatform implements IDbPlatform {
     public SqlBuilder getSqlBuilder() {
         return sqlBuilder;
     }
+    
+    public boolean isLob(int type) {
+        return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY
+                || type == Types.VARBINARY || type == Types.LONGVARBINARY ||
+                // SQL-Server ntext binary type
+                type == -10;
+    }
 
     public void alter(boolean failOnError, Table... tables) {
         String alterSql = getAlterScriptFor(tables);

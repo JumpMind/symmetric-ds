@@ -20,6 +20,8 @@ public class Parameters extends HashMap<String, String> {
     public final static String LOADER_ENABLE_FALLBACK_INSERT = "dataloader.enable.fallback.insert";
     
     public final static String LOADER_ALLOW_MISSING_DELETES = "dataloader.allow.missing.delete";
+    
+    public final static String LOADER_DONT_INCLUDE_PKS_IN_UPDATE = "dataloader.dont.include.keys.in.update.statement";
 
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
 

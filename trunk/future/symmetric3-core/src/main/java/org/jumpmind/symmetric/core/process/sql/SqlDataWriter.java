@@ -1,13 +1,15 @@
 package org.jumpmind.symmetric.core.process.sql;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
+import org.jumpmind.symmetric.core.common.ArrayUtils;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
+import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.DataEventType;
@@ -22,11 +24,10 @@ import org.jumpmind.symmetric.core.sql.ISqlTransaction;
 import org.jumpmind.symmetric.core.sql.StatementBuilder;
 import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
 
-public class SqlDataWriter implements IDataWriter<SqlDataContext> {
+// Notes:  Inserts try to use jdbc batching by default
+public class SqlDataWriter implements IDataWriter<DataContext> {
 
     final Log log = LogFactory.getLog(getClass());
-
-    protected DataSource dataSource;
 
     protected IDbPlatform platform;
 
@@ -58,11 +59,19 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
 
     protected boolean usePrimaryKeysFromSource;
 
-    public SqlDataWriter(DataSource dataSource, IDbPlatform platform, Parameters parameters,
+    protected boolean dontIncludeKeysInUpdateStatement;
+
+    protected Batch batch;
+
+    protected DataContext ctx;
+
+    public SqlDataWriter(IDbPlatform platform, Parameters parameters) {
+        this(platform, parameters, null, null);
+    }
+
+    public SqlDataWriter(IDbPlatform platform, Parameters parameters,
             List<IColumnFilter<DataContext>> columnFilters,
             List<IDataFilter<DataContext>> dataFilters) {
-
-        this.dataSource = dataSource;
         this.platform = platform;
         this.parameters = parameters != null ? parameters : new Parameters();
         this.columnFilters = columnFilters;
@@ -79,20 +88,21 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
         this.maxRowsBeforeCommit = parameters
                 .getInt(Parameters.LOADER_MAX_ROWS_BEFORE_COMMIT, 1000);
         this.usePrimaryKeysFromSource = parameters.is(Parameters.DB_USE_PKS_FROM_SOURCE, true);
+        this.dontIncludeKeysInUpdateStatement = parameters.is(
+                Parameters.LOADER_DONT_INCLUDE_PKS_IN_UPDATE, false);
     }
 
-    public SqlDataContext createDataContext() {
-        return new SqlDataContext();
+    public DataContext createDataContext() {
+        return new DataContext();
     }
 
-    public void open(SqlDataContext context) {
+    public void open(DataContext context) {
+        this.ctx = context;
         this.transaction = this.platform.getSqlConnection().startSqlTransaction();
-        this.transaction.setUseBatching(this.useBatching);
     }
 
-    public boolean switchTables(SqlDataContext context) {
+    public boolean switchTables(Table sourceTable) {
         this.lastDataEvent = null;
-        Table sourceTable = context.getTable();
         if (sourceTable != null) {
             this.targetTable = platform.findTable(sourceTable.getCatalogName(),
                     sourceTable.getSchemaName(), sourceTable.getTableName(), true).copy();
@@ -112,23 +122,36 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
 
     }
 
-    public void startBatch(SqlDataContext context) {
+    public void startBatch(Batch batch) {
         this.lastDataEvent = null;
+        this.batch = batch;
     }
 
-    public void writeData(Data data, SqlDataContext ctx) {
+    public void writeData(Data data) {
+        writeData(data, this.useBatching);
+        lastDataEvent = data.getEventType();
+    }
+
+    protected void writeData(Data data, boolean batchMode) {
 
         try {
-            if (data.getEventType() == DataEventType.INSERT) {
-                StatementBuilder st = getStatementBuilder(DmlType.INSERT, ctx, data);
-                if (this.lastDataEvent != DataEventType.INSERT) {
-                    transaction.prepare(st.getSql(), this.maxRowsBeforeBatchFlush, this.useBatching);
-                }
-                execute(ctx, st, data);
-            }
+            switch (data.getEventType()) {
+            case INSERT:
+                processInsert(data, batchMode);
+                break;
 
-            // TODO UPDATE
-            // TODO DELETE
+            case UPDATE:
+                processUpdate(data);
+                break;
+
+            case DELETE:
+                processDelete(data, batchMode);
+                break;
+
+            case SQL:
+                processSql(data);
+                break;
+            }
 
             uncommittedRows++;
 
@@ -138,27 +161,179 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
             }
 
         } catch (DataIntegrityViolationException ex) {
-            if (transaction.isUseBatching() && isCorrectForIntegrityViolation(data)) {
-                // if we were in batch mode, then resubmit in non batch mode so
+            if (transaction.isInBatchMode() && isCorrectForIntegrityViolation(data)) {
+                // if we were in batch mode, then resubmit in non-batch mode so
                 // we can fallback.
-                try {
-                    transaction.setUseBatching(false);
-                    List<Data> failed = transaction.getUnflushedMarkers();
-                    // decrement stats?
-                    for (Data data2 : failed) {
-                        writeData(data2, ctx);
-                    }
-                } finally {
-                    transaction.setUseBatching(true);
+                List<Data> failed = transaction.getUnflushedMarkers();
+                batch.decrementInsertCount(failed.size());
+                for (Data data2 : failed) {
+                    writeData(data2, false);
                 }
-            } else if (isCorrectForIntegrityViolation(data)) {
-                // fallback if enabled
+            } else {
+                throw ex;
             }
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    protected boolean filterData(Data data, DataContext ctx) {
+        boolean continueToLoad = true;
+        if (dataFilters != null) {
+            batch.startTimer();
+            for (IDataFilter<DataContext> filter : dataFilters) {
+                continueToLoad &= filter.filter(ctx, data);
+            }
+            batch.incrementFilterMillis(batch.endTimer());
+        }
+        return continueToLoad;
+    }
+
+    protected boolean doesColumnNeedUpdated(int columnIndex, Column column, Data data) {
+        boolean needsUpdated = true;
+        String[] oldData = data.toParsedOldData();
+        String[] rowData = data.toParsedRowData();
+        if (oldData != null) {
+            needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
+                    || (platform.isLob(column.getTypeCode()) && (platform.getPlatformInfo()
+                            .isNeedsToSelectLobData() || StringUtils.isBlank(oldData[columnIndex])));
+        } else if (dontIncludeKeysInUpdateStatement) {
+            // This is in support of creating update statements that don't use
+            // the keys in the set portion of the update statement. </p> In
+            // oracle (and maybe not only in oracle) if there is no index on
+            // child table on FK column and update is performing on PK on master
+            // table, table lock is acquired on child table. Table lock is taken
+            // not in exclusive mode, but lock contentions is possible.
+            //
+            // @see ParameterConstants#DATA_LOADER_NO_KEYS_IN_UPDATE
+            needsUpdated = !column.isPrimaryKey()
+                    || !StringUtils.equals(rowData[columnIndex], getPkDataFor(data, column));
+        }
+        return needsUpdated;
+    }
+
+    protected String getPkDataFor(Data data, Column column) {
+        String[] values = data.toParsedPkData();
+        if (values != null) {
+            Column[] columns = targetTable.getColumns();
+            int index = -1;
+            for (Column column2 : columns) {
+                if (column2.isPrimaryKey()) {
+                    index++;
+                }
+                if (column2.equals(column)) {
+                    return values[index];
+                }
+            }
+        } else {
+            return data.toParsedRowData()[targetTable.getColumnIndex(column)];
+        }
+        return null;
+    }
+
+    protected int executeUpdateSql(Data data) {
+        StatementBuilder st = null;
+        String[] columnValues = data.toParsedRowData();
+        ArrayList<String> changedColumnNameList = new ArrayList<String>();
+        ArrayList<String> changedColumnValueList = new ArrayList<String>();
+        ArrayList<Column> changedColumnMetaList = new ArrayList<Column>();
+        for (int i = 0; i < columnValues.length; i++) {
+            Column column = targetTable.getColumn(i);
+            if (column != null) {
+                if (doesColumnNeedUpdated(i, column, data)) {
+                    changedColumnNameList.add(column.getName());
+                    changedColumnMetaList.add(column);
+                    changedColumnValueList.add(columnValues[i]);
+                }
+            }
+        }
+        if (changedColumnNameList.size() > 0) {
+            st = getStatementBuilder(DmlType.UPDATE, targetTable.getPrimaryKeyColumnsArray(),
+                    changedColumnMetaList.toArray(new Column[changedColumnMetaList.size()]));
+            columnValues = (String[]) changedColumnValueList
+                    .toArray(new String[changedColumnValueList.size()]);
+            String[] values = (String[]) ArrayUtils.addAll(columnValues, getPkData(data));
+            transaction.prepare(st.getSql(), -1, false);
+            return execute(st, data, values);
+        } else {
+            // There was no change to apply
+            return 1;
+        }
+    }
+
+    protected String[] getPkData(Data data) {
+        String[] pkData = data.toParsedPkData();
+        if (pkData == null) {
+            String[] values = data.toParsedRowData();
+            Column[] pkColumns = targetTable.getPrimaryKeyColumnsArray();
+            pkData = new String[pkColumns.length];
+            int i = 0;
+            for (Column column : pkColumns) {
+                pkData[i++] = values[targetTable.getColumnIndex(column)];
+            }
+        }
+        return pkData;
+    }
+
+    protected void executeInsertSql(Data data, boolean batchMode) {
+        StatementBuilder st = getStatementBuilder(DmlType.INSERT, null, targetTable.getColumns());
+        if (this.lastDataEvent != DataEventType.INSERT) {
+            transaction.prepare(st.getSql(), this.maxRowsBeforeBatchFlush, batchMode);
+        }
+        execute(st, data, data.toParsedRowData());
+    }
+
+    protected void processInsert(Data data, boolean batchMode) {
+        if (filterData(data, ctx)) {
+            batch.incrementInsertCount();
+            try {
+                batch.startTimer();
+                // TODO add save point logic for postgresql
+                executeInsertSql(data, batchMode);
+            } catch (DataIntegrityViolationException e) {
+                // TODO log insert failed
+                if (enableFallbackForInsert && !batchMode) {
+                    this.lastDataEvent = null;
+                    // TODO rollback to save point
+                    batch.incrementFallbackUpdateCount();
+                    executeUpdateSql(data);
+                } else {
+                    throw e;
+                }
+            } finally {
+                batch.incrementDatabaseMillis(batch.endTimer());
+            }
+        }
+    }
+
+    protected void processUpdate(Data data) {
+        if (filterData(data, ctx)) {
+            batch.incrementUpdateCount();
+            try {
+                batch.startTimer();
+                executeUpdateSql(data);
+            } catch (DataIntegrityViolationException e) {
+                // TODO log update failed
+                if (enableFallbackForUpdate) {
+                    batch.incrementFallbackInsertCount();
+                    executeInsertSql(data, false);
+                } else {
+                    throw e;
+                }
+            } finally {
+                batch.incrementDatabaseMillis(batch.endTimer());
+            }
+        }
+    }
+
+    protected void processDelete(Data data, boolean batchMode) {
+        // TODO
+    }
+
+    protected void processSql(Data data) {
+        // TODO
     }
 
     protected boolean isCorrectForIntegrityViolation(Data data) {
@@ -173,9 +348,9 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
         }
     }
 
-    protected int execute(SqlDataContext ctx, StatementBuilder st, Data data) {
-        Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(),
-                data.toParsedRowData(), st.getMetaData(true));
+    protected int execute(StatementBuilder st, Data data, String[] values) {
+        Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(), values,
+                st.getMetaData(true));
         if (columnFilters != null) {
             for (IColumnFilter<DataContext> columnFilter : columnFilters) {
                 objectValues = columnFilter.filterColumnsValues(ctx, targetTable, objectValues);
@@ -184,31 +359,22 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
         return transaction.update(data, objectValues, st.getTypes());
     }
 
-    final private StatementBuilder getStatementBuilder(DmlType dmlType, SqlDataContext ctx,
-            Data data) {
-        Column[] statementColumns = targetTable.getColumns();
-        StatementBuilder st = ctx.getStatementBuilder(targetTable, data);
-        if (st == null) {
-            Column[] preFilteredColumns = statementColumns;
-            if (columnFilters != null) {
-                for (IColumnFilter<DataContext> columnFilter : columnFilters) {
-                    statementColumns = columnFilter.filterColumnsNames(ctx, targetTable,
-                            statementColumns);
-                }
-            }
-
-            String tableName = targetTable.getFullyQualifiedTableName();
-
-            st = new StatementBuilder(dmlType, tableName, targetTable.getPrimaryKeyColumnsArray(),
-                    targetTable.getColumns(), preFilteredColumns, platform.getPlatformInfo()
-                            .isDateOverridesToTimestamp(), platform.getPlatformInfo()
-                            .getIdentifierQuoteString());
-
-            if (dmlType != DmlType.UPDATE) {
-                ctx.putStatementBuilder(targetTable, data, st);
+    final private StatementBuilder getStatementBuilder(DmlType dmlType, Column[] lookupColumns,
+            Column[] changingColumns) {
+        Column[] preFilteredColumns = changingColumns;
+        if (columnFilters != null) {
+            for (IColumnFilter<DataContext> columnFilter : columnFilters) {
+                changingColumns = columnFilter
+                        .filterColumnsNames(ctx, targetTable, changingColumns);
             }
         }
-        return st;
+
+        String tableName = targetTable.getFullyQualifiedTableName();
+
+        return new StatementBuilder(dmlType, tableName, lookupColumns, changingColumns,
+                preFilteredColumns, platform.getPlatformInfo().isDateOverridesToTimestamp(),
+                platform.getPlatformInfo().getIdentifierQuoteString());
+
     }
 
     private void commit() {
@@ -216,12 +382,12 @@ public class SqlDataWriter implements IDataWriter<SqlDataContext> {
         uncommittedRows = 0;
     }
 
-    public void close(SqlDataContext context) {
+    public void close() {
         commit();
         this.transaction.close();
     }
 
-    public void finishBatch(SqlDataContext context) {
+    public void finishBatch(Batch batch) {
         commit();
     }
 

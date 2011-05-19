@@ -16,7 +16,7 @@ import org.jumpmind.symmetric.core.sql.ISqlTransaction;
  */
 public class JdbcSqlTransaction implements ISqlTransaction {
 
-    protected boolean useBatching = true;
+    protected boolean inBatchMode = true;
 
     protected Connection dbConnection;
 
@@ -41,20 +41,20 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
     }
 
-    public void setUseBatching(boolean useBatching) {
+    public void setInBatchMode(boolean useBatching) {
         if (dbConnection != null) {
-            this.useBatching = useBatching && supportsBatchUpdates(dbConnection);
+            this.inBatchMode = useBatching && supportsBatchUpdates(dbConnection);
         }
     }
 
-    public boolean isUseBatching() {
-        return useBatching;
+    public boolean isInBatchMode() {
+        return inBatchMode;
     }
 
     public void commit() {
         if (dbConnection != null) {
             try {
-                if (pstmt != null && useBatching) {
+                if (pstmt != null && inBatchMode) {
                     flush();
                 }
                 dbConnection.commit();
@@ -67,6 +67,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     public void rollback() {
         if (dbConnection != null) {
             try {
+                markers.clear();
                 dbConnection.rollback();
             } catch (SQLException ex) {
                 // do nothing
@@ -129,7 +130,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 throw new IllegalStateException(
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
-            setUseBatching(useBatching);
+            setInBatchMode(useBatching);
             this.numberOfRowsBeforeBatchFlush = flushSize;
             pstmt = dbConnection.prepareStatement(sql);
         } catch (SQLException ex) {
@@ -142,7 +143,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         try {
             StatementCreatorUtil.setValues(pstmt, values, types, sqlConnection.getJdbcDbPlatform()
                     .getLobHandler());
-            if (useBatching) {
+            if (inBatchMode) {
                 if (marker == null) {
                     marker = new Integer(markers.size() + 1);
                 }

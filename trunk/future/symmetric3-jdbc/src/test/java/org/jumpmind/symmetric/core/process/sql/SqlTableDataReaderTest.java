@@ -6,6 +6,7 @@ import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.process.DataContext;
 import org.junit.Test;
 
 public class SqlTableDataReaderTest extends AbstractDatabaseTest {
@@ -17,7 +18,7 @@ public class SqlTableDataReaderTest extends AbstractDatabaseTest {
         TableToExtract tableToExtract = new TableToExtract(testTable, "");
         SqlTableDataReader reader = new SqlTableDataReader(getPlatform(true), new Batch(),
                 tableToExtract);
-        SqlDataContext ctx = reader.createDataContext();
+        DataContext ctx = reader.createDataContext();
         reader.open(ctx);
         Batch batch = reader.nextBatch(ctx);
         Assert.assertNotNull(batch);
