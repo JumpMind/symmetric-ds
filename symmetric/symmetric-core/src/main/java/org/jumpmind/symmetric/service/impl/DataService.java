@@ -850,6 +850,9 @@ public class DataService extends AbstractService implements IDataService {
         data.setCreateTime(results.getDate(7));
         int histId = results.getInt(8);
         data.setTriggerHistory(triggerRouterService.getTriggerHistory(histId));
+        if (data.getTriggerHistory() == null) {
+            data.setTriggerHistory(new TriggerHistory(histId));
+        }
         data.setChannelId(results.getString(9));
         data.setTransactionId(results.getString(10));
         data.setSourceNodeId(results.getString(11));

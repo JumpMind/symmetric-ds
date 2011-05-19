@@ -83,8 +83,14 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
     public TriggerHistory() {
         createTime = new Date();
     }
+    
+    public TriggerHistory(int triggerHistoryId) {
+        this();
+        this.triggerHistoryId = triggerHistoryId;
+    }   
 
     public TriggerHistory(String tableName, String pkColumnNames, String columnNames) {
+        this();
         this.sourceTableName = tableName;
         this.pkColumnNames = pkColumnNames;
         this.columnNames = columnNames;
