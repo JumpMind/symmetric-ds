@@ -37,7 +37,7 @@ import org.jumpmind.symmetric.core.model.Column;
 public class StatementBuilder {
     
     public enum DmlType {
-        INSERT, UPDATE, DELETE, UPDATE_NO_KEYS, COUNT
+        INSERT, UPDATE, DELETE, COUNT
     };
 
     protected DmlType dmlType;
@@ -64,10 +64,6 @@ public class StatementBuilder {
             sql = buildInsertSql(tableName, columns);
             types = buildTypes(columns, isDateOverrideToTimestamp);
         } else if (type == DmlType.UPDATE) {
-            sql = buildUpdateSql(tableName, keys, columns);
-            types = buildTypes(keys, columns, isDateOverrideToTimestamp);
-        } else if (type == DmlType.UPDATE_NO_KEYS) {
-            columns = removeKeysFromColumns(keys, columns);
             sql = buildUpdateSql(tableName, keys, columns);
             types = buildTypes(keys, columns, isDateOverrideToTimestamp);
         } else if (type == DmlType.DELETE) {
@@ -247,7 +243,6 @@ public class StatementBuilder {
     public Column[] getMetaData(boolean prefiltered) {
         switch (dmlType) {
         case UPDATE:
-        case UPDATE_NO_KEYS:
             return getColumnKeyMetaData(prefiltered);
         case INSERT:
             return getColumns();

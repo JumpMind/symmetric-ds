@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.core.sql.StatementBuilder;
 import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
 
-// Notes:  Inserts try to use jdbc batching by default
+// Notes:  Inserts and deletes try to use jdbc batching by default
 public class SqlDataWriter implements IDataWriter<DataContext> {
 
     final Log log = LogFactory.getLog(getClass());
