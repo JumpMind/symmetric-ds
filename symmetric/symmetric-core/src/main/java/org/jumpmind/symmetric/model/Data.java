@@ -215,5 +215,16 @@ public class Data extends AbstractCsvData implements Serializable {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
+    
+    public String getPkDataFor(String columnName) {
+        String[] pkData = toParsedPkData();
+        String[] keyNames = triggerHistory.getParsedPkColumnNames();
+        for (int i = 0; i < keyNames.length; i++) {
+            if (columnName.equals(keyNames[i])) {
+                return pkData[i];
+            }            
+        }
+        return null;
+    }
 
 }
