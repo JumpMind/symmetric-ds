@@ -218,8 +218,9 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getDefaultSchema() {
-        if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) jdbcTemplate.queryForObject(
+        String defaultSchema = super.getDefaultSchema();
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) jdbcTemplate.queryForObject(
                     "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
         }
         return defaultSchema;

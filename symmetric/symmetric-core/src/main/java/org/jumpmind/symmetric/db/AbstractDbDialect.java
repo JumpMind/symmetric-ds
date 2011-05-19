@@ -144,7 +144,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected Set<String> sqlKeywords;
 
-    protected String defaultSchema;
+    private String defaultSchema;
 
     protected LobHandler lobHandler;
 
@@ -263,9 +263,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         for (int i = 0; i < functions.length; i++) {
             String funcName = tablePrefix + "_" + functions[i];
             if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName,
-                    defaultSchema)) == 0) {
+                    getDefaultSchema())) == 0) {
                 jdbcTemplate.update(sqlTemplate.getFunctionSql(functions[i], funcName,
-                        defaultSchema));
+                        getDefaultSchema()));
                 log.info("FunctionInstalled", funcName);
             }
         }

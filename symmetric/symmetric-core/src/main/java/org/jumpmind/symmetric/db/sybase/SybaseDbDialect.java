@@ -237,10 +237,11 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getDefaultSchema() {
-        if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) jdbcTemplate.queryForObject("select USER_NAME()", String.class);
+        String defaultSchema = super.getDefaultSchema();
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) jdbcTemplate.queryForObject("select USER_NAME()", String.class);
         }
-        return this.defaultSchema;
+        return defaultSchema;
     }
 
     public boolean needsToSelectLobData() {
