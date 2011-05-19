@@ -3,10 +3,8 @@ package org.jumpmind.symmetric.core.sql;
 import java.util.List;
 
 public interface ISqlTransaction {
-
-    public void setUseBatching(boolean on);
     
-    public boolean isUseBatching();
+    public boolean isInBatchMode();
     
     public void commit();
     
@@ -17,7 +15,7 @@ public interface ISqlTransaction {
     /**
      * Each time the SQL changes it needs to be submitted for preparation
      */
-    public void prepare(String sql, int flushSize, boolean useBatching);
+    public void prepare(String sql, int flushSize, boolean batchMode);
     
     public <T> int update(T marker, Object[] values, int[] types);
     

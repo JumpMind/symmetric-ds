@@ -206,6 +206,8 @@ public class DbPlatformInfo {
     private String sqlCommandDelimiter = ";";
     
     private boolean requiresAutoCommitFalseToSetFetchSize = false;
+    
+    private boolean needsToSelectLobData;
 
     /** Contains non-default mappings from jdbc to native types. */
     private HashMap<Integer, String> nativeTypes = new HashMap<Integer, String>();
@@ -1215,5 +1217,13 @@ public class DbPlatformInfo {
     
     public boolean isRequiresAutoCommitFalseToSetFetchSize() {
         return requiresAutoCommitFalseToSetFetchSize;
+    }
+    
+    public void setNeedsToSelectLobData(boolean needsToSelectLobData) {
+        this.needsToSelectLobData = needsToSelectLobData;
+    }
+    
+    public boolean isNeedsToSelectLobData() {
+        return needsToSelectLobData;
     }
 }

@@ -36,22 +36,20 @@ public class DataProcessor<T extends DataContext> {
             batch = dataReader.nextBatch(readerContext);
             if (batch != null) {
                 int dataRow = 0;
-                readerContext.setBatch(batch);
                 boolean processBatch = listener == null ? true : listener.batchBegin(batch);
                 if (processBatch) {
-                    writerContext.setBatch(batch);
                     if (!dataWriterOpened) {
                         writerContext.setBinaryEncoding(readerContext.getBinaryEncoding());
                         dataWriter.open(writerContext);
                     }
-                    dataWriter.startBatch(writerContext);
+                    dataWriter.startBatch(batch);
                 }
                 dataRow += forEachTableInBatch(processBatch, batch, readerContext, writerContext);
                 if (processBatch) {
                     if (listener != null) {
                         listener.batchBeforeCommit(batch);
                     }
-                    dataWriter.finishBatch(writerContext);
+                    dataWriter.finishBatch(batch);
                     if (listener != null) {
                         listener.batchCommit(batch);
                     }
@@ -67,10 +65,8 @@ public class DataProcessor<T extends DataContext> {
         do {
             table = dataReader.nextTable(readerContext);
             if (table != null) {
-                readerContext.setTable(table);
                 if (processBatch) {
-                    writerContext.setTable(table);
-                    processBatch |= dataWriter.switchTables(writerContext);
+                    processBatch |= dataWriter.switchTables(table);
                 }
                 dataRow += forEachDataInTable(processBatch, batch, readerContext, writerContext);
             }
@@ -88,7 +84,7 @@ public class DataProcessor<T extends DataContext> {
                 try {
                     dataRow++;
                     if (processBatch) {
-                        dataWriter.writeData(data, writerContext);
+                        dataWriter.writeData(data);
                     }
                 } catch (Exception ex) {
                     if (errorHandler != null) {

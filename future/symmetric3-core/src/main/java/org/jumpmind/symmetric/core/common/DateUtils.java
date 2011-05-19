@@ -37,7 +37,7 @@ import java.util.TimeZone;
  * @since 2.0
  * @version $Id: DateUtils.java 437554 2006-08-28 06:21:41Z bayard $
  */
-public class DateUtils {
+public abstract  class DateUtils {
     
     /**
      * The UTC time zone  (often referred to as GMT).

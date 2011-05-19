@@ -7,12 +7,13 @@ import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.IDataReader;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
 import org.jumpmind.symmetric.core.sql.mapper.DataMapper;
 
-public class SqlTableDataReader implements IDataReader<SqlDataContext> {
+public class SqlTableDataReader implements IDataReader<DataContext> {
 
     enum Status {
         New, BatchStarted, TableStarted, DataStarted, Finished
@@ -47,17 +48,17 @@ public class SqlTableDataReader implements IDataReader<SqlDataContext> {
         }
     }
 
-    public void close(SqlDataContext context) {
+    public void close(DataContext context) {
         if (readCursor != null) {
             readCursor.close();
         }
     }
 
-    public SqlDataContext createDataContext() {
-        return new SqlDataContext();
+    public DataContext createDataContext() {
+        return new DataContext();
     }
 
-    public Batch nextBatch(SqlDataContext context) {
+    public Batch nextBatch(DataContext context) {
         if (status == Status.New) {
             status = Status.BatchStarted;
             return batch;
@@ -66,7 +67,7 @@ public class SqlTableDataReader implements IDataReader<SqlDataContext> {
         }
     }
 
-    public Data nextData(SqlDataContext context) {
+    public Data nextData(DataContext context) {
         Data data = null;
         if (status == Status.TableStarted) {
             status = Status.DataStarted;
@@ -82,7 +83,7 @@ public class SqlTableDataReader implements IDataReader<SqlDataContext> {
         return data;
     }
 
-    public Table nextTable(SqlDataContext context) {
+    public Table nextTable(DataContext context) {
         if (status == Status.BatchStarted) {
             status = Status.TableStarted;
             return tableToRead.getTable();
@@ -91,6 +92,6 @@ public class SqlTableDataReader implements IDataReader<SqlDataContext> {
         }
     }
 
-    public void open(SqlDataContext context) {
+    public void open(DataContext context) {
     }
 }

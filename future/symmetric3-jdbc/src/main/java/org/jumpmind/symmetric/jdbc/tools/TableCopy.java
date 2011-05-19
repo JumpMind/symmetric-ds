@@ -12,8 +12,8 @@ import org.jumpmind.symmetric.core.io.IoUtils;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.DataProcessor;
-import org.jumpmind.symmetric.core.process.sql.SqlDataContext;
 import org.jumpmind.symmetric.core.process.sql.SqlDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlTableDataReader;
 import org.jumpmind.symmetric.core.process.sql.TableToExtract;
@@ -60,10 +60,8 @@ public class TableCopy {
         for (TableToExtract tableToRead : tables) {
             SqlTableDataReader reader = new SqlTableDataReader(this.sourcePlatform, new Batch(),
                     tableToRead);
-            SqlDataWriter writer = new SqlDataWriter(this.target, this.targetPlatform, parameters,
-                    null, null);
-            DataProcessor<SqlDataContext> processor = new DataProcessor<SqlDataContext>(reader,
-                    writer);
+            SqlDataWriter writer = new SqlDataWriter(this.targetPlatform, parameters);
+            DataProcessor<DataContext> processor = new DataProcessor<DataContext>(reader, writer);
             processor.process();
         }
     }

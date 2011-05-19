@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class StringUtils {
+public abstract class StringUtils {
 
     private static Pattern TOKEN_REPLACEMENT_PATTERN = Pattern.compile("\\$\\((.+?)\\)");
     

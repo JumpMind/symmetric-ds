@@ -70,6 +70,14 @@ public class Data extends AbstractCsvData implements Serializable {
      */
     private Date createTime;
 
+    public Data(String tableName, DataEventType eventType, String rowData) {
+        this(-1, null, rowData, eventType, tableName, null, null, null, null);
+    }
+
+    public Data(String pkData, String rowData, DataEventType eventType, String tableName) {
+        this(-1, pkData, rowData, eventType, tableName, null, null, null, null);
+    }
+
     public Data(long dataId, String pkData, String rowData, DataEventType eventType,
             String tableName, Date createTime, String channelId, String transactionId,
             String sourceNodeId) {

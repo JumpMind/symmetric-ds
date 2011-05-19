@@ -39,6 +39,8 @@ public interface IDbPlatform {
     public ISqlConnection getSqlConnection();
     
     public TriggerBuilder getTriggerBuilder();
+    
+    public boolean isLob(int type);    
 
     /**
      * Returns the constraint name. This method takes care of length limitations
