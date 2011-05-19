@@ -20,6 +20,7 @@ public class Batch {
     protected long otherCount;
     protected long fallbackInsertCount;
     protected long fallbackUpdateCount;
+    protected long fallbackUpdateWithNewKeysCount;
     protected long missingDeleteCount;
     protected long timerMillis;
 
@@ -33,6 +34,10 @@ public class Batch {
 
     public long incrementFallbackInsertCount() {
         return ++fallbackInsertCount;
+    }
+    
+    public long incrementFallbackUpdateWithNewKeysCount() {
+        return ++fallbackUpdateWithNewKeysCount;
     }
 
     public long incrementFallbackUpdateCount() {
