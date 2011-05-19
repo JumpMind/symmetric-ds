@@ -23,14 +23,39 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
 
     @Test
     public void testOneRowInsert() {
+        writeToTestTable(new Data(testTable.getTableName(), DataEventType.INSERT, "1,\"test\""));
+        Assert.assertEquals(1, count(testTable.getTableName()));
+    }
+
+    @Test
+    public void testOneRowInsertOneRowUpdate() {
+        writeToTestTable(new Data(testTable.getTableName(), DataEventType.INSERT, "1,\"test\""),
+                new Data(testTable.getTableName(), DataEventType.UPDATE, "1", "1,\"updated\""));
+        Assert.assertEquals(1, count(testTable.getTableName()));
+        Assert.assertEquals(
+                "updated",
+                getPlatform().getSqlConnection().queryForObject(
+                        String.format("select TEST_TEXT from %s where TEST_ID=?",
+                                testTable.getTableName()), String.class, 1));
+    }
+    
+    @Test
+    public void testOneRowInsertOneRowDelete() {
+        writeToTestTable(new Data(testTable.getTableName(), DataEventType.INSERT, "1,\"test\""),
+                new Data(testTable.getTableName(), DataEventType.DELETE, "1", null));
+        Assert.assertEquals(0, count(testTable.getTableName()));
+    }
+
+    protected void writeToTestTable(Data... datas) {
         SqlDataWriter writer = new SqlDataWriter(getPlatform(), new Parameters());
         writer.open(writer.createDataContext());
         Batch batch = new Batch();
         writer.startBatch(batch);
         writer.switchTables(testTable);
-        writer.writeData(new Data(testTable.getTableName(), DataEventType.INSERT, "1,\"test\""));
+        for (Data data : datas) {
+            writer.writeData(data);
+        }
         writer.finishBatch(batch);
-        writer.close();        
-        Assert.assertEquals(1, count(testTable.getTableName()));
+        writer.close();
     }
 }

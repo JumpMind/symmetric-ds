@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.core.model;
 
@@ -26,9 +27,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.csv.CsvUtils;
-
 
 /**
  * 
@@ -37,30 +38,37 @@ abstract class AbstractCsvData {
 
     private Map<String, String[]> parsedCsvData = null;
 
+    protected void removeData(String key) {
+        parsedCsvData.remove(key);
+    }
+
+    protected void putData(String key, String[] data) {
+        if (parsedCsvData == null) {
+            parsedCsvData = new HashMap<String, String[]>(2);
+        }
+        parsedCsvData.put(key, data);
+    }
+
     protected String[] getData(String key, String data) {
-        if (!StringUtils.isBlank(data)) {
+        String[] values = null;
+        if (parsedCsvData != null && parsedCsvData.containsKey(key)) {
+            values = parsedCsvData.get(key);
+        } else if (!StringUtils.isBlank(data)) {
             try {
-                if (parsedCsvData == null) {
-                    parsedCsvData = new HashMap<String, String[]>(2);
-                }
-                if (parsedCsvData.containsKey(key)) {
-                    return parsedCsvData.get(key);
+                CsvReader csvReader = CsvUtils.getCsvReader(new StringReader(data));
+                if (csvReader.readRecord()) {
+                    values = csvReader.getValues();
+                    putData(key, values);
                 } else {
-                    CsvReader csvReader = CsvUtils.getCsvReader(new StringReader(data));
-                    if (csvReader.readRecord()) {
-                        String[] values = csvReader.getValues();
-                        parsedCsvData.put(key, values);
-                        return values;
-                    } else {
-                        throw new IllegalStateException(String.format("Could not parse the data passed in: %s", data));
-                    }
+                    throw new IllegalStateException(String.format(
+                            "Could not parse the data passed in: %s", data));
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new IoException(e);
             }
-        } else {
-            return null;
         }
+        return values;
+
     }
 
 }

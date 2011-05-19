@@ -21,6 +21,7 @@ import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
 import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
+import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.core.sql.StatementBuilder;
 import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
 
@@ -31,8 +32,6 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
 
     protected IDbPlatform platform;
 
-    protected Parameters parameters;
-
     protected List<IColumnFilter<DataContext>> columnFilters;
 
     protected List<IDataFilter<DataContext>> dataFilters;
@@ -41,29 +40,21 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
 
     protected ISqlTransaction transaction;
 
-    protected DataEventType lastDataEvent;
+    protected StatementBuilder statementBuilder;
+
+    protected Data lastData;
 
     protected int uncommittedRows = 0;
 
-    protected int maxRowsBeforeBatchFlush;
-
-    protected boolean enableFallbackForInsert;
-
-    protected boolean enableFallbackForUpdate;
-
-    protected boolean allowMissingDeletes;
-
-    protected boolean useBatching;
-
-    protected int maxRowsBeforeCommit;
-
-    protected boolean usePrimaryKeysFromSource;
-
-    protected boolean dontIncludeKeysInUpdateStatement;
+    protected Settings settings;
 
     protected Batch batch;
 
     protected DataContext ctx;
+
+    public SqlDataWriter(IDbPlatform platform) {
+        this(platform, new Settings());
+    }
 
     public SqlDataWriter(IDbPlatform platform, Parameters parameters) {
         this(platform, parameters, null, null);
@@ -72,24 +63,34 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     public SqlDataWriter(IDbPlatform platform, Parameters parameters,
             List<IColumnFilter<DataContext>> columnFilters,
             List<IDataFilter<DataContext>> dataFilters) {
+        this(platform, new Settings(), columnFilters, dataFilters);
+
+        settings.maxRowsBeforeBatchFlush = parameters.getInt(
+                Parameters.LOADER_MAX_ROWS_BEFORE_BATCH_FLUSH, 10);
+        settings.enableFallbackForInsert = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_INSERT,
+                true);
+        settings.enableFallbackForUpdate = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_UPDATE,
+                true);
+        settings.allowMissingDeletes = parameters.is(Parameters.LOADER_ALLOW_MISSING_DELETES, true);
+        settings.useBatching = parameters.is(Parameters.LOADER_USE_BATCHING, true);
+        settings.maxRowsBeforeCommit = parameters.getInt(Parameters.LOADER_MAX_ROWS_BEFORE_COMMIT,
+                1000);
+        settings.usePrimaryKeysFromSource = parameters.is(Parameters.DB_USE_PKS_FROM_SOURCE, true);
+        settings.dontIncludeKeysInUpdateStatement = parameters.is(
+                Parameters.LOADER_DONT_INCLUDE_PKS_IN_UPDATE, false);
+    }
+
+    public SqlDataWriter(IDbPlatform platform, Settings settings) {
+        this(platform, settings, null, null);
+    }
+
+    public SqlDataWriter(IDbPlatform platform, Settings settings,
+            List<IColumnFilter<DataContext>> columnFilters,
+            List<IDataFilter<DataContext>> dataFilters) {
         this.platform = platform;
-        this.parameters = parameters != null ? parameters : new Parameters();
         this.columnFilters = columnFilters;
         this.dataFilters = dataFilters;
-
-        this.maxRowsBeforeBatchFlush = parameters.getInt(
-                Parameters.LOADER_MAX_ROWS_BEFORE_BATCH_FLUSH, 10);
-        this.enableFallbackForInsert = parameters
-                .is(Parameters.LOADER_ENABLE_FALLBACK_INSERT, true);
-        this.enableFallbackForUpdate = parameters
-                .is(Parameters.LOADER_ENABLE_FALLBACK_UPDATE, true);
-        this.allowMissingDeletes = parameters.is(Parameters.LOADER_ALLOW_MISSING_DELETES, true);
-        this.useBatching = parameters.is(Parameters.LOADER_USE_BATCHING, true);
-        this.maxRowsBeforeCommit = parameters
-                .getInt(Parameters.LOADER_MAX_ROWS_BEFORE_COMMIT, 1000);
-        this.usePrimaryKeysFromSource = parameters.is(Parameters.DB_USE_PKS_FROM_SOURCE, true);
-        this.dontIncludeKeysInUpdateStatement = parameters.is(
-                Parameters.LOADER_DONT_INCLUDE_PKS_IN_UPDATE, false);
+        this.settings = settings;
     }
 
     public DataContext createDataContext() {
@@ -102,13 +103,12 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     public boolean switchTables(Table sourceTable) {
-        this.lastDataEvent = null;
         if (sourceTable != null) {
             this.targetTable = platform.findTable(sourceTable.getCatalogName(),
                     sourceTable.getSchemaName(), sourceTable.getTableName(), true).copy();
             if (this.targetTable != null) {
                 this.targetTable.reOrderColumns(sourceTable.getColumns(),
-                        this.usePrimaryKeysFromSource);
+                        settings.usePrimaryKeysFromSource);
                 return true;
             } else {
                 log.log(LogLevel.WARN, "Did not find the %s table in the target database",
@@ -123,16 +123,20 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     public void startBatch(Batch batch) {
-        this.lastDataEvent = null;
+        this.statementBuilder = null;
         this.batch = batch;
     }
 
     public void writeData(Data data) {
-        writeData(data, this.useBatching);
-        lastDataEvent = data.getEventType();
+        writeData(data, settings.useBatching);
+        this.lastData = data;
     }
 
     protected void writeData(Data data, boolean batchMode) {
+
+        if (lastData != null && lastData.getEventType() != data.getEventType()) {
+            transaction.flush();
+        }
 
         try {
             switch (data.getEventType()) {
@@ -156,7 +160,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
             uncommittedRows++;
 
             // check if an early commit needs to happen
-            if (uncommittedRows > this.maxRowsBeforeCommit) {
+            if (uncommittedRows > settings.maxRowsBeforeCommit) {
                 commit();
             }
 
@@ -199,7 +203,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
                     || (platform.isLob(column.getTypeCode()) && (platform.getPlatformInfo()
                             .isNeedsToSelectLobData() || StringUtils.isBlank(oldData[columnIndex])));
-        } else if (dontIncludeKeysInUpdateStatement) {
+        } else if (settings.dontIncludeKeysInUpdateStatement) {
             // This is in support of creating update statements that don't use
             // the keys in the set portion of the update statement. </p> In
             // oracle (and maybe not only in oracle) if there is no index on
@@ -234,7 +238,6 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected int executeUpdateSql(Data data) {
-        StatementBuilder st = null;
         String[] columnValues = data.toParsedRowData();
         ArrayList<String> changedColumnNameList = new ArrayList<String>();
         ArrayList<String> changedColumnValueList = new ArrayList<String>();
@@ -250,13 +253,14 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
             }
         }
         if (changedColumnNameList.size() > 0) {
-            st = getStatementBuilder(DmlType.UPDATE, targetTable.getPrimaryKeyColumnsArray(),
+            this.statementBuilder = getStatementBuilder(DmlType.UPDATE,
+                    targetTable.getPrimaryKeyColumnsArray(),
                     changedColumnMetaList.toArray(new Column[changedColumnMetaList.size()]));
             columnValues = (String[]) changedColumnValueList
                     .toArray(new String[changedColumnValueList.size()]);
             String[] values = (String[]) ArrayUtils.addAll(columnValues, getPkData(data));
-            transaction.prepare(st.getSql(), -1, false);
-            return execute(st, data, values);
+            transaction.prepare(this.statementBuilder.getSql(), -1, false);
+            return execute(data, values);
         } else {
             // There was no change to apply
             return 1;
@@ -278,11 +282,25 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected void executeInsertSql(Data data, boolean batchMode) {
-        StatementBuilder st = getStatementBuilder(DmlType.INSERT, null, targetTable.getColumns());
-        if (this.lastDataEvent != DataEventType.INSERT) {
-            transaction.prepare(st.getSql(), this.maxRowsBeforeBatchFlush, batchMode);
+        if (this.statementBuilder == null || this.lastData == null
+                || this.lastData.getEventType() != DataEventType.INSERT) {
+            this.statementBuilder = getStatementBuilder(DmlType.INSERT, null,
+                    targetTable.getColumns());
+            transaction.prepare(this.statementBuilder.getSql(), settings.maxRowsBeforeBatchFlush,
+                    batchMode);
         }
-        execute(st, data, data.toParsedRowData());
+        execute(data, data.toParsedRowData());
+    }
+
+    protected int executeDeleteSql(Data data, boolean batchMode) {
+        if (this.statementBuilder == null || this.lastData == null
+                || this.lastData.getEventType() != DataEventType.DELETE) {
+            this.statementBuilder = getStatementBuilder(DmlType.DELETE,
+                    targetTable.getPrimaryKeyColumnsArray(), targetTable.getColumns());
+            transaction.prepare(this.statementBuilder.getSql(), settings.maxRowsBeforeBatchFlush,
+                    batchMode);
+        }
+        return execute(data, data.toParsedPkData());
     }
 
     protected void processInsert(Data data, boolean batchMode) {
@@ -294,8 +312,8 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
                 executeInsertSql(data, batchMode);
             } catch (DataIntegrityViolationException e) {
                 // TODO log insert failed
-                if (enableFallbackForInsert && !batchMode) {
-                    this.lastDataEvent = null;
+                if (settings.enableFallbackForInsert && !batchMode) {
+                    this.statementBuilder = null;
                     // TODO rollback to save point
                     batch.incrementFallbackUpdateCount();
                     executeUpdateSql(data);
@@ -313,12 +331,30 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
             batch.incrementUpdateCount();
             try {
                 batch.startTimer();
-                executeUpdateSql(data);
+                int updateCount = executeUpdateSql(data);
+                if (updateCount == 0) {
+                    if (settings.enableFallbackForUpdate) {
+                        // The row was missing, fallback to an insert
+                        batch.incrementFallbackInsertCount();
+                        executeInsertSql(data, false);
+                    } else {
+                        throw new SqlException("There were no rows to update");
+                    }
+                }
             } catch (DataIntegrityViolationException e) {
-                // TODO log update failed
-                if (enableFallbackForUpdate) {
-                    batch.incrementFallbackInsertCount();
-                    executeInsertSql(data, false);
+                // If we got here, most likely scenario is that the update
+                // has already run and updated the primary key.
+                // Let's attempt to run the update using the new
+                // key values.
+                if (settings.enableFallbackForUpdate) {
+                    // remove the old pk values so that the new ones will be
+                    // used
+                    data.clearPkData();
+                    batch.incrementFallbackUpdateWithNewKeysCount();
+                    int updateCount = executeUpdateSql(data);
+                    if (updateCount == 0) {
+                        throw new SqlException("There were no rows to update using");
+                    }
                 } else {
                     throw e;
                 }
@@ -329,7 +365,21 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected void processDelete(Data data, boolean batchMode) {
-        // TODO
+        if (filterData(data, ctx)) {
+            batch.incrementDeleteCount();
+            batch.startTimer();
+            try {
+                int updateCount = executeDeleteSql(data, batchMode);
+                if (!batchMode && updateCount == 0) {
+                    batch.incrementMissingDeleteCount();
+                    if (!settings.allowMissingDeletes) {
+                        throw new SqlException("No rows were deleted");
+                    }
+                }
+            } finally {
+                batch.incrementDatabaseMillis(batch.endTimer());
+            }
+        }
     }
 
     protected void processSql(Data data) {
@@ -337,26 +387,26 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected boolean isCorrectForIntegrityViolation(Data data) {
-        if (data.getEventType() == DataEventType.INSERT && enableFallbackForInsert) {
+        if (data.getEventType() == DataEventType.INSERT && settings.enableFallbackForInsert) {
             return true;
-        } else if (data.getEventType() == DataEventType.UPDATE && enableFallbackForUpdate) {
+        } else if (data.getEventType() == DataEventType.UPDATE && settings.enableFallbackForUpdate) {
             return true;
-        } else if (data.getEventType() == DataEventType.DELETE && allowMissingDeletes) {
+        } else if (data.getEventType() == DataEventType.DELETE && settings.allowMissingDeletes) {
             return true;
         } else {
             return false;
         }
     }
 
-    protected int execute(StatementBuilder st, Data data, String[] values) {
+    protected int execute(Data data, String[] values) {
         Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(), values,
-                st.getMetaData(true));
+                statementBuilder.getMetaData(true));
         if (columnFilters != null) {
             for (IColumnFilter<DataContext> columnFilter : columnFilters) {
                 objectValues = columnFilter.filterColumnsValues(ctx, targetTable, objectValues);
             }
         }
-        return transaction.update(data, objectValues, st.getTypes());
+        return transaction.update(data, objectValues, this.statementBuilder.getTypes());
     }
 
     final private StatementBuilder getStatementBuilder(DmlType dmlType, Column[] lookupColumns,
@@ -389,6 +439,26 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
 
     public void finishBatch(Batch batch) {
         commit();
+    }
+
+    public static class Settings {
+
+        protected int maxRowsBeforeBatchFlush;
+
+        protected boolean enableFallbackForInsert;
+
+        protected boolean enableFallbackForUpdate;
+
+        protected boolean allowMissingDeletes;
+
+        protected boolean useBatching;
+
+        protected int maxRowsBeforeCommit;
+
+        protected boolean usePrimaryKeysFromSource;
+
+        protected boolean dontIncludeKeysInUpdateStatement;
+
     }
 
 }
