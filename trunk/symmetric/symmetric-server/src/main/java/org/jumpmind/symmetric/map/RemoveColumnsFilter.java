@@ -95,9 +95,6 @@ public class RemoveColumnsFilter implements ITableColumnFilter, INodeGroupExtens
             for (String col : columnNames) {
                 if (ArrayUtils.contains(columnsToRemove, col)) {
                     Integer putValue = index;
-                    if (dml.equals(DmlType.UPDATE_NO_KEYS)) {
-                        putValue = index - 1;
-                    }
                     if (columnIndex.get(dml) == null) {
                         columnIndex.put(dml, new ArrayList<Integer>());
                     }
