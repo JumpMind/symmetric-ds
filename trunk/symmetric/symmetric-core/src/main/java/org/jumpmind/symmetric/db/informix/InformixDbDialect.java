@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.informix;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -131,8 +132,12 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getDefaultSchema() {
-        return jdbcTemplate
-                .queryForObject("select trim(user) from sysmaster:sysdual", String.class);
+        String defaultSchema = super.getDefaultSchema();
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = jdbcTemplate.queryForObject("select trim(user) from sysmaster:sysdual",
+                    String.class);
+        }
+        return defaultSchema;
     }
 
     @Override

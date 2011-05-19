@@ -210,7 +210,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         if (StringUtils.isBlank(defaultSchema)) {
             defaultSchema = (String) jdbcTemplate.queryForObject("select current_schema()", String.class);
         }
-        return super.getDefaultSchema();
+        return defaultSchema;
     }
 
     @Override
