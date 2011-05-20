@@ -327,12 +327,12 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected void processInsert(Data data, boolean batchMode) {
-        if (filterData(data, ctx)) {
-            batch.incrementInsertCount();
+        if (filterData(data, ctx)) {           
             try {
                 batch.startTimer();
                 // TODO add save point logic for postgresql
                 executeInsertSql(data, batchMode);
+                batch.incrementInsertCount();
             } catch (DataIntegrityViolationException e) {
                 // TODO log insert failed
                 if (settings.enableFallbackForInsert && !batchMode) {
@@ -350,19 +350,20 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected void processUpdate(Data data) {
-        if (filterData(data, ctx)) {
-            batch.incrementUpdateCount();
+        if (filterData(data, ctx)) {           
             try {
                 batch.startTimer();
                 int updateCount = executeUpdateSql(data);
                 if (updateCount == 0) {
                     if (settings.enableFallbackForUpdate) {
                         // The row was missing, fallback to an insert
-                        batch.incrementFallbackInsertCount();
                         executeInsertSql(data, false);
+                        batch.incrementFallbackInsertCount();
                     } else {
                         throw new SqlException("There were no rows to update");
                     }
+                } else {
+                    batch.incrementUpdateCount();
                 }
             } catch (DataIntegrityViolationException e) {
                 // If we got here, most likely scenario is that the update
@@ -372,11 +373,12 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
                 if (settings.enableFallbackForUpdate) {
                     // remove the old pk values so that the new ones will be
                     // used
-                    data.clearPkData();
-                    batch.incrementFallbackUpdateWithNewKeysCount();
+                    data.clearPkData();                   
                     int updateCount = executeUpdateSql(data);
                     if (updateCount == 0) {
                         throw new SqlException("There were no rows to update using");
+                    } else {
+                        batch.incrementFallbackUpdateWithNewKeysCount();
                     }
                 } else {
                     throw e;
