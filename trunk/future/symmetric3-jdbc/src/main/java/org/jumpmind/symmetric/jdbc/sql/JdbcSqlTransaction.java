@@ -40,6 +40,14 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             throw sqlConnection.translate(ex);
         }
     }
+    
+    public void setNumberOfRowsBeforeBatchFlush(int numberOfRowsBeforeBatchFlush) {
+        this.numberOfRowsBeforeBatchFlush = numberOfRowsBeforeBatchFlush;
+    }
+    
+    public int getNumberOfRowsBeforeBatchFlush() {
+        return numberOfRowsBeforeBatchFlush;
+    }
 
     public void setInBatchMode(boolean useBatching) {
         if (dbConnection != null) {
@@ -124,13 +132,12 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
     }
 
-    public void prepare(String sql, int flushSize) {
+    public void prepare(String sql) {
         try {
             if (this.markers.size() > 0) {
                 throw new IllegalStateException(
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
-            this.numberOfRowsBeforeBatchFlush = flushSize;
             pstmt = dbConnection.prepareStatement(sql);
         } catch (SQLException ex) {
             throw sqlConnection.translate(ex);
