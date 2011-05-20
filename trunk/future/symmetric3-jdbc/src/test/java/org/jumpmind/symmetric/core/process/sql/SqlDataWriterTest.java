@@ -94,6 +94,19 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
         Assert.assertEquals(1,
                 count(testTable.getTableName(), String.format("TEST_TEXT='updated'")));
     }
+    
+    @Test
+    public void testSqlData() {
+        insertTestTableRows(10);
+        Assert.assertEquals(10, count(testTable.getTableName()));
+        Batch batch = writeToTestTable(new Data(testTable.getTableName(), DataEventType.SQL, 
+                String.format("\"update %s set TEST_TEXT='it worked!'\"", testTable.getTableName())));
+        Assert.assertEquals(10, count(testTable.getTableName()));
+        Assert.assertEquals(10, count(testTable.getTableName(), "TEST_TEXT='it worked!'"));
+        Assert.assertEquals(1, batch.getSqlCount());
+        Assert.assertEquals(10, batch.getSqlRowsAffectedCount());
+
+    }
 
     protected Batch writeToTestTable(Data... datas) {
         SqlDataWriter writer = new SqlDataWriter(getPlatform(), new Parameters());

@@ -17,6 +17,7 @@ public class Batch {
     protected long deleteCount;
     protected long updateCount;
     protected long sqlCount;
+    protected long sqlRowsAffectedCount;
     protected long otherCount;
     protected long fallbackInsertCount;
     protected long fallbackUpdateCount;
@@ -68,6 +69,10 @@ public class Batch {
         return ++sqlCount;
     }
 
+    public long incrementSqlRowsAffected(int count) {
+        return sqlRowsAffectedCount+=count;
+    }
+    
     public long incrementOtherCount() {
         return ++otherCount;
     }
@@ -194,5 +199,9 @@ public class Batch {
     
     public long getFallbackUpdateWithNewKeysCount() {
         return fallbackUpdateWithNewKeysCount;
+    }
+    
+    public long getSqlRowsAffectedCount() {
+        return sqlRowsAffectedCount;
     }
 }
