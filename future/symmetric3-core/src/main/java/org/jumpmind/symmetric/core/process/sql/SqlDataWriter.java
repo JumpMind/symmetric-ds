@@ -16,13 +16,13 @@ import org.jumpmind.symmetric.core.model.DataEventType;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataContext;
+import org.jumpmind.symmetric.core.process.DataFailedToLoadException;
 import org.jumpmind.symmetric.core.process.DataProcessor;
 import org.jumpmind.symmetric.core.process.IColumnFilter;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
 import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
-import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.core.sql.StatementBuilder;
 import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
 
@@ -91,6 +91,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     public void open(DataContext context) {
         this.ctx = context;
         this.transaction = this.platform.getSqlConnection().startSqlTransaction();
+        this.transaction.setNumberOfRowsBeforeBatchFlush(settings.maxRowsBeforeBatchFlush);
     }
 
     public boolean switchTables(Table sourceTable) {
@@ -160,7 +161,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new DataFailedToLoadException(data, ex);
         }
     }
 
@@ -285,7 +286,8 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
             columnValues = (String[]) changedColumnValueList
                     .toArray(new String[changedColumnValueList.size()]);
             String[] values = (String[]) ArrayUtils.addAll(columnValues, getPkData(data));
-            transaction.prepare(this.statementBuilder.getSql(), -1);
+            transaction.setInBatchMode(false);
+            transaction.prepare(this.statementBuilder.getSql());
             return execute(data, values);
         } else {
             // There was no change to apply
@@ -312,16 +314,17 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
         if (requireNewStatement(data)) {
             this.statementBuilder = getStatementBuilder(DmlType.INSERT, null,
                     targetTable.getColumns());
-            transaction.prepare(this.statementBuilder.getSql(), settings.maxRowsBeforeBatchFlush);
+            transaction.prepare(this.statementBuilder.getSql());
         }
         execute(data, data.toParsedRowData());
     }
 
     protected int executeDeleteSql(Data data, boolean batchMode) {
+        transaction.setInBatchMode(batchMode);
         if (requireNewStatement(data)) {
             this.statementBuilder = getStatementBuilder(DmlType.DELETE,
                     targetTable.getPrimaryKeyColumnsArray(), targetTable.getColumns());
-            transaction.prepare(this.statementBuilder.getSql(), settings.maxRowsBeforeBatchFlush);
+            transaction.prepare(this.statementBuilder.getSql());
         }
         return execute(data, data.toParsedPkData());
     }
@@ -334,7 +337,6 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
                 executeInsertSql(data, batchMode);
                 batch.incrementInsertCount();
             } catch (DataIntegrityViolationException e) {
-                // TODO log insert failed
                 if (settings.enableFallbackForInsert && !batchMode) {
                     this.statementBuilder = null;
                     // TODO rollback to save point
@@ -360,7 +362,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
                         executeInsertSql(data, false);
                         batch.incrementFallbackInsertCount();
                     } else {
-                        throw new SqlException("There were no rows to update");
+                        throw new DataFailedToLoadException(data, "There were no rows to update");
                     }
                 } else {
                     batch.incrementUpdateCount();
@@ -376,7 +378,8 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
                     data.clearPkData();
                     int updateCount = executeUpdateSql(data);
                     if (updateCount == 0) {
-                        throw new SqlException("There were no rows to update using");
+                        throw new DataFailedToLoadException(data,
+                                "There were no rows to update using");
                     } else {
                         batch.incrementFallbackUpdateWithNewKeysCount();
                     }
@@ -397,7 +400,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
                 if (!batchMode && updateCount == 0) {
                     batch.incrementMissingDeleteCount();
                     if (!settings.allowMissingDeletes) {
-                        throw new SqlException("No rows were deleted");
+                        throw new DataFailedToLoadException(data, "No rows were deleted");
                     }
                 } else {
                     batch.incrementDeleteCount();
@@ -413,7 +416,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
             transaction.setInBatchMode(false);
             String[] tokens = data.toParsedRowData();
             if (tokens != null && tokens.length > 0) {
-                transaction.prepare(tokens[0], -1);
+                transaction.prepare(tokens[0]);
                 batch.incrementSqlRowsAffected(transaction.update(data));
                 batch.incrementSqlCount();
             }

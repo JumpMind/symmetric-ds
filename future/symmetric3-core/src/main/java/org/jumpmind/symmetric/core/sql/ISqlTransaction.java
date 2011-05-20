@@ -8,6 +8,10 @@ public interface ISqlTransaction {
 
     public void setInBatchMode(boolean batchMode);
 
+    public void setNumberOfRowsBeforeBatchFlush(int numberOfRowsBeforeBatchFlush);
+
+    public int getNumberOfRowsBeforeBatchFlush();
+
     public void commit();
 
     public void rollback();
@@ -17,10 +21,10 @@ public interface ISqlTransaction {
     /**
      * Each time the SQL changes it needs to be submitted for preparation
      */
-    public void prepare(String sql, int flushSize);
+    public void prepare(String sql);
 
     public <T> int update(T marker);
-    
+
     public <T> int update(T marker, Object[] values, int[] types);
 
     public int flush();

@@ -93,9 +93,9 @@ abstract public class AbstractDatabaseTest {
     protected void prepareInsertIntoTestTable(ISqlTransaction transaction, String tableName,
             int flushAt, boolean batchMode) {
         transaction.setInBatchMode(batchMode);
+        transaction.setNumberOfRowsBeforeBatchFlush(flushAt);
         transaction.prepare(
-                String.format("insert into %s (TEST_ID, TEST_TEXT) values(?, ?)", tableName),
-                flushAt);
+                String.format("insert into %s (TEST_ID, TEST_TEXT) values(?, ?)", tableName));
     }
 
     protected int batchInsertIntoTestTable(int numberToInsert, int numberToStartAt,
