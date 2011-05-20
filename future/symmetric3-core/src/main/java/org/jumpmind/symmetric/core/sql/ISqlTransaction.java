@@ -19,6 +19,8 @@ public interface ISqlTransaction {
      */
     public void prepare(String sql, int flushSize);
 
+    public <T> int update(T marker);
+    
     public <T> int update(T marker, Object[] values, int[] types);
 
     public int flush();

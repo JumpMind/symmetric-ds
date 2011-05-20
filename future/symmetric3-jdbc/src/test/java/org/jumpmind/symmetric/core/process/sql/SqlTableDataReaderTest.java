@@ -7,13 +7,21 @@ import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataContext;
+import org.junit.Before;
 import org.junit.Test;
 
 public class SqlTableDataReaderTest extends AbstractDatabaseTest {
 
+    Table testTable;
+
+    @Before
+    public void cleanupTestTable() {
+        testTable = buildTestTable();
+        delete(testTable.getTableName());
+    }
+
     @Test
     public void testSimpleTableWithNoCondition() throws Exception {
-        Table testTable = buildTestTable();
         insertTestTableRows(100);
         TableToExtract tableToExtract = new TableToExtract(testTable, "");
         SqlTableDataReader reader = new SqlTableDataReader(getPlatform(true), new Batch(),

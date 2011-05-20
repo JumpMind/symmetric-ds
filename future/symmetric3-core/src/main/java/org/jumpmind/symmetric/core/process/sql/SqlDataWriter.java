@@ -327,7 +327,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected void processInsert(Data data, boolean batchMode) {
-        if (filterData(data, ctx)) {           
+        if (filterData(data, ctx)) {
             try {
                 batch.startTimer();
                 // TODO add save point logic for postgresql
@@ -350,7 +350,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected void processUpdate(Data data) {
-        if (filterData(data, ctx)) {           
+        if (filterData(data, ctx)) {
             try {
                 batch.startTimer();
                 int updateCount = executeUpdateSql(data);
@@ -373,7 +373,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
                 if (settings.enableFallbackForUpdate) {
                     // remove the old pk values so that the new ones will be
                     // used
-                    data.clearPkData();                   
+                    data.clearPkData();
                     int updateCount = executeUpdateSql(data);
                     if (updateCount == 0) {
                         throw new SqlException("There were no rows to update using");
@@ -391,7 +391,6 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
 
     protected void processDelete(Data data, boolean batchMode) {
         if (filterData(data, ctx)) {
-            batch.incrementDeleteCount();
             batch.startTimer();
             try {
                 int updateCount = executeDeleteSql(data, batchMode);
@@ -400,6 +399,8 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
                     if (!settings.allowMissingDeletes) {
                         throw new SqlException("No rows were deleted");
                     }
+                } else {
+                    batch.incrementDeleteCount();
                 }
             } finally {
                 batch.incrementDatabaseMillis(batch.endTimer());
@@ -408,7 +409,15 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected void processSql(Data data) {
-        // TODO
+        if (filterData(data, ctx)) {
+            transaction.setInBatchMode(false);
+            String[] tokens = data.toParsedRowData();
+            if (tokens != null && tokens.length > 0) {
+                transaction.prepare(tokens[0], -1);
+                batch.incrementSqlRowsAffected(transaction.update(data));
+                batch.incrementSqlCount();
+            }
+        }
     }
 
     protected boolean isCorrectForIntegrityViolation(Data data) {

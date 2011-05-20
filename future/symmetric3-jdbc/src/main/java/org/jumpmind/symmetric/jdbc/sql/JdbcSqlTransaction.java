@@ -136,12 +136,18 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             throw sqlConnection.translate(ex);
         }
     }
+    
+    public int update(Object marker) {
+        return update(marker, null, null);
+    }
 
-    public int update(Object marker, Object[] values, int[] types) {
+    public int update(Object marker, Object[] args, int[] argTypes) {
         int rowsUpdated = 0;
         try {
-            StatementCreatorUtil.setValues(pstmt, values, types, sqlConnection.getJdbcDbPlatform()
+            if (args != null) {
+            StatementCreatorUtil.setValues(pstmt, args, argTypes, sqlConnection.getJdbcDbPlatform()
                     .getLobHandler());
+            }
             if (inBatchMode) {
                 if (marker == null) {
                     marker = new Integer(markers.size() + 1);
