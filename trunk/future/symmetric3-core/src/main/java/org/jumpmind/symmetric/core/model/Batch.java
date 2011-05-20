@@ -191,4 +191,8 @@ public class Batch {
     public boolean isInitialLoad() {
         return initialLoad;
     }
+    
+    public long getFallbackUpdateWithNewKeysCount() {
+        return fallbackUpdateWithNewKeysCount;
+    }
 }

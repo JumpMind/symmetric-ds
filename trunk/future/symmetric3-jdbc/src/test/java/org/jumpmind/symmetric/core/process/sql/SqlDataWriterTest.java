@@ -66,7 +66,33 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
                 1,
                 count(testTable.getTableName(),
                         String.format("TEST_ID=%d and TEST_TEXT='new value'", existingId)));
-        Assert.assertEquals(1, batch.getInsertCount());
+        Assert.assertEquals(0, batch.getInsertCount());
+    }
+
+    @Test
+    public void testOneRowUpdateFallbackToInsert() {
+        Assert.assertEquals(0, count(testTable.getTableName()));
+        Batch batch = writeToTestTable(new Data(testTable.getTableName(), DataEventType.UPDATE,
+                "1", "1,\"updated\""));
+        Assert.assertEquals(1, count(testTable.getTableName()));
+        Assert.assertEquals(1, batch.getFallbackInsertCount());
+        Assert.assertEquals(0, batch.getUpdateCount());
+    }
+
+    @Test
+    public void testOneRowUpdateFallbackUpdateWithNewKeys() {
+        insertTestTableRows(1);
+        Assert.assertEquals(1, count(testTable.getTableName()));
+        int existingId = getPlatform().getSqlConnection().queryForInt(
+                String.format("select min(TEST_ID) from %s", testTable.getTableName()));
+        Batch batch = writeToTestTable(new Data(testTable.getTableName(), DataEventType.UPDATE,
+                String.format("%d", existingId + 1), String.format("%d,\"updated\"", existingId)));
+        Assert.assertEquals(1, count(testTable.getTableName()));
+        Assert.assertEquals(0, batch.getFallbackInsertCount());
+        Assert.assertEquals(1, batch.getFallbackUpdateWithNewKeysCount());
+        Assert.assertEquals(0, batch.getUpdateCount());
+        Assert.assertEquals(1,
+                count(testTable.getTableName(), String.format("TEST_TEXT='updated'")));
     }
 
     protected Batch writeToTestTable(Data... datas) {
