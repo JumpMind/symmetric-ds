@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.core;
 
 import org.jumpmind.symmetric.core.common.AbstractVersion;
 
-
 /**
  * Follow the Apache versioning scheme documented <a
  * href="http://apr.apache.org/versioning.html">here</a>.

@@ -110,7 +110,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
         return rowsUpdated;
     }
-    
+
     protected void removeMarkersThatWereSuccessful(BatchUpdateException ex) {
         int[] updateCounts = ex.getUpdateCounts();
         Iterator<Object> it = markers.iterator();
@@ -124,13 +124,12 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
     }
 
-    public void prepare(String sql, int flushSize, boolean useBatching) {
+    public void prepare(String sql, int flushSize) {
         try {
             if (this.markers.size() > 0) {
                 throw new IllegalStateException(
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
-            setInBatchMode(useBatching);
             this.numberOfRowsBeforeBatchFlush = flushSize;
             pstmt = dbConnection.prepareStatement(sql);
         } catch (SQLException ex) {
@@ -161,8 +160,12 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         return rowsUpdated;
     }
 
-    public List<Object> getUnflushedMarkers() {
-        return markers;
+    public List<Object> getUnflushedMarkers(boolean clear) {
+        List<Object> ret = new ArrayList<Object>(markers);
+        if (clear) {
+            markers.clear();
+        }
+        return ret;
     }
 
     /**

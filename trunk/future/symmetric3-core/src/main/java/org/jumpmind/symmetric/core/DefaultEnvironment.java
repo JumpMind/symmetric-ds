@@ -7,10 +7,10 @@ public class DefaultEnvironment implements IEnvironment {
 
     protected IResourceFactory resourceFactory;
     protected IDbPlatform dbPlatform;
-    
-    public DefaultEnvironment() {     
+
+    public DefaultEnvironment() {
     }
-            
+
     public DefaultEnvironment(IResourceFactory resourceFactory, IDbPlatform dbPlatform) {
         this.resourceFactory = resourceFactory;
         this.dbPlatform = dbPlatform;
@@ -23,13 +23,13 @@ public class DefaultEnvironment implements IEnvironment {
     public IDbPlatform getDbPlatform() {
         return dbPlatform;
     }
-    
+
     public void setResourceFactory(IResourceFactory resourceFactory) {
         this.resourceFactory = resourceFactory;
     }
-    
+
     public IResourceFactory getResourceFactory() {
         return resourceFactory;
-    }    
+    }
 
 }

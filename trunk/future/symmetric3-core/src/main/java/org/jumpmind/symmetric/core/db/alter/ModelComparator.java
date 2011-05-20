@@ -136,8 +136,8 @@ public class ModelComparator {
      *            The target table
      * @return The changes
      */
-    public List<ModelChange> compareTables(Database sourceModel, Table sourceTable, Database targetModel,
-            Table targetTable) {
+    public List<ModelChange> compareTables(Database sourceModel, Table sourceTable,
+            Database targetModel, Table targetTable) {
         ArrayList<ModelChange> changes = new ArrayList<ModelChange>();
 
         for (int fkIdx = 0; fkIdx < sourceTable.getForeignKeyCount(); fkIdx++) {
@@ -175,8 +175,8 @@ public class ModelComparator {
 
             if (targetIndex == null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Index " + sourceIndex.getName()
-                            + " needs to be removed from table " + sourceTable.getTableName());
+                    log.debug("Index " + sourceIndex.getName() + " needs to be removed from table "
+                            + sourceTable.getTableName());
                 }
                 changes.add(new RemoveIndexChange(sourceTable, sourceIndex));
             }
@@ -239,7 +239,8 @@ public class ModelComparator {
 
         if ((sourcePK.length == 0) && (targetPK.length > 0)) {
             if (log.isDebugEnabled()) {
-                log.debug("A primary key needs to be added to the table " + sourceTable.getTableName());
+                log.debug("A primary key needs to be added to the table "
+                        + sourceTable.getTableName());
             }
             // we have to use the target table here because the primary key
             // might
@@ -316,8 +317,8 @@ public class ModelComparator {
      *            The target column
      * @return The changes
      */
-    public List<TableChangeImplBase> compareColumns(Table sourceTable, Column sourceColumn, Table targetTable,
-            Column targetColumn) {
+    public List<TableChangeImplBase> compareColumns(Table sourceTable, Column sourceColumn,
+            Table targetTable, Column targetColumn) {
         ArrayList<TableChangeImplBase> changes = new ArrayList<TableChangeImplBase>();
 
         if (targetColumn.getTypeCode() != sourceColumn.getTypeCode()

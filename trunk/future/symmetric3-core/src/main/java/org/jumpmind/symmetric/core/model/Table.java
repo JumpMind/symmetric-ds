@@ -54,7 +54,7 @@ public class Table implements Serializable, Cloneable {
         this.setSchemaName(schemaName);
         this.setTableName(tableName);
     }
-    
+
     public Table(String tableName) {
         this.setTableName(tableName);
     }
@@ -686,7 +686,7 @@ public class Table implements Serializable, Cloneable {
     public String getFullyQualifiedTableName() {
         return getQualifiedTablePrefix() + this.tableName;
     }
-    
+
     public String getQualifiedTablePrefix() {
         String fullyQualified = "";
         if (!StringUtils.isBlank(schemaName)) {

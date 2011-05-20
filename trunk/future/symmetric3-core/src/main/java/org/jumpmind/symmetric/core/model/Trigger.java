@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.core.model;
 
@@ -82,7 +82,7 @@ public class Trigger implements Serializable {
      * can use to 'group' events together and commit together.
      */
     private String txIdExpression = null;
-    
+
     private String externalSelect = null;
 
     private Date createTime;
@@ -98,16 +98,15 @@ public class Trigger implements Serializable {
     public Trigger(String tableName) {
         this.sourceTableName = tableName;
     }
-    
+
     final public String qualifiedSourceTableName() {
         return qualifiedSourceTablePrefix() + sourceTableName;
     }
-    
+
     final public String qualifiedSourceTablePrefix() {
-        String schemaPlus = (getSourceSchemaName() != null ? getSourceSchemaName()
-                + "." : "");
-        String catalogPlus = (getSourceCatalogName() != null ? getSourceCatalogName()
-                + "." : "") + schemaPlus;
+        String schemaPlus = (getSourceSchemaName() != null ? getSourceSchemaName() + "." : "");
+        String catalogPlus = (getSourceCatalogName() != null ? getSourceCatalogName() + "." : "")
+                + schemaPlus;
         return catalogPlus;
     }
 
@@ -131,7 +130,7 @@ public class Trigger implements Serializable {
         }
         return orderedColumns.toArray(new Column[orderedColumns.size()]);
     }
-    
+
     /**
      * Get a list of the natural indexes of the excluded columns
      */
@@ -173,11 +172,10 @@ public class Trigger implements Serializable {
                 || lastTriggerBuildTime.before(getLastUpdateTime());
     }
 
-
     public String getTriggerId() {
         return triggerId;
     }
-    
+
     public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
         if (StringUtils.isNotBlank(triggerId) && StringUtils.isNumeric(triggerId)) {
@@ -186,8 +184,7 @@ public class Trigger implements Serializable {
                 maxTriggerId = id + 1;
             }
         }
-    }    
-    
+    }
 
     public String getSourceTableName() {
         return sourceTableName;
@@ -315,7 +312,7 @@ public class Trigger implements Serializable {
 
     public void setTxIdExpression(String txIdExpression) {
         this.txIdExpression = txIdExpression;
-    }           
+    }
 
     public String getExternalSelect() {
         return externalSelect;
@@ -328,7 +325,7 @@ public class Trigger implements Serializable {
     public void setLastUpdateBy(String updatedBy) {
         this.lastUpdateBy = updatedBy;
     }
-    
+
     public String getLastUpdateBy() {
         return lastUpdateBy;
     }
@@ -340,7 +337,7 @@ public class Trigger implements Serializable {
     public void setLastUpdateTime(Date lastModifiedOn) {
         this.lastUpdateTime = lastModifiedOn;
     }
-    
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -348,7 +345,7 @@ public class Trigger implements Serializable {
     public void setCreateTime(Date createdOn) {
         this.createTime = createdOn;
     }
-    
+
     public long toHashedValue() {
         long hashedValue = triggerId != null ? triggerId.hashCode() : 0;
         if (null != sourceTableName) {

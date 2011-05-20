@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.core.sql;
 
@@ -30,12 +30,11 @@ import org.jumpmind.symmetric.core.common.CollectionUtils;
 import org.jumpmind.symmetric.core.common.NotImplementedException;
 import org.jumpmind.symmetric.core.model.Column;
 
-
 /**
  * Builds a SQL DML statement
  */
 public class StatementBuilder {
-    
+
     public enum DmlType {
         INSERT, UPDATE, DELETE, COUNT
     };
@@ -55,7 +54,8 @@ public class StatementBuilder {
     protected Column[] preFilteredColumns;
 
     public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
-            Column[] preFilteredColumns, boolean isDateOverrideToTimestamp, String identifierQuoteString) {
+            Column[] preFilteredColumns, boolean isDateOverrideToTimestamp,
+            String identifierQuoteString) {
         this.keys = keys;
         this.columns = columns;
         this.preFilteredColumns = preFilteredColumns;
@@ -173,8 +173,8 @@ public class StatementBuilder {
 
     public void appendColumnEquals(StringBuilder sql, String[] names, String separator) {
         for (int i = 0; i < names.length; i++) {
-            sql.append(quote).append(names[i]).append(quote).append(" = ?").append(
-                    i + 1 < names.length ? separator : "");
+            sql.append(quote).append(names[i]).append(quote).append(" = ?")
+                    .append(i + 1 < names.length ? separator : "");
         }
     }
 

@@ -16,18 +16,20 @@ public class JdbcPlatformTest extends AbstractDatabaseTest {
     public void testJdbcPlatformFactory() {
         IJdbcDbPlatform platform = getPlatform(true);
         Assert.assertNotNull(platform);
-    }    
-    
+    }
+
     @Test
     public void testCreateTable() {
         IJdbcDbPlatform platform = getPlatform(true);
-        Table table = new Table("test",
-                new Column("test_id", TypeMap.NUMERIC, "10,2", false, true, true));
+        Table table = new Table("test", new Column("test_id", TypeMap.NUMERIC, "10,2", false, true,
+                true));
         ISqlConnection sqlConnection = platform.getSqlConnection();
         String alterSql = platform.getAlterScriptFor(table);
         Assert.assertFalse(StringUtils.isBlank(alterSql));
         sqlConnection.update(alterSql);
         alterSql = platform.getAlterScriptFor(table);
-        Assert.assertTrue("There should have been no changes to the table.  Instead, we received the alter script: " + alterSql,StringUtils.isBlank(alterSql));
+        Assert.assertTrue(
+                "There should have been no changes to the table.  Instead, we received the alter script: "
+                        + alterSql, StringUtils.isBlank(alterSql));
     }
 }

@@ -145,7 +145,8 @@ public class SqlScript {
 
     public void execute(final boolean autoCommit) {
         ISqlConnection connection = platform.getSqlConnection();
-        connection.update(autoCommit, failOnError, commitRate, statements.toArray(new String[statements.size()]));
+        connection.update(autoCommit, failOnError, commitRate,
+                statements.toArray(new String[statements.size()]));
     }
 
     private String trimComments(String line) {

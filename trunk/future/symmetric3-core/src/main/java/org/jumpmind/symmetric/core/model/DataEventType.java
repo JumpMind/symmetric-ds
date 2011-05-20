@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.core.model;
 
@@ -44,8 +44,9 @@ public enum DataEventType {
     RELOAD("R"),
 
     /**
-     * An event that indicates that the data payload has a sql statement that needs to be executed. This is more of a
-     * remote control feature (that would have been very handy in past lives).
+     * An event that indicates that the data payload has a sql statement that
+     * needs to be executed. This is more of a remote control feature (that
+     * would have been very handy in past lives).
      */
     SQL("S"),
 
@@ -55,13 +56,14 @@ public enum DataEventType {
     CREATE("C"),
 
     /**
-     * An event that indicates that all SymmetricDS configuration table data should be streamed to the client.
+     * An event that indicates that all SymmetricDS configuration table data
+     * should be streamed to the client.
      */
     CONFIG("X"),
 
     /**
-     * An event the indicates that the data payload is going to be a Java bean shell script that is to be run at the
-     * client.
+     * An event the indicates that the data payload is going to be a Java bean
+     * shell script that is to be run at the client.
      */
     BSH("B");
 

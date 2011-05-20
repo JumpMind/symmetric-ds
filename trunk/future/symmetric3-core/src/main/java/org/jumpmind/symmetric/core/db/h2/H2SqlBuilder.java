@@ -48,7 +48,6 @@ import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.core.sql.SqlException;
 
-
 /**
  * The SQL Builder for the H2 database. From patch <a
  * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
@@ -62,7 +61,7 @@ public class H2SqlBuilder extends SqlBuilder {
     }
 
     @Override
-    public void dropTable(Table table)  {
+    public void dropTable(Table table) {
         print("DROP TABLE ");
         printIdentifier(getTableName(table));
         print(" IF EXISTS");
@@ -75,19 +74,21 @@ public class H2SqlBuilder extends SqlBuilder {
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index)  {
+    public void writeExternalIndexDropStmt(Table table, Index index) {
         print("DROP INDEX IF EXISTS ");
         printIdentifier(getIndexName(index));
         printEndOfStatement();
     }
 
     @Override
-    protected void processTableStructureChanges(Database currentModel, Database desiredModel, Collection<TableChange> changes)  {
+    protected void processTableStructureChanges(Database currentModel, Database desiredModel,
+            Collection<TableChange> changes) {
 
         // Only drop columns that are not part of a primary key
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-            if ((change instanceof RemoveColumnChange) && ((RemoveColumnChange) change).getColumn().isPrimaryKey()) {
+            if ((change instanceof RemoveColumnChange)
+                    && ((RemoveColumnChange) change).getColumn().isPrimaryKey()) {
                 changeIt.remove();
             }
         }
@@ -102,12 +103,13 @@ public class H2SqlBuilder extends SqlBuilder {
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
             if (change instanceof AddColumnChange) {
-                addColumnChanges.add((AddColumnChange)change);
+                addColumnChanges.add((AddColumnChange) change);
                 changeIt.remove();
             }
         }
 
-        for (ListIterator<AddColumnChange> changeIt = addColumnChanges.listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
+        for (ListIterator<AddColumnChange> changeIt = addColumnChanges
+                .listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
             AddColumnChange addColumnChange = (AddColumnChange) changeIt.previous();
             processChange(currentModel, desiredModel, addColumnChange);
             changeIt.remove();
@@ -119,9 +121,8 @@ public class H2SqlBuilder extends SqlBuilder {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
                 processChange(currentModel, desiredModel, removeColumnChange);
                 changeIt.remove();
-            }
-            else if (change instanceof ColumnAutoIncrementChange) {
-                processAlterColumn(currentModel, change);              
+            } else if (change instanceof ColumnAutoIncrementChange) {
+                processAlterColumn(currentModel, change);
                 changeIt.remove();
             } else if (change instanceof ColumnChange) {
                 boolean needsAlter = true;
@@ -144,7 +145,8 @@ public class H2SqlBuilder extends SqlBuilder {
                     ColumnSizeChange sizeChange = (ColumnSizeChange) change;
                     if (sizeChange.getNewScale() == 0 && sizeChange.getNewSize() == 0) {
                         needsAlter = false;
-                    } else if (sizeChange.getNewSize() == sizeChange.getChangedColumn().getSizeAsInt()
+                    } else if (sizeChange.getNewSize() == sizeChange.getChangedColumn()
+                            .getSizeAsInt()
                             && sizeChange.getNewScale() == sizeChange.getChangedColumn().getScale()) {
                         needsAlter = false;
                     }
@@ -157,13 +159,13 @@ public class H2SqlBuilder extends SqlBuilder {
         }
 
     }
-    
+
     @Override
-    protected void writeColumnAutoIncrementStmt(Table table, Column column)  {
+    protected void writeColumnAutoIncrementStmt(Table table, Column column) {
         print("AUTO_INCREMENT");
     }
 
-    protected void processAlterColumn(Database currentModel, TableChange change)  {
+    protected void processAlterColumn(Database currentModel, TableChange change) {
         Column column = null;
         if (change instanceof ColumnChange) {
             column = ((ColumnChange) change).getChangedColumn();
@@ -203,8 +205,8 @@ public class H2SqlBuilder extends SqlBuilder {
      * @param change
      *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, AddColumnChange change)
-             {
+    protected void processChange(Database currentModel, Database desiredModel,
+            AddColumnChange change) {
         print("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable()));
         printIndent();
@@ -228,8 +230,8 @@ public class H2SqlBuilder extends SqlBuilder {
      * @param change
      *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, RemoveColumnChange change)
-             {
+    protected void processChange(Database currentModel, Database desiredModel,
+            RemoveColumnChange change) {
         print("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable()));
         printIndent();
@@ -240,7 +242,7 @@ public class H2SqlBuilder extends SqlBuilder {
     }
 
     @Override
-    protected void writeColumnDefaultValueStmt(Table table, Column column)  {
+    protected void writeColumnDefaultValueStmt(Table table, Column column) {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
@@ -255,22 +257,24 @@ public class H2SqlBuilder extends SqlBuilder {
                 print(" DEFAULT ");
                 writeColumnDefaultValue(table, column);
             }
-        } else if (getPlatformInfo().isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement()) {
+        } else if (getPlatformInfo().isDefaultValueUsedForIdentitySpec()
+                && column.isAutoIncrement()) {
             print(" DEFAULT ");
             writeColumnDefaultValue(table, column);
         } else if (!StringUtils.isBlank(column.getDefaultValue())) {
             print(" DEFAULT ");
             writeColumnDefaultValue(table, column);
         }
-    }    
+    }
 
     @Override
-    protected void printDefaultValue(Object defaultValue, int typeCode)  {
+    protected void printDefaultValue(Object defaultValue, int typeCode) {
         if (defaultValue != null) {
             String defaultValueStr = defaultValue.toString();
-            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode) && !defaultValueStr.startsWith("TO_DATE(")
-                    && !defaultValue.equals("CURRENT_TIMESTAMP") && !defaultValue.equals("CURRENT_TIME")
-                    && !defaultValue.equals("CURRENT_DATE");
+            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
+                    && !defaultValueStr.startsWith("TO_DATE(")
+                    && !defaultValue.equals("CURRENT_TIMESTAMP")
+                    && !defaultValue.equals("CURRENT_TIME") && !defaultValue.equals("CURRENT_DATE");
             ;
 
             if (shouldUseQuotes) {

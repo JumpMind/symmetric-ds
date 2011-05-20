@@ -29,7 +29,7 @@ public class H2DbPlatform extends AbstractJdbcDbPlatform {
         platformInfo.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);
 
         platformInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BIT);
-        
+
         platformInfo.addNativeTypeMapping(Types.NUMERIC, "DECIMAL", Types.DECIMAL);
         platformInfo.addNativeTypeMapping(Types.BINARY, "BINARY", Types.BINARY);
         platformInfo.addNativeTypeMapping(Types.BLOB, "BLOB", Types.BLOB);
@@ -48,7 +48,7 @@ public class H2DbPlatform extends AbstractJdbcDbPlatform {
         platformInfo.setBlankCharColumnSpacePadded(true);
         platformInfo.setNonBlankCharColumnSpacePadded(false);
         platformInfo.setRequiresAutoCommitFalseToSetFetchSize(false);
-        
+
         this.jdbcModelReader = new H2JdbcModelReader(this);
         this.sqlBuilder = new H2SqlBuilder(this);
         this.triggerBuilder = new H2TriggerBuilder(this);

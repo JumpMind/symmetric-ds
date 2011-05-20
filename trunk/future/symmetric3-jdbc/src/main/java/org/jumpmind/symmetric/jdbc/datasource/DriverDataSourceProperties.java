@@ -20,7 +20,7 @@ public class DriverDataSourceProperties extends Properties {
     public DriverDataSourceProperties(String file) {
         load(new File(file));
     }
-    
+
     public DriverDataSourceProperties(File file) {
         load(file);
     }
@@ -31,7 +31,7 @@ public class DriverDataSourceProperties extends Properties {
     public void store(String file) {
         store(new File(file));
     }
-    
+
     public DataSource getDataSource() {
         return getDataSource(System.getProperty("db.default", getProperty("db.default", "h2")));
     }

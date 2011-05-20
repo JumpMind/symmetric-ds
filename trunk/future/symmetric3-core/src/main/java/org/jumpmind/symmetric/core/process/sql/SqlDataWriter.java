@@ -16,6 +16,7 @@ import org.jumpmind.symmetric.core.model.DataEventType;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataContext;
+import org.jumpmind.symmetric.core.process.DataProcessor;
 import org.jumpmind.symmetric.core.process.IColumnFilter;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
@@ -25,7 +26,10 @@ import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.core.sql.StatementBuilder;
 import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
 
-// Notes:  Inserts and deletes try to use jdbc batching by default
+/**
+ * An {@link IDataWriter} used by {@link DataProcessor}s to write {@link Data}
+ * to a relational database.
+ */
 public class SqlDataWriter implements IDataWriter<DataContext> {
 
     final Log log = LogFactory.getLog(getClass());
@@ -60,28 +64,15 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
         this(platform, parameters, null, null);
     }
 
+    public SqlDataWriter(IDbPlatform platform, Settings settings) {
+        this(platform, settings, null, null);
+    }
+
     public SqlDataWriter(IDbPlatform platform, Parameters parameters,
             List<IColumnFilter<DataContext>> columnFilters,
             List<IDataFilter<DataContext>> dataFilters) {
         this(platform, new Settings(), columnFilters, dataFilters);
-
-        settings.maxRowsBeforeBatchFlush = parameters.getInt(
-                Parameters.LOADER_MAX_ROWS_BEFORE_BATCH_FLUSH, 10);
-        settings.enableFallbackForInsert = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_INSERT,
-                true);
-        settings.enableFallbackForUpdate = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_UPDATE,
-                true);
-        settings.allowMissingDeletes = parameters.is(Parameters.LOADER_ALLOW_MISSING_DELETES, true);
-        settings.useBatching = parameters.is(Parameters.LOADER_USE_BATCHING, true);
-        settings.maxRowsBeforeCommit = parameters.getInt(Parameters.LOADER_MAX_ROWS_BEFORE_COMMIT,
-                1000);
-        settings.usePrimaryKeysFromSource = parameters.is(Parameters.DB_USE_PKS_FROM_SOURCE, true);
-        settings.dontIncludeKeysInUpdateStatement = parameters.is(
-                Parameters.LOADER_DONT_INCLUDE_PKS_IN_UPDATE, false);
-    }
-
-    public SqlDataWriter(IDbPlatform platform, Settings settings) {
-        this(platform, settings, null, null);
+        populateSettings(parameters);
     }
 
     public SqlDataWriter(IDbPlatform platform, Settings settings,
@@ -90,7 +81,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
         this.platform = platform;
         this.columnFilters = columnFilters;
         this.dataFilters = dataFilters;
-        this.settings = settings;
+        this.settings = settings == null ? new Settings() : settings;
     }
 
     public DataContext createDataContext() {
@@ -134,11 +125,11 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
 
     protected void writeData(Data data, boolean batchMode) {
 
-        if (lastData != null && lastData.getEventType() != data.getEventType()) {
-            transaction.flush();
-        }
-
         try {
+            if (requireNewStatement(data)) {
+                flush();
+            }
+
             switch (data.getEventType()) {
             case INSERT:
                 processInsert(data, batchMode);
@@ -165,22 +156,57 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
             }
 
         } catch (DataIntegrityViolationException ex) {
-            if (transaction.isInBatchMode() && isCorrectForIntegrityViolation(data)) {
-                // if we were in batch mode, then resubmit in non-batch mode so
-                // we can fallback.
-                List<Data> failed = transaction.getUnflushedMarkers();
-                batch.decrementInsertCount(failed.size());
-                for (Data data2 : failed) {
-                    writeData(data2, false);
-                }
-            } else {
-                throw ex;
-            }
+            handleDataIntegrityViolationException(ex);
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    protected void handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        if (transaction.isInBatchMode()) {
+            resendFailedDataInNonBatchMode();
+        } else {
+            throw ex;
+        }
+    }
+
+    protected void flush() {
+        try {
+            transaction.flush();
+        } catch (DataIntegrityViolationException ex) {
+            handleDataIntegrityViolationException(ex);
+        }
+    }
+
+    protected boolean requireNewStatement(Data data) {
+        return statementBuilder == null || lastData == null
+                || lastData.getEventType() != data.getEventType();
+    }
+
+    protected void resendFailedDataInNonBatchMode() {
+        List<Data> failed = transaction.getUnflushedMarkers(true);
+        batch.decrementInsertCount(failed.size());
+        for (Data data2 : failed) {
+            writeData(data2, false);
+        }
+    }
+
+    protected void populateSettings(Parameters parameters) {
+        settings.maxRowsBeforeBatchFlush = parameters.getInt(
+                Parameters.LOADER_MAX_ROWS_BEFORE_BATCH_FLUSH, 10);
+        settings.enableFallbackForInsert = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_INSERT,
+                true);
+        settings.enableFallbackForUpdate = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_UPDATE,
+                true);
+        settings.allowMissingDeletes = parameters.is(Parameters.LOADER_ALLOW_MISSING_DELETES, true);
+        settings.useBatching = parameters.is(Parameters.LOADER_USE_BATCHING, true);
+        settings.maxRowsBeforeCommit = parameters.getInt(Parameters.LOADER_MAX_ROWS_BEFORE_COMMIT,
+                1000);
+        settings.usePrimaryKeysFromSource = parameters.is(Parameters.DB_USE_PKS_FROM_SOURCE, true);
+        settings.dontIncludeKeysInUpdateStatement = parameters.is(
+                Parameters.LOADER_DONT_INCLUDE_PKS_IN_UPDATE, false);
     }
 
     protected boolean filterData(Data data, DataContext ctx) {
@@ -259,7 +285,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
             columnValues = (String[]) changedColumnValueList
                     .toArray(new String[changedColumnValueList.size()]);
             String[] values = (String[]) ArrayUtils.addAll(columnValues, getPkData(data));
-            transaction.prepare(this.statementBuilder.getSql(), -1, false);
+            transaction.prepare(this.statementBuilder.getSql(), -1);
             return execute(data, values);
         } else {
             // There was no change to apply
@@ -282,23 +308,20 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected void executeInsertSql(Data data, boolean batchMode) {
-        if (this.statementBuilder == null || this.lastData == null
-                || this.lastData.getEventType() != DataEventType.INSERT) {
+        transaction.setInBatchMode(batchMode);
+        if (requireNewStatement(data)) {
             this.statementBuilder = getStatementBuilder(DmlType.INSERT, null,
                     targetTable.getColumns());
-            transaction.prepare(this.statementBuilder.getSql(), settings.maxRowsBeforeBatchFlush,
-                    batchMode);
+            transaction.prepare(this.statementBuilder.getSql(), settings.maxRowsBeforeBatchFlush);
         }
         execute(data, data.toParsedRowData());
     }
 
     protected int executeDeleteSql(Data data, boolean batchMode) {
-        if (this.statementBuilder == null || this.lastData == null
-                || this.lastData.getEventType() != DataEventType.DELETE) {
+        if (requireNewStatement(data)) {
             this.statementBuilder = getStatementBuilder(DmlType.DELETE,
                     targetTable.getPrimaryKeyColumnsArray(), targetTable.getColumns());
-            transaction.prepare(this.statementBuilder.getSql(), settings.maxRowsBeforeBatchFlush,
-                    batchMode);
+            transaction.prepare(this.statementBuilder.getSql(), settings.maxRowsBeforeBatchFlush);
         }
         return execute(data, data.toParsedPkData());
     }
@@ -428,6 +451,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     private void commit() {
+        flush();
         this.transaction.commit();
         uncommittedRows = 0;
     }

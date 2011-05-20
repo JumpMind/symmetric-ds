@@ -42,13 +42,13 @@ import org.jumpmind.symmetric.core.model.TypeMap;
  * The SQL Builder for Oracle.
  */
 public class OracleSqlBuilder extends SqlBuilder {
-    
+
     /** The regular expression pattern for ISO dates, i.e. 'YYYY-MM-DD'. */
     private Pattern _isoDatePattern;
-    
+
     /** The regular expression pattern for ISO times, i.e. 'HH:MI:SS'. */
     private Pattern _isoTimePattern;
-    
+
     /**
      * The regular expression pattern for ISO timestamps, i.e. 'YYYY-MM-DD
      * HH:MI:SS.fffffffff'.
@@ -93,9 +93,9 @@ public class OracleSqlBuilder extends SqlBuilder {
     /**
      * {@inheritDoc}
      */
-    public void dropTable(Table table) 
-    {
-        // The only difference to the Oracle 8/9 variant is the purge which prevents the
+    public void dropTable(Table table) {
+        // The only difference to the Oracle 8/9 variant is the purge which
+        // prevents the
         // table from being moved to the recycle bin (which is new in Oracle 10)
         List<Column> columns = table.getAutoIncrementColumns();
 
@@ -119,7 +119,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      * @param column
      *            The column
      */
-    protected void createAutoIncrementSequence(Table table, Column column)  {
+    protected void createAutoIncrementSequence(Table table, Column column) {
         print("CREATE SEQUENCE ");
         printIdentifier(getConstraintName("seq", table, column.getName(), null));
         printEndOfStatement();
@@ -133,7 +133,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      * @param column
      *            The column
      */
-    protected void createAutoIncrementTrigger(Table table, Column column)  {
+    protected void createAutoIncrementTrigger(Table table, Column column) {
         String columnName = getColumnName(column);
         String triggerName = getConstraintName("trg", table, column.getName(), null);
 
@@ -195,7 +195,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      * @param column
      *            The column
      */
-    protected void dropAutoIncrementSequence(Table table, Column column)  {
+    protected void dropAutoIncrementSequence(Table table, Column column) {
         print("DROP SEQUENCE ");
         printIdentifier(getConstraintName("seq", table, column.getName(), null));
         printEndOfStatement();
@@ -209,7 +209,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      * @param column
      *            The column
      */
-    protected void dropAutoIncrementTrigger(Table table, Column column)  {
+    protected void dropAutoIncrementTrigger(Table table, Column column) {
         print("DROP TRIGGER ");
         printIdentifier(getConstraintName("trg", table, column.getName(), null));
         printEndOfStatement();
@@ -218,29 +218,28 @@ public class OracleSqlBuilder extends SqlBuilder {
     /**
      * {@inheritDoc}
      */
-    protected void createTemporaryTable(Database database, Table table)
-             {
+    protected void createTemporaryTable(Database database, Table table) {
         createTable(database, table);
     }
 
     /**
      * {@inheritDoc}
      */
-    protected void dropTemporaryTable(Database database, Table table)  {
+    protected void dropTemporaryTable(Database database, Table table) {
         dropTable(table);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void dropExternalForeignKeys(Table table)  {
+    public void dropExternalForeignKeys(Table table) {
         // no need to as we drop the table with CASCASE CONSTRAINTS
     }
 
     /**
      * {@inheritDoc}
      */
-    public void writeExternalIndexDropStmt(Table table, Index index)  {
+    public void writeExternalIndexDropStmt(Table table, Index index) {
         // Index names in Oracle are unique to a schema and hence Oracle does
         // not
         // use the ON <tablename> clause
@@ -252,7 +251,7 @@ public class OracleSqlBuilder extends SqlBuilder {
     /**
      * {@inheritDoc}
      */
-    protected void printDefaultValue(Object defaultValue, int typeCode)  {
+    protected void printDefaultValue(Object defaultValue, int typeCode) {
         if (defaultValue != null) {
             String defaultValueStr = defaultValue.toString();
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
@@ -274,7 +273,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      */
     protected String getNativeDefaultValue(Column column) {
         if (column.getTypeCode() == Types.BIT) {
-            return TypeMap.convertToBoolean(column.getDefaultValue()).toString(); 
+            return TypeMap.convertToBoolean(column.getDefaultValue()).toString();
         }
         // Oracle does not accept ISO formats, so we have to convert an ISO spec
         // if we find one
@@ -300,7 +299,7 @@ public class OracleSqlBuilder extends SqlBuilder {
     /**
      * {@inheritDoc}
      */
-    protected void writeColumnAutoIncrementStmt(Table table, Column column)  {
+    protected void writeColumnAutoIncrementStmt(Table table, Column column) {
         // we're using sequences instead
     }
 
@@ -333,7 +332,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      * {@inheritDoc}
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes)  {
+            Table sourceTable, Table targetTable, List<TableChange> changes) {
         // While Oracle has an ALTER TABLE MODIFY statement, it is somewhat
         // limited
         // esp. if there is data in the table, so we don't use it
@@ -414,7 +413,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change)  {
+            AddColumnChange change) {
         print("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable()));
         printIndent();
@@ -439,7 +438,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change)  {
+            RemoveColumnChange change) {
         if (change.getColumn().isAutoIncrement()) {
             dropAutoIncrementTrigger(change.getChangedTable(), change.getColumn());
             dropAutoIncrementSequence(change.getChangedTable(), change.getColumn());
@@ -464,7 +463,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemovePrimaryKeyChange change)  {
+            RemovePrimaryKeyChange change) {
         print("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable()));
         printIndent();
@@ -472,6 +471,5 @@ public class OracleSqlBuilder extends SqlBuilder {
         printEndOfStatement();
         change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
     }
-    
-    
+
 }

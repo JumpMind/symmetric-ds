@@ -16,7 +16,7 @@ public class TableCopyProperties extends DriverDataSourceProperties {
     public TableCopyProperties(String file) {
         load(new File(file));
     }
-    
+
     public TableCopyProperties(File file) {
         load(file);
     }

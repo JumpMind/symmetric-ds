@@ -8,7 +8,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -59,17 +61,13 @@ public class JdbcSqlConnection implements ISqlConnection {
         }
     }
 
-    public <T> ISqlReadCursor<T> query(String sql, ISqlRowMapper<T> mapper) {
-        return query(sql, mapper, null, null);
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper) {
+        return queryForCursor(sql, mapper, null, null);
     }
 
-    public <T> ISqlReadCursor<T> query(String sql, ISqlRowMapper<T> mapper, Object[] values,
-            int[] types) {
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
+            Object[] values, int[] types) {
         return new JdbcSqlReadCursor<T>(sql, values, types, mapper, this.dbPlatform);
-    }
-
-    public ISqlTransaction startSqlTransaction() {
-        return new JdbcSqlTransaction(this);
     }
 
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
@@ -93,6 +91,45 @@ public class JdbcSqlConnection implements ISqlConnection {
                 return result;
             }
         });
+    }
+
+    public List<Map<String, Object>> query(String sql) {
+        return query(sql, null, null);
+    }
+
+    public List<Map<String, Object>> query(String sql, Object[] args, int[] types) {
+        return query(sql, new ISqlRowMapper<Map<String, Object>>() {
+            public Map<String, Object> mapRow(java.util.Map<String, Object> row) {
+                return row;
+            }
+        }, args, types);
+    }
+
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper) {
+        return query(sql, mapper, null, null);
+    }
+
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types) {
+        ISqlReadCursor<T> cursor = queryForCursor(sql, mapper, args, types);
+        try {
+            T next = null;
+            List<T> list = new ArrayList<T>();
+            do {
+                next = cursor.next();
+                if (next != null) {
+                    list.add(next);
+                }
+            } while (next != null);
+            return list;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    public ISqlTransaction startSqlTransaction() {
+        return new JdbcSqlTransaction(this);
     }
 
     public int update(String sql) {

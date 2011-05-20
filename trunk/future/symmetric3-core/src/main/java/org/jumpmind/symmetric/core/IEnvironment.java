@@ -6,7 +6,7 @@ import org.jumpmind.symmetric.core.resources.IResourceFactory;
 public interface IEnvironment {
 
     public IResourceFactory getResourceFactory();
-    
+
     public IDbPlatform getDbPlatform();
-    
+
 }

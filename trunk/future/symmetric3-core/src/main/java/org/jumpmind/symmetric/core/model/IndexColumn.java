@@ -162,46 +162,36 @@ public class IndexColumn implements Cloneable, Serializable {
     /**
      * {@inheritDoc}
      */
-    public boolean equals(Object obj)
-    {
-        if (obj instanceof IndexColumn)
-        {
-            IndexColumn other = (IndexColumn)obj;
+    public boolean equals(Object obj) {
+        if (obj instanceof IndexColumn) {
+            IndexColumn other = (IndexColumn) obj;
 
-            return new EqualsBuilder().append(name, other.name)
-                                      .append(size, other.size)
-                                      .isEquals();
-        }
-        else
-        {
+            return new EqualsBuilder().append(name, other.name).append(size, other.size).isEquals();
+        } else {
             return false;
         }
     }
 
     /**
-     * Compares this index column to the given one while ignoring the case of identifiers.
+     * Compares this index column to the given one while ignoring the case of
+     * identifiers.
      * 
-     * @param other The other index column
-     * @return <code>true</code> if this index column is equal (ignoring case) to the given one
+     * @param other
+     *            The other index column
+     * @return <code>true</code> if this index column is equal (ignoring case)
+     *         to the given one
      */
-    public boolean equalsIgnoreCase(IndexColumn other)
-    {
+    public boolean equalsIgnoreCase(IndexColumn other) {
         return new EqualsBuilder().append(name.toUpperCase(), other.name.toUpperCase())
-                                  .append(size, other.size)
-                                  .isEquals();
+                .append(size, other.size).isEquals();
     }
 
     /**
      * {@inheritDoc}
      */
-    public int hashCode()
-    {
-        return new HashCodeBuilder(17, 37).append(name)
-                                          .append(size)
-                                          .toHashCode();
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(name).append(size).toHashCode();
     }
-
-
 
     /**
      * {@inheritDoc}

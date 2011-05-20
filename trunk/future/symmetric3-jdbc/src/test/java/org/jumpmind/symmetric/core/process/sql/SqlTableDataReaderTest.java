@@ -27,7 +27,7 @@ public class SqlTableDataReaderTest extends AbstractDatabaseTest {
         Assert.assertEquals(testTable, nextTable);
         for (int i = 0; i < 100; i++) {
             Data data = reader.nextData(ctx);
-            Assert.assertNotNull("Null data on the " + i + " element",data);
+            Assert.assertNotNull("Null data on the " + i + " element", data);
         }
         Data data = reader.nextData(ctx);
         Assert.assertNull(data);

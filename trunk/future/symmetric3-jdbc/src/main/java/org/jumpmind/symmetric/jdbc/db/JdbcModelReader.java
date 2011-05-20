@@ -447,7 +447,7 @@ public class JdbcModelReader {
                     log.log(LogLevel.INFO, ex, "Cannot determine the catalog name from connection.");
                 }
                 db.addTables(readTables(con, catalog, schema, tableTypes));
-                
+
                 // Note that we do this here instead of in readTable since
                 // platforms may redefine the readTable method whereas it is
                 // highly unlikely that this method gets redefined
@@ -571,34 +571,33 @@ public class JdbcModelReader {
                     : schemaName;
             final String catalog = StringUtils.isBlank(catalogName) ? platform.getDefaultCatalog()
                     : catalogName;
-            table = platform.getJdbcSqlConnection()
-                    .execute(new IConnectionCallback<Table>() {
-                        public Table execute(Connection c) throws SQLException {
-                            Table table = null;
-                            DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
-                            metaData.setMetaData(c.getMetaData());
-                            metaData.setCatalog(catalog);
-                            metaData.setSchemaPattern(schema);
-                            metaData.setTableTypes(getDefaultTableTypes());
-                            ResultSet tableData = null;
-                            try {
-                                tableData = metaData.getTables(getTableNamePattern(tableName));
-                                while (tableData != null && tableData.next()) {
-                                    Map<String, Object> values = readColumns(tableData,
-                                            initColumnsForTable());
-                                    table = readTable(c, metaData, values);
-                                }
-                            } finally {
-                                JdbcSqlConnection.close(tableData);
-                            }
-
-                            if (makeAllColumnsPKsIfNoneFound) {
-                                makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
-                            }
-
-                            return table;
+            table = platform.getJdbcSqlConnection().execute(new IConnectionCallback<Table>() {
+                public Table execute(Connection c) throws SQLException {
+                    Table table = null;
+                    DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
+                    metaData.setMetaData(c.getMetaData());
+                    metaData.setCatalog(catalog);
+                    metaData.setSchemaPattern(schema);
+                    metaData.setTableTypes(getDefaultTableTypes());
+                    ResultSet tableData = null;
+                    try {
+                        tableData = metaData.getTables(getTableNamePattern(tableName));
+                        while (tableData != null && tableData.next()) {
+                            Map<String, Object> values = readColumns(tableData,
+                                    initColumnsForTable());
+                            table = readTable(c, metaData, values);
                         }
-                    });
+                    } finally {
+                        JdbcSqlConnection.close(tableData);
+                    }
+
+                    if (makeAllColumnsPKsIfNoneFound) {
+                        makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
+                    }
+
+                    return table;
+                }
+            });
         } catch (SqlException ex) {
             log.log(LogLevel.WARN, ex);
         }
@@ -632,8 +631,8 @@ public class JdbcModelReader {
      * @return The table or <code>null</code> if the result set row did not
      *         contain a valid table
      */
-    protected Table readTable(Connection c, DatabaseMetaDataWrapper metaData, Map<String, Object> values)
-            throws SQLException {
+    protected Table readTable(Connection c, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
         String tableName = (String) values.get("TABLE_NAME");
         Table table = null;
 
@@ -1000,8 +999,8 @@ public class JdbcModelReader {
      *            The name of the table
      * @return The list of indices
      */
-    protected Collection<Index> readIndices(Connection c, DatabaseMetaDataWrapper metaData, String tableName)
-            throws SQLException {
+    protected Collection<Index> readIndices(Connection c, DatabaseMetaDataWrapper metaData,
+            String tableName) throws SQLException {
         Map<String, Index> indices = new LinkedHashMap<String, Index>();
         ResultSet indexData = null;
 

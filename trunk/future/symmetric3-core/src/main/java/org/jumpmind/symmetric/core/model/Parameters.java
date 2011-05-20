@@ -8,19 +8,19 @@ import org.jumpmind.symmetric.core.sql.SqlConstants;
 public class Parameters extends HashMap<String, String> {
 
     private static final long serialVersionUID = 1L;
-    
+
     public final static String LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
-    
+
     public final static String LOADER_MAX_ROWS_BEFORE_BATCH_FLUSH = "dataloader.max.rows.before.batch.flush";
-    
+
     public final static String LOADER_USE_BATCHING = "dataloader.use.batching";
-    
+
     public final static String LOADER_ENABLE_FALLBACK_UPDATE = "dataloader.enable.fallback.update";
-    
+
     public final static String LOADER_ENABLE_FALLBACK_INSERT = "dataloader.enable.fallback.insert";
-    
+
     public final static String LOADER_ALLOW_MISSING_DELETES = "dataloader.allow.missing.delete";
-    
+
     public final static String LOADER_DONT_INCLUDE_PKS_IN_UPDATE = "dataloader.dont.include.keys.in.update.statement";
 
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";

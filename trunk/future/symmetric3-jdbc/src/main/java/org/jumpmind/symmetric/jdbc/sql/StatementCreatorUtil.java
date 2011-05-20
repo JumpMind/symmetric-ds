@@ -67,18 +67,17 @@ public abstract class StatementCreatorUtil {
         javaTypeToSqlTypeMap.put(Blob.class, Types.BLOB);
         javaTypeToSqlTypeMap.put(Clob.class, Types.CLOB);
     }
-    
-    public static void setValues(PreparedStatement ps, Object[] args, int[] argTypes, ILobHandler lobHandler) throws SQLException {
+
+    public static void setValues(PreparedStatement ps, Object[] args, int[] argTypes,
+            ILobHandler lobHandler) throws SQLException {
         for (int i = 1; i <= args.length; i++) {
-            Object arg = args[i-1];
-            int argType = argTypes[i-1];
+            Object arg = args[i - 1];
+            int argType = argTypes[i - 1];
             if (argType == Types.BLOB && lobHandler != null) {
                 lobHandler.setBlobAsBytes(ps, i, (byte[]) arg);
-            }
-            else if (argType == Types.CLOB && lobHandler != null) {
+            } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.setClobAsString(ps, i, (String) arg);
-            }
-            else {
+            } else {
                 setParameterValue(ps, i, argType, arg);
             }
         }

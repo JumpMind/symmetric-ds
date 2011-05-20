@@ -21,65 +21,65 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-
 /**
  * Abstract base class for Spring's {@link javax.sql.DataSource}
  * implementations, taking care of the padding.
- *
- * <p>'Padding' in the context of this class means default implementations
- * for certain methods from the <code>DataSource</code> interface, such as
+ * 
+ * <p>
+ * 'Padding' in the context of this class means default implementations for
+ * certain methods from the <code>DataSource</code> interface, such as
  * {@link #getLoginTimeout()}, {@link #setLoginTimeout(int)}, and so forth.
- *
+ * 
  * @author Juergen Hoeller
  * @since 07.05.2003
  * @see DriverManagerDataSource
  */
 public abstract class AbstractDataSource implements DataSource {
-    
-	/**
-	 * Returns 0, indicating the default system timeout is to be used.
-	 */
-	public int getLoginTimeout() throws SQLException {
-		return 0;
-	}
 
-	/**
-	 * Setting a login timeout is not supported.
-	 */
-	public void setLoginTimeout(int timeout) throws SQLException {
-		throw new UnsupportedOperationException("setLoginTimeout");
-	}
+    /**
+     * Returns 0, indicating the default system timeout is to be used.
+     */
+    public int getLoginTimeout() throws SQLException {
+        return 0;
+    }
 
-	/**
-	 * LogWriter methods are not supported.
-	 */
-	public PrintWriter getLogWriter() {
-		throw new UnsupportedOperationException("getLogWriter");
-	}
+    /**
+     * Setting a login timeout is not supported.
+     */
+    public void setLoginTimeout(int timeout) throws SQLException {
+        throw new UnsupportedOperationException("setLoginTimeout");
+    }
 
-	/**
-	 * LogWriter methods are not supported.
-	 */
-	public void setLogWriter(PrintWriter pw) throws SQLException {
-		throw new UnsupportedOperationException("setLogWriter");
-	}
+    /**
+     * LogWriter methods are not supported.
+     */
+    public PrintWriter getLogWriter() {
+        throw new UnsupportedOperationException("getLogWriter");
+    }
 
+    /**
+     * LogWriter methods are not supported.
+     */
+    public void setLogWriter(PrintWriter pw) throws SQLException {
+        throw new UnsupportedOperationException("setLogWriter");
+    }
 
-	//---------------------------------------------------------------------
-	// Implementation of JDBC 4.0's Wrapper interface
-	//---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
+    // Implementation of JDBC 4.0's Wrapper interface
+    // ---------------------------------------------------------------------
 
-	@SuppressWarnings("unchecked")
-	public <T> T  unwrap(Class<T> iface) throws SQLException {
-		if (!DataSource.class.equals(iface)) {
-			throw new SQLException("DataSource of type [" + getClass().getName() +
-					"] can only be unwrapped as [javax.sql.DataSource], not as [" + iface.getName());
-		}
-		return (T) this;
-	}
+    @SuppressWarnings("unchecked")
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        if (!DataSource.class.equals(iface)) {
+            throw new SQLException("DataSource of type [" + getClass().getName()
+                    + "] can only be unwrapped as [javax.sql.DataSource], not as ["
+                    + iface.getName());
+        }
+        return (T) this;
+    }
 
-	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		return DataSource.class.equals(iface);
-	}
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return DataSource.class.equals(iface);
+    }
 
 }

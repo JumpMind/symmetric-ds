@@ -5,16 +5,17 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public abstract class StringUtils {
 
     private static Pattern TOKEN_REPLACEMENT_PATTERN = Pattern.compile("\\$\\((.+?)\\)");
-    
+
     /**
-     * <p>The maximum size to which the padding constant(s) can expand.</p>
+     * <p>
+     * The maximum size to which the padding constant(s) can expand.
+     * </p>
      */
     private static final int PAD_LIMIT = 8192;
-    
+
     /**
      * <p>
      * Replaces all occurrences of a String within another String.
@@ -137,10 +138,12 @@ public abstract class StringUtils {
     public static boolean isEmpty(String str) {
         return str == null || str.length() == 0;
     }
-    
+
     /**
-     * <p>Checks if a String is whitespace, empty ("") or null.</p>
-     *
+     * <p>
+     * Checks if a String is whitespace, empty ("") or null.
+     * </p>
+     * 
      * <pre>
      * StringUtils.isBlank(null)      = true
      * StringUtils.isBlank("")        = true
@@ -148,8 +151,9 @@ public abstract class StringUtils {
      * StringUtils.isBlank("bob")     = false
      * StringUtils.isBlank("  bob  ") = false
      * </pre>
-     *
-     * @param str  the String to check, may be null
+     * 
+     * @param str
+     *            the String to check, may be null
      * @return <code>true</code> if the String is null, empty or whitespace
      * @since 2.0
      */
@@ -165,10 +169,12 @@ public abstract class StringUtils {
         }
         return true;
     }
-    
+
     /**
-     * <p>Checks if a String is not empty (""), not null and not whitespace only.</p>
-     *
+     * <p>
+     * Checks if a String is not empty (""), not null and not whitespace only.
+     * </p>
+     * 
      * <pre>
      * StringUtils.isNotBlank(null)      = false
      * StringUtils.isNotBlank("")        = false
@@ -176,28 +182,34 @@ public abstract class StringUtils {
      * StringUtils.isNotBlank("bob")     = true
      * StringUtils.isNotBlank("  bob  ") = true
      * </pre>
-     *
-     * @param str  the String to check, may be null
-     * @return <code>true</code> if the String is
-     *  not empty and not null and not whitespace
+     * 
+     * @param str
+     *            the String to check, may be null
+     * @return <code>true</code> if the String is not empty and not null and not
+     *         whitespace
      * @since 2.0
      */
     public static boolean isNotBlank(String str) {
         return !StringUtils.isBlank(str);
-    }    
-    
+    }
+
     /**
-     * <p>Converts a String to upper case as per {@link String#toUpperCase()}.</p>
-     *
-     * <p>A <code>null</code> input String returns <code>null</code>.</p>
-     *
+     * <p>
+     * Converts a String to upper case as per {@link String#toUpperCase()}.
+     * </p>
+     * 
+     * <p>
+     * A <code>null</code> input String returns <code>null</code>.
+     * </p>
+     * 
      * <pre>
      * StringUtils.upperCase(null)  = null
      * StringUtils.upperCase("")    = ""
      * StringUtils.upperCase("aBc") = "ABC"
      * </pre>
-     *
-     * @param str  the String to upper case, may be null
+     * 
+     * @param str
+     *            the String to upper case, may be null
      * @return the upper cased String, <code>null</code> if null String input
      */
     public static String upperCase(String str) {
@@ -208,17 +220,22 @@ public abstract class StringUtils {
     }
 
     /**
-     * <p>Converts a String to lower case as per {@link String#toLowerCase()}.</p>
-     *
-     * <p>A <code>null</code> input String returns <code>null</code>.</p>
-     *
+     * <p>
+     * Converts a String to lower case as per {@link String#toLowerCase()}.
+     * </p>
+     * 
+     * <p>
+     * A <code>null</code> input String returns <code>null</code>.
+     * </p>
+     * 
      * <pre>
      * StringUtils.lowerCase(null)  = null
      * StringUtils.lowerCase("")    = ""
      * StringUtils.lowerCase("aBc") = "abc"
      * </pre>
-     *
-     * @param str  the String to lower case, may be null
+     * 
+     * @param str
+     *            the String to lower case, may be null
      * @return the lower cased String, <code>null</code> if null String input
      */
     public static String lowerCase(String str) {
@@ -229,10 +246,14 @@ public abstract class StringUtils {
     }
 
     /**
-     * <p>Right pad a String with a specified character.</p>
-     *
-     * <p>The String is padded to the size of <code>size</code>.</p>
-     *
+     * <p>
+     * Right pad a String with a specified character.
+     * </p>
+     * 
+     * <p>
+     * The String is padded to the size of <code>size</code>.
+     * </p>
+     * 
      * <pre>
      * StringUtils.rightPad(null, *, *)     = null
      * StringUtils.rightPad("", 3, 'z')     = "zzz"
@@ -241,12 +262,15 @@ public abstract class StringUtils {
      * StringUtils.rightPad("bat", 1, 'z')  = "bat"
      * StringUtils.rightPad("bat", -1, 'z') = "bat"
      * </pre>
-     *
-     * @param str  the String to pad out, may be null
-     * @param size  the size to pad to
-     * @param padChar  the character to pad with
-     * @return right padded String or original String if no padding is necessary,
-     *  <code>null</code> if null String input
+     * 
+     * @param str
+     *            the String to pad out, may be null
+     * @param size
+     *            the size to pad to
+     * @param padChar
+     *            the character to pad with
+     * @return right padded String or original String if no padding is
+     *         necessary, <code>null</code> if null String input
      * @since 2.0
      */
     public static String rightPad(String str, int size, char padChar) {
@@ -264,10 +288,14 @@ public abstract class StringUtils {
     }
 
     /**
-     * <p>Right pad a String with a specified String.</p>
-     *
-     * <p>The String is padded to the size of <code>size</code>.</p>
-     *
+     * <p>
+     * Right pad a String with a specified String.
+     * </p>
+     * 
+     * <p>
+     * The String is padded to the size of <code>size</code>.
+     * </p>
+     * 
      * <pre>
      * StringUtils.rightPad(null, *, *)      = null
      * StringUtils.rightPad("", 3, "z")      = "zzz"
@@ -279,12 +307,15 @@ public abstract class StringUtils {
      * StringUtils.rightPad("bat", 5, null)  = "bat  "
      * StringUtils.rightPad("bat", 5, "")    = "bat  "
      * </pre>
-     *
-     * @param str  the String to pad out, may be null
-     * @param size  the size to pad to
-     * @param padStr  the String to pad with, null or empty treated as single space
-     * @return right padded String or original String if no padding is necessary,
-     *  <code>null</code> if null String input
+     * 
+     * @param str
+     *            the String to pad out, may be null
+     * @param size
+     *            the size to pad to
+     * @param padStr
+     *            the String to pad with, null or empty treated as single space
+     * @return right padded String or original String if no padding is
+     *         necessary, <code>null</code> if null String input
      */
     public static String rightPad(String str, int size, String padStr) {
         if (str == null) {
@@ -316,28 +347,33 @@ public abstract class StringUtils {
             return str.concat(new String(padding));
         }
     }
-    
+
     /**
-     * <p>Returns padding using the specified delimiter repeated
-     * to a given length.</p>
-     *
+     * <p>
+     * Returns padding using the specified delimiter repeated to a given length.
+     * </p>
+     * 
      * <pre>
      * StringUtils.padding(0, 'e')  = ""
      * StringUtils.padding(3, 'e')  = "eee"
      * StringUtils.padding(-2, 'e') = IndexOutOfBoundsException
      * </pre>
-     *
-     * <p>Note: this method doesn't not support padding with
-     * <a href="http://www.unicode.org/glossary/#supplementary_character">Unicode Supplementary Characters</a>
-     * as they require a pair of <code>char</code>s to be represented.
-     * If you are needing to support full I18N of your applications
-     * consider using {@link #repeat(String, int)} instead. 
+     * 
+     * <p>
+     * Note: this method doesn't not support padding with <a
+     * href="http://www.unicode.org/glossary/#supplementary_character">Unicode
+     * Supplementary Characters</a> as they require a pair of <code>char</code>s
+     * to be represented. If you are needing to support full I18N of your
+     * applications consider using {@link #repeat(String, int)} instead.
      * </p>
-     *
-     * @param repeat  number of times to repeat delim
-     * @param padChar  character to repeat
+     * 
+     * @param repeat
+     *            number of times to repeat delim
+     * @param padChar
+     *            character to repeat
      * @return String with repeated character
-     * @throws IndexOutOfBoundsException if <code>repeat &lt; 0</code>
+     * @throws IndexOutOfBoundsException
+     *             if <code>repeat &lt; 0</code>
      * @see #repeat(String, int)
      */
     private static String padding(int repeat, char padChar) throws IndexOutOfBoundsException {
@@ -350,13 +386,17 @@ public abstract class StringUtils {
         }
         return new String(buf);
     }
-    
+
     /**
-     * <p>Compares two Strings, returning <code>true</code> if they are equal.</p>
-     *
-     * <p><code>null</code>s are handled without exceptions. Two <code>null</code>
-     * references are considered to be equal. The comparison is case sensitive.</p>
-     *
+     * <p>
+     * Compares two Strings, returning <code>true</code> if they are equal.
+     * </p>
+     * 
+     * <p>
+     * <code>null</code>s are handled without exceptions. Two <code>null</code>
+     * references are considered to be equal. The comparison is case sensitive.
+     * </p>
+     * 
      * <pre>
      * StringUtils.equals(null, null)   = true
      * StringUtils.equals(null, "abc")  = false
@@ -364,24 +404,30 @@ public abstract class StringUtils {
      * StringUtils.equals("abc", "abc") = true
      * StringUtils.equals("abc", "ABC") = false
      * </pre>
-     *
+     * 
      * @see java.lang.String#equals(Object)
-     * @param str1  the first String, may be null
-     * @param str2  the second String, may be null
+     * @param str1
+     *            the first String, may be null
+     * @param str2
+     *            the second String, may be null
      * @return <code>true</code> if the Strings are equal, case sensitive, or
-     *  both <code>null</code>
+     *         both <code>null</code>
      */
     public static boolean equals(String str1, String str2) {
         return str1 == null ? str2 == null : str1.equals(str2);
     }
 
     /**
-     * <p>Compares two Strings, returning <code>true</code> if they are equal ignoring
-     * the case.</p>
-     *
-     * <p><code>null</code>s are handled without exceptions. Two <code>null</code>
-     * references are considered equal. Comparison is case insensitive.</p>
-     *
+     * <p>
+     * Compares two Strings, returning <code>true</code> if they are equal
+     * ignoring the case.
+     * </p>
+     * 
+     * <p>
+     * <code>null</code>s are handled without exceptions. Two <code>null</code>
+     * references are considered equal. Comparison is case insensitive.
+     * </p>
+     * 
      * <pre>
      * StringUtils.equalsIgnoreCase(null, null)   = true
      * StringUtils.equalsIgnoreCase(null, "abc")  = false
@@ -389,18 +435,21 @@ public abstract class StringUtils {
      * StringUtils.equalsIgnoreCase("abc", "abc") = true
      * StringUtils.equalsIgnoreCase("abc", "ABC") = true
      * </pre>
-     *
+     * 
      * @see java.lang.String#equalsIgnoreCase(String)
-     * @param str1  the first String, may be null
-     * @param str2  the second String, may be null
+     * @param str1
+     *            the first String, may be null
+     * @param str2
+     *            the second String, may be null
      * @return <code>true</code> if the Strings are equal, case insensitive, or
-     *  both <code>null</code>
+     *         both <code>null</code>
      */
     public static boolean equalsIgnoreCase(String str1, String str2) {
         return str1 == null ? str2 == null : str1.equalsIgnoreCase(str2);
     }
-    
-    public static String replaceTokens(String tokenName, String replacementValue, String originalText) {
+
+    public static String replaceTokens(String tokenName, String replacementValue,
+            String originalText) {
         Map<String, String> replacements = new HashMap<String, String>(1);
         replacements.put(tokenName, replacementValue);
         return replaceTokens(originalText, replacements, true);
@@ -444,14 +493,18 @@ public abstract class StringUtils {
             return String.format(format, arg);
         }
     }
-    
+
     /**
-     * <p>Checks if the String contains only unicode digits.
-     * A decimal point is not a unicode digit and returns false.</p>
-     *
-     * <p><code>null</code> will return <code>false</code>.
-     * An empty String ("") will return <code>true</code>.</p>
-     *
+     * <p>
+     * Checks if the String contains only unicode digits. A decimal point is not
+     * a unicode digit and returns false.
+     * </p>
+     * 
+     * <p>
+     * <code>null</code> will return <code>false</code>. An empty String ("")
+     * will return <code>true</code>.
+     * </p>
+     * 
      * <pre>
      * StringUtils.isNumeric(null)   = false
      * StringUtils.isNumeric("")     = true
@@ -462,8 +515,9 @@ public abstract class StringUtils {
      * StringUtils.isNumeric("12-3") = false
      * StringUtils.isNumeric("12.3") = false
      * </pre>
-     *
-     * @param str  the String to check, may be null
+     * 
+     * @param str
+     *            the String to check, may be null
      * @return <code>true</code> if only contains digits, and is non-null
      */
     public static boolean isNumeric(String str) {
@@ -477,6 +531,6 @@ public abstract class StringUtils {
             }
         }
         return true;
-    }    
-    
+    }
+
 }

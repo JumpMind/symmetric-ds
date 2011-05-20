@@ -119,12 +119,15 @@ public abstract class Index {
      * {@inheritDoc}
      */
     public abstract Object clone() throws CloneNotSupportedException;
-    
+
     /**
-     * Compares this index to the given one while ignoring the case of identifiers.
+     * Compares this index to the given one while ignoring the case of
+     * identifiers.
      * 
-     * @param otherIndex The other index
-     * @return <code>true</code> if this index is equal (ignoring case) to the given one
+     * @param otherIndex
+     *            The other index
+     * @return <code>true</code> if this index is equal (ignoring case) to the
+     *         given one
      */
     public abstract boolean equalsIgnoreCase(Index otherIndex);
 }

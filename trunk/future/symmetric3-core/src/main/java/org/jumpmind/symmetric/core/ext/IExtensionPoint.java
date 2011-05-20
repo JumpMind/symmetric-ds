@@ -16,11 +16,13 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.core.ext;
 
 /**
- * This is a marker interface that identifies ways that SymmetricDS can be extended.
+ * This is a marker interface that identifies ways that SymmetricDS can be
+ * extended.
  */
 public interface IExtensionPoint {
 

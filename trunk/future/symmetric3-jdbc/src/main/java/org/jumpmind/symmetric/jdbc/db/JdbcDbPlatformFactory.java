@@ -21,7 +21,8 @@ public class JdbcDbPlatformFactory {
 
     public static IJdbcDbPlatform createPlatform(DataSource dataSource, Parameters parameters) {
         String platformId = lookupPlatformId(dataSource, true);
-        AbstractJdbcDbPlatform platform = createNewPlatformInstance(platformId, dataSource, parameters);
+        AbstractJdbcDbPlatform platform = createNewPlatformInstance(platformId, dataSource,
+                parameters);
         if (platform == null) {
             platformId = lookupPlatformId(dataSource, false);
             platform = createNewPlatformInstance(platformId, dataSource, parameters);
@@ -35,7 +36,8 @@ public class JdbcDbPlatformFactory {
 
         if (platformClass != null) {
             try {
-                Constructor<?> constructor = platformClass.getConstructor(DataSource.class, Parameters.class);
+                Constructor<?> constructor = platformClass.getConstructor(DataSource.class,
+                        Parameters.class);
                 return (AbstractJdbcDbPlatform) constructor.newInstance(dataSource, parameters);
             } catch (Exception ex) {
                 throw new SqlException("Could not create platform for database " + databaseName, ex);

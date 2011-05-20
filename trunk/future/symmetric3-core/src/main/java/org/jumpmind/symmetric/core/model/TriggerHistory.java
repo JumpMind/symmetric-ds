@@ -16,23 +16,23 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.core.model;
 
 import java.io.Serializable;
 import java.util.Date;
 
-
 /**
  * Maps to the table sync audit table which tracks the history of sync trigger
- * creation. <p/> This table also tracks the columns and the primary keys as of
- * the create date so that if the table definition changes while we still have
- * events to process (as may be the case when distributing events to remote
- * locations), then we still have the history of what the columns and primary
- * keys were at the time.
- *
+ * creation.
+ * <p/>
+ * This table also tracks the columns and the primary keys as of the create date
+ * so that if the table definition changes while we still have events to process
+ * (as may be the case when distributing events to remote locations), then we
+ * still have the history of what the columns and primary keys were at the time.
+ * 
  * 
  */
 public class TriggerHistory extends AbstractCsvData implements Serializable {
@@ -62,7 +62,6 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
     private String nameForDeleteTrigger;
 
     private Date inactiveTime;
-    
 
     /**
      * This is a hash based on the tablename, column names, and column data
@@ -70,7 +69,7 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
      * changes.
      */
     private int tableHash;
-    
+
     /**
      * This is a hash based on the values in the trigger configuration table.
      */
@@ -87,9 +86,9 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
         this.pkColumnNames = pkColumnNames;
         this.columnNames = columnNames;
     }
-    
+
     public TriggerHistory(Table table, Trigger trigger) {
-        this(table,trigger,null);
+        this(table, trigger, null);
     }
 
     public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason) {
@@ -157,11 +156,11 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
         }
         throw new IllegalStateException();
     }
-    
+
     public String[] getParsedColumnNames() {
         return getData("columnNames", columnNames);
     }
-    
+
     public String[] getParsedPkColumnNames() {
         return getData("pkColumnNames", pkColumnNames);
     }
@@ -181,7 +180,7 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
     public void setSourceTableName(String tableName) {
         this.sourceTableName = tableName;
     }
-    
+
     public String getColumnNames() {
         return columnNames;
     }
@@ -257,7 +256,7 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
     public Trigger getTrigger() {
         return trigger;
     }
-    
+
     public void setTrigger(Trigger trigger) {
         this.trigger = trigger;
     }
@@ -285,6 +284,5 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
     public void setTriggerRowHash(long triggerRowHash) {
         this.triggerRowHash = triggerRowHash;
     }
-    
 
 }

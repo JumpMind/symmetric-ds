@@ -244,8 +244,7 @@ public abstract class TypeMap {
      * @param category
      *            The type category
      */
-    protected static void registerJdbcType(int typeCode, String typeName,
-            TypeCategory category) {
+    protected static void registerJdbcType(int typeCode, String typeName, TypeCategory category) {
         Integer typeId = new Integer(typeCode);
 
         typeNameToTypeCode.put(typeName.toUpperCase(), typeId);

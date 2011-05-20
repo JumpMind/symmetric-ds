@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.core.sql.SqlException;
  * objects stored in the tables.
  */
 public class Database implements Serializable, Cloneable {
-    
+
     private static final long serialVersionUID = -1L;
 
     /** The name of the database model. */
@@ -49,8 +49,8 @@ public class Database implements Serializable, Cloneable {
     private String _version;
     /** The tables. */
     private ArrayList<Table> _tables = new ArrayList<Table>();
-    
-    private Map<String, Integer> tableIndexCache = new HashMap<String, Integer>();    
+
+    private Map<String, Integer> tableIndexCache = new HashMap<String, Integer>();
 
     /**
      * Adds all tables from the other database to this database. Note that the
@@ -66,8 +66,8 @@ public class Database implements Serializable, Cloneable {
             if (findTable(table.getTableName()) != null) {
                 // TODO: It might make more sense to log a warning and overwrite
                 // the table (or merge them) ?
-                throw new SqlException("Cannot merge the models because table " + table.getTableName()
-                        + " already defined in this model");
+                throw new SqlException("Cannot merge the models because table "
+                        + table.getTableName() + " already defined in this model");
             }
             addTable(table.copy());
         }
@@ -185,7 +185,7 @@ public class Database implements Serializable, Cloneable {
             _tables.add(idx, table);
         }
     }
-    
+
     /**
      * Adds the given tables.
      * 
@@ -416,7 +416,7 @@ public class Database implements Serializable, Cloneable {
         }
         return null;
     }
-    
+
     /**
      * Catalog & Schema aware finder
      */
@@ -466,7 +466,7 @@ public class Database implements Serializable, Cloneable {
 
     public void resetTableIndexCache() {
         tableIndexCache.clear();
-    }    
+    }
 
     /**
      * {@inheritDoc}
@@ -486,19 +486,14 @@ public class Database implements Serializable, Cloneable {
     /**
      * {@inheritDoc}
      */
-    public boolean equals(Object obj)
-    {
-        if (obj instanceof Database)
-        {
-            Database other = (Database)obj;
+    public boolean equals(Object obj) {
+        if (obj instanceof Database) {
+            Database other = (Database) obj;
 
             // Note that this compares case sensitive
-            return new EqualsBuilder().append(_name,   other._name)
-                                      .append(_tables, other._tables)
-                                      .isEquals();
-        }
-        else
-        {
+            return new EqualsBuilder().append(_name, other._name).append(_tables, other._tables)
+                    .isEquals();
+        } else {
             return false;
         }
     }
@@ -506,13 +501,10 @@ public class Database implements Serializable, Cloneable {
     /**
      * {@inheritDoc}
      */
-    public int hashCode()
-    {
-        return new HashCodeBuilder(17, 37).append(_name)
-                                          .append(_tables)
-                                          .toHashCode();
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(_name).append(_tables).toHashCode();
     }
-    
+
     /**
      * {@inheritDoc}
      */
