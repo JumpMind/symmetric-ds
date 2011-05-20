@@ -44,20 +44,20 @@ abstract public class AbstractDbPlatform implements IDbPlatform {
     protected String defaultCatalog;
 
     protected SqlBuilder sqlBuilder;
-    
+
     protected TriggerBuilder triggerBuilder;
-    
+
     protected Parameters parameters;
-    
+
     public AbstractDbPlatform(Parameters parameters) {
         this.parameters = parameters == null ? new Parameters() : parameters;
 
     }
-    
+
     public Parameters getParameters() {
         return parameters;
     }
-    
+
     public TriggerBuilder getTriggerBuilder() {
         return triggerBuilder;
     }
@@ -65,7 +65,7 @@ abstract public class AbstractDbPlatform implements IDbPlatform {
     public SqlBuilder getSqlBuilder() {
         return sqlBuilder;
     }
-    
+
     public boolean isLob(int type) {
         return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY
                 || type == Types.VARBINARY || type == Types.LONGVARBINARY ||

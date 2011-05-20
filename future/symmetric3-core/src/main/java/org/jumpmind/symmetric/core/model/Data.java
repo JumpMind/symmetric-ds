@@ -118,7 +118,7 @@ public class Data extends AbstractCsvData implements Serializable {
     public String[] toParsedPkData() {
         return getData("pkData", pkData);
     }
-    
+
     public void clearPkData() {
         this.pkData = null;
         this.removeData("pkData");
@@ -161,7 +161,7 @@ public class Data extends AbstractCsvData implements Serializable {
     }
 
     public void setPkData(String pkData) {
-        this.pkData = pkData;        
+        this.pkData = pkData;
     }
 
     public String getOldData() {

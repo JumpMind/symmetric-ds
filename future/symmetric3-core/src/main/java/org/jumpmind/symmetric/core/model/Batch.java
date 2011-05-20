@@ -35,7 +35,7 @@ public class Batch {
     public long incrementFallbackInsertCount() {
         return ++fallbackInsertCount;
     }
-    
+
     public long incrementFallbackUpdateWithNewKeysCount() {
         return ++fallbackUpdateWithNewKeysCount;
     }
@@ -51,26 +51,27 @@ public class Batch {
     public long incrementInsertCount() {
         return ++insertCount;
     }
-    
+
     public long decrementInsertCount(int number) {
-        return insertCount-=number;
+        return insertCount -= number;
     }
 
     public long incrementUpdateCount() {
         return ++updateCount;
     }
-    
+
     public long incrementDeleteCount() {
         return ++deleteCount;
     }
-    
+
     public long incrementSqlCount() {
         return ++sqlCount;
     }
-    
+
     public long incrementOtherCount() {
         return ++otherCount;
     }
+
     public void incrementFilterMillis(long millis) {
         filterMillis += millis;
     }
@@ -122,23 +123,23 @@ public class Batch {
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
-    
+
     public long getDeleteCount() {
         return deleteCount;
     }
-    
+
     public long getInsertCount() {
         return insertCount;
     }
-    
+
     public long getOtherCount() {
         return otherCount;
     }
-    
+
     public long getSqlCount() {
         return sqlCount;
     }
-    
+
     public long getUpdateCount() {
         return updateCount;
     }

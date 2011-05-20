@@ -75,7 +75,7 @@ public class SqlTableDataReader implements IDataReader<DataContext> {
             TriggerBuilder triggerBuilder = this.dbPlatform.getTriggerBuilder();
             String sql = triggerBuilder.createTableExtractSql(tableToRead, this.dbPlatform
                     .getParameters().is(Parameters.DB_SUPPORT_BIG_LOBS, false));
-            this.readCursor = connection.query(sql, new DataMapper());
+            this.readCursor = connection.queryForCursor(sql, new DataMapper());
         }
         if (readCursor != null) {
             data = readCursor.next();

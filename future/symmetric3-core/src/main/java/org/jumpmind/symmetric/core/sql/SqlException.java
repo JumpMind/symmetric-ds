@@ -18,6 +18,6 @@ public class SqlException extends RuntimeException {
 
     public SqlException(Throwable cause) {
         super(cause);
-    }    
+    }
 
 }

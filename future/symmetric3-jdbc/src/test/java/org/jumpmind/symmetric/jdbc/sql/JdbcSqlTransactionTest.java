@@ -35,7 +35,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
         // committed, but in single connection databases the database is still
         // locked at this point.
         // Assert.assertEquals(0, count(testTable.getTableName()));
-        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
+        Assert.assertEquals(0, transaction.getUnflushedMarkers(true).size());
         transaction.commit();
         transaction.close();
 
@@ -50,9 +50,9 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
         int flushAt = 11;
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
         Assert.assertEquals(flushAt, batchInsertIntoTestTable(12, 1, transaction));
-        Assert.assertEquals(1, transaction.getUnflushedMarkers().size());
+        Assert.assertEquals(1, transaction.getUnflushedMarkers(false).size());
         Assert.assertEquals(1, transaction.flush());
-        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
+        Assert.assertEquals(0, transaction.getUnflushedMarkers(false).size());
         transaction.rollback();
         transaction.close();
 
@@ -67,7 +67,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
         int flushAt = 10;
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
         Assert.assertEquals(flushAt, batchInsertIntoTestTable(10, 1, transaction));
-        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
+        Assert.assertEquals(0, transaction.getUnflushedMarkers(false).size());
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
         try {
             Assert.assertEquals(0, batchInsertIntoTestTable(2, 11, transaction));
@@ -75,7 +75,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
             transaction.flush();
             Assert.fail("This should have failed");
         } catch (DataIntegrityViolationException ex) {
-            Assert.assertEquals(4, transaction.getUnflushedMarkers().size());
+            Assert.assertEquals(4, transaction.getUnflushedMarkers(false).size());
         }
 
         transaction.commit();
@@ -95,7 +95,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
         // committed, but in single connection databases the database is still
         // locked at this point.
         // Assert.assertEquals(0, count(testTable.getTableName()));
-        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
+        Assert.assertEquals(0, transaction.getUnflushedMarkers(false).size());
         transaction.commit();
         transaction.close();
 
@@ -109,7 +109,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
         ISqlTransaction transaction = connection.startSqlTransaction();
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, true);
         Assert.assertEquals(10, batchInsertIntoTestTable(10, 1, transaction));
-        Assert.assertEquals(0, transaction.getUnflushedMarkers().size());
+        Assert.assertEquals(0, transaction.getUnflushedMarkers(false).size());
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, true);
         try {
             Assert.assertEquals(2, batchInsertIntoTestTable(2, 11, transaction));

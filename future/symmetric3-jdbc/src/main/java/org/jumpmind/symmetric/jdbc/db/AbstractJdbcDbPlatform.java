@@ -17,36 +17,37 @@ abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implemen
 
     protected DataSource dataSource;
 
-    protected JdbcModelReader jdbcModelReader;   
+    protected JdbcModelReader jdbcModelReader;
 
     public AbstractJdbcDbPlatform(DataSource dataSource, Parameters parameters) {
         super(parameters);
         this.dataSource = dataSource;
     }
-    
+
     public ISqlConnection getSqlConnection() {
         return getJdbcSqlConnection();
     }
-    
+
     public JdbcSqlConnection getJdbcSqlConnection() {
         return new JdbcSqlConnection(this);
     }
-    
+
     public Database findDatabase(String catalogName, String schemaName) {
         return jdbcModelReader.getDatabase(catalogName, schemaName, null);
-    }    
-    
+    }
+
     public String getAlterScriptFor(Table... tables) {
         StringWriter writer = new StringWriter();
         sqlBuilder.setWriter(writer);
         Database desiredModel = new Database();
         desiredModel.addTables(tables);
-        
+
         Database currentModel = new Database();
         for (Table table : tables) {
-            currentModel.addTable(jdbcModelReader.readTable(table.getCatalogName(), table.getSchemaName(), table.getTableName(), false, false));
+            currentModel.addTable(jdbcModelReader.readTable(table.getCatalogName(),
+                    table.getSchemaName(), table.getTableName(), false, false));
         }
-                
+
         sqlBuilder.alterDatabase(currentModel, desiredModel);
 
         return writer.toString();
@@ -56,14 +57,13 @@ abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implemen
         return findTable(null, null, tableName, false);
     }
 
-    public Table findTable(String catalogName, String schemaName, String tableName,
-            boolean useCache) {
+    public Table findTable(String catalogName, String schemaName, String tableName, boolean useCache) {
         Table cachedTable = cachedModel.findTable(catalogName, schemaName, tableName);
         if (cachedTable == null || !useCache) {
             Table justReadTable = jdbcModelReader.readTable(catalogName, schemaName, tableName,
                     !parameters.is(Parameters.DB_METADATA_IGNORE_CASE, true),
                     parameters.is(Parameters.DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND, false));
-            
+
             if (cachedTable != null) {
                 cachedModel.removeTable(cachedTable);
             }

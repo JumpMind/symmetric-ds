@@ -9,38 +9,39 @@ import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
 
-public interface IDbPlatform {    
-    
+public interface IDbPlatform {
+
     public DbPlatformInfo getPlatformInfo();
-    
+
     public Parameters getParameters();
-    
+
     public String getAlterScriptFor(Table... tables);
-    
+
     public void alter(boolean failOnError, Table... tables);
-    
+
     public Database findDatabase(String catalogName, String schemaName);
-    
+
     public Table findTable(String tableName);
 
-    public Table findTable(String catalogName, String schemaName, String tableName, boolean useCached);
+    public Table findTable(String catalogName, String schemaName, String tableName,
+            boolean useCached);
 
     public List<Table> findTables(String catalogName, String schemaName);
-    
+
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData);
-    
+
     public String getDefaultCatalog();
-    
+
     public String getDefaultSchema();
-    
+
     public SqlBuilder getSqlBuilder();
-    
+
     public ISqlConnection getSqlConnection();
-    
+
     public TriggerBuilder getTriggerBuilder();
-    
-    public boolean isLob(int type);    
+
+    public boolean isLob(int type);
 
     /**
      * Returns the constraint name. This method takes care of length limitations
@@ -69,6 +70,6 @@ public interface IDbPlatform {
      * @return The shortened version
      */
     public String shortenName(String name, int desiredLength);
-    
+
     public boolean isDataIntegrityException(Exception ex);
 }

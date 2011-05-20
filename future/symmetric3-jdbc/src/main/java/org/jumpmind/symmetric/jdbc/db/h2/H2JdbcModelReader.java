@@ -25,7 +25,8 @@ public class H2JdbcModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
         Column column = super.readColumn(metaData, values);
         if (values.get("CHARACTER_MAXIMUM_LENGTH") != null) {
             column.setSize(values.get("CHARACTER_MAXIMUM_LENGTH").toString());
@@ -61,21 +62,22 @@ public class H2JdbcModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk,
-            Index index) {
+    protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table,
+            ForeignKey fk, Index index) {
         String name = index.getName();
         return name != null && name.startsWith("CONSTRAINT_INDEX_");
     }
 
     @Override
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index) {
+    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table,
+            Index index) {
         String name = index.getName();
         return name != null && name.startsWith("PRIMARY_KEY_");
     }
-    
+
     @Override
-    protected Table readTable(Connection c, DatabaseMetaDataWrapper metaData, Map<String, Object> values)
-            throws SQLException {
+    protected Table readTable(Connection c, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
         Table table = super.readTable(c, metaData, values);
 
         if (table != null) {

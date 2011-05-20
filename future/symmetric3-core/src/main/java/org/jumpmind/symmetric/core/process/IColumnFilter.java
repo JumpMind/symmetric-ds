@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.core.process;
 
@@ -26,11 +27,10 @@ import org.jumpmind.symmetric.core.model.Table;
 
 /**
  * This is an extension point that can be implemented to filter out columns from
- * use by the dataloader. One column filter may be added per target table.
- * </p>
+ * use by the dataloader. One column filter may be added per target table. </p>
  * Please implement {@link ITableColumnFilter} instead of this class directly if
  * you want the extension to be auto discovered.
- *
+ * 
  * 
  */
 public interface IColumnFilter<T extends DataContext> extends IExtensionPoint {
@@ -40,7 +40,10 @@ public interface IColumnFilter<T extends DataContext> extends IExtensionPoint {
      * index you are interested in order to be able to filter the column value
      * as well.
      * <P>
-     * @param columnNames If column names are going to change, then you should change the name in this reference and return it as the return value.
+     * 
+     * @param columnNames
+     *            If column names are going to change, then you should change
+     *            the name in this reference and return it as the return value.
      * @return The columnName that the data loader will use to build its dml.
      */
     public Column[] filterColumnsNames(T ctx, Table table, Column[] columns);

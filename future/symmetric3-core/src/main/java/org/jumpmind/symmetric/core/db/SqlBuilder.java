@@ -2566,5 +2566,5 @@ public abstract class SqlBuilder {
     protected String createUniqueIdentifier() {
         return new UID().toString().replace(':', '_').replace('-', '_');
     }
-    
+
 }

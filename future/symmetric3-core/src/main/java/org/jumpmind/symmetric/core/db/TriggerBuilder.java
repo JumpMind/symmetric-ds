@@ -77,7 +77,7 @@ abstract public class TriggerBuilder {
     abstract protected boolean isTransactionIdOverrideSupported();
 
     abstract protected String preProcessTriggerSqlClause(String sqlClause);
-    
+
     abstract protected String getDataHasChangedCondition();
 
     abstract protected String getSourceNodeExpression();
@@ -286,7 +286,7 @@ abstract public class TriggerBuilder {
                 && defaultCatalog != null && defaultCatalog.length() > 0 ? defaultCatalog + "."
                 : "", sql);
     }
-    
+
     public String createTableExtractSql(TableToExtract tableToExtract, boolean supportsBigLobs) {
         return createTableExtractSql(tableToExtract, null, supportsBigLobs);
     }

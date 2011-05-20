@@ -33,27 +33,27 @@ import org.jumpmind.symmetric.core.common.LogLevel;
  * and native type mappings.
  */
 public class DbPlatformInfo {
-    
+
     /** The Log to which logging calls will be made. */
     private final Log log = LogFactory.getLog(DbPlatformInfo.class);
-    
+
     private boolean scriptModeOn = false;
-    
-    private boolean sqlCommentsOn = false;     
-    
+
+    private boolean sqlCommentsOn = false;
+
     private boolean dateOverridesToTimestamp = false;
-    
+
     private String identifierQuoteString = "\"";
 
     /** Whether delimited identifiers are used or not. */
     private boolean delimitedIdentifierModeOn = false;
-       
+
     private boolean emptyStringNulled = false;
-    
+
     private boolean blankCharColumnSpacePadded = false;
-    
+
     private boolean nonBlankCharColumnSpacePadded = false;
-    
+
     /**
      * Whether the database requires the explicit stating of NULL as the default
      * value.
@@ -79,10 +79,10 @@ public class DbPlatformInfo {
      * statement.
      */
     private boolean foreignKeysEmbedded = false;
-    
+
     /**
-     * Determines whether foreign keys of a table read from a live database
-     * are alphabetically sorted.
+     * Determines whether foreign keys of a table read from a live database are
+     * alphabetically sorted.
      */
     private boolean foreignKeysSorted = false;
 
@@ -204,9 +204,9 @@ public class DbPlatformInfo {
 
     /** The text separating individual sql commands. */
     private String sqlCommandDelimiter = ";";
-    
+
     private boolean requiresAutoCommitFalseToSetFetchSize = false;
-    
+
     private boolean needsToSelectLobData;
 
     /** Contains non-default mappings from jdbc to native types. */
@@ -332,11 +332,11 @@ public class DbPlatformInfo {
     public void setPrimaryKeyEmbedded(boolean primaryKeyEmbedded) {
         this.primaryKeyEmbedded = primaryKeyEmbedded;
     }
-    
+
     public boolean isForeignKeysSorted() {
         return foreignKeysSorted;
     }
-    
+
     public void setForeignKeysSorted(boolean foreignKeySorted) {
         this.foreignKeysSorted = foreignKeySorted;
     }
@@ -965,8 +965,8 @@ public class DbPlatformInfo {
             }
         } catch (Exception ex) {
             // ignore -> won't be defined
-            log.log(LogLevel.WARN, ex,
-                    "Cannot add native type mapping for undefined jdbc type %s", jdbcTypeName);
+            log.log(LogLevel.WARN, ex, "Cannot add native type mapping for undefined jdbc type %s",
+                    jdbcTypeName);
         }
     }
 
@@ -997,8 +997,7 @@ public class DbPlatformInfo {
             }
         } catch (Exception ex) {
             // ignore -> won't be defined
-            log.log(
-                    LogLevel.WARN,
+            log.log(LogLevel.WARN,
                     ex,
                     "Cannot add native type mapping for undefined jdbc type %s , target jdbc type %s",
                     jdbcTypeName, targetJdbcTypeName);
@@ -1144,31 +1143,31 @@ public class DbPlatformInfo {
             typesWithPrecisionAndScale.remove(new Integer(sqlTypeCode));
         }
     }
-    
+
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn) {
         this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;
     }
-    
+
     public boolean isDelimitedIdentifierModeOn() {
         return delimitedIdentifierModeOn;
-    }    
-    
+    }
+
     public boolean isDateOverridesToTimestamp() {
         return dateOverridesToTimestamp;
     }
-    
+
     public void setDateOverridesToTimestamp(boolean dateOverridesToTimestamp) {
         this.dateOverridesToTimestamp = dateOverridesToTimestamp;
     }
-    
+
     public String getIdentifierQuoteString() {
         return identifierQuoteString;
     }
-    
+
     public void setIdentifierQuoteString(String identifierQuoteString) {
         this.identifierQuoteString = identifierQuoteString;
     }
-    
+
     public void setBlankCharColumnSpacePadded(boolean blankCharColumnSpacePadded) {
         this.blankCharColumnSpacePadded = blankCharColumnSpacePadded;
     }
@@ -1184,7 +1183,7 @@ public class DbPlatformInfo {
     public boolean isEmptyStringNulled() {
         return emptyStringNulled;
     }
-    
+
     public void setNonBlankCharColumnSpacePadded(boolean nonBlankCharColumnSpacePadded) {
         this.nonBlankCharColumnSpacePadded = nonBlankCharColumnSpacePadded;
     }
@@ -1193,11 +1192,10 @@ public class DbPlatformInfo {
         return nonBlankCharColumnSpacePadded;
     }
 
-
     public boolean isSqlCommentsOn() {
         return sqlCommentsOn;
     }
-    
+
     public void setSqlCommentsOn(boolean sqlCommentsOn) {
         this.sqlCommentsOn = sqlCommentsOn;
     }
@@ -1205,24 +1203,24 @@ public class DbPlatformInfo {
     public void setScriptModeOn(boolean scriptModeOn) {
         this.scriptModeOn = scriptModeOn;
     }
-    
+
     public boolean isScriptModeOn() {
         return scriptModeOn;
     }
-    
+
     public void setRequiresAutoCommitFalseToSetFetchSize(
             boolean requiresAutoCommitFalseToSetFetchSize) {
         this.requiresAutoCommitFalseToSetFetchSize = requiresAutoCommitFalseToSetFetchSize;
     }
-    
+
     public boolean isRequiresAutoCommitFalseToSetFetchSize() {
         return requiresAutoCommitFalseToSetFetchSize;
     }
-    
+
     public void setNeedsToSelectLobData(boolean needsToSelectLobData) {
         this.needsToSelectLobData = needsToSelectLobData;
     }
-    
+
     public boolean isNeedsToSelectLobData() {
         return needsToSelectLobData;
     }

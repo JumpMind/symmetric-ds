@@ -16,17 +16,16 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.core.process;
 
 import org.jumpmind.symmetric.core.ext.IExtensionPoint;
 import org.jumpmind.symmetric.core.model.Data;
 
-
-
 /**
- * Extension point that can be use to change or prevent a {@link Data} object from 
- * being processes
+ * Extension point that can be use to change or prevent a {@link Data} object
+ * from being processes
  */
 public interface IDataFilter<T extends DataContext> extends IExtensionPoint {
 
@@ -35,6 +34,5 @@ public interface IDataFilter<T extends DataContext> extends IExtensionPoint {
      *         the row and it should be ignored.
      */
     public boolean filter(T context, Data data);
-
 
 }

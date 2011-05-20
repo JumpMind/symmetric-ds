@@ -8,10 +8,10 @@ import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
 public interface IJdbcDbPlatform extends IDbPlatform {
 
-    public ILobHandler getLobHandler();  
-    
+    public ILobHandler getLobHandler();
+
     public DataSource getDataSource();
-    
+
     public JdbcSqlConnection getJdbcSqlConnection();
-    
+
 }

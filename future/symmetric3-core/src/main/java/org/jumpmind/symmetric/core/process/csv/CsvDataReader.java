@@ -8,7 +8,6 @@ import org.jumpmind.symmetric.core.process.IDataReader;
 
 public class CsvDataReader implements IDataReader<DataContext> {
 
-
     public void open(DataContext context) {
         // TODO Auto-generated method stub
 

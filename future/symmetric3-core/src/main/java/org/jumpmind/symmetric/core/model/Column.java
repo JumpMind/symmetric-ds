@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.core.common.HashCodeBuilder;
  * @version $Revision: 463305 $
  */
 public class Column implements Cloneable, Serializable {
-    
+
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -6226348998874210093L;
 
@@ -81,11 +81,12 @@ public class Column implements Cloneable, Serializable {
     private String defaultValue;
 
     private String jdbcTypeName;
-    
-    public Column() {     
+
+    public Column() {
     }
-    
-    public Column(String name, String type, String size, boolean autoincrement, boolean required, boolean primaryKey) {
+
+    public Column(String name, String type, String size, boolean autoincrement, boolean required,
+            boolean primaryKey) {
         setName(name);
         setType(type);
         setSize(size);
@@ -93,7 +94,7 @@ public class Column implements Cloneable, Serializable {
         setRequired(required);
         setPrimaryKey(primaryKey);
     }
-    
+
     /**
      * Returns the name of the column.
      * 

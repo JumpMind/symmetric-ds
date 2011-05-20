@@ -16,7 +16,7 @@ public class OracleDbPlatform extends AbstractJdbcDbPlatform {
 
     public OracleDbPlatform(DataSource dataSource, Parameters parameters) {
         super(dataSource, parameters);
-        
+
         platformInfo.setMaxIdentifierLength(30);
         platformInfo.setIdentityStatusReadingSupported(false);
 
@@ -60,7 +60,7 @@ public class OracleDbPlatform extends AbstractJdbcDbPlatform {
         platformInfo.setBlankCharColumnSpacePadded(true);
         platformInfo.setNonBlankCharColumnSpacePadded(true);
         platformInfo.setRequiresAutoCommitFalseToSetFetchSize(false);
-        
+
         this.jdbcModelReader = new OracleJdbcModelReader(this);
         this.sqlBuilder = new OracleSqlBuilder(this);
 

@@ -3,6 +3,10 @@ package org.jumpmind.symmetric;
 import javax.sql.DataSource;
 
 import org.hsqldb.types.Types;
+import org.jumpmind.symmetric.core.common.Log;
+import org.jumpmind.symmetric.core.common.LogFactory;
+import org.jumpmind.symmetric.core.common.LogLevel;
+import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.io.FileUtils;
 import org.jumpmind.symmetric.core.model.Column;
@@ -17,6 +21,8 @@ import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
 import org.junit.BeforeClass;
 
 abstract public class AbstractDatabaseTest {
+
+    final protected Log log = LogFactory.getLog(getClass());
 
     static protected IJdbcDbPlatform platform;
 
@@ -73,16 +79,23 @@ abstract public class AbstractDatabaseTest {
     }
 
     protected int count(String tableName) {
+        return count(tableName, null);
+    }
+
+    protected int count(String tableName, String where) {
         IDbPlatform platform = getPlatform(false);
         ISqlConnection connection = platform.getSqlConnection();
-        return connection.queryForInt(String.format("select count(*) from %s", tableName));
+        return connection.queryForInt(String.format("select count(*) from %s %s %s", tableName,
+                StringUtils.isNotBlank(where) ? "where" : "", StringUtils.isNotBlank(where) ? where
+                        : ""));
     }
 
     protected void prepareInsertIntoTestTable(ISqlTransaction transaction, String tableName,
             int flushAt, boolean batchMode) {
+        transaction.setInBatchMode(batchMode);
         transaction.prepare(
                 String.format("insert into %s (TEST_ID, TEST_TEXT) values(?, ?)", tableName),
-                flushAt, batchMode);
+                flushAt);
     }
 
     protected int batchInsertIntoTestTable(int numberToInsert, int numberToStartAt,
@@ -95,4 +108,11 @@ abstract public class AbstractDatabaseTest {
         }
         return updatedCount;
     }
+
+    protected void printOutTable(String tableName) {
+        log.log(LogLevel.INFO,
+                getPlatform().getSqlConnection()
+                        .query(String.format("select * from %s", tableName)).toString());
+    }
+
 }

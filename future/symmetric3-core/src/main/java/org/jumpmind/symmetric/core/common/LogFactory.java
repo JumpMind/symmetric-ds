@@ -10,8 +10,7 @@ public class LogFactory {
     private static Map<Class<?>, Log> logs = new HashMap<Class<?>, Log>();
 
     static {
-        String clazzName = System.getProperty(Log.class.getName(),
-                DefaultLog.class.getName());
+        String clazzName = System.getProperty(Log.class.getName(), DefaultLog.class.getName());
         try {
             logClass = Class.forName(clazzName);
             Object log = logClass.newInstance();

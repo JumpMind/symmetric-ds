@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.core.common;
 import java.lang.reflect.Array;
 
 public abstract class ArrayUtils {
-    
+
     /**
      * <p>
      * Adds all the elements of the given arrays into a new array.
@@ -45,17 +45,25 @@ public abstract class ArrayUtils {
         System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
         return joinedArray;
     }
-    
+
     /**
-     * <p>Shallow clones an array returning a typecast result and handling
-     * <code>null</code>.</p>
-     *
-     * <p>The objects in the array are not cloned, thus there is no special
-     * handling for multi-dimensional arrays.</p>
+     * <p>
+     * Shallow clones an array returning a typecast result and handling
+     * <code>null</code>.
+     * </p>
      * 
-     * <p>This method returns <code>null</code> for a <code>null</code> input array.</p>
+     * <p>
+     * The objects in the array are not cloned, thus there is no special
+     * handling for multi-dimensional arrays.
+     * </p>
      * 
-     * @param array  the array to shallow clone, may be <code>null</code>
+     * <p>
+     * This method returns <code>null</code> for a <code>null</code> input
+     * array.
+     * </p>
+     * 
+     * @param array
+     *            the array to shallow clone, may be <code>null</code>
      * @return the cloned array, <code>null</code> if <code>null</code> input
      */
     public static Object[] clone(Object[] array) {

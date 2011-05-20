@@ -38,7 +38,7 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
                         String.format("select TEST_TEXT from %s where TEST_ID=?",
                                 testTable.getTableName()), String.class, 1));
     }
-    
+
     @Test
     public void testOneRowInsertOneRowDelete() {
         writeToTestTable(new Data(testTable.getTableName(), DataEventType.INSERT, "1,\"test\""),
@@ -46,7 +46,30 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
         Assert.assertEquals(0, count(testTable.getTableName()));
     }
 
-    protected void writeToTestTable(Data... datas) {
+    @Test
+    public void testOneRowInsertFallbackToUpdate() {
+        insertTestTableRows(10);
+        Assert.assertEquals(10, count(testTable.getTableName()));
+        int existingId = getPlatform().getSqlConnection().queryForInt(
+                String.format("select min(TEST_ID) from %s", testTable.getTableName()));
+        Assert.assertEquals(1,
+                count(testTable.getTableName(), String.format("TEST_ID=%d", existingId)));
+        Assert.assertEquals(
+                0,
+                count(testTable.getTableName(),
+                        String.format("TEST_ID=%d and TEST_TEXT='new value'", existingId)));
+        Batch batch = writeToTestTable(new Data(testTable.getTableName(), DataEventType.INSERT,
+                String.format("%d,\"new value\"", existingId)));
+        Assert.assertEquals(10, count(testTable.getTableName()));
+        Assert.assertEquals(1, batch.getFallbackUpdateCount());
+        Assert.assertEquals(
+                1,
+                count(testTable.getTableName(),
+                        String.format("TEST_ID=%d and TEST_TEXT='new value'", existingId)));
+        Assert.assertEquals(1, batch.getInsertCount());
+    }
+
+    protected Batch writeToTestTable(Data... datas) {
         SqlDataWriter writer = new SqlDataWriter(getPlatform(), new Parameters());
         writer.open(writer.createDataContext());
         Batch batch = new Batch();
@@ -57,5 +80,6 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
         }
         writer.finishBatch(batch);
         writer.close();
+        return batch;
     }
 }

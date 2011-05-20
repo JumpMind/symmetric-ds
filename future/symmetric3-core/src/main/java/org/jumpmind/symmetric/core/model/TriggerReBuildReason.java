@@ -20,7 +20,6 @@
 
 package org.jumpmind.symmetric.core.model;
 
-
 /**
  * {@link TriggerHistory}
  */

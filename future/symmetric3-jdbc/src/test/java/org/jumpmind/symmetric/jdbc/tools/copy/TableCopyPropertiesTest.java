@@ -13,11 +13,12 @@ public class TableCopyPropertiesTest {
         TableCopyProperties properties = new TableCopyProperties();
         properties.loadExample();
     }
-    
+
     @Test
-    public void testGetTargetDataSource() {        
+    public void testGetTargetDataSource() {
         FileUtils.deleteDirectory("target/h2");
-        TableCopyProperties properties = new TableCopyProperties("src/test/resources/test-tablecopy.properties");
+        TableCopyProperties properties = new TableCopyProperties(
+                "src/test/resources/test-tablecopy.properties");
         DataSource dataSource = properties.getTargetDataSource();
         JdbcSqlConnection template = new JdbcSqlConnection(dataSource);
         template.update("create table test (test varchar(100))");

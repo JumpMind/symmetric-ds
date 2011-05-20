@@ -11,12 +11,11 @@ public class IoException extends RuntimeException {
     public IoException(IOException ex) {
         super(ex);
     }
-    
+
     public IoException(XmlPullParserException ex) {
         super(ex);
     }
-    
-    
+
     public IoException(String msg) {
         super(msg);
     }
