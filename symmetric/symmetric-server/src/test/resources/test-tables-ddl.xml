@@ -4,7 +4,7 @@
 <database name="testdb">
 
     <table name="test_very_long_table_name_1234">
-        <column name="id" type="VARCHAR" required="true" primaryKey="true" />
+        <column name="id" type="VARCHAR" size="100" required="true" primaryKey="true" />
     </table>
 
     <table name="test_triggers_table">
@@ -130,8 +130,8 @@
     </table>
 
     <table name="TEST_ADD_DL_TABLE_1">
-        <column name="PK1" type="VARCHAR" primaryKey="true" required="true" />
-        <column name="PK2" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="PK1" type="VARCHAR" size="100" primaryKey="true" required="true" />
+        <column name="PK2" type="VARCHAR" size="100" primaryKey="true" required="true" />
         <column name="ADD1" type="DECIMAL" size="10" />
         <column name="ADD2" type="DECIMAL" size="10,2" />
         <column name="ADD3" type="INTEGER" />
@@ -142,22 +142,22 @@
     </table>
 
     <table name="TEST_ADD_DL_TABLE_2">
-        <column name="PK1" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="PK1" type="VARCHAR" size="100" primaryKey="true" required="true" />
         <column name="ADD1" type="DECIMAL" size="10" />
     </table>
 
     <table name="TEST_TARGET_TABLE_A">
-        <column name="ID_FIELD" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="ID_FIELD" type="VARCHAR" size="100" primaryKey="true" required="true" />
         <column name="DESC_FIELD" type="VARCHAR" />
     </table>
 
     <table name="TEST_TARGET_TABLE_B">
-        <column name="ID_FIELD" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="ID_FIELD" type="VARCHAR" size="100" primaryKey="true" required="true" />
         <column name="DESC_FIELD" type="VARCHAR" />
     </table>
 
     <table name="TEST_CHANGING_COLUMN_NAME">
-        <column name="ID1" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="ID1" type="VARCHAR" size="100" primaryKey="true" required="true" />
         <column name="TEST" type="DECIMAL" size="10" />
     </table>
     

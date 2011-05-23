@@ -216,4 +216,16 @@
         </property>
     </bean>
 
+    <bean id="Interbase" class="org.springframework.jdbc.support.SQLErrorCodes">
+        <property name="databaseProductName">
+            <value>InterBase*</value>
+        </property>
+        <property name="useSqlStateForTranslation">
+            <value>false</value>
+        </property>        
+        <property name="dataIntegrityViolationCodes">
+            <value>335544665</value>
+        </property>
+    </bean>
+
 </beans>
