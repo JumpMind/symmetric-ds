@@ -89,6 +89,10 @@ public class SqlScript {
         }
     }
 
+    public SqlScript(String sqlScript, IDbPlatform platform) {
+        this(sqlScript, platform, true, ";", null);
+    }
+
     public SqlScript(String sqlScript, IDbPlatform platform, boolean failOnError, String delimiter,
             Map<String, String> replacementTokens) {
         init(IoUtils.readLines(new StringReader(sqlScript)), platform, failOnError, delimiter,

@@ -78,26 +78,28 @@ public enum DataEventType {
     }
 
     public static DataEventType getEventType(String s) {
-        if (s.equals(INSERT.getCode())) {
-            return INSERT;
-        } else if (s.equals(UPDATE.getCode())) {
-            return UPDATE;
-        } else if (s.equals(DELETE.getCode())) {
-            return DELETE;
-        } else if (s.equals(RELOAD.getCode())) {
-            return RELOAD;
-        } else if (s.equals(SQL.getCode())) {
-            return SQL;
-        } else if (s.equals(CREATE.getCode())) {
-            return CREATE;
-        } else if (s.equals(CONFIG.getCode())) {
-            return CONFIG;
-        } else if (s.equals(RELOAD.getCode())) {
-            return RELOAD;
-        } else if (s.equals(BSH.getCode())) {
-            return BSH;
-        } else {
-            throw new IllegalStateException(String.format("Invalid data event type of %s", s));
+        if (s != null) {
+            if (s.equals(INSERT.getCode())) {
+                return INSERT;
+            } else if (s.equals(UPDATE.getCode())) {
+                return UPDATE;
+            } else if (s.equals(DELETE.getCode())) {
+                return DELETE;
+            } else if (s.equals(RELOAD.getCode())) {
+                return RELOAD;
+            } else if (s.equals(SQL.getCode())) {
+                return SQL;
+            } else if (s.equals(CREATE.getCode())) {
+                return CREATE;
+            } else if (s.equals(CONFIG.getCode())) {
+                return CONFIG;
+            } else if (s.equals(RELOAD.getCode())) {
+                return RELOAD;
+            } else if (s.equals(BSH.getCode())) {
+                return BSH;
+            }
         }
+        throw new IllegalStateException(String.format("Invalid data event type of %s", s));
+
     }
 }

@@ -9,6 +9,18 @@ public class Parameters extends HashMap<String, String> {
 
     private static final long serialVersionUID = 1L;
 
+    public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
+
+    public final static String DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND = "db.pk.use.all.if.none";
+
+    public final static String DB_USE_PKS_FROM_SOURCE = "db.pk.use.from.source";
+
+    public final static String DB_SUPPORT_BIG_LOBS = "db.support.big.lobs";
+
+    public final static String DB_QUERY_TIMEOUT = "db.sql.query.timeout.seconds";
+
+    public final static String DB_STREAMING_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";
+    
     public final static String LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
 
     public final static String LOADER_MAX_ROWS_BEFORE_BATCH_FLUSH = "dataloader.max.rows.before.batch.flush";
@@ -23,17 +35,7 @@ public class Parameters extends HashMap<String, String> {
 
     public final static String LOADER_DONT_INCLUDE_PKS_IN_UPDATE = "dataloader.dont.include.keys.in.update.statement";
 
-    public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
-
-    public final static String DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND = "db.pk.use.all.if.none";
-
-    public final static String DB_USE_PKS_FROM_SOURCE = "db.pk.use.from.source";
-
-    public final static String DB_SUPPORT_BIG_LOBS = "db.support.big.lobs";
-
-    public final static String DB_QUERY_TIMEOUT = "db.sql.query.timeout.seconds";
-
-    public final static String DB_STREAMING_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";
+    public final static String TRIGGER_NUMBER_PRECISION = "trigger.number.precision";
 
     public Parameters() {
     }
@@ -75,6 +77,15 @@ public class Parameters extends HashMap<String, String> {
         String value = get(key);
         if (value != null) {
             returnValue = Boolean.parseBoolean(value);
+        }
+        return returnValue;
+    }
+    
+    public String get(String key, String defaultValue) {
+        String returnValue = defaultValue;
+        String value = get(key);
+        if (value != null) {
+            returnValue = value;
         }
         return returnValue;
     }

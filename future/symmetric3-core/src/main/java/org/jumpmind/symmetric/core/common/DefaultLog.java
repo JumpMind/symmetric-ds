@@ -1,7 +1,7 @@
 package org.jumpmind.symmetric.core.common;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 public class DefaultLog extends Log {
 
@@ -33,32 +33,32 @@ public class DefaultLog extends Log {
 
     @Override
     public boolean isDebugEnabled() {
-        return logger.isLoggable(Level.FINE);
+        return logger.isDebugEnabled();
     }
 
     public void log(LogLevel level, Throwable error, String msg, Object... params) {
-        Level loggerLevel = Level.SEVERE;
+        Level loggerLevel = Level.FATAL;
 
         switch (level) {
         case DEBUG:
-            loggerLevel = Level.FINE;
+            loggerLevel = Level.DEBUG;
             break;
         case INFO:
             loggerLevel = Level.INFO;
             break;
         case WARN:
-            loggerLevel = Level.WARNING;
+            loggerLevel = Level.WARN;
             break;
         }
 
-        if (logger.isLoggable(loggerLevel)) {
+        if (logger.isEnabledFor(loggerLevel)) {
             if (error != null && params == null) {
                 logger.log(loggerLevel, msg, error);
             } else if (error != null && msg != null && params != null) {
-                logger.log(loggerLevel, msg, params);
+                logger.log(loggerLevel, String.format(msg, params));
                 logger.log(loggerLevel, error.getMessage(), error);
             } else if (msg != null) {
-                logger.log(loggerLevel, msg, params);
+                logger.log(loggerLevel, String.format(msg, params));
             }
         }
 
