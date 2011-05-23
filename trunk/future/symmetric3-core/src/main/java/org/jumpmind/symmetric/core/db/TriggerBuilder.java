@@ -80,8 +80,6 @@ abstract public class TriggerBuilder {
 
     abstract protected String getDataHasChangedCondition();
 
-    abstract protected String getSourceNodeExpression();
-
     abstract protected String getSyncTriggersExpression();
 
     protected String getInitialLoadTableAlias() {
@@ -382,7 +380,6 @@ abstract public class TriggerBuilder {
                 preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()), ddl);
         ddl = StringUtils.replaceTokens("dataHasChangedCondition",
                 preProcessTriggerSqlClause(getDataHasChangedCondition()), ddl);
-        ddl = StringUtils.replaceTokens("sourceNodeExpression", getSourceNodeExpression(), ddl);
 
         String defaultCatalog = dbPlatform.getDefaultCatalog();
         String defaultSchema = dbPlatform.getDefaultSchema();

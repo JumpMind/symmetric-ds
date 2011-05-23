@@ -15,6 +15,7 @@ import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
+import org.jumpmind.symmetric.core.sql.SqlScript;
 import org.jumpmind.symmetric.jdbc.datasource.DriverDataSourceProperties;
 import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
 import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
@@ -59,9 +60,9 @@ abstract public class AbstractDatabaseTest {
         IJdbcDbPlatform platform = getPlatform(true);
         Table table = new Table("TEST", new Column("TEST_ID", TypeMap.INTEGER, null, true, true,
                 true), new Column("TEST_TEXT", TypeMap.VARCHAR, "1000", false, false, false));
-        ISqlConnection sqlConnection = platform.getSqlConnection();
         String alterSql = platform.getAlterScriptFor(table);
-        sqlConnection.update(alterSql);
+        SqlScript script = new SqlScript(alterSql, platform);
+        script.execute();
         return platform.findTable(table.getTableName());
     }
 

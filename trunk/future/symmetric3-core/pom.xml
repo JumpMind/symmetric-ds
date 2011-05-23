@@ -5,7 +5,7 @@
     <artifactId>symmetric3-core</artifactId>
     <packaging>jar</packaging>
     <version>3.0.0-SNAPSHOT</version>
-    <name>core</name>
+    <name>symmetric3-core</name>
 
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
@@ -23,7 +23,12 @@
             <groupId>xpp3</groupId>
             <artifactId>xpp3_min</artifactId>
             <version>1.1.4c</version>
-        </dependency>        
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

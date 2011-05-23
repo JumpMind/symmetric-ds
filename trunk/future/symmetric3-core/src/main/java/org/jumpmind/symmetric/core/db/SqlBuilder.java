@@ -964,7 +964,7 @@ public abstract class SqlBuilder {
 
         table.setCatalogName(targetTable.getCatalogName());
         table.setSchemaName(targetTable.getSchemaName());
-        table.setTableName(targetTable.getTableName() + "");
+        table.setTableName(targetTable.getTableName() + "_");
         table.setType(targetTable.getType());
         for (int idx = 0; idx < targetTable.getColumnCount(); idx++) {
             try {
@@ -1625,7 +1625,7 @@ public abstract class SqlBuilder {
             // right
             // after the cutting place (which would look odd with an aditional
             // one)
-            result.append("");
+            result.append("_");
         }
         result.append(name.substring(startCut + delta + 1, originalLength));
         return result.toString();
@@ -2058,7 +2058,7 @@ public abstract class SqlBuilder {
 
             for (int idx = 0; idx < fk.getReferenceCount(); idx++) {
                 name.append(fk.getReference(idx).getLocalColumnName());
-                name.append("");
+                name.append("_");
             }
             name.append(fk.getForeignTableName());
             fkName = getConstraintName(null, table, "FK", name.toString());
@@ -2095,13 +2095,13 @@ public abstract class SqlBuilder {
 
         if (prefix != null) {
             result.append(prefix);
-            result.append("");
+            result.append("_");
         }
         result.append(table.getTableName());
-        result.append("");
+        result.append("_");
         result.append(secondPart);
         if (suffix != null) {
-            result.append("");
+            result.append("_");
             result.append(suffix);
         }
         return shortenName(result.toString(), getMaxConstraintNameLength());

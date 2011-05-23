@@ -40,11 +40,11 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             throw sqlConnection.translate(ex);
         }
     }
-    
+
     public void setNumberOfRowsBeforeBatchFlush(int numberOfRowsBeforeBatchFlush) {
         this.numberOfRowsBeforeBatchFlush = numberOfRowsBeforeBatchFlush;
     }
-    
+
     public int getNumberOfRowsBeforeBatchFlush() {
         return numberOfRowsBeforeBatchFlush;
     }
@@ -106,7 +106,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             try {
                 int[] updates = pstmt.executeBatch();
                 for (int i : updates) {
-                    rowsUpdated += i;
+                    rowsUpdated += normalizeUpdateCount(i);
                 }
                 markers.clear();
             } catch (BatchUpdateException ex) {
@@ -119,13 +119,27 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         return rowsUpdated;
     }
 
+    /**
+     * According to the executeUpdate() javadoc -2 means that the result was successful, but
+     * that the number of rows affected is unknown. since we know that only one
+     * row is suppose to be affected, we'll default to 1.
+     * 
+     * @param value
+     */
+    private final int normalizeUpdateCount(int value) {
+        if (value == -2) {
+            value = 1;
+        }
+        return value;
+    }
+
     protected void removeMarkersThatWereSuccessful(BatchUpdateException ex) {
         int[] updateCounts = ex.getUpdateCounts();
         Iterator<Object> it = markers.iterator();
         int index = 0;
         while (it.hasNext()) {
             it.next();
-            if (updateCounts[index] > 0) {
+            if (updateCounts.length > index && normalizeUpdateCount(updateCounts[index]) > 0) {
                 it.remove();
             }
             index++;
@@ -143,7 +157,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             throw sqlConnection.translate(ex);
         }
     }
-    
+
     public int update(Object marker) {
         return update(marker, null, null);
     }
@@ -152,8 +166,8 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         int rowsUpdated = 0;
         try {
             if (args != null) {
-            StatementCreatorUtil.setValues(pstmt, args, argTypes, sqlConnection.getJdbcDbPlatform()
-                    .getLobHandler());
+                StatementCreatorUtil.setValues(pstmt, args, argTypes, sqlConnection
+                        .getJdbcDbPlatform().getLobHandler());
             }
             if (inBatchMode) {
                 if (marker == null) {

@@ -139,16 +139,24 @@ public class JdbcSqlConnection implements ISqlConnection {
     public int update(final String sql, final Object[] values, final int[] types) {
         return execute(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
-                PreparedStatement ps = null;
-                try {
-                    ps = con.prepareStatement(sql);
-                    if (values != null) {
+                if (values == null) {
+                    Statement stmt = null;
+                    try {
+                        stmt = con.createStatement();
+                        return stmt.executeUpdate(sql);
+                    } finally {
+                        close(stmt);
+                    }
+                } else {
+                    PreparedStatement ps = null;
+                    try {
+                        ps = con.prepareStatement(sql);
                         StatementCreatorUtil.setValues(ps, values, types,
                                 ((IJdbcDbPlatform) getDbPlatform()).getLobHandler());
+                        return ps.executeUpdate();
+                    } finally {
+                        close(ps);
                     }
-                    return ps.executeUpdate();
-                } finally {
-                    close(ps);
                 }
             }
         });

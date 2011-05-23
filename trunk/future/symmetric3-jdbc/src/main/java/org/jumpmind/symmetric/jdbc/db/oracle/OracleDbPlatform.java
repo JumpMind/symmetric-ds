@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.oracle.OracleSqlBuilder;
+import org.jumpmind.symmetric.core.db.oracle.OracleTriggerBuilder;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.jdbc.db.AbstractJdbcDbPlatform;
 
@@ -61,6 +62,7 @@ public class OracleDbPlatform extends AbstractJdbcDbPlatform {
         platformInfo.setNonBlankCharColumnSpacePadded(true);
         platformInfo.setRequiresAutoCommitFalseToSetFetchSize(false);
 
+        this.triggerBuilder = new OracleTriggerBuilder(this);
         this.jdbcModelReader = new OracleJdbcModelReader(this);
         this.sqlBuilder = new OracleSqlBuilder(this);
 

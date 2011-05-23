@@ -193,11 +193,6 @@ public class H2TriggerBuilder extends TriggerBuilder {
     }
 
     @Override
-    protected String getSourceNodeExpression() {
-        return null;
-    }
-
-    @Override
     protected String getSyncTriggersExpression() {
         return " @sync_prevented is null ";
     }

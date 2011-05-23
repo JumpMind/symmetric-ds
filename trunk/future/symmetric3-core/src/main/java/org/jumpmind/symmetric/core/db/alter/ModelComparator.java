@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.core.model.Table;
  * TODO: Add support and tests for the change of the column order
  */
 public class ModelComparator {
+    
     /** The log for this comparator. */
     private final Log log = LogFactory.getLog(ModelComparator.class);
 
