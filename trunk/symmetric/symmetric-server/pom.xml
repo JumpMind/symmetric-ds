@@ -62,6 +62,9 @@
                         <additionalClasspathElement>
                             ${user.home}/.symmetricds/lib/ifxlang.jar
                         </additionalClasspathElement>
+                        <additionalClasspathElement>
+                            ${user.home}/.symmetricds/lib/interclient.jar
+                        </additionalClasspathElement>
                     </additionalClasspathElements>
                     <includes>
                         <include>**/*TestSuite.java</include>
