@@ -246,7 +246,7 @@ public class TestSetupUtil {
             platform.dropTables(previousSymmetricVersionTables, true);
             dialect.purge();
 
-            boolean autocommitDdl = databaseType.equals("postgres") ? true : false;
+            boolean autocommitDdl = databaseType.equals("postgres") || databaseType.equals("interbase") ? true : false;
 
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(autocommitDdl);
 
