@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
+import org.jumpmind.symmetric.db.interbase.InterbaseDbDialect;
 import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.ddl.model.Table;
@@ -988,7 +989,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         if (getRootDbDialect() instanceof Db2DbDialect || getClientDbDialect() instanceof Db2DbDialect
                 || getRootDbDialect() instanceof FirebirdDbDialect || getClientDbDialect() instanceof FirebirdDbDialect
-                || getRootDbDialect() instanceof InformixDbDialect) {
+                || getRootDbDialect() instanceof InterbaseDbDialect || getRootDbDialect() instanceof InformixDbDialect) {
             return;
         }
         // alter the table to have column names that are not usually allowed
