@@ -102,17 +102,6 @@ public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect 
     }
 
     @Override
-    protected String getTableNamePattern(String tableName) {
-        /*
-         * When looking up a table definition, Jaybird treats underscore (_) in
-         * the table name as a wildcard, so it needs to be escaped, or you'll
-         * get back column names for more than one table. Example:
-         * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
-         */
-        return tableName.replaceAll("\\_", "\\\\_");
-    }
-
-    @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select gen_id(gen_" + sequenceName + ", 0) from rdb$database";
     }
