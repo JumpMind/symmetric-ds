@@ -286,7 +286,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
 
         if (getRootDbDialect().isClobSyncSupported()) {
-            assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), "", "Expected empty CLOB");
+            if (getClientDbDialect() instanceof InterbaseDbDialect) {
+                // Putting an empty string into a CLOB on Interbase results in a NULL value
+                assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), null, "Expected null CLOB");   
+            } else {
+                assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), "", "Expected empty CLOB");
+            }
         }
 
         if (getRootDbDialect().isBlobSyncSupported()) {
