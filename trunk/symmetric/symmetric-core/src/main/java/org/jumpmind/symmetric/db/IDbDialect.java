@@ -306,5 +306,7 @@ public interface IDbDialect {
     public boolean escapesTemplatesForDatabaseInserts();
     
     public String getMasterCollation();
-    
+ 
+    public boolean supportsBatchUpdates();
+
 }

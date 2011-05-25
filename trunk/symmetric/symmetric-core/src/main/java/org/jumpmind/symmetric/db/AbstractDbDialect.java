@@ -1553,4 +1553,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public String getMasterCollation() {
         return parameterService.getString(ParameterConstants.DB_MASTER_COLLATION, "");
     }
+    
+    public boolean supportsBatchUpdates() {
+        return true;
+    }
 }
