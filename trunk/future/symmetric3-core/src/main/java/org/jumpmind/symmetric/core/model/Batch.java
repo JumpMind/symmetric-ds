@@ -25,6 +25,11 @@ public class Batch {
     protected long missingDeleteCount;
     protected long timerMillis;
 
+    public Batch(long batchId) {
+        this();
+        this.batchId = batchId;
+    }
+    
     public Batch() {
         this.startTime = new Date();
     }

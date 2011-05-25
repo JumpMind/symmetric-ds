@@ -50,7 +50,7 @@ abstract public class TriggerBuilder {
 
     abstract protected String getNumberColumnTemplate();
 
-    abstract protected String getDatetimeColumnTemplate();
+    abstract protected String getDateTimeColumnTemplate();
 
     abstract protected String getBooleanColumnTemplate();
 
@@ -163,20 +163,20 @@ abstract public class TriggerBuilder {
                     break;
                 case Types.DATE:
                     if (noDateColumnTemplate()) {
-                        templateToUse = getDatetimeColumnTemplate();
+                        templateToUse = getDateTimeColumnTemplate();
                         break;
                     }
                     templateToUse = getDateColumnTemplate();
                     break;
                 case Types.TIME:
                     if (noTimeColumnTemplate()) {
-                        templateToUse = getDatetimeColumnTemplate();
+                        templateToUse = getDateTimeColumnTemplate();
                         break;
                     }
                     templateToUse = getTimeColumnTemplate();
                     break;
                 case Types.TIMESTAMP:
-                    templateToUse = getDatetimeColumnTemplate();
+                    templateToUse = getDateTimeColumnTemplate();
                     break;
                 case Types.BOOLEAN:
                 case Types.BIT:
@@ -595,9 +595,7 @@ abstract public class TriggerBuilder {
     }
 
     private boolean noDateColumnTemplate() {
-        String dateColumnTemplate = getDateColumnTemplate();
-        return dateColumnTemplate == null || dateColumnTemplate.equals("null")
-                || dateColumnTemplate.trim().equals("");
+        return StringUtils.isBlank(getDateColumnTemplate());
     }
 
     private String buildColumnNameString(String tableAlias, Column[] columns) {

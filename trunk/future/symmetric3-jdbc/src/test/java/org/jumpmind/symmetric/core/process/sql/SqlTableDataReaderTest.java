@@ -26,18 +26,18 @@ public class SqlTableDataReaderTest extends AbstractDatabaseTest {
         TableToExtract tableToExtract = new TableToExtract(testTable, "");
         SqlTableDataReader reader = new SqlTableDataReader(getPlatform(true), new Batch(),
                 tableToExtract);
-        DataContext ctx = reader.createDataContext();
+        DataContext ctx = new DataContext();
         reader.open(ctx);
-        Batch batch = reader.nextBatch(ctx);
+        Batch batch = reader.nextBatch();
         Assert.assertNotNull(batch);
-        Table nextTable = reader.nextTable(ctx);
+        Table nextTable = reader.nextTable();
         Assert.assertNotNull(nextTable);
         Assert.assertEquals(testTable, nextTable);
         for (int i = 0; i < 100; i++) {
-            Data data = reader.nextData(ctx);
+            Data data = reader.nextData();
             Assert.assertNotNull("Null data on the " + i + " element", data);
         }
-        Data data = reader.nextData(ctx);
+        Data data = reader.nextData();
         Assert.assertNull(data);
     }
 }

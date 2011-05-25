@@ -194,6 +194,7 @@ public class JdbcModelReader {
         // filter manually
         result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("COLUMN_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("TYPE_NAME", 12));
         result.add(new MetaDataColumnDescriptor("DATA_TYPE", Types.INTEGER, new Integer(
                 java.sql.Types.OTHER)));
         result.add(new MetaDataColumnDescriptor("NUM_PREC_RADIX", Types.INTEGER, new Integer(10)));
@@ -201,7 +202,7 @@ public class JdbcModelReader {
         result.add(new MetaDataColumnDescriptor("COLUMN_SIZE", Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("IS_NULLABLE", Types.VARCHAR, "YES"));
         result.add(new MetaDataColumnDescriptor("REMARKS", Types.VARCHAR));
-
+        
         return result;
     }
 
@@ -860,7 +861,7 @@ public class JdbcModelReader {
 
         column.setName((String) values.get("COLUMN_NAME"));
         column.setDefaultValue((String) values.get("COLUMN_DEF"));
-        column.setTypeCode(((Integer) values.get("DATA_TYPE")).intValue());
+        column.setTypeCode(mapJdbcTypeForColumn(((Integer) values.get("DATA_TYPE")).intValue(), values));
         column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
 
         String size = (String) values.get("COLUMN_SIZE");
@@ -881,6 +882,10 @@ public class JdbcModelReader {
         column.setRequired("NO".equalsIgnoreCase(((String) values.get("IS_NULLABLE")).trim()));
         column.setDescription((String) values.get("REMARKS"));
         return column;
+    }
+    
+    protected int mapJdbcTypeForColumn(int typeCode, Map<String,Object> values) {
+        return typeCode;
     }
 
     /**

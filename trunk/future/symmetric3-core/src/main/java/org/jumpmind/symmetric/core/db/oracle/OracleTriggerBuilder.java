@@ -134,7 +134,7 @@ public class OracleTriggerBuilder extends TriggerBuilder {
     }
 
     @Override
-    protected String getDatetimeColumnTemplate() {
+    protected String getDateTimeColumnTemplate() {
         return "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF3')),'\"'))";
     }
 

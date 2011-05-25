@@ -4,21 +4,21 @@ import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
 
-public class DataProcessor<T extends DataContext> {
+public class DataProcessor {
 
-    protected IDataReader<T> dataReader;
-    protected IDataWriter<T> dataWriter;
+    protected IDataReader dataReader;
+    protected IDataWriter dataWriter;
     protected IDataProcessorListener listener;
     protected IDataWriterErrorHandler errorHandler;
 
     public DataProcessor() {
     }
 
-    public DataProcessor(IDataReader<T> dataReader, IDataWriter<T> dataWriter) {
+    public DataProcessor(IDataReader dataReader, IDataWriter dataWriter) {
         this(dataReader, dataWriter, null, null);
     }
 
-    public DataProcessor(IDataReader<T> dataReader, IDataWriter<T> dataWriter,
+    public DataProcessor(IDataReader dataReader, IDataWriter dataWriter,
             IDataProcessorListener listener, IDataWriterErrorHandler errorHandler) {
         this.dataReader = dataReader;
         this.dataWriter = dataWriter;
@@ -27,24 +27,25 @@ public class DataProcessor<T extends DataContext> {
     }
 
     public void process() {
-        T readerContext = dataReader.createDataContext();
-        T writerContext = dataWriter.createDataContext();
-        dataReader.open(readerContext);
+        process(new DataContext());
+    }
+
+    public void process(DataContext ctx) {
+        dataReader.open(ctx);
         boolean dataWriterOpened = false;
         Batch batch = null;
         do {
-            batch = dataReader.nextBatch(readerContext);
+            batch = dataReader.nextBatch();
             if (batch != null) {
                 int dataRow = 0;
                 boolean processBatch = listener == null ? true : listener.batchBegin(batch);
                 if (processBatch) {
                     if (!dataWriterOpened) {
-                        writerContext.setBinaryEncoding(readerContext.getBinaryEncoding());
-                        dataWriter.open(writerContext);
+                        dataWriter.open(ctx);
                     }
                     dataWriter.startBatch(batch);
                 }
-                dataRow += forEachTableInBatch(processBatch, batch, readerContext, writerContext);
+                dataRow += forEachTableInBatch(processBatch, batch);
                 if (processBatch) {
                     if (listener != null) {
                         listener.batchBeforeCommit(batch);
@@ -58,29 +59,27 @@ public class DataProcessor<T extends DataContext> {
         } while (batch != null);
     }
 
-    protected int forEachTableInBatch(boolean processBatch, Batch batch, T readerContext,
-            T writerContext) {
+    protected int forEachTableInBatch(boolean processBatch, Batch batch) {
         int dataRow = 0;
         Table table = null;
         do {
-            table = dataReader.nextTable(readerContext);
+            table = dataReader.nextTable();
             if (table != null) {
                 boolean processTable = false;
                 if (processBatch) {
-                    processTable = dataWriter.switchTables(table);
+                    processTable = dataWriter.writeTable(table);
                 }
-                dataRow += forEachDataInTable(processTable, batch, readerContext, writerContext);
+                dataRow += forEachDataInTable(processTable, batch);
             }
         } while (table != null);
         return dataRow;
     }
 
-    protected int forEachDataInTable(boolean processTable, Batch batch, T readerContext,
-            T writerContext) {
+    protected int forEachDataInTable(boolean processTable, Batch batch) {
         int dataRow = 0;
         Data data = null;
         do {
-            data = dataReader.nextData(readerContext);
+            data = dataReader.nextData();
             if (data != null) {
                 try {
                     dataRow++;

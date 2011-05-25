@@ -72,4 +72,7 @@ public interface IDbPlatform {
     public String shortenName(String name, int desiredLength);
 
     public boolean isDataIntegrityException(Exception ex);
+    
+    public boolean supportsBatchUpdates();
+    
 }

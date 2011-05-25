@@ -19,7 +19,7 @@ public class JdbcDbPlatformFactory {
 
     private static Map<String, Class<? extends IDbPlatform>> platforms = null;
 
-    public static IJdbcDbPlatform createPlatform(DataSource dataSource, Parameters parameters) {
+    public static AbstractJdbcDbPlatform createPlatform(DataSource dataSource, Parameters parameters) {
         String platformId = lookupPlatformId(dataSource, true);
         AbstractJdbcDbPlatform platform = createNewPlatformInstance(platformId, dataSource,
                 parameters);

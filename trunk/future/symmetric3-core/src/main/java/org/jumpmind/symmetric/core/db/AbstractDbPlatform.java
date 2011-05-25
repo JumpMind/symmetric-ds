@@ -258,6 +258,6 @@ abstract public class AbstractDbPlatform implements IDbPlatform {
 
     public void setDefaultSchema(String defaultSchema) {
         this.defaultSchema = defaultSchema;
-    }
+    }        
 
 }

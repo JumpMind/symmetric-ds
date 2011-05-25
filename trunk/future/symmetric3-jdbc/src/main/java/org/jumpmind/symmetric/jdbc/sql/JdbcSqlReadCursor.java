@@ -49,7 +49,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
             st.setFetchSize(parameters.getStreamingFetchSize());
             rs = st.executeQuery();
         } catch (SQLException ex) {
-            throw dbPlatform.getJdbcSqlConnection().translate(ex);
+            throw dbPlatform.getJdbcSqlConnection().translate(sql, ex);
         }
     }
 

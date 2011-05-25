@@ -96,7 +96,7 @@ public class H2TriggerBuilder extends TriggerBuilder {
     }
 
     @Override
-    protected String getDatetimeColumnTemplate() {
+    protected String getDateTimeColumnTemplate() {
         return "case when $(tableAlias)\"$(columnName)\" is null then '''' else ''\"''||formatdatetime($(tableAlias)\"$(columnName)\", ''yyyy-MM-dd HH:mm:ss.S'')||''\"'' end";
     }
 

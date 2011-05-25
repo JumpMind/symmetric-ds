@@ -22,17 +22,18 @@ package org.jumpmind.symmetric.core.process;
 
 import org.jumpmind.symmetric.core.ext.IExtensionPoint;
 import org.jumpmind.symmetric.core.model.Data;
+import org.jumpmind.symmetric.core.model.Table;
 
 /**
  * Extension point that can be use to change or prevent a {@link Data} object
  * from being processes
  */
-public interface IDataFilter<T extends DataContext> extends IExtensionPoint {
+public interface IDataFilter extends IExtensionPoint {
 
     /**
      * @return true if the row should be loaded. false if the filter has handled
      *         the row and it should be ignored.
      */
-    public boolean filter(T context, Data data);
+    public boolean filter(DataContext context, Table table, Data data);
 
 }

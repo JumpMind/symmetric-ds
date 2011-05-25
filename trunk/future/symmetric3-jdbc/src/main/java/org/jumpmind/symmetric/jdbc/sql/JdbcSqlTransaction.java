@@ -2,7 +2,6 @@ package org.jumpmind.symmetric.jdbc.sql;
 
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -10,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
+import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
 
 /**
  * TODO Support Oracle's non-standard way of batching
@@ -21,6 +21,8 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     protected Connection dbConnection;
 
     protected PreparedStatement pstmt;
+    
+    protected IJdbcDbPlatform dbPlatform;
 
     protected JdbcSqlConnection sqlConnection;
 
@@ -30,9 +32,10 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     protected List<Object> markers = new ArrayList<Object>();
 
-    public JdbcSqlTransaction(JdbcSqlConnection sqlConnection) {
+    public JdbcSqlTransaction(IJdbcDbPlatform platform) {
         try {
-            this.sqlConnection = sqlConnection;
+            this.dbPlatform = platform;
+            this.sqlConnection = platform.getJdbcSqlConnection();
             this.dbConnection = sqlConnection.getJdbcDbPlatform().getDataSource().getConnection();
             this.oldAutoCommitValue = this.dbConnection.getAutoCommit();
             this.dbConnection.setAutoCommit(false);
@@ -51,7 +54,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     public void setInBatchMode(boolean useBatching) {
         if (dbConnection != null) {
-            this.inBatchMode = useBatching && supportsBatchUpdates(dbConnection);
+            this.inBatchMode = useBatching && this.dbPlatform.supportsBatchUpdates();
         }
     }
 
@@ -193,35 +196,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             markers.clear();
         }
         return ret;
-    }
-
-    /**
-     * Return whether the given JDBC driver supports JDBC 2.0 batch updates.
-     * <p>
-     * Typically invoked right before execution of a given set of statements: to
-     * decide whether the set of SQL statements should be executed through the
-     * JDBC 2.0 batch mechanism or simply in a traditional one-by-one fashion.
-     * <p>
-     * Logs a warning if the "supportsBatchUpdates" methods throws an exception
-     * and simply returns <code>false</code> in that case.
-     * 
-     * @param con
-     *            the Connection to check
-     * @return whether JDBC 2.0 batch updates are supported
-     * @see java.sql.DatabaseMetaData#supportsBatchUpdates()
-     */
-    public static boolean supportsBatchUpdates(Connection con) {
-        try {
-            DatabaseMetaData dbmd = con.getMetaData();
-            if (dbmd != null) {
-                if (dbmd.supportsBatchUpdates()) {
-                    return true;
-                }
-            }
-        } catch (SQLException ex) {
-        } catch (AbstractMethodError err) {
-        }
-        return false;
     }
 
 }
