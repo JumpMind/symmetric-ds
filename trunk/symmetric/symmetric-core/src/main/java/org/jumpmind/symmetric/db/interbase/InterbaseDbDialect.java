@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.interbase;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -94,6 +95,19 @@ public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect 
 
     public String getSyncTriggersExpression() {
         return ":" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
+    }
+    
+    @Override
+    protected String getSequenceName(SequenceIdentifier identifier) {
+        switch (identifier) {
+        case OUTGOING_BATCH:
+            return "SYM_OUTGOING_BATCH_BATCH_ID";
+        case DATA:
+            return "SYM_DATA_DATA_ID";
+        case TRIGGER_HIST:
+            return "SYM_TRIGGER_TRIGGER_HIST_ID";
+        }
+        return null;
     }
 
     @Override
