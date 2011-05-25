@@ -45,6 +45,8 @@ public class InterbasePlatform extends PlatformImplBase
     public static final String JDBC_DRIVER      = "interbase.interclient.Driver";
     /** The subprotocol used by the interbase driver. */
     public static final String JDBC_SUBPROTOCOL = "interbase";
+    
+    public static int SWITCH_TO_LONGVARCHAR_SIZE = 4096;
 
     /**
      * Creates a new platform instance.
@@ -72,7 +74,7 @@ public class InterbasePlatform extends PlatformImplBase
         info.addNativeTypeMapping(Types.FLOAT,         "DOUBLE PRECISION",   Types.DOUBLE);
         info.addNativeTypeMapping(Types.JAVA_OBJECT,   "BLOB",               Types.LONGVARBINARY);
         info.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARCHAR,   "BLOB SUB_TYPE TEXT", Types.CLOB);
+        info.addNativeTypeMapping(Types.LONGVARCHAR,   "VARCHAR("+SWITCH_TO_LONGVARCHAR_SIZE+")",     Types.VARCHAR);
         info.addNativeTypeMapping(Types.NULL,          "BLOB",               Types.LONGVARBINARY);
         info.addNativeTypeMapping(Types.OTHER,         "BLOB",               Types.LONGVARBINARY);
         info.addNativeTypeMapping(Types.REAL,          "FLOAT");

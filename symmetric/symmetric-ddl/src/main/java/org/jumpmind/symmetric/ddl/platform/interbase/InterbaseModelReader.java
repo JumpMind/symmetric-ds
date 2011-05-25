@@ -78,6 +78,19 @@ public class InterbaseModelReader extends JdbcModelReader
 
         return table;
     }
+    
+    @Override
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
+        Column column = super.readColumn(metaData, values);
+        if (column.getTypeCode() == Types.VARCHAR) {
+            int size = Integer.parseInt(column.getSize());
+            if (size >= InterbasePlatform.SWITCH_TO_LONGVARCHAR_SIZE) {
+                column.setTypeCode(Types.LONGVARCHAR);
+            }
+        }
+        return column;
+    }
 
     /**
      * {@inheritDoc}
