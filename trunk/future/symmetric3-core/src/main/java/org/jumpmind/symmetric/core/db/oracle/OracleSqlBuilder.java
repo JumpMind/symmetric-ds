@@ -256,7 +256,11 @@ public class OracleSqlBuilder extends SqlBuilder {
             String defaultValueStr = defaultValue.toString();
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
                     && !defaultValueStr.startsWith("TO_DATE(");
-
+            if (shouldUseQuotes && defaultValue instanceof String) {
+                String value = (String)defaultValue;
+                shouldUseQuotes = !(value.startsWith("'") && value.endsWith("'"));
+            }
+            
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
                 print(getPlatformInfo().getValueQuoteToken());

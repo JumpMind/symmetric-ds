@@ -188,6 +188,8 @@ public class JdbcSqlConnection implements ISqlConnection {
                             if (!failOnError) {
                                 log.log(LogLevel.WARN, "%s.  Failed to execute: %s.",
                                         ex.getMessage(), sql);
+                            } else {
+                                throw new SqlException(ex);
                             }
                         }
                     }

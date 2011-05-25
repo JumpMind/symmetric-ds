@@ -20,7 +20,6 @@ import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.jdbc.db.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
 import org.jumpmind.symmetric.jdbc.db.JdbcModelReader;
@@ -151,9 +150,7 @@ public class OracleJdbcModelReader extends JdbcModelReader {
                     column.setDefaultValue(timestamp.toString());
                 }
             }
-        } else if (TypeMap.isTextType(column.getTypeCode())) {
-            column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
-        }
+        } 
         return column;
     }
 

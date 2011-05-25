@@ -65,16 +65,17 @@ public class DataProcessor<T extends DataContext> {
         do {
             table = dataReader.nextTable(readerContext);
             if (table != null) {
+                boolean processTable = false;
                 if (processBatch) {
-                    processBatch |= dataWriter.switchTables(table);
+                    processTable = dataWriter.switchTables(table);
                 }
-                dataRow += forEachDataInTable(processBatch, batch, readerContext, writerContext);
+                dataRow += forEachDataInTable(processTable, batch, readerContext, writerContext);
             }
         } while (table != null);
         return dataRow;
     }
 
-    protected int forEachDataInTable(boolean processBatch, Batch batch, T readerContext,
+    protected int forEachDataInTable(boolean processTable, Batch batch, T readerContext,
             T writerContext) {
         int dataRow = 0;
         Data data = null;
@@ -83,7 +84,7 @@ public class DataProcessor<T extends DataContext> {
             if (data != null) {
                 try {
                     dataRow++;
-                    if (processBatch) {
+                    if (processTable) {
                         dataWriter.writeData(data);
                     }
                 } catch (Exception ex) {
