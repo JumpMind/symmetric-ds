@@ -87,7 +87,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
 
     @Test
     public void basicTest() {
-        TriggerHistory hist = makeTableSynchistoryId(TD1.table, TD1.keyColumns, TD1.columns);
+        TriggerHistory hist = makeTableSyncHistoryId(TD1.table, TD1.keyColumns, TD1.columns);
 
         try {
             DataExtractorContext context = (DataExtractorContext) find(CONTEXT_NAME);
@@ -123,7 +123,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
 
     @Test
     public void biggerTest() {
-        TriggerHistory history = makeTableSynchistoryId(TD1.table, TD1.keyColumns, TD1.columns);
+        TriggerHistory history = makeTableSyncHistoryId(TD1.table, TD1.keyColumns, TD1.columns);
 
         try {
             DataExtractorContext context = (DataExtractorContext) find(CONTEXT_NAME);
@@ -175,11 +175,11 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
 
-            TriggerHistory history = makeTableSynchistoryId(TD1.table, TD1.keyColumns, TD1.columns);
+            TriggerHistory history = makeTableSyncHistoryId(TD1.table, TD1.keyColumns, TD1.columns);
             Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
 
-            history = makeTableSynchistoryId(TD3.table, TD3.keyColumns, TD3.columns);
+            history = makeTableSyncHistoryId(TD3.table, TD3.keyColumns, TD3.columns);
             data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.UPDATE, TD3.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
             data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.DELETE, TD3.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
@@ -207,8 +207,8 @@ public class DataExtractorTest extends AbstractDatabaseTest {
 
     @Test
     public void changingTables() {
-        TriggerHistory history = makeTableSynchistoryId(TD1.table, TD1.keyColumns, TD1.columns);
-        TriggerHistory history2 = makeTableSynchistoryId(TD4.table, TD4.keyColumns, TD4.columns);
+        TriggerHistory history = makeTableSyncHistoryId(TD1.table, TD1.keyColumns, TD1.columns);
+        TriggerHistory history2 = makeTableSyncHistoryId(TD4.table, TD4.keyColumns, TD4.columns);
 
         try {
             DataExtractorContext context = (DataExtractorContext)find(CONTEXT_NAME);
@@ -262,7 +262,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
         });
     }
 
-    private TriggerHistory makeTableSynchistoryId(String tableName, final String pk, final String col) {
+    private TriggerHistory makeTableSyncHistoryId(String tableName, final String pk, final String col) {
         String sql = "insert into sym_trigger_hist (trigger_hist_id, source_table_name, source_schema_name, trigger_id, column_names, pk_column_names,name_for_update_trigger,name_for_delete_trigger, name_for_insert_trigger,table_hash,trigger_row_hash,last_trigger_build_reason,create_time) " +
         		" values (null, '"
                 + tableName + "','symmetric','1','" + col + "' , '" + pk + "','a','b','c',1,1,'T',current_timestamp)";
