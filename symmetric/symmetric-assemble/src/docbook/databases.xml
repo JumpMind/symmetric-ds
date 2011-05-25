@@ -385,14 +385,6 @@ code="2". LINE NUMBER=1. SQLSTATE=54040
             <command>copy databases\firebird\sym_udf.dll C:\Program Files\Firebird\Firebird_2_0\UDF</command>        
         </para>
         <para>
-            The
-            <ulink url="http://www.firebirdsql.org/index.php?op=devel&amp;sub=jdbc">
-                Jaybird JDBC driver
-            </ulink>
-            was used during testing, but the user must download the driver
-            and place it in the SymmetricDS "lib" folder.
-        </para>
-        <para>
             The following limitations currently exist for this dialect:
         </para>
         <para>
