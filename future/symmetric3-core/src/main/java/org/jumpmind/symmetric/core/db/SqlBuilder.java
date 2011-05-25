@@ -1945,7 +1945,11 @@ public abstract class SqlBuilder {
     protected void printDefaultValue(Object defaultValue, int typeCode) {
         if (defaultValue != null) {
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode);
-
+            if (shouldUseQuotes && defaultValue instanceof String) {
+                String value = (String)defaultValue;
+                shouldUseQuotes = !(value.startsWith("'") && value.endsWith("'"));
+            }
+            
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
                 print(getPlatformInfo().getValueQuoteToken());

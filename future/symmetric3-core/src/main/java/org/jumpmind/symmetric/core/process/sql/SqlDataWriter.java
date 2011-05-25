@@ -23,6 +23,7 @@ import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
 import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
+import org.jumpmind.symmetric.core.sql.SqlScript;
 import org.jumpmind.symmetric.core.sql.StatementBuilder;
 import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
 
@@ -55,6 +56,8 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     protected Batch batch;
 
     protected DataContext ctx;
+    
+    protected boolean exitBatchMode = false;
 
     public SqlDataWriter(IDbPlatform platform) {
         this(platform, new Settings());
@@ -96,9 +99,16 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
 
     public boolean switchTables(Table sourceTable) {
         if (sourceTable != null) {
-            this.targetTable = platform.findTable(sourceTable.getCatalogName(),
-                    sourceTable.getSchemaName(), sourceTable.getTableName(), true).copy();
-            if (this.targetTable != null) {
+            Table tableAtTarget = platform.findTable(sourceTable.getCatalogName(),
+                    sourceTable.getSchemaName(), sourceTable.getTableName(), true);
+            if (tableAtTarget == null && settings.autoCreateTable) {
+                new SqlScript(platform.getAlterScriptFor(sourceTable), platform).execute();  
+                tableAtTarget = platform.findTable(sourceTable.getCatalogName(),
+                        sourceTable.getSchemaName(), sourceTable.getTableName(), true);
+            }
+            
+            if (tableAtTarget != null) {
+                this.targetTable = tableAtTarget.copy();
                 this.targetTable.reOrderColumns(sourceTable.getColumns(),
                         settings.usePrimaryKeysFromSource);
                 return true;
@@ -117,6 +127,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     public void startBatch(Batch batch) {
         this.statementBuilder = null;
         this.batch = batch;
+        this.exitBatchMode = false;
     }
 
     public void writeData(Data data) {
@@ -167,6 +178,8 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
 
     protected void handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         if (transaction.isInBatchMode()) {
+            log.log(LogLevel.WARN, "Exiting batch mode for the rest of batch %d", batch.getBatchId());
+            this.exitBatchMode = true;
             resendFailedDataInNonBatchMode();
         } else {
             throw ex;
@@ -208,6 +221,8 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
         settings.usePrimaryKeysFromSource = parameters.is(Parameters.DB_USE_PKS_FROM_SOURCE, true);
         settings.dontIncludeKeysInUpdateStatement = parameters.is(
                 Parameters.LOADER_DONT_INCLUDE_PKS_IN_UPDATE, false);
+        settings.autoCreateTable = parameters.is(Parameters.LOADER_CREATE_TABLE_IF_DOESNT_EXIST,
+                false);
     }
 
     protected boolean filterData(Data data, DataContext ctx) {
@@ -310,7 +325,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected void executeInsertSql(Data data, boolean batchMode) {
-        transaction.setInBatchMode(batchMode);
+        transaction.setInBatchMode(batchMode && !exitBatchMode);
         if (requireNewStatement(data)) {
             this.statementBuilder = getStatementBuilder(DmlType.INSERT, null,
                     targetTable.getColumns());
@@ -320,7 +335,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     }
 
     protected int executeDeleteSql(Data data, boolean batchMode) {
-        transaction.setInBatchMode(batchMode);
+        transaction.setInBatchMode(batchMode && !exitBatchMode);
         if (requireNewStatement(data)) {
             this.statementBuilder = getStatementBuilder(DmlType.DELETE,
                     targetTable.getPrimaryKeyColumnsArray(), targetTable.getColumns());
@@ -496,6 +511,8 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
         protected boolean usePrimaryKeysFromSource;
 
         protected boolean dontIncludeKeysInUpdateStatement;
+
+        protected boolean autoCreateTable;
 
     }
 

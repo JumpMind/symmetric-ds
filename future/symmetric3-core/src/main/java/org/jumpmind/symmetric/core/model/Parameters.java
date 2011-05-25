@@ -21,6 +21,8 @@ public class Parameters extends HashMap<String, String> {
 
     public final static String DB_STREAMING_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";
     
+    public final static String LOADER_CREATE_TABLE_IF_DOESNT_EXIST = "dataloader.create.if.table.doesnt.exist";
+    
     public final static String LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
 
     public final static String LOADER_MAX_ROWS_BEFORE_BATCH_FLUSH = "dataloader.max.rows.before.batch.flush";

@@ -6,6 +6,9 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.core.common.Log;
+import org.jumpmind.symmetric.core.common.LogFactory;
+import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.db.TableNotFoundException;
 import org.jumpmind.symmetric.core.io.IoUtils;
@@ -21,6 +24,8 @@ import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
 import org.jumpmind.symmetric.jdbc.tools.copy.TableCopyProperties;
 
 public class TableCopy {
+
+    static final Log logger = LogFactory.getLog(TableCopy.class);
 
     protected DataSource source;
     protected DataSource target;
@@ -45,6 +50,8 @@ public class TableCopy {
             Table table = sourcePlatform.findTable(tableName);
             if (table != null) {
                 String condition = properties.getConditionForTable(tableName);
+                table.setSchemaName(null);
+                table.setCatalogName(null);
                 tablesToRead.add(new TableToExtract(table, condition));
             } else {
                 throw new TableNotFoundException(tableName);
@@ -58,10 +65,12 @@ public class TableCopy {
 
     public void copy(List<TableToExtract> tables) {
         for (TableToExtract tableToRead : tables) {
-            SqlTableDataReader reader = new SqlTableDataReader(this.sourcePlatform, new Batch(),
-                    tableToRead);
-            SqlDataWriter writer = new SqlDataWriter(this.targetPlatform, parameters);
-            DataProcessor<DataContext> processor = new DataProcessor<DataContext>(reader, writer);
+            logger.log(LogLevel.INFO,
+                    String.format("Copying %s", tableToRead.getTable().getTableName()));
+            Batch batch = new Batch();
+            DataProcessor<DataContext> processor = new DataProcessor<DataContext>(
+                    new SqlTableDataReader(this.sourcePlatform, batch, tableToRead),
+                    new SqlDataWriter(this.targetPlatform, parameters));
             processor.process();
         }
     }
@@ -97,7 +106,9 @@ public class TableCopy {
             if (propFile.exists() && !propFile.isDirectory()) {
                 TableCopyProperties properties = new TableCopyProperties(propFile);
                 new TableCopy(properties).copy();
-
+            } else {
+                System.err.println(String.format("Could not find the properties file named %s",
+                        args[0]));
             }
         } else {
             System.err
