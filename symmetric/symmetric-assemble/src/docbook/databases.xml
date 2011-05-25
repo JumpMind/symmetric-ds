@@ -146,6 +146,16 @@
                         <entry>N</entry>
                         <entry>N</entry>
                     </row>                                    
+                    <row>
+                        <entry>Interbase</entry>
+                        <entry>9.0</entry>
+                        <entry>N</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>
                 </tbody>
             </tgroup>
         </table>
@@ -452,6 +462,32 @@ ontape -s -L 0
                   </para>
               </listitem>
           </itemizedlist>
+        </para>
+    </section>
+    <section id="ap02-interbase">
+        <title>Interbase</title>
+        <para>
+            The Interbase Dialect requires the installation of a User Defined Function (UDF) library
+            in order to provide functionality needed by the database triggers.
+            SymmetricDS includes the required UDF library, called SYM_UDF, in both source form 
+            (as a C program) and as pre-compiled libraries for both Windows and Linux.  
+            The SYM_UDF library is copied into the UDF folder within the Interbase installation directory.
+        </para>
+        <para>
+            For Linux users: 
+        </para>
+        <para>
+            <command>cp databases/interbase/sym_udf.so /opt/interbase/UDF</command>
+        </para>
+        <para>
+            For Windows users: 
+        </para>
+        <para>
+            <command>copy databases\interbase\sym_udf.dll C:\CodeGear\InterBase\UDF</command>        
+        </para>
+        <para>
+            Interbase does not have a current_transaction function available, so SymmetricDS
+            cannot track changes by transaction.  
         </para>
     </section>
 </appendix>
