@@ -13,7 +13,7 @@ import org.jumpmind.symmetric.core.sql.ISqlConnection;
 import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
 import org.jumpmind.symmetric.core.sql.mapper.DataMapper;
 
-public class SqlTableDataReader implements IDataReader<DataContext> {
+public class SqlTableDataReader implements IDataReader {
 
     enum Status {
         New, BatchStarted, TableStarted, DataStarted, Finished
@@ -48,17 +48,13 @@ public class SqlTableDataReader implements IDataReader<DataContext> {
         }
     }
 
-    public void close(DataContext context) {
+    public void close() {
         if (readCursor != null) {
             readCursor.close();
         }
     }
 
-    public DataContext createDataContext() {
-        return new DataContext();
-    }
-
-    public Batch nextBatch(DataContext context) {
+    public Batch nextBatch() {
         if (status == Status.New) {
             status = Status.BatchStarted;
             return batch;
@@ -67,14 +63,15 @@ public class SqlTableDataReader implements IDataReader<DataContext> {
         }
     }
 
-    public Data nextData(DataContext context) {
+    public Data nextData() {
         Data data = null;
         if (status == Status.TableStarted) {
             status = Status.DataStarted;
             ISqlConnection connection = this.dbPlatform.getSqlConnection();
             TriggerBuilder triggerBuilder = this.dbPlatform.getTriggerBuilder();
-            String sql = triggerBuilder.createTableExtractSql(tableToRead, this.dbPlatform
-                    .getParameters().is(Parameters.DB_SUPPORT_BIG_LOBS, false));
+            Parameters parameters = this.dbPlatform.getParameters();
+            String sql = triggerBuilder.createTableExtractSql(tableToRead, parameters,
+                    parameters.is(Parameters.DB_SUPPORT_BIG_LOBS, false));
             this.readCursor = connection.queryForCursor(sql, new DataMapper());
         }
         if (readCursor != null) {
@@ -83,7 +80,7 @@ public class SqlTableDataReader implements IDataReader<DataContext> {
         return data;
     }
 
-    public Table nextTable(DataContext context) {
+    public Table nextTable() {
         if (status == Status.BatchStarted) {
             status = Status.TableStarted;
             return tableToRead.getTable();

@@ -524,6 +524,24 @@ public class Table implements Serializable, Cloneable {
         }
         return -1;
     }
+    
+    /**
+     * Determines the index of the given column.
+     * 
+     * @param columnName
+     * @return The index or <code>-1</code> if it is no column of this table
+     */
+    public int getColumnIndex(String columnName) {
+        int idx = 0;
+        for (Iterator<Column> it = columns.iterator(); it.hasNext(); idx++) {
+            Column column = it.next();
+            if (column.getName().equals(columnName)) {
+                return idx;
+            }
+        }
+        return -1;
+    }
+
 
     /**
      * Finds the index with the specified name, using case insensitive matching.

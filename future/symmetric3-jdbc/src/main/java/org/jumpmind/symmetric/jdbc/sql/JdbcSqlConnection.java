@@ -129,7 +129,7 @@ public class JdbcSqlConnection implements ISqlConnection {
     }
 
     public ISqlTransaction startSqlTransaction() {
-        return new JdbcSqlTransaction(this);
+        return new JdbcSqlTransaction(dbPlatform);
     }
 
     public int update(String sql) {
@@ -189,7 +189,7 @@ public class JdbcSqlConnection implements ISqlConnection {
                                 log.log(LogLevel.WARN, "%s.  Failed to execute: %s.",
                                         ex.getMessage(), sql);
                             } else {
-                                throw new SqlException(ex);
+                                throw translate(statement, ex);
                             }
                         }
                     }
@@ -371,12 +371,16 @@ public class JdbcSqlConnection implements ISqlConnection {
         } catch (SQLException ex) {
         }
     }
-
+    
     public SqlException translate(Exception ex) {
+        return translate(ex.getMessage(), ex);
+    }
+
+    public SqlException translate(String message, Exception ex) {
         if (getDbPlatform().isDataIntegrityException(ex)) {
-            return new DataIntegrityViolationException(ex);
+            return new DataIntegrityViolationException(message, ex);
         } else {
-            return new SqlException(ex);
+            return new SqlException(message, ex);
         }
     }
 

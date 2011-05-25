@@ -8,6 +8,7 @@ import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.DataEventType;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.process.DataContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -110,10 +111,11 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
 
     protected Batch writeToTestTable(Data... datas) {
         SqlDataWriter writer = new SqlDataWriter(getPlatform(), new Parameters());
-        writer.open(writer.createDataContext());
+        DataContext ctx = new DataContext();
+        writer.open(ctx);
         Batch batch = new Batch();
         writer.startBatch(batch);
-        writer.switchTables(testTable);
+        writer.writeTable(testTable);
         for (Data data : datas) {
             writer.writeData(data);
         }

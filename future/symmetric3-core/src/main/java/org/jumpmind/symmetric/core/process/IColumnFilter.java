@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.core.model.Table;
  * 
  * 
  */
-public interface IColumnFilter<T extends DataContext> extends IExtensionPoint {
+public interface IColumnFilter extends IExtensionPoint {
 
     /**
      * This method is always called first. Typically, you must cache the column
@@ -46,7 +46,7 @@ public interface IColumnFilter<T extends DataContext> extends IExtensionPoint {
      *            the name in this reference and return it as the return value.
      * @return The columnName that the data loader will use to build its dml.
      */
-    public Column[] filterColumnsNames(T ctx, Table table, Column[] columns);
+    public Column[] filterColumnsNames(DataContext ctx, Table table, Column[] columns);
 
     /**
      * This method is always called after
@@ -56,5 +56,5 @@ public interface IColumnFilter<T extends DataContext> extends IExtensionPoint {
      * 
      * @return the column values
      */
-    public Object[] filterColumnsValues(T ctx, Table table, Object[] values);
+    public Object[] filterColumnsValues(DataContext ctx, Table table, Object[] values);
 }

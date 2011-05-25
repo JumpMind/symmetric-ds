@@ -13,10 +13,12 @@ import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.db.TableNotFoundException;
 import org.jumpmind.symmetric.core.io.IoUtils;
 import org.jumpmind.symmetric.core.model.Batch;
+import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.DataProcessor;
+import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.sql.SqlDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlTableDataReader;
 import org.jumpmind.symmetric.core.process.sql.TableToExtract;
@@ -64,14 +66,25 @@ public class TableCopy {
     }
 
     public void copy(List<TableToExtract> tables) {
+        long batchId = 1;
         for (TableToExtract tableToRead : tables) {
             logger.log(LogLevel.INFO,
                     String.format("Copying %s", tableToRead.getTable().getTableName()));
-            Batch batch = new Batch();
-            DataProcessor<DataContext> processor = new DataProcessor<DataContext>(
-                    new SqlTableDataReader(this.sourcePlatform, batch, tableToRead),
-                    new SqlDataWriter(this.targetPlatform, parameters));
-            processor.process();
+            Batch batch = new Batch(batchId++);
+            DataProcessor processor = new DataProcessor(new SqlTableDataReader(this.sourcePlatform,
+                    batch, tableToRead), new SqlDataWriter(this.targetPlatform, parameters,
+                    new IDataFilter() {
+                        int statementCount = 0;
+
+                        public boolean filter(DataContext context, Table table, Data data) {
+                            statementCount++;
+                            if (statementCount % 1000 == 0) {
+                                logger.debug("We have written %d statements", statementCount);
+                            }
+                            return true;
+                        }
+                    }));
+            processor.process(new DataContext(parameters));
         }
     }
 

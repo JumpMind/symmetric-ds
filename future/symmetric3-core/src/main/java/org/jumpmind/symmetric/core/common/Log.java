@@ -10,7 +10,7 @@ abstract public class Log {
 
     public abstract void log(LogLevel level, Throwable error);
 
-    public abstract void debug(String msg);
+    public abstract void debug(String msg, Object... params);
 
     public abstract boolean isDebugEnabled();
 

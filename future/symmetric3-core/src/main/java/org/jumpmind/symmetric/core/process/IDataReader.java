@@ -4,17 +4,16 @@ import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
 
-public interface IDataReader<T extends DataContext> {
+public interface IDataReader {
 
-    public void open(T context);
+    public void open(DataContext context);
 
-    public Batch nextBatch(T context);
+    public Batch nextBatch();
 
-    public Table nextTable(T context);
+    public Table nextTable();
 
-    public Data nextData(T context);
+    public Data nextData();
 
-    public void close(T context);
-
-    public T createDataContext();
+    public void close();
+    
 }

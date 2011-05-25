@@ -2,19 +2,14 @@ package org.jumpmind.symmetric.jdbc.db.oracle;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.model.Column;
@@ -27,18 +22,6 @@ import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
 
 public class OracleJdbcModelReader extends JdbcModelReader {
 
-    /** The regular expression pattern for the Oracle conversion of ISO dates. */
-    private Pattern oracleIsoDatePattern;
-
-    /** The regular expression pattern for the Oracle conversion of ISO times. */
-    private Pattern oracleIsoTimePattern;
-
-    /**
-     * The regular expression pattern for the Oracle conversion of ISO
-     * timestamps.
-     */
-    private Pattern oracleIsoTimestampPattern;
-
     /**
      * Creates a new model reader for Oracle 8 databases.
      * 
@@ -50,11 +33,98 @@ public class OracleJdbcModelReader extends JdbcModelReader {
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
+    }
 
-        oracleIsoDatePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD'\\)");
-        oracleIsoTimePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'HH24:MI:SS'\\)");
-        oracleIsoTimestampPattern = Pattern
-                .compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD HH24:MI:SS'\\)");
+    @Override
+    protected int mapJdbcTypeForColumn(int typeCode, Map<String, Object> values) {
+        String typeName = (String) values.get("TYPE_NAME");
+        if (typeName != null && typeName.startsWith("DATE")) {
+            typeCode = Types.DATE;
+        } else if (typeName != null && typeName.startsWith("TIMESTAMP")) {
+            // This is for Oracle's TIMESTAMP(9)
+            typeCode = Types.TIMESTAMP;
+        } else if (typeName != null && typeName.startsWith("NVARCHAR")) {
+            // This is for Oracle's NVARCHAR type
+            typeCode = Types.VARCHAR;
+        } else if (typeName != null && typeName.startsWith("NCHAR")) {
+            typeCode = Types.CHAR;
+        } else if (typeName != null && typeName.startsWith("BINARY_FLOAT")) {
+            typeCode = Types.FLOAT;
+        } else if (typeName != null && typeName.startsWith("BINARY_DOUBLE")) {
+            typeCode = Types.DOUBLE;
+        }
+
+        switch (typeCode) {
+        case Types.DECIMAL:
+            typeCode = mapDecimalTypeCode(typeCode, values);
+            break;
+        case Types.FLOAT:
+            typeCode = mapFloatTypeCode(typeCode, values);
+            break;
+        }
+        return typeCode;
+    }
+
+    /**
+     * Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to FLOAT but
+     * with different sizes (63 for REAL, 126 for FLOAT/DOUBLE PRECISION)
+     */
+    protected int mapFloatTypeCode(int typeCode, Map<String, Object> values) {
+
+        int size = Integer.parseInt((String) values.get("COLUMN_SIZE"));
+        switch (size) {
+        case 63:
+            typeCode = Types.REAL;
+            break;
+        case 126:
+            typeCode = Types.DOUBLE;
+            break;
+        }
+
+        return typeCode;
+    }
+
+    /**
+     * We're back-mapping the NUMBER columns returned by Oracle Note that the
+     * JDBC driver returns DECIMAL for these NUMBER columns
+     */
+    protected int mapDecimalTypeCode(int typeCode, Map<String, Object> values) {
+        int scale = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
+
+        int size = Integer.parseInt((String) values.get("COLUMN_SIZE"));
+        switch (size) {
+        case 1:
+            if (scale == 0) {
+                typeCode = Types.BIT;
+            }
+            break;
+        case 3:
+            if (scale == 0) {
+                typeCode = Types.TINYINT;
+            }
+            break;
+        case 5:
+            if (scale == 0) {
+                typeCode = Types.SMALLINT;
+            }
+            break;
+        case 18:
+            typeCode = Types.REAL;
+            break;
+        case 22:
+            if (scale == 0) {
+                typeCode = Types.INTEGER;
+            }
+            break;
+        case 38:
+            if (scale == 0) {
+                typeCode = Types.BIGINT;
+            } else {
+                typeCode = Types.DOUBLE;
+            }
+            break;
+        }
+        return typeCode;
     }
 
     /**
@@ -63,94 +133,10 @@ public class OracleJdbcModelReader extends JdbcModelReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-
         if (column.getDefaultValue() != null) {
             // Oracle pads the default value with spaces
             column.setDefaultValue(column.getDefaultValue().trim());
         }
-        if (column.getTypeCode() == Types.DECIMAL) {
-            // We're back-mapping the NUMBER columns returned by Oracle
-            // Note that the JDBC driver returns DECIMAL for these NUMBER
-            // columns
-            switch (column.getSizeAsInt()) {
-            case 1:
-                if (column.getScale() == 0) {
-                    column.setTypeCode(Types.BIT);
-                }
-                break;
-            case 3:
-                if (column.getScale() == 0) {
-                    column.setTypeCode(Types.TINYINT);
-                }
-                break;
-            case 5:
-                if (column.getScale() == 0) {
-                    column.setTypeCode(Types.SMALLINT);
-                }
-                break;
-            case 18:
-                column.setTypeCode(Types.REAL);
-                break;
-            case 22:
-                if (column.getScale() == 0) {
-                    column.setTypeCode(Types.INTEGER);
-                }
-                break;
-            case 38:
-                if (column.getScale() == 0) {
-                    column.setTypeCode(Types.BIGINT);
-                } else {
-                    column.setTypeCode(Types.DOUBLE);
-                }
-                break;
-            }
-        } else if (column.getTypeCode() == Types.FLOAT) {
-            // Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to
-            // FLOAT but with
-            // different sizes (63 for REAL, 126 for FLOAT/DOUBLE PRECISION)
-            switch (column.getSizeAsInt()) {
-            case 63:
-                column.setTypeCode(Types.REAL);
-                break;
-            case 126:
-                column.setTypeCode(Types.DOUBLE);
-                break;
-            }
-        } else if ((column.getTypeCode() == Types.DATE)
-                || (column.getTypeCode() == Types.TIMESTAMP)) {
-            // Oracle has only one DATE/TIME type, so we can't know which it is
-            // and thus map
-            // it back to TIMESTAMP
-            column.setTypeCode(Types.TIMESTAMP);
-
-            // we also reverse the ISO-format adaptation, and adjust the default
-            // value to timestamp
-            if (column.getDefaultValue() != null) {
-                Timestamp timestamp = null;
-
-                Matcher matcher = oracleIsoTimestampPattern.matcher(column.getDefaultValue());
-                if (matcher.matches()) {
-                    String timestampVal = matcher.group(1);
-                    timestamp = Timestamp.valueOf(timestampVal);
-                } else {
-                    matcher = oracleIsoDatePattern.matcher(column.getDefaultValue());
-                    if (matcher.matches()) {
-                        String dateVal = matcher.group(1);
-                        timestamp = new Timestamp(Date.valueOf(dateVal).getTime());
-                    } else {
-                        matcher = oracleIsoTimePattern.matcher(column.getDefaultValue());
-                        if (matcher.matches()) {
-                            String dateVal = matcher.group(1);
-                            timestamp = new Timestamp(Time.valueOf(dateVal).getTime());
-                        }
-                    }
-                }
-
-                if (timestamp != null) {
-                    column.setDefaultValue(timestamp.toString());
-                }
-            }
-        } 
         return column;
     }
 

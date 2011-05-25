@@ -31,15 +31,15 @@ import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
  * An {@link IDataWriter} used by {@link DataProcessor}s to write {@link Data}
  * to a relational database.
  */
-public class SqlDataWriter implements IDataWriter<DataContext> {
+public class SqlDataWriter implements IDataWriter {
 
     final Log log = LogFactory.getLog(getClass());
 
     protected IDbPlatform platform;
 
-    protected List<IColumnFilter<DataContext>> columnFilters;
+    protected List<IColumnFilter> columnFilters;
 
-    protected List<IDataFilter<DataContext>> dataFilters;
+    protected List<IDataFilter> dataFilters;
 
     protected Table targetTable;
 
@@ -56,7 +56,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
     protected Batch batch;
 
     protected DataContext ctx;
-    
+
     protected boolean exitBatchMode = false;
 
     public SqlDataWriter(IDbPlatform platform) {
@@ -67,28 +67,29 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
         this(platform, parameters, null, null);
     }
 
+    public SqlDataWriter(IDbPlatform platform, Parameters parameters,
+            IDataFilter filter) {
+        this(platform, parameters, null, toList(filter));
+    }
+
     public SqlDataWriter(IDbPlatform platform, Settings settings) {
         this(platform, settings, null, null);
     }
 
     public SqlDataWriter(IDbPlatform platform, Parameters parameters,
-            List<IColumnFilter<DataContext>> columnFilters,
-            List<IDataFilter<DataContext>> dataFilters) {
+            List<IColumnFilter> columnFilters,
+            List<IDataFilter> dataFilters) {
         this(platform, new Settings(), columnFilters, dataFilters);
         populateSettings(parameters);
     }
 
     public SqlDataWriter(IDbPlatform platform, Settings settings,
-            List<IColumnFilter<DataContext>> columnFilters,
-            List<IDataFilter<DataContext>> dataFilters) {
+            List<IColumnFilter> columnFilters,
+            List<IDataFilter> dataFilters) {
         this.platform = platform;
         this.columnFilters = columnFilters;
         this.dataFilters = dataFilters;
         this.settings = settings == null ? new Settings() : settings;
-    }
-
-    public DataContext createDataContext() {
-        return new DataContext();
     }
 
     public void open(DataContext context) {
@@ -97,16 +98,16 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
         this.transaction.setNumberOfRowsBeforeBatchFlush(settings.maxRowsBeforeBatchFlush);
     }
 
-    public boolean switchTables(Table sourceTable) {
+    public boolean writeTable(Table sourceTable) {
         if (sourceTable != null) {
             Table tableAtTarget = platform.findTable(sourceTable.getCatalogName(),
                     sourceTable.getSchemaName(), sourceTable.getTableName(), true);
             if (tableAtTarget == null && settings.autoCreateTable) {
-                new SqlScript(platform.getAlterScriptFor(sourceTable), platform).execute();  
+                new SqlScript(platform.getAlterScriptFor(sourceTable), platform).execute();
                 tableAtTarget = platform.findTable(sourceTable.getCatalogName(),
                         sourceTable.getSchemaName(), sourceTable.getTableName(), true);
             }
-            
+
             if (tableAtTarget != null) {
                 this.targetTable = tableAtTarget.copy();
                 this.targetTable.reOrderColumns(sourceTable.getColumns(),
@@ -178,7 +179,8 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
 
     protected void handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         if (transaction.isInBatchMode()) {
-            log.log(LogLevel.WARN, "Exiting batch mode for the rest of batch %d", batch.getBatchId());
+            log.log(LogLevel.WARN, "Exiting batch mode for the rest of batch %d",
+                    batch.getBatchId());
             this.exitBatchMode = true;
             resendFailedDataInNonBatchMode();
         } else {
@@ -223,14 +225,24 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
                 Parameters.LOADER_DONT_INCLUDE_PKS_IN_UPDATE, false);
         settings.autoCreateTable = parameters.is(Parameters.LOADER_CREATE_TABLE_IF_DOESNT_EXIST,
                 false);
+
+        List<IDataFilter> filters = parameters
+                .instantiate(Parameters.LOADER_DATA_FILTERS);
+        if (filters.size() > 0) {
+            if (this.dataFilters == null) {
+                this.dataFilters = filters;
+            } else {
+                this.dataFilters.addAll(filters);
+            }
+        }
     }
 
     protected boolean filterData(Data data, DataContext ctx) {
         boolean continueToLoad = true;
         if (dataFilters != null) {
             batch.startTimer();
-            for (IDataFilter<DataContext> filter : dataFilters) {
-                continueToLoad &= filter.filter(ctx, data);
+            for (IDataFilter filter : dataFilters) {
+                continueToLoad &= filter.filter(ctx, targetTable, data);
             }
             batch.incrementFilterMillis(batch.endTimer());
         }
@@ -454,7 +466,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
         Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(), values,
                 statementBuilder.getMetaData(true));
         if (columnFilters != null) {
-            for (IColumnFilter<DataContext> columnFilter : columnFilters) {
+            for (IColumnFilter columnFilter : columnFilters) {
                 objectValues = columnFilter.filterColumnsValues(ctx, targetTable, objectValues);
             }
         }
@@ -465,7 +477,7 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
             Column[] changingColumns) {
         Column[] preFilteredColumns = changingColumns;
         if (columnFilters != null) {
-            for (IColumnFilter<DataContext> columnFilter : columnFilters) {
+            for (IColumnFilter columnFilter : columnFilters) {
                 changingColumns = columnFilter
                         .filterColumnsNames(ctx, targetTable, changingColumns);
             }
@@ -516,4 +528,9 @@ public class SqlDataWriter implements IDataWriter<DataContext> {
 
     }
 
+    protected static List<IDataFilter> toList(IDataFilter filter) {
+        List<IDataFilter> list = new ArrayList<IDataFilter>(1);
+        list.add(filter);
+        return list;
+    }
 }

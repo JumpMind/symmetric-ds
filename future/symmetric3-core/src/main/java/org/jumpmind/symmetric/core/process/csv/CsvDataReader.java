@@ -6,36 +6,31 @@ import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.IDataReader;
 
-public class CsvDataReader implements IDataReader<DataContext> {
+public class CsvDataReader implements IDataReader {
 
     public void open(DataContext context) {
         // TODO Auto-generated method stub
 
     }
 
-    public Batch nextBatch(DataContext context) {
+    public Batch nextBatch() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public Table nextTable(DataContext context) {
+    public Table nextTable() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public Data nextData(DataContext context) {
+    public Data nextData() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public void close(DataContext context) {
+    public void close() {
         // TODO Auto-generated method stub
 
-    }
-
-    public DataContext createDataContext() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }

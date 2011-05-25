@@ -27,8 +27,8 @@ public class DefaultLog extends Log {
     }
 
     @Override
-    public void debug(String msg) {
-        log(LogLevel.DEBUG, msg);
+    public void debug(String msg, Object... params) {
+        log(LogLevel.DEBUG, msg, params);
     }
 
     @Override
