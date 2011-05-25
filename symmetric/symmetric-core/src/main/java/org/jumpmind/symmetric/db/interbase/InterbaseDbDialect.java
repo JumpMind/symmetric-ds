@@ -171,7 +171,7 @@ public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect 
     
     @Override
     public boolean supportsTransactionId() {
-        return true;
+        return false;
     }
 
     @Override
