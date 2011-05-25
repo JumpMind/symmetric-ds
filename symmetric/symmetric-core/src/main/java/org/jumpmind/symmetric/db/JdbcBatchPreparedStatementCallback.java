@@ -79,7 +79,7 @@ public class JdbcBatchPreparedStatementCallback implements PreparedStatementCall
         int rowsAffected = 0;
         boolean oracleStyle = setupForOracleBatching(ps);
         int batchSize = pss.getBatchSize();
-        if (JdbcUtils.supportsBatchUpdates(ps.getConnection())) {
+        if (JdbcUtils.supportsBatchUpdates(ps.getConnection()) && dbDialect.supportsBatchUpdates()) {
             for (int i = 0; i < batchSize; i++) {
                 pss.setValues(ps, i);
                 if (oracleStyle) {

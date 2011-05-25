@@ -175,6 +175,13 @@ public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect 
     }
 
     @Override
+    public boolean supportsBatchUpdates() {
+        // Interbase and interclient driver do have support for batch updates, 
+        // but we get primary/unique key violation when enabling its use
+        return false;
+    }
+
+    @Override
     public void truncateTable(String tableName) {
         jdbcTemplate.update("delete from " + tableName);
     }
