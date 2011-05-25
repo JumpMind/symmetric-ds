@@ -74,7 +74,7 @@ public class TestInterbasePlatform extends TestPlatformBase
             "    \"COL_INTEGER\"         INTEGER,\n"+
             "    \"COL_JAVA_OBJECT\"     BLOB,\n"+
             "    \"COL_LONGVARBINARY\"   BLOB,\n"+
-            "    \"COL_LONGVARCHAR\"     BLOB SUB_TYPE TEXT,\n"+
+            "    \"COL_LONGVARCHAR\"     VARCHAR("+InterbasePlatform.SWITCH_TO_LONGVARCHAR_SIZE+"),\n"+
             "    \"COL_NULL\"            BLOB,\n"+
             "    \"COL_NUMERIC\"         NUMERIC(15,0),\n"+
             "    \"COL_OTHER\"           BLOB,\n"+
