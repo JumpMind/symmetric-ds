@@ -556,11 +556,6 @@
                 <version>1.0</version>
             </dependency>
             <dependency>
-                <groupId>com.embarcadero</groupId>
-                <artifactId>interclient</artifactId>
-                <version>9.0.3</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derby</artifactId>
                 <version>${version.derby}</version>
