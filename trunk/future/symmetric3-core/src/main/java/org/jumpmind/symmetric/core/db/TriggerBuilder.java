@@ -34,11 +34,15 @@ abstract public class TriggerBuilder {
 
     abstract protected String getWrappedBlobColumnTemplate();
 
-    abstract protected String getInitialLoadSql();
-
+    abstract protected String getTableExtractSqlTemplate();
+    
+    protected String getTableExtractCountSqlTemplate() {
+        return "select count(*) from $(schemaName)$(tableName) t where $(whereClause)";
+    }
+    
     abstract protected Map<String, String> getFunctionTemplatesToInstall();
 
-    abstract protected String getFunctionInstalledSql();
+    abstract protected String getFunctionInstalledSqlTemplate();
 
     abstract protected String getEmptyColumnTemplate();
 
@@ -82,7 +86,7 @@ abstract public class TriggerBuilder {
 
     abstract protected String getSyncTriggersExpression();
 
-    protected String getInitialLoadTableAlias() {
+    protected String getTableExtractSqlTableAlias() {
         return "t";
     }
 
@@ -291,10 +295,21 @@ abstract public class TriggerBuilder {
 
     public String createTableExtractSql(TableToExtract tableToExtract,
             Map<String, String> replacementTokens, boolean supportsBigLobs) {
-        String sql = getInitialLoadSql();
+        return replaceTemplateVariables(getTableExtractSqlTemplate(), tableToExtract,
+                replacementTokens, supportsBigLobs);
+    }
+    
+    public String createTableExtractCountSql(TableToExtract tableToExtract,
+            Map<String, String> replacementTokens) {
+        return replaceTemplateVariables(getTableExtractCountSqlTemplate(), tableToExtract,
+                replacementTokens, false);
+    }
+
+    public String replaceTemplateVariables(String sql, TableToExtract tableToExtract,
+            Map<String, String> replacementTokens, boolean supportsBigLobs) {
         Column[] columns = tableToExtract.getTable().getColumns();
-        String columnsText = buildColumnString(getInitialLoadTableAlias(),
-                getInitialLoadTableAlias(), "", columns, false, supportsBigLobs).columnString;
+        String columnsText = buildColumnString(getTableExtractSqlTableAlias(),
+                getTableExtractSqlTableAlias(), "", columns, false, supportsBigLobs).columnString;
         sql = StringUtils.replaceTokens("columns", columnsText, sql);
         sql = StringUtils
                 .replaceTokens(
@@ -306,7 +321,7 @@ abstract public class TriggerBuilder {
                 .getQualifiedTablePrefix(), sql);
         sql = StringUtils.replaceTokens(
                 "primaryKeyWhereString",
-                getPrimaryKeyWhereString(getInitialLoadTableAlias(), tableToExtract.getTable()
+                getPrimaryKeyWhereString(getTableExtractSqlTableAlias(), tableToExtract.getTable()
                         .getPrimaryKeyColumnsArray()), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to
@@ -319,11 +334,11 @@ abstract public class TriggerBuilder {
 
     public String createCsvPrimaryKeySql(TableToExtract tableToExtract,
             Map<String, String> replacementTokens, boolean supportsBigLobs) {
-        String sql = getInitialLoadSql();
+        String sql = getTableExtractSqlTemplate();
 
         Column[] columns = tableToExtract.getTable().getPrimaryKeyColumnsArray();
-        String columnsText = buildColumnString(getInitialLoadTableAlias(),
-                getInitialLoadTableAlias(), "", columns, false, supportsBigLobs).toString();
+        String columnsText = buildColumnString(getTableExtractSqlTableAlias(),
+                getTableExtractSqlTableAlias(), "", columns, false, supportsBigLobs).toString();
         sql = StringUtils.replaceTokens("columns", columnsText, sql);
 
         sql = StringUtils.replaceTokens("tableName", tableToExtract.getTable().getTableName(), sql);
@@ -332,7 +347,7 @@ abstract public class TriggerBuilder {
                         .getSchemaName() + "." : "", sql);
         sql = StringUtils.replaceTokens("whereClause", tableToExtract.getCondition(), sql);
         sql = StringUtils.replaceTokens("primaryKeyWhereString",
-                getPrimaryKeyWhereString(getInitialLoadTableAlias(), columns), sql);
+                getPrimaryKeyWhereString(getTableExtractSqlTableAlias(), columns), sql);
 
         return sql;
     }
@@ -693,7 +708,7 @@ abstract public class TriggerBuilder {
     }
 
     public String getFunctionInstalledSql(String functionName, String defaultSchema) {
-        String functionInstalledSql = getFunctionInstalledSql();
+        String functionInstalledSql = getFunctionInstalledSqlTemplate();
         if (functionInstalledSql != null) {
             String ddl = StringUtils.replaceTokens("functionName", functionName,
                     functionInstalledSql);

@@ -91,6 +91,8 @@ public class DataProcessor {
                         if (!errorHandler.handleWriteError(ex, batch, data, dataRow)) {
                             rethrow(ex);
                         }
+                    } else {
+                        rethrow(ex);
                     }
                 }
             }
@@ -104,6 +106,14 @@ public class DataProcessor {
         } else {
             throw new RuntimeException(ex);
         }
+    }
+    
+    public void setErrorHandler(IDataWriterErrorHandler errorHandler) {
+        this.errorHandler = errorHandler;
+    }
+    
+    public void setListener(IDataProcessorListener listener) {
+        this.listener = listener;
     }
 
 }

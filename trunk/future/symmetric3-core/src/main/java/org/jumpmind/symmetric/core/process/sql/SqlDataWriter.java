@@ -337,7 +337,7 @@ public class SqlDataWriter implements IDataWriter {
     }
 
     protected void executeInsertSql(Data data, boolean batchMode) {
-        transaction.setInBatchMode(batchMode && !exitBatchMode);
+        transaction.setInBatchMode(batchMode);
         if (requireNewStatement(data)) {
             this.statementBuilder = getStatementBuilder(DmlType.INSERT, null,
                     targetTable.getColumns());
@@ -347,7 +347,7 @@ public class SqlDataWriter implements IDataWriter {
     }
 
     protected int executeDeleteSql(Data data, boolean batchMode) {
-        transaction.setInBatchMode(batchMode && !exitBatchMode);
+        transaction.setInBatchMode(batchMode);
         if (requireNewStatement(data)) {
             this.statementBuilder = getStatementBuilder(DmlType.DELETE,
                     targetTable.getPrimaryKeyColumnsArray(), targetTable.getColumns());
@@ -357,6 +357,7 @@ public class SqlDataWriter implements IDataWriter {
     }
 
     protected void processInsert(Data data, boolean batchMode) {
+        batchMode = batchMode && !exitBatchMode;
         if (filterData(data, ctx)) {
             try {
                 batch.startTimer();
@@ -420,6 +421,7 @@ public class SqlDataWriter implements IDataWriter {
     }
 
     protected void processDelete(Data data, boolean batchMode) {
+        batchMode = batchMode && !exitBatchMode;
         if (filterData(data, ctx)) {
             batch.startTimer();
             try {

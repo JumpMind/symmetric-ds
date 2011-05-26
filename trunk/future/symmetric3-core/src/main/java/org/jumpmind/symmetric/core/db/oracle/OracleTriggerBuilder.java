@@ -39,7 +39,7 @@ public class OracleTriggerBuilder extends TriggerBuilder {
     }
 
     @Override
-    protected String getInitialLoadSql() {
+    protected String getTableExtractSqlTemplate() {
         return "select $(columns) as ROW_DATA, 'I' as EVENT_TYPE from $(schemaName)$(tableName) t  where $(whereClause)";
     }
 
@@ -104,7 +104,7 @@ public class OracleTriggerBuilder extends TriggerBuilder {
     }
 
     @Override
-    protected String getFunctionInstalledSql() {
+    protected String getFunctionInstalledSqlTemplate() {
         return "select count(*) from user_source where line = 1 and (type = 'FUNCTION' or type = 'PACKAGE') and name=upper('$(functionName)'";
     }
 

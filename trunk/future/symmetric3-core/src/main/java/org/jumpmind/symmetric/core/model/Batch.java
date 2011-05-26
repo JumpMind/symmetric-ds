@@ -13,6 +13,7 @@ public class Batch {
     protected long databaseMillis;
     protected long byteCount;
     protected long lineCount;
+    protected long expectedRowCount;
     protected long insertCount;
     protected long deleteCount;
     protected long updateCount;

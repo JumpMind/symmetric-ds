@@ -10,11 +10,19 @@ abstract public class Log {
 
     public abstract void log(LogLevel level, Throwable error);
 
-    public abstract void debug(String msg, Object... params);
+    public void debug(String msg, Object... params) {
+        log(LogLevel.DEBUG, msg, params);
+    }
+
+    public void info(String msg, Object... params) {
+        log(LogLevel.INFO, msg, params);
+    }
+    
+    public void error(Throwable ex) {
+        log(LogLevel.ERROR, ex);
+    }
 
     public abstract boolean isDebugEnabled();
-
-    public abstract void error(Throwable ex);
 
     protected void initialize(Class<?> clazz) {
         this.clazz = clazz;
