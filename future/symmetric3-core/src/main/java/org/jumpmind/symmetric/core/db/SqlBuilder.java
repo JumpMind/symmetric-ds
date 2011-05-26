@@ -1686,7 +1686,7 @@ public abstract class SqlBuilder {
 
         writeColumns(table);
 
-        if (getPlatformInfo().isPrimaryKeyEmbedded()) {
+        if (getPlatformInfo().isPrimaryKeyEmbedded() && !table.hasUniqueIndexThatMatchesPrimaryKeys()) {
             writeEmbeddedPrimaryKeysStmt(table);
         }
         if (getPlatformInfo().isForeignKeysEmbedded()) {

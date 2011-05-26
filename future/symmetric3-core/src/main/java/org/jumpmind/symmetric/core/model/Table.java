@@ -524,7 +524,7 @@ public class Table implements Serializable, Cloneable {
         }
         return -1;
     }
-    
+
     /**
      * Determines the index of the given column.
      * 
@@ -541,7 +541,6 @@ public class Table implements Serializable, Cloneable {
         }
         return -1;
     }
-
 
     /**
      * Finds the index with the specified name, using case insensitive matching.
@@ -714,6 +713,29 @@ public class Table implements Serializable, Cloneable {
             fullyQualified = catalogName + "." + fullyQualified;
         }
         return fullyQualified;
+    }
+
+    public boolean hasUniqueIndexThatMatchesPrimaryKeys() {
+        Index[] indexes = getIndices();
+        if (indexes != null && indexes.length > 0) {
+            for (Index index : indexes) {
+                if (index instanceof UniqueIndex) {
+                    boolean isPrimaryKey = true;
+                    IndexColumn[] columns = index.getColumns();
+                    if (columns != null && columns.length > 0) {
+                        for (IndexColumn indexColumn : columns) {
+                            isPrimaryKey &= getColumn(getColumnIndex(indexColumn.getName()))
+                                    .isPrimaryKey();
+                        }
+                    }
+
+                    if (isPrimaryKey) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")

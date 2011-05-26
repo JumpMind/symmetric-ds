@@ -94,8 +94,8 @@ public class TableCopy {
 
     protected String buildProgressBar(int percent, int expectedCount) {
         StringBuilder b = new StringBuilder("|");
-        for (int i = 1; i <= 20; i++) {
-            if (percent >= i * 5) {
+        for (int i = 1; i <= 25; i++) {
+            if (percent >= i * 4) {
                 b.append("=");
             } else {
                 b.append(" ");
