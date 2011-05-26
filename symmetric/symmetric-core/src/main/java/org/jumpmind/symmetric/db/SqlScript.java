@@ -95,6 +95,11 @@ public class SqlScript {
             throw new RuntimeException(ex);
         }
     }
+    
+
+    public SqlScript(String sqlScript, DataSource ds, boolean failOnError) {
+        this(sqlScript, ds, failOnError, QUERY_ENDS, null);
+    }
 
     @SuppressWarnings("unchecked")
     public SqlScript(String sqlScript, DataSource ds, boolean failOnError, String delimiter,

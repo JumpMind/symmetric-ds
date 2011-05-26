@@ -240,24 +240,28 @@ public class TestSetupUtil {
         try {
             IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
             Platform platform = dialect.getPlatform();
-            Database testDb = getTestDatabase();
-            Database previousSymmetricVersionTables = getPreviousSymmetricVersionTables();
-            platform.dropTables(testDb, true);
-            platform.dropTables(previousSymmetricVersionTables, true);
-            dialect.purge();
 
-            boolean autocommitDdl = databaseType.equals("postgres") || databaseType.equals("interbase") ? true : false;
-
-            new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(autocommitDdl);
-
-            String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
+            String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + "-pre.sql";
             URL url = getResource(fileName);
             if (url != null) {
-                new SqlScript(url, ds, false).execute(autocommitDdl);
+                new SqlScript(url, ds, false).execute(true);
+            }            
+                        
+            Database testDb = getTestDatabase();
+            new SqlScript(platform.getDropTablesSql(testDb, true), ds, false).execute(true);            
+
+            new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(true);
+
+            fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
+            url = getResource(fileName);
+            if (url != null) {
+                new SqlScript(url, ds, false).execute(true);
             }
 
+            dialect.purge();
+            
             platform.createTables(testDb, false, true);
-            platform.createTables(previousSymmetricVersionTables, false, true);
+            platform.createTables(getPreviousSymmetricVersionTables(), false, true);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
