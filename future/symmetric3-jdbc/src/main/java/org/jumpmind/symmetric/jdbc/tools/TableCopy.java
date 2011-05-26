@@ -8,7 +8,6 @@ import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
-import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.db.TableNotFoundException;
 import org.jumpmind.symmetric.core.io.IoUtils;
@@ -68,24 +67,46 @@ public class TableCopy {
     public void copy(List<TableToExtract> tables) {
         long batchId = 1;
         for (TableToExtract tableToRead : tables) {
-            logger.log(LogLevel.INFO,
-                    String.format("Copying %s", tableToRead.getTable().getTableName()));
+            logger.info("Copying %s (%d of %d)", tableToRead.getTable().getTableName(), batchId, tables.size());
             Batch batch = new Batch(batchId++);
+            final int expectedCount = this.sourcePlatform.getSqlConnection().queryForInt(
+                    this.sourcePlatform.getTriggerBuilder().createTableExtractCountSql(tableToRead,
+                            parameters));
             DataProcessor processor = new DataProcessor(new SqlTableDataReader(this.sourcePlatform,
                     batch, tableToRead), new SqlDataWriter(this.targetPlatform, parameters,
                     new IDataFilter() {
                         int statementCount = 0;
+                        int percent = 0;
 
                         public boolean filter(DataContext context, Table table, Data data) {
                             statementCount++;
-                            if (statementCount % 1000 == 0) {
-                                logger.debug("We have written %d statements", statementCount);
+                            int currentPercent = (int) ((double) statementCount / (double) expectedCount) * 100;
+                            if (currentPercent != percent) {
+                                percent = currentPercent;
+                                logger.info(buildProgressBar(percent, expectedCount));
                             }
                             return true;
                         }
                     }));
             processor.process(new DataContext(parameters));
         }
+    }
+
+    protected String buildProgressBar(int percent, int expectedCount) {
+        StringBuilder b = new StringBuilder("|");
+        for (int i = 1; i <= 20; i++) {
+            if (percent >= i * 5) {
+                b.append("=");
+            } else {
+                b.append(" ");
+            }
+        }
+        b.append("| ");
+        b.append(percent);
+        b.append("% of ");
+        b.append(expectedCount);
+        b.append(" rows\r");
+        return b.toString();
     }
 
     public Parameters getParameters() {
@@ -113,7 +134,6 @@ public class TableCopy {
     }
 
     public static void main(String[] args) {
-
         if (args != null && args.length > 0) {
             File propFile = new File(args[0]);
             if (propFile.exists() && !propFile.isDirectory()) {
@@ -131,4 +151,5 @@ public class TableCopy {
 
         }
     }
+    
 }

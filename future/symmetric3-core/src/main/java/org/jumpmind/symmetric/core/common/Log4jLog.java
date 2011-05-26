@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.core.common;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-public class DefaultLog extends Log {
+public class Log4jLog extends Log {
 
     Logger logger;
 

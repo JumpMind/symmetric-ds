@@ -10,7 +10,7 @@ public class LogFactory {
     private static Map<Class<?>, Log> logs = new HashMap<Class<?>, Log>();
 
     static {
-        String clazzName = System.getProperty(Log.class.getName(), DefaultLog.class.getName());
+        String clazzName = System.getProperty(Log.class.getName(), ConsoleLog.class.getName());
         try {
             logClass = Class.forName(clazzName);
             Object log = logClass.newInstance();
@@ -20,7 +20,7 @@ public class LogFactory {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            logClass = DefaultLog.class;
+            logClass = Log4jLog.class;
         }
     }
 
@@ -33,7 +33,7 @@ public class LogFactory {
                     try {
                         log = (Log) logClass.newInstance();
                     } catch (Exception e) {
-                        log = new DefaultLog();
+                        log = new Log4jLog();
                     }
 
                     log.initialize(clazz);
