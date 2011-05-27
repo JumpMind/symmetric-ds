@@ -7,6 +7,8 @@ import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.model.Parameters;
 
 public class DataContext {
+    
+    public static final String KEY_SQL_TRANSACTION = "sql.transaction";
 
     protected BinaryEncoding binaryEncoding = BinaryEncoding.NONE;
 

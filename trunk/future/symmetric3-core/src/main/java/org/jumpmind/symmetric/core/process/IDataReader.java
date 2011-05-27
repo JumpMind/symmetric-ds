@@ -4,9 +4,7 @@ import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
 
-public interface IDataReader {
-
-    public void open(DataContext context);
+public interface IDataReader extends IDataResource {
 
     public Batch nextBatch();
 
@@ -14,6 +12,4 @@ public interface IDataReader {
 
     public Data nextData();
 
-    public void close();
-    
 }

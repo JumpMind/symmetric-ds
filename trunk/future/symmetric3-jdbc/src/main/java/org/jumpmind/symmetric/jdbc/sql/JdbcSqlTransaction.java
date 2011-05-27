@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.jdbc.sql;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -88,6 +89,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     public void close() {
         if (dbConnection != null) {
+            JdbcSqlConnection.close(pstmt);
             try {
                 dbConnection.setAutoCommit(this.oldAutoCommitValue);
             } catch (SQLException ex) {
@@ -121,6 +123,38 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
         return rowsUpdated;
     }
+    
+    public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
+        return execute(this.dbConnection, new IConnectionCallback<T>() {
+            @SuppressWarnings("unchecked")
+            public T execute(Connection con) throws SQLException {
+                T result = null;
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                try {
+                    ps = con.prepareStatement(sql);
+                    StatementCreatorUtil.setValues(ps, args);
+                    rs = ps.executeQuery();
+                    if (rs.next()) {
+                        result = (T) rs.getObject(1);
+                    }
+                } finally {
+                    JdbcSqlConnection.close(rs);
+                    JdbcSqlConnection.close(ps);
+                }
+                return result;
+            }
+        });
+    }
+    
+
+    public <T> T execute(Connection c, IConnectionCallback<T> callback) {
+        try {
+            return callback.execute(c);
+        } catch (SQLException ex) {
+            throw this.sqlConnection.translate(ex);
+        } 
+    }    
 
     /**
      * According to the executeUpdate() javadoc -2 means that the result was successful, but
@@ -155,6 +189,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 throw new IllegalStateException(
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
+            JdbcSqlConnection.close(pstmt);
             pstmt = dbConnection.prepareStatement(sql);
         } catch (SQLException ex) {
             throw sqlConnection.translate(ex);

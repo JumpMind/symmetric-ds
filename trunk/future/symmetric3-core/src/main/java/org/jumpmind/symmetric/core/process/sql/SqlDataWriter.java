@@ -57,7 +57,7 @@ public class SqlDataWriter implements IDataWriter {
 
     protected DataContext ctx;
 
-    protected boolean exitBatchMode = false;
+    protected boolean currentBatchMode = false;
 
     public SqlDataWriter(IDbPlatform platform) {
         this(platform, new Settings());
@@ -96,6 +96,7 @@ public class SqlDataWriter implements IDataWriter {
         this.ctx = context;
         this.transaction = this.platform.getSqlConnection().startSqlTransaction();
         this.transaction.setNumberOfRowsBeforeBatchFlush(settings.maxRowsBeforeBatchFlush);
+        this.ctx.getContext().put(DataContext.KEY_SQL_TRANSACTION, this.transaction);
     }
 
     public boolean writeTable(Table sourceTable) {
@@ -128,15 +129,15 @@ public class SqlDataWriter implements IDataWriter {
     public void startBatch(Batch batch) {
         this.statementBuilder = null;
         this.batch = batch;
-        this.exitBatchMode = false;
+        this.currentBatchMode = settings.batchMode;
     }
 
     public void writeData(Data data) {
-        writeData(data, settings.useBatching);
+        writeData(data, currentBatchMode, true);
         this.lastData = data;
     }
 
-    protected void writeData(Data data, boolean batchMode) {
+    protected void writeData(Data data, boolean batchMode, boolean filter) {
 
         try {
             if (requireNewStatement(data)) {
@@ -145,19 +146,19 @@ public class SqlDataWriter implements IDataWriter {
 
             switch (data.getEventType()) {
             case INSERT:
-                processInsert(data, batchMode);
+                processInsert(data, batchMode, filter);
                 break;
 
             case UPDATE:
-                processUpdate(data);
+                processUpdate(data, filter);
                 break;
 
             case DELETE:
-                processDelete(data, batchMode);
+                processDelete(data, batchMode, filter);
                 break;
 
             case SQL:
-                processSql(data);
+                processSql(data, filter);
                 break;
             }
 
@@ -181,7 +182,7 @@ public class SqlDataWriter implements IDataWriter {
         if (transaction.isInBatchMode()) {
             log.log(LogLevel.WARN, "Exiting batch mode for the rest of batch %d",
                     batch.getBatchId());
-            this.exitBatchMode = true;
+            this.currentBatchMode = false;
             resendFailedDataInNonBatchMode();
         } else {
             throw ex;
@@ -205,7 +206,7 @@ public class SqlDataWriter implements IDataWriter {
         List<Data> failed = transaction.getUnflushedMarkers(true);
         batch.decrementInsertCount(failed.size());
         for (Data data2 : failed) {
-            writeData(data2, false);
+            writeData(data2, false, false);
         }
     }
 
@@ -217,7 +218,7 @@ public class SqlDataWriter implements IDataWriter {
         settings.enableFallbackForUpdate = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_UPDATE,
                 true);
         settings.allowMissingDeletes = parameters.is(Parameters.LOADER_ALLOW_MISSING_DELETES, true);
-        settings.useBatching = parameters.is(Parameters.LOADER_USE_BATCHING, true);
+        settings.batchMode = parameters.is(Parameters.LOADER_USE_BATCHING, true);
         settings.maxRowsBeforeCommit = parameters.getInt(Parameters.LOADER_MAX_ROWS_BEFORE_COMMIT,
                 1000);
         settings.usePrimaryKeysFromSource = parameters.is(Parameters.DB_USE_PKS_FROM_SOURCE, true);
@@ -356,9 +357,8 @@ public class SqlDataWriter implements IDataWriter {
         return execute(data, data.toParsedPkData());
     }
 
-    protected void processInsert(Data data, boolean batchMode) {
-        batchMode = batchMode && !exitBatchMode;
-        if (filterData(data, ctx)) {
+    protected void processInsert(Data data, boolean batchMode, boolean filter) {
+        if (!filter || filterData(data, ctx)) {
             try {
                 batch.startTimer();
                 // TODO add save point logic for postgresql
@@ -379,8 +379,8 @@ public class SqlDataWriter implements IDataWriter {
         }
     }
 
-    protected void processUpdate(Data data) {
-        if (filterData(data, ctx)) {
+    protected void processUpdate(Data data, boolean filter) {
+        if (!filter || filterData(data, ctx)) {
             try {
                 batch.startTimer();
                 int updateCount = executeUpdateSql(data);
@@ -420,9 +420,8 @@ public class SqlDataWriter implements IDataWriter {
         }
     }
 
-    protected void processDelete(Data data, boolean batchMode) {
-        batchMode = batchMode && !exitBatchMode;
-        if (filterData(data, ctx)) {
+    protected void processDelete(Data data, boolean batchMode, boolean filter) {
+        if (!filter || filterData(data, ctx)) {
             batch.startTimer();
             try {
                 int updateCount = executeDeleteSql(data, batchMode);
@@ -440,8 +439,8 @@ public class SqlDataWriter implements IDataWriter {
         }
     }
 
-    protected void processSql(Data data) {
-        if (filterData(data, ctx)) {
+    protected void processSql(Data data, boolean filter) {
+        if (!filter || filterData(data, ctx)) {
             transaction.setInBatchMode(false);
             String[] tokens = data.toParsedRowData();
             if (tokens != null && tokens.length > 0) {
@@ -518,7 +517,7 @@ public class SqlDataWriter implements IDataWriter {
 
         protected boolean allowMissingDeletes;
 
-        protected boolean useBatching;
+        protected boolean batchMode;
 
         protected int maxRowsBeforeCommit;
 
