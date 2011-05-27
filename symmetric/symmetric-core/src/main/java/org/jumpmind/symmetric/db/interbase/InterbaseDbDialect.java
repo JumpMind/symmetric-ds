@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.db.interbase;
 
+import java.util.List;
+
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -27,6 +29,7 @@ import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 
 /**
  * Database dialect for <a href="http://www.embarcadero.com/products/interbase/">Interbase</a>.
@@ -184,5 +187,16 @@ public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect 
     @Override
     public void truncateTable(String tableName) {
         jdbcTemplate.update("delete from " + tableName);
+    }
+    
+    
+    @Override
+    public void cleanupTriggers() {
+        List<String> names = jdbcTemplate.query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '"+tablePrefix.toUpperCase()+"_%'", new SingleColumnRowMapper<String>());
+        int count = 0;
+        for (String name : names) {
+            count += jdbcTemplate.update("drop trigger " + name);
+        }
+        log.info("RemovedTriggers", count);
     }
 }

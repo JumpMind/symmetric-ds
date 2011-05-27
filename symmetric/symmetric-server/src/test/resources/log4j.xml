@@ -18,7 +18,7 @@
     </category>
     
     <category name="org.jumpmind.symmetric.ddl">
-        <priority value="DEBUG" />
+        <priority value="WARN" />
     </category>
         
     <!-- Disable the not found override properties file warnings to avoid confusion -->
@@ -52,7 +52,7 @@
     </category>
 
     <category name="org.jumpmind.symmetric.db.SqlScript">
-        <priority value="DEBUG" />
+        <priority value="ERROR" />
     </category>
     
     <!-- To enable router stats set this to DEBUG     -->

@@ -308,5 +308,7 @@ public interface IDbDialect {
     public String getMasterCollation();
  
     public boolean supportsBatchUpdates();
+    
+    public void cleanupTriggers();
 
 }
