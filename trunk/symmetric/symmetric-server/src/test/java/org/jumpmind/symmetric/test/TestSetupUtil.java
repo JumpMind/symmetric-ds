@@ -240,6 +240,8 @@ public class TestSetupUtil {
         try {
             IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
             Platform platform = dialect.getPlatform();
+            
+            dialect.cleanupTriggers();
 
             String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + "-pre.sql";
             URL url = getResource(fileName);

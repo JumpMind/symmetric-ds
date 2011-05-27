@@ -1557,4 +1557,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public boolean supportsBatchUpdates() {
         return true;
     }
+    
+    public void cleanupTriggers() {
+    }
 }
