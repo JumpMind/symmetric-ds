@@ -1,10 +1,14 @@
 package org.jumpmind.symmetric.core.process;
 
+import org.jumpmind.symmetric.core.common.Log;
+import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
 
 public class DataProcessor {
+
+    static final Log log = LogFactory.getLog(DataProcessor.class);
 
     protected IDataReader dataReader;
     protected IDataWriter dataWriter;
@@ -31,32 +35,37 @@ public class DataProcessor {
     }
 
     public void process(DataContext ctx) {
-        dataReader.open(ctx);
-        boolean dataWriterOpened = false;
-        Batch batch = null;
-        do {
-            batch = dataReader.nextBatch();
-            if (batch != null) {
-                int dataRow = 0;
-                boolean processBatch = listener == null ? true : listener.batchBegin(batch);
-                if (processBatch) {
-                    if (!dataWriterOpened) {
-                        dataWriter.open(ctx);
+        try {
+            dataReader.open(ctx);
+            boolean dataWriterOpened = false;
+            Batch batch = null;
+            do {
+                batch = dataReader.nextBatch();
+                if (batch != null) {
+                    int dataRow = 0;
+                    boolean processBatch = listener == null ? true : listener.batchBegin(batch);
+                    if (processBatch) {
+                        if (!dataWriterOpened) {
+                            dataWriter.open(ctx);
+                        }
+                        dataWriter.startBatch(batch);
                     }
-                    dataWriter.startBatch(batch);
+                    dataRow += forEachTableInBatch(processBatch, batch);
+                    if (processBatch) {
+                        if (listener != null) {
+                            listener.batchBeforeCommit(batch);
+                        }
+                        dataWriter.finishBatch(batch);
+                        if (listener != null) {
+                            listener.batchCommit(batch);
+                        }
+                    }
                 }
-                dataRow += forEachTableInBatch(processBatch, batch);
-                if (processBatch) {
-                    if (listener != null) {
-                        listener.batchBeforeCommit(batch);
-                    }
-                    dataWriter.finishBatch(batch);
-                    if (listener != null) {
-                        listener.batchCommit(batch);
-                    }
-                }
-            }
-        } while (batch != null);
+            } while (batch != null);
+        } finally {
+            close(this.dataReader);
+            close(this.dataWriter);
+        }
     }
 
     protected int forEachTableInBatch(boolean processBatch, Batch batch) {
@@ -107,11 +116,19 @@ public class DataProcessor {
             throw new RuntimeException(ex);
         }
     }
-    
+
+    protected void close(IDataResource dataResource) {
+        try {
+            dataResource.close();
+        } catch (Exception ex) {
+            log.error(ex);
+        }
+    }
+
     public void setErrorHandler(IDataWriterErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
     }
-    
+
     public void setListener(IDataProcessorListener listener) {
         this.listener = listener;
     }

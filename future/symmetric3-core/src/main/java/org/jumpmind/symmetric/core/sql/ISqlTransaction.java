@@ -11,6 +11,8 @@ public interface ISqlTransaction {
     public void setNumberOfRowsBeforeBatchFlush(int numberOfRowsBeforeBatchFlush);
 
     public int getNumberOfRowsBeforeBatchFlush();
+    
+    public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args);
 
     public void commit();
 

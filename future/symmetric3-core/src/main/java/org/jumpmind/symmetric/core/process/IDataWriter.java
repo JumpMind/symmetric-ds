@@ -4,9 +4,7 @@ import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
 
-public interface IDataWriter {
-
-    public void open(DataContext context);
+public interface IDataWriter extends IDataResource {
 
     public void startBatch(Batch batch);
 
@@ -15,7 +13,5 @@ public interface IDataWriter {
     public void writeData(Data data);
 
     public void finishBatch(Batch batch);
-
-    public void close();
 
 }
