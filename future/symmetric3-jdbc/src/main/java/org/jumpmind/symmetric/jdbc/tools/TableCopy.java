@@ -67,7 +67,8 @@ public class TableCopy {
     public void copy(List<TableToExtract> tables) {
         long batchId = 1;
         for (TableToExtract tableToRead : tables) {
-            logger.info("Copying %s (%d of %d)", tableToRead.getTable().getTableName(), batchId, tables.size());
+            logger.info("Copying %s (%d of %d)", tableToRead.getTable().getTableName(), batchId,
+                    tables.size());
             Batch batch = new Batch(batchId++);
             final int expectedCount = this.sourcePlatform.getSqlConnection().queryForInt(
                     this.sourcePlatform.getTriggerBuilder().createTableExtractCountSql(tableToRead,
@@ -80,10 +81,10 @@ public class TableCopy {
 
                         public boolean filter(DataContext context, Table table, Data data) {
                             statementCount++;
-                            int currentPercent = (int) ((double) statementCount / (double) expectedCount) * 100;
+                            int currentPercent = (int) (((double) statementCount / (double) expectedCount) * 100);
                             if (currentPercent != percent) {
                                 percent = currentPercent;
-                                logger.info(buildProgressBar(percent, expectedCount));
+                                logger.info(buildProgressBar(percent, expectedCount, percent < 100));
                             }
                             return true;
                         }
@@ -92,7 +93,7 @@ public class TableCopy {
         }
     }
 
-    protected String buildProgressBar(int percent, int expectedCount) {
+    protected String buildProgressBar(int percent, int expectedCount, boolean includeCarriageReturn) {
         StringBuilder b = new StringBuilder("|");
         for (int i = 1; i <= 25; i++) {
             if (percent >= i * 4) {
@@ -105,7 +106,10 @@ public class TableCopy {
         b.append(percent);
         b.append("% of ");
         b.append(expectedCount);
-        b.append(" rows\r");
+        b.append(" rows");
+        if (includeCarriageReturn) {
+            b.append("\r");
+        }
         return b.toString();
     }
 
@@ -151,5 +155,5 @@ public class TableCopy {
 
         }
     }
-    
+
 }
