@@ -6,6 +6,7 @@ import java.io.InputStream;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.jdbc.datasource.DriverDataSourceProperties;
 
@@ -26,6 +27,15 @@ public class TableCopyProperties extends DriverDataSourceProperties {
 
     public String[] getTables() {
         return getProperty("copy.tables", "").split(",");
+    }
+    
+    public File getTargetFile() {
+        String fileName = getProperty("db.target.file");
+        if (StringUtils.isNotBlank(fileName)) {
+            return new File(fileName);
+        } else {
+            return null;
+        }
     }
 
     public String getConditionForTable(String tableName) {

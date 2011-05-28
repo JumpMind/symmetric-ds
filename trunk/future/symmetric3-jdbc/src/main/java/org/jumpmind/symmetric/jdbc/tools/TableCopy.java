@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.jdbc.tools;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
 import org.jumpmind.symmetric.core.db.TableNotFoundException;
+import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.core.io.IoUtils;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
@@ -18,6 +20,8 @@ import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.DataProcessor;
 import org.jumpmind.symmetric.core.process.IDataFilter;
+import org.jumpmind.symmetric.core.process.IDataWriter;
+import org.jumpmind.symmetric.core.process.csv.CsvDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlTableDataReader;
 import org.jumpmind.symmetric.core.process.sql.TableToExtract;
@@ -34,6 +38,10 @@ public class TableCopy {
     protected IDbPlatform sourcePlatform;
     protected Parameters parameters;
     protected List<TableToExtract> tablesToRead;
+    protected File targetFile;
+    
+    public TableCopy() {     
+    }
 
     public TableCopy(TableCopyProperties properties) {
         this.parameters = new Parameters(properties);
@@ -41,8 +49,13 @@ public class TableCopy {
         this.source = properties.getSourceDataSource();
         this.sourcePlatform = JdbcDbPlatformFactory.createPlatform(source, parameters);
 
-        this.target = properties.getTargetDataSource();
-        this.targetPlatform = JdbcDbPlatformFactory.createPlatform(target, parameters);
+        this.targetFile = properties.getTargetFile();
+        if (targetFile == null) {
+            this.target = properties.getTargetDataSource();
+            this.targetPlatform = JdbcDbPlatformFactory.createPlatform(target, parameters);
+        } else if (targetFile.exists()) {
+            throw new IllegalStateException(targetFile.getName() + " already exists");
+        }
 
         String[] tableNames = properties.getTables();
 
@@ -67,29 +80,42 @@ public class TableCopy {
     public void copy(List<TableToExtract> tables) {
         long batchId = 1;
         for (TableToExtract tableToRead : tables) {
-            logger.info("Copying %s (%d of %d)", tableToRead.getTable().getTableName(), batchId,
-                    tables.size());
+            logger.info("(%d of %d) Copying table %s ", batchId, tables.size(), tableToRead
+                    .getTable().getTableName());
             Batch batch = new Batch(batchId++);
-            final int expectedCount = this.sourcePlatform.getSqlConnection().queryForInt(
+            int expectedCount = this.sourcePlatform.getSqlConnection().queryForInt(
                     this.sourcePlatform.getTriggerBuilder().createTableExtractCountSql(tableToRead,
                             parameters));
             DataProcessor processor = new DataProcessor(new SqlTableDataReader(this.sourcePlatform,
-                    batch, tableToRead), new SqlDataWriter(this.targetPlatform, parameters,
-                    new IDataFilter() {
-                        int statementCount = 0;
-                        int percent = 0;
-
-                        public boolean filter(DataContext context, Table table, Data data) {
-                            statementCount++;
-                            int currentPercent = (int) (((double) statementCount / (double) expectedCount) * 100);
-                            if (currentPercent != percent) {
-                                percent = currentPercent;
-                                logger.info(buildProgressBar(percent, expectedCount, percent < 100));
-                            }
-                            return true;
-                        }
-                    }));
+                    batch, tableToRead), getDataWriter(expectedCount));
             processor.process(new DataContext(parameters));
+        }
+    }
+
+    protected IDataWriter getDataWriter(final int expectedCount) {
+        IDataFilter progressFilter = new IDataFilter() {
+            int statementCount = 0;
+            int percent = 0;
+
+            public boolean filter(DataContext context, Table table, Data data) {
+                statementCount++;
+                int currentPercent = (int) (((double) statementCount / (double) expectedCount) * 100);
+                if (currentPercent != percent) {
+                    percent = currentPercent;
+                    logger.info(buildProgressBar(percent, expectedCount, percent < 100));
+                }
+                return true;
+            }
+        };
+
+        if (targetFile != null) {
+            try {
+                return new CsvDataWriter(this.targetFile, progressFilter);
+            } catch (IOException e) {
+                throw new IoException(e);
+            }
+        } else {
+            return new SqlDataWriter(this.targetPlatform, parameters, progressFilter);
         }
     }
 
