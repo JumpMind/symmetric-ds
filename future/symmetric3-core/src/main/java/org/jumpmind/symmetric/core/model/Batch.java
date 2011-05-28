@@ -3,10 +3,12 @@ package org.jumpmind.symmetric.core.model;
 import java.util.Date;
 
 public class Batch {
+    
+    public static final long UNKNOWN_BATCH_ID = -9999;
 
+    protected long batchId = UNKNOWN_BATCH_ID;
     protected String sourceNodeId;
-    protected boolean initialLoad;
-    protected long batchId;
+    protected boolean initialLoad;    
     protected String channelId;
     protected Date startTime;
     protected long filterMillis;

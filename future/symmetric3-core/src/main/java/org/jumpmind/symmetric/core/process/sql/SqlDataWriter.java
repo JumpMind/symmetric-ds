@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.symmetric.core.common.ArrayUtils;
-import org.jumpmind.symmetric.core.common.Log;
-import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.IDbPlatform;
@@ -15,6 +13,7 @@ import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.DataEventType;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.process.AbstractDataFilter;
 import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.DataFailedToLoadException;
 import org.jumpmind.symmetric.core.process.DataProcessor;
@@ -31,15 +30,9 @@ import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
  * An {@link IDataWriter} used by {@link DataProcessor}s to write {@link Data}
  * to a relational database.
  */
-public class SqlDataWriter implements IDataWriter {
-
-    final Log log = LogFactory.getLog(getClass());
+public class SqlDataWriter extends AbstractDataFilter implements IDataWriter {
 
     protected IDbPlatform platform;
-
-    protected List<IColumnFilter> columnFilters;
-
-    protected List<IDataFilter> dataFilters;
 
     protected Table targetTable;
 
@@ -238,18 +231,6 @@ public class SqlDataWriter implements IDataWriter {
         }
     }
 
-    protected boolean filterData(Data data, DataContext ctx) {
-        boolean continueToLoad = true;
-        if (dataFilters != null) {
-            batch.startTimer();
-            for (IDataFilter filter : dataFilters) {
-                continueToLoad &= filter.filter(ctx, targetTable, data);
-            }
-            batch.incrementFilterMillis(batch.endTimer());
-        }
-        return continueToLoad;
-    }
-
     protected boolean doesColumnNeedUpdated(int columnIndex, Column column, Data data) {
         boolean needsUpdated = true;
         String[] oldData = data.toParsedOldData();
@@ -358,7 +339,7 @@ public class SqlDataWriter implements IDataWriter {
     }
 
     protected void processInsert(Data data, boolean batchMode, boolean filter) {
-        if (!filter || filterData(data, ctx)) {
+        if (!filter || filterData(data, batch, targetTable, ctx)) {
             try {
                 batch.startTimer();
                 // TODO add save point logic for postgresql
@@ -380,7 +361,7 @@ public class SqlDataWriter implements IDataWriter {
     }
 
     protected void processUpdate(Data data, boolean filter) {
-        if (!filter || filterData(data, ctx)) {
+        if (!filter || filterData(data, batch, targetTable, ctx)) {
             try {
                 batch.startTimer();
                 int updateCount = executeUpdateSql(data);
@@ -421,7 +402,7 @@ public class SqlDataWriter implements IDataWriter {
     }
 
     protected void processDelete(Data data, boolean batchMode, boolean filter) {
-        if (!filter || filterData(data, ctx)) {
+        if (!filter || filterData(data, batch, targetTable, ctx)) {
             batch.startTimer();
             try {
                 int updateCount = executeDeleteSql(data, batchMode);
@@ -440,7 +421,7 @@ public class SqlDataWriter implements IDataWriter {
     }
 
     protected void processSql(Data data, boolean filter) {
-        if (!filter || filterData(data, ctx)) {
+        if (!filter || filterData(data, batch, targetTable, ctx)) {
             transaction.setInBatchMode(false);
             String[] tokens = data.toParsedRowData();
             if (tokens != null && tokens.length > 0) {
@@ -529,9 +510,4 @@ public class SqlDataWriter implements IDataWriter {
 
     }
 
-    protected static List<IDataFilter> toList(IDataFilter filter) {
-        List<IDataFilter> list = new ArrayList<IDataFilter>(1);
-        list.add(filter);
-        return list;
-    }
 }
