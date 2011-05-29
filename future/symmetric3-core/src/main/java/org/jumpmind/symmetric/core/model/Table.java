@@ -701,10 +701,14 @@ public class Table implements Serializable, Cloneable {
     }
 
     public String getFullyQualifiedTableName() {
-        return getQualifiedTablePrefix() + this.tableName;
+        return getFullyQualifiedTableName(tableName, schemaName, catalogName);
     }
-
-    public String getQualifiedTablePrefix() {
+    
+    public static String getFullyQualifiedTableName(String tableName, String schemaName, String catalogName) {
+        return getQualifiedTablePrefix(schemaName, catalogName) + tableName;
+    }
+    
+    public static String getQualifiedTablePrefix(String schemaName, String catalogName) {
         String fullyQualified = "";
         if (!StringUtils.isBlank(schemaName)) {
             fullyQualified = schemaName + "." + fullyQualified;
@@ -712,7 +716,11 @@ public class Table implements Serializable, Cloneable {
         if (!StringUtils.isBlank(catalogName)) {
             fullyQualified = catalogName + "." + fullyQualified;
         }
-        return fullyQualified;
+        return fullyQualified;        
+    }
+
+    public String getQualifiedTablePrefix() {
+        return getQualifiedTablePrefix(schemaName, catalogName);
     }
 
     public boolean hasUniqueIndexThatMatchesPrimaryKeys() {

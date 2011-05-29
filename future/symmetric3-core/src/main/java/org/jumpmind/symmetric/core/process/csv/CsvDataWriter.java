@@ -19,6 +19,7 @@ import org.jumpmind.symmetric.core.process.AbstractDataFilter;
 import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
+import org.jumpmind.symmetric.csv.CsvConstants;
 
 public class CsvDataWriter extends AbstractDataFilter implements IDataWriter {
 
