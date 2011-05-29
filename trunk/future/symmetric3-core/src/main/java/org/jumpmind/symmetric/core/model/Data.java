@@ -28,6 +28,12 @@ import java.util.Date;
  */
 public class Data extends AbstractCsvData implements Serializable {
 
+    private static final String OLD_DATA = "oldData";
+
+    private static final String PK_DATA = "pkData";
+
+    private static final String ROW_DATA = "rowData";
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -106,22 +112,34 @@ public class Data extends AbstractCsvData implements Serializable {
 
     public Data() {
     }
+    
+    public void putParsedRowData(String[] tokens) {
+        putData(ROW_DATA, tokens);
+    }
+    
+    public void putParsedOldData(String[] tokens) {
+        putData(OLD_DATA, tokens);
+    }
+    
+    public void putParsedPkData(String[] tokens) {
+        putData(PK_DATA, tokens);
+    }
 
     public String[] toParsedRowData() {
-        return getData("rowData", rowData);
+        return getData(ROW_DATA, rowData);
     }
 
     public String[] toParsedOldData() {
-        return getData("oldData", oldData);
+        return getData(OLD_DATA, oldData);
     }
 
     public String[] toParsedPkData() {
-        return getData("pkData", pkData);
+        return getData(PK_DATA, pkData);
     }
 
     public void clearPkData() {
         this.pkData = null;
-        this.removeData("pkData");
+        this.removeData(PK_DATA);
     }
 
     public long getDataId() {
@@ -211,5 +229,6 @@ public class Data extends AbstractCsvData implements Serializable {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
+        
 
 }

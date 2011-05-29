@@ -33,6 +33,11 @@ public class Batch {
         this.batchId = batchId;
     }
     
+    public Batch(long batchId, String channelId) {
+        this(batchId);
+        this.channelId = channelId;
+    }
+    
     public Batch() {
         this.startTime = new Date();
     }

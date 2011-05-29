@@ -33,6 +33,10 @@ final public class CsvConstants {
 
     public static final String NODEID = "nodeid";
 
+    public static final String CHANNEL = "channel";
+
+    public static final String BATCH = "batch";
+
     public static final String SCHEMA = "schema";
     
     public static final String CATALOG = "catalog";
@@ -43,7 +47,7 @@ final public class CsvConstants {
 
     public static final String COLUMNS = "columns";
 
-    public static final String BATCH = "batch";
+    public static final String COMMIT = "commit";
 
     public static final String INSERT = "insert";
 
@@ -53,13 +57,10 @@ final public class CsvConstants {
 
     public static final String DELETE = "delete";
 
-    public static final String COMMIT = "commit";
-
     public static final String SQL = "sql";
     
     public static final String BSH = "bsh";
 
     public static final String CREATE = "create";
 
-    public static final String CHANNEL = "channel";
 }
