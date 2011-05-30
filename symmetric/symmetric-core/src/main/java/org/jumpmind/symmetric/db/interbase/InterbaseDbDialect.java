@@ -37,7 +37,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 
 public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final String CONTEXT_TABLE_NAME = "context";
+    public static final String CONTEXT_TABLE_NAME = "context";
 
     static final String CONTEXT_TABLE_CREATE = "create global temporary table %s (id varchar(30), context_value varchar(30)) on commit preserve rows";
 

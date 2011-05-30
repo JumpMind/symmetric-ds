@@ -58,6 +58,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.informix.InformixDbDialect;
+import org.jumpmind.symmetric.db.interbase.InterbaseDbDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.sybase.SybaseDbDialect;
 import org.jumpmind.symmetric.ddl.Platform;
@@ -920,7 +921,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
             Table[] allTables = database.getTables();
             for (Table table : allTables) {
                 // Remove SYM_ON_ trigger tables for embedded databases
-                if (table.getName().startsWith(tablePrefix.toUpperCase() + "_ON_")) {
+                if (table.getName().startsWith(tablePrefix.toUpperCase() + "_ON_") ||
+                    table.getName().equalsIgnoreCase(tablePrefix + "_" + InterbaseDbDialect.CONTEXT_TABLE_NAME)) {
                     database.removeTable(table);
                 }
             }
