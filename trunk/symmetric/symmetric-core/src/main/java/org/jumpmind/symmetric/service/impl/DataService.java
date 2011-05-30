@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.sql.Connection;
+import java.sql.DataTruncation;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -77,6 +78,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -182,8 +184,15 @@ public class DataService extends AbstractService implements IDataService {
         Data data = new Data(triggerRouter.getTrigger().getSourceTableName(), DataEventType.CREATE,
                 CsvUtils.escapeCsvData(xml), null, history, 
                 parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD : triggerRouter.getTrigger().getChannelId(), null, null);
-        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
-                Constants.UNKNOWN_ROUTER_ID, isLoad);
+        try {
+            insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
+                    Constants.UNKNOWN_ROUTER_ID, isLoad);
+        } catch (DataIntegrityViolationException e) {
+            if (e.getRootCause() != null && e.getRootCause() instanceof DataTruncation) {
+                log.error("InitialLoadCreateDataTruncation");
+            }
+            throw e;
+        }
     }
 
     public long insertData(final Data data) {
