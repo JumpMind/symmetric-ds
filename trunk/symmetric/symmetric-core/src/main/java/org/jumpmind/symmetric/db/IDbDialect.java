@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -311,4 +312,6 @@ public interface IDbDialect {
     
     public void cleanupTriggers();
 
+    public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener);
+    
 }

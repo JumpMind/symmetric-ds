@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.load.IBatchListener;
@@ -92,6 +93,8 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
     private ITransportManager transportManager;
 
     private IRouterService routingService;
+    
+    private IDbDialect dbDialect;
 
     private BeanFactory beanFactory;
 
@@ -273,6 +276,10 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
             triggerRouterService.addExtraConfigTables((IExtraConfigTables)ext);
         }
         
+        if (ext instanceof IDatabaseUpgradeListener) {
+            dbDialect.addDatabaseUpgradeListener((IDatabaseUpgradeListener)ext);
+        }
+
         return installed;
     }   
 
@@ -322,6 +329,10 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
+    }
+    
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
     
 }

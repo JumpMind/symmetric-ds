@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.map.ListOrderedMap;
@@ -76,6 +78,7 @@ import org.jumpmind.symmetric.ddl.platform.MetaDataColumnDescriptor;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 import org.jumpmind.symmetric.ddl.platform.informix.InformixModelReader;
 import org.jumpmind.symmetric.ddlutils.JdbcModelReaderSupport;
+import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -152,6 +155,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected boolean supportsTransactionViews = false;
     
     protected int queryTimeoutInSeconds = 300;
+    
+    protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
     
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -948,11 +953,38 @@ abstract public class AbstractDbDialect implements IDbDialect {
         
         try {
             log.info("TablesAutoUpdatingStart");
-            String alterSql = getAlterSql(databaseTables);
-            log.debug("TablesAutoUpdatingAlterSql", alterSql);
-            if (!StringUtils.isBlank(alterSql)) {
-                new SqlScript(alterSql, jdbcTemplate.getDataSource(), true, platform
-                        .getPlatformInfo().getSqlCommandDelimiter(), null).execute();
+            Database currentModel = new Database();
+            Table[] tables = databaseTables.getTables();
+            Database existingModel = readPlatformDatabase(true);
+            for (Table table : tables) {
+                Table currentVersion = existingModel.findTable(table.getName());
+                if (currentVersion != null) {
+                    currentModel.addTable(currentVersion);
+                }
+            }
+
+            SqlBuilder builder = platform.getSqlBuilder();
+            
+            if (builder.isAlterDatabase(currentModel, databaseTables, null)) {
+                DataSource ds = jdbcTemplate.getDataSource();
+                String delimiter = platform.getPlatformInfo().getSqlCommandDelimiter();
+
+                for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
+                    String sql = listener.beforeUpgrade(this, tablePrefix, currentModel, databaseTables);
+                    new SqlScript(sql, ds, true, delimiter, null).execute();
+                }
+
+                StringWriter writer = new StringWriter();
+                builder.setWriter(writer);
+                builder.alterDatabase(currentModel, databaseTables, null);
+                String alterSql = writer.toString();
+                log.debug("TablesAutoUpdatingAlterSql", alterSql);
+                new SqlScript(alterSql, ds, true, delimiter, null).execute();
+                
+                for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
+                    String sql = listener.afterUpgrade(this, tablePrefix, databaseTables);
+                    new SqlScript(sql, ds, true, delimiter, null).execute();
+                }
                 return true;
             } else {
                 return false;
@@ -964,9 +996,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    protected String getAlterSql(Database desiredModel) throws IOException {
+    protected String getAlterSql(Database databaseTables) throws IOException {
         Database currentModel = new Database();
-        Table[] tables = desiredModel.getTables();
+        Table[] tables = databaseTables.getTables();
         Database existingModel = readPlatformDatabase(true);
         for (Table table : tables) {
             Table currentVersion = existingModel.findTable(table.getName());
@@ -977,7 +1009,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         SqlBuilder builder = platform.getSqlBuilder();
         StringWriter writer = new StringWriter();
         builder.setWriter(writer);
-        builder.alterDatabase(currentModel, desiredModel, null);
+        builder.alterDatabase(currentModel, databaseTables, null);
         return writer.toString();
     }
     
@@ -1561,5 +1593,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
     
     public void cleanupTriggers() {
+    }
+    
+    public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener) {
+        databaseUpgradeListeners.add(listener);
     }
 }
