@@ -365,7 +365,7 @@ public class MSSqlBuilder extends SqlBuilder
     /**
      * {@inheritDoc}
      */
-    protected void writeCopyDataStatement(Table sourceTable, Table targetTable) throws IOException
+    public void writeCopyDataStatement(Table sourceTable, Table targetTable) throws IOException
     {
         // Sql Server per default does not allow us to insert values explicitly into
         // identity columns. However, we can change this behavior

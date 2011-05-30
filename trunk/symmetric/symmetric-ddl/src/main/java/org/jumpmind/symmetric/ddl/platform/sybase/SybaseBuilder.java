@@ -331,7 +331,7 @@ public class SybaseBuilder extends SqlBuilder
     /**
      * {@inheritDoc}
      */
-    protected void writeCopyDataStatement(Table sourceTable, Table targetTable) throws IOException
+    public void writeCopyDataStatement(Table sourceTable, Table targetTable) throws IOException
     {
         boolean hasIdentity = targetTable.getAutoIncrementColumns().length > 0;
 
