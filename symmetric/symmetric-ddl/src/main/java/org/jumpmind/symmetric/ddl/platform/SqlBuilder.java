@@ -468,6 +468,15 @@ public abstract class SqlBuilder
         processChanges(currentModel, desiredModel, changes, params);
     }
 
+    public boolean isAlterDatabase(Database currentModel, Database desiredModel, CreationParameters params) throws IOException
+    {
+        ModelComparator comparator = new ModelComparator(getPlatformInfo(),
+                                                         getPlatform().isDelimitedIdentifierModeOn());
+        List            changes    = comparator.compare(currentModel, desiredModel);
+
+        return changes.size() > 0;
+    }
+
     /**
      * Calls the given closure for all changes that are of one of the given types, and
      * then removes them from the changes collection.
@@ -1031,11 +1040,38 @@ public abstract class SqlBuilder
      */
     protected Table getTemporaryTableFor(Database targetModel, Table targetTable) throws IOException
     {
+        return getTemporaryTableFor(targetModel, targetTable, "_");
+    }
+
+    public Table getBackupTableFor(Database model, Table sourceTable) throws IOException
+    {
+        return getTemporaryTableFor(model, sourceTable, "x");
+    }
+
+    public Table createBackupTableFor(Database model, Table sourceTable) throws IOException
+    {
+        Table backupTable = getBackupTableFor(model, sourceTable);
+        writeTableCreationStmt(model, backupTable, null);
+        printEndOfStatement();
+        writeCopyDataStatement(sourceTable, backupTable);
+        return backupTable;
+    }
+
+    public void restoreTableFromBackup(Table backupTable, Table targetTable, ListOrderedMap columnMap) throws IOException
+    {
+        print("DELETE FROM ");
+        printIdentifier(getTableName(targetTable));
+        printEndOfStatement();
+        writeCopyDataStatement(backupTable, targetTable, columnMap);
+    }
+
+    protected Table getTemporaryTableFor(Database targetModel, Table targetTable, String suffix) throws IOException
+    {
         Table table = new Table();
 
         table.setCatalog(targetTable.getCatalog());
         table.setSchema(targetTable.getSchema());
-        table.setName(targetTable.getName() + "_");
+        table.setName(targetTable.getName() + suffix);
         table.setType(targetTable.getType());
         for (int idx = 0; idx < targetTable.getColumnCount(); idx++)
         {
@@ -1135,7 +1171,43 @@ public abstract class SqlBuilder
      * @param sourceTable The source table
      * @param targetTable The target table
      */
-    protected void writeCopyDataStatement(Table sourceTable, Table targetTable) throws IOException
+    public void writeCopyDataStatement(Table sourceTable, Table targetTable) throws IOException
+    {
+        ListOrderedMap columnMap = getCopyDataColumnMapping(sourceTable, targetTable);
+        writeCopyDataStatement(sourceTable, targetTable, columnMap);
+    }
+    
+    public void writeCopyDataStatement(Table sourceTable, Table targetTable, ListOrderedMap columnMap) throws IOException
+    {
+        print("INSERT INTO ");
+        printIdentifier(getTableName(targetTable));
+        print(" (");
+        for (Iterator columnIt = columnMap.values().iterator(); columnIt.hasNext();)
+        {
+            printIdentifier(getColumnName((Column)columnIt.next()));
+            if (columnIt.hasNext())
+            {
+                print(",");
+            }
+        }
+        print(") SELECT ");
+        for (Iterator columnsIt = columnMap.entrySet().iterator(); columnsIt.hasNext();)
+        {
+            Map.Entry entry = (Map.Entry)columnsIt.next();
+
+            writeCastExpression((Column)entry.getKey(),
+                                (Column)entry.getValue());
+            if (columnsIt.hasNext())
+            {
+                print(",");
+            }
+        }
+        print(" FROM ");
+        printIdentifier(getTableName(sourceTable));
+        printEndOfStatement();
+    }
+    
+    public ListOrderedMap getCopyDataColumnMapping(Table sourceTable, Table targetTable)
     {
         ListOrderedMap columns = new ListOrderedMap();
 
@@ -1151,33 +1223,18 @@ public abstract class SqlBuilder
                 columns.put(sourceColumn, targetColumn);
             }
         }
+        return columns;
+    }
 
-        print("INSERT INTO ");
-        printIdentifier(getTableName(targetTable));
-        print(" (");
-        for (Iterator columnIt = columns.keySet().iterator(); columnIt.hasNext();)
-        {
-            printIdentifier(getColumnName((Column)columnIt.next()));
-            if (columnIt.hasNext())
-            {
-                print(",");
-            }
-        }
-        print(") SELECT ");
-        for (Iterator columnsIt = columns.entrySet().iterator(); columnsIt.hasNext();)
-        {
-            Map.Entry entry = (Map.Entry)columnsIt.next();
+    public ListOrderedMap getCopyDataColumnOrderedMapping(Table sourceTable, Table targetTable)
+    {
+        ListOrderedMap columns = new ListOrderedMap();
 
-            writeCastExpression((Column)entry.getKey(),
-                                (Column)entry.getValue());
-            if (columnsIt.hasNext())
-            {
-                print(",");
-            }
+        for (int idx = 0; idx < sourceTable.getColumnCount(); idx++)
+        {
+            columns.put(sourceTable.getColumn(idx), targetTable.getColumn(idx));
         }
-        print(" FROM ");
-        printIdentifier(getTableName(sourceTable));
-        printEndOfStatement();
+        return columns;
     }
 
     /**
