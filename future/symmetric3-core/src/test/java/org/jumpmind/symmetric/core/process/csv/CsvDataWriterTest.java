@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.core.process.sql;
+package org.jumpmind.symmetric.core.process.csv;
 
 import org.junit.Test;
 

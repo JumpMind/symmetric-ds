@@ -10,7 +10,7 @@ public interface IDataWriter extends IDataResource {
 
     public boolean writeTable(Table table);
 
-    public void writeData(Data data);
+    public boolean writeData(Data data);
 
     public void finishBatch(Batch batch);
 
