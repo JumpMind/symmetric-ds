@@ -872,6 +872,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         String xml = buffer.toString().replaceAll("&apos;", "");
         xml = xml.replaceAll("default=\"empty_blob\\(\\) *\"", "");
         xml = xml.replaceAll("unique name=\"PRIMARY\"", "unique name=\"PRIMARYINDEX\"");
+        // on postgres, this is a "text" column
+        xml = xml.replaceAll("type=\"VARCHAR\" size=\"2147483647\"", "type=\"LONGVARCHAR\"");
         return xml;
     }
 
