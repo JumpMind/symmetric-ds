@@ -125,13 +125,14 @@ public class SqlDataWriter extends AbstractDataFilter implements IDataWriter {
         this.currentBatchMode = settings.batchMode;
     }
 
-    public void writeData(Data data) {
-        writeData(data, currentBatchMode, true);
+    public boolean writeData(Data data) {        
+        boolean committed = writeData(data, currentBatchMode, true);
         this.lastData = data;
+        return committed;
     }
 
-    protected void writeData(Data data, boolean batchMode, boolean filter) {
-
+    protected boolean writeData(Data data, boolean batchMode, boolean filter) {
+        boolean committed = false;
         try {
             if (requireNewStatement(data)) {
                 flush();
@@ -160,6 +161,7 @@ public class SqlDataWriter extends AbstractDataFilter implements IDataWriter {
             // check if an early commit needs to happen
             if (uncommittedRows > settings.maxRowsBeforeCommit) {
                 commit();
+                committed = true;
             }
 
         } catch (DataIntegrityViolationException ex) {
@@ -169,6 +171,9 @@ public class SqlDataWriter extends AbstractDataFilter implements IDataWriter {
         } catch (Exception ex) {
             throw new DataFailedToLoadException(data, ex);
         }
+        
+        return committed;
+        
     }
 
     protected void handleDataIntegrityViolationException(DataIntegrityViolationException ex) {

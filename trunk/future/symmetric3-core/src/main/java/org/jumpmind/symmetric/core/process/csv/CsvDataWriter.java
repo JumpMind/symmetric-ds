@@ -96,7 +96,7 @@ public class CsvDataWriter extends AbstractDataFilter implements IDataWriter {
         return true;
     }
 
-    public void writeData(Data data) {
+    public boolean writeData(Data data) {
         if (filterData(data, batch, table, context)) {
             switch (data.getEventType()) {
             case INSERT:
@@ -119,6 +119,8 @@ public class CsvDataWriter extends AbstractDataFilter implements IDataWriter {
                 break;
             }
         }
+        
+        return false;
     }
 
     public void finishBatch(Batch batch) {

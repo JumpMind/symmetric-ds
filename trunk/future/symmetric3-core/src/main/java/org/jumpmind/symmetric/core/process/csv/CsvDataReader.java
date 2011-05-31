@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.core.process.csv;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,6 +33,14 @@ public class CsvDataReader implements IDataReader {
     protected Object next;
     protected Batch batch;
     protected Table table;
+    
+    public CsvDataReader(StringBuilder input) {
+        this(new BufferedReader(new StringReader(input.toString())), true);
+    }
+    
+    public CsvDataReader(String input) {
+        this(new BufferedReader(new StringReader(input)), true);
+    }
 
     public CsvDataReader(BufferedReader reader, boolean closeReader) {
         this.reader = reader;

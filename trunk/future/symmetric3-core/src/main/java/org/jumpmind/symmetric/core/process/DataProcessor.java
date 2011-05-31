@@ -93,7 +93,9 @@ public class DataProcessor {
                 try {
                     dataRow++;
                     if (processTable) {
-                        dataWriter.writeData(data);
+                        if (dataWriter.writeData(data)) {
+                            listener.batchEarlyCommit(batch, dataRow);
+                        }
                     }
                 } catch (Exception ex) {
                     if (errorHandler != null) {
