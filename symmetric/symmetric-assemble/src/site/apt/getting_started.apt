@@ -5,18 +5,18 @@
  Date
  ------ 
 
-User Guide - SymmetricDS 2.2
+User Guide - SymmetricDS 2.3
  
  To get a demo of SymmetricDS 2 running, try the
- {{{./guide/2.2/html-single/user-guide.html#tutorial}Hands-On}} tutorial.
+ {{{./guide/2.3/html-single/user-guide.html#tutorial}Hands-On}} tutorial.
 
- {{{./guide/2.2/html-single/user-guide.html}User Guide (Single Page HTML)}}
+ {{{./guide/2.3/html-single/user-guide.html}User Guide (Single Page HTML)}}
 
- {{{./guide/2.2/html/user-guide.html}User Guide (Multi Page HTML)}}
+ {{{./guide/2.3/html/user-guide.html}User Guide (Multi Page HTML)}}
  
- {{{./guide/2.2/pdf/user-guide.pdf}User Guide (PDF)}}
+ {{{./guide/2.3/pdf/user-guide.pdf}User Guide (PDF)}}
  
- {{{./apidocs-2.2/index.html}JavaDoc for 2.2}}
+ {{{./apidocs-2.3/index.html}JavaDoc for 2.3}}
  
 User Guide - SymmetricDS 2.0
 
