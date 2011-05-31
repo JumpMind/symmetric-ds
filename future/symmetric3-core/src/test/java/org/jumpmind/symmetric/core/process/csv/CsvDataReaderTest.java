@@ -23,7 +23,7 @@ public class CsvDataReaderTest {
         putTableN(builder, 1, true);
         putInsert(builder, 4);
         endCsv(builder);
-        System.out.println(builder);
+        
         CsvDataReader reader = new CsvDataReader(builder);
         DataContext ctx = new DataContext();
         reader.open(ctx);
