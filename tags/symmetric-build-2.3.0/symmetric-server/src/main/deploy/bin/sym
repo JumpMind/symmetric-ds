@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# Run commandline support through SymmetricLauncher
+#
+
+PRGDIR=`dirname "$0"`
+if [ "$PRGDIR" = "" ]
+then
+   PRGDIR=`echo $0 | sed 's/\/sym//g'`
+fi
+if [ "$PRGDIR" = "" ]
+then
+   PRGDIR="."
+fi
+LIBDIR=$PRGDIR/../lib
+WEBLIBDIR=$PRGDIR/../web/WEB-INF/lib
+LOG4JXML="file:$PRGDIR/../conf/log4j.xml"
+RUNJAVA=java
+
+if [ -n "log4j.xml" -a -f "log4j.xml" ]
+then
+   LOG4JXML="file:$PRGDIR/log4j.xml"
+fi
+
+if [ -x "$JAVA_HOME/bin/java" ]
+then
+   RUNJAVA="$JAVA_HOME/bin/java"
+fi
+
+CLASSPATH=.
+SEP=:
+
+if uname | grep -i cygwin > /dev/null
+then
+   SEP=";"
+fi
+
+for jar in $LIBDIR/*
+do
+   CLASSPATH=${CLASSPATH}${SEP}${jar}
+done
+
+for jar in $WEBLIBDIR/*
+do
+   CLASSPATH=${CLASSPATH}${SEP}${jar}
+done
+
+#echo $CLASSPATH
+
+exec "$RUNJAVA" -Duser.language=en -Djava.io.tmpdir=../tmp -Dorg.mortbay.jetty.Request.maxFormContentSize=800000 -Dsym.keystore.file="$PRGDIR/../security/keystore" -Djavax.net.ssl.trustStore="$PRGDIR/../security/cacerts" -Dsun.net.client.defaultReadTimeout=1800000 -Dsun.net.client.defaultConnectTimeout=1800000 -Dlog4j.configuration=$LOG4JXML -cp $CLASSPATH org.jumpmind.symmetric.SymmetricLauncher "$@"
