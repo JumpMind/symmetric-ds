@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
-import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
+import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
 
 /**
  * TODO Support Oracle's non-standard way of batching
@@ -23,9 +23,9 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     protected PreparedStatement pstmt;
     
-    protected IJdbcDbPlatform dbPlatform;
+    protected IJdbcDbDialect dbDialect;
 
-    protected JdbcSqlConnection sqlConnection;
+    protected JdbcSqlTemplate sqlConnection;
 
     protected int numberOfRowsBeforeBatchFlush = 1000;
 
@@ -33,9 +33,9 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     protected List<Object> markers = new ArrayList<Object>();
 
-    public JdbcSqlTransaction(IJdbcDbPlatform platform) {
+    public JdbcSqlTransaction(IJdbcDbDialect platform) {
         try {
-            this.dbPlatform = platform;
+            this.dbDialect = platform;
             this.sqlConnection = platform.getJdbcSqlConnection();
             this.dbConnection = sqlConnection.getJdbcDbPlatform().getDataSource().getConnection();
             this.oldAutoCommitValue = this.dbConnection.getAutoCommit();
@@ -55,7 +55,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     public void setInBatchMode(boolean useBatching) {
         if (dbConnection != null) {
-            this.inBatchMode = useBatching && this.dbPlatform.supportsBatchUpdates();
+            this.inBatchMode = useBatching && this.dbDialect.supportsBatchUpdates();
         }
     }
 
@@ -89,7 +89,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     public void close() {
         if (dbConnection != null) {
-            JdbcSqlConnection.close(pstmt);
+            JdbcSqlTemplate.close(pstmt);
             try {
                 dbConnection.setAutoCommit(this.oldAutoCommitValue);
             } catch (SQLException ex) {
@@ -139,8 +139,8 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                         result = (T) rs.getObject(1);
                     }
                 } finally {
-                    JdbcSqlConnection.close(rs);
-                    JdbcSqlConnection.close(ps);
+                    JdbcSqlTemplate.close(rs);
+                    JdbcSqlTemplate.close(ps);
                 }
                 return result;
             }
@@ -189,7 +189,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 throw new IllegalStateException(
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
-            JdbcSqlConnection.close(pstmt);
+            JdbcSqlTemplate.close(pstmt);
             pstmt = dbConnection.prepareStatement(sql);
         } catch (SQLException ex) {
             throw sqlConnection.translate(ex);

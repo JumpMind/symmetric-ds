@@ -14,16 +14,19 @@ import org.jumpmind.symmetric.core.model.TriggerHistory;
 import org.jumpmind.symmetric.core.process.sql.TableToExtract;
 import org.jumpmind.symmetric.core.sql.SqlConstants;
 
-abstract public class TriggerBuilder {
+abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder {
 
     private static final String ORIG_TABLE_ALIAS = "orig";
 
-    protected IDbPlatform dbPlatform;
+    protected IDbDialect dbDialect;
 
-    public TriggerBuilder(IDbPlatform dbPlatform) {
-        this.dbPlatform = dbPlatform;
+    public AbstractDataCaptureBuilder(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
+    // TODO make a single method to get a template for a specific column type.
+    //abstract protected String getColumnTemplate(int type);
+        
     abstract protected String getClobColumnTemplate();
 
     abstract protected String getNewTriggerValue();
@@ -274,8 +277,8 @@ abstract public class TriggerBuilder {
     }
 
     protected String replaceDefaultSchemaAndCatalog(Table table, String sql) {
-        String defaultCatalog = dbPlatform.getDefaultCatalog();
-        String defaultSchema = dbPlatform.getDefaultSchema();
+        String defaultCatalog = dbDialect.getDefaultCatalog();
+        String defaultSchema = dbDialect.getDefaultSchema();
 
         boolean resolveSchemaAndCatalogs = table.getCatalogName() != null
                 || table.getSchemaName() != null;
@@ -396,8 +399,8 @@ abstract public class TriggerBuilder {
         ddl = StringUtils.replaceTokens("dataHasChangedCondition",
                 preProcessTriggerSqlClause(getDataHasChangedCondition()), ddl);
 
-        String defaultCatalog = dbPlatform.getDefaultCatalog();
-        String defaultSchema = dbPlatform.getDefaultSchema();
+        String defaultCatalog = dbDialect.getDefaultCatalog();
+        String defaultSchema = dbDialect.getDefaultSchema();
 
         String syncTriggersExpression = getSyncTriggersExpression();
         syncTriggersExpression = StringUtils
@@ -507,7 +510,7 @@ abstract public class TriggerBuilder {
         }
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented by "
-                    + dbPlatform.getClass().getName());
+                    + dbDialect.getClass().getName());
         }
         return replaceTemplateVariables(dml, history, tablePrefix, metaData, ddl, supportsBigLobs);
     }

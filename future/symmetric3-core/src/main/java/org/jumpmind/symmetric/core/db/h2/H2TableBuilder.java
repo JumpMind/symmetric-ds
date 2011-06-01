@@ -31,8 +31,8 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.IDbPlatform;
-import org.jumpmind.symmetric.core.db.SqlBuilder;
+import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.AbstractTableBuilder;
 import org.jumpmind.symmetric.core.db.alter.AddColumnChange;
 import org.jumpmind.symmetric.core.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.symmetric.core.db.alter.ColumnChange;
@@ -53,9 +53,9 @@ import org.jumpmind.symmetric.core.sql.SqlException;
  * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  */
-public class H2SqlBuilder extends SqlBuilder {
+public class H2TableBuilder extends AbstractTableBuilder {
 
-    public H2SqlBuilder(IDbPlatform platform) {
+    public H2TableBuilder(IDbDialect platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }

@@ -5,17 +5,17 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.oracle.OracleSqlBuilder;
-import org.jumpmind.symmetric.core.db.oracle.OracleTriggerBuilder;
+import org.jumpmind.symmetric.core.db.oracle.OracleTableBuilder;
+import org.jumpmind.symmetric.core.db.oracle.OracleDataCaptureBuilder;
 import org.jumpmind.symmetric.core.model.Parameters;
-import org.jumpmind.symmetric.jdbc.db.AbstractJdbcDbPlatform;
+import org.jumpmind.symmetric.jdbc.db.AbstractJdbcDbDialect;
 
-public class OracleDbPlatform extends AbstractJdbcDbPlatform {
+public class OracleDbDialect extends AbstractJdbcDbDialect {
 
     protected static final int[] DATA_INTEGRITY_SQL_ERROR_CODES = { 1, 1400, 1722, 2291, 2292,
             12899 };
 
-    public OracleDbPlatform(DataSource dataSource, Parameters parameters) {
+    public OracleDbDialect(DataSource dataSource, Parameters parameters) {
         super(dataSource, parameters);
 
         platformInfo.setMaxIdentifierLength(30);
@@ -62,9 +62,9 @@ public class OracleDbPlatform extends AbstractJdbcDbPlatform {
         platformInfo.setNonBlankCharColumnSpacePadded(true);
         platformInfo.setRequiresAutoCommitFalseToSetFetchSize(false);
 
-        this.triggerBuilder = new OracleTriggerBuilder(this);
-        this.jdbcModelReader = new OracleJdbcModelReader(this);
-        this.sqlBuilder = new OracleSqlBuilder(this);
+        this.dataCaptureBuilder = new OracleDataCaptureBuilder(this);
+        this.jdbcModelReader = new OracleJdbcTableReader(this);
+        this.tableBuilder = new OracleTableBuilder(this);
 
     }
 

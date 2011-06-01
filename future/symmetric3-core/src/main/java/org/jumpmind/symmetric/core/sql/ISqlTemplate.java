@@ -3,14 +3,14 @@ package org.jumpmind.symmetric.core.sql;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.IDbDialect;
 
 /**
  * This interface insulates the application from the data connection technology.
  */
-public interface ISqlConnection {
+public interface ISqlTemplate {
 
-    public IDbPlatform getDbPlatform();
+    public IDbDialect getDbDialect();
 
     public <T> T queryForObject(String sql, Class<T> clazz, Object... args);
 

@@ -3,14 +3,14 @@ package org.jumpmind.symmetric.core.db.h2;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.symmetric.core.db.IDbPlatform;
-import org.jumpmind.symmetric.core.db.TriggerBuilder;
+import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.AbstractDataCaptureBuilder;
 import org.jumpmind.symmetric.core.process.sql.TableToExtract;
 import org.jumpmind.symmetric.core.sql.SqlConstants;
 
-public class H2TriggerBuilder extends TriggerBuilder {
+public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
 
-    public H2TriggerBuilder(IDbPlatform dbPlatform) {
+    public H2DataCaptureBuilder(IDbDialect dbPlatform) {
         super(dbPlatform);
     }
 

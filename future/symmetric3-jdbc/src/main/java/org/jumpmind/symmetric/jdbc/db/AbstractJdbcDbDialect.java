@@ -7,34 +7,34 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.core.db.AbstractDbPlatform;
+import org.jumpmind.symmetric.core.db.AbstractDbDialect;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.sql.ISqlConnection;
+import org.jumpmind.symmetric.core.sql.ISqlTemplate;
 import org.jumpmind.symmetric.jdbc.sql.IConnectionCallback;
 import org.jumpmind.symmetric.jdbc.sql.ILobHandler;
-import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
+import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
 
-abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implements IJdbcDbPlatform {
+abstract public class AbstractJdbcDbDialect extends AbstractDbDialect implements IJdbcDbDialect {
 
     protected DataSource dataSource;
 
-    protected JdbcModelReader jdbcModelReader;
+    protected JdbcTableReader jdbcModelReader;
 
     private Boolean supportsBatchUpdates;
 
-    public AbstractJdbcDbPlatform(DataSource dataSource, Parameters parameters) {
+    public AbstractJdbcDbDialect(DataSource dataSource, Parameters parameters) {
         super(parameters);
         this.dataSource = dataSource;
     }
 
-    public ISqlConnection getSqlConnection() {
+    public ISqlTemplate getSqlConnection() {
         return getJdbcSqlConnection();
     }
 
-    public JdbcSqlConnection getJdbcSqlConnection() {
-        return new JdbcSqlConnection(this);
+    public JdbcSqlTemplate getJdbcSqlConnection() {
+        return new JdbcSqlTemplate(this);
     }
 
     public Database findDatabase(String catalogName, String schemaName) {
@@ -43,7 +43,7 @@ abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implemen
 
     public String getAlterScriptFor(Table... tables) {
         StringWriter writer = new StringWriter();
-        sqlBuilder.setWriter(writer);
+        tableBuilder.setWriter(writer);
         Database desiredModel = new Database();
         desiredModel.addTables(tables);
 
@@ -53,7 +53,7 @@ abstract public class AbstractJdbcDbPlatform extends AbstractDbPlatform implemen
                     table.getSchemaName(), table.getTableName(), false, false));
         }
 
-        sqlBuilder.alterDatabase(currentModel, desiredModel);
+        tableBuilder.alterDatabase(currentModel, desiredModel);
 
         return writer.toString();
     }

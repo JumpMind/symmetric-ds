@@ -6,14 +6,14 @@ import java.util.List;
 import org.jumpmind.symmetric.core.common.ArrayUtils;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.DataEventType;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.process.AbstractDataFilter;
+import org.jumpmind.symmetric.core.process.AbstractDataWriter;
 import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.DataFailedToLoadException;
 import org.jumpmind.symmetric.core.process.DataProcessor;
@@ -30,9 +30,9 @@ import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
  * An {@link IDataWriter} used by {@link DataProcessor}s to write {@link Data}
  * to a relational database.
  */
-public class SqlDataWriter extends AbstractDataFilter implements IDataWriter {
+public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
-    protected IDbPlatform platform;
+    protected IDbDialect platform;
 
     protected Table targetTable;
 
@@ -52,31 +52,31 @@ public class SqlDataWriter extends AbstractDataFilter implements IDataWriter {
 
     protected boolean currentBatchMode = false;
 
-    public SqlDataWriter(IDbPlatform platform) {
+    public SqlDataWriter(IDbDialect platform) {
         this(platform, new Settings());
     }
 
-    public SqlDataWriter(IDbPlatform platform, Parameters parameters) {
+    public SqlDataWriter(IDbDialect platform, Parameters parameters) {
         this(platform, parameters, null, null);
     }
 
-    public SqlDataWriter(IDbPlatform platform, Parameters parameters,
+    public SqlDataWriter(IDbDialect platform, Parameters parameters,
             IDataFilter filter) {
         this(platform, parameters, null, toList(filter));
     }
 
-    public SqlDataWriter(IDbPlatform platform, Settings settings) {
+    public SqlDataWriter(IDbDialect platform, Settings settings) {
         this(platform, settings, null, null);
     }
 
-    public SqlDataWriter(IDbPlatform platform, Parameters parameters,
+    public SqlDataWriter(IDbDialect platform, Parameters parameters,
             List<IColumnFilter> columnFilters,
             List<IDataFilter> dataFilters) {
         this(platform, new Settings(), columnFilters, dataFilters);
         populateSettings(parameters);
     }
 
-    public SqlDataWriter(IDbPlatform platform, Settings settings,
+    public SqlDataWriter(IDbDialect platform, Settings settings,
             List<IColumnFilter> columnFilters,
             List<IDataFilter> dataFilters) {
         this.platform = platform;

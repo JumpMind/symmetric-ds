@@ -14,13 +14,13 @@ public class JdbcPlatformTest extends AbstractDatabaseTest {
 
     @Test
     public void testJdbcPlatformFactory() {
-        IJdbcDbPlatform platform = getPlatform(true);
+        IJdbcDbDialect platform = getPlatform(true);
         Assert.assertNotNull(platform);
     }
 
     @Test
     public void testCreateTable() {
-        IJdbcDbPlatform platform = getPlatform(true);
+        IJdbcDbDialect platform = getPlatform(true);
         Table table = new Table("test", new Column("test_id", TypeMap.NUMERIC, "10,2", false, true,
                 true));
         String alterSql = platform.getAlterScriptFor(table);

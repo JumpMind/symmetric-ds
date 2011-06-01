@@ -1,27 +1,27 @@
 package org.jumpmind.symmetric.core;
 
-import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.resources.IResourceFactory;
 
 public class DefaultEnvironment implements IEnvironment {
 
     protected IResourceFactory resourceFactory;
-    protected IDbPlatform dbPlatform;
+    protected IDbDialect dbDialect;
 
     public DefaultEnvironment() {
     }
 
-    public DefaultEnvironment(IResourceFactory resourceFactory, IDbPlatform dbPlatform) {
+    public DefaultEnvironment(IResourceFactory resourceFactory, IDbDialect dbDialect) {
         this.resourceFactory = resourceFactory;
-        this.dbPlatform = dbPlatform;
+        this.dbDialect = dbDialect;
     }
 
-    public void setDbPlatform(IDbPlatform dbPlatform) {
-        this.dbPlatform = dbPlatform;
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
-    public IDbPlatform getDbPlatform() {
-        return dbPlatform;
+    public IDbDialect getDbDialect() {
+        return dbDialect;
     }
 
     public void setResourceFactory(IResourceFactory resourceFactory) {

@@ -9,11 +9,11 @@ import java.util.Map;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
 import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
-import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
+import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
 
 public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 
-    protected IJdbcDbPlatform dbPlatform;
+    protected IJdbcDbDialect dbDialect;
 
     protected Connection c;
 
@@ -28,9 +28,9 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     protected int rowNumber;
 
     public JdbcSqlReadCursor(String sql, Object[] values, int[] types, ISqlRowMapper<T> mapper,
-            IJdbcDbPlatform dbPlatform) {
+            IJdbcDbDialect dbPlatform) {
         this.mapper = mapper;
-        this.dbPlatform = dbPlatform;
+        this.dbDialect = dbPlatform;
         Parameters parameters = dbPlatform.getParameters();
         try {
             c = dbPlatform.getDataSource().getConnection();
@@ -56,20 +56,20 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     public T next() {
         try {
             if (rs.next()) {
-                Map<String, Object> row = JdbcSqlConnection.getMapForRow(rs);
+                Map<String, Object> row = JdbcSqlTemplate.getMapForRow(rs);
                 return mapper.mapRow(row);
             } else {
                 return null;
             }
         } catch (SQLException ex) {
-            throw dbPlatform.getJdbcSqlConnection().translate(ex);
+            throw dbDialect.getJdbcSqlConnection().translate(ex);
         }
     }
 
     public void close() {
-        JdbcSqlConnection.close(rs);
-        JdbcSqlConnection.close(st);
-        JdbcSqlConnection.close(autoCommitFlag, c);
+        JdbcSqlTemplate.close(rs);
+        JdbcSqlTemplate.close(st);
+        JdbcSqlTemplate.close(autoCommitFlag, c);
 
     }
 

@@ -16,11 +16,11 @@ import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.jdbc.db.DatabaseMetaDataWrapper;
-import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
-import org.jumpmind.symmetric.jdbc.db.JdbcModelReader;
-import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
+import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
+import org.jumpmind.symmetric.jdbc.db.JdbcTableReader;
+import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
 
-public class OracleJdbcModelReader extends JdbcModelReader {
+public class OracleJdbcTableReader extends JdbcTableReader {
 
     /**
      * Creates a new model reader for Oracle 8 databases.
@@ -28,7 +28,7 @@ public class OracleJdbcModelReader extends JdbcModelReader {
      * @param platform
      *            The platform that this model reader belongs to
      */
-    public OracleJdbcModelReader(IJdbcDbPlatform platform) {
+    public OracleJdbcTableReader(IJdbcDbDialect platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
@@ -192,8 +192,8 @@ public class OracleJdbcModelReader extends JdbcModelReader {
                 return false;
             }
             // we have a trigger, so lets check the sequence
-            JdbcSqlConnection.close(resultSet);
-            JdbcSqlConnection.close(prepStmt);
+            JdbcSqlTemplate.close(resultSet);
+            JdbcSqlTemplate.close(prepStmt);
 
             prepStmt = c.prepareStatement("SELECT * FROM user_sequences WHERE sequence_name = ?");
             prepStmt.setString(1, seqName);
@@ -201,8 +201,8 @@ public class OracleJdbcModelReader extends JdbcModelReader {
             resultSet = prepStmt.executeQuery();
             return resultSet.next();
         } finally {
-            JdbcSqlConnection.close(resultSet);
-            JdbcSqlConnection.close(prepStmt);
+            JdbcSqlTemplate.close(resultSet);
+            JdbcSqlTemplate.close(prepStmt);
         }
     }
 

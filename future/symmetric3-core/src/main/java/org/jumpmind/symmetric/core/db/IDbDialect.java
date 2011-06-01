@@ -7,11 +7,11 @@ import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.sql.ISqlConnection;
+import org.jumpmind.symmetric.core.sql.ISqlTemplate;
 
-public interface IDbPlatform {
+public interface IDbDialect {
 
-    public DbPlatformInfo getPlatformInfo();
+    public DbDialectInfo getPlatformInfo();
 
     public Parameters getParameters();
 
@@ -35,11 +35,9 @@ public interface IDbPlatform {
 
     public String getDefaultSchema();
 
-    public SqlBuilder getSqlBuilder();
+    public ISqlTemplate getSqlConnection();
 
-    public ISqlConnection getSqlConnection();
-
-    public TriggerBuilder getTriggerBuilder();
+    public IDataCaptureBuilder getDataCaptureBuilder();
 
     public boolean isLob(int type);
 

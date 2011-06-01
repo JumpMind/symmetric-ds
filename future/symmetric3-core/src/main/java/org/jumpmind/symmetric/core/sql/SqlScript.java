@@ -32,11 +32,11 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.io.IoUtils;
 
 /**
- * This class is for running SQL scripts against an {@link ISqlConnection}.
+ * This class is for running SQL scripts against an {@link ISqlTemplate}.
  */
 public class SqlScript {
 
@@ -51,7 +51,7 @@ public class SqlScript {
 
     private List<String> statements;
 
-    private IDbPlatform platform;
+    private IDbDialect platform;
 
     private int commitRate = 10000;
 
@@ -63,19 +63,19 @@ public class SqlScript {
 
     private String lineDeliminator;
 
-    public SqlScript(URL url, IDbPlatform platform) {
+    public SqlScript(URL url, IDbDialect platform) {
         this(url, platform, true, QUERY_ENDS, null);
     }
 
-    public SqlScript(URL url, IDbPlatform platform, boolean failOnError) {
+    public SqlScript(URL url, IDbDialect platform, boolean failOnError) {
         this(url, platform, failOnError, QUERY_ENDS, null);
     }
 
-    public SqlScript(URL url, IDbPlatform platform, String delimiter) {
+    public SqlScript(URL url, IDbDialect platform, String delimiter) {
         this(url, platform, true, delimiter, null);
     }
 
-    public SqlScript(URL url, IDbPlatform platform, boolean failOnError, String delimiter,
+    public SqlScript(URL url, IDbDialect platform, boolean failOnError, String delimiter,
             Map<String, String> replacementTokens) {
         try {
             fileName = url.getFile();
@@ -89,17 +89,17 @@ public class SqlScript {
         }
     }
 
-    public SqlScript(String sqlScript, IDbPlatform platform) {
+    public SqlScript(String sqlScript, IDbDialect platform) {
         this(sqlScript, platform, true, ";", null);
     }
 
-    public SqlScript(String sqlScript, IDbPlatform platform, boolean failOnError, String delimiter,
+    public SqlScript(String sqlScript, IDbDialect platform, boolean failOnError, String delimiter,
             Map<String, String> replacementTokens) {
         init(IoUtils.readLines(new StringReader(sqlScript)), platform, failOnError, delimiter,
                 replacementTokens);
     }
 
-    private void init(List<String> sqlScript, IDbPlatform platform, boolean failOnError,
+    private void init(List<String> sqlScript, IDbDialect platform, boolean failOnError,
             String delimiter, Map<String, String> replacementTokens) {
         this.statements = parseLines(sqlScript);
         this.platform = platform;
@@ -148,7 +148,7 @@ public class SqlScript {
     }
 
     public void execute(final boolean autoCommit) {
-        ISqlConnection connection = platform.getSqlConnection();
+        ISqlTemplate connection = platform.getSqlConnection();
         connection.update(autoCommit, failOnError, commitRate,
                 statements.toArray(new String[statements.size()]));
     }

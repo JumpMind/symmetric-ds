@@ -32,10 +32,10 @@ import org.jumpmind.symmetric.core.common.LogLevel;
  * Contains information about the database platform such as supported features
  * and native type mappings.
  */
-public class DbPlatformInfo {
+public class DbDialectInfo {
 
     /** The Log to which logging calls will be made. */
-    private final Log log = LogFactory.getLog(DbPlatformInfo.class);
+    private final Log log = LogFactory.getLog(DbDialectInfo.class);
 
     private boolean scriptModeOn = false;
 
@@ -245,7 +245,7 @@ public class DbPlatformInfo {
     /**
      * Creates a new platform info object.
      */
-    public DbPlatformInfo() {
+    public DbDialectInfo() {
         typesWithNullDefault.add(new Integer(Types.CHAR));
         typesWithNullDefault.add(new Integer(Types.VARCHAR));
         typesWithNullDefault.add(new Integer(Types.LONGVARCHAR));

@@ -11,6 +11,9 @@ public interface IDataWriter extends IDataResource {
     public boolean writeTable(Table table);
 
     public boolean writeData(Data data);
+    
+    // TODO
+    // public void writeStream(Outputstream)
 
     public void finishBatch(Batch batch);
 
