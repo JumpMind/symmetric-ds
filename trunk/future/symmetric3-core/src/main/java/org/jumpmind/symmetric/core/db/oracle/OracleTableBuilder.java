@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.jumpmind.symmetric.core.db.IDbPlatform;
-import org.jumpmind.symmetric.core.db.SqlBuilder;
+import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.AbstractTableBuilder;
 import org.jumpmind.symmetric.core.db.alter.AddColumnChange;
 import org.jumpmind.symmetric.core.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.symmetric.core.db.alter.PrimaryKeyChange;
@@ -41,7 +41,7 @@ import org.jumpmind.symmetric.core.model.TypeMap;
 /**
  * The SQL Builder for Oracle.
  */
-public class OracleSqlBuilder extends SqlBuilder {
+public class OracleTableBuilder extends AbstractTableBuilder {
 
     /** The regular expression pattern for ISO dates, i.e. 'YYYY-MM-DD'. */
     private Pattern _isoDatePattern;
@@ -61,7 +61,7 @@ public class OracleSqlBuilder extends SqlBuilder {
      * @param platform
      *            The platform this builder belongs to
      */
-    public OracleSqlBuilder(IDbPlatform platform) {
+    public OracleTableBuilder(IDbDialect platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
 

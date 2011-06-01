@@ -7,40 +7,40 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.io.FileUtils;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
-import org.jumpmind.symmetric.core.sql.ISqlConnection;
+import org.jumpmind.symmetric.core.sql.ISqlTemplate;
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
 import org.jumpmind.symmetric.core.sql.SqlScript;
 import org.jumpmind.symmetric.jdbc.datasource.DriverDataSourceProperties;
-import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
-import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
+import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
+import org.jumpmind.symmetric.jdbc.db.JdbcDbDialectFactory;
 import org.junit.BeforeClass;
 
 abstract public class AbstractDatabaseTest {
 
     final protected Log log = LogFactory.getLog(getClass());
 
-    static protected IJdbcDbPlatform platform;
+    static protected IJdbcDbDialect platform;
 
-    protected static IJdbcDbPlatform getPlatform() {
+    protected static IJdbcDbDialect getPlatform() {
         return getPlatform(true);
     }
 
-    protected static IJdbcDbPlatform getPlatform(boolean useExisting) {
-        IJdbcDbPlatform result = null;
+    protected static IJdbcDbDialect getPlatform(boolean useExisting) {
+        IJdbcDbDialect result = null;
         if (useExisting) {
             if (platform == null) {
-                platform = JdbcDbPlatformFactory.createPlatform(createDataSource(),
+                platform = JdbcDbDialectFactory.createPlatform(createDataSource(),
                         new Parameters());
             }
             result = platform;
         } else {
-            result = JdbcDbPlatformFactory.createPlatform(createDataSource(), new Parameters());
+            result = JdbcDbDialectFactory.createPlatform(createDataSource(), new Parameters());
         }
         return result;
     }
@@ -57,7 +57,7 @@ abstract public class AbstractDatabaseTest {
     }
 
     protected Table buildTestTable() {
-        IJdbcDbPlatform platform = getPlatform(true);
+        IJdbcDbDialect platform = getPlatform(true);
         Table table = new Table("TEST", new Column("TEST_ID", TypeMap.INTEGER, null, true, true,
                 true), new Column("TEST_TEXT", TypeMap.VARCHAR, "1000", false, false, false));
         String alterSql = platform.getAlterScriptFor(table);
@@ -71,7 +71,7 @@ abstract public class AbstractDatabaseTest {
     }
 
     protected void insertTestTableRows(int count) {
-        ISqlConnection sqlConnection = getPlatform(true).getSqlConnection();
+        ISqlTemplate sqlConnection = getPlatform(true).getSqlConnection();
         for (int i = 0; i < count; i++) {
             sqlConnection
                     .update("insert into test (test_text) values('the lazy brown fox jumped over "
@@ -84,8 +84,8 @@ abstract public class AbstractDatabaseTest {
     }
 
     protected int count(String tableName, String where) {
-        IDbPlatform platform = getPlatform(false);
-        ISqlConnection connection = platform.getSqlConnection();
+        IDbDialect platform = getPlatform(false);
+        ISqlTemplate connection = platform.getSqlConnection();
         return connection.queryForInt(String.format("select count(*) from %s %s %s", tableName,
                 StringUtils.isNotBlank(where) ? "where" : "", StringUtils.isNotBlank(where) ? where
                         : ""));

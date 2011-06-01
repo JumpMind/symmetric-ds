@@ -9,7 +9,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
-import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.TableNotFoundException;
 import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.core.io.IoUtils;
@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.core.process.csv.CsvDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlTableDataReader;
 import org.jumpmind.symmetric.core.process.sql.TableToExtract;
-import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
+import org.jumpmind.symmetric.jdbc.db.JdbcDbDialectFactory;
 import org.jumpmind.symmetric.jdbc.tools.copy.TableCopyProperties;
 
 public class TableCopy {
@@ -34,8 +34,8 @@ public class TableCopy {
 
     protected DataSource source;
     protected DataSource target;
-    protected IDbPlatform targetPlatform;
-    protected IDbPlatform sourcePlatform;
+    protected IDbDialect targetPlatform;
+    protected IDbDialect sourcePlatform;
     protected Parameters parameters;
     protected List<TableToExtract> tablesToRead;
     protected File targetFile;
@@ -47,12 +47,12 @@ public class TableCopy {
         this.parameters = new Parameters(properties);
 
         this.source = properties.getSourceDataSource();
-        this.sourcePlatform = JdbcDbPlatformFactory.createPlatform(source, parameters);
+        this.sourcePlatform = JdbcDbDialectFactory.createPlatform(source, parameters);
 
         this.targetFile = properties.getTargetFile();
         if (targetFile == null) {
             this.target = properties.getTargetDataSource();
-            this.targetPlatform = JdbcDbPlatformFactory.createPlatform(target, parameters);
+            this.targetPlatform = JdbcDbDialectFactory.createPlatform(target, parameters);
         } else if (targetFile.exists()) {
             throw new IllegalStateException(targetFile.getName() + " already exists");
         }
@@ -84,7 +84,7 @@ public class TableCopy {
                     .getTable().getTableName());
             Batch batch = new Batch(batchId++);
             int expectedCount = this.sourcePlatform.getSqlConnection().queryForInt(
-                    this.sourcePlatform.getTriggerBuilder().createTableExtractCountSql(tableToRead,
+                    this.sourcePlatform.getDataCaptureBuilder().createTableExtractCountSql(tableToRead,
                             parameters));
             DataProcessor processor = new DataProcessor(new SqlTableDataReader(this.sourcePlatform,
                     batch, tableToRead), getDataWriter(expectedCount));
@@ -147,7 +147,7 @@ public class TableCopy {
         return source;
     }
 
-    public IDbPlatform getSourcePlatform() {
+    public IDbDialect getSourcePlatform() {
         return sourcePlatform;
     }
 
@@ -159,7 +159,7 @@ public class TableCopy {
         return target;
     }
 
-    public IDbPlatform getTargetPlatform() {
+    public IDbDialect getTargetPlatform() {
         return targetPlatform;
     }
 

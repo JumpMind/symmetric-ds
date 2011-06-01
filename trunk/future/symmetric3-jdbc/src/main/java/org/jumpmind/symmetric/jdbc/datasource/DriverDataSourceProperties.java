@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.core.sql.SqlException;
-import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
+import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
 
 public class DriverDataSourceProperties extends Properties {
 
@@ -49,7 +49,7 @@ public class DriverDataSourceProperties extends Properties {
             ds.setUsername(username);
             ds.setPassword(password);
             ds.setSuppressClose(true);
-            new JdbcSqlConnection(ds).testConnection();
+            new JdbcSqlTemplate(ds).testConnection();
             return ds;
         } catch (Exception ex) {
             throw createDataSourceCreationException(name, ex);

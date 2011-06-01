@@ -9,7 +9,7 @@ import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
 
-abstract public class AbstractDataFilter implements IDataWriter {
+abstract public class AbstractDataWriter implements IDataWriter {
 
     protected final Log log = LogFactory.getLog(getClass());
 

@@ -85,7 +85,7 @@ import org.jumpmind.symmetric.core.sql.SqlException;
  * complex when attempting to reuse code across many databases. Hopefully only a
  * small amount code needs to be changed on a per database basis.
  */
-public abstract class SqlBuilder {
+public abstract class AbstractTableBuilder {
 
     /** The line separator for in between sql commands. */
     private static final String LINESEPARATOR = System.getProperty("line.separator", "\n");
@@ -94,10 +94,10 @@ public abstract class SqlBuilder {
     protected static final String SIZEPLACEHOLDER = "{0}";
 
     /** The Log to which logging calls will be made. */
-    protected final Log log = LogFactory.getLog(SqlBuilder.class);
+    protected final Log log = LogFactory.getLog(AbstractTableBuilder.class);
 
     /** The platform that this builder belongs to. */
-    private IDbPlatform platform;
+    private IDbDialect platform;
 
     /** The current Writer used to output the SQL to. */
     private Writer writer;
@@ -130,7 +130,7 @@ public abstract class SqlBuilder {
      * @param platform
      *            The platform this builder belongs to
      */
-    public SqlBuilder(IDbPlatform platform) {
+    public AbstractTableBuilder(IDbDialect platform) {
         this.platform = platform;
     }
 
@@ -139,7 +139,7 @@ public abstract class SqlBuilder {
      * 
      * @return The platform
      */
-    public IDbPlatform getPlatform() {
+    public IDbDialect getPlatform() {
         return platform;
     }
 
@@ -148,7 +148,7 @@ public abstract class SqlBuilder {
      * 
      * @return The info object
      */
-    public DbPlatformInfo getPlatformInfo() {
+    public DbDialectInfo getPlatformInfo() {
         return platform.getPlatformInfo();
     }
 

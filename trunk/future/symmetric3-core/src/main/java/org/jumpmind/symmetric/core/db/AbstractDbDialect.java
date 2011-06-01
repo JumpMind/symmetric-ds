@@ -23,7 +23,7 @@ import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.sql.SqlScript;
 
-abstract public class AbstractDbPlatform implements IDbPlatform {
+abstract public class AbstractDbDialect implements IDbDialect {
 
     protected final Log log = LogFactory.getLog(getClass());
 
@@ -35,7 +35,7 @@ abstract public class AbstractDbPlatform implements IDbPlatform {
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
             "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
 
-    protected DbPlatformInfo platformInfo = new DbPlatformInfo();
+    protected DbDialectInfo platformInfo = new DbDialectInfo();
 
     protected Database cachedModel = new Database();
 
@@ -43,13 +43,13 @@ abstract public class AbstractDbPlatform implements IDbPlatform {
 
     protected String defaultCatalog;
 
-    protected SqlBuilder sqlBuilder;
+    protected AbstractTableBuilder tableBuilder;
 
-    protected TriggerBuilder triggerBuilder;
+    protected IDataCaptureBuilder dataCaptureBuilder;
 
     protected Parameters parameters;
 
-    public AbstractDbPlatform(Parameters parameters) {
+    public AbstractDbDialect(Parameters parameters) {
         this.parameters = parameters == null ? new Parameters() : parameters;
 
     }
@@ -58,12 +58,12 @@ abstract public class AbstractDbPlatform implements IDbPlatform {
         return parameters;
     }
 
-    public TriggerBuilder getTriggerBuilder() {
-        return triggerBuilder;
+    public IDataCaptureBuilder getDataCaptureBuilder() {
+        return dataCaptureBuilder;
     }
 
-    public SqlBuilder getSqlBuilder() {
-        return sqlBuilder;
+    public AbstractTableBuilder getTableBuilder() {
+        return tableBuilder;
     }
 
     public boolean isLob(int type) {
@@ -162,7 +162,7 @@ abstract public class AbstractDbPlatform implements IDbPlatform {
         return getDate(value, pattern).getTime();
     }
 
-    public DbPlatformInfo getPlatformInfo() {
+    public DbDialectInfo getPlatformInfo() {
         return platformInfo;
     }
 

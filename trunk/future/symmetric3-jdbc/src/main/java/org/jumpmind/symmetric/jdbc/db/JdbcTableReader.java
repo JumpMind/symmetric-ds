@@ -41,8 +41,8 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.DbPlatformInfo;
-import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.DbDialectInfo;
+import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.ForeignKey;
@@ -54,12 +54,12 @@ import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.UniqueIndex;
 import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.jdbc.sql.IConnectionCallback;
-import org.jumpmind.symmetric.jdbc.sql.JdbcSqlConnection;
+import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
 
 /**
  * An utility class to create a Database model from a live database.
  */
-public class JdbcModelReader {
+public class JdbcTableReader {
 
     /** The Log to which logging calls will be made. */
     protected final Log log = LogFactory.getLog(getClass());
@@ -80,7 +80,7 @@ public class JdbcModelReader {
     private final List<MetaDataColumnDescriptor> columnsForIndex;
 
     /** The platform that this model reader belongs to. */
-    private IJdbcDbPlatform platform;
+    private IJdbcDbDialect platform;
     /**
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
      * must support).
@@ -102,7 +102,7 @@ public class JdbcModelReader {
     /** The table types to recognize per default. */
     private String[] defaultTableTypes = { "TABLE" };
 
-    protected JdbcSqlConnection connection;
+    protected JdbcSqlTemplate connection;
 
     /**
      * Creates a new model reader instance.
@@ -110,9 +110,9 @@ public class JdbcModelReader {
      * @param platform
      *            The platform this builder belongs to
      */
-    public JdbcModelReader(IJdbcDbPlatform platform) {
+    public JdbcTableReader(IJdbcDbDialect platform) {
         this.platform = platform;
-        this.connection = new JdbcSqlConnection(platform);
+        this.connection = new JdbcSqlTemplate(platform);
 
         defaultSizes.put(new Integer(Types.CHAR), "254");
         defaultSizes.put(new Integer(Types.VARCHAR), "254");
@@ -140,7 +140,7 @@ public class JdbcModelReader {
      * 
      * @return The platform
      */
-    public IDbPlatform getPlatform() {
+    public IDbDialect getPlatform() {
         return platform;
     }
 
@@ -149,7 +149,7 @@ public class JdbcModelReader {
      * 
      * @return The platform settings
      */
-    public DbPlatformInfo getPlatformInfo() {
+    public DbDialectInfo getPlatformInfo() {
         return platform.getPlatformInfo();
     }
 
@@ -589,7 +589,7 @@ public class JdbcModelReader {
                             table = readTable(c, metaData, values);
                         }
                     } finally {
-                        JdbcSqlConnection.close(tableData);
+                        JdbcSqlTemplate.close(tableData);
                     }
 
                     if (makeAllColumnsPKsIfNoneFound) {

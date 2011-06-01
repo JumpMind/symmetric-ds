@@ -3,10 +3,10 @@ package org.jumpmind.symmetric.jdbc.sql;
 import junit.framework.Assert;
 
 import org.jumpmind.symmetric.AbstractDatabaseTest;
-import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
-import org.jumpmind.symmetric.core.sql.ISqlConnection;
+import org.jumpmind.symmetric.core.sql.ISqlTemplate;
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,8 +23,8 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testSuccessfulBatchInserts() {
-        IDbPlatform platform = getPlatform(true);
-        ISqlConnection connection = platform.getSqlConnection();
+        IDbDialect platform = getPlatform(true);
+        ISqlTemplate connection = platform.getSqlConnection();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 10;
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
@@ -44,8 +44,8 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testRollbackBatchInserts() {
-        IDbPlatform platform = getPlatform(true);
-        ISqlConnection connection = platform.getSqlConnection();
+        IDbDialect platform = getPlatform(true);
+        ISqlTemplate connection = platform.getSqlConnection();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 11;
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
@@ -61,8 +61,8 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testDataIntegrityViolationInBatchMode() {
-        IDbPlatform platform = getPlatform(true);
-        ISqlConnection connection = platform.getSqlConnection();
+        IDbDialect platform = getPlatform(true);
+        ISqlTemplate connection = platform.getSqlConnection();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 10;
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
@@ -89,8 +89,8 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testNonBatchSuccessfulUpdates() {
-        IDbPlatform platform = getPlatform(true);
-        ISqlConnection connection = platform.getSqlConnection();
+        IDbDialect platform = getPlatform(true);
+        ISqlTemplate connection = platform.getSqlConnection();
         ISqlTransaction transaction = connection.startSqlTransaction();
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, false);
         Assert.assertEquals(5, batchInsertIntoTestTable(5, 1, transaction));
@@ -109,8 +109,8 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testDataIntegrityViolationInNonBatchMode() {
-        IDbPlatform platform = getPlatform(true);
-        ISqlConnection connection = platform.getSqlConnection();
+        IDbDialect platform = getPlatform(true);
+        ISqlTemplate connection = platform.getSqlConnection();
         ISqlTransaction transaction = connection.startSqlTransaction();
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, true);
         Assert.assertEquals(10, batchInsertIntoTestTable(10, 1, transaction));

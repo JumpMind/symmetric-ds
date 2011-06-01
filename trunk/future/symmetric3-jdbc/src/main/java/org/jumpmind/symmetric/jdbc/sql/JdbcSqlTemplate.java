@@ -18,38 +18,38 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
-import org.jumpmind.symmetric.core.db.IDbPlatform;
+import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
-import org.jumpmind.symmetric.core.sql.ISqlConnection;
+import org.jumpmind.symmetric.core.sql.ISqlTemplate;
 import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
 import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
 import org.jumpmind.symmetric.core.sql.ISqlTransaction;
 import org.jumpmind.symmetric.core.sql.SqlException;
-import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
-import org.jumpmind.symmetric.jdbc.db.JdbcDbPlatformFactory;
+import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
+import org.jumpmind.symmetric.jdbc.db.JdbcDbDialectFactory;
 
 // TODO make sure connection timeouts are set properly
-public class JdbcSqlConnection implements ISqlConnection {
+public class JdbcSqlTemplate implements ISqlTemplate {
 
-    static final Log log = LogFactory.getLog(JdbcSqlConnection.class);
+    static final Log log = LogFactory.getLog(JdbcSqlTemplate.class);
 
-    protected IJdbcDbPlatform dbPlatform;
+    protected IJdbcDbDialect dbDialect;
 
-    public JdbcSqlConnection(DataSource dataSource) {
-        this.dbPlatform = JdbcDbPlatformFactory.createPlatform(dataSource, new Parameters());
+    public JdbcSqlTemplate(DataSource dataSource) {
+        this.dbDialect = JdbcDbDialectFactory.createPlatform(dataSource, new Parameters());
     }
 
-    public JdbcSqlConnection(IJdbcDbPlatform platform) {
-        this.dbPlatform = platform;
+    public JdbcSqlTemplate(IJdbcDbDialect platform) {
+        this.dbDialect = platform;
     }
 
-    public IDbPlatform getDbPlatform() {
-        return this.dbPlatform;
+    public IDbDialect getDbDialect() {
+        return this.dbDialect;
     }
 
-    public IJdbcDbPlatform getJdbcDbPlatform() {
-        return this.dbPlatform;
+    public IJdbcDbDialect getJdbcDbPlatform() {
+        return this.dbDialect;
     }
 
     public int queryForInt(String sql) {
@@ -67,7 +67,7 @@ public class JdbcSqlConnection implements ISqlConnection {
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
             Object[] values, int[] types) {
-        return new JdbcSqlReadCursor<T>(sql, values, types, mapper, this.dbPlatform);
+        return new JdbcSqlReadCursor<T>(sql, values, types, mapper, this.dbDialect);
     }
 
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
@@ -129,7 +129,7 @@ public class JdbcSqlConnection implements ISqlConnection {
     }
 
     public ISqlTransaction startSqlTransaction() {
-        return new JdbcSqlTransaction(dbPlatform);
+        return new JdbcSqlTransaction(dbDialect);
     }
 
     public int update(String sql) {
@@ -152,7 +152,7 @@ public class JdbcSqlConnection implements ISqlConnection {
                     try {
                         ps = con.prepareStatement(sql);
                         StatementCreatorUtil.setValues(ps, values, types,
-                                ((IJdbcDbPlatform) getDbPlatform()).getLobHandler());
+                                ((IJdbcDbDialect) getDbDialect()).getLobHandler());
                         return ps.executeUpdate();
                     } finally {
                         close(ps);
@@ -222,7 +222,7 @@ public class JdbcSqlConnection implements ISqlConnection {
     public <T> T execute(IConnectionCallback<T> callback) {
         Connection c = null;
         try {
-            c = this.dbPlatform.getDataSource().getConnection();
+            c = this.dbDialect.getDataSource().getConnection();
             return callback.execute(c);
         } catch (SQLException ex) {
             throw translate(ex);
@@ -236,8 +236,8 @@ public class JdbcSqlConnection implements ISqlConnection {
         int columnCount = rsmd.getColumnCount();
         Map<String, Object> mapOfColValues = new HashMap<String, Object>();
         for (int i = 1; i <= columnCount; i++) {
-            String key = JdbcSqlConnection.lookupColumnName(rsmd, i);
-            Object obj = JdbcSqlConnection.getResultSetValue(rs, i);
+            String key = JdbcSqlTemplate.lookupColumnName(rsmd, i);
+            Object obj = JdbcSqlTemplate.getResultSetValue(rs, i);
             mapOfColValues.put(key, obj);
         }
         return mapOfColValues;
@@ -377,7 +377,7 @@ public class JdbcSqlConnection implements ISqlConnection {
     }
 
     public SqlException translate(String message, Exception ex) {
-        if (getDbPlatform().isDataIntegrityException(ex)) {
+        if (getDbDialect().isDataIntegrityException(ex)) {
             return new DataIntegrityViolationException(message, ex);
         } else {
             return new SqlException(message, ex);

@@ -12,13 +12,13 @@ import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
 import org.jumpmind.symmetric.jdbc.db.DatabaseMetaDataWrapper;
-import org.jumpmind.symmetric.jdbc.db.IJdbcDbPlatform;
-import org.jumpmind.symmetric.jdbc.db.JdbcModelReader;
+import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
+import org.jumpmind.symmetric.jdbc.db.JdbcTableReader;
 import org.jumpmind.symmetric.jdbc.db.MetaDataColumnDescriptor;
 
-public class H2JdbcModelReader extends JdbcModelReader {
+public class H2JdbcTableReader extends JdbcTableReader {
 
-    public H2JdbcModelReader(IJdbcDbPlatform platform) {
+    public H2JdbcTableReader(IJdbcDbDialect platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);

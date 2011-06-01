@@ -3,14 +3,14 @@ package org.jumpmind.symmetric.core.db.oracle;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.symmetric.core.db.IDbPlatform;
-import org.jumpmind.symmetric.core.db.TriggerBuilder;
+import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.AbstractDataCaptureBuilder;
 import org.jumpmind.symmetric.core.model.Parameters;
 
-public class OracleTriggerBuilder extends TriggerBuilder {
+public class OracleDataCaptureBuilder extends AbstractDataCaptureBuilder {
 
-    public OracleTriggerBuilder(IDbPlatform dbPlatform) {
-        super(dbPlatform);
+    public OracleDataCaptureBuilder(IDbDialect dbDialect) {
+        super(dbDialect);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class OracleTriggerBuilder extends TriggerBuilder {
 
     @Override
     protected String getNumberColumnTemplate() {
-        return String.format("decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number(%s))||'\"')", dbPlatform.getParameters().get(Parameters.TRIGGER_NUMBER_PRECISION, "30,10"));
+        return String.format("decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number(%s))||'\"')", dbDialect.getParameters().get(Parameters.TRIGGER_NUMBER_PRECISION, "30,10"));
     }
 
     @Override
