@@ -10,8 +10,8 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.IoException;
-import org.jumpmind.symmetric.core.sql.SqlException;
-import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
+import org.jumpmind.symmetric.core.db.SqlException;
+import org.jumpmind.symmetric.jdbc.db.JdbcSqlTemplate;
 
 public class DriverDataSourceProperties extends Properties {
 

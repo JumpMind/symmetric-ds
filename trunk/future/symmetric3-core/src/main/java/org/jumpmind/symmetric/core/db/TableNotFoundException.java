@@ -1,7 +1,6 @@
 package org.jumpmind.symmetric.core.db;
 
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.sql.SqlException;
 
 public class TableNotFoundException extends SqlException {
 

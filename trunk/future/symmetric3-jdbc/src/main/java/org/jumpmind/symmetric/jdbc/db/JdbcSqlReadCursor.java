@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.jdbc.sql;
+package org.jumpmind.symmetric.jdbc.db;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,10 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.jumpmind.symmetric.core.db.ISqlReadCursor;
+import org.jumpmind.symmetric.core.db.ISqlRowMapper;
 import org.jumpmind.symmetric.core.model.Parameters;
-import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
-import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
-import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
 
 public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 

@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.DbDialectInfo;
 import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.SqlException;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.ForeignKey;
@@ -52,9 +53,6 @@ import org.jumpmind.symmetric.core.model.NonUniqueIndex;
 import org.jumpmind.symmetric.core.model.Reference;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.UniqueIndex;
-import org.jumpmind.symmetric.core.sql.SqlException;
-import org.jumpmind.symmetric.jdbc.sql.IConnectionCallback;
-import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
 
 /**
  * An utility class to create a Database model from a live database.

@@ -1,7 +1,7 @@
 package org.jumpmind.symmetric.core.process;
 
+import org.jumpmind.symmetric.core.db.SqlException;
 import org.jumpmind.symmetric.core.model.Data;
-import org.jumpmind.symmetric.core.sql.SqlException;
 
 public class DataFailedToLoadException extends SqlException {
 

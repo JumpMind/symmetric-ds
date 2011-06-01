@@ -4,7 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.jumpmind.symmetric.core.common.NotImplementedException;
-import org.jumpmind.symmetric.jdbc.sql.ILobHandler;
+import org.jumpmind.symmetric.jdbc.db.ILobHandler;
 
 public class OracleLobHandler implements ILobHandler {
 

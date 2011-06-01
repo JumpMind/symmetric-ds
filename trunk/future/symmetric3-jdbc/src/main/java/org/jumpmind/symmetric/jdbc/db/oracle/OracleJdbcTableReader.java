@@ -17,8 +17,8 @@ import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.jdbc.db.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
+import org.jumpmind.symmetric.jdbc.db.JdbcSqlTemplate;
 import org.jumpmind.symmetric.jdbc.db.JdbcTableReader;
-import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
 
 public class OracleJdbcTableReader extends JdbcTableReader {
 

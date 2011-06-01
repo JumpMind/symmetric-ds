@@ -33,6 +33,7 @@ import java.util.ListIterator;
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.AbstractTableBuilder;
+import org.jumpmind.symmetric.core.db.SqlException;
 import org.jumpmind.symmetric.core.db.alter.AddColumnChange;
 import org.jumpmind.symmetric.core.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.symmetric.core.db.alter.ColumnChange;
@@ -46,7 +47,6 @@ import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Index;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
-import org.jumpmind.symmetric.core.sql.SqlException;
 
 /**
  * The SQL Builder for the H2 database. From patch <a

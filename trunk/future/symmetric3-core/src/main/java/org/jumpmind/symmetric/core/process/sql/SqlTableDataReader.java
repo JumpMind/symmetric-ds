@@ -3,15 +3,15 @@ package org.jumpmind.symmetric.core.process.sql;
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.IDataCaptureBuilder;
 import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.ISqlReadCursor;
+import org.jumpmind.symmetric.core.db.ISqlTemplate;
+import org.jumpmind.symmetric.core.db.mapper.DataMapper;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.IDataReader;
-import org.jumpmind.symmetric.core.sql.ISqlTemplate;
-import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
-import org.jumpmind.symmetric.core.sql.mapper.DataMapper;
 
 public class SqlTableDataReader implements IDataReader {
 

@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.core.sql;
+package org.jumpmind.symmetric.core.db;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,7 +33,6 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.db.IDbDialect;
 
 /**
  * This class is for running SQL scripts against an {@link ISqlTemplate}.

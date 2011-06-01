@@ -6,7 +6,12 @@ import java.util.List;
 import org.jumpmind.symmetric.core.common.ArrayUtils;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.db.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.ISqlTransaction;
+import org.jumpmind.symmetric.core.db.SqlScript;
+import org.jumpmind.symmetric.core.db.StatementBuilder;
+import org.jumpmind.symmetric.core.db.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
@@ -20,11 +25,6 @@ import org.jumpmind.symmetric.core.process.DataProcessor;
 import org.jumpmind.symmetric.core.process.IColumnFilter;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
-import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
-import org.jumpmind.symmetric.core.sql.ISqlTransaction;
-import org.jumpmind.symmetric.core.sql.SqlScript;
-import org.jumpmind.symmetric.core.sql.StatementBuilder;
-import org.jumpmind.symmetric.core.sql.StatementBuilder.DmlType;
 
 /**
  * An {@link IDataWriter} used by {@link DataProcessor}s to write {@link Data}

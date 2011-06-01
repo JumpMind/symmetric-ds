@@ -10,8 +10,8 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.SqlException;
 import org.jumpmind.symmetric.core.model.Parameters;
-import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.jdbc.db.h2.H2DbDialect;
 import org.jumpmind.symmetric.jdbc.db.oracle.OracleDbDialect;
 

@@ -8,13 +8,10 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.db.AbstractDbDialect;
+import org.jumpmind.symmetric.core.db.ISqlTemplate;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.sql.ISqlTemplate;
-import org.jumpmind.symmetric.jdbc.sql.IConnectionCallback;
-import org.jumpmind.symmetric.jdbc.sql.ILobHandler;
-import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
 
 abstract public class AbstractJdbcDbDialect extends AbstractDbDialect implements IJdbcDbDialect {
 
