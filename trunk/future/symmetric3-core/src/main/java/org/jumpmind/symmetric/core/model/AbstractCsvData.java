@@ -26,8 +26,8 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.symmetric.core.common.IoException;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.csv.CsvUtils;
 

@@ -37,6 +37,7 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.core.common.ClassUtils;
 import org.jumpmind.symmetric.core.common.CollectionUtils;
+import org.jumpmind.symmetric.core.common.IoException;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
@@ -61,7 +62,6 @@ import org.jumpmind.symmetric.core.db.alter.RemoveIndexChange;
 import org.jumpmind.symmetric.core.db.alter.RemovePrimaryKeyChange;
 import org.jumpmind.symmetric.core.db.alter.RemoveTableChange;
 import org.jumpmind.symmetric.core.db.alter.TableChange;
-import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.ForeignKey;

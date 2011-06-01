@@ -2,7 +2,7 @@ package org.jumpmind.symmetric.core.resources;
 
 import java.io.InputStream;
 
-import org.jumpmind.symmetric.core.io.IoException;
+import org.jumpmind.symmetric.core.common.IoException;
 import org.xmlpull.mxp1.MXParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
