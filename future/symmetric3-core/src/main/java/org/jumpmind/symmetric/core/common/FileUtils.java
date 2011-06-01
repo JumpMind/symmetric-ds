@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.core.io;
+package org.jumpmind.symmetric.core.common;
 
 import java.io.File;
 

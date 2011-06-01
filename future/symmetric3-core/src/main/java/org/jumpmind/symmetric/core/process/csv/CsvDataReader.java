@@ -10,8 +10,8 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.core.common.ArrayUtils;
 import org.jumpmind.symmetric.core.common.BinaryEncoding;
+import org.jumpmind.symmetric.core.common.IoException;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
