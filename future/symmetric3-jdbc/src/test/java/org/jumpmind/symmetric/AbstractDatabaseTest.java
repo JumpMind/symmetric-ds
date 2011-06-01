@@ -3,12 +3,12 @@ package org.jumpmind.symmetric;
 import javax.sql.DataSource;
 
 import org.hsqldb.types.Types;
+import org.jumpmind.symmetric.core.common.FileUtils;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.IDbDialect;
-import org.jumpmind.symmetric.core.io.FileUtils;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;

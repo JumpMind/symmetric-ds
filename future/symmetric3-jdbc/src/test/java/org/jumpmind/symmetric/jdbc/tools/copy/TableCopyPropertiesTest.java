@@ -2,7 +2,7 @@ package org.jumpmind.symmetric.jdbc.tools.copy;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.core.io.FileUtils;
+import org.jumpmind.symmetric.core.common.FileUtils;
 import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
 import org.junit.Test;
 

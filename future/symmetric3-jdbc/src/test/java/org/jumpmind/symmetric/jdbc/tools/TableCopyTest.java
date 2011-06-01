@@ -2,8 +2,8 @@ package org.jumpmind.symmetric.jdbc.tools;
 
 import junit.framework.Assert;
 
+import org.jumpmind.symmetric.core.common.FileUtils;
 import org.jumpmind.symmetric.core.db.IDbDialect;
-import org.jumpmind.symmetric.core.io.FileUtils;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
