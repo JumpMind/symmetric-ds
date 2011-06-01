@@ -12,7 +12,6 @@ import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.Trigger;
 import org.jumpmind.symmetric.core.model.TriggerHistory;
 import org.jumpmind.symmetric.core.process.sql.TableToExtract;
-import org.jumpmind.symmetric.core.sql.SqlConstants;
 
 abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder {
 

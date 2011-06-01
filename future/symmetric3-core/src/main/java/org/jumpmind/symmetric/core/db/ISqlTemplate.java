@@ -1,9 +1,8 @@
-package org.jumpmind.symmetric.core.sql;
+package org.jumpmind.symmetric.core.db;
 
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.core.db.IDbDialect;
 
 /**
  * This interface insulates the application from the data connection technology.

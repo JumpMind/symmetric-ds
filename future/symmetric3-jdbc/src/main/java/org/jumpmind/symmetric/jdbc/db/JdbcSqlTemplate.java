@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.jdbc.sql;
+package org.jumpmind.symmetric.jdbc.db;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -18,16 +18,14 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
+import org.jumpmind.symmetric.core.db.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.ISqlReadCursor;
+import org.jumpmind.symmetric.core.db.ISqlRowMapper;
+import org.jumpmind.symmetric.core.db.ISqlTemplate;
+import org.jumpmind.symmetric.core.db.ISqlTransaction;
+import org.jumpmind.symmetric.core.db.SqlException;
 import org.jumpmind.symmetric.core.model.Parameters;
-import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
-import org.jumpmind.symmetric.core.sql.ISqlTemplate;
-import org.jumpmind.symmetric.core.sql.ISqlReadCursor;
-import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
-import org.jumpmind.symmetric.core.sql.ISqlTransaction;
-import org.jumpmind.symmetric.core.sql.SqlException;
-import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
-import org.jumpmind.symmetric.jdbc.db.JdbcDbDialectFactory;
 
 // TODO make sure connection timeouts are set properly
 public class JdbcSqlTemplate implements ISqlTemplate {

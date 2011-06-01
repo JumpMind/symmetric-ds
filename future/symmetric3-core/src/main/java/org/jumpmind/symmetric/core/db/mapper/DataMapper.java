@@ -1,10 +1,10 @@
-package org.jumpmind.symmetric.core.sql.mapper;
+package org.jumpmind.symmetric.core.db.mapper;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.core.db.ISqlRowMapper;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.DataEventType;
-import org.jumpmind.symmetric.core.sql.ISqlRowMapper;
 
 public class DataMapper implements ISqlRowMapper<Data> {
 

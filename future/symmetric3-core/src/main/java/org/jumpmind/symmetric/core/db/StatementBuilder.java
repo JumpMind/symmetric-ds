@@ -19,7 +19,7 @@
  * under the License. 
  */
 
-package org.jumpmind.symmetric.core.sql;
+package org.jumpmind.symmetric.core.db;
 
 import java.sql.Types;
 import java.util.ArrayList;

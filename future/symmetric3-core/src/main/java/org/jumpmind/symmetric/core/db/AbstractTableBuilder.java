@@ -70,7 +70,6 @@ import org.jumpmind.symmetric.core.model.IndexColumn;
 import org.jumpmind.symmetric.core.model.Reference;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
-import org.jumpmind.symmetric.core.sql.SqlException;
 
 /**
  * This class is a collection of Strategy methods for creating the DDL required

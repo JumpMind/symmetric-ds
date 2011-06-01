@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.AbstractDataCaptureBuilder;
+import org.jumpmind.symmetric.core.db.SqlConstants;
 import org.jumpmind.symmetric.core.process.sql.TableToExtract;
-import org.jumpmind.symmetric.core.sql.SqlConstants;
 
 public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
 

@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.jdbc.sql;
+package org.jumpmind.symmetric.jdbc.db;
 
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jumpmind.symmetric.core.sql.ISqlTransaction;
-import org.jumpmind.symmetric.jdbc.db.IJdbcDbDialect;
+import org.jumpmind.symmetric.core.db.ISqlTransaction;
 
 /**
  * TODO Support Oracle's non-standard way of batching

@@ -8,7 +8,7 @@ import java.util.Properties;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
-import org.jumpmind.symmetric.core.sql.SqlConstants;
+import org.jumpmind.symmetric.core.db.SqlConstants;
 
 public class Parameters extends HashMap<String, String> {
 

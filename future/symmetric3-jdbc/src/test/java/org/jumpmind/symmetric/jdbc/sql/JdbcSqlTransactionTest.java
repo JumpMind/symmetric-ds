@@ -3,11 +3,11 @@ package org.jumpmind.symmetric.jdbc.sql;
 import junit.framework.Assert;
 
 import org.jumpmind.symmetric.AbstractDatabaseTest;
+import org.jumpmind.symmetric.core.db.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.db.ISqlTemplate;
+import org.jumpmind.symmetric.core.db.ISqlTransaction;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.sql.DataIntegrityViolationException;
-import org.jumpmind.symmetric.core.sql.ISqlTemplate;
-import org.jumpmind.symmetric.core.sql.ISqlTransaction;
 import org.junit.Before;
 import org.junit.Test;
 

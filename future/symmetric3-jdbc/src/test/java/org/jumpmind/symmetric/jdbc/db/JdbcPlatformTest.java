@@ -4,10 +4,10 @@ import junit.framework.Assert;
 
 import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.db.SqlScript;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
-import org.jumpmind.symmetric.core.sql.SqlScript;
 import org.junit.Test;
 
 public class JdbcPlatformTest extends AbstractDatabaseTest {

@@ -7,7 +7,6 @@ import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
-import org.jumpmind.symmetric.core.sql.ISqlTemplate;
 
 public interface IDbDialect {
 
