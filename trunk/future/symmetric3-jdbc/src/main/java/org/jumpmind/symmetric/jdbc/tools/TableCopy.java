@@ -7,12 +7,12 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.core.common.IoException;
+import org.jumpmind.symmetric.core.common.IoUtils;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.TableNotFoundException;
-import org.jumpmind.symmetric.core.io.IoException;
-import org.jumpmind.symmetric.core.io.IoUtils;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Parameters;

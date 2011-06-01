@@ -6,8 +6,8 @@ import java.io.InputStream;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.core.common.IoException;
 import org.jumpmind.symmetric.core.common.StringUtils;
-import org.jumpmind.symmetric.core.io.IoException;
 import org.jumpmind.symmetric.jdbc.datasource.DriverDataSourceProperties;
 
 public class TableCopyProperties extends DriverDataSourceProperties {

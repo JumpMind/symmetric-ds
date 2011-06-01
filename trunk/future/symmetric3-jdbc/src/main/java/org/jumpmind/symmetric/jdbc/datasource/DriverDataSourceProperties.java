@@ -9,7 +9,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.core.io.IoException;
+import org.jumpmind.symmetric.core.common.IoException;
 import org.jumpmind.symmetric.core.sql.SqlException;
 import org.jumpmind.symmetric.jdbc.sql.JdbcSqlTemplate;
 
