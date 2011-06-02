@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="org.jumpmind.symmetric.android"
+      android:versionName="3.0.0" android:versionCode="3">
+
+
+    <application android:icon="@drawable/icon" android:label="@string/app_name">
+        <service android:name="AbstractSymmetricService"></service>
+
+
+    </application>
+</manifest>
