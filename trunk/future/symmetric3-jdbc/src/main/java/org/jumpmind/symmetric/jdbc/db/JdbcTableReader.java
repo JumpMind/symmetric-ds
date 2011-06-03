@@ -148,7 +148,7 @@ public class JdbcTableReader {
      * @return The platform settings
      */
     public DbDialectInfo getPlatformInfo() {
-        return platform.getPlatformInfo();
+        return platform.getDialectInfo();
     }
 
     /**
@@ -450,7 +450,7 @@ public class JdbcTableReader {
                 // Note that we do this here instead of in readTable since
                 // platforms may redefine the readTable method whereas it is
                 // highly unlikely that this method gets redefined
-                if (getPlatform().getPlatformInfo().isForeignKeysSorted()) {
+                if (getPlatform().getDialectInfo().isForeignKeysSorted()) {
                     sortForeignKeys(db);
                 }
                 db.initialize();
@@ -725,7 +725,7 @@ public class JdbcTableReader {
 
         for (int columnIdx = 0; columnIdx < fk.getReferenceCount(); columnIdx++) {
             String name = fk.getReference(columnIdx).getLocalColumnName();
-            Column localColumn = table.findColumn(name, getPlatform().getPlatformInfo()
+            Column localColumn = table.findColumn(name, getPlatform().getDialectInfo()
                     .isDelimitedIdentifierModeOn());
 
             if (mustBeUnique && !localColumn.isPrimaryKey()) {
@@ -1165,11 +1165,11 @@ public class JdbcTableReader {
     }
 
     public StringBuilder appendIdentifier(StringBuilder query, String identifier) {
-        if (getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn()) {
+        if (getPlatform().getDialectInfo().isDelimitedIdentifierModeOn()) {
             query.append(getPlatformInfo().getDelimiterToken());
         }
         query.append(identifier);
-        if (getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn()) {
+        if (getPlatform().getDialectInfo().isDelimitedIdentifierModeOn()) {
             query.append(getPlatformInfo().getDelimiterToken());
         }
         return query;
@@ -1184,7 +1184,7 @@ public class JdbcTableReader {
     protected void sortForeignKeys(Database model) {
         for (int tableIdx = 0; tableIdx < model.getTableCount(); tableIdx++) {
             model.getTable(tableIdx).sortForeignKeys(
-                    getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn());
+                    getPlatform().getDialectInfo().isDelimitedIdentifierModeOn());
         }
     }
 

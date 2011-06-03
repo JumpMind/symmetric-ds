@@ -148,7 +148,7 @@ public abstract class AbstractTableBuilder {
      * @return The info object
      */
     public DbDialectInfo getPlatformInfo() {
-        return platform.getPlatformInfo();
+        return platform.getDialectInfo();
     }
 
     /**
@@ -675,7 +675,7 @@ public abstract class AbstractTableBuilder {
             Collection<TableChange> changes) {
         LinkedHashMap<String, List<TableChange>> changesPerTable = new LinkedHashMap<String, List<TableChange>>();
         LinkedHashMap<String, List<ForeignKey>> unchangedFKs = new LinkedHashMap<String, List<ForeignKey>>();
-        boolean caseSensitive = getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn();
+        boolean caseSensitive = getPlatform().getDialectInfo().isDelimitedIdentifierModeOn();
 
         // we first sort the changes for the tables
         // however since the changes might contain source or target tables

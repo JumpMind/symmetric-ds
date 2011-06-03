@@ -10,7 +10,7 @@ import org.jumpmind.symmetric.core.model.Table;
 
 public interface IDbDialect {
 
-    public DbDialectInfo getPlatformInfo();
+    public DbDialectInfo getDialectInfo();
 
     public Parameters getParameters();
 
