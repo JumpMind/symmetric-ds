@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.core;
 
 import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.resources.IResourceFactory;
 
 public class DefaultEnvironment implements IEnvironment {
@@ -30,6 +31,10 @@ public class DefaultEnvironment implements IEnvironment {
 
     public IResourceFactory getResourceFactory() {
         return resourceFactory;
+    }
+    
+    public Parameters getParameters() {
+        return null;
     }
 
 }
