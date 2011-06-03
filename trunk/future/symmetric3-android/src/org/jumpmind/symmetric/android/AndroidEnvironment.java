@@ -1,20 +1,40 @@
 package org.jumpmind.symmetric.android;
 
+import org.jumpmind.symmetric.android.db.sqlite.SQLiteDbDialect;
 import org.jumpmind.symmetric.core.IEnvironment;
 import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.resources.IResourceFactory;
+
+import android.database.sqlite.SQLiteOpenHelper;
 
 public class AndroidEnvironment implements IEnvironment {
 
-    IResourceFactory resourceFactory = new AndroidResourceFactory();    
+    protected IResourceFactory resourceFactory = new AndroidResourceFactory();
+    
+    protected IDbDialect dbDialect;
+    
+    protected Parameters parameters = new Parameters();
+    
+    public AndroidEnvironment(SQLiteOpenHelper sqliteopenhelper) {
+        readParameters();
+        this.dbDialect = new SQLiteDbDialect(sqliteopenhelper, parameters);
+    }
+    
+    protected void readParameters() {
+        
+    }
     
     public IDbDialect getDbDialect() {
-        // TODO Auto-generated method stub
-        return null;
+        return dbDialect;
     }
     
     public IResourceFactory getResourceFactory() {
         return resourceFactory;
+    }
+    
+    public Parameters getParameters() {
+        return parameters;
     }
     
 }

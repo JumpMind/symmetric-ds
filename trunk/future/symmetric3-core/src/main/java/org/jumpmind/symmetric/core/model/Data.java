@@ -59,7 +59,6 @@ public class Data extends AbstractCsvData implements Serializable {
      * To support column-level sync and conflict resolution. Comma delimited old
      * row data from an update.
      */
-
     private String oldData;
 
     private String channelId;
