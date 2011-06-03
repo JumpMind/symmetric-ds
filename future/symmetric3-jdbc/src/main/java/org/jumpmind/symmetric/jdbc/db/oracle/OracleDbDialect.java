@@ -18,49 +18,49 @@ public class OracleDbDialect extends AbstractJdbcDbDialect {
     public OracleDbDialect(DataSource dataSource, Parameters parameters) {
         super(dataSource, parameters);
 
-        platformInfo.setMaxIdentifierLength(30);
-        platformInfo.setIdentityStatusReadingSupported(false);
+        dialectInfo.setMaxIdentifierLength(30);
+        dialectInfo.setIdentityStatusReadingSupported(false);
 
         // Note that the back-mappings are partially done by the model reader,
         // not the driver
-        platformInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
-        platformInfo.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)");
-        platformInfo.addNativeTypeMapping(Types.BINARY, "RAW", Types.VARBINARY);
-        platformInfo.addNativeTypeMapping(Types.BIT, "NUMBER(1)");
-        platformInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.TIMESTAMP);
-        platformInfo.addNativeTypeMapping(Types.DECIMAL, "NUMBER");
-        platformInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
-        platformInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
-        platformInfo.addNativeTypeMapping(Types.FLOAT, "FLOAT", Types.DOUBLE);
-        platformInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
-        platformInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
-        platformInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
-        platformInfo.addNativeTypeMapping(Types.NULL, "BLOB", Types.BLOB);
-        platformInfo.addNativeTypeMapping(Types.NUMERIC, "NUMBER", Types.DECIMAL);
-        platformInfo.addNativeTypeMapping(Types.INTEGER, "NUMBER", Types.DECIMAL);
-        platformInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
-        platformInfo.addNativeTypeMapping(Types.REF, "BLOB", Types.BLOB);
-        platformInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)");
-        platformInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
-        platformInfo.addNativeTypeMapping(Types.TIME, "DATE", Types.TIMESTAMP);
-        platformInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATE");
-        platformInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)");
-        platformInfo.addNativeTypeMapping(Types.VARBINARY, "RAW");
-        platformInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
-        platformInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
-        platformInfo.addNativeTypeMapping("BOOLEAN", "NUMBER(1)", "BIT");
-        platformInfo.addNativeTypeMapping("DATALINK", "BLOB", "BLOB");
+        dialectInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
+        dialectInfo.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)");
+        dialectInfo.addNativeTypeMapping(Types.BINARY, "RAW", Types.VARBINARY);
+        dialectInfo.addNativeTypeMapping(Types.BIT, "NUMBER(1)");
+        dialectInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.TIMESTAMP);
+        dialectInfo.addNativeTypeMapping(Types.DECIMAL, "NUMBER");
+        dialectInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
+        dialectInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
+        dialectInfo.addNativeTypeMapping(Types.FLOAT, "FLOAT", Types.DOUBLE);
+        dialectInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
+        dialectInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
+        dialectInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
+        dialectInfo.addNativeTypeMapping(Types.NULL, "BLOB", Types.BLOB);
+        dialectInfo.addNativeTypeMapping(Types.NUMERIC, "NUMBER", Types.DECIMAL);
+        dialectInfo.addNativeTypeMapping(Types.INTEGER, "NUMBER", Types.DECIMAL);
+        dialectInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
+        dialectInfo.addNativeTypeMapping(Types.REF, "BLOB", Types.BLOB);
+        dialectInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)");
+        dialectInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
+        dialectInfo.addNativeTypeMapping(Types.TIME, "DATE", Types.TIMESTAMP);
+        dialectInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATE");
+        dialectInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)");
+        dialectInfo.addNativeTypeMapping(Types.VARBINARY, "RAW");
+        dialectInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
+        dialectInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
+        dialectInfo.addNativeTypeMapping("BOOLEAN", "NUMBER(1)", "BIT");
+        dialectInfo.addNativeTypeMapping("DATALINK", "BLOB", "BLOB");
 
-        platformInfo.setDefaultSize(Types.CHAR, 254);
-        platformInfo.setDefaultSize(Types.VARCHAR, 254);
-        platformInfo.setDefaultSize(Types.BINARY, 254);
-        platformInfo.setDefaultSize(Types.VARBINARY, 254);
+        dialectInfo.setDefaultSize(Types.CHAR, 254);
+        dialectInfo.setDefaultSize(Types.VARCHAR, 254);
+        dialectInfo.setDefaultSize(Types.BINARY, 254);
+        dialectInfo.setDefaultSize(Types.VARBINARY, 254);
 
-        platformInfo.setDateOverridesToTimestamp(true);
-        platformInfo.setEmptyStringNulled(true);
-        platformInfo.setBlankCharColumnSpacePadded(true);
-        platformInfo.setNonBlankCharColumnSpacePadded(true);
-        platformInfo.setRequiresAutoCommitFalseToSetFetchSize(false);
+        dialectInfo.setDateOverridesToTimestamp(true);
+        dialectInfo.setEmptyStringNulled(true);
+        dialectInfo.setBlankCharColumnSpacePadded(true);
+        dialectInfo.setNonBlankCharColumnSpacePadded(true);
+        dialectInfo.setRequiresAutoCommitFalseToSetFetchSize(false);
 
         this.dataCaptureBuilder = new OracleDataCaptureBuilder(this);
         this.jdbcModelReader = new OracleJdbcTableReader(this);

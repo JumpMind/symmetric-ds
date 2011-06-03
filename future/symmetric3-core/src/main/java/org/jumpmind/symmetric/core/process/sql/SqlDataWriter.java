@@ -242,7 +242,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         String[] rowData = data.toParsedRowData();
         if (oldData != null) {
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
-                    || (platform.isLob(column.getTypeCode()) && (platform.getPlatformInfo()
+                    || (platform.isLob(column.getTypeCode()) && (platform.getDialectInfo()
                             .isNeedsToSelectLobData() || StringUtils.isBlank(oldData[columnIndex])));
         } else if (settings.dontIncludeKeysInUpdateStatement) {
             // This is in support of creating update statements that don't use
@@ -473,8 +473,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         String tableName = targetTable.getFullyQualifiedTableName();
 
         return new StatementBuilder(dmlType, tableName, lookupColumns, changingColumns,
-                preFilteredColumns, platform.getPlatformInfo().isDateOverridesToTimestamp(),
-                platform.getPlatformInfo().getIdentifierQuoteString());
+                preFilteredColumns, platform.getDialectInfo().isDateOverridesToTimestamp(),
+                platform.getDialectInfo().getIdentifierQuoteString());
 
     }
 

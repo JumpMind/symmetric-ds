@@ -34,7 +34,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
             "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
 
-    protected DbDialectInfo platformInfo = new DbDialectInfo();
+    protected DbDialectInfo dialectInfo = new DbDialectInfo();
 
     protected Database cachedModel = new Database();
 
@@ -88,21 +88,21 @@ abstract public class AbstractDbDialect implements IDbDialect {
             try {
                 if (column != null) {
                     int type = column.getTypeCode();
-                    if ((value == null || (platformInfo.isEmptyStringNulled() && value.equals("")))
+                    if ((value == null || (dialectInfo.isEmptyStringNulled() && value.equals("")))
                             && column.isRequired() && column.isOfTextType()) {
                         objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                     }
                     if (value != null) {
-                        if (type == Types.DATE && !platformInfo.isDateOverridesToTimestamp()) {
+                        if (type == Types.DATE && !dialectInfo.isDateOverridesToTimestamp()) {
                             objectValue = getDate(value, TIMESTAMP_PATTERNS);
                         } else if (type == Types.TIMESTAMP
-                                || (type == Types.DATE && platformInfo.isDateOverridesToTimestamp())) {
+                                || (type == Types.DATE && dialectInfo.isDateOverridesToTimestamp())) {
                             objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
                         } else if (type == Types.CHAR) {
                             String charValue = value.toString();
-                            if ((StringUtils.isBlank(charValue) && platformInfo
+                            if ((StringUtils.isBlank(charValue) && dialectInfo
                                     .isBlankCharColumnSpacePadded())
-                                    || (!StringUtils.isBlank(charValue) && platformInfo
+                                    || (!StringUtils.isBlank(charValue) && dialectInfo
                                             .isNonBlankCharColumnSpacePadded())) {
                                 objectValue = StringUtils.rightPad(value.toString(),
                                         column.getSizeAsInt(), ' ');
@@ -161,8 +161,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return getDate(value, pattern).getTime();
     }
 
-    public DbDialectInfo getPlatformInfo() {
-        return platformInfo;
+    public DbDialectInfo getDialectInfo() {
+        return dialectInfo;
     }
 
     /**
@@ -194,7 +194,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             result.append("_");
             result.append(suffix);
         }
-        return shortenName(result.toString(), getPlatformInfo().getMaxConstraintNameLength());
+        return shortenName(result.toString(), getDialectInfo().getMaxConstraintNameLength());
     }
 
     /**

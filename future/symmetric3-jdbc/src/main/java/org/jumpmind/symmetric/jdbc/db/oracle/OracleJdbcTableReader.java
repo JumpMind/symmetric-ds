@@ -177,7 +177,7 @@ public class OracleJdbcTableReader extends JdbcTableReader {
         String triggerName = getPlatform().getConstraintName("trg", table, column.getName(), null);
         String seqName = getPlatform().getConstraintName("seq", table, column.getName(), null);
 
-        if (!getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn()) {
+        if (!getPlatform().getDialectInfo().isDelimitedIdentifierModeOn()) {
             triggerName = triggerName.toUpperCase();
             seqName = seqName.toUpperCase();
         }
@@ -241,7 +241,7 @@ public class OracleJdbcTableReader extends JdbcTableReader {
         try {
             stmt = c.prepareStatement(query.toString());
             stmt.setString(1,
-                    getPlatform().getPlatformInfo().isDelimitedIdentifierModeOn() ? tableName
+                    getPlatform().getDialectInfo().isDelimitedIdentifierModeOn() ? tableName
                             : tableName.toUpperCase());
             stmt.setString(2, "N");
             stmt.setString(3, "TABLE");
