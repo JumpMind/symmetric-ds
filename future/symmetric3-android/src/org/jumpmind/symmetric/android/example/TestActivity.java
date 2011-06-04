@@ -22,7 +22,8 @@ public class TestActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.symmetricClient = new SymmetricClient(new AndroidEnvironment(new DatabaseOpener()));
+        DatabaseOpener opener = new DatabaseOpener();
+        this.symmetricClient = new SymmetricClient(new AndroidEnvironment(opener));
         setContentView(R.layout.main);
         this.initializeButton = (Button) findViewById(R.id.initializeButton);
         this.initializeButton.setOnClickListener(new View.OnClickListener() {

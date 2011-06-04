@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.android.db.sqlite;
+package org.jumpmind.symmetric.android.db;
 
 import org.jumpmind.symmetric.core.db.AbstractTableBuilder;
 import org.jumpmind.symmetric.core.db.IDbDialect;
