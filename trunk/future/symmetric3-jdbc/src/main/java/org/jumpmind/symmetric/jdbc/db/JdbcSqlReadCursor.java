@@ -3,7 +3,9 @@ package org.jumpmind.symmetric.jdbc.db;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.symmetric.core.db.ISqlReadCursor;
@@ -27,15 +29,15 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     protected int rowNumber;
 
     public JdbcSqlReadCursor(String sql, Object[] values, int[] types, ISqlRowMapper<T> mapper,
-            IJdbcDbDialect dbPlatform) {
+            IJdbcDbDialect dbDialect) {
         this.mapper = mapper;
-        this.dbDialect = dbPlatform;
-        Parameters parameters = dbPlatform.getParameters();
+        this.dbDialect = dbDialect;
+        Parameters parameters = dbDialect.getParameters();
         try {
-            c = dbPlatform.getDataSource().getConnection();
+            c = dbDialect.getDataSource().getConnection();
             autoCommitFlag = c.getAutoCommit();
 
-            if (dbPlatform.getDialectInfo().isRequiresAutoCommitFalseToSetFetchSize()) {
+            if (dbDialect.getDialectInfo().isRequiresAutoCommitFalseToSetFetchSize()) {
                 c.setAutoCommit(false);
             }
 
@@ -43,19 +45,19 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                     java.sql.ResultSet.CONCUR_READ_ONLY);
             st.setQueryTimeout(parameters.getQueryTimeout());
             if (values != null) {
-                StatementCreatorUtil.setValues(st, values, types, dbPlatform.getLobHandler());
+                StatementCreatorUtil.setValues(st, values, types, dbDialect.getLobHandler());
             }
             st.setFetchSize(parameters.getStreamingFetchSize());
             rs = st.executeQuery();
         } catch (SQLException ex) {
-            throw dbPlatform.getJdbcSqlConnection().translate(sql, ex);
+            throw dbDialect.getJdbcSqlConnection().translate(sql, ex);
         }
     }
 
     public T next() {
         try {
             if (rs.next()) {
-                Map<String, Object> row = JdbcSqlTemplate.getMapForRow(rs);
+                Map<String, Object> row = getMapForRow();
                 return mapper.mapRow(row);
             } else {
                 return null;
@@ -63,6 +65,19 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         } catch (SQLException ex) {
             throw dbDialect.getJdbcSqlConnection().translate(ex);
         }
+    }
+    
+
+    protected Map<String, Object> getMapForRow() throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        Map<String, Object> mapOfColValues = new HashMap<String, Object>(columnCount);
+        for (int i = 1; i <= columnCount; i++) {
+            String key = JdbcSqlTemplate.lookupColumnName(rsmd, i);
+            Object obj = JdbcSqlTemplate.getResultSetValue(rs, i);
+            mapOfColValues.put(key, obj);
+        }
+        return mapOfColValues;
     }
 
     public void close() {

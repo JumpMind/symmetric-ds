@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.android.db.sqlite;
+package org.jumpmind.symmetric.android.db;
 
 import java.util.Map;
 

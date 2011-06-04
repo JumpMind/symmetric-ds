@@ -8,16 +8,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
+import org.jumpmind.symmetric.core.db.AbstractSqlTemplate;
 import org.jumpmind.symmetric.core.db.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.ISqlReadCursor;
@@ -28,7 +25,7 @@ import org.jumpmind.symmetric.core.db.SqlException;
 import org.jumpmind.symmetric.core.model.Parameters;
 
 // TODO make sure connection timeouts are set properly
-public class JdbcSqlTemplate implements ISqlTemplate {
+public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
 
     static final Log log = LogFactory.getLog(JdbcSqlTemplate.class);
 
@@ -48,19 +45,6 @@ public class JdbcSqlTemplate implements ISqlTemplate {
 
     public IJdbcDbDialect getJdbcDbPlatform() {
         return this.dbDialect;
-    }
-
-    public int queryForInt(String sql) {
-        Number number = queryForObject(sql, Number.class);
-        if (number != null) {
-            return number.intValue();
-        } else {
-            return 0;
-        }
-    }
-
-    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper) {
-        return queryForCursor(sql, mapper, null, null);
     }
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
@@ -91,47 +75,8 @@ public class JdbcSqlTemplate implements ISqlTemplate {
         });
     }
 
-    public List<Map<String, Object>> query(String sql) {
-        return query(sql, null, null);
-    }
-
-    public List<Map<String, Object>> query(String sql, Object[] args, int[] types) {
-        return query(sql, new ISqlRowMapper<Map<String, Object>>() {
-            public Map<String, Object> mapRow(java.util.Map<String, Object> row) {
-                return row;
-            }
-        }, args, types);
-    }
-
-    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper) {
-        return query(sql, mapper, null, null);
-    }
-
-    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types) {
-        ISqlReadCursor<T> cursor = queryForCursor(sql, mapper, args, types);
-        try {
-            T next = null;
-            List<T> list = new ArrayList<T>();
-            do {
-                next = cursor.next();
-                if (next != null) {
-                    list.add(next);
-                }
-            } while (next != null);
-            return list;
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-    }
-
     public ISqlTransaction startSqlTransaction() {
         return new JdbcSqlTransaction(dbDialect);
-    }
-
-    public int update(String sql) {
-        return update(sql, null, null);
     }
 
     public int update(final String sql, final Object[] values, final int[] types) {
@@ -158,10 +103,6 @@ public class JdbcSqlTemplate implements ISqlTemplate {
                 }
             }
         });
-    }
-
-    public int update(String... sql) {
-        return update(true, true, -1, sql);
     }
 
     public int update(final boolean autoCommit, final boolean failOnError, final int commitRate,
@@ -227,18 +168,6 @@ public class JdbcSqlTemplate implements ISqlTemplate {
         } finally {
             close(c);
         }
-    }
-
-    public static Map<String, Object> getMapForRow(ResultSet rs) throws SQLException {
-        ResultSetMetaData rsmd = rs.getMetaData();
-        int columnCount = rsmd.getColumnCount();
-        Map<String, Object> mapOfColValues = new HashMap<String, Object>();
-        for (int i = 1; i <= columnCount; i++) {
-            String key = JdbcSqlTemplate.lookupColumnName(rsmd, i);
-            Object obj = JdbcSqlTemplate.getResultSetValue(rs, i);
-            mapOfColValues.put(key, obj);
-        }
-        return mapOfColValues;
     }
 
     /**
@@ -369,7 +298,7 @@ public class JdbcSqlTemplate implements ISqlTemplate {
         } catch (SQLException ex) {
         }
     }
-    
+
     public SqlException translate(Exception ex) {
         return translate(ex.getMessage(), ex);
     }
@@ -377,6 +306,8 @@ public class JdbcSqlTemplate implements ISqlTemplate {
     public SqlException translate(String message, Exception ex) {
         if (getDbDialect().isDataIntegrityException(ex)) {
             return new DataIntegrityViolationException(message, ex);
+        } else if (ex instanceof SqlException) {
+            return (SqlException) ex;
         } else {
             return new SqlException(message, ex);
         }

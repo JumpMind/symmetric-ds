@@ -3,8 +3,6 @@ package org.jumpmind.symmetric.android.db;
 import java.sql.Types;
 import java.util.List;
 
-import org.jumpmind.symmetric.android.db.sqlite.SQLiteDataCaptureBuilder;
-import org.jumpmind.symmetric.android.db.sqlite.SQLiteTableBuilder;
 import org.jumpmind.symmetric.core.db.AbstractDbDialect;
 import org.jumpmind.symmetric.core.db.ISqlTemplate;
 import org.jumpmind.symmetric.core.model.Database;
@@ -16,6 +14,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class SQLiteDbDialect extends AbstractDbDialect {
 
     protected SQLiteOpenHelper openHelper;
+    
+    protected SQLiteSqlTemplate sqlTemplate;
 
     public SQLiteDbDialect(SQLiteOpenHelper openHelper, Parameters parameters) {
         super(parameters);
@@ -67,6 +67,7 @@ public class SQLiteDbDialect extends AbstractDbDialect {
         return null;
     }
 
+    // http://www.xerial.org/trac/Xerial/browser/XerialJ/trunk/sqlite-jdbc/src/main/java/org/sqlite/MetaData.java
     public Table findTable(String tableName) {
         // TODO Auto-generated method stub
         return null;
