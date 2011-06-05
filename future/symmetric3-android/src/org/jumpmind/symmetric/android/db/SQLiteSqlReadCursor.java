@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 public class SQLiteSqlReadCursor<T> implements ISqlReadCursor<T> {
 
     protected SQLiteSqlTemplate sqlTemplate;
+
     protected Cursor cursor;
 
     protected ISqlRowMapper<T> mapper;
@@ -54,7 +55,7 @@ public class SQLiteSqlReadCursor<T> implements ISqlReadCursor<T> {
         }
     }
 
-    protected Map<String, Object> getMapForRow()  {
+    protected Map<String, Object> getMapForRow() {
         int columnCount = this.cursor.getColumnCount();
         Map<String, Object> mapOfColValues = new HashMap<String, Object>(columnCount);
         for (int i = 1; i <= columnCount; i++) {

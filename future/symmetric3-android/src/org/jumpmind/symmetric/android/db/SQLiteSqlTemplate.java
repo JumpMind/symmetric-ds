@@ -145,8 +145,7 @@ public class SQLiteSqlTemplate extends AbstractSqlTemplate implements ISqlTempla
     }
 
     public ISqlTransaction startSqlTransaction() {
-        // TODO Auto-generated method stub
-        return null;
+        return new SQLiteSqlTransaction(this);
     }
 
 }

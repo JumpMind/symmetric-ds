@@ -2,13 +2,17 @@ package org.jumpmind.symmetric.core.common;
 
 abstract public class Log {
 
-    Class<?> clazz;
-
-    public abstract void log(LogLevel level, String msg, Object... params);
+    protected Class<?> clazz;
 
     public abstract void log(LogLevel level, Throwable error, String msg, Object... params);
 
-    public abstract void log(LogLevel level, Throwable error);
+    public void log(LogLevel level, String msg, Object... params) {
+        log(level, null, msg, params);
+    }
+
+    public void log(LogLevel level, Throwable error) {
+        log(level, error, null);
+    }
 
     public void debug(String msg, Object... params) {
         log(LogLevel.DEBUG, msg, params);
