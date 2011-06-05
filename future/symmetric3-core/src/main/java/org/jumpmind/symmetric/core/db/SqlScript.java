@@ -147,7 +147,7 @@ public class SqlScript {
     }
 
     public void execute(final boolean autoCommit) {
-        ISqlTemplate connection = platform.getSqlConnection();
+        ISqlTemplate connection = platform.getSqlTemplate();
         connection.update(autoCommit, failOnError, commitRate,
                 statements.toArray(new String[statements.size()]));
     }

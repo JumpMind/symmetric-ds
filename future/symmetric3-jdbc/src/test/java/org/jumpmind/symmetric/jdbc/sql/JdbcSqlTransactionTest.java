@@ -24,7 +24,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
     @Test
     public void testSuccessfulBatchInserts() {
         IDbDialect platform = getPlatform(true);
-        ISqlTemplate connection = platform.getSqlConnection();
+        ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 10;
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
@@ -45,7 +45,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
     @Test
     public void testRollbackBatchInserts() {
         IDbDialect platform = getPlatform(true);
-        ISqlTemplate connection = platform.getSqlConnection();
+        ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 11;
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
@@ -62,7 +62,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
     @Test
     public void testDataIntegrityViolationInBatchMode() {
         IDbDialect platform = getPlatform(true);
-        ISqlTemplate connection = platform.getSqlConnection();
+        ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 10;
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), flushAt, true);
@@ -90,7 +90,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
     @Test
     public void testNonBatchSuccessfulUpdates() {
         IDbDialect platform = getPlatform(true);
-        ISqlTemplate connection = platform.getSqlConnection();
+        ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, false);
         Assert.assertEquals(5, batchInsertIntoTestTable(5, 1, transaction));
@@ -110,7 +110,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
     @Test
     public void testDataIntegrityViolationInNonBatchMode() {
         IDbDialect platform = getPlatform(true);
-        ISqlTemplate connection = platform.getSqlConnection();
+        ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, true);
         Assert.assertEquals(10, batchInsertIntoTestTable(10, 1, transaction));

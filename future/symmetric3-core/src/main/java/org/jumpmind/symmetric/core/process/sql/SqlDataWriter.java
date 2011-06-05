@@ -87,7 +87,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     public void open(DataContext context) {
         this.ctx = context;
-        this.transaction = this.platform.getSqlConnection().startSqlTransaction();
+        this.transaction = this.platform.getSqlTemplate().startSqlTransaction();
         this.transaction.setNumberOfRowsBeforeBatchFlush(settings.maxRowsBeforeBatchFlush);
         this.ctx.getContext().put(DataContext.KEY_SQL_TRANSACTION, this.transaction);
     }

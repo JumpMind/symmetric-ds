@@ -41,13 +41,13 @@ public class TableCopyTest {
     public void testSimpleTableCopy() throws Exception {
         tableCopy
                 .getSourcePlatform()
-                .getSqlConnection()
+                .getSqlTemplate()
                 .update("insert into table1 values(1)", "insert into table1 values(2)",
                         "insert into table1 values(3)", "insert into table1 values(4)");
         tableCopy.copy();
         Assert.assertEquals(
                 4,
-                tableCopy.getTargetPlatform().getSqlConnection()
+                tableCopy.getTargetPlatform().getSqlTemplate()
                         .queryForInt("select count(*) from table1"));
     }
 }

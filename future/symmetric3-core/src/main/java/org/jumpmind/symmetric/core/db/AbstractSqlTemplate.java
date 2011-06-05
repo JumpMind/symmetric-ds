@@ -9,13 +9,17 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public int queryForInt(String sql) {
         return queryForObject(sql, Integer.class, (Object[]) null);
     }
-    
+
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper) {
         return this.queryForCursor(sql, mapper, null, null);
     }
-    
+
     public List<Map<String, Object>> query(String sql) {
-        return query(sql, null, null);
+        return query(sql, (Object[])null, (int[])null);
+    }
+
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args) {
+        return query(sql, mapper, args, null);
     }
 
     public List<Map<String, Object>> query(String sql, Object[] args, int[] types) {
@@ -48,7 +52,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
             }
         }
     }
-    
+
     public int update(String sql) {
         return update(sql, null, null);
     }
@@ -57,5 +61,4 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         return update(true, true, -1, sql);
     }
 
-    
 }

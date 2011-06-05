@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.core.db;
 
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Time;
@@ -230,6 +231,50 @@ abstract public class AbstractDbDialect implements IDbDialect {
         result.append(name.substring(startCut + delta + 1, originalLength));
         return result.toString();
     }
+    
+    public String getAlterScriptFor(Table... tables) {
+        StringWriter writer = new StringWriter();
+        tableBuilder.setWriter(writer);
+        Database desiredModel = new Database();
+        desiredModel.addTables(tables);
+
+        Database currentModel = new Database();
+        for (Table table : tables) {
+            currentModel.addTable(readTable(table.getCatalogName(),
+                    table.getSchemaName(), table.getTableName(), false, false));
+        }
+
+        tableBuilder.alterDatabase(currentModel, desiredModel);
+
+        return writer.toString();
+    }
+    
+    public Table findTable(String tableName, boolean useCached) {
+        return findTable(null, null, tableName, useCached);
+    }
+    
+    public Table findTable(String catalogName, String schemaName, String tableName,
+            boolean useCached) {
+        Table cachedTable = cachedModel.findTable(catalogName, schemaName, tableName);
+        if (cachedTable == null || !useCached) {
+            Table justReadTable = readTable(catalogName, schemaName, tableName,
+                    !parameters.is(Parameters.DB_METADATA_IGNORE_CASE, true),
+                    parameters.is(Parameters.DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND, false));
+
+            if (cachedTable != null) {
+                cachedModel.removeTable(cachedTable);
+            }
+
+            if (justReadTable != null) {
+                cachedModel.addTable(justReadTable);
+            }
+
+            cachedTable = justReadTable;
+        }
+        return cachedTable;    }
+    
+    abstract protected Table readTable(String catalogName, String schemaName, String tableName,
+            boolean caseSensitive, boolean makeAllColumnsPKsIfNoneFound);
 
     public void resetCachedTableModel() {
         synchronized (this.getClass()) {

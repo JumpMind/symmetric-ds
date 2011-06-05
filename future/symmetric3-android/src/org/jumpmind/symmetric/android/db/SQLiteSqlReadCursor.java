@@ -58,7 +58,7 @@ public class SQLiteSqlReadCursor<T> implements ISqlReadCursor<T> {
     protected Map<String, Object> getMapForRow() {
         int columnCount = this.cursor.getColumnCount();
         Map<String, Object> mapOfColValues = new HashMap<String, Object>(columnCount);
-        for (int i = 1; i <= columnCount; i++) {
+        for (int i = 0; i < columnCount; i++) {
             String name = this.cursor.getColumnName(i);
             mapOfColValues.put(name, this.cursor.getString(i));
         }
