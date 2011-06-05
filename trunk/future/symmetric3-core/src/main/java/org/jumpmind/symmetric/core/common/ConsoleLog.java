@@ -3,19 +3,6 @@ package org.jumpmind.symmetric.core.common;
 public class ConsoleLog extends Log {
 
     @Override
-    protected void initialize(Class<?> clazz) {
-        super.initialize(clazz);
-    }
-
-    public void log(LogLevel level, String msg, Object... params) {
-        log(level, null, msg, params);
-    }
-
-    public void log(LogLevel level, Throwable error) {
-        log(level, error, null);
-    }
-
-    @Override
     public boolean isDebugEnabled() {
         return getLogLevel().contains("debug");
     }
