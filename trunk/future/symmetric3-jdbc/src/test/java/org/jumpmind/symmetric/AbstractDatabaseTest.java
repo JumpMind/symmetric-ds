@@ -63,15 +63,15 @@ abstract public class AbstractDatabaseTest {
         String alterSql = platform.getAlterScriptFor(table);
         SqlScript script = new SqlScript(alterSql, platform);
         script.execute();
-        return platform.findTable(table.getTableName());
+        return platform.findTable(table.getTableName(), false);
     }
 
     protected void delete(String tableName) {
-        getPlatform(true).getSqlConnection().update(String.format("delete from %s", tableName));
+        getPlatform(true).getSqlTemplate().update(String.format("delete from %s", tableName));
     }
 
     protected void insertTestTableRows(int count) {
-        ISqlTemplate sqlConnection = getPlatform(true).getSqlConnection();
+        ISqlTemplate sqlConnection = getPlatform(true).getSqlTemplate();
         for (int i = 0; i < count; i++) {
             sqlConnection
                     .update("insert into test (test_text) values('the lazy brown fox jumped over "
@@ -85,7 +85,7 @@ abstract public class AbstractDatabaseTest {
 
     protected int count(String tableName, String where) {
         IDbDialect platform = getPlatform(false);
-        ISqlTemplate connection = platform.getSqlConnection();
+        ISqlTemplate connection = platform.getSqlTemplate();
         return connection.queryForInt(String.format("select count(*) from %s %s %s", tableName,
                 StringUtils.isNotBlank(where) ? "where" : "", StringUtils.isNotBlank(where) ? where
                         : ""));
@@ -112,7 +112,7 @@ abstract public class AbstractDatabaseTest {
 
     protected void printOutTable(String tableName) {
         log.log(LogLevel.INFO,
-                getPlatform().getSqlConnection()
+                getPlatform().getSqlTemplate()
                         .query(String.format("select * from %s", tableName)).toString());
     }
 

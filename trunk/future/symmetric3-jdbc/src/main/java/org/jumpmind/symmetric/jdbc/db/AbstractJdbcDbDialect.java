@@ -1,12 +1,12 @@
 package org.jumpmind.symmetric.jdbc.db;
 
-import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.core.common.NotImplementedException;
 import org.jumpmind.symmetric.core.db.AbstractDbDialect;
 import org.jumpmind.symmetric.core.db.ISqlTemplate;
 import org.jumpmind.symmetric.core.model.Database;
@@ -26,7 +26,7 @@ abstract public class AbstractJdbcDbDialect extends AbstractDbDialect implements
         this.dataSource = dataSource;
     }
 
-    public ISqlTemplate getSqlConnection() {
+    public ISqlTemplate getSqlTemplate() {
         return getJdbcSqlConnection();
     }
 
@@ -38,49 +38,15 @@ abstract public class AbstractJdbcDbDialect extends AbstractDbDialect implements
         return jdbcModelReader.getDatabase(catalogName, schemaName, null);
     }
 
-    public String getAlterScriptFor(Table... tables) {
-        StringWriter writer = new StringWriter();
-        tableBuilder.setWriter(writer);
-        Database desiredModel = new Database();
-        desiredModel.addTables(tables);
-
-        Database currentModel = new Database();
-        for (Table table : tables) {
-            currentModel.addTable(jdbcModelReader.readTable(table.getCatalogName(),
-                    table.getSchemaName(), table.getTableName(), false, false));
-        }
-
-        tableBuilder.alterDatabase(currentModel, desiredModel);
-
-        return writer.toString();
+    @Override
+    protected Table readTable(String catalogName, String schemaName, String tableName,
+            boolean caseSensitive, boolean makeAllColumnsPKsIfNoneFound) {
+        return jdbcModelReader.readTable(catalogName, schemaName, tableName, caseSensitive,
+                makeAllColumnsPKsIfNoneFound);
     }
 
-    public Table findTable(String tableName) {
-        return findTable(null, null, tableName, false);
-    }
-
-    public Table findTable(String catalogName, String schemaName, String tableName, boolean useCache) {
-        Table cachedTable = cachedModel.findTable(catalogName, schemaName, tableName);
-        if (cachedTable == null || !useCache) {
-            Table justReadTable = jdbcModelReader.readTable(catalogName, schemaName, tableName,
-                    !parameters.is(Parameters.DB_METADATA_IGNORE_CASE, true),
-                    parameters.is(Parameters.DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND, false));
-
-            if (cachedTable != null) {
-                cachedModel.removeTable(cachedTable);
-            }
-
-            if (justReadTable != null) {
-                cachedModel.addTable(justReadTable);
-            }
-
-            cachedTable = justReadTable;
-        }
-        return cachedTable;
-    }
-
-    public java.util.List<Table> findTables(String catalog, String schema) {
-        return null;
+    public java.util.List<Table> findTables(String catalog, String schema, boolean useCached) {
+        throw new NotImplementedException();
     };
 
     protected void setDataSource(DataSource dataSource) {

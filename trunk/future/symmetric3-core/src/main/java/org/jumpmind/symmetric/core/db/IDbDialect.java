@@ -20,12 +20,12 @@ public interface IDbDialect {
 
     public Database findDatabase(String catalogName, String schemaName);
 
-    public Table findTable(String tableName);
+    public Table findTable(String tableName, boolean useCached);
 
     public Table findTable(String catalogName, String schemaName, String tableName,
             boolean useCached);
 
-    public List<Table> findTables(String catalogName, String schemaName);
+    public List<Table> findTables(String catalogName, String schemaName, boolean useCached);
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData);
@@ -34,7 +34,7 @@ public interface IDbDialect {
 
     public String getDefaultSchema();
 
-    public ISqlTemplate getSqlConnection();
+    public ISqlTemplate getSqlTemplate();
 
     public IDataCaptureBuilder getDataCaptureBuilder();
 

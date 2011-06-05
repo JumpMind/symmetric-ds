@@ -61,7 +61,7 @@ public class TableCopy {
 
         tablesToRead = new ArrayList<TableToExtract>();
         for (String tableName : tableNames) {
-            Table table = sourcePlatform.findTable(tableName);
+            Table table = sourcePlatform.findTable(tableName, false);
             if (table != null) {
                 String condition = properties.getConditionForTable(tableName);
                 table.setSchemaName(null);
@@ -83,7 +83,7 @@ public class TableCopy {
             logger.info("(%d of %d) Copying table %s ", batchId, tables.size(), tableToRead
                     .getTable().getTableName());
             Batch batch = new Batch(batchId++);
-            int expectedCount = this.sourcePlatform.getSqlConnection().queryForInt(
+            int expectedCount = this.sourcePlatform.getSqlTemplate().queryForInt(
                     this.sourcePlatform.getDataCaptureBuilder().createTableExtractCountSql(tableToRead,
                             parameters));
             DataProcessor processor = new DataProcessor(new SqlTableDataReader(this.sourcePlatform,

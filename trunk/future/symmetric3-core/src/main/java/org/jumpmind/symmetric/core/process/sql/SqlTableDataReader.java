@@ -67,7 +67,7 @@ public class SqlTableDataReader implements IDataReader {
         Data data = null;
         if (status == Status.TableStarted) {
             status = Status.DataStarted;
-            ISqlTemplate connection = this.dbDialect.getSqlConnection();
+            ISqlTemplate connection = this.dbDialect.getSqlTemplate();
             IDataCaptureBuilder builder = this.dbDialect.getDataCaptureBuilder();
             Parameters parameters = this.dbDialect.getParameters();
             String sql = builder.createTableExtractSql(tableToRead, parameters,
