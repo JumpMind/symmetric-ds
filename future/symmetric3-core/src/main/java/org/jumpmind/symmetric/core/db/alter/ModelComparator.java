@@ -373,9 +373,14 @@ public class ModelComparator {
 
         Object sourceDefaultValue = sourceColumn.getParsedDefaultValue();
         Object targetDefaultValue = targetColumn.getParsedDefaultValue();
+        if (platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != targetColumn.getTypeCode()) {
+            sourceDefaultValue = sourceColumn.getDefaultValue();
+            targetDefaultValue = targetColumn.getDefaultValue();
+        }
 
         if (((sourceDefaultValue == null) && (targetDefaultValue != null))
                 || ((sourceDefaultValue != null) && !sourceDefaultValue.equals(targetDefaultValue))) {
+
             if (log.isDebugEnabled()) {
                 log.debug("The " + sourceColumn.getName() + " column on the "
                         + sourceTable.getTableName() + " table changed default value from "

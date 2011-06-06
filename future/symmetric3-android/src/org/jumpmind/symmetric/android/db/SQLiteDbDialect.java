@@ -31,26 +31,39 @@ public class SQLiteDbDialect extends AbstractDbDialect {
         dialectInfo.setIdentityOverrideAllowed(false);
         dialectInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         dialectInfo.setNullAsDefaultValueRequired(false);
-        dialectInfo.addNativeTypeMapping(Types.ARRAY, "BINARY", Types.BINARY);
-        dialectInfo.addNativeTypeMapping(Types.DISTINCT, "BINARY", Types.BINARY);
-        dialectInfo.addNativeTypeMapping(Types.NULL, "BINARY", Types.BINARY);
-        dialectInfo.addNativeTypeMapping(Types.REF, "BINARY", Types.BINARY);
-        dialectInfo.addNativeTypeMapping(Types.STRUCT, "BINARY", Types.BINARY);
-        dialectInfo.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);
+        dialectInfo.addNativeTypeMapping(Types.ARRAY, "NONE", Types.BINARY);
+        dialectInfo.addNativeTypeMapping(Types.DISTINCT, "NONE", Types.BINARY);
+        dialectInfo.addNativeTypeMapping(Types.NULL, "NONE", Types.BINARY);
+        dialectInfo.addNativeTypeMapping(Types.REF, "NONE", Types.BINARY);
+        dialectInfo.addNativeTypeMapping(Types.STRUCT, "NONE", Types.BINARY);
+        dialectInfo.addNativeTypeMapping(Types.DATALINK, "NONE", Types.BINARY);
 
-        dialectInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BIT);
-        dialectInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.TINYINT);
-        dialectInfo.addNativeTypeMapping(Types.SMALLINT, "SMALLINT", Types.SMALLINT);
-        dialectInfo.addNativeTypeMapping(Types.BINARY, "BINARY", Types.BINARY);
-        dialectInfo.addNativeTypeMapping(Types.BLOB, "BLOB", Types.BLOB);
-        dialectInfo.addNativeTypeMapping(Types.CLOB, "CLOB", Types.CLOB);
-        dialectInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
-        dialectInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "OTHER");
+        dialectInfo.addNativeTypeMapping(Types.BIT, "INTEGER", Types.INTEGER);
+        dialectInfo.addNativeTypeMapping(Types.BOOLEAN, "INTEGER", Types.INTEGER);
+        dialectInfo.addNativeTypeMapping(Types.TINYINT, "INTEGER", Types.INTEGER);
+        dialectInfo.addNativeTypeMapping(Types.SMALLINT, "INTEGER", Types.INTEGER);
+        dialectInfo.addNativeTypeMapping(Types.BINARY, "NONE", Types.BINARY);
+        dialectInfo.addNativeTypeMapping(Types.BLOB, "NONE", Types.BINARY);
+        dialectInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.VARCHAR);
+        dialectInfo.addNativeTypeMapping(Types.VARCHAR, "TEXT", Types.VARCHAR);
+        dialectInfo.addNativeTypeMapping(Types.LONGNVARCHAR, "TEXT", Types.VARCHAR);
+        dialectInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT", Types.VARCHAR);
+        dialectInfo.addNativeTypeMapping(Types.NVARCHAR, "TEXT", Types.VARCHAR);
+        dialectInfo.addNativeTypeMapping(Types.NCHAR, "TEXT", Types.VARCHAR);
+        dialectInfo.addNativeTypeMapping(Types.CHAR, "TEXT", Types.VARCHAR);
+        dialectInfo.addNativeTypeMapping(Types.FLOAT, "FLOAT", Types.FLOAT);
+        dialectInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "NONE", Types.BINARY);
+        dialectInfo.addNativeTypeMapping(Types.DATE, "TEXT", Types.VARCHAR);
+        dialectInfo.addNativeTypeMapping(Types.TIME, "TEXT", Types.VARCHAR);
+        dialectInfo.addNativeTypeMapping(Types.TIMESTAMP, "TEXT", Types.VARCHAR);
 
-        dialectInfo.setDefaultSize(Types.CHAR, Integer.MAX_VALUE);
-        dialectInfo.setDefaultSize(Types.VARCHAR, Integer.MAX_VALUE);
-        dialectInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
-        dialectInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
+        dialectInfo.setHasSize(Types.CHAR, false);
+        dialectInfo.setHasSize(Types.VARCHAR, false);
+        dialectInfo.setHasSize(Types.BINARY, false);
+        dialectInfo.setHasSize(Types.VARBINARY, false);
+
+        dialectInfo.setHasPrecisionAndScale(Types.DECIMAL, false);
+        dialectInfo.setHasPrecisionAndScale(Types.NUMERIC, false);
 
         this.openHelper = openHelper;
 
@@ -88,30 +101,36 @@ public class SQLiteDbDialect extends AbstractDbDialect {
         return tables;
     }
 
-    // http://www.xerial.org/trac/Xerial/browser/XerialJ/trunk/sqlite-jdbc/src/main/java/org/sqlite/MetaData.java
     @Override
     protected Table readTable(String catalogName, String schemaName, String tableName,
             boolean caseSensitive, boolean makeAllColumnsPKsIfNoneFound) {
-
-        // PRAGMA index_info(index-name);
-        //
-        // This pragma returns one row each column in the named index. The first
-        // column of the result is the rank of the column within the index. The
-        // second column of the result is the rank of the column within the
-        // table. The third column of output is the name of the column being
-        // indexed.
-        //
-        // PRAGMA index_list(table-name);
-        //
-        // This pragma returns one row for each index associated with the given
-        // table. Columns of the result set include the index name and a flag to
-        // indicate whether or not the index is UNIQUE.
+        Table table = null;
         List<Column> columns = sqlTemplate.query("pragma table_info(" + tableName + ")",
                 new ColumnMapper());
-        Table table = new Table(tableName);
-        for (Column column : columns) {
-            table.addColumn(column);
+
+        if (columns != null && columns.size() > 0) {
+            table = new Table(tableName);
+            for (Column column : columns) {
+                table.addColumn(column);
+            }
+            // TODO read indexes
+            // PRAGMA index_info(index-name);
+            //
+            // This pragma returns one row each column in the named index. The
+            // first column of the result is the rank of the column within the
+            // index.
+            //
+            // The second column of the result is the rank of the column within
+            // the table. The third column of output is the name of the column
+            // being indexed.
+            //
+            // PRAGMA index_list(table-name);
+            //
+            // This pragma returns one row for each index associated with the
+            // given table. Columns of the result set include the index name and
+            // a flag to indicate whether or not the index is UNIQUE.
         }
+
         return table;
     }
 
@@ -130,18 +149,20 @@ public class SQLiteDbDialect extends AbstractDbDialect {
     class ColumnMapper implements ISqlRowMapper<Column> {
         public Column mapRow(Map<String, Object> row) {
             Column col = new Column((String) row.get("name"), toJdbcType((String) row.get("type")),
-                    null, false, booleanValue("notnull"), booleanValue("pk"));
-            col.setDefaultValue((String) row.get("cid"));
+                    null, false, booleanValue(row.get("notnull")), booleanValue(row.get("pk")));
+            col.setDefaultValue((String) row.get("dflt_value"));
             return col;
         }
 
         public String toJdbcType(String colType) {
             colType = colType == null ? "TEXT" : colType.toUpperCase();
-            if (colType.equals("INT") || colType.equals("INTEGER")) {
+            if (colType.startsWith("INT")) {
                 colType = TypeMap.INTEGER;
-            } else if (colType.equals("TEXT")) {
+            } else if (colType.startsWith("NUM")) {
+                colType = TypeMap.NUMERIC;
+            } else if (colType.startsWith("TEXT") || colType.contains("CHAR")) {
                 colType = TypeMap.VARCHAR;
-            } else if (colType.equals("FLOAT")) {
+            } else if (colType.startsWith("FLOAT")) {
                 colType = TypeMap.FLOAT;
             } else {
                 colType = TypeMap.VARCHAR;
@@ -150,7 +171,7 @@ public class SQLiteDbDialect extends AbstractDbDialect {
         }
 
         protected boolean booleanValue(Object v) {
-            return v.equals("1");
+            return v != null && v.equals("1");
         }
     }
 

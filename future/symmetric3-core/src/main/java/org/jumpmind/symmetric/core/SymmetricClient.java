@@ -1,11 +1,10 @@
 package org.jumpmind.symmetric.core;
 
-import java.util.List;
-
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
+import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.RemoteNodeStatuses;
-import org.jumpmind.symmetric.core.model.Table;
 
 public class SymmetricClient {
 
@@ -13,8 +12,15 @@ public class SymmetricClient {
 
     protected IEnvironment environment;
 
+    protected IDbDialect dbDialect;
+
+    protected SymmetricDatabase symmetricDatabase;
+
     public SymmetricClient(IEnvironment environment) {
         this.environment = environment;
+        this.dbDialect = this.environment.getDbDialect();
+        this.symmetricDatabase = new SymmetricDatabase(environment.getParameters().get(
+                Parameters.DB_TABLE_PREFIX, SymmetricDatabase.DEFAULT_PREFIX));
         initServices();
     }
 
@@ -37,10 +43,7 @@ public class SymmetricClient {
     }
 
     protected void initDatabase() {
-        List<Table> tables = environment.getDbDialect().findTables(null, null, false);
-        for (Table table : tables) {
-            log.info(table.toVerboseString());
-        }
+        this.dbDialect.alter(true, this.symmetricDatabase.getTables());
     }
 
 }
