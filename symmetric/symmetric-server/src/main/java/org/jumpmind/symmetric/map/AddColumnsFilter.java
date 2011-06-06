@@ -111,6 +111,11 @@ public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtension
                     extraValue = ctx.getSourceNode();
                 } else if (TokenConstants.NODE_GROUP_ID.equals(extraValue)) {
                     extraValue = ctx.getSourceNode() != null ? ctx.getSourceNode().getNodeGroupId() : null;
+                } else if (extraCol.startsWith(":")){
+                    int index = ctx.getColumnIndex(extraCol.substring(1));
+                    if (index >= 0) {
+                        extraValue = columnValues[index];
+                    }
                 }
                 columnValuesPlus[i++] = extraValue;
             }
