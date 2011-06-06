@@ -15,6 +15,8 @@ public class Parameters extends HashMap<String, String> {
     private static final long serialVersionUID = 1L;
 
     protected static Log log = LogFactory.getLog(Parameters.class);
+    
+    public final static String DB_TABLE_PREFIX = "sync.table.prefix";
 
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
 

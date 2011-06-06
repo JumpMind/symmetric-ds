@@ -99,6 +99,12 @@ public class Column implements Cloneable, Serializable {
         setRequired(required);
         setPrimaryKey(primaryKey);
     }
+    
+    public Column(String name, String type, String size, boolean autoincrement, boolean required,
+            boolean primaryKey, String defaultValue) {
+        this(name, type, size, autoincrement, required, primaryKey);
+        this.setDefaultValue(defaultValue);
+    }
 
     /**
      * Returns the name of the column.
