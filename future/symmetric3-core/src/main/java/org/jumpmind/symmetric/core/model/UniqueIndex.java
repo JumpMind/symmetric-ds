@@ -27,12 +27,17 @@ import org.jumpmind.symmetric.core.common.EqualsBuilder;
  * Provides compatibility with Torque-style xml with separate &lt;index&gt; and
  * &lt;unique&gt; tags, but adds no functionality. All indexes are treated the
  * same by the Table.
- * 
- * @version $Revision: 463305 $
  */
 public class UniqueIndex extends Index {
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -4097003126550294993L;
+
+    public UniqueIndex() {
+    }
+
+    public UniqueIndex(String name) {
+        setName(name);
+    }
 
     /**
      * {@inheritDoc}
