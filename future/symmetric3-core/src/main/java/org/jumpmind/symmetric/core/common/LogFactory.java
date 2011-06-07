@@ -8,6 +8,11 @@ public class LogFactory {
     private static Class<?> logClass;
 
     private static Map<Class<?>, Log> logs = new HashMap<Class<?>, Log>();
+    
+    public static void setLogClass(Class<?> logClass) {
+        LogFactory.logClass = logClass;
+        logs.clear();
+    }
 
     static void checkInitialization() {
         if (logClass == null) {
