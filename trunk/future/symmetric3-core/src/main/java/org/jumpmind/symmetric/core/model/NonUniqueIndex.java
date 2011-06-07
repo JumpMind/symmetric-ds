@@ -31,6 +31,13 @@ public class NonUniqueIndex extends Index {
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -3591499395114850301L;
 
+    public NonUniqueIndex() {     
+    }
+    
+    public NonUniqueIndex(String name) {
+        setName(name);
+    }
+
     /**
      * {@inheritDoc}
      */

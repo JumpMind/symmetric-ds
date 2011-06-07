@@ -6,19 +6,26 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.core.db.AbstractDbDialect;
-import org.jumpmind.symmetric.core.db.ISqlRowMapper;
 import org.jumpmind.symmetric.core.db.ISqlTemplate;
 import org.jumpmind.symmetric.core.db.SqlConstants;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
+import org.jumpmind.symmetric.core.model.Index;
+import org.jumpmind.symmetric.core.model.IndexColumn;
+import org.jumpmind.symmetric.core.model.NonUniqueIndex;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
+import org.jumpmind.symmetric.core.model.UniqueIndex;
 
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class SQLiteDbDialect extends AbstractDbDialect {
+
+    final static ColumnMapper COLUMN_MAPPER = new ColumnMapper();
+    final static IndexMapper INDEX_MAPPER = new IndexMapper();
+    final static IndexColumnMapper INDEX_COLUMN_MAPPER = new IndexColumnMapper();
 
     protected SQLiteOpenHelper openHelper;
 
@@ -31,6 +38,7 @@ public class SQLiteDbDialect extends AbstractDbDialect {
         dialectInfo.setIdentityOverrideAllowed(false);
         dialectInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         dialectInfo.setNullAsDefaultValueRequired(false);
+        
         dialectInfo.addNativeTypeMapping(Types.ARRAY, "NONE", Types.BINARY);
         dialectInfo.addNativeTypeMapping(Types.DISTINCT, "NONE", Types.BINARY);
         dialectInfo.addNativeTypeMapping(Types.NULL, "NONE", Types.BINARY);
@@ -106,29 +114,24 @@ public class SQLiteDbDialect extends AbstractDbDialect {
             boolean caseSensitive, boolean makeAllColumnsPKsIfNoneFound) {
         Table table = null;
         List<Column> columns = sqlTemplate.query("pragma table_info(" + tableName + ")",
-                new ColumnMapper());
+                COLUMN_MAPPER);
 
         if (columns != null && columns.size() > 0) {
             table = new Table(tableName);
             for (Column column : columns) {
                 table.addColumn(column);
             }
-            // TODO read indexes
-            // PRAGMA index_info(index-name);
-            //
-            // This pragma returns one row each column in the named index. The
-            // first column of the result is the rank of the column within the
-            // index.
-            //
-            // The second column of the result is the rank of the column within
-            // the table. The third column of output is the name of the column
-            // being indexed.
-            //
-            // PRAGMA index_list(table-name);
-            //
-            // This pragma returns one row for each index associated with the
-            // given table. Columns of the result set include the index name and
-            // a flag to indicate whether or not the index is UNIQUE.
+
+            List<Index> indexes = sqlTemplate.query("pragma index_list(" + tableName + ")",
+                    INDEX_MAPPER);
+            for (Index index : indexes) {
+                List<IndexColumn> indexColumns = sqlTemplate.query(
+                        "pragma index_info(" + index.getName() + ")", INDEX_COLUMN_MAPPER);
+                for (IndexColumn indexColumn : indexColumns) {
+                    index.addColumn(indexColumn);
+                }
+                table.addIndex(index);
+            }
         }
 
         return table;
@@ -146,7 +149,7 @@ public class SQLiteDbDialect extends AbstractDbDialect {
         return true;
     }
 
-    class ColumnMapper implements ISqlRowMapper<Column> {
+    static class ColumnMapper extends AbstractSqlRowMapper<Column> {
         public Column mapRow(Map<String, Object> row) {
             Column col = new Column((String) row.get("name"), toJdbcType((String) row.get("type")),
                     null, false, booleanValue(row.get("notnull")), booleanValue(row.get("pk")));
@@ -170,8 +173,26 @@ public class SQLiteDbDialect extends AbstractDbDialect {
             return colType;
         }
 
-        protected boolean booleanValue(Object v) {
-            return v != null && v.equals("1");
+    }
+
+    static class IndexMapper extends AbstractSqlRowMapper<Index> {
+        public Index mapRow(Map<String, Object> row) {
+            boolean unique = booleanValue(row.get("unique"));
+            String name = (String) row.get("name");
+            if (unique) {
+                return new UniqueIndex(name);
+            } else {
+                return new NonUniqueIndex(name);
+            }
+        }
+    }
+
+    static class IndexColumnMapper extends AbstractSqlRowMapper<IndexColumn> {
+        public IndexColumn mapRow(Map<String, Object> row) {
+            IndexColumn column = new IndexColumn();
+            column.setName((String) row.get("name"));
+            column.setOrdinalPosition(intValue(row.get("cid")));
+            return column;
         }
     }
 
