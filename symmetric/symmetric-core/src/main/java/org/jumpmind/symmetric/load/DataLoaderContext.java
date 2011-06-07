@@ -118,6 +118,16 @@ public class DataLoaderContext implements IDataLoaderContext {
         tableTemplateMap.put(getFullQualifiedTableName(), tableTemplate);
     }
 
+    public int getFilteredColumnIndex(String columnName) {
+        String[] columnNames = tableTemplate.getFilteredColumnNames();
+        for (int i = 0; i < columnNames.length; i++) {
+            if (columnNames[i].equals(columnName)) {
+                return i;
+            }
+        }
+        return -1;        
+    }
+    
     public int getColumnIndex(String columnName) {
         String[] columnNames = tableTemplate.getColumnNames();
         for (int i = 0; i < columnNames.length; i++) {
@@ -234,6 +244,10 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     public void setSkipping(boolean isSkipping) {
         this.isSkipping = isSkipping;
+    }
+    
+    public String[] getFilteredColumnNames() {
+        return tableTemplate.getFilteredColumnNames();
     }
 
     public String[] getColumnNames() {
