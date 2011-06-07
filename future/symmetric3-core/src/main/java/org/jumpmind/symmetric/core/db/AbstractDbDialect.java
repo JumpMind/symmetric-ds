@@ -76,7 +76,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public void alter(boolean failOnError, Table... tables) {
         String alterSql = getAlterScriptFor(tables);
         SqlScript script = new SqlScript(alterSql, this, failOnError, ";", null);
-        script.execute();
+        int alterStatements = script.execute();
+        log.info("Ran %d alter statements", alterStatements);
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
@@ -231,7 +232,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         result.append(name.substring(startCut + delta + 1, originalLength));
         return result.toString();
     }
-    
+
     public String getAlterScriptFor(Table... tables) {
         StringWriter writer = new StringWriter();
         tableBuilder.setWriter(writer);
@@ -240,19 +241,19 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
         Database currentModel = new Database();
         for (Table table : tables) {
-            currentModel.addTable(readTable(table.getCatalogName(),
-                    table.getSchemaName(), table.getTableName(), false, false));
+            currentModel.addTable(readTable(table.getCatalogName(), table.getSchemaName(),
+                    table.getTableName(), false, false));
         }
 
         tableBuilder.alterDatabase(currentModel, desiredModel);
 
         return writer.toString();
     }
-    
+
     public Table findTable(String tableName, boolean useCached) {
         return findTable(null, null, tableName, useCached);
     }
-    
+
     public Table findTable(String catalogName, String schemaName, String tableName,
             boolean useCached) {
         Table cachedTable = cachedModel.findTable(catalogName, schemaName, tableName);
@@ -271,8 +272,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
             cachedTable = justReadTable;
         }
-        return cachedTable;    }
-    
+        return cachedTable;
+    }
+
     abstract protected Table readTable(String catalogName, String schemaName, String tableName,
             boolean caseSensitive, boolean makeAllColumnsPKsIfNoneFound);
 
@@ -302,6 +304,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void setDefaultSchema(String defaultSchema) {
         this.defaultSchema = defaultSchema;
-    }        
+    }
 
 }

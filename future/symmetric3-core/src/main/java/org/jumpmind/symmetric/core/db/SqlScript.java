@@ -107,8 +107,8 @@ public class SqlScript {
         this.replacementTokens = replacementTokens;
     }
 
-    public void execute() {
-        execute(false);
+    public int execute() {
+        return execute(false);
     }
 
     protected List<String> parseLines(List<String> script) {
@@ -146,9 +146,9 @@ public class SqlScript {
         return statements;
     }
 
-    public void execute(final boolean autoCommit) {
+    public int execute(final boolean autoCommit) {
         ISqlTemplate connection = platform.getSqlTemplate();
-        connection.update(autoCommit, failOnError, commitRate,
+        return connection.update(autoCommit, failOnError, commitRate,
                 statements.toArray(new String[statements.size()]));
     }
 
