@@ -59,6 +59,8 @@ public class TableTemplate {
     private String[] keyNames;
 
     private String[] columnNames;
+    
+    private String[] filteredColumnNames;
 
     private String[] oldData;
 
@@ -214,21 +216,21 @@ public class TableTemplate {
     }
 
     final private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type,
-            String[] statementColumnNames) {
+            String[] preFilteredColumnNames) {
         StatementBuilder st = statementMap.get(type);
-        if (st == null) {
-            String[] preFilteredColumnNames = statementColumnNames;
+        if (st == null) {            
+            this.filteredColumnNames = preFilteredColumnNames;
             if (columnFilters != null) {
                 for (IColumnFilter columnFilter : columnFilters) {
-                    statementColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(),
-                            statementColumnNames);
+                    this.filteredColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(),
+                            this.filteredColumnNames);
                 }
             }
 
             String tableName = getFullyQualifiedTableName();
             
             st = new StatementBuilder(type, tableName, getColumnMetaData(keyNames),
-                    getColumnMetaData(statementColumnNames),
+                    getColumnMetaData(this.filteredColumnNames),
                     getColumnMetaData(preFilteredColumnNames), dbDialect
                             .isDateOverrideToTimestamp(), dbDialect.getIdentifierQuoteString());
 
@@ -293,6 +295,10 @@ public class TableTemplate {
 
     public String[] getColumnNames() {
         return columnNames;
+    }
+    
+    public String[] getFilteredColumnNames() {
+        return filteredColumnNames != null ? filteredColumnNames : columnNames;
     }
 
     public Table getTable() {
