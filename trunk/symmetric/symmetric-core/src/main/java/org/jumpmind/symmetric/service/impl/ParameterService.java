@@ -237,7 +237,7 @@ public class ParameterService extends AbstractService implements IParameterServi
                 || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System
                         .currentTimeMillis() - cacheTimeoutInMs))) {
             lastTimeParameterWereCached = new Date();
-            parameters = rereadApplicationParameters();
+            parameters = rereadApplicationParameters();            
             cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
         }
         return parameters;

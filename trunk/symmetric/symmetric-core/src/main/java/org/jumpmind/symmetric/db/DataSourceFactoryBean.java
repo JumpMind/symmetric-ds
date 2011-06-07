@@ -23,7 +23,11 @@ package org.jumpmind.symmetric.db;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
@@ -35,21 +39,45 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class DataSourceFactoryBean implements FactoryBean<DataSource>, ApplicationContextAware {
 
+    static final ILog log = LogFactory.getLog(DataSourceFactoryBean.class);
+    
     private String jndiName;
 
     private String beanName;
 
     private ApplicationContext applicationContext;
+    
+    private String connectionProperties;
 
     public DataSource getObject() throws Exception {
+        DataSource dataSource = null;
         if (jndiName == null || jndiName.trim().length() == 0) {
-            if (beanName.startsWith(Constants.PARENT_PROPERTY_PREFIX) && applicationContext.getParent() != null) {
-                return (DataSource) applicationContext.getParent().getBean(
+            if (beanName.startsWith(Constants.PARENT_PROPERTY_PREFIX)
+                    && applicationContext.getParent() != null) {
+                dataSource = (DataSource) applicationContext.getParent().getBean(
                         beanName.substring(Constants.PARENT_PROPERTY_PREFIX.length()));
+            } else {
+                dataSource = (DataSource) applicationContext.getBean(beanName);
             }
-            return (DataSource) applicationContext.getBean(beanName);
         } else {
-            return (DataSource) applicationContext.getBean("jndiDataSource");
+            dataSource = (DataSource) applicationContext.getBean("jndiDataSource");
+        }
+        
+        applyConnectionProperties(dataSource);
+        return dataSource;
+    }
+    
+    protected void applyConnectionProperties(DataSource dataSource) {
+        if (StringUtils.isNotBlank(connectionProperties) && dataSource instanceof BasicDataSource) {
+            BasicDataSource bds = (BasicDataSource)dataSource;
+            String[] properties = connectionProperties.split(";");
+            for (String property : properties) {
+                String[] keyValue = property.split("=");
+                if (keyValue != null && keyValue.length > 1) {
+                    log.info("DatabaseSettingConnectionProperty", keyValue[0], keyValue[1]);
+                    bds.addConnectionProperty(keyValue[0], keyValue[1]);
+                }
+            }
         }
     }
 
@@ -71,6 +99,10 @@ public class DataSourceFactoryBean implements FactoryBean<DataSource>, Applicati
 
     public void setBeanName(String beanName) {
         this.beanName = beanName;
+    }
+    
+    public void setConnectionProperties(String connectionProperties) {
+        this.connectionProperties = connectionProperties;
     }
 
 }

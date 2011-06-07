@@ -14,6 +14,7 @@
     <bean id="dataSource" class="org.jumpmind.symmetric.db.DataSourceFactoryBean">
         <property name="jndiName" value="$[sym.db.jndi.name]" />
         <property name="beanName" value="$[sym.db.spring.bean.name]" />
+        <property name="connectionProperties" value="$[sym.db.connection.properties]" />
     </bean>
 
     <bean id="symmetricBasicDataSource" class="org.apache.commons.dbcp.BasicDataSource"
