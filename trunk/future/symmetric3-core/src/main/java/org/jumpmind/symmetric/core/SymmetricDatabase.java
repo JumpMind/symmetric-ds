@@ -11,7 +11,7 @@ public class SymmetricDatabase extends Database {
     private static final long serialVersionUID = 1L;
 
     public static final String DEFAULT_PREFIX = "sym";
-    
+
     protected String prefix = DEFAULT_PREFIX;
 
     public SymmetricDatabase() {
@@ -21,6 +21,8 @@ public class SymmetricDatabase extends Database {
     public SymmetricDatabase(String prefix) {
         this.prefix = prefix;
         addTable(buildNodeTable());
+        addTable(buildNodeSecurity());
+        addTable(buildNodeIdentity());
     }
 
     protected String prependPrefix(String suffix) {
@@ -50,6 +52,28 @@ public class SymmetricDatabase extends Database {
                 false, "0"));
         table.addColumn(new Column("created_at_node_id", TypeMap.VARCHAR, "50", false, false, false));
         table.addColumn(new Column("deployment_type", TypeMap.VARCHAR, "50", false, false, false));
+        return table;
+    }
+
+    protected Table buildNodeSecurity() {
+        Table table = new Table(prependPrefix("node_security"));
+        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("node_password", TypeMap.VARCHAR, "50", false, true, false));
+        table.addColumn(new Column("registration_enabled", TypeMap.BOOLEAN, "1", false, true,
+                false, "0"));
+        table.addColumn(new Column("registration_time", TypeMap.TIMESTAMP, "50", false, false,
+                false));
+        table.addColumn(new Column("initial_load_enabled", TypeMap.BOOLEAN, "1", false, true,
+                false, "0"));
+        table.addColumn(new Column("initial_load_time", TypeMap.TIMESTAMP, "50", false, false,
+                false));
+        table.addColumn(new Column("created_at_node_id", TypeMap.VARCHAR, "50", false, false, false));
+        return table;
+    }
+
+    protected Table buildNodeIdentity() {
+        Table table = new Table(prependPrefix("node_identity"));
+        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
         return table;
     }
 }
