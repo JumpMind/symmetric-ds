@@ -100,6 +100,34 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         Assert.assertEquals(1, getJdbcTemplate().queryForInt(ASSERT_SQL, "1", "1",
                 ADDITIONAL_COLUMN_VALUE_1, ADDITIONAL_COLUMN_VALUE_2));
     }
+
+    @Test
+    public void testAddColumnsFilterReferenceAnotherColumn() throws Exception {
+
+        final String ADDITIONAL_COLUMN_VALUE_1 = "Hello Johnny";
+        final Integer ADDITIONAL_COLUMN_VALUE_2 = 42;
+        
+        final String ASSERT_SQL = "select count(*) from " + TEST_TABLE
+                + " where id=? and column1=? and column2=? and field1=? and another_id_column=id";
+
+        cleanSlate();
+
+        ByteArrayOutputStream out = getStandardCsv();
+
+        AddColumnsFilter filter = new AddColumnsFilter();
+        Map<String, Object> additionalColumns = new HashMap<String, Object>();
+        additionalColumns.put("column2", ADDITIONAL_COLUMN_VALUE_1);
+        additionalColumns.put("field1", ADDITIONAL_COLUMN_VALUE_2);
+        additionalColumns.put("another_id_column", ":id");
+        filter.setAdditionalColumns(additionalColumns);
+        filter.setTables(new String[] { TEST_TABLE });
+        Map<String, List<IColumnFilter>> filters = createColumnFilterList(TEST_TABLE, filter);
+
+        load(out, filters);
+
+        Assert.assertEquals(1, getJdbcTemplate().queryForInt(ASSERT_SQL, "1", "1",
+                ADDITIONAL_COLUMN_VALUE_1, ADDITIONAL_COLUMN_VALUE_2));
+    }
     
     @Test
     public void testAddExternalIdColumn() throws Exception {
