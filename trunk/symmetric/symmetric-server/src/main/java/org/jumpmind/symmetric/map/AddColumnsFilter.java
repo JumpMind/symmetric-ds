@@ -23,7 +23,10 @@ package org.jumpmind.symmetric.map;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.symmetric.common.TokenConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -36,6 +39,8 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
  */
 public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtensionPoint {
 
+    private static final ILog log = LogFactory.getLog(AddColumnsFilter.class);
+    
     private String[] tables;
 
     private Map<String, Object> additionalColumns;
@@ -112,9 +117,27 @@ public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtension
                 } else if (TokenConstants.NODE_GROUP_ID.equals(extraValue)) {
                     extraValue = ctx.getSourceNode() != null ? ctx.getSourceNode().getNodeGroupId() : null;
                 } else if (extraValue instanceof String && extraValue.toString().startsWith(":")){
-                    int index = ctx.getFilteredColumnIndex(extraValue.toString().substring(1));
+                    String extraColumnName = extraValue.toString().substring(1);
+                    int index = ctx.getFilteredColumnIndex(extraColumnName);
                     if (index >= 0) {
-                        extraValue = columnValues[index];
+                        if (columnValues.length > index) {
+                            extraValue = columnValues[index];
+                        } else {
+                            log.error(
+                                    "Message",
+                                    String.format(
+                                            "The column name of %s was found, but the index, %d, was greater than the array of values.\n The column names were: $s\n The column values were: %s",
+                                            extraColumnName, index, ArrayUtils.toString(ctx.getFilteredColumnNames()), ArrayUtils.toString(columnValues)));
+                            ;
+                            extraValue = null;
+                        }
+                    } else {
+                        log.error(
+                                "Message",
+                                String.format(
+                                        "Could not find a column with the name of %s",
+                                        extraColumnName, index));
+                        extraValue = null;
                     }
                 }
                 columnValuesPlus[i++] = extraValue;

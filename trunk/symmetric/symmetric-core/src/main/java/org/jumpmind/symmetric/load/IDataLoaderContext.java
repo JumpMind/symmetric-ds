@@ -85,6 +85,8 @@ public interface IDataLoaderContext extends ICacheContext {
     public boolean isSkipping();
 
     public String[] getColumnNames();
+    
+    public String[] getFilteredColumnNames();
 
     /**
      * @return an array of the previous values of the row that is being data sync'd.
