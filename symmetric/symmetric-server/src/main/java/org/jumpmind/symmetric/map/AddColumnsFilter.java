@@ -126,7 +126,7 @@ public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtension
                             log.error(
                                     "Message",
                                     String.format(
-                                            "The column name of %s was found, but the index, %d, was greater than the array of values.\n The column names were: $s\n The column values were: %s",
+                                            "The column name of %s was found, but the index, %d, was greater than the array of values.\n The column names were: %s\n The column values were: %s",
                                             extraColumnName, index, ArrayUtils.toString(ctx.getFilteredColumnNames()), ArrayUtils.toString(columnValues)));
                             ;
                             extraValue = null;
