@@ -44,8 +44,9 @@
       <column name="id" type="VARCHAR" size="50" primaryKey="true" required="true"/>
       <column name="column1" type="VARCHAR" size="50" />
       <column name="column2" type="VARCHAR" size="50" />
-      <column name="field1" type="INTEGER" />
-      <column name="time1" type="TIMESTAMP" />    
+      <column name="field1" type="INTEGER" />      
+      <column name="time1" type="TIMESTAMP" />
+      <column name="another_id_column" type="VARCHAR" size="50" />    
     </table>    
        
     <table name="test_order_detail">
