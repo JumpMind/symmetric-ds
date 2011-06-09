@@ -78,7 +78,7 @@ public class JdbcTableReader {
     private final List<MetaDataColumnDescriptor> columnsForIndex;
 
     /** The platform that this model reader belongs to. */
-    private IJdbcDbDialect platform;
+    private IJdbcDbDialect dbDialect;
     /**
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
      * must support).
@@ -109,7 +109,7 @@ public class JdbcTableReader {
      *            The platform this builder belongs to
      */
     public JdbcTableReader(IJdbcDbDialect platform) {
-        this.platform = platform;
+        this.dbDialect = platform;
         this.connection = new JdbcSqlTemplate(platform);
 
         defaultSizes.put(new Integer(Types.CHAR), "254");
@@ -138,8 +138,8 @@ public class JdbcTableReader {
      * 
      * @return The platform
      */
-    public IDbDialect getPlatform() {
-        return platform;
+    public IDbDialect getDbDialect() {
+        return dbDialect;
     }
 
     /**
@@ -147,8 +147,8 @@ public class JdbcTableReader {
      * 
      * @return The platform settings
      */
-    public DbDialectInfo getPlatformInfo() {
-        return platform.getDialectInfo();
+    public DbDialectInfo getDbDialectInfo() {
+        return dbDialect.getDbDialectInfo();
     }
 
     /**
@@ -450,7 +450,7 @@ public class JdbcTableReader {
                 // Note that we do this here instead of in readTable since
                 // platforms may redefine the readTable method whereas it is
                 // highly unlikely that this method gets redefined
-                if (getPlatform().getDialectInfo().isForeignKeysSorted()) {
+                if (getDbDialect().getDbDialectInfo().isForeignKeysSorted()) {
                     sortForeignKeys(db);
                 }
                 db.initialize();
@@ -517,7 +517,7 @@ public class JdbcTableReader {
         }
     }
 
-    protected String getPlatformTableName(String catalogName, String schemaName, String tblName) {
+    protected String getDialectTableName(String catalogName, String schemaName, String tblName) {
         return tblName;
     }
 
@@ -549,7 +549,7 @@ public class JdbcTableReader {
                                 StringUtils.lowerCase(tableName), makeAllColumnsPKsIfNoneFound);
                         if (table == null) {
                             table = readTableCaseSensitive(catalogName, schemaName,
-                                    getPlatformTableName(catalogName, schemaName, tableName),
+                                    getDialectTableName(catalogName, schemaName, tableName),
                                     makeAllColumnsPKsIfNoneFound);
                         }
                     }
@@ -566,11 +566,11 @@ public class JdbcTableReader {
             // If we don't provide a default schema or catalog, then on some
             // databases multiple results will be found in the metadata from
             // multiple schemas/catalogs
-            final String schema = StringUtils.isBlank(schemaName) ? platform.getDefaultSchema()
+            final String schema = StringUtils.isBlank(schemaName) ? dbDialect.getDefaultSchema()
                     : schemaName;
-            final String catalog = StringUtils.isBlank(catalogName) ? platform.getDefaultCatalog()
+            final String catalog = StringUtils.isBlank(catalogName) ? dbDialect.getDefaultCatalog()
                     : catalogName;
-            table = platform.getJdbcSqlConnection().execute(new IConnectionCallback<Table>() {
+            table = dbDialect.getJdbcSqlConnection().execute(new IConnectionCallback<Table>() {
                 public Table execute(Connection c) throws SQLException {
                     Table table = null;
                     DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
@@ -654,7 +654,7 @@ public class JdbcTableReader {
                 table.findColumn(it.next(), true).setPrimaryKey(true);
             }
 
-            if (getPlatformInfo().isSystemIndicesReturned()) {
+            if (getDbDialectInfo().isSystemIndicesReturned()) {
                 removeSystemIndices(metaData, table);
             }
         }
@@ -721,11 +721,11 @@ public class JdbcTableReader {
     protected void removeInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table,
             ForeignKey fk) throws SQLException {
         List<String> columnNames = new ArrayList<String>();
-        boolean mustBeUnique = !getPlatformInfo().isSystemForeignKeyIndicesAlwaysNonUnique();
+        boolean mustBeUnique = !getDbDialectInfo().isSystemForeignKeyIndicesAlwaysNonUnique();
 
         for (int columnIdx = 0; columnIdx < fk.getReferenceCount(); columnIdx++) {
             String name = fk.getReference(columnIdx).getLocalColumnName();
-            Column localColumn = table.findColumn(name, getPlatform().getDialectInfo()
+            Column localColumn = table.findColumn(name, getDbDialect().getDbDialectInfo()
                     .isDelimitedIdentifierModeOn());
 
             if (mustBeUnique && !localColumn.isPrimaryKey()) {
@@ -1165,12 +1165,12 @@ public class JdbcTableReader {
     }
 
     public StringBuilder appendIdentifier(StringBuilder query, String identifier) {
-        if (getPlatform().getDialectInfo().isDelimitedIdentifierModeOn()) {
-            query.append(getPlatformInfo().getDelimiterToken());
+        if (getDbDialect().getDbDialectInfo().isDelimitedIdentifierModeOn()) {
+            query.append(getDbDialectInfo().getDelimiterToken());
         }
         query.append(identifier);
-        if (getPlatform().getDialectInfo().isDelimitedIdentifierModeOn()) {
-            query.append(getPlatformInfo().getDelimiterToken());
+        if (getDbDialect().getDbDialectInfo().isDelimitedIdentifierModeOn()) {
+            query.append(getDbDialectInfo().getDelimiterToken());
         }
         return query;
     }
@@ -1184,7 +1184,7 @@ public class JdbcTableReader {
     protected void sortForeignKeys(Database model) {
         for (int tableIdx = 0; tableIdx < model.getTableCount(); tableIdx++) {
             model.getTable(tableIdx).sortForeignKeys(
-                    getPlatform().getDialectInfo().isDelimitedIdentifierModeOn());
+                    getDbDialect().getDbDialectInfo().isDelimitedIdentifierModeOn());
         }
     }
 

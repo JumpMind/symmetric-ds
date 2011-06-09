@@ -56,6 +56,7 @@ public class OracleDbDialect extends AbstractJdbcDbDialect {
         dialectInfo.setDefaultSize(Types.BINARY, 254);
         dialectInfo.setDefaultSize(Types.VARBINARY, 254);
 
+        // These come from the old db dialect class
         dialectInfo.setDateOverridesToTimestamp(true);
         dialectInfo.setEmptyStringNulled(true);
         dialectInfo.setBlankCharColumnSpacePadded(true);

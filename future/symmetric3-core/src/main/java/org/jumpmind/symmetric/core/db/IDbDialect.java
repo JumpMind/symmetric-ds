@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.core.db;
 
 import java.util.List;
 
+import org.jumpmind.symmetric.core.SymmetricDatabase;
 import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
@@ -10,7 +11,9 @@ import org.jumpmind.symmetric.core.model.Table;
 
 public interface IDbDialect {
 
-    public DbDialectInfo getDialectInfo();
+    public DbDialectInfo getDbDialectInfo();
+    
+    public SymmetricDatabase getDatabaseDefinition();
 
     public Parameters getParameters();
 

@@ -174,10 +174,10 @@ public class OracleJdbcTableReader extends JdbcTableReader {
         // determine whether it fits our auto-increment definition
         PreparedStatement prepStmt = null;
         ResultSet resultSet = null;
-        String triggerName = getPlatform().getConstraintName("trg", table, column.getName(), null);
-        String seqName = getPlatform().getConstraintName("seq", table, column.getName(), null);
+        String triggerName = getDbDialect().getConstraintName("trg", table, column.getName(), null);
+        String seqName = getDbDialect().getConstraintName("seq", table, column.getName(), null);
 
-        if (!getPlatform().getDialectInfo().isDelimitedIdentifierModeOn()) {
+        if (!getDbDialect().getDbDialectInfo().isDelimitedIdentifierModeOn()) {
             triggerName = triggerName.toUpperCase();
             seqName = seqName.toUpperCase();
         }
@@ -241,7 +241,7 @@ public class OracleJdbcTableReader extends JdbcTableReader {
         try {
             stmt = c.prepareStatement(query.toString());
             stmt.setString(1,
-                    getPlatform().getDialectInfo().isDelimitedIdentifierModeOn() ? tableName
+                    getDbDialect().getDbDialectInfo().isDelimitedIdentifierModeOn() ? tableName
                             : tableName.toUpperCase());
             stmt.setString(2, "N");
             stmt.setString(3, "TABLE");

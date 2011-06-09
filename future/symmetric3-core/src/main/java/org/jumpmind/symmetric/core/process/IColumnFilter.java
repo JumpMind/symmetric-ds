@@ -56,5 +56,5 @@ public interface IColumnFilter extends IExtensionPoint {
      * 
      * @return the column values
      */
-    public Object[] filterColumnsValues(DataContext ctx, Table table, Object[] values);
+    public String[] filterColumnsValues(DataContext ctx, Table table, String[] values);
 }

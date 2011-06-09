@@ -541,6 +541,17 @@ public class Table implements Serializable, Cloneable {
         }
         return -1;
     }
+    
+    public Column getColumn(String columnName) {
+        int idx = 0;
+        for (Iterator<Column> it = columns.iterator(); it.hasNext(); idx++) {
+            Column column = it.next();
+            if (column.getName().equals(columnName)) {
+                return column;
+            }
+        }
+        return null;        
+    }
 
     /**
      * Finds the index with the specified name, using case insensitive matching.

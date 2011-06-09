@@ -96,7 +96,7 @@ public abstract class AbstractTableBuilder {
     protected final Log log = LogFactory.getLog(AbstractTableBuilder.class);
 
     /** The platform that this builder belongs to. */
-    private IDbDialect platform;
+    private IDbDialect dbDialect;
 
     /** The current Writer used to output the SQL to. */
     private Writer writer;
@@ -129,8 +129,8 @@ public abstract class AbstractTableBuilder {
      * @param platform
      *            The platform this builder belongs to
      */
-    public AbstractTableBuilder(IDbDialect platform) {
-        this.platform = platform;
+    public AbstractTableBuilder(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
     /**
@@ -138,8 +138,8 @@ public abstract class AbstractTableBuilder {
      * 
      * @return The platform
      */
-    public IDbDialect getPlatform() {
-        return platform;
+    public IDbDialect getDbDialect() {
+        return dbDialect;
     }
 
     /**
@@ -147,8 +147,8 @@ public abstract class AbstractTableBuilder {
      * 
      * @return The info object
      */
-    public DbDialectInfo getPlatformInfo() {
-        return platform.getDialectInfo();
+    public DbDialectInfo getDbDialectInfo() {
+        return dbDialect.getDbDialectInfo();
     }
 
     /**
@@ -329,7 +329,7 @@ public abstract class AbstractTableBuilder {
      * @return The number of characters, or -1 if not limited
      */
     public int getMaxTableNameLength() {
-        return getPlatformInfo().getMaxTableNameLength();
+        return getDbDialectInfo().getMaxTableNameLength();
     }
 
     /**
@@ -340,7 +340,7 @@ public abstract class AbstractTableBuilder {
      * @return The number of characters, or -1 if not limited
      */
     public int getMaxColumnNameLength() {
-        return getPlatformInfo().getMaxColumnNameLength();
+        return getDbDialectInfo().getMaxColumnNameLength();
     }
 
     /**
@@ -351,7 +351,7 @@ public abstract class AbstractTableBuilder {
      * @return The number of characters, or -1 if not limited
      */
     public int getMaxConstraintNameLength() {
-        return getPlatformInfo().getMaxConstraintNameLength();
+        return getDbDialectInfo().getMaxConstraintNameLength();
     }
 
     /**
@@ -362,7 +362,7 @@ public abstract class AbstractTableBuilder {
      * @return The number of characters, or -1 if not limited
      */
     public int getMaxForeignKeyNameLength() {
-        return getPlatformInfo().getMaxForeignKeyNameLength();
+        return getDbDialectInfo().getMaxForeignKeyNameLength();
     }
 
     //
@@ -421,7 +421,7 @@ public abstract class AbstractTableBuilder {
      *            for existing tables, the parameters won't be applied
      */
     public void alterDatabase(Database currentModel, Database desiredModel) {
-        ModelComparator comparator = new ModelComparator(getPlatformInfo(), getPlatformInfo()
+        ModelComparator comparator = new ModelComparator(getDbDialectInfo(), getDbDialectInfo()
                 .isDelimitedIdentifierModeOn());
         List<ModelChange> changes = comparator.compare(currentModel, desiredModel);
 
@@ -561,7 +561,7 @@ public abstract class AbstractTableBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveForeignKeyChange change) {
         writeExternalForeignKeyDropStmt(change.getChangedTable(), change.getForeignKey());
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -580,7 +580,7 @@ public abstract class AbstractTableBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveIndexChange change) {
         writeExternalIndexDropStmt(change.getChangedTable(), change.getIndex());
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -599,7 +599,7 @@ public abstract class AbstractTableBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveTableChange change) {
         dropTable(change.getChangedTable());
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -617,7 +617,7 @@ public abstract class AbstractTableBuilder {
      */
     protected void processChange(Database currentModel, Database desiredModel, AddTableChange change) {
         createTable(desiredModel, change.getNewTable());
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -637,7 +637,7 @@ public abstract class AbstractTableBuilder {
             AddForeignKeyChange change) {
         writeExternalForeignKeyCreateStmt(desiredModel, change.getChangedTable(),
                 change.getNewForeignKey());
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -655,7 +655,7 @@ public abstract class AbstractTableBuilder {
      */
     protected void processChange(Database currentModel, Database desiredModel, AddIndexChange change) {
         writeExternalIndexCreateStmt(change.getChangedTable(), change.getNewIndex());
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -675,7 +675,7 @@ public abstract class AbstractTableBuilder {
             Collection<TableChange> changes) {
         LinkedHashMap<String, List<TableChange>> changesPerTable = new LinkedHashMap<String, List<TableChange>>();
         LinkedHashMap<String, List<ForeignKey>> unchangedFKs = new LinkedHashMap<String, List<ForeignKey>>();
-        boolean caseSensitive = getPlatform().getDialectInfo().isDelimitedIdentifierModeOn();
+        boolean caseSensitive = getDbDialect().getDbDialectInfo().isDelimitedIdentifierModeOn();
 
         // we first sort the changes for the tables
         // however since the changes might contain source or target tables
@@ -757,7 +757,7 @@ public abstract class AbstractTableBuilder {
     private List<ForeignKey> getUnchangedForeignKeys(Database currentModel, Database desiredModel,
             String tableName) {
         ArrayList<ForeignKey> unchangedFKs = new ArrayList<ForeignKey>();
-        boolean caseSensitive = getPlatformInfo().isDelimitedIdentifierModeOn();
+        boolean caseSensitive = getDbDialectInfo().isDelimitedIdentifierModeOn();
         Table sourceTable = currentModel.findTable(tableName, caseSensitive);
         Table targetTable = desiredModel.findTable(tableName, caseSensitive);
 
@@ -789,7 +789,7 @@ public abstract class AbstractTableBuilder {
     private void addRelevantFKsFromUnchangedTables(Database currentModel, Database desiredModel,
             Set<String> namesOfKnownChangedTables, Map<String, List<ForeignKey>> fksPerTable) {
 
-        boolean caseSensitive = getPlatformInfo().isDelimitedIdentifierModeOn();
+        boolean caseSensitive = getDbDialectInfo().isDelimitedIdentifierModeOn();
 
         for (int tableIdx = 0; tableIdx < desiredModel.getTableCount(); tableIdx++) {
             Table targetTable = desiredModel.getTable(tableIdx);
@@ -841,9 +841,9 @@ public abstract class AbstractTableBuilder {
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             String tableName, List<TableChange> changes) {
-        Table sourceTable = currentModel.findTable(tableName, getPlatformInfo()
+        Table sourceTable = currentModel.findTable(tableName, getDbDialectInfo()
                 .isDelimitedIdentifierModeOn());
-        Table targetTable = desiredModel.findTable(tableName, getPlatformInfo()
+        Table targetTable = desiredModel.findTable(tableName, getDbDialectInfo()
                 .isDelimitedIdentifierModeOn());
 
         // we're enforcing a full rebuild in case of the addition of a required
@@ -1032,7 +1032,7 @@ public abstract class AbstractTableBuilder {
             }
         }
 
-        boolean caseSensitive = getPlatformInfo().isDelimitedIdentifierModeOn();
+        boolean caseSensitive = getDbDialectInfo().isDelimitedIdentifierModeOn();
 
         for (int idx = 0; idx < targetTable.getIndexCount(); idx++) {
             Index targetIndex = targetTable.getIndex(idx);
@@ -1066,7 +1066,7 @@ public abstract class AbstractTableBuilder {
 
         for (int idx = 0; idx < sourceTable.getColumnCount(); idx++) {
             Column sourceColumn = sourceTable.getColumn(idx);
-            Column targetColumn = targetTable.findColumn(sourceColumn.getName(), getPlatformInfo()
+            Column targetColumn = targetTable.findColumn(sourceColumn.getName(), getDbDialectInfo()
                     .isDelimitedIdentifierModeOn());
 
             if (targetColumn != null) {
@@ -1126,7 +1126,7 @@ public abstract class AbstractTableBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddPrimaryKeyChange change) {
         writeExternalPrimaryKeysCreateStmt(change.getChangedTable(), change.getPrimaryKeyColumns());
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -1143,7 +1143,7 @@ public abstract class AbstractTableBuilder {
      * @return The corresponding foreign key if found
      */
     protected ForeignKey findCorrespondingForeignKey(Table table, ForeignKey fk) {
-        boolean caseMatters = getPlatformInfo().isDelimitedIdentifierModeOn();
+        boolean caseMatters = getDbDialectInfo().isDelimitedIdentifierModeOn();
         boolean checkFkName = (fk.getName() != null) && (fk.getName().length() > 0);
         Reference[] refs = fk.getReferences();
         ArrayList<Reference> curRefs = new ArrayList<Reference>();
@@ -1212,10 +1212,10 @@ public abstract class AbstractTableBuilder {
         writeTableCreationStmt(database, table);
         writeTableCreationStmtEnding(table);
 
-        if (!getPlatformInfo().isPrimaryKeyEmbedded()) {
+        if (!getDbDialectInfo().isPrimaryKeyEmbedded()) {
             writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumnsArray());
         }
-        if (!getPlatformInfo().isIndicesEmbedded()) {
+        if (!getDbDialectInfo().isIndicesEmbedded()) {
             writeExternalIndicesCreateStmt(table);
         }
     }
@@ -1242,7 +1242,7 @@ public abstract class AbstractTableBuilder {
      *            The table
      */
     public void createExternalForeignKeys(Database database, Table table) {
-        if (!getPlatformInfo().isForeignKeysEmbedded()) {
+        if (!getDbDialectInfo().isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
                 writeExternalForeignKeyCreateStmt(database, table, table.getForeignKey(idx));
             }
@@ -1330,7 +1330,7 @@ public abstract class AbstractTableBuilder {
      *            The table
      */
     public void dropExternalForeignKeys(Table table) {
-        if (!getPlatformInfo().isForeignKeysEmbedded()) {
+        if (!getDbDialectInfo().isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
                 writeExternalForeignKeyDropStmt(table, table.getForeignKey(idx));
             }
@@ -1525,49 +1525,49 @@ public abstract class AbstractTableBuilder {
         // TODO: Handle binary types (BINARY, VARBINARY, LONGVARBINARY, BLOB)
         switch (column.getTypeCode()) {
         case Types.DATE:
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             if (!(value instanceof String) && (getValueDateFormat() != null)) {
                 // TODO: Can the format method handle java.sql.Date properly ?
                 result.append(getValueDateFormat().format(value));
             } else {
                 result.append(value.toString());
             }
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             break;
         case Types.TIME:
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             if (!(value instanceof String) && (getValueTimeFormat() != null)) {
                 // TODO: Can the format method handle java.sql.Date properly ?
                 result.append(getValueTimeFormat().format(value));
             } else {
                 result.append(value.toString());
             }
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             break;
         case Types.TIMESTAMP:
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             // TODO: SimpleDateFormat does not support nano seconds so we would
             // need a custom date formatter for timestamps
             result.append(value.toString());
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             break;
         case Types.REAL:
         case Types.NUMERIC:
         case Types.FLOAT:
         case Types.DOUBLE:
         case Types.DECIMAL:
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             if (!(value instanceof String) && (getValueNumberFormat() != null)) {
                 result.append(getValueNumberFormat().format(value));
             } else {
                 result.append(value.toString());
             }
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             break;
         default:
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             result.append(escapeStringValue(value.toString()));
-            result.append(getPlatformInfo().getValueQuoteToken());
+            result.append(getDbDialectInfo().getValueQuoteToken());
             break;
         }
         return result.toString();
@@ -1685,13 +1685,13 @@ public abstract class AbstractTableBuilder {
 
         writeColumns(table);
 
-        if (getPlatformInfo().isPrimaryKeyEmbedded() && !table.hasUniqueIndexThatMatchesPrimaryKeys()) {
+        if (getDbDialectInfo().isPrimaryKeyEmbedded() && !table.hasUniqueIndexThatMatchesPrimaryKeys()) {
             writeEmbeddedPrimaryKeysStmt(table);
         }
-        if (getPlatformInfo().isForeignKeysEmbedded()) {
+        if (getDbDialectInfo().isForeignKeysEmbedded()) {
             writeEmbeddedForeignKeysStmt(database, table);
         }
-        if (getPlatformInfo().isIndicesEmbedded()) {
+        if (getDbDialectInfo().isIndicesEmbedded()) {
             writeEmbeddedIndicesStmt(table);
         }
         println();
@@ -1756,13 +1756,13 @@ public abstract class AbstractTableBuilder {
         if (column.isRequired()) {
             print(" ");
             writeColumnNotNullableStmt();
-        } else if (getPlatformInfo().isNullAsDefaultValueRequired()
-                && getPlatformInfo().hasNullDefault(column.getTypeCode())) {
+        } else if (getDbDialectInfo().isNullAsDefaultValueRequired()
+                && getDbDialectInfo().hasNullDefault(column.getTypeCode())) {
             print(" ");
             writeColumnNullableStmt();
         }
-        if (column.isAutoIncrement() && !getPlatformInfo().isDefaultValueUsedForIdentitySpec()) {
-            if (!getPlatformInfo().isNonPKIdentityColumnsSupported() && !column.isPrimaryKey()) {
+        if (column.isAutoIncrement() && !getDbDialectInfo().isDefaultValueUsedForIdentitySpec()) {
+            if (!getDbDialectInfo().isNonPKIdentityColumnsSupported() && !column.isPrimaryKey()) {
                 throw new SqlException(
                         "Column "
                                 + column.getName()
@@ -1793,14 +1793,14 @@ public abstract class AbstractTableBuilder {
         Object sizeSpec = column.getSize();
 
         if (sizeSpec == null) {
-            sizeSpec = getPlatformInfo().getDefaultSize(column.getTypeCode());
+            sizeSpec = getDbDialectInfo().getDefaultSize(column.getTypeCode());
         }
         if (sizeSpec != null) {
-            if (getPlatformInfo().hasSize(column.getTypeCode())) {
+            if (getDbDialectInfo().hasSize(column.getTypeCode())) {
                 sqlType.append("(");
                 sqlType.append(sizeSpec.toString());
                 sqlType.append(")");
-            } else if (getPlatformInfo().hasPrecisionAndScale(column.getTypeCode())) {
+            } else if (getDbDialectInfo().hasPrecisionAndScale(column.getTypeCode())) {
                 sqlType.append("(");
                 sqlType.append(column.getSizeAsInt());
                 sqlType.append(",");
@@ -1821,7 +1821,7 @@ public abstract class AbstractTableBuilder {
      * @return The native type
      */
     protected String getNativeType(Column column) {
-        String nativeType = (String) getPlatformInfo().getNativeType(column.getTypeCode());
+        String nativeType = (String) getDbDialectInfo().getNativeType(column.getTypeCode());
 
         return nativeType == null ? column.getType() : nativeType;
     }
@@ -1903,7 +1903,7 @@ public abstract class AbstractTableBuilder {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
-            if (!getPlatformInfo().isDefaultValuesForLongTypesSupported()
+            if (!getDbDialectInfo().isDefaultValuesForLongTypesSupported()
                     && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
                 throw new SqlException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
@@ -1914,7 +1914,7 @@ public abstract class AbstractTableBuilder {
                 print(" DEFAULT ");
                 writeColumnDefaultValue(table, column);
             }
-        } else if (getPlatformInfo().isDefaultValueUsedForIdentitySpec()
+        } else if (getDbDialectInfo().isDefaultValueUsedForIdentitySpec()
                 && column.isAutoIncrement()) {
             print(" DEFAULT ");
             writeColumnDefaultValue(table, column);
@@ -1951,9 +1951,9 @@ public abstract class AbstractTableBuilder {
             
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                print(getPlatformInfo().getValueQuoteToken());
+                print(getDbDialectInfo().getValueQuoteToken());
                 print(escapeStringValue(defaultValue.toString()));
-                print(getPlatformInfo().getValueQuoteToken());
+                print(getDbDialectInfo().getValueQuoteToken());
             } else {
                 print(defaultValue.toString());
             }
@@ -2022,14 +2022,14 @@ public abstract class AbstractTableBuilder {
         String desiredDefault = desiredColumn.getDefaultValue();
         String currentDefault = currentColumn.getDefaultValue();
         boolean defaultsEqual = (desiredDefault == null) || desiredDefault.equals(currentDefault);
-        boolean sizeMatters = getPlatformInfo().hasSize(currentColumn.getTypeCode())
+        boolean sizeMatters = getDbDialectInfo().hasSize(currentColumn.getTypeCode())
                 && (desiredColumn.getSize() != null);
 
         // We're comparing the jdbc type that corresponds to the native type for
         // the
         // desired type, in order to avoid repeated altering of a perfectly
         // valid column
-        if ((getPlatformInfo().getTargetJdbcType(desiredColumn.getTypeCode()) != currentColumn
+        if ((getDbDialectInfo().getTargetJdbcType(desiredColumn.getTypeCode()) != currentColumn
                 .getTypeCode())
                 || (desiredColumn.isRequired() != currentColumn.isRequired())
                 || (sizeMatters && !StringUtils.equals(desiredColumn.getSize(),
@@ -2201,7 +2201,7 @@ public abstract class AbstractTableBuilder {
         for (int idx = 0; idx < table.getIndexCount(); idx++) {
             Index index = table.getIndex(idx);
 
-            if (!index.isUnique() && !getPlatformInfo().isIndicesSupported()) {
+            if (!index.isUnique() && !getDbDialectInfo().isIndicesSupported()) {
                 throw new SqlException("Platform does not support non-unique indices");
             }
             writeExternalIndexCreateStmt(table, index);
@@ -2215,7 +2215,7 @@ public abstract class AbstractTableBuilder {
      *            The table
      */
     protected void writeEmbeddedIndicesStmt(Table table) {
-        if (getPlatformInfo().isIndicesSupported()) {
+        if (getDbDialectInfo().isIndicesSupported()) {
             for (int idx = 0; idx < table.getIndexCount(); idx++) {
                 printStartOfEmbeddedStatement();
                 writeEmbeddedIndexCreateStmt(table, table.getIndex(idx));
@@ -2232,7 +2232,7 @@ public abstract class AbstractTableBuilder {
      *            The index
      */
     protected void writeExternalIndexCreateStmt(Table table, Index index) {
-        if (getPlatformInfo().isIndicesSupported()) {
+        if (getDbDialectInfo().isIndicesSupported()) {
             if (index.getName() == null) {
                 log.log(LogLevel.WARN, "Cannot write unnamed index " + index);
             } else {
@@ -2317,12 +2317,12 @@ public abstract class AbstractTableBuilder {
      *            The index to drop
      */
     public void writeExternalIndexDropStmt(Table table, Index index) {
-        if (getPlatformInfo().isAlterTableForDropUsed()) {
+        if (getDbDialectInfo().isAlterTableForDropUsed()) {
             writeTableAlterStmt(table);
         }
         print("DROP INDEX ");
         printIdentifier(getIndexName(index));
-        if (!getPlatformInfo().isAlterTableForDropUsed()) {
+        if (!getDbDialectInfo().isAlterTableForDropUsed()) {
             print(" ON ");
             printIdentifier(getTableName(table));
         }
@@ -2345,7 +2345,7 @@ public abstract class AbstractTableBuilder {
                 log.log(LogLevel.WARN, "Foreign key table is null for key " + key);
             } else {
                 printStartOfEmbeddedStatement();
-                if (getPlatformInfo().isEmbeddedForeignKeysNamed()) {
+                if (getDbDialectInfo().isEmbeddedForeignKeysNamed()) {
                     print("CONSTRAINT ");
                     printIdentifier(getForeignKeyName(table, key));
                     print(" ");
@@ -2447,13 +2447,13 @@ public abstract class AbstractTableBuilder {
      *            The comment text
      */
     protected void printComment(String text) {
-        if (getPlatformInfo().isSqlCommentsOn()) {
-            print(getPlatformInfo().getCommentPrefix());
+        if (getDbDialectInfo().isSqlCommentsOn()) {
+            print(getDbDialectInfo().getCommentPrefix());
             // Some databases insist on a space after the prefix
             print(" ");
             print(text);
             print(" ");
-            print(getPlatformInfo().getCommentSuffix());
+            print(getDbDialectInfo().getCommentSuffix());
             println();
         }
     }
@@ -2475,7 +2475,7 @@ public abstract class AbstractTableBuilder {
         // individual
         // statements separately (the end of a statement is identified by this
         // method)
-        println(getPlatformInfo().getSqlCommandDelimiter());
+        println(getDbDialectInfo().getSqlCommandDelimiter());
         println();
     }
 
@@ -2510,9 +2510,9 @@ public abstract class AbstractTableBuilder {
      *         identifier is returned unchanged
      */
     protected String getDelimitedIdentifier(String identifier) {
-        if (getPlatformInfo().isDelimitedIdentifierModeOn()) {
-            return getPlatformInfo().getDelimiterToken() + identifier
-                    + getPlatformInfo().getDelimiterToken();
+        if (getDbDialectInfo().isDelimitedIdentifierModeOn()) {
+            return getDbDialectInfo().getDelimiterToken() + identifier
+                    + getDbDialectInfo().getDelimiterToken();
         } else {
             return identifier;
         }

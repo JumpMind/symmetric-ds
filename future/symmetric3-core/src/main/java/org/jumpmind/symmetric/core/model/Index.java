@@ -26,10 +26,10 @@ import java.util.ArrayList;
  */
 public abstract class Index {
     /** The name of the index. */
-    protected String _name;
+    protected String name;
 
     /** The columns making up the index. */
-    protected ArrayList<IndexColumn> _columns = new ArrayList<IndexColumn>();
+    protected ArrayList<IndexColumn> columns = new ArrayList<IndexColumn>();
 
     abstract public String toVerboseString();
 
@@ -39,42 +39,42 @@ public abstract class Index {
      * {@inheritDoc}
      */
     public String getName() {
-        return _name;
+        return name;
     }
 
     /**
      * {@inheritDoc}
      */
     public void setName(String name) {
-        _name = name;
+        this.name = name;
     }
 
     /**
      * {@inheritDoc}
      */
     public int getColumnCount() {
-        return _columns.size();
+        return columns.size();
     }
 
     /**
      * {@inheritDoc}
      */
     public IndexColumn getColumn(int idx) {
-        return (IndexColumn) _columns.get(idx);
+        return (IndexColumn) columns.get(idx);
     }
 
     /**
      * {@inheritDoc}
      */
     public IndexColumn[] getColumns() {
-        return (IndexColumn[]) _columns.toArray(new IndexColumn[_columns.size()]);
+        return (IndexColumn[]) columns.toArray(new IndexColumn[columns.size()]);
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean hasColumn(Column column) {
-        for (int idx = 0; idx < _columns.size(); idx++) {
+        for (int idx = 0; idx < columns.size(); idx++) {
             IndexColumn curColumn = getColumn(idx);
 
             if (column.equals(curColumn.getColumn())) {
@@ -89,15 +89,27 @@ public abstract class Index {
      */
     public void addColumn(IndexColumn column) {
         if (column != null) {
-            for (int idx = 0; idx < _columns.size(); idx++) {
+            for (int idx = 0; idx < columns.size(); idx++) {
                 IndexColumn curColumn = getColumn(idx);
 
                 if (curColumn.getOrdinalPosition() > column.getOrdinalPosition()) {
-                    _columns.add(idx, column);
+                    columns.add(idx, column);
                     return;
                 }
             }
-            _columns.add(column);
+            columns.add(column);
+        }
+    }
+
+    public boolean hasAllPrimaryKeys() {
+        if (columns != null) {
+            boolean allPks = true;
+            for (IndexColumn column : columns) {
+                allPks &= column.getColumn().isPrimaryKey();
+            }
+            return allPks;
+        } else {
+            return false;
         }
     }
 
@@ -105,14 +117,14 @@ public abstract class Index {
      * {@inheritDoc}
      */
     public void removeColumn(IndexColumn column) {
-        _columns.remove(column);
+        columns.remove(column);
     }
 
     /**
      * {@inheritDoc}
      */
     public void removeColumn(int idx) {
-        _columns.remove(idx);
+        columns.remove(idx);
     }
 
     /**

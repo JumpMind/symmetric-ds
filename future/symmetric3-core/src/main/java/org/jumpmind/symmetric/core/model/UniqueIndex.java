@@ -52,8 +52,8 @@ public class UniqueIndex extends Index {
     @SuppressWarnings("unchecked")
     public Object clone() throws CloneNotSupportedException {
         UniqueIndex result = new UniqueIndex();
-        result._name = _name;
-        result._columns = (ArrayList<IndexColumn>) _columns.clone();
+        result.name = name;
+        result.columns = (ArrayList<IndexColumn>) columns.clone();
         return result;
     }
 
@@ -64,7 +64,7 @@ public class UniqueIndex extends Index {
         if (obj instanceof UniqueIndex) {
             UniqueIndex other = (UniqueIndex) obj;
 
-            return new EqualsBuilder().append(_name, other._name).append(_columns, other._columns)
+            return new EqualsBuilder().append(name, other.name).append(columns, other.columns)
                     .isEquals();
         } else {
             return false;
@@ -78,10 +78,10 @@ public class UniqueIndex extends Index {
         if (other instanceof UniqueIndex) {
             UniqueIndex otherIndex = (UniqueIndex) other;
 
-            boolean checkName = (_name != null) && (_name.length() > 0)
-                    && (otherIndex._name != null) && (otherIndex._name.length() > 0);
+            boolean checkName = (name != null) && (name.length() > 0)
+                    && (otherIndex.name != null) && (otherIndex.name.length() > 0);
 
-            if ((!checkName || _name.equalsIgnoreCase(otherIndex._name))
+            if ((!checkName || name.equalsIgnoreCase(otherIndex.name))
                     && (getColumnCount() == otherIndex.getColumnCount())) {
                 for (int idx = 0; idx < getColumnCount(); idx++) {
                     if (!getColumn(idx).equalsIgnoreCase(otherIndex.getColumn(idx))) {
@@ -98,7 +98,7 @@ public class UniqueIndex extends Index {
      * {@inheritDoc}
      */
     public int hashCode() {
-        return _columns.hashCode();
+        return columns.hashCode();
     }
 
     /**

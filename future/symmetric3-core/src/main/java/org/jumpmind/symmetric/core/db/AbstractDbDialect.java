@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jumpmind.symmetric.core.SymmetricDatabase;
 import org.jumpmind.symmetric.core.common.Base64;
 import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.common.DateUtils;
@@ -49,9 +50,16 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected Parameters parameters;
 
+    protected SymmetricDatabase databaseDefinition = null;
+
     public AbstractDbDialect(Parameters parameters) {
         this.parameters = parameters == null ? new Parameters() : parameters;
+        this.databaseDefinition = new SymmetricDatabase(parameters.get(Parameters.DB_TABLE_PREFIX,
+                SymmetricDatabase.DEFAULT_PREFIX));
+    }
 
+    public SymmetricDatabase getDatabaseDefinition() {
+        return databaseDefinition;
     }
 
     public Parameters getParameters() {
@@ -163,7 +171,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return getDate(value, pattern).getTime();
     }
 
-    public DbDialectInfo getDialectInfo() {
+    public DbDialectInfo getDbDialectInfo() {
         return dialectInfo;
     }
 
@@ -196,7 +204,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             result.append("_");
             result.append(suffix);
         }
-        return shortenName(result.toString(), getDialectInfo().getMaxConstraintNameLength());
+        return shortenName(result.toString(), getDbDialectInfo().getMaxConstraintNameLength());
     }
 
     /**

@@ -32,7 +32,7 @@ public class JdbcDbDialectFactory {
 
     private static AbstractJdbcDbDialect createNewPlatformInstance(String databaseName,
             DataSource dataSource, Parameters parameters) {
-        Class<? extends IDbDialect> platformClass = getPlatforms().get(databaseName.toLowerCase());
+        Class<? extends IDbDialect> platformClass = getDbDialects().get(databaseName.toLowerCase());
 
         if (platformClass != null) {
             try {
@@ -77,7 +77,7 @@ public class JdbcDbDialectFactory {
         }
     }
 
-    private static synchronized Map<String, Class<? extends IDbDialect>> getPlatforms() {
+    private static synchronized Map<String, Class<? extends IDbDialect>> getDbDialects() {
         if (platforms == null) {
             platforms = registerPlatforms();
         }
