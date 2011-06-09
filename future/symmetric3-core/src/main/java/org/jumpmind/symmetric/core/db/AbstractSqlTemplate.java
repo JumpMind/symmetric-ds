@@ -7,7 +7,7 @@ import java.util.Map;
 abstract public class AbstractSqlTemplate implements ISqlTemplate {
 
     public int queryForInt(String sql) {
-        return queryForObject(sql, Integer.class, (Object[]) null);
+        return queryForObject(sql, Number.class, (Object[]) null).intValue();
     }
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper) {
