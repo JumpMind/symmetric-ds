@@ -84,7 +84,11 @@ public class Column implements Cloneable, Serializable {
 
     public Column() {
     }
-    
+
+    public Column(String name) {
+        this(name, false);
+    }
+
     public Column(String name, boolean primaryKey) {
         setName(name);
         setPrimaryKey(primaryKey);
@@ -99,7 +103,7 @@ public class Column implements Cloneable, Serializable {
         setRequired(required);
         setPrimaryKey(primaryKey);
     }
-    
+
     public Column(String name, String type, String size, boolean autoincrement, boolean required,
             boolean primaryKey, String defaultValue) {
         this(name, type, size, autoincrement, required, primaryKey);
