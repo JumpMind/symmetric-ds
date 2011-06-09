@@ -13,7 +13,7 @@ public class QueryTest {
     final static Table TABLE1 = new Table("table1", new Column("column1"), new Column("column2"));
 
     @Test
-    public void testOneTableSelect() {
+    public void testSelectFromTable1() {
         Object[] args = new Object[] { 1, "someValue" };
         Query query = Query.create(TABLE1).where(TABLE1.getColumn(0), "=", args[0])
                 .and(TABLE1.getColumn(1), "!=", args[1]);
