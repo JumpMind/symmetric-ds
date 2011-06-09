@@ -7,6 +7,9 @@ public class Query {
 
     protected Table table;
     
+    protected boolean quoteTable = false;
+    protected boolean quoteColumns = false;
+    
     static public Query create(Table table) {
         return new Query(table);
     }
@@ -76,6 +79,22 @@ public class Query {
     @Override
     public String toString() {    
         return super.toString();
+    }
+
+    public void setQuoteColumns(boolean quoteColumns) {
+        this.quoteColumns = quoteColumns;
+    }
+    
+    public boolean isQuoteColumns() {
+        return quoteColumns;
+    }
+    
+    public void setQuoteTable(boolean quoteTable) {
+        this.quoteTable = quoteTable;
+    }
+    
+    public boolean isQuoteTable() {
+        return quoteTable;
     }
     
 }
