@@ -242,7 +242,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         String[] rowData = data.toParsedRowData();
         if (oldData != null) {
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
-                    || (platform.isLob(column.getTypeCode()) && (platform.getDialectInfo()
+                    || (platform.isLob(column.getTypeCode()) && (platform.getDbDialectInfo()
                             .isNeedsToSelectLobData() || StringUtils.isBlank(oldData[columnIndex])));
         } else if (settings.dontIncludeKeysInUpdateStatement) {
             // This is in support of creating update statements that don't use
@@ -450,13 +450,13 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     }
 
     protected int execute(Data data, String[] values) {
-        Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(), values,
-                statementBuilder.getMetaData(true));
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
-                objectValues = columnFilter.filterColumnsValues(ctx, targetTable, objectValues);
+                values = columnFilter.filterColumnsValues(ctx, targetTable, values);
             }
         }
+        Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(), values,
+                statementBuilder.getMetaData(true));
         return transaction.update(data, objectValues, this.statementBuilder.getTypes());
     }
 
@@ -473,8 +473,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         String tableName = targetTable.getFullyQualifiedTableName();
 
         return new StatementBuilder(dmlType, tableName, lookupColumns, changingColumns,
-                preFilteredColumns, platform.getDialectInfo().isDateOverridesToTimestamp(),
-                platform.getDialectInfo().getIdentifierQuoteString());
+                preFilteredColumns, platform.getDbDialectInfo().isDateOverridesToTimestamp(),
+                platform.getDbDialectInfo().getIdentifierQuoteString());
 
     }
 

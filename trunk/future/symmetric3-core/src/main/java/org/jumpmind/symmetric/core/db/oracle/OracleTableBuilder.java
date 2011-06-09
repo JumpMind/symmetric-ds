@@ -137,7 +137,7 @@ public class OracleTableBuilder extends AbstractTableBuilder {
         String columnName = getColumnName(column);
         String triggerName = getConstraintName("trg", table, column.getName(), null);
 
-        if (getPlatformInfo().isScriptModeOn()) {
+        if (getDbDialectInfo().isScriptModeOn()) {
             // For the script, we output a more nicely formatted version
             print("CREATE OR REPLACE TRIGGER ");
             printlnIdentifier(triggerName);
@@ -152,9 +152,9 @@ public class OracleTableBuilder extends AbstractTableBuilder {
             print(".nextval INTO :new.");
             printIdentifier(columnName);
             print(" FROM dual");
-            println(getPlatformInfo().getSqlCommandDelimiter());
+            println(getDbDialectInfo().getSqlCommandDelimiter());
             print("END");
-            println(getPlatformInfo().getSqlCommandDelimiter());
+            println(getDbDialectInfo().getSqlCommandDelimiter());
             println("/");
             println();
         } else {
@@ -175,14 +175,14 @@ public class OracleTableBuilder extends AbstractTableBuilder {
             print(".nextval INTO :new.");
             printIdentifier(columnName);
             print(" FROM dual");
-            print(getPlatformInfo().getSqlCommandDelimiter());
+            print(getDbDialectInfo().getSqlCommandDelimiter());
             print(" END");
             // It is important that there is a semicolon at the end of the
             // statement (or more
             // precisely, at the end of the PL/SQL block), and thus we put two
             // semicolons here
             // because the tokenizer will remove the one at the end
-            print(getPlatformInfo().getSqlCommandDelimiter());
+            print(getDbDialectInfo().getSqlCommandDelimiter());
             printEndOfStatement();
         }
     }
@@ -263,9 +263,9 @@ public class OracleTableBuilder extends AbstractTableBuilder {
             
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                print(getPlatformInfo().getValueQuoteToken());
+                print(getDbDialectInfo().getValueQuoteToken());
                 print(escapeStringValue(defaultValueStr));
-                print(getPlatformInfo().getValueQuoteToken());
+                print(getDbDialectInfo().getValueQuoteToken());
             } else {
                 print(defaultValueStr);
             }
@@ -428,7 +428,7 @@ public class OracleTableBuilder extends AbstractTableBuilder {
             createAutoIncrementSequence(change.getChangedTable(), change.getNewColumn());
             createAutoIncrementTrigger(change.getChangedTable(), change.getNewColumn());
         }
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -453,7 +453,7 @@ public class OracleTableBuilder extends AbstractTableBuilder {
         print("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()));
         printEndOfStatement();
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -473,7 +473,7 @@ public class OracleTableBuilder extends AbstractTableBuilder {
         printIndent();
         print("DROP PRIMARY KEY");
         printEndOfStatement();
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
 }

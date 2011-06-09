@@ -37,7 +37,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
             c = dbDialect.getDataSource().getConnection();
             autoCommitFlag = c.getAutoCommit();
 
-            if (dbDialect.getDialectInfo().isRequiresAutoCommitFalseToSetFetchSize()) {
+            if (dbDialect.getDbDialectInfo().isRequiresAutoCommitFalseToSetFetchSize()) {
                 c.setAutoCommit(false);
             }
 

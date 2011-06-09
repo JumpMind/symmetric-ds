@@ -38,7 +38,7 @@ public class SQLiteDbDialect extends AbstractDbDialect {
         dialectInfo.setIdentityOverrideAllowed(false);
         dialectInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         dialectInfo.setNullAsDefaultValueRequired(false);
-        
+
         dialectInfo.addNativeTypeMapping(Types.ARRAY, "NONE", Types.BINARY);
         dialectInfo.addNativeTypeMapping(Types.DISTINCT, "NONE", Types.BINARY);
         dialectInfo.addNativeTypeMapping(Types.NULL, "NONE", Types.BINARY);
@@ -129,8 +129,12 @@ public class SQLiteDbDialect extends AbstractDbDialect {
                         "pragma index_info(" + index.getName() + ")", INDEX_COLUMN_MAPPER);
                 for (IndexColumn indexColumn : indexColumns) {
                     index.addColumn(indexColumn);
+                    indexColumn.setColumn(table.getColumn(indexColumn.getName()));
                 }
-                table.addIndex(index);
+                if (!(index.hasAllPrimaryKeys() && index.getName().toLowerCase()
+                        .contains("autoindex"))) {
+                    table.addIndex(index);
+                }
             }
         }
 

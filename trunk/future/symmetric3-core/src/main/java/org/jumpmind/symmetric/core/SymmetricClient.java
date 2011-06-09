@@ -3,7 +3,6 @@ package org.jumpmind.symmetric.core;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.db.IDbDialect;
-import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.RemoteNodeStatuses;
 
 public class SymmetricClient {
@@ -19,8 +18,7 @@ public class SymmetricClient {
     public SymmetricClient(IEnvironment environment) {
         this.environment = environment;
         this.dbDialect = this.environment.getDbDialect();
-        this.symmetricDatabase = new SymmetricDatabase(environment.getParameters().get(
-                Parameters.DB_TABLE_PREFIX, SymmetricDatabase.DEFAULT_PREFIX));
+        this.symmetricDatabase = this.dbDialect.getDatabaseDefinition();
         initServices();
     }
 

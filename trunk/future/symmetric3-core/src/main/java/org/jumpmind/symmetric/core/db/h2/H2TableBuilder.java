@@ -174,7 +174,7 @@ public class H2TableBuilder extends AbstractTableBuilder {
         }
 
         if (column != null) {
-            change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+            change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
             print("ALTER TABLE ");
             printlnIdentifier(getTableName(change.getChangedTable()));
             printIndent();
@@ -217,7 +217,7 @@ public class H2TableBuilder extends AbstractTableBuilder {
             printIdentifier(getColumnName(change.getNextColumn()));
         }
         printEndOfStatement();
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     /**
@@ -238,7 +238,7 @@ public class H2TableBuilder extends AbstractTableBuilder {
         print("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()));
         printEndOfStatement();
-        change.apply(currentModel, getPlatformInfo().isDelimitedIdentifierModeOn());
+        change.apply(currentModel, getDbDialectInfo().isDelimitedIdentifierModeOn());
     }
 
     @Override
@@ -246,7 +246,7 @@ public class H2TableBuilder extends AbstractTableBuilder {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
-            if (!getPlatformInfo().isDefaultValuesForLongTypesSupported()
+            if (!getDbDialectInfo().isDefaultValuesForLongTypesSupported()
                     && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
                 throw new SqlException(
                         "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
@@ -257,7 +257,7 @@ public class H2TableBuilder extends AbstractTableBuilder {
                 print(" DEFAULT ");
                 writeColumnDefaultValue(table, column);
             }
-        } else if (getPlatformInfo().isDefaultValueUsedForIdentitySpec()
+        } else if (getDbDialectInfo().isDefaultValueUsedForIdentitySpec()
                 && column.isAutoIncrement()) {
             print(" DEFAULT ");
             writeColumnDefaultValue(table, column);
@@ -279,9 +279,9 @@ public class H2TableBuilder extends AbstractTableBuilder {
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                print(getPlatformInfo().getValueQuoteToken());
+                print(getDbDialectInfo().getValueQuoteToken());
                 print(escapeStringValue(defaultValueStr));
-                print(getPlatformInfo().getValueQuoteToken());
+                print(getDbDialectInfo().getValueQuoteToken());
             } else {
                 print(defaultValueStr);
             }

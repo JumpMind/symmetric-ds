@@ -47,20 +47,20 @@ public class ModelComparator {
     private final Log log = LogFactory.getLog(ModelComparator.class);
 
     /** The platform information. */
-    private DbDialectInfo platformInfo;
+    private DbDialectInfo dbDialectInfo;
     /** Whether comparison is case sensitive. */
     private boolean caseSensitive;
 
     /**
      * Creates a new model comparator object.
      * 
-     * @param platformInfo
+     * @param dbDialectInfo
      *            The platform info
      * @param caseSensitive
      *            Whether comparison is case sensitive
      */
-    public ModelComparator(DbDialectInfo platformInfo, boolean caseSensitive) {
-        this.platformInfo = platformInfo;
+    public ModelComparator(DbDialectInfo dbDialectInfo, boolean caseSensitive) {
+        this.dbDialectInfo = dbDialectInfo;
         this.caseSensitive = caseSensitive;
     }
 
@@ -323,7 +323,7 @@ public class ModelComparator {
         ArrayList<TableChangeImplBase> changes = new ArrayList<TableChangeImplBase>();
 
         if (targetColumn.getTypeCode() != sourceColumn.getTypeCode()
-                && platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != sourceColumn
+                && dbDialectInfo.getTargetJdbcType(targetColumn.getTypeCode()) != sourceColumn
                         .getTypeCode()) {
             if (log.isDebugEnabled()) {
                 log.debug("The " + sourceColumn.getName() + " column on the "
@@ -334,12 +334,12 @@ public class ModelComparator {
                     .getTypeCode()));
         }
 
-        boolean sizeMatters = platformInfo.hasSize(sourceColumn.getTypeCode());
-        boolean scaleMatters = platformInfo.hasPrecisionAndScale(sourceColumn.getTypeCode());
+        boolean sizeMatters = dbDialectInfo.hasSize(sourceColumn.getTypeCode());
+        boolean scaleMatters = dbDialectInfo.hasPrecisionAndScale(sourceColumn.getTypeCode());
 
         String targetSize = targetColumn.getSize();
         if (targetSize == null) {
-            Integer defaultSize = platformInfo.getDefaultSize(platformInfo
+            Integer defaultSize = dbDialectInfo.getDefaultSize(dbDialectInfo
                     .getTargetJdbcType(targetColumn.getTypeCode()));
             if (defaultSize != null) {
                 targetSize = defaultSize.toString();
@@ -373,7 +373,7 @@ public class ModelComparator {
 
         Object sourceDefaultValue = sourceColumn.getParsedDefaultValue();
         Object targetDefaultValue = targetColumn.getParsedDefaultValue();
-        if (platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != targetColumn.getTypeCode()) {
+        if (dbDialectInfo.getTargetJdbcType(targetColumn.getTypeCode()) != targetColumn.getTypeCode()) {
             sourceDefaultValue = sourceColumn.getDefaultValue();
             targetDefaultValue = targetColumn.getDefaultValue();
         }

@@ -52,8 +52,8 @@ public class NonUniqueIndex extends Index {
     public Object clone() throws CloneNotSupportedException {
         NonUniqueIndex result = new NonUniqueIndex();
 
-        result._name = _name;
-        result._columns = (ArrayList<IndexColumn>) _columns.clone();
+        result.name = name;
+        result.columns = (ArrayList<IndexColumn>) columns.clone();
 
         return result;
     }
@@ -65,7 +65,7 @@ public class NonUniqueIndex extends Index {
         if (obj instanceof NonUniqueIndex) {
             NonUniqueIndex other = (NonUniqueIndex) obj;
 
-            return new EqualsBuilder().append(_name, other._name).append(_columns, other._columns)
+            return new EqualsBuilder().append(name, other.name).append(columns, other.columns)
                     .isEquals();
         } else {
             return false;
@@ -79,10 +79,10 @@ public class NonUniqueIndex extends Index {
         if (other instanceof NonUniqueIndex) {
             NonUniqueIndex otherIndex = (NonUniqueIndex) other;
 
-            boolean checkName = (_name != null) && (_name.length() > 0)
-                    && (otherIndex._name != null) && (otherIndex._name.length() > 0);
+            boolean checkName = (name != null) && (name.length() > 0)
+                    && (otherIndex.name != null) && (otherIndex.name.length() > 0);
 
-            if ((!checkName || _name.equalsIgnoreCase(otherIndex._name))
+            if ((!checkName || name.equalsIgnoreCase(otherIndex.name))
                     && (getColumnCount() == otherIndex.getColumnCount())) {
                 for (int idx = 0; idx < getColumnCount(); idx++) {
                     if (!getColumn(idx).equalsIgnoreCase(otherIndex.getColumn(idx))) {
@@ -99,7 +99,7 @@ public class NonUniqueIndex extends Index {
      * {@inheritDoc}
      */
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(_name).append(_columns).toHashCode();
+        return new HashCodeBuilder(17, 37).append(name).append(columns).toHashCode();
     }
 
     /**
