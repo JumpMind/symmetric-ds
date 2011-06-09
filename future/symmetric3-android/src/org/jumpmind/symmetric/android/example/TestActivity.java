@@ -17,7 +17,7 @@ public class TestActivity extends Activity {
     protected final String TAG = "SymmetricDS Test";
     protected Button initializeButton;
 
-    SymmetricClient symmetricClient;
+    protected SymmetricClient symmetricClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
