@@ -92,7 +92,7 @@ public class Query {
                 sql.append(tableAlias);
                 sql.append(" ");
                 String lastTableAlias = getTableAlias(i - 1, tables);
-                List<Column> columns = getColumnJoinList(lastTable, table);
+                List<Column> columns = autoBuildColumnJoinList(lastTable, table);
                 int columnIndex = 0;
                 for (Column column : columns) {
                     sql.append(lastTableAlias);
@@ -112,7 +112,7 @@ public class Query {
         }
     }
 
-    protected static List<Column> getColumnJoinList(Table t1, Table t2) {
+    protected static List<Column> autoBuildColumnJoinList(Table t1, Table t2) {
         List<Column> columns = new ArrayList<Column>();
         Column[] t1Columns = t1.getColumns();
         for (Column column1 : t1Columns) {
