@@ -17,7 +17,7 @@ public class QueryTest {
         Object[] args = new Object[] { 1, "someValue" };
         Query query = Query.create(TABLE1).where(TABLE1.getColumn(0), "=", args[0])
                 .and(TABLE1.getColumn(1), "!=", args[1]);
-        Assert.assertEquals("select column1, column2 from table1 where column1=? and column2!=?",
+        Assert.assertEquals("select t1.column1, t1.column2 from table1 t1 where column1=? and column2!=?",
                 query.getSql());
 
         Assert.assertEquals(args[0], query.getArgs()[0]);
