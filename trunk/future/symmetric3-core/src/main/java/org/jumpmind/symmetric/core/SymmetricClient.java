@@ -13,12 +13,12 @@ public class SymmetricClient {
 
     protected IDbDialect dbDialect;
 
-    protected SymmetricDatabase symmetricDatabase;
+    protected SymmetricTables symmetricDatabase;
 
     public SymmetricClient(IEnvironment environment) {
         this.environment = environment;
         this.dbDialect = this.environment.getDbDialect();
-        this.symmetricDatabase = this.dbDialect.getDatabaseDefinition();
+        this.symmetricDatabase = this.dbDialect.getSymmetricTables();
         initServices();
     }
 

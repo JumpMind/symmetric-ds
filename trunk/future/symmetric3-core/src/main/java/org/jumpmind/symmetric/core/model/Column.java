@@ -63,7 +63,7 @@ public class Column implements Cloneable, Serializable {
     private boolean autoIncrement;
 
     /** The JDBC type code, one of the constants in {@link java.sql.Types}. */
-    private int typeCode;
+    private int typeCode = Integer.MAX_VALUE;
 
     /** The name of the JDBC type. */
     private String type;
@@ -89,6 +89,11 @@ public class Column implements Cloneable, Serializable {
         this(name, false);
     }
 
+    public Column(String name, int typeCode) {
+        this(name, false);
+        this.setTypeCode(typeCode);
+    }
+    
     public Column(String name, boolean primaryKey) {
         setName(name);
         setPrimaryKey(primaryKey);

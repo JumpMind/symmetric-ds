@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.core.db;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,17 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args) {
         return query(sql, mapper, args, null);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <T, W> Map<T, W> query(String sql, String keyCol, String valueCol, Object[] args,
+            int[] types) {        
+        List<Map<String,Object>> rows = query(sql, args, types);
+        Map<T,W> map = new HashMap<T, W>(rows.size());
+        for (Map<String, Object> row : rows) {
+            map.put((T)row.get(keyCol), (W)row.get(valueCol));
+        }
+        return map;
     }
 
     public List<Map<String, Object>> query(String sql, Object[] args, int[] types) {
