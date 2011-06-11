@@ -29,6 +29,8 @@ public interface ISqlTemplate {
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args);
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types);
+    
+    public <T,W> Map<T,W> query(String sql, String keyCol, String valueCol, Object[] args, int[] types);
 
     public int update(String sql);
 

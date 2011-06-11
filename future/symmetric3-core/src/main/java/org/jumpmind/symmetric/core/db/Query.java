@@ -11,18 +11,21 @@ public class Query {
     protected Table[] tables;
 
     protected boolean quoteTable = false;
+
     protected boolean quoteColumns = false;
 
-    List<Object> args;
+    protected List<Object> args;
 
-    StringBuilder sql;
+    protected List<Integer> argTypes;
 
-    static public Query create(Table table, int expectedNumberOfArgs) {
-        return new Query(expectedNumberOfArgs, table);
+    protected StringBuilder sql;
+
+    static public Query create(int expectedNumberOfArgs, Table... tables) {
+        return new Query(expectedNumberOfArgs, tables);
     }
 
-    static public Query create(Table table) {
-        return new Query(0, table);
+    static public Query create(Table... tables) {
+        return new Query(0, tables);
     }
 
     public Query(int expectedNumberOfArgs, String... tables) {
@@ -32,11 +35,12 @@ public class Query {
     public Query(int expectedNumberOfArgs, Table... tables) {
         this.tables = tables;
         this.args = new ArrayList<Object>(expectedNumberOfArgs);
+        this.argTypes = new ArrayList<Integer>(expectedNumberOfArgs);
         this.sql = select(tables);
     }
 
     public String getSql() {
-        return sql.toString();
+        return sql.toString().trim();
     }
 
     public Object[] getArgs() {
@@ -44,48 +48,81 @@ public class Query {
     }
 
     public int[] getArgTypes() {
-        return null;
+        int[] array = null;
+        if (argTypes.size() > 0 && argTypes.size() == args.size()) {
+            array = new int[argTypes.size()];
+            for (int i = 0; i < argTypes.size(); i++) {
+                Integer type = argTypes.get(i);
+                if (type != null) {
+                    array[i] = type;
+                }
+            }
+
+        }
+        return array;
     }
 
     public Query where() {
+        sql.append("where ");
         return this;
     }
 
     public Query where(String column, String condition, Object value) {
-        return this;
+        return where(new Column(column), condition, value);
     }
 
     public Query where(Column column, String condition, Object value) {
+        return where().append(column, condition, value);
+    }
+
+    protected Query append(Column column, String condition, Object value) {
+        String tableAlias = getTableAlias(findTableIndexWith(column, tables), tables);
+        sql.append(tableAlias);
+        sql.append(".");
+        sql.append(column.getName());
+        sql.append(condition);
+        if (value == null) {
+            sql.append(" is null ");
+        } else {
+            sql.append("? ");
+            args.add(value);
+            if (column.getTypeCode() != Integer.MAX_VALUE) {
+                argTypes.add(column.getTypeCode());
+            }
+        }
+        return this;
+    }
+
+    public Query append(String value) {
+        sql.append(value);
+        sql.append(" ");
         return this;
     }
 
     public Query and(String column, String condition, Object value) {
-        return this;
+        return and(new Column(column), condition, value);
     }
 
     public Query and(Column column, String condition, Object value) {
-        return this;
+        return append("and").append(column, condition, value);
     }
 
     public Query or(String column, String condition, Object value) {
-        return this;
+        return or(new Column(column), condition, value);
     }
 
     public Query or(Column column, String condition, Object value) {
-        return this;
+        return append("or").append(column, condition, value);
     }
 
     public Query startGroup() {
+        sql.append("(");
         return this;
     }
 
     public Query endGroup() {
+        sql.append(")");
         return this;
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
     }
 
     public void setQuoteColumns(boolean quoteColumns) {
@@ -102,6 +139,11 @@ public class Query {
 
     public boolean isQuoteTable() {
         return quoteTable;
+    }
+
+    @Override
+    public String toString() {
+        return getSql();
     }
 
     protected static StringBuilder select(Table... tables) {
@@ -135,15 +177,15 @@ public class Query {
                 sql.append(tableAlias);
                 sql.append(".");
                 sql.append(column.getName());
-                sql.append(columns.length > 1 && ++columnIndex < columns.length ? ", " : " ");
+                sql.append((columns.length > 1 && ++columnIndex < columns.length) || i+1 < tables.length ? ", " : " ");
             }
         }
     }
 
     protected static String getTableAlias(int index, Table... tables) {
-        String tableAlias = "";
-        if (tables.length > 0) {
-            tableAlias = "t" + 1;
+        String tableAlias = "t";
+        if (tables.length > 1 && index >= 0) {
+            tableAlias += (index + 1);
         }
         return tableAlias;
     }
@@ -159,12 +201,13 @@ public class Query {
                 sql.append(table.getFullyQualifiedTableName());
                 sql.append(" ");
                 sql.append(tableAlias);
-                sql.append(" ");
+                sql.append(" on ");                
                 String lastTableAlias = getTableAlias(i - 1, tables);
-                List<Column> columns = autoBuildColumnJoinList(lastTable, table);
+                List<Column> columns = autoBuildJoins(lastTable, table);                
                 int columnIndex = 0;
                 for (Column column : columns) {
                     sql.append(lastTableAlias);
+                    sql.append(".");
                     sql.append(column.getName());
                     sql.append("=");
                     sql.append(tableAlias);
@@ -181,7 +224,7 @@ public class Query {
         }
     }
 
-    protected static List<Column> autoBuildColumnJoinList(Table t1, Table t2) {
+    protected static List<Column> autoBuildJoins(Table t1, Table t2) {
         List<Column> columns = new ArrayList<Column>();
         Column[] t1Columns = t1.getColumns();
         for (Column column1 : t1Columns) {
@@ -213,6 +256,23 @@ public class Query {
         } else {
             return null;
         }
+    }
+
+    protected static int findTableIndexWith(Column column, Table[] tables) {
+        int matchOnNameIndex = -1;
+        for (int i = 0; i < tables.length; i++) {
+            Table table = tables[i];
+            Column[] columns = table.getColumns();
+            for (Column column2 : columns) {
+                if (column2.equals(column)) {
+                    return i;
+                } else if (matchOnNameIndex < 0 && column2.getName().equals(column.getName())) {
+                    matchOnNameIndex = i;
+                }
+            }
+        }
+        return matchOnNameIndex;
+
     }
 
 }

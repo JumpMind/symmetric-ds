@@ -2,7 +2,7 @@ package org.jumpmind.symmetric.core.db;
 
 import java.util.List;
 
-import org.jumpmind.symmetric.core.SymmetricDatabase;
+import org.jumpmind.symmetric.core.SymmetricTables;
 import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
@@ -13,7 +13,7 @@ public interface IDbDialect {
 
     public DbDialectInfo getDbDialectInfo();
     
-    public SymmetricDatabase getDatabaseDefinition();
+    public SymmetricTables getSymmetricTables();
 
     public Parameters getParameters();
 
@@ -74,5 +74,11 @@ public interface IDbDialect {
     public boolean isDataIntegrityException(Exception ex);
     
     public boolean supportsBatchUpdates();
+    
+    public Query createQuery(int expectedNumberOfArgs, Table... tables);
+
+    public Query createQuery(Table... tables);
+    
+    public void refreshParameters(Parameters parameters);
     
 }

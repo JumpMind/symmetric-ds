@@ -10,7 +10,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.symmetric.core.SymmetricDatabase;
+import org.jumpmind.symmetric.core.SymmetricTables;
 import org.jumpmind.symmetric.core.common.Base64;
 import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.common.DateUtils;
@@ -50,15 +50,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected Parameters parameters;
 
-    protected SymmetricDatabase databaseDefinition = null;
+    protected SymmetricTables databaseDefinition = null;
 
     public AbstractDbDialect(Parameters parameters) {
         this.parameters = parameters == null ? new Parameters() : parameters;
-        this.databaseDefinition = new SymmetricDatabase(parameters.get(Parameters.DB_TABLE_PREFIX,
-                SymmetricDatabase.DEFAULT_PREFIX));
+        this.databaseDefinition = new SymmetricTables(parameters.get(Parameters.DB_TABLE_PREFIX,
+                SymmetricTables.DEFAULT_PREFIX));
     }
 
-    public SymmetricDatabase getDatabaseDefinition() {
+    public SymmetricTables getSymmetricTables() {
         return databaseDefinition;
     }
 
@@ -314,4 +314,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.defaultSchema = defaultSchema;
     }
 
+    public Query createQuery(int expectedNumberOfArgs, Table... tables) {
+        return Query.create(expectedNumberOfArgs, tables);
+    }
+
+    public Query createQuery(Table... tables) {
+        return Query.create(tables);
+    }
+
+    public void refreshParameters(Parameters parameters) {
+        this.parameters = parameters;
+    }
 }
