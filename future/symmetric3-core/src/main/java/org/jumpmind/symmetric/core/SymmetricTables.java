@@ -62,6 +62,20 @@ public class SymmetricTables extends Database {
         addTable(buildNodeTable());
         addTable(buildNodeSecurity());
         addTable(buildNodeIdentity());
+        addTable(buildParameter());
+        addTable(buildChannel());
+        addTable(buildNodeChannelCtl());
+        addTable(buildNodeGroup());
+        addTable(buildNodeGroupLink());
+        addTable(buildNodeHost());
+        addTable(buildNodeHostChannelStats());
+        addTable(buildNodeHostJobStats());
+        addTable(buildNodeHostStats());
+        addTable(buildNodeGroupChannelWindow());
+        addTable(buildRegistrationRedirect());
+        addTable(buildRouter());
+        addTable(buildTrigger());
+        addTable(buildTriggerRouter());
     }
 
     public Table getSymmetricTable(String name) {
