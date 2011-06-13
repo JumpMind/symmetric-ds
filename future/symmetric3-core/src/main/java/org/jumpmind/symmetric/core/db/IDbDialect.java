@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.core.SymmetricTables;
 import org.jumpmind.symmetric.core.common.BinaryEncoding;
+import org.jumpmind.symmetric.core.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
@@ -78,6 +79,13 @@ public interface IDbDialect {
     public Query createQuery(int expectedNumberOfArgs, Table... tables);
 
     public Query createQuery(Table... tables);
+    
+    public DmlStatement createDmlStatement(DmlType dmlType, Table table);
+    
+    public DmlStatement createDmlStatement(DmlType dmlType, String tableName, Column[] keys, Column[] columns);
+    
+    public DmlStatement createDmlStatement(DmlType dmlType, String tableName, Column[] keys, Column[] columns,
+            Column[] preFilteredColumns);
     
     public void refreshParameters(Parameters parameters);
     
