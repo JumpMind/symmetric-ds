@@ -19,6 +19,7 @@ import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
@@ -320,6 +321,21 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public Query createQuery(Table... tables) {
         return Query.create(tables);
+    }
+    
+    public DmlStatement createDmlStatement(DmlType dmlType, Table table) {
+        return createDmlStatement(dmlType, table.getFullyQualifiedTableName(), table.getPrimaryKeyColumnsArray(), table.getColumns());
+    }
+    
+    public DmlStatement createDmlStatement(DmlType dmlType, String tableName, Column[] keys, Column[] columns) {
+        return createDmlStatement(dmlType, tableName, keys, columns, null);
+    }
+    
+    public DmlStatement createDmlStatement(DmlType dmlType, String tableName, Column[] keys, Column[] columns,
+            Column[] preFilteredColumns) {
+        return new DmlStatement(dmlType, tableName, keys, columns,
+                preFilteredColumns, dialectInfo.isDateOverridesToTimestamp(),
+                dialectInfo.getIdentifierQuoteString());
     }
 
     public void refreshParameters(Parameters parameters) {

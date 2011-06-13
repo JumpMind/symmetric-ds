@@ -31,9 +31,9 @@ import org.jumpmind.symmetric.core.common.NotImplementedException;
 import org.jumpmind.symmetric.core.model.Column;
 
 /**
- * Builds a SQL DML statement
+ * Represents and builds a SQL DML statement based on a column defintions
  */
-public class StatementBuilder {
+public class DmlStatement {
 
     public enum DmlType {
         INSERT, UPDATE, DELETE, COUNT
@@ -53,7 +53,7 @@ public class StatementBuilder {
 
     protected Column[] preFilteredColumns;
 
-    public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
+    public DmlStatement(DmlType type, String tableName, Column[] keys, Column[] columns,
             Column[] preFilteredColumns, boolean isDateOverrideToTimestamp,
             String identifierQuoteString) {
         this.keys = keys;

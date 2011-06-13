@@ -10,8 +10,8 @@ import org.jumpmind.symmetric.core.db.DataIntegrityViolationException;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.ISqlTransaction;
 import org.jumpmind.symmetric.core.db.SqlScript;
-import org.jumpmind.symmetric.core.db.StatementBuilder;
-import org.jumpmind.symmetric.core.db.StatementBuilder.DmlType;
+import org.jumpmind.symmetric.core.db.DmlStatement;
+import org.jumpmind.symmetric.core.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
@@ -32,13 +32,13 @@ import org.jumpmind.symmetric.core.process.IDataWriter;
  */
 public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
-    protected IDbDialect platform;
+    protected IDbDialect dbDialect;
 
     protected Table targetTable;
 
     protected ISqlTransaction transaction;
 
-    protected StatementBuilder statementBuilder;
+    protected DmlStatement dmlStatement;
 
     protected Data lastData;
 
@@ -52,34 +52,31 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     protected boolean currentBatchMode = false;
 
-    public SqlDataWriter(IDbDialect platform) {
-        this(platform, new Settings());
+    public SqlDataWriter(IDbDialect dbDialect) {
+        this(dbDialect, new Settings());
     }
 
-    public SqlDataWriter(IDbDialect platform, Parameters parameters) {
-        this(platform, parameters, null, null);
+    public SqlDataWriter(IDbDialect dbDialect, Parameters parameters) {
+        this(dbDialect, parameters, null, null);
     }
 
-    public SqlDataWriter(IDbDialect platform, Parameters parameters,
-            IDataFilter filter) {
-        this(platform, parameters, null, toList(filter));
+    public SqlDataWriter(IDbDialect dbDialect, Parameters parameters, IDataFilter filter) {
+        this(dbDialect, parameters, null, toList(filter));
     }
 
-    public SqlDataWriter(IDbDialect platform, Settings settings) {
-        this(platform, settings, null, null);
+    public SqlDataWriter(IDbDialect dbDialect, Settings settings) {
+        this(dbDialect, settings, null, null);
     }
 
-    public SqlDataWriter(IDbDialect platform, Parameters parameters,
-            List<IColumnFilter> columnFilters,
-            List<IDataFilter> dataFilters) {
-        this(platform, new Settings(), columnFilters, dataFilters);
+    public SqlDataWriter(IDbDialect dbDialect, Parameters parameters,
+            List<IColumnFilter> columnFilters, List<IDataFilter> dataFilters) {
+        this(dbDialect, new Settings(), columnFilters, dataFilters);
         populateSettings(parameters);
     }
 
-    public SqlDataWriter(IDbDialect platform, Settings settings,
-            List<IColumnFilter> columnFilters,
+    public SqlDataWriter(IDbDialect dbDialect, Settings settings, List<IColumnFilter> columnFilters,
             List<IDataFilter> dataFilters) {
-        this.platform = platform;
+        this.dbDialect = dbDialect;
         this.columnFilters = columnFilters;
         this.dataFilters = dataFilters;
         this.settings = settings == null ? new Settings() : settings;
@@ -87,18 +84,18 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     public void open(DataContext context) {
         this.ctx = context;
-        this.transaction = this.platform.getSqlTemplate().startSqlTransaction();
+        this.transaction = this.dbDialect.getSqlTemplate().startSqlTransaction();
         this.transaction.setNumberOfRowsBeforeBatchFlush(settings.maxRowsBeforeBatchFlush);
         this.ctx.getContext().put(DataContext.KEY_SQL_TRANSACTION, this.transaction);
     }
 
     public boolean writeTable(Table sourceTable) {
         if (sourceTable != null) {
-            Table tableAtTarget = platform.findTable(sourceTable.getCatalogName(),
+            Table tableAtTarget = dbDialect.findTable(sourceTable.getCatalogName(),
                     sourceTable.getSchemaName(), sourceTable.getTableName(), true);
             if (tableAtTarget == null && settings.autoCreateTable) {
-                new SqlScript(platform.getAlterScriptFor(sourceTable), platform).execute();
-                tableAtTarget = platform.findTable(sourceTable.getCatalogName(),
+                new SqlScript(dbDialect.getAlterScriptFor(sourceTable), dbDialect).execute();
+                tableAtTarget = dbDialect.findTable(sourceTable.getCatalogName(),
                         sourceTable.getSchemaName(), sourceTable.getTableName(), true);
             }
 
@@ -120,12 +117,12 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     }
 
     public void startBatch(Batch batch) {
-        this.statementBuilder = null;
+        this.dmlStatement = null;
         this.batch = batch;
         this.currentBatchMode = settings.batchMode;
     }
 
-    public boolean writeData(Data data) {        
+    public boolean writeData(Data data) {
         boolean committed = writeData(data, currentBatchMode, true);
         this.lastData = data;
         return committed;
@@ -171,9 +168,9 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         } catch (Exception ex) {
             throw new DataFailedToLoadException(data, ex);
         }
-        
+
         return committed;
-        
+
     }
 
     protected void handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
@@ -196,7 +193,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     }
 
     protected boolean requireNewStatement(Data data) {
-        return statementBuilder == null || lastData == null
+        return dmlStatement == null || lastData == null
                 || lastData.getEventType() != data.getEventType();
     }
 
@@ -225,8 +222,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         settings.autoCreateTable = parameters.is(Parameters.LOADER_CREATE_TABLE_IF_DOESNT_EXIST,
                 false);
 
-        List<IDataFilter> filters = parameters
-                .instantiate(Parameters.LOADER_DATA_FILTERS);
+        List<IDataFilter> filters = parameters.instantiate(Parameters.LOADER_DATA_FILTERS);
         if (filters.size() > 0) {
             if (this.dataFilters == null) {
                 this.dataFilters = filters;
@@ -242,7 +238,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         String[] rowData = data.toParsedRowData();
         if (oldData != null) {
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
-                    || (platform.isLob(column.getTypeCode()) && (platform.getDbDialectInfo()
+                    || (dbDialect.isLob(column.getTypeCode()) && (dbDialect.getDbDialectInfo()
                             .isNeedsToSelectLobData() || StringUtils.isBlank(oldData[columnIndex])));
         } else if (settings.dontIncludeKeysInUpdateStatement) {
             // This is in support of creating update statements that don't use
@@ -294,14 +290,14 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
             }
         }
         if (changedColumnNameList.size() > 0) {
-            this.statementBuilder = getStatementBuilder(DmlType.UPDATE,
+            this.dmlStatement = getStatementBuilder(DmlType.UPDATE,
                     targetTable.getPrimaryKeyColumnsArray(),
                     changedColumnMetaList.toArray(new Column[changedColumnMetaList.size()]));
             columnValues = (String[]) changedColumnValueList
                     .toArray(new String[changedColumnValueList.size()]);
             String[] values = (String[]) ArrayUtils.addAll(columnValues, getPkData(data));
             transaction.setInBatchMode(false);
-            transaction.prepare(this.statementBuilder.getSql());
+            transaction.prepare(this.dmlStatement.getSql());
             return execute(data, values);
         } else {
             // There was no change to apply
@@ -326,9 +322,9 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     protected void executeInsertSql(Data data, boolean batchMode) {
         transaction.setInBatchMode(batchMode);
         if (requireNewStatement(data)) {
-            this.statementBuilder = getStatementBuilder(DmlType.INSERT, null,
+            this.dmlStatement = getStatementBuilder(DmlType.INSERT, null,
                     targetTable.getColumns());
-            transaction.prepare(this.statementBuilder.getSql());
+            transaction.prepare(this.dmlStatement.getSql());
         }
         execute(data, data.toParsedRowData());
     }
@@ -336,9 +332,9 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     protected int executeDeleteSql(Data data, boolean batchMode) {
         transaction.setInBatchMode(batchMode);
         if (requireNewStatement(data)) {
-            this.statementBuilder = getStatementBuilder(DmlType.DELETE,
+            this.dmlStatement = getStatementBuilder(DmlType.DELETE,
                     targetTable.getPrimaryKeyColumnsArray(), targetTable.getColumns());
-            transaction.prepare(this.statementBuilder.getSql());
+            transaction.prepare(this.dmlStatement.getSql());
         }
         return execute(data, data.toParsedPkData());
     }
@@ -352,7 +348,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                 batch.incrementInsertCount();
             } catch (DataIntegrityViolationException e) {
                 if (settings.enableFallbackForInsert && !batchMode) {
-                    this.statementBuilder = null;
+                    this.dmlStatement = null;
                     // TODO rollback to save point
                     batch.incrementFallbackUpdateCount();
                     executeUpdateSql(data);
@@ -455,12 +451,12 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                 values = columnFilter.filterColumnsValues(ctx, targetTable, values);
             }
         }
-        Object[] objectValues = platform.getObjectValues(ctx.getBinaryEncoding(), values,
-                statementBuilder.getMetaData(true));
-        return transaction.update(data, objectValues, this.statementBuilder.getTypes());
+        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), values,
+                dmlStatement.getMetaData(true));
+        return transaction.update(data, objectValues, this.dmlStatement.getTypes());
     }
 
-    final private StatementBuilder getStatementBuilder(DmlType dmlType, Column[] lookupColumns,
+    final private DmlStatement getStatementBuilder(DmlType dmlType, Column[] lookupColumns,
             Column[] changingColumns) {
         Column[] preFilteredColumns = changingColumns;
         if (columnFilters != null) {
@@ -470,11 +466,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
             }
         }
 
-        String tableName = targetTable.getFullyQualifiedTableName();
-
-        return new StatementBuilder(dmlType, tableName, lookupColumns, changingColumns,
-                preFilteredColumns, platform.getDbDialectInfo().isDateOverridesToTimestamp(),
-                platform.getDbDialectInfo().getIdentifierQuoteString());
+        return dbDialect.createDmlStatement(dmlType, targetTable.getFullyQualifiedTableName(),
+                lookupColumns, changingColumns, preFilteredColumns);
 
     }
 
