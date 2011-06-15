@@ -55,6 +55,11 @@
             <artifactId>symmetric3-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric3-test</artifactId>
+            <scope>test</scope>
+        </dependency>        
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>

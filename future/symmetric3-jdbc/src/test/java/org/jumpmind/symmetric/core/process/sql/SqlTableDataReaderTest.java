@@ -24,7 +24,7 @@ public class SqlTableDataReaderTest extends AbstractDatabaseTest {
     public void testSimpleTableWithNoCondition() throws Exception {
         insertTestTableRows(100);
         TableToExtract tableToExtract = new TableToExtract(testTable, "");
-        SqlTableDataReader reader = new SqlTableDataReader(getPlatform(true), new Batch(),
+        SqlTableDataReader reader = new SqlTableDataReader(getDbDialect(true), new Batch(),
                 tableToExtract);
         DataContext ctx = new DataContext();
         reader.open(ctx);

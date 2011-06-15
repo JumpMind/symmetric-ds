@@ -10,17 +10,17 @@ import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.model.TypeMap;
 import org.junit.Test;
 
-public class JdbcPlatformTest extends AbstractDatabaseTest {
+public class JdbcDbDialectTest extends AbstractDatabaseTest {
 
     @Test
     public void testJdbcPlatformFactory() {
-        IJdbcDbDialect platform = getPlatform(true);
+        IJdbcDbDialect platform = getDbDialect(true);
         Assert.assertNotNull(platform);
     }
 
     @Test
     public void testCreateTable() {
-        IJdbcDbDialect platform = getPlatform(true);
+        IJdbcDbDialect platform = getDbDialect(true);
         Table table = new Table("test", new Column("test_id", TypeMap.NUMERIC, "10,2", false, true,
                 true));
         String alterSql = platform.getAlterScriptFor(table);

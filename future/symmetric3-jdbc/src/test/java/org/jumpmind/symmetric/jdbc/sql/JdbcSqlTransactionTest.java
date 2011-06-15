@@ -23,7 +23,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testSuccessfulBatchInserts() {
-        IDbDialect platform = getPlatform(true);
+        IDbDialect platform = getDbDialect(true);
         ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 10;
@@ -44,7 +44,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testRollbackBatchInserts() {
-        IDbDialect platform = getPlatform(true);
+        IDbDialect platform = getDbDialect(true);
         ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 11;
@@ -61,7 +61,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testDataIntegrityViolationInBatchMode() {
-        IDbDialect platform = getPlatform(true);
+        IDbDialect platform = getDbDialect(true);
         ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         int flushAt = 10;
@@ -89,7 +89,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testNonBatchSuccessfulUpdates() {
-        IDbDialect platform = getPlatform(true);
+        IDbDialect platform = getDbDialect(true);
         ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, false);
@@ -109,7 +109,7 @@ public class JdbcSqlTransactionTest extends AbstractDatabaseTest {
 
     @Test
     public void testDataIntegrityViolationInNonBatchMode() {
-        IDbDialect platform = getPlatform(true);
+        IDbDialect platform = getDbDialect(true);
         ISqlTemplate connection = platform.getSqlTemplate();
         ISqlTransaction transaction = connection.startSqlTransaction();
         prepareInsertIntoTestTable(transaction, testTable.getTableName(), -1, true);
