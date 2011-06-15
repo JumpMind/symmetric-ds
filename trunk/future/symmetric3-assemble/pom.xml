@@ -24,6 +24,7 @@
     <modules>
         <module>../symmetric3-csv</module>
         <module>../symmetric3-core</module>
+        <module>../symmetric3-test</module>
         <module>../symmetric3-jdbc</module>
         <module>../symmetric3-android</module>
     </modules>

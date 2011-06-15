@@ -35,7 +35,7 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
         Assert.assertEquals(1, count(testTable.getTableName()));
         Assert.assertEquals(
                 "updated",
-                getPlatform().getSqlTemplate().queryForObject(
+                getDbDialect().getSqlTemplate().queryForObject(
                         String.format("select TEST_TEXT from %s where TEST_ID=?",
                                 testTable.getTableName()), String.class, 1));
     }
@@ -51,7 +51,7 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
     public void testOneRowInsertFallbackToUpdate() {
         insertTestTableRows(10);
         Assert.assertEquals(10, count(testTable.getTableName()));
-        int existingId = getPlatform().getSqlTemplate().queryForInt(
+        int existingId = getDbDialect().getSqlTemplate().queryForInt(
                 String.format("select min(TEST_ID) from %s", testTable.getTableName()));
         Assert.assertEquals(1,
                 count(testTable.getTableName(), String.format("TEST_ID=%d", existingId)));
@@ -84,7 +84,7 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
     public void testOneRowUpdateFallbackUpdateWithNewKeys() {
         insertTestTableRows(1);
         Assert.assertEquals(1, count(testTable.getTableName()));
-        int existingId = getPlatform().getSqlTemplate().queryForInt(
+        int existingId = getDbDialect().getSqlTemplate().queryForInt(
                 String.format("select min(TEST_ID) from %s", testTable.getTableName()));
         Batch batch = writeToTestTable(new Data(testTable.getTableName(), DataEventType.UPDATE,
                 String.format("%d", existingId + 1), String.format("%d,\"updated\"", existingId)));
@@ -110,7 +110,7 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
     }
 
     protected Batch writeToTestTable(Data... datas) {
-        SqlDataWriter writer = new SqlDataWriter(getPlatform(), new Parameters());
+        SqlDataWriter writer = new SqlDataWriter(getDbDialect(), new Parameters());
         DataContext ctx = new DataContext();
         writer.open(ctx);
         Batch batch = new Batch();

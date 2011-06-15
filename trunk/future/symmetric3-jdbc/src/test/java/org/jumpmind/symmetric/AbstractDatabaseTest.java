@@ -27,11 +27,11 @@ abstract public class AbstractDatabaseTest {
 
     static protected IJdbcDbDialect platform;
 
-    protected static IJdbcDbDialect getPlatform() {
-        return getPlatform(true);
+    public static IJdbcDbDialect getDbDialect() {
+        return getDbDialect(true);
     }
 
-    protected static IJdbcDbDialect getPlatform(boolean useExisting) {
+    protected static IJdbcDbDialect getDbDialect(boolean useExisting) {
         IJdbcDbDialect result = null;
         if (useExisting) {
             if (platform == null) {
@@ -48,7 +48,7 @@ abstract public class AbstractDatabaseTest {
     @BeforeClass
     public static void setupDataSource() {
         FileUtils.deleteDirectory("target/h2");
-        platform = getPlatform(false);
+        platform = getDbDialect(false);
     }
 
     protected static DataSource createDataSource() {
@@ -57,7 +57,7 @@ abstract public class AbstractDatabaseTest {
     }
 
     protected Table buildTestTable() {
-        IJdbcDbDialect platform = getPlatform(true);
+        IJdbcDbDialect platform = getDbDialect(true);
         Table table = new Table("TEST", new Column("TEST_ID", TypeMap.INTEGER, null, true, true,
                 true), new Column("TEST_TEXT", TypeMap.VARCHAR, "1000", false, false, false));
         String alterSql = platform.getAlterScriptFor(table);
@@ -67,11 +67,11 @@ abstract public class AbstractDatabaseTest {
     }
 
     protected void delete(String tableName) {
-        getPlatform(true).getSqlTemplate().update(String.format("delete from %s", tableName));
+        getDbDialect(true).getSqlTemplate().update(String.format("delete from %s", tableName));
     }
 
     protected void insertTestTableRows(int count) {
-        ISqlTemplate sqlConnection = getPlatform(true).getSqlTemplate();
+        ISqlTemplate sqlConnection = getDbDialect(true).getSqlTemplate();
         for (int i = 0; i < count; i++) {
             sqlConnection
                     .update("insert into test (test_text) values('the lazy brown fox jumped over "
@@ -84,7 +84,7 @@ abstract public class AbstractDatabaseTest {
     }
 
     protected int count(String tableName, String where) {
-        IDbDialect platform = getPlatform(false);
+        IDbDialect platform = getDbDialect(false);
         ISqlTemplate connection = platform.getSqlTemplate();
         return connection.queryForInt(String.format("select count(*) from %s %s %s", tableName,
                 StringUtils.isNotBlank(where) ? "where" : "", StringUtils.isNotBlank(where) ? where
@@ -112,7 +112,7 @@ abstract public class AbstractDatabaseTest {
 
     protected void printOutTable(String tableName) {
         log.log(LogLevel.INFO,
-                getPlatform().getSqlTemplate()
+                getDbDialect().getSqlTemplate()
                         .query(String.format("select * from %s", tableName)).toString());
     }
 

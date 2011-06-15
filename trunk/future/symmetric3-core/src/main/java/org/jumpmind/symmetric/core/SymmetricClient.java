@@ -52,6 +52,18 @@ public class SymmetricClient {
     public RemoteNodeStatuses pull() {
         return null;
     }
+    
+    public ConfigurationService getConfigurationService() {
+        return configurationService;
+    }
+    
+    public ParameterService getParameterService() {
+        return parameterService;
+    }
+    
+    public TriggerRouterService getTriggerRouterService() {
+        return triggerRouterService;
+    }
 
 
 
