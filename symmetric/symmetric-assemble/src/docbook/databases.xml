@@ -478,8 +478,24 @@ ontape -s -L 0
             <command>copy databases\interbase\sym_udf.dll C:\CodeGear\InterBase\UDF</command>        
         </para>
         <para>
-            Interbase does not have a current_transaction function available, so SymmetricDS
-            cannot track changes by transaction.  
+            The Interbase dialect currently has the following limitations:  
         </para>
+        <itemizedlist spacing="compact">
+            <listitem>
+                <para>
+                    Data capture is limited to 4 KB per row, including large objects (LOB).
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    There is no transaction ID recorded on data captured.
+                    Either specify a tx_id_expression on the
+                    <xref linkend="table_trigger" xrefstyle="table"/> table,
+                    or set a max_batch_size on the                        
+                    <xref linkend="table_channel" xrefstyle="table"/> table that
+                    will accommodate your transactional data.
+                </para>
+            </listitem>
+        </itemizedlist>
     </section>
 </appendix>
