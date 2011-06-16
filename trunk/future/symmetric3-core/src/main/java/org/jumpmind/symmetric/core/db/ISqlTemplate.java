@@ -16,6 +16,8 @@ public interface ISqlTemplate {
     public <T> T queryForObject(String sql, Class<T> clazz, Object... args);
 
     public int queryForInt(String sql);
+    
+    public <T> ISqlReadCursor<T> queryForCursor(Query query, ISqlRowMapper<T> mapper) ;
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
             Object[] values, int[] types);
@@ -31,6 +33,8 @@ public interface ISqlTemplate {
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args);
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types);
+    
+    public <T> List<T> query(Query query, ISqlRowMapper<T> mapper);
     
     public <T,W> Map<T,W> query(String sql, String keyCol, String valueCol, Object[] args, int[] types);
 

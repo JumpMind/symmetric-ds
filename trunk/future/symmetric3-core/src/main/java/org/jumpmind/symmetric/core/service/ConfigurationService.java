@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.core.service;
 
 import org.jumpmind.symmetric.core.IEnvironment;
+import org.jumpmind.symmetric.core.db.IDataCaptureBuilder;
 
 public class ConfigurationService extends AbstractParameterizedService {
 
@@ -13,7 +14,8 @@ public class ConfigurationService extends AbstractParameterizedService {
     }
     
     public void autoConfigFunctions() {
-
+        IDataCaptureBuilder dataCaptureBuilder = dbDialect.getDataCaptureBuilder();
+        dataCaptureBuilder.configureRequiredFunctions();
     }
     
     public void autoConfigChannels() {

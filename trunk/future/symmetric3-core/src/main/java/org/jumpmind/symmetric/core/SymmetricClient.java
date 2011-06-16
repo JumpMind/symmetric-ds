@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.core;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.db.IDbDialect;
+import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.core.service.ConfigurationService;
 import org.jumpmind.symmetric.core.service.ParameterService;
@@ -17,11 +18,11 @@ public class SymmetricClient {
     protected IDbDialect dbDialect;
 
     protected SymmetricTables symmetricDatabase;
-    
+
     protected ParameterService parameterService;
-    
+
     protected ConfigurationService configurationService;
-    
+
     protected TriggerRouterService triggerRouterService;
 
     public SymmetricClient(IEnvironment environment) {
@@ -34,11 +35,13 @@ public class SymmetricClient {
     }
 
     public void initialize() {
-        this.configurationService.autoConfigTables();
-        this.configurationService.autoConfigFunctions();
-        this.configurationService.autoConfigChannels();
-        this.configurationService.autoConfigRegistrationServer();
-        this.triggerRouterService.syncTriggers();
+        if (this.parameterService.getParameters().is(Parameters.AUTO_CONFIGURE_DATABASE, true)) {
+            this.configurationService.autoConfigTables();
+            this.configurationService.autoConfigFunctions();
+            this.configurationService.autoConfigChannels();
+            this.configurationService.autoConfigRegistrationServer();
+            this.triggerRouterService.syncTriggers();
+        }
     }
 
     public void syncTriggers() {
@@ -52,19 +55,17 @@ public class SymmetricClient {
     public RemoteNodeStatuses pull() {
         return null;
     }
-    
+
     public ConfigurationService getConfigurationService() {
         return configurationService;
     }
-    
+
     public ParameterService getParameterService() {
         return parameterService;
     }
-    
+
     public TriggerRouterService getTriggerRouterService() {
         return triggerRouterService;
     }
-
-
 
 }

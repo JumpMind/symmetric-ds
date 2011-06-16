@@ -4,6 +4,8 @@ import java.sql.Types;
 import java.util.Map;
 
 import org.jumpmind.symmetric.core.Version;
+import org.jumpmind.symmetric.core.common.Log;
+import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.NotImplementedException;
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.model.Column;
@@ -15,6 +17,8 @@ import org.jumpmind.symmetric.core.process.sql.TableToExtract;
 
 abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder {
 
+    protected final Log log = LogFactory.getLog(getClass());
+
     private static final String ORIG_TABLE_ALIAS = "orig";
 
     protected IDbDialect dbDialect;
@@ -24,8 +28,8 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
     }
 
     // TODO make a single method to get a template for a specific column type.
-    //abstract protected String getColumnTemplate(int type);
-        
+    // abstract protected String getColumnTemplate(int type);
+
     abstract protected String getClobColumnTemplate();
 
     abstract protected String getNewTriggerValue();
@@ -37,11 +41,11 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
     abstract protected String getWrappedBlobColumnTemplate();
 
     abstract protected String getTableExtractSqlTemplate();
-    
+
     protected String getTableExtractCountSqlTemplate() {
         return "select count(*) from $(schemaName)$(tableName) t where $(whereClause)";
     }
-    
+
     abstract protected Map<String, String> getFunctionTemplatesToInstall();
 
     abstract protected String getFunctionInstalledSqlTemplate();
@@ -300,7 +304,7 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
         return replaceTemplateVariables(getTableExtractSqlTemplate(), tableToExtract,
                 replacementTokens, supportsBigLobs);
     }
-    
+
     public String createTableExtractCountSql(TableToExtract tableToExtract,
             Map<String, String> replacementTokens) {
         return replaceTemplateVariables(getTableExtractCountSqlTemplate(), tableToExtract,
@@ -721,6 +725,21 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
             return ddl;
         } else {
             return null;
+        }
+    }
+
+    public void configureRequiredFunctions() {
+        ISqlTemplate sqlTemplate = dbDialect.getSqlTemplate();
+        String[] functions = getFunctionsToInstall();
+        for (int i = 0; i < functions.length; i++) {
+            String funcName = String.format("%s_%s", dbDialect.getParameters().getTablePrefix(),
+                    functions[i]);
+            if (sqlTemplate.queryForInt(getFunctionInstalledSql(funcName,
+                    dbDialect.getDefaultSchema())) == 0) {
+                sqlTemplate.update(getFunctionSql(functions[i], funcName,
+                        dbDialect.getDefaultSchema()));
+                log.info("Installed function %s", funcName);
+            }
         }
     }
 
