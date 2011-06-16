@@ -3,6 +3,8 @@ package org.jumpmind.symmetric.core.db;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.symmetric.core.model.Table;
+
 
 /**
  * This interface insulates the application from the data connection technology.
@@ -39,7 +41,15 @@ public interface ISqlTemplate {
     public int update(boolean autoCommit, boolean failOnError, int commitRate, String... sql);
 
     public int update(String sql, Object[] values, int[] types);
-
+    
+    public int update(Table table, Map<String,Object> args);
+    
+	public int insert(Table table, Map<String, Object> params);
+	
+	public int delete(Table table, Map<String, Object> params);
+	
+	public void save(Table table, Map<String, Object> params);
+	
     public void testConnection();
 
     public SqlException translate(Exception ex);

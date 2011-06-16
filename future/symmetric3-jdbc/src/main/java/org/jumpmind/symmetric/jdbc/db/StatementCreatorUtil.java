@@ -72,7 +72,7 @@ public abstract class StatementCreatorUtil {
             ILobHandler lobHandler) throws SQLException {
         for (int i = 1; i <= args.length; i++) {
             Object arg = args[i - 1];
-            int argType = argTypes[i - 1];
+            int argType = argTypes != null && argTypes.length > i ? argTypes[i - 1] : UNKNOWN_TYPE;
             if (argType == Types.BLOB && lobHandler != null) {
                 lobHandler.setBlobAsBytes(ps, i, (byte[]) arg);
             } else if (argType == Types.CLOB && lobHandler != null) {

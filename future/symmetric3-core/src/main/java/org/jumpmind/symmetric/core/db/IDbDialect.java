@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.core.db;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jumpmind.symmetric.core.SymmetricTables;
 import org.jumpmind.symmetric.core.common.BinaryEncoding;
@@ -81,6 +82,8 @@ public interface IDbDialect {
     public Query createQuery(Table... tables);
     
     public DmlStatement createDmlStatement(DmlType dmlType, Table table);
+    
+    public DmlStatement createDmlStatement(DmlType dmlType, Table table, Set<String> columnFilter);
     
     public DmlStatement createDmlStatement(DmlType dmlType, String tableName, Column[] keys, Column[] columns);
     
