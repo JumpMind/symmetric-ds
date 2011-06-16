@@ -1,12 +1,26 @@
 package org.jumpmind.symmetric.core.service;
 
+import java.util.List;
+import java.util.Map;
+
 import org.jumpmind.symmetric.core.IEnvironment;
 import org.jumpmind.symmetric.core.db.IDataCaptureBuilder;
+import org.jumpmind.symmetric.core.model.Channel;
+import org.jumpmind.symmetric.core.model.NodeChannel;
 
 public class ConfigurationService extends AbstractParameterizedService {
 
-    public ConfigurationService(IEnvironment environment, ParameterService parameterSerivce) {
+    protected Map<String, List<NodeChannel>> nodeChannelCache;
+
+    protected long nodeChannelCacheTime;
+
+    protected List<Channel> defaultChannels;
+    
+    protected NodeService nodeService;
+    
+    public ConfigurationService(IEnvironment environment, ParameterService parameterSerivce, NodeService nodeService) {
         super(environment, parameterSerivce);
+        this.nodeService = nodeService;
     }
     
     public void autoConfigTables() {
@@ -67,5 +81,12 @@ public class ConfigurationService extends AbstractParameterizedService {
 //            nodeService.updateNodeSecurity(nodeSecurity);
 //        }
     }
+    
+    public void reloadChannels() {
+        synchronized (this) {
+            nodeChannelCache = null;
+        }
+    }
+
 
 }
