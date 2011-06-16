@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.jumpmind.symmetric.core.SymmetricTables;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
 import org.jumpmind.symmetric.core.common.LogLevel;
@@ -19,6 +20,8 @@ public class Parameters extends HashMap<String, String> {
 
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
+    public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
+    
     public final static String DB_TABLE_PREFIX = "sync.table.prefix";
 
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
@@ -161,6 +164,10 @@ public class Parameters extends HashMap<String, String> {
 
     public int getStreamingFetchSize() {
         return getInt(DB_STREAMING_FETCH_SIZE, SqlConstants.DEFAULT_STREAMING_FETCH_SIZE);
+    }
+    
+    public String getTablePrefix() {
+        return get(DB_TABLE_PREFIX, SymmetricTables.DEFAULT_PREFIX);
     }
 
     @Override

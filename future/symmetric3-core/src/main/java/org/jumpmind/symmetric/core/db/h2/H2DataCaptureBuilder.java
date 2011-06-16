@@ -61,7 +61,7 @@ public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
         Map<String, String> functionTemplatesToInstall = new HashMap<String, String>();
         functionTemplatesToInstall
                 .put("BASE64_ENCODE",
-                        "CREATE ALIAS IF NOT EXISTS $(functionName) for \"org.jumpmind.symmetric.db.EmbeddedDbFunctions.encodeBase64\";");
+                        "CREATE ALIAS IF NOT EXISTS $(functionName) for \"org.jumpmind.symmetric.core.db.EmbeddedDbFunctions.encodeBase64\";");
         return functionTemplatesToInstall;
     }
 

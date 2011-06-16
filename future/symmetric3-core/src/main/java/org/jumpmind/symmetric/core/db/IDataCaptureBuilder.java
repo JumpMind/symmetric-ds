@@ -14,4 +14,6 @@ public interface IDataCaptureBuilder {
     public String createTableExtractCountSql(TableToExtract tableToExtract,
             Map<String, String> replacementTokens);
     
+    public void configureRequiredFunctions();
+    
 }
