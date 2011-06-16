@@ -6,6 +6,7 @@ import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.core.service.ConfigurationService;
+import org.jumpmind.symmetric.core.service.NodeService;
 import org.jumpmind.symmetric.core.service.ParameterService;
 import org.jumpmind.symmetric.core.service.TriggerRouterService;
 
@@ -21,6 +22,8 @@ public class SymmetricClient {
 
     protected ParameterService parameterService;
 
+    protected NodeService nodeService;
+
     protected ConfigurationService configurationService;
 
     protected TriggerRouterService triggerRouterService;
@@ -30,7 +33,9 @@ public class SymmetricClient {
         this.dbDialect = this.environment.getDbDialect();
         this.symmetricDatabase = this.dbDialect.getSymmetricTables();
         this.parameterService = new ParameterService(environment);
-        this.configurationService = new ConfigurationService(environment, this.parameterService);
+        this.nodeService = new NodeService(environment, this.parameterService);
+        this.configurationService = new ConfigurationService(environment, this.parameterService,
+                this.nodeService);
         this.triggerRouterService = new TriggerRouterService(environment, this.parameterService);
     }
 
