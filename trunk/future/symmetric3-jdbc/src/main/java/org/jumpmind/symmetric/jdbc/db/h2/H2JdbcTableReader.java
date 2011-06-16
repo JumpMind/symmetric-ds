@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.ForeignKey;
 import org.jumpmind.symmetric.core.model.Index;
@@ -37,8 +38,9 @@ public class H2JdbcTableReader extends JdbcTableReader {
         if (values.get("NUMERIC_SCALE") != null) {
             column.setScale((Integer) values.get("NUMERIC_SCALE"));
         }
+        
         if (TypeMap.isTextType(column.getTypeCode()) && (column.getDefaultValue() != null)) {
-            column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
+            column.setDefaultValue(StringUtils.strip(column.getDefaultValue(), "'"));
         }
         return column;
     }

@@ -13,41 +13,41 @@ public class SymmetricTables extends Database {
 
     private static final long serialVersionUID = 1L;
     
-    public static final String REGISTRATION_REDIRECT = "registration_redirect";
+    public static final String REGISTRATION_REDIRECT = "REGISTRATION_REDIRECT";
 
-    public static final String PARAMETER = "parameter";
+    public static final String PARAMETER = "PARAMETER";
 
-    public static final String TRIGGER_ROUTER = "trigger_router";
+    public static final String TRIGGER_ROUTER = "TRIGGER_ROUTER";
 
-    public static final String ROUTER = "router";
+    public static final String ROUTER = "ROUTER";
 
-    public static final String TRIGGER = "trigger";
+    public static final String TRIGGER = "TRIGGER";
 
-    public static final String NODE_GROUP_CHANNEL_WINDOW = "node_group_channel_window";
+    public static final String NODE_GROUP_CHANNEL_WINDOW = "NODE_GROUP_CHANNEL_WINDOW";
 
-    public static final String NODE_CHANNEL_CTL = "node_channel_ctl";
+    public static final String NODE_CHANNEL_CTL = "NODE_CHANNEL_CTL";
 
-    public static final String CHANNEL = "channel";
+    public static final String CHANNEL = "CHANNEL";
 
-    public static final String NODE_HOST_JOB_STATS = "node_host_job_stats";
+    public static final String NODE_HOST_JOB_STATS = "NODE_HOST_JOB_STATS";
 
-    public static final String NODE_HOST_STATS = "node_host_stats";
+    public static final String NODE_HOST_STATS = "NODE_HOST_STATS";
 
-    public static final String NODE_HOST_CHANNEL_STATS = "node_host_channel_stats";
+    public static final String NODE_HOST_CHANNEL_STATS = "NODE_HOST_CHANNEL_STATS";
 
-    public static final String NODE_HOST = "node_host";
+    public static final String NODE_HOST = "NODE_HOST";
 
-    public static final String NODE_GROUP_LINK = "node_group_link";
+    public static final String NODE_GROUP_LINK = "NODE_GROUP_LINK";
 
-    public static final String NODE_GROUP = "node_group";
+    public static final String NODE_GROUP = "NODE_GROUP";
 
-    public static final String NODE_IDENTITY = "node_identity";
+    public static final String NODE_IDENTITY = "NODE_IDENTITY";
 
-    public static final String NODE_SECURITY = "node_security";
+    public static final String NODE_SECURITY = "NODE_SECURITY";
 
-    public static final String NODE = "node";
+    public static final String NODE = "NODE";
 
-    public static final String DEFAULT_PREFIX = "sym";
+    public static final String DEFAULT_PREFIX = "SYM";
 
     protected String prefix = DEFAULT_PREFIX;
 
@@ -78,13 +78,13 @@ public class SymmetricTables extends Database {
         addTable(buildTriggerRouter());
     }
 
-    public Table getSymmetricTable(String name) {
-        return byName.get(name);
+    public Table getSymmetricTable(String suffix) {
+        return byName.get(prependPrefix(suffix));
     }
 
     @Override
     public void addTable(Table table) {
-        this.byName.put(table.getTableName().substring(this.prefix.length()), table);
+        this.byName.put(table.getTableName(), table);
         super.addTable(table);
     }
 
@@ -98,319 +98,319 @@ public class SymmetricTables extends Database {
 
     protected Table buildNodeTable() {
         Table table = new Table(prependPrefix(NODE));
-        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("node_group_id", TypeMap.VARCHAR, "50", false, true, false));
-        table.addColumn(new Column("external_id", TypeMap.VARCHAR, "50", false, true, false));
-        table.addColumn(new Column("sync_enabled", TypeMap.BOOLEAN, "1", false, true, false, "0"));
-        table.addColumn(new Column("sync_url", TypeMap.VARCHAR, "255", false, false, false));
-        table.addColumn(new Column("schema_version", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("symmetric_version", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("database_type", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("database_version", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("heartbeat_time", TypeMap.TIMESTAMP, "50", false, false, false));
-        table.addColumn(new Column("timezone_offset", TypeMap.VARCHAR, "6", false, false, false));
-        table.addColumn(new Column("batch_to_send_count", TypeMap.INTEGER, null, false, false,
+        table.addColumn(new Column("NODE_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("NODE_GROUP_ID", TypeMap.VARCHAR, "50", false, true, false));
+        table.addColumn(new Column("EXTERNAL_ID", TypeMap.VARCHAR, "50", false, true, false));
+        table.addColumn(new Column("SYNC_ENABLED", TypeMap.BOOLEAN, "1", false, true, false, "0"));
+        table.addColumn(new Column("SYNC_URL", TypeMap.VARCHAR, "255", false, false, false));
+        table.addColumn(new Column("SCHEMA_VERSION", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("SYMMETRIC_VERSION", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("DATABASE_TYPE", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("DATABASE_VERSION", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("HEARTBEAT_TIME", TypeMap.TIMESTAMP, "50", false, false, false));
+        table.addColumn(new Column("TIMEZONE_OFFSET", TypeMap.VARCHAR, "6", false, false, false));
+        table.addColumn(new Column("BATCH_TO_SEND_COUNT", TypeMap.INTEGER, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("batch_in_error_count", TypeMap.INTEGER, null, false, false,
+        table.addColumn(new Column("BATCH_IN_ERROR_COUNT", TypeMap.INTEGER, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("created_at_node_id", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("deployment_type", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("CREATED_AT_NODE_ID", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("DEPLOYMENT_TYPE", TypeMap.VARCHAR, "50", false, false, false));
         return table;
     }
 
     protected Table buildNodeSecurity() {
         Table table = new Table(prependPrefix(NODE_SECURITY));
-        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("node_password", TypeMap.VARCHAR, "50", false, true, false));
-        table.addColumn(new Column("registration_enabled", TypeMap.BOOLEAN, "1", false, true,
+        table.addColumn(new Column("NODE_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("NODE_PASSWORD", TypeMap.VARCHAR, "50", false, true, false));
+        table.addColumn(new Column("REGISTRATION_ENABLED", TypeMap.BOOLEAN, "1", false, true,
                 false, "0"));
-        table.addColumn(new Column("registration_time", TypeMap.TIMESTAMP, "50", false, false,
+        table.addColumn(new Column("REGISTRATION_TIME", TypeMap.TIMESTAMP, "50", false, false,
                 false));
-        table.addColumn(new Column("initial_load_enabled", TypeMap.BOOLEAN, "1", false, true,
+        table.addColumn(new Column("INITIAL_LOAD_ENABLED", TypeMap.BOOLEAN, "1", false, true,
                 false, "0"));
-        table.addColumn(new Column("initial_load_time", TypeMap.TIMESTAMP, "50", false, false,
+        table.addColumn(new Column("INITIAL_LOAD_TIME", TypeMap.TIMESTAMP, "50", false, false,
                 false));
-        table.addColumn(new Column("created_at_node_id", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("CREATED_AT_NODE_ID", TypeMap.VARCHAR, "50", false, false, false));
         return table;
     }
 
     protected Table buildNodeIdentity() {
         Table table = new Table(prependPrefix(NODE_IDENTITY));
-        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("NODE_ID", TypeMap.VARCHAR, "50", false, true, true));
         return table;
     }
 
     protected Table buildNodeGroup() {
         Table table = new Table(prependPrefix(NODE_GROUP));
-        table.addColumn(new Column("node_group_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("description", TypeMap.VARCHAR, "255", false, false, false));
+        table.addColumn(new Column("NODE_GROUP_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("DESCRIPTION", TypeMap.VARCHAR, "255", false, false, false));
         return table;
     }
 
     protected Table buildNodeGroupLink() {
         Table table = new Table(prependPrefix(NODE_GROUP_LINK));
-        table.addColumn(new Column("source_node_group_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("target_node_group_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("data_event_action", TypeMap.VARCHAR, "1", false, true, false));
+        table.addColumn(new Column("SOURCE_NODE_GROUP_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("TARGET_NODE_GROUP_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("DATA_EVENT_ACTION", TypeMap.VARCHAR, "1", false, true, false));
         return table;
     }
 
     protected Table buildNodeHost() {
         Table table = new Table(prependPrefix(NODE_HOST));
-        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("host_name", TypeMap.VARCHAR, "60", false, false, true));
-        table.addColumn(new Column("ip_address", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("os_user", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("os_name", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("os_arch", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("os_version", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("available_processors", TypeMap.INTEGER, null, false, false,
+        table.addColumn(new Column("NODE_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("HOST_NAME", TypeMap.VARCHAR, "60", false, true, true));
+        table.addColumn(new Column("IP_ADDRESS", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("OS_USER", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("OS_NAME", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("OS_ARCH", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("OS_VERSION", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("AVAILABLE_PROCESSORS", TypeMap.INTEGER, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("free_memory_bytes", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("FREE_MEMORY_BYTES", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        table.addColumn(new Column("total_memory_bytes", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("TOTAL_MEMORY_BYTES", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        table.addColumn(new Column("max_memory_bytes", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("MAX_MEMORY_BYTES", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        table.addColumn(new Column("java_version", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("java_vendor", TypeMap.VARCHAR, "255", false, false, false));
-        table.addColumn(new Column("symmetric_version", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("timezone_offset", TypeMap.VARCHAR, "6", false, false, false));
-        table.addColumn(new Column("heartbeat_time", TypeMap.TIMESTAMP, "50", false, false, false));
-        table.addColumn(new Column("last_restart_time", TypeMap.TIMESTAMP, "50", false, false,
+        table.addColumn(new Column("JAVA_VERSION", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("JAVA_VENDOR", TypeMap.VARCHAR, "255", false, false, false));
+        table.addColumn(new Column("SYMMETRIC_VERSION", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("TIMEZONE_OFFSET", TypeMap.VARCHAR, "6", false, false, false));
+        table.addColumn(new Column("HEARTBEAT_TIME", TypeMap.TIMESTAMP, "50", false, false, false));
+        table.addColumn(new Column("LAST_RESTART_TIME", TypeMap.TIMESTAMP, "50", false, false,
                 false));
-        table.addColumn(new Column("create_time", TypeMap.TIMESTAMP, "50", false, false, false));
+        table.addColumn(new Column("CREATE_TIME", TypeMap.TIMESTAMP, "50", false, false, false));
         return table;
     }
 
     protected Table buildNodeHostChannelStats() {
         Table table = new Table(prependPrefix(NODE_HOST_CHANNEL_STATS));
-        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("host_name", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("channel_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("start_time", TypeMap.TIMESTAMP, "50", false, true, true));
-        table.addColumn(new Column("end_time", TypeMap.TIMESTAMP, "50", false, true, true));
-        table.addColumn(new Column("data_routed", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("data_unrouted", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("data_event_inserted", TypeMap.BIGINT, null, false, false,
+        table.addColumn(new Column("NODE_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("HOST_NAME", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("CHANNEL_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("START_TIME", TypeMap.TIMESTAMP, "50", false, true, true));
+        table.addColumn(new Column("END_TIME", TypeMap.TIMESTAMP, "50", false, true, true));
+        table.addColumn(new Column("DATA_ROUTED", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("DATA_UNROUTED", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("DATA_EVENT_INSERTED", TypeMap.BIGINT, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("data_extracted", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("data_bytes_extracted", TypeMap.BIGINT, null, false, false,
+        table.addColumn(new Column("DATA_EXTRACTED", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("DATA_BYTES_EXTRACTED", TypeMap.BIGINT, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("data_extracted_errors", TypeMap.BIGINT, null, false, false,
+        table.addColumn(new Column("DATA_EXTRACTED_ERRORS", TypeMap.BIGINT, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("data_bytes_sent", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("DATA_BYTES_SENT", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        table.addColumn(new Column("data_sent", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("data_sent_errors", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("DATA_SENT", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("DATA_SENT_ERRORS", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        table.addColumn(new Column("data_loaded", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("data_bytes_loaded", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("DATA_LOADED", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("DATA_BYTES_LOADED", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        table.addColumn(new Column("data_loaded_errors", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("DATA_LOADED_ERRORS", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        // <index name="idx_nd_hst_chnl_sts">
-        // <index-column name="node_id"/>
-        // <index-column name="start_time"/>
-        // <index-column name="end_time"/>
+        // <index name="IDX_ND_HST_CHNL_STS">
+        // <index-column name="NODE_ID"/>
+        // <index-column name="START_TIME"/>
+        // <index-column name="END_TIME"/>
         return table;
     }
 
     protected Table buildNodeHostStats() {
         Table table = new Table(prependPrefix(NODE_HOST_STATS));
-        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("host_name", TypeMap.VARCHAR, "60", false, true, true));
-        table.addColumn(new Column("start_time", TypeMap.TIMESTAMP, "50", false, true, true));
-        table.addColumn(new Column("end_time", TypeMap.TIMESTAMP, null, false, true, true));
-        table.addColumn(new Column("restarted", TypeMap.BIGINT, null, false, true, false, "0"));
-        table.addColumn(new Column("nodes_pulled", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("total_nodes_pull_time", TypeMap.BIGINT, null, false, false,
+        table.addColumn(new Column("NODE_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("HOST_NAME", TypeMap.VARCHAR, "60", false, true, true));
+        table.addColumn(new Column("START_TIME", TypeMap.TIMESTAMP, "50", false, true, true));
+        table.addColumn(new Column("END_TIME", TypeMap.TIMESTAMP, null, false, true, true));
+        table.addColumn(new Column("RESTARTED", TypeMap.BIGINT, null, false, true, false, "0"));
+        table.addColumn(new Column("NODES_PULLED", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("TOTAL_NODES_PULL_TIME", TypeMap.BIGINT, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("nodes_pushed", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("total_nodes_push_time", TypeMap.BIGINT, null, false, false,
+        table.addColumn(new Column("NODES_PUSHED", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("TOTAL_NODES_PUSH_TIME", TypeMap.BIGINT, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("nodes_rejected", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("nodes_registered", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("NODES_REJECTED", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("NODES_REGISTERED", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        table.addColumn(new Column("nodes_loaded", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("nodes_disabled", TypeMap.BIGINT, null, false, false, false, "0"));
-        table.addColumn(new Column("purged_data_rows", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("NODES_LOADED", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("NODES_DISABLED", TypeMap.BIGINT, null, false, false, false, "0"));
+        table.addColumn(new Column("PURGED_DATA_ROWS", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        table.addColumn(new Column("purged_data_event_rows", TypeMap.BIGINT, null, false, false,
+        table.addColumn(new Column("PURGED_DATA_EVENT_ROWS", TypeMap.BIGINT, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("purged_batch_outgoing_rows", TypeMap.BIGINT, null, false,
+        table.addColumn(new Column("PURGED_BATCH_OUTGOING_ROWS", TypeMap.BIGINT, null, false,
                 false, false, "0"));
-        table.addColumn(new Column("purged_batch_incoming_rows", TypeMap.BIGINT, null, false,
+        table.addColumn(new Column("PURGED_BATCH_INCOMING_ROWS", TypeMap.BIGINT, null, false,
                 false, false, "0"));
-        table.addColumn(new Column("triggers_created_count", TypeMap.BIGINT, null, false, false,
+        table.addColumn(new Column("TRIGGERS_CREATED_COUNT", TypeMap.BIGINT, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("triggers_rebuilt_count", TypeMap.BIGINT, null, false, false,
+        table.addColumn(new Column("TRIGGERS_REBUILT_COUNT", TypeMap.BIGINT, null, false, false,
                 false, "0"));
-        table.addColumn(new Column("triggers_removed_count", TypeMap.BIGINT, null, false, false,
+        table.addColumn(new Column("TRIGGERS_REMOVED_COUNT", TypeMap.BIGINT, null, false, false,
                 false, "0"));
-        // <index name="idx_nd_hst_sts">
-        // <index-column name="node_id"/>
-        // <index-column name="start_time"/>
-        // <index-column name="end_time"/>
+        // <index name="IDX_ND_HST_STS">
+        // <index-column name="NODE_ID"/>
+        // <index-column name="START_TIME"/>
+        // <index-column name="END_TIME"/>
         // </index>
         return table;
     }
 
     protected Table buildNodeHostJobStats() {
         Table table = new Table(prependPrefix(NODE_HOST_JOB_STATS));
-        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("host_name", TypeMap.VARCHAR, "60", false, true, true));
-        table.addColumn(new Column("job_name", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("start_time", TypeMap.TIMESTAMP, "50", false, true, true));
-        table.addColumn(new Column("end_time", TypeMap.TIMESTAMP, null, false, true, true));
-        table.addColumn(new Column("processed_count", TypeMap.BIGINT, null, false, false, false,
+        table.addColumn(new Column("NODE_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("HOST_NAME", TypeMap.VARCHAR, "60", false, true, true));
+        table.addColumn(new Column("JOB_NAME", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("START_TIME", TypeMap.TIMESTAMP, "50", false, true, true));
+        table.addColumn(new Column("END_TIME", TypeMap.TIMESTAMP, null, false, true, true));
+        table.addColumn(new Column("PROCESSED_COUNT", TypeMap.BIGINT, null, false, false, false,
                 "0"));
-        // <index name="idx_nd_hst_job">
-        // <index-column name="job_name"/>
+        // <index name="IDX_ND_HST_JOB">
+        // <index-column name="JOB_NAME"/>
         // </index>
         return table;
     }
 
     protected Table buildChannel() {
         Table table = new Table(prependPrefix(CHANNEL));
-        table.addColumn(new Column("channel_id", TypeMap.VARCHAR, "20", false, true, true));
-        table.addColumn(new Column("processing_order", TypeMap.INTEGER, null, false, true, false,
+        table.addColumn(new Column("CHANNEL_ID", TypeMap.VARCHAR, "20", false, true, true));
+        table.addColumn(new Column("PROCESSING_ORDER", TypeMap.INTEGER, null, false, true, false,
                 "1"));
-        table.addColumn(new Column("max_batch_size", TypeMap.INTEGER, null, false, true, false,
+        table.addColumn(new Column("MAX_BATCH_SIZE", TypeMap.INTEGER, null, false, true, false,
                 "1000"));
-        table.addColumn(new Column("max_batch_to_send", TypeMap.INTEGER, null, false, true, false,
+        table.addColumn(new Column("MAX_BATCH_TO_SEND", TypeMap.INTEGER, null, false, true, false,
                 "60"));
-        table.addColumn(new Column("max_data_to_route", TypeMap.INTEGER, null, false, true, false,
+        table.addColumn(new Column("MAX_DATA_TO_ROUTE", TypeMap.INTEGER, null, false, true, false,
                 "100000"));
-        table.addColumn(new Column("extract_period_millis", TypeMap.INTEGER, null, false, true,
+        table.addColumn(new Column("EXTRACT_PERIOD_MILLIS", TypeMap.INTEGER, null, false, true,
                 false, "0"));
-        table.addColumn(new Column("enabled", TypeMap.BOOLEAN, "1", false, true, false, "1"));
-        table.addColumn(new Column("use_old_data_to_route", TypeMap.BOOLEAN, "1", false, true,
+        table.addColumn(new Column("ENABLED", TypeMap.BOOLEAN, "1", false, true, false, "1"));
+        table.addColumn(new Column("USE_OLD_DATA_TO_ROUTE", TypeMap.BOOLEAN, "1", false, true,
                 false, "1"));
-        table.addColumn(new Column("use_row_data_to_route", TypeMap.BOOLEAN, "1", false, true,
+        table.addColumn(new Column("USE_ROW_DATA_TO_ROUTE", TypeMap.BOOLEAN, "1", false, true,
                 false, "1"));
-        table.addColumn(new Column("use_pk_data_to_route", TypeMap.BOOLEAN, "1", false, true,
+        table.addColumn(new Column("USE_PK_DATA_TO_ROUTE", TypeMap.BOOLEAN, "1", false, true,
                 false, "1"));
-        table.addColumn(new Column("contains_big_lob", TypeMap.BOOLEAN, "1", false, true, false,
+        table.addColumn(new Column("CONTAINS_BIG_LOB", TypeMap.BOOLEAN, "1", false, true, false,
                 "0"));
-        table.addColumn(new Column("batch_algorithm", TypeMap.VARCHAR, "50", false, true, false,
+        table.addColumn(new Column("BATCH_ALGORITHM", TypeMap.VARCHAR, "50", false, true, false,
                 "default"));
-        table.addColumn(new Column("description", TypeMap.VARCHAR, "255", false, false, false));
+        table.addColumn(new Column("DESCRIPTION", TypeMap.VARCHAR, "255", false, false, false));
         return table;
     }
 
     protected Table buildNodeChannelCtl() {
         Table table = new Table(prependPrefix(NODE_CHANNEL_CTL));
-        table.addColumn(new Column("node_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("channel_id", TypeMap.VARCHAR, "20", false, true, true));
-        table.addColumn(new Column("suspend_enabled", TypeMap.BOOLEAN, "1", false, false, false,
+        table.addColumn(new Column("NODE_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("CHANNEL_ID", TypeMap.VARCHAR, "20", false, true, true));
+        table.addColumn(new Column("SUSPEND_ENABLED", TypeMap.BOOLEAN, "1", false, false, false,
                 "0"));
-        table.addColumn(new Column("ignore_enabled", TypeMap.BOOLEAN, "1", false, false, false, "0"));
-        table.addColumn(new Column("last_extract_time", TypeMap.TIMESTAMP, "50", false, false,
+        table.addColumn(new Column("IGNORE_ENABLED", TypeMap.BOOLEAN, "1", false, false, false, "0"));
+        table.addColumn(new Column("LAST_EXTRACT_TIME", TypeMap.TIMESTAMP, "50", false, false,
                 false));
         return table;
     }
 
     protected Table buildNodeGroupChannelWindow() {
         Table table = new Table(prependPrefix(NODE_GROUP_CHANNEL_WINDOW));
-        table.addColumn(new Column("node_group_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("channel_id", TypeMap.VARCHAR, "20", false, true, true));
-        table.addColumn(new Column("start_time", TypeMap.TIME, "50", false, true, true));
-        table.addColumn(new Column("end_time", TypeMap.TIME, "50", false, true, true));
-        table.addColumn(new Column("enabled", TypeMap.BOOLEAN, "1", false, true, false, "0"));
+        table.addColumn(new Column("NODE_GROUP_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("CHANNEL_ID", TypeMap.VARCHAR, "20", false, true, true));
+        table.addColumn(new Column("START_TIME", TypeMap.TIME, "50", false, true, true));
+        table.addColumn(new Column("END_TIME", TypeMap.TIME, "50", false, true, true));
+        table.addColumn(new Column("ENABLED", TypeMap.BOOLEAN, "1", false, true, false, "0"));
         return table;
     }
 
     protected Table buildTrigger() {
         Table table = new Table(prependPrefix(TRIGGER));
-        table.addColumn(new Column("trigger_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("source_catalog_name", TypeMap.VARCHAR, "50", false, false,
+        table.addColumn(new Column("TRIGGER_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("SOURCE_CATALOG_NAME", TypeMap.VARCHAR, "50", false, false,
                 false));
-        table.addColumn(new Column("source_schema_name", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("source_table_name", TypeMap.VARCHAR, "50", false, true, false));
-        table.addColumn(new Column("channel_id", TypeMap.VARCHAR, "20", false, true, false));
-        table.addColumn(new Column("sync_on_update", TypeMap.BOOLEAN, "1", false, true, false, "1"));
-        table.addColumn(new Column("sync_on_insert", TypeMap.BOOLEAN, "1", false, true, false, "1"));
-        table.addColumn(new Column("sync_on_delete", TypeMap.BOOLEAN, "1", false, true, false, "1"));
-        table.addColumn(new Column("sync_on_incoming_batch", TypeMap.BOOLEAN, "1", false, true,
+        table.addColumn(new Column("SOURCE_SCHEMA_NAME", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("SOURCE_TABLE_NAME", TypeMap.VARCHAR, "50", false, true, false));
+        table.addColumn(new Column("CHANNEL_ID", TypeMap.VARCHAR, "20", false, true, false));
+        table.addColumn(new Column("SYNC_ON_UPDATE", TypeMap.BOOLEAN, "1", false, true, false, "1"));
+        table.addColumn(new Column("SYNC_ON_INSERT", TypeMap.BOOLEAN, "1", false, true, false, "1"));
+        table.addColumn(new Column("SYNC_ON_DELETE", TypeMap.BOOLEAN, "1", false, true, false, "1"));
+        table.addColumn(new Column("SYNC_ON_INCOMING_BATCH", TypeMap.BOOLEAN, "1", false, true,
                 false));
-        table.addColumn(new Column("name_for_update_trigger", TypeMap.VARCHAR, "50", false, false,
+        table.addColumn(new Column("NAME_FOR_UPDATE_TRIGGER", TypeMap.VARCHAR, "50", false, false,
                 false));
-        table.addColumn(new Column("name_for_insert_trigger", TypeMap.VARCHAR, "50", false, false,
+        table.addColumn(new Column("NAME_FOR_INSERT_TRIGGER", TypeMap.VARCHAR, "50", false, false,
                 false));
-        table.addColumn(new Column("name_for_delete_trigger", TypeMap.VARCHAR, "50", false, false,
+        table.addColumn(new Column("NAME_FOR_DELETE_TRIGGER", TypeMap.VARCHAR, "50", false, false,
                 false));
-        table.addColumn(new Column("sync_on_update_condition", TypeMap.LONGVARCHAR, null, false,
+        table.addColumn(new Column("SYNC_ON_UPDATE_CONDITION", TypeMap.LONGVARCHAR, null, false,
                 false, false));
-        table.addColumn(new Column("sync_on_insert_condition", TypeMap.LONGVARCHAR, null, false,
+        table.addColumn(new Column("SYNC_ON_INSERT_CONDITION", TypeMap.LONGVARCHAR, null, false,
                 false, false));
-        table.addColumn(new Column("sync_on_delete_condition", TypeMap.LONGVARCHAR, null, false,
+        table.addColumn(new Column("SYNC_ON_DELETE_CONDITION", TypeMap.LONGVARCHAR, null, false,
                 false, false));
-        table.addColumn(new Column("external_select", TypeMap.LONGVARCHAR, null, false, false,
+        table.addColumn(new Column("EXTERNAL_SELECT", TypeMap.LONGVARCHAR, null, false, false,
                 false));
-        table.addColumn(new Column("tx_id_expression", TypeMap.LONGVARCHAR, null, false, false,
+        table.addColumn(new Column("TX_ID_EXPRESSION", TypeMap.LONGVARCHAR, null, false, false,
                 false));
-        table.addColumn(new Column("excluded_column_names", TypeMap.LONGVARCHAR, null, false,
+        table.addColumn(new Column("EXCLUDED_COLUMN_NAMES", TypeMap.LONGVARCHAR, null, false,
                 false, false));
-        table.addColumn(new Column("create_time", TypeMap.TIMESTAMP, "50", false, true, false));
-        table.addColumn(new Column("last_update_by", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("last_update_time", TypeMap.TIMESTAMP, "50", false, true, false));
+        table.addColumn(new Column("CREATE_TIME", TypeMap.TIMESTAMP, "50", false, true, false));
+        table.addColumn(new Column("LAST_UPDATE_BY", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("LAST_UPDATE_TIME", TypeMap.TIMESTAMP, "50", false, true, false));
         return table;
     }
 
     protected Table buildRouter() {
         Table table = new Table(prependPrefix(ROUTER));
-        table.addColumn(new Column("router_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("target_catalog_name", TypeMap.VARCHAR, "50", false, false,
+        table.addColumn(new Column("ROUTER_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("TARGET_CATALOG_NAME", TypeMap.VARCHAR, "50", false, false,
                 false));
-        table.addColumn(new Column("target_schema_name", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("target_table_name", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("source_node_group_id", TypeMap.VARCHAR, "50", false, false,
+        table.addColumn(new Column("TARGET_SCHEMA_NAME", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("TARGET_TABLE_NAME", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("SOURCE_NODE_GROUP_ID", TypeMap.VARCHAR, "50", false, false,
                 false));
-        table.addColumn(new Column("target_node_group_id", TypeMap.VARCHAR, "50", false, false,
+        table.addColumn(new Column("TARGET_NODE_GROUP_ID", TypeMap.VARCHAR, "50", false, false,
                 false));
-        table.addColumn(new Column("router_type", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("router_expression", TypeMap.LONGVARCHAR, null, false, false,
+        table.addColumn(new Column("ROUTER_TYPE", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("ROUTER_EXPRESSION", TypeMap.LONGVARCHAR, null, false, false,
                 false));
-        table.addColumn(new Column("sync_on_update", TypeMap.BOOLEAN, "1", false, true, false, "1"));
-        table.addColumn(new Column("sync_on_insert", TypeMap.BOOLEAN, "1", false, true, false, "1"));
-        table.addColumn(new Column("sync_on_delete", TypeMap.BOOLEAN, "1", false, true, false, "1"));
-        table.addColumn(new Column("create_time", TypeMap.TIMESTAMP, "50", false, true, false, "1"));
-        table.addColumn(new Column("last_update_by", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("last_update_time", TypeMap.TIMESTAMP, "50", false, true, false));
+        table.addColumn(new Column("SYNC_ON_UPDATE", TypeMap.BOOLEAN, "1", false, true, false, "1"));
+        table.addColumn(new Column("SYNC_ON_INSERT", TypeMap.BOOLEAN, "1", false, true, false, "1"));
+        table.addColumn(new Column("SYNC_ON_DELETE", TypeMap.BOOLEAN, "1", false, true, false, "1"));
+        table.addColumn(new Column("CREATE_TIME", TypeMap.TIMESTAMP, "50", false, true, false, "1"));
+        table.addColumn(new Column("LAST_UPDATE_BY", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("LAST_UPDATE_TIME", TypeMap.TIMESTAMP, "50", false, true, false));
         return table;
     }
 
     protected Table buildTriggerRouter() {
         Table table = new Table(prependPrefix(TRIGGER_ROUTER));
-        table.addColumn(new Column("trigger_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("router_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("initial_load_order", TypeMap.INTEGER, null, false, true, false,
+        table.addColumn(new Column("TRIGGER_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("ROUTER_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("INITIAL_LOAD_ORDER", TypeMap.INTEGER, null, false, true, false,
                 "1"));
-        table.addColumn(new Column("initial_load_select", TypeMap.LONGVARCHAR, null, false, false,
+        table.addColumn(new Column("INITIAL_LOAD_SELECT", TypeMap.LONGVARCHAR, null, false, false,
                 false));
-        table.addColumn(new Column("ping_back_enabled", TypeMap.BOOLEAN, "1", false, true, false,
+        table.addColumn(new Column("PING_BACK_ENABLED", TypeMap.BOOLEAN, "1", false, true, false,
                 "0"));
-        table.addColumn(new Column("create_time", TypeMap.TIMESTAMP, "50", false, true, false));
-        table.addColumn(new Column("last_update_by", TypeMap.VARCHAR, "50", false, false, false));
-        table.addColumn(new Column("last_update_time", TypeMap.TIMESTAMP, "50", false, true, false));
+        table.addColumn(new Column("CREATE_TIME", TypeMap.TIMESTAMP, "50", false, true, false));
+        table.addColumn(new Column("LAST_UPDATE_BY", TypeMap.VARCHAR, "50", false, false, false));
+        table.addColumn(new Column("LAST_UPDATE_TIME", TypeMap.TIMESTAMP, "50", false, true, false));
         return table;
     }
 
     protected Table buildParameter() {
         Table table = new Table(prependPrefix(PARAMETER));
-        table.addColumn(new Column("external_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("node_group_id", TypeMap.VARCHAR, "50", false, true, true));
-        table.addColumn(new Column("param_key", TypeMap.VARCHAR, "80", false, true, true));
-        table.addColumn(new Column("param_value", TypeMap.LONGVARCHAR, null, false, false, false));
+        table.addColumn(new Column("EXTERNAL_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("NODE_GROUP_ID", TypeMap.VARCHAR, "50", false, true, true));
+        table.addColumn(new Column("PARAM_KEY", TypeMap.VARCHAR, "80", false, true, true));
+        table.addColumn(new Column("PARAM_VALUE", TypeMap.LONGVARCHAR, null, false, false, false));
         return table;
     }
 
     protected Table buildRegistrationRedirect() {
         Table table = new Table(prependPrefix(REGISTRATION_REDIRECT));
-        table.addColumn(new Column("registrant_external_id", TypeMap.VARCHAR, "50", false, true,
+        table.addColumn(new Column("REGISTRANT_EXTERNAL_ID", TypeMap.VARCHAR, "50", false, true,
                 true));
-        table.addColumn(new Column("registration_node_id", TypeMap.VARCHAR, "50", false, true,
+        table.addColumn(new Column("REGISTRATION_NODE_ID", TypeMap.VARCHAR, "50", false, true,
                 false));
         return table;
     }
