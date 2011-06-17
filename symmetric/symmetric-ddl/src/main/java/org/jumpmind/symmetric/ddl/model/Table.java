@@ -875,22 +875,28 @@ public class Table implements Serializable, Cloneable
     
     public Column getColumnWithName(String name) {
         Column[] columns = getColumns();
+        if (columns != null) {
         for (Column column : columns) {
             if (column.getName().equals(name)) {
                 return column;
             }
+        }
         }
         return null;
     }
     
     public boolean doesIndexContainOnlyPrimaryKeyColumns(Index index) {
         IndexColumn[] columns = index.getColumns();
-        for (IndexColumn indexColumn : columns) {
-            Column column = getColumnWithName(indexColumn.getName());
-            if (column == null || !column.isPrimaryKey()) {
-                return false;
+        if (columns != null) {
+            for (IndexColumn indexColumn : columns) {
+                Column column = getColumnWithName(indexColumn.getName());
+                if (column == null || !column.isPrimaryKey()) {
+                    return false;
+                }
             }
+            return true;
+        } else {
+            return false;
         }
-        return true;
     }
 }
