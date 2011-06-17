@@ -872,4 +872,25 @@ public class Table implements Serializable, Cloneable
         }
         return tableName;
     }
+    
+    public Column getColumnWithName(String name) {
+        Column[] columns = getColumns();
+        for (Column column : columns) {
+            if (column.getName().equals(name)) {
+                return column;
+            }
+        }
+        return null;
+    }
+    
+    public boolean doesIndexContainOnlyPrimaryKeyColumns(Index index) {
+        IndexColumn[] columns = index.getColumns();
+        for (IndexColumn indexColumn : columns) {
+            Column column = getColumnWithName(indexColumn.getName());
+            if (column == null || !column.isPrimaryKey()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

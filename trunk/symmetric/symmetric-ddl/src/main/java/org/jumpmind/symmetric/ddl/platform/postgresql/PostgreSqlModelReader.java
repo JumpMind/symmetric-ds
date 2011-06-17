@@ -236,8 +236,7 @@ public class PostgreSqlModelReader extends JdbcModelReader
      */
     protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index)
     {
-        // PostgreSql uses the form "[tablename]_pkey"
-        return (table.getName() + "_pkey").equals(index.getName());
+        return table.doesIndexContainOnlyPrimaryKeyColumns(index);
     }
 
 }
