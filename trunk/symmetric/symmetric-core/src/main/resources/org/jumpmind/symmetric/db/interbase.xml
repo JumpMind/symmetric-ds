@@ -24,14 +24,14 @@
                     <map>
                         <entry key="escape">
                             <value>
-                                declare external function $(functionName) cstring(32660)
-                                returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'
+                                declare external function $(functionName) cstring(4096)
+                                returns cstring(4096) free_it entry_point 'sym_escape' module_name 'sym_udf'
                             </value>
                         </entry>
                         <entry key="hex">
                             <value>
                                 declare external function $(functionName) blob
-                                returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'
+                                returns cstring(4096) free_it entry_point 'sym_hex' module_name 'sym_udf'
                             </value>
                         </entry>
                     </map>
