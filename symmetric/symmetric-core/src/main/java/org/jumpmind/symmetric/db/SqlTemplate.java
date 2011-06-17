@@ -547,6 +547,7 @@ public class SqlTemplate {
 
         columnsText = AppUtils.replace("origTableAlias", origTableAlias, columnsText);
         columnsText = AppUtils.replace("tableAlias", tableAlias, columnsText);
+        columnsText = AppUtils.replace("prefixName", dbDialect.getTablePrefix(), columnsText);
         return new ColumnString(columnsText, isLob);
     }
 
