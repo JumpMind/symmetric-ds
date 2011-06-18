@@ -89,7 +89,11 @@ public class SqlScript {
     }
 
     public SqlScript(String sqlScript, IDbDialect platform) {
-        this(sqlScript, platform, true, ";", null);
+        this(sqlScript, platform, true, QUERY_ENDS, null);
+    }
+    
+    public SqlScript(String sqlScript, IDbDialect platform, boolean failOnError) {
+        this(sqlScript, platform, failOnError, QUERY_ENDS, null);
     }
 
     public SqlScript(String sqlScript, IDbDialect platform, boolean failOnError, String delimiter,

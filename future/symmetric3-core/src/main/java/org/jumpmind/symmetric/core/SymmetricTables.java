@@ -46,10 +46,54 @@ public class SymmetricTables extends Database {
     public static final String NODE_SECURITY = "NODE_SECURITY";
 
     public static final String NODE = "NODE";
+    
+    public static final String DATA_GAP = "DATA_GAP";
+    
+    public static final String DATA_EVENT = "DATA_EVENT";
+    
+    public static final String TRIGGER_HIST = "TRIGGER_HIST";
+    
+    public static final String LOCK = "LOCK";
+    
+    public static final String INCOMING_BATCH = "INCOMING_BATCH";
+    
+    public static final String OUTGOING_BATCH = "OUTGOING_BATCH";
+    
+    public static final String REGISTRATION_REQUEST = "REGISTRATION_REQUEST";
+    
+    public static final String DATA = "DATA";
 
     public static final String DEFAULT_PREFIX = "SYM";
 
     protected String prefix = DEFAULT_PREFIX;
+    
+    public static String[] DROP_ORDER = {
+        DATA_GAP,
+        NODE_CHANNEL_CTL,
+        NODE_GROUP_CHANNEL_WINDOW,
+        DATA_EVENT,
+        TRIGGER_HIST,
+        TRIGGER,
+        ROUTER,
+        TRIGGER_ROUTER,
+        NODE_SECURITY,
+        NODE_IDENTITY,
+        LOCK,
+        NODE_HOST,
+        NODE,
+        NODE_GROUP_LINK,
+        NODE_GROUP,
+        INCOMING_BATCH,
+        CHANNEL,
+        OUTGOING_BATCH,
+        PARAMETER,
+        NODE_HOST_CHANNEL_STATS,
+        NODE_HOST_STATS,
+        NODE_HOST_JOB_STATS,
+        REGISTRATION_REDIRECT,
+        REGISTRATION_REQUEST,
+        DATA
+    };
 
     protected Map<String, Table> byName = new HashMap<String, Table>();
 

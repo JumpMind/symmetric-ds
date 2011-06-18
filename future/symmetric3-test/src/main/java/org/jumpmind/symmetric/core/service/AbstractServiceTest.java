@@ -7,8 +7,10 @@ import org.junit.Before;
 abstract public class AbstractServiceTest {
 
     abstract protected IEnvironment getEnvironment();
-    
-    abstract protected void resetEnvironment();
+
+    protected void resetEnvironment() {
+        getEnvironment().getDbDialect().removeSymmetric();
+    }
 
     protected static SymmetricClient client;
 
@@ -20,7 +22,7 @@ abstract public class AbstractServiceTest {
             client = new SymmetricClient(environment);
             client.initialize();
         }
-        
+
     }
 
 }

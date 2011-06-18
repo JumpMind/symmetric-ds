@@ -92,4 +92,6 @@ public interface IDbDialect {
     
     public void refreshParameters(Parameters parameters);
     
+    public void removeSymmetric();
+    
 }

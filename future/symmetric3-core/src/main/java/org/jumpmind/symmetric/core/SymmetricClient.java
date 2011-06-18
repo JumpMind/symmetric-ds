@@ -40,7 +40,7 @@ public class SymmetricClient {
     }
 
     public void initialize() {
-        if (this.parameterService.getParameters().is(Parameters.AUTO_CONFIGURE_DATABASE, true)) {
+        if (this.environment.getParameters().is(Parameters.AUTO_CONFIGURE_DATABASE, true)) {
             this.configurationService.autoConfigTables();
             this.configurationService.autoConfigFunctions();
             this.configurationService.autoConfigChannels();
@@ -51,6 +51,10 @@ public class SymmetricClient {
 
     public void syncTriggers() {
         this.triggerRouterService.syncTriggers();
+    }
+    
+    public void removeSymmetric() {
+        this.dbDialect.removeSymmetric();
     }
 
     public RemoteNodeStatuses push() {
@@ -71,6 +75,10 @@ public class SymmetricClient {
 
     public TriggerRouterService getTriggerRouterService() {
         return triggerRouterService;
+    }
+    
+    public NodeService getNodeService() {
+        return nodeService;
     }
 
 }
