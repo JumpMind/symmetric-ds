@@ -148,4 +148,17 @@ public class SQLiteSqlTemplate extends AbstractSqlTemplate implements ISqlTempla
         return new SQLiteSqlTransaction(this);
     }
 
+    public int getDatabaseMajorVersion() {
+        return database.getVersion();
+    }
+    
+    public int getDatabaseMinorVersion() {
+        return 0;
+    }
+    
+    
+    public String getDatabaseProductName() {
+     
+        return "SQLite";
+    }
 }

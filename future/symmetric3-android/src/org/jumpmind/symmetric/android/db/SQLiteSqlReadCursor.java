@@ -1,10 +1,8 @@
 package org.jumpmind.symmetric.android.db;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jumpmind.symmetric.core.db.ISqlReadCursor;
 import org.jumpmind.symmetric.core.db.ISqlRowMapper;
+import org.jumpmind.symmetric.core.db.Row;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -34,7 +32,7 @@ public class SQLiteSqlReadCursor<T> implements ISqlReadCursor<T> {
     public T next() {
         try {
             if (this.cursor.moveToNext()) {
-                Map<String, Object> row = getMapForRow();
+                Row row = getMapForRow();
                 rowNumber++;
                 if (this.mapper != null) {
                     return this.mapper.mapRow(row);
@@ -55,9 +53,9 @@ public class SQLiteSqlReadCursor<T> implements ISqlReadCursor<T> {
         }
     }
 
-    protected Map<String, Object> getMapForRow() {
+    protected Row getMapForRow() {
         int columnCount = this.cursor.getColumnCount();
-        Map<String, Object> mapOfColValues = new HashMap<String, Object>(columnCount);
+        Row mapOfColValues = new Row(columnCount);
         for (int i = 0; i < columnCount; i++) {
             String name = this.cursor.getColumnName(i);
             mapOfColValues.put(name, this.cursor.getString(i));
