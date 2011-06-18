@@ -313,4 +313,28 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
     }
 
+    public int getDatabaseMajorVersion() {
+        return execute(new IConnectionCallback<Integer>() {
+            public Integer execute(Connection con) throws SQLException {
+                return con.getMetaData().getDatabaseMajorVersion();
+            }
+        });
+    }
+
+    public int getDatabaseMinorVersion() {
+        return execute(new IConnectionCallback<Integer>() {
+            public Integer execute(Connection con) throws SQLException {
+                return con.getMetaData().getDatabaseMinorVersion();
+            }
+        });
+    }
+
+    public String getDatabaseProductName() {
+        return execute(new IConnectionCallback<String>() {
+            public String execute(Connection con) throws SQLException {
+                return con.getMetaData().getDatabaseProductName();
+            }
+        });
+    }
+
 }

@@ -5,11 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jumpmind.symmetric.core.db.ISqlReadCursor;
 import org.jumpmind.symmetric.core.db.ISqlRowMapper;
+import org.jumpmind.symmetric.core.db.Row;
 import org.jumpmind.symmetric.core.model.Parameters;
 
 public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
@@ -57,7 +56,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     public T next() {
         try {
             if (rs.next()) {
-                Map<String, Object> row = getMapForRow();
+                Row row = getMapForRow();
                 return mapper.mapRow(row);
             } else {
                 return null;
@@ -68,10 +67,10 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     }
     
 
-    protected Map<String, Object> getMapForRow() throws SQLException {
+    protected Row getMapForRow() throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
-        Map<String, Object> mapOfColValues = new HashMap<String, Object>(columnCount);
+        Row mapOfColValues = new Row(columnCount);
         for (int i = 1; i <= columnCount; i++) {
             String key = JdbcSqlTemplate.lookupColumnName(rsmd, i);
             Object obj = JdbcSqlTemplate.getResultSetValue(rs, i);

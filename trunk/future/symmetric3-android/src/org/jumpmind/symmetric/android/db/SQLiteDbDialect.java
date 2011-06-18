@@ -3,10 +3,10 @@ package org.jumpmind.symmetric.android.db;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.jumpmind.symmetric.core.db.AbstractDbDialect;
 import org.jumpmind.symmetric.core.db.ISqlTemplate;
+import org.jumpmind.symmetric.core.db.Row;
 import org.jumpmind.symmetric.core.db.SqlConstants;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
@@ -154,7 +154,7 @@ public class SQLiteDbDialect extends AbstractDbDialect {
     }
 
     static class ColumnMapper extends AbstractSqlRowMapper<Column> {
-        public Column mapRow(Map<String, Object> row) {
+        public Column mapRow(Row row) {
             Column col = new Column((String) row.get("name"), toJdbcType((String) row.get("type")),
                     null, false, booleanValue(row.get("notnull")), booleanValue(row.get("pk")));
             col.setDefaultValue((String) row.get("dflt_value"));
@@ -180,7 +180,7 @@ public class SQLiteDbDialect extends AbstractDbDialect {
     }
 
     static class IndexMapper extends AbstractSqlRowMapper<Index> {
-        public Index mapRow(Map<String, Object> row) {
+        public Index mapRow(Row row) {
             boolean unique = booleanValue(row.get("unique"));
             String name = (String) row.get("name");
             if (unique) {
@@ -192,7 +192,7 @@ public class SQLiteDbDialect extends AbstractDbDialect {
     }
 
     static class IndexColumnMapper extends AbstractSqlRowMapper<IndexColumn> {
-        public IndexColumn mapRow(Map<String, Object> row) {
+        public IndexColumn mapRow(Row row) {
             IndexColumn column = new IndexColumn();
             column.setName((String) row.get("name"));
             column.setOrdinalPosition(intValue(row.get("cid")));

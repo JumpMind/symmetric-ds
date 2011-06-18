@@ -13,30 +13,30 @@ public interface ISqlTemplate {
 
     public IDbDialect getDbDialect();
 
-    public <T> T queryForObject(String sql, Class<T> clazz, Object... args);
+    public <T> T queryForObject(String sql, Class<T> clazz, Object... params);
 
     public int queryForInt(String sql);
     
     public <T> ISqlReadCursor<T> queryForCursor(Query query, ISqlRowMapper<T> mapper) ;
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
-            Object[] values, int[] types);
+            Object[] params, int[] types);
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper);
 
-    public List<Map<String, Object>> query(String sql);
+    public List<Row> query(String sql);
 
-    public List<Map<String, Object>> query(String sql, Object[] args, int[] types);
+    public List<Row> query(String sql, Object[] params, int[] types);
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper);
     
-    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args);
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... params);
 
-    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types);
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] params, int[] types);
     
     public <T> List<T> query(Query query, ISqlRowMapper<T> mapper);
     
-    public <T,W> Map<T,W> query(String sql, String keyCol, String valueCol, Object[] args, int[] types);
+    public <T,W> Map<T,W> query(String sql, String keyCol, String valueCol, Object[] params, int[] types);
 
     public int update(String sql);
 
@@ -46,7 +46,7 @@ public interface ISqlTemplate {
 
     public int update(String sql, Object[] values, int[] types);
     
-    public int update(Table table, Map<String,Object> args);
+    public int update(Table table, Map<String,Object> params);
     
 	public int insert(Table table, Map<String, Object> params);
 	
@@ -59,5 +59,11 @@ public interface ISqlTemplate {
     public SqlException translate(Exception ex);
 
     public ISqlTransaction startSqlTransaction();
+    
+    public int getDatabaseMajorVersion();
+    
+    public int getDatabaseMinorVersion();
+    
+    public String getDatabaseProductName();
 
 }

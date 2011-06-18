@@ -59,6 +59,15 @@ public class Parameters extends HashMap<String, String> {
     public final static String EXTERNAL_ID = "external.id";
     
     public final static String NODE_GROUP_ID = "group.id";
+    
+    public final static String SCHEMA_VERSION = "schema.version";
+    
+    public final static String REGISTRATION_URL = "registration.url";
+
+    public final static String SYNC_URL = "sync.url";
+    
+    public final static String ENGINE_NAME = "engine.name";
+
 
     protected List<IParameterFilter> parameterFilters = new ArrayList<IParameterFilter>();
 
@@ -156,6 +165,10 @@ public class Parameters extends HashMap<String, String> {
     
     public String getNodeGroupId() {
         return get(NODE_GROUP_ID, "");
+    }
+    
+    public String getSyncUrl() {
+        return get(SYNC_URL, "");
     }
 
     public int getQueryTimeout() {
