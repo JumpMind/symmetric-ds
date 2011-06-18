@@ -81,6 +81,15 @@ public class SymmetricTables extends Database {
     public Table getSymmetricTable(String suffix) {
         return byName.get(prependPrefix(suffix));
     }
+    
+    public Table[] getSymmetricTables(String... suffixs) {
+        Table[] tables = new Table[suffixs.length];
+        int index = 0;
+        for (String suffix : suffixs) {
+            tables[index++] = getSymmetricTable(suffix);
+        }
+        return tables;
+    }
 
     @Override
     public void addTable(Table table) {

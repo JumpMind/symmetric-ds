@@ -13,6 +13,12 @@ public class Row extends HashMap<String, Object> {
     public Row(int numberOfColumns) {
         super(numberOfColumns);
     }
+    
+    public Row(String columnName, Object value) {
+        super(1);
+        put(columnName, value);
+    }
+
 
     public String stringValue() {
         Object obj = this.values().iterator().next();
