@@ -58,6 +58,17 @@ public class NodeService extends AbstractParameterizedService {
     }
 
     /**
+     * Lookup a node in the database, which contains information for syncing
+     * with it.
+     */
+    public Node findNode(String id) {
+        List<Node> list = dbDialect.getSqlTemplate().query(
+                new Query(1, getTable(SymmetricTables.NODE)).where("NODE_ID", "=", id),
+                NODE_MAPPER);
+        return (Node) getFirstEntry(list);
+    }
+
+    /**
      * Lookup a node_security in the database, which contains private
      * information used to authenticate.
      */
