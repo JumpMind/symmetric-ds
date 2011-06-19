@@ -146,7 +146,7 @@ public class Query {
         return getSql();
     }
 
-    protected static StringBuilder select(Table... tables) {
+    protected static StringBuilder select(Table[] tables) {
         if (tables != null && tables.length > 0) {
             StringBuilder sql = new StringBuilder("select ");
             if (hasColumns(tables)) {

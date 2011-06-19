@@ -13,6 +13,6 @@ public interface IEnvironment {
     /**
      * Get parameters that are specific to the environment
      */
-    public Parameters getParameters();
+    public Parameters getLocalParameters();
 
 }

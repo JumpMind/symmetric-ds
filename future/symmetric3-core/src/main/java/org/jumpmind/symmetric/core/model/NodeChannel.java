@@ -25,24 +25,28 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 
+ * A composite parent for {@link Channel} and {@link NodeChannelControl}
  */
 public class NodeChannel implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Channel channel;
-    
+
     private NodeChannelControl nodeChannelControl;
 
+    public NodeChannel(Channel channel, NodeChannelControl nodeChannelControl) {
+        this.channel = channel != null ? channel : new Channel();
+        this.nodeChannelControl = nodeChannelControl != null ? nodeChannelControl
+                : new NodeChannelControl();
+    }
+
     public NodeChannel() {
-        channel = new Channel();
-        nodeChannelControl = new NodeChannelControl();
+        this(new Channel(), new NodeChannelControl());
     }
 
     public NodeChannel(String channelId) {
-        channel = new Channel();
-        nodeChannelControl = new NodeChannelControl();
+        this();
         nodeChannelControl.setChannelId(channelId);
         channel.setChannelId(channelId);
     }
