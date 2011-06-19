@@ -40,7 +40,7 @@ public class SymmetricClient {
     }
 
     public void initialize() {
-        if (this.environment.getParameters().is(Parameters.AUTO_CONFIGURE_DATABASE, true)) {
+        if (this.environment.getLocalParameters().is(Parameters.AUTO_CONFIGURE_DATABASE, true)) {
             this.configurationService.autoConfigTables();
             this.configurationService.autoConfigFunctions();
             this.configurationService.autoConfigChannels();

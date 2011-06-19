@@ -25,6 +25,7 @@ import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.service.ParameterService;
 
 abstract public class AbstractDbDialect implements IDbDialect {
 
@@ -50,12 +51,16 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected IDataCaptureBuilder dataCaptureBuilder;
 
-    protected Parameters parameters;
+    /**
+     * These are parameters that have been setup on this system. They will be
+     * merged with database driven parameters in the {@link ParameterService}
+     */
+    protected Parameters localParameters;
 
     protected SymmetricTables databaseDefinition = null;
 
     public AbstractDbDialect(Parameters parameters) {
-        this.parameters = parameters == null ? new Parameters() : parameters;
+        this.localParameters = parameters == null ? new Parameters() : parameters;
         this.databaseDefinition = new SymmetricTables(parameters.get(Parameters.DB_TABLE_PREFIX,
                 SymmetricTables.DEFAULT_PREFIX));
     }
@@ -65,7 +70,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public Parameters getParameters() {
-        return parameters;
+        return localParameters;
     }
 
     public IDataCaptureBuilder getDataCaptureBuilder() {
@@ -269,8 +274,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         Table cachedTable = cachedModel.findTable(catalogName, schemaName, tableName);
         if (cachedTable == null || !useCached) {
             Table justReadTable = readTable(catalogName, schemaName, tableName,
-                    !parameters.is(Parameters.DB_METADATA_IGNORE_CASE, true),
-                    parameters.is(Parameters.DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND, false));
+                    !localParameters.is(Parameters.DB_METADATA_IGNORE_CASE, true),
+                    localParameters.is(Parameters.DB_USE_ALL_COLUMNS_AS_PK_IF_NONE_FOUND, false));
 
             if (cachedTable != null) {
                 cachedModel.removeTable(cachedTable);
@@ -346,7 +351,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public void refreshParameters(Parameters parameters) {
-        this.parameters = parameters;
+        this.localParameters = parameters;
     }
 
     public void removeSymmetric() {

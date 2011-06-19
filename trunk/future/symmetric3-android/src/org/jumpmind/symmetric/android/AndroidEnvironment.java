@@ -20,12 +20,12 @@ public class AndroidEnvironment implements IEnvironment {
 
     protected IDbDialect dbDialect;
 
-    protected Parameters parameters = new Parameters();
+    protected Parameters localParameters = new Parameters();
 
     public AndroidEnvironment(SQLiteOpenHelper sqliteopenhelper) {
         this.readParameters();
         this.resourceFactory = new AndroidResourceFactory();
-        this.dbDialect = new SQLiteDbDialect(sqliteopenhelper, parameters);
+        this.dbDialect = new SQLiteDbDialect(sqliteopenhelper, localParameters);
     }
 
     protected void readParameters() {
@@ -40,8 +40,8 @@ public class AndroidEnvironment implements IEnvironment {
         return resourceFactory;
     }
 
-    public Parameters getParameters() {
-        return parameters;
+    public Parameters getLocalParameters() {
+        return localParameters;
     }
 
 }

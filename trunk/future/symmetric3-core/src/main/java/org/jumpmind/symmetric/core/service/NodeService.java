@@ -13,6 +13,7 @@ import org.jumpmind.symmetric.core.db.mapper.NodeMapper;
 import org.jumpmind.symmetric.core.db.mapper.NodeSecurityMapper;
 import org.jumpmind.symmetric.core.ext.INodePasswordFilter;
 import org.jumpmind.symmetric.core.model.Node;
+import org.jumpmind.symmetric.core.model.NodeGroup;
 import org.jumpmind.symmetric.core.model.NodeSecurity;
 
 public class NodeService extends AbstractParameterizedService {
@@ -35,6 +36,10 @@ public class NodeService extends AbstractParameterizedService {
 
     public void saveNode(Node node) {
         dbDialect.getSqlTemplate().save(getTable(SymmetricTables.NODE), getParams(node));
+    }
+    
+    public void saveNodeGroup(NodeGroup nodeGroup) {
+        dbDialect.getSqlTemplate().save(getTable(SymmetricTables.NODE_GROUP), getParams(nodeGroup));
     }
 
     public void deleteNode(Node node) {
@@ -114,6 +119,11 @@ public class NodeService extends AbstractParameterizedService {
         dbDialect.getSqlTemplate().delete(tables.getSymmetricTable(SymmetricTables.NODE_IDENTITY),
                 new Row("NODE_ID", nodeId));
     }
+    
+    public String findIdentityNodeId() {
+        Node node = findIdentity();
+        return node != null ? node.getNodeId() : null;
+    }
 
     public Node findIdentity(boolean useCache) {
         if (cachedNodeIdentity == null || useCache == false) {
@@ -128,6 +138,13 @@ public class NodeService extends AbstractParameterizedService {
     public void insertNodeIdentity(String nodeId) {
         dbDialect.getSqlTemplate().save(getTable(SymmetricTables.NODE_IDENTITY),
                 new Row("NODE_ID", nodeId));
+    }
+    
+    protected Map<String, Object> getParams(NodeGroup nodeGroup) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("NODE_GROUP_ID", nodeGroup.getNodeGroupId());
+        params.put("DESCRIPTION", nodeGroup.getDescription());
+        return params;
     }
 
     protected Map<String, Object> getParams(NodeSecurity nodeSecurity) {

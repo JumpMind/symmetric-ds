@@ -18,10 +18,16 @@ public class Parameters extends HashMap<String, String> {
 
     protected static Log log = LogFactory.getLog(Parameters.class);
 
+    public final static String CACHE_TIMEOUT_NODE_SECURITY_IN_MS = "cache.node.security.time.ms";
+    public final static String CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS = "cache.trigger.router.time.ms";
+    public final static String CACHE_TIMEOUT_CHANNEL_IN_MS = "cache.channel.time.ms";
+
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
+    public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
+
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
-    
+
     public final static String DB_TABLE_PREFIX = "sync.table.prefix";
 
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
@@ -55,19 +61,18 @@ public class Parameters extends HashMap<String, String> {
     public final static String LOADER_DONT_INCLUDE_PKS_IN_UPDATE = "dataloader.dont.include.keys.in.update.statement";
 
     public final static String TRIGGER_NUMBER_PRECISION = "trigger.number.precision";
-    
+
     public final static String EXTERNAL_ID = "external.id";
-    
+
     public final static String NODE_GROUP_ID = "group.id";
-    
+
     public final static String SCHEMA_VERSION = "schema.version";
-    
+
     public final static String REGISTRATION_URL = "registration.url";
 
     public final static String SYNC_URL = "sync.url";
-    
-    public final static String ENGINE_NAME = "engine.name";
 
+    public final static String ENGINE_NAME = "engine.name";
 
     protected List<IParameterFilter> parameterFilters = new ArrayList<IParameterFilter>();
 
@@ -130,7 +135,7 @@ public class Parameters extends HashMap<String, String> {
             returnValue = value;
         }
         return returnValue;
-    }     
+    }
 
     public String[] getArray(String key, String[] defaultValue) {
         String value = get(key);
@@ -139,7 +144,7 @@ public class Parameters extends HashMap<String, String> {
             retValue = value.split(",");
         }
         return retValue;
-    }   
+    }
 
     @SuppressWarnings("unchecked")
     public <T> List<T> instantiate(String key) {
@@ -158,15 +163,19 @@ public class Parameters extends HashMap<String, String> {
             return objects;
         }
     }
-    
+
+    public String getRegistrationUrl() {
+        return get(REGISTRATION_URL, "");
+    }
+
     public String getExternalId() {
         return get(EXTERNAL_ID, "");
     }
-    
+
     public String getNodeGroupId() {
         return get(NODE_GROUP_ID, "");
     }
-    
+
     public String getSyncUrl() {
         return get(SYNC_URL, "");
     }
@@ -178,7 +187,7 @@ public class Parameters extends HashMap<String, String> {
     public int getStreamingFetchSize() {
         return getInt(DB_STREAMING_FETCH_SIZE, SqlConstants.DEFAULT_STREAMING_FETCH_SIZE);
     }
-    
+
     public String getTablePrefix() {
         return get(DB_TABLE_PREFIX, SymmetricTables.DEFAULT_PREFIX);
     }
@@ -187,7 +196,7 @@ public class Parameters extends HashMap<String, String> {
     public String get(Object key) {
         String value = super.get(key);
         for (IParameterFilter filter : parameterFilters) {
-            value = filter.filterParameter((String)key, value);
+            value = filter.filterParameter((String) key, value);
         }
         return value;
     }

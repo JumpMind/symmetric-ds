@@ -8,12 +8,12 @@ public class DefaultEnvironment implements IEnvironment {
 
     protected IResourceFactory resourceFactory;
     protected IDbDialect dbDialect;
-    protected Parameters parameters;
+    protected Parameters localParameters;
 
     public DefaultEnvironment(IResourceFactory resourceFactory, IDbDialect dbDialect, Parameters parameters) {
         this.resourceFactory = resourceFactory;
         this.dbDialect = dbDialect;
-        this.parameters = parameters;
+        this.localParameters = parameters;
     }
 
     public void setDbDialect(IDbDialect dbDialect) {
@@ -32,8 +32,8 @@ public class DefaultEnvironment implements IEnvironment {
         return resourceFactory;
     }
     
-    public Parameters getParameters() {
-        return parameters;
+    public Parameters getLocalParameters() {
+        return localParameters;
     }
 
 }

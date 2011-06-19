@@ -100,7 +100,7 @@ public class ParameterService extends AbstractService {
     protected Parameters readParameters() {
         Parameters parameters = new Parameters(parameterFilters);
         parameters.putAll(System.getProperties());
-        parameters.putAll(environment.getParameters());
+        parameters.putAll(environment.getLocalParameters());
         String externalId = parameters.getExternalId();
         String nodeGroupId = parameters.getNodeGroupId();
         parameters.putAll(readFromDatabase(ALL, ALL));

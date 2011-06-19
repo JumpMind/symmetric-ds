@@ -22,6 +22,10 @@ abstract public class Log {
         log(LogLevel.INFO, msg, params);
     }
 
+    public void warn(String msg, Object... params) {
+        log(LogLevel.WARN, msg, params);
+    }
+    
     public void error(String msg, Object... params) {
         log(LogLevel.ERROR, msg, params);
     }
