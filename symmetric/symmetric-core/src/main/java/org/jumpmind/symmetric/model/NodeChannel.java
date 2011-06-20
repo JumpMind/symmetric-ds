@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 
+ * A composite parent for {@link Channel} and {@link NodeChannelControl}
  */
 public class NodeChannel implements Serializable {
 
