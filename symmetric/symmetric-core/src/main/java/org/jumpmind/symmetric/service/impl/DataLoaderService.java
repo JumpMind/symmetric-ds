@@ -20,6 +20,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -263,8 +264,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             }
             
-            if (totalNetworkMillis > Constants.LONG_OPERATION_THRESHOLD && batchesProcessed.size() == 0) {
-                log.warn("LoaderNoBatchesLoadedWarning", totalNetworkMillis);
+            if (transport instanceof FileIncomingTransport && batchesProcessed.size() == 0) {
+                File incomingFile = ((FileIncomingTransport) transport).getFile();
+                if (incomingFile != null && incomingFile.exists()) {
+                    log.warn("LoaderNoBatchesLoadedWarning", incomingFile.length());
+                }
             }
 
         } catch (RegistrationRequiredException ex) {

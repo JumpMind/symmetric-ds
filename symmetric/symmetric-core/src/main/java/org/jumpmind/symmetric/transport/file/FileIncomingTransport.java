@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.transport.file;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
@@ -58,6 +59,14 @@ public class FileIncomingTransport implements IIncomingTransport {
     
     public String getRedirectionUrl() {
         return null;
+    }
+    
+    public File getFile() {
+        if (fileWriter != null) {
+            return fileWriter.getFile();
+        } else {
+            return null;
+        }
     }
 
 }
