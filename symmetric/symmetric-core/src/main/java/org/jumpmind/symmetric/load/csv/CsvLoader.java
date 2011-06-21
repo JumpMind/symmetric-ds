@@ -131,10 +131,10 @@ public class CsvLoader implements IDataLoader {
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
                 this.context.setSourceNodeId(tokens[1]);
-            } else if (isMetaTokenParsed(tokens)) {
-                continue;
             } else {
-                throw new RuntimeException("Unexpected token '" + tokens[0] + "' while parsing for next batch");
+                if (!isMetaTokenParsed(tokens)) {
+                    log.debug("LoaderIgnoringToken", tokens[0]);
+                }
             }
         }
         return false;
