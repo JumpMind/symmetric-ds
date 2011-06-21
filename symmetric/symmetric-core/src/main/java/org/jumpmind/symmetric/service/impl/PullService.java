@@ -68,8 +68,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         try {
                             log.debug("DataPulling", nodeName);
                             dataLoaderService.loadDataFromPull(node, status);
-                            if (status.getDataProcessed() > 0) {
-                                log.info("DataPulled", nodeName);
+                            if (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0) {
+                                log.info("DataPulled", nodeName, status.getDataProcessed(), status.getBatchesProcessed());
+                            } else {
+                                log.debug("DataPulled", nodeName, status.getDataProcessed(), status.getBatchesProcessed());
                             }
                         } catch (ConnectException ex) {
                             log.warn("TransportFailedConnectionUnavailable",
