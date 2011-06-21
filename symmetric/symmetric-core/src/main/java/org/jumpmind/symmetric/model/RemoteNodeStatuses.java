@@ -50,6 +50,14 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
         return dataProcessed;        
     }
     
+    public boolean errorOccurred() {
+        boolean errorOccurred = false;
+        for (RemoteNodeStatus status : this) {
+            errorOccurred |= status.failed();
+        }
+        return errorOccurred;        
+    }
+    
     public RemoteNodeStatus add(Node node) {
         RemoteNodeStatus status = null;
         if (node != null) {
