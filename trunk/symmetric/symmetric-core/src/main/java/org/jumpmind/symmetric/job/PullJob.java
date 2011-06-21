@@ -40,6 +40,7 @@ public class PullJob extends AbstractJob {
         // Re-pull immediately if we are in the middle of an initial load
         // so that the initial load completes as quickly as possible.
         while (nodeService.isDataLoadStarted() && statuses.wasDataProcessed()) {
+            log.info("DataPullingInReloadMode");
             statuses = pullService.pullData();
         }
         
