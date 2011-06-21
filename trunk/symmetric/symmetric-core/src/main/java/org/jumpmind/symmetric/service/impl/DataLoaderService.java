@@ -229,7 +229,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      */
     protected List<IncomingBatch> loadDataAndReturnBatches(IIncomingTransport transport) throws IOException {
 
-        List<IncomingBatch> list = new ArrayList<IncomingBatch>();
+        List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
         IncomingBatch batch = null;
         IDataLoader dataLoader = null;
         try {
@@ -246,24 +246,24 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED) || 
                     (batch.getChannelId() != null && batch.getChannelId().equals(Constants.CHANNEL_CONFIG))) {
                     log.debug("LoaderProcessingBatch", batch.getBatchId());
-                    list.add(batch);
+                    batchesProcessed.add(batch);
                     loadBatch(dataLoader, batch);
                 }
                 batch = null;
             }
 
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                estimateNetworkMillis(list, totalNetworkMillis);
+                estimateNetworkMillis(batchesProcessed, totalNetworkMillis);
             }
 
-            for (IncomingBatch incomingBatch : list) {
+            for (IncomingBatch incomingBatch : batchesProcessed) {
                 // TODO I wonder if there is a way to avoid the second update?
                 if (incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
                     log.error("LoaderFailedToUpdateBatch", incomingBatch.getBatchId());
                 }
             }
             
-            if (totalNetworkMillis > Constants.LONG_OPERATION_THRESHOLD && list.size() == 0) {
+            if (totalNetworkMillis > Constants.LONG_OPERATION_THRESHOLD && batchesProcessed.size() == 0) {
                 log.warn("LoaderNoBatchesLoadedWarning", totalNetworkMillis);
             }
 
@@ -287,7 +287,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (Throwable e) {
             if (dataLoader != null && dataLoader.getContext().getBatch() != null && batch == null) {
                 batch = dataLoader.getContext().getBatch();
-                list.add(batch);
+                batchesProcessed.add(batch);
             }
             if (dataLoader != null && batch != null) {
                 statisticManager.incrementDataLoadedErrors(batch.getChannelId(), 1);
@@ -324,7 +324,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
             transport.close();
         }
-        return list;
+        return batchesProcessed;
     }
 
     protected void estimateNetworkMillis(List<IncomingBatch> list, long totalNetworkMillis) {
