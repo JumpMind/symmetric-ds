@@ -242,9 +242,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             
             IDataLoaderContext context = dataLoader.getContext();            
             while (dataLoader.hasNext()) {
-                batch = context.getBatch();
+                batch = context.getBatch();                
                 if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED) || 
                     (batch.getChannelId() != null && batch.getChannelId().equals(Constants.CHANNEL_CONFIG))) {
+                    log.debug("LoaderProcessingBatch", batch.getBatchId());
                     list.add(batch);
                     loadBatch(dataLoader, batch);
                 }
@@ -257,7 +258,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
             for (IncomingBatch incomingBatch : list) {
                 // TODO I wonder if there is a way to avoid the second update?
-                incomingBatchService.updateIncomingBatch(incomingBatch);
+                if (incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
+                    log.error("LoaderFailedToUpdateBatch", incomingBatch.getBatchId());
+                }
+            }
+            
+            if (totalNetworkMillis > Constants.LONG_OPERATION_THRESHOLD && list.size() == 0) {
+                log.warn("LoaderNoBatchesLoadedWarning", totalNetworkMillis);
             }
 
         } catch (RegistrationRequiredException ex) {
