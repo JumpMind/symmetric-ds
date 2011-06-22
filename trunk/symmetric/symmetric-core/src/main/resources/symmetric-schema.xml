@@ -400,6 +400,26 @@
         <column name="last_locking_server_id" type="VARCHAR" size="255"  description="The server id of the process that last did work on this batch." />
     </table>
     
+    <table name="transform_table" description="Defines a data loader transformation which can be used to map arbitrary tables and columns to other tables and columns.">
+        <column name="transform_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific transform." />
+        <column name="source_catalog_name" type="VARCHAR" size="50"  description="Optional name for the catalog the configured table is in." />
+        <column name="source_schema_name" type="VARCHAR" size="50"  description="Optional name for the schema a configured table is in." />
+        <column name="source_table_name" type="VARCHAR" size="50" required="true"  description="The name of the source table that will be transformed." />
+        <column name="target_catalog_name" type="VARCHAR" size="50"  description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
+        <column name="target_schema_name" type="VARCHAR" size="50"  description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
+        <column name="target_table_name" type="VARCHAR" size="50"  description="Optional name for a target table.  Use this if the target table name is different than the source." />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The target node group that this transformation belongs to, such as 'store'." />
+    </table>    
+    
+    <table name="transform_column" description="Defines the column mappings and optional data transformation for a data loader transformation ">
+            <column name="transform_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific transform." />
+            <column name="source_column_name" type="VARCHAR" size="50" primaryKey="true" description="Optional name of the source column.  Either the source column or the target column must be defined." />
+            <column name="target_column_name" type="VARCHAR" size="50" primaryKey="true" description="Optional name of the target column.  Either the source column or the target column must be defined." />
+            <column name="pk" type="BOOLEANINT" size="1" default="0" description="Indicates whether this mapping defines a primary key to be used to identify the target row.  At least one row must be defined as a pk for each transform_id."/>
+            <column name="transform_type" type="VARCHAR" size="50"  description="The name of a specific type of transform.  Custom transformers can be configured as extension points." />
+            <column name="transform_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of transform that is configured in transform_type.  See the documentation for each transformer for more details." />
+    </table>
+    
     <!-- 
     <table name="alert_def" description="The definition of an alert">
         <column name="alert_def_id" type="VARCHAR" size="50" primaryKey="true" required="true"  description="Unique identifier for an alert defintion" />    
