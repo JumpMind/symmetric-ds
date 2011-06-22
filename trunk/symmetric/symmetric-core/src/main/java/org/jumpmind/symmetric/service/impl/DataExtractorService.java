@@ -488,8 +488,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         - outgoingBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                                     outgoingBatch = outgoingBatchService
                                             .findOutgoingBatch(currentBatch.getBatchId());
+                                    outgoingBatch.setExtractMillis(currentBatch.getExtractMillis());
                                     currentBatch = outgoingBatch;
                                 }
+                                
                                 if (outgoingBatch.getStatus() != Status.OK) {
                                     outgoingBatch.setStatus(OutgoingBatch.Status.SE);
                                     outgoingBatch.setSentCount(outgoingBatch.getSentCount() + 1);
