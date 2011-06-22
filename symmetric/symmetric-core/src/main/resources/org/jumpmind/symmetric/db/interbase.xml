@@ -34,6 +34,12 @@
                                 returns cstring(4096) free_it entry_point 'sym_hex' module_name 'sym_udf'
                             </value>
                         </entry>
+                        <entry key="rtrim">
+                            <value>
+                                declare external function $(functionName) cstring(32767)
+                                returns cstring(32767) free_it entry_point 'IB_UDF_rtrim' module_name 'ib_udf'
+                            </value>
+                        </entry>
                     </map>
                 </property>                                   
                 <property name="stringColumnTemplate" >
@@ -167,7 +173,7 @@
                         </entry>
                         <entry key="initialLoadSqlTemplate">
                             <value>
-                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
+                                <![CDATA[select $[sym.sync.table.prefix]_rtrim($(columns))||'' from $(schemaName)$(tableName) t where $(whereClause)]]>
                             </value>
                         </entry>
                     </map>
