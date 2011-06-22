@@ -516,8 +516,14 @@ public class DataService extends AbstractService implements IDataService {
                 rowData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trigger,
                         configurationService.getChannel(trigger.getChannelId()),
                         whereClause), String.class);
+                if (rowData != null) {
+                    rowData = rowData.trim();
+                }
                 pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(
                         trigger, configurationService.getChannel(trigger.getChannelId()), whereClause), String.class);
+                if (pkData != null) {
+                    pkData = pkData.trim();
+                }
             }
             TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
                     .getTriggerId());
