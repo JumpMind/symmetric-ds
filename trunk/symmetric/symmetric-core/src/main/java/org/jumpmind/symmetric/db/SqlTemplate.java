@@ -95,16 +95,16 @@ public class SqlTemplate {
 
     private String newColumnPrefix = "";
 
-    public String createInitalLoadSql(Node node, IDbDialect dialect, TriggerRouter triggerRouter, Table metaData, TriggerHistory triggerHistory, Channel channel) {
+    public String createInitalLoadSql(Node node, IDbDialect dialect, TriggerRouter triggerRouter, Table table, TriggerHistory triggerHistory, Channel channel) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-        Column[] columns = dialect.orderColumns(triggerHistory.getParsedColumnNames(), metaData);
+        Column[] columns = dialect.orderColumns(triggerHistory.getParsedColumnNames(), table);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT, false, channel).columnString;
         sql = AppUtils.replace("columns", columnsText, sql);
         sql = AppUtils.replace("whereClause", StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION : triggerRouter.getInitialLoadSelect(), sql);
-        sql = AppUtils.replace("tableName", metaData.getName(), sql);
+        sql = AppUtils.replace("tableName", table.getName(), sql);
         sql = AppUtils.replace("schemaName", triggerRouter.qualifiedSourceTablePrefix(), sql);
-        sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
+        sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), table
                 .getPrimaryKeyColumns()), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to
@@ -132,27 +132,29 @@ public class SqlTemplate {
                 && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", sql);
     }
 
-    public String createCsvDataSql(IDbDialect dialect, Trigger trig, Table metaData, Channel channel, String whereClause) {
+    public String createCsvDataSql(IDbDialect dialect, Trigger trigger, Table table, Channel channel, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
-        Column[] columns = trig.orderColumnsForTable(metaData);
+        Column[] columns = trigger.orderColumnsForTable(table);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT, false, channel).columnString;
         sql = AppUtils.replace("columns", columnsText, sql);
 
-        sql = AppUtils.replace("tableName", trig.getSourceTableName(), sql);
-        sql = AppUtils.replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
+        sql = AppUtils.replace("tableName", trigger.getSourceTableName(), sql);
+        sql = AppUtils.replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() + "." : "", sql);
         sql = AppUtils.replace("whereClause", whereClause, sql);
-        sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
+        sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), table
                 .getPrimaryKeyColumns()), sql);
+        
+        sql = replaceDefaultSchemaAndCatalog(dialect, trigger, sql);
 
         return sql;
     }
 
-    public String createCsvPrimaryKeySql(IDbDialect dialect, Trigger trig, Table metaData, Channel channel, String whereClause) {
+    public String createCsvPrimaryKeySql(IDbDialect dialect, Trigger trig, Table table, Channel channel, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
-        Column[] columns = metaData.getPrimaryKeyColumns();
+        Column[] columns = table.getPrimaryKeyColumns();
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT, false, channel).toString();
         sql = AppUtils.replace("columns", columnsText, sql);
@@ -175,20 +177,20 @@ public class SqlTemplate {
     }
 
     public String createTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history, Channel channel,
-            String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema) {
+            String tablePrefix, Table table, String defaultCatalog, String defaultSchema) {
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + dialect.getPlatform().getName());
         }
-        return replaceTemplateVariables(dialect, dml, trigger, history, channel, tablePrefix, metaData, defaultCatalog,
+        return replaceTemplateVariables(dialect, dml, trigger, history, channel, tablePrefix, table, defaultCatalog,
                 defaultSchema, ddl);
     }
 
     public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history, Channel channel,
-            String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema) {
+            String tablePrefix, Table table, String defaultCatalog, String defaultSchema) {
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
-        return replaceTemplateVariables(dialect, dml, trigger, history, channel, tablePrefix, metaData, defaultCatalog,
+        return replaceTemplateVariables(dialect, dml, trigger, history, channel, tablePrefix, table, defaultCatalog,
                 defaultSchema, ddl);
     }
 
@@ -203,7 +205,7 @@ public class SqlTemplate {
     }
 
     public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
-            TriggerHistory history, Channel channel, String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema,
+            TriggerHistory history, Channel channel, String tablePrefix, Table table, String defaultCatalog, String defaultSchema,
             String ddl) {
 
         boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
@@ -237,13 +239,13 @@ public class SqlTemplate {
                 : syncTriggersExpression, ddl);
         ddl = AppUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
-        Column[] columns = trigger.orderColumnsForTable(metaData);
+        Column[] columns = trigger.orderColumnsForTable(table);
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns, dialect, dml, false, channel);
         ddl = AppUtils.replace("columns", columnString.toString(), ddl);
         
         ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
         
-        ddl = AppUtils.replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
+        ddl = AppUtils.replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, table.getColumns()),
                 ddl);
         ddl = AppUtils.replace("oldColumns", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml, true, channel).toString(), ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
@@ -255,7 +257,7 @@ public class SqlTemplate {
                 : (resolveSchemaAndCatalogs && history.getSourceSchemaName() != null ? history.getSourceSchemaName()
                         + "." : "")), ddl);
 
-        columns = metaData.getPrimaryKeyColumns();
+        columns = table.getPrimaryKeyColumns();
         ddl = AppUtils.replace("oldKeys", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml, true, channel).toString(), ddl);
         ddl = AppUtils.replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
         ddl = AppUtils.replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
