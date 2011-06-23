@@ -182,10 +182,6 @@ public class SymmetricServlet extends AbstractServlet {
         Servlet servlet = findMatchingServlet(req, res);
         if (servlet != null) {
             try {
-                if (res instanceof HttpServletResponse) {
-                    // let the client and web server know that we don't know the content length
-                    ((HttpServletResponse) res).setHeader("Transfer-Encoding", "chunked");
-                }
                 servlet.service(req, res);
             } catch (Exception e) {
                 logException(req, e, !(e instanceof IOException && StringUtils.isNotBlank(e.getMessage())));
