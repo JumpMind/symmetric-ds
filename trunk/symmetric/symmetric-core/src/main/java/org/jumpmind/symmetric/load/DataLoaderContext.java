@@ -100,7 +100,7 @@ public class DataLoaderContext implements IDataLoaderContext {
     public Node getTargetNode()
     {
         if (targetNode == null) {
-            this.targetNode = nodeService != null && targetNodeId != null ? nodeService.findIdentity() : null; 
+            this.targetNode = nodeService != null ? nodeService.findIdentity() : null; 
         }
         return this.targetNode;      
     }

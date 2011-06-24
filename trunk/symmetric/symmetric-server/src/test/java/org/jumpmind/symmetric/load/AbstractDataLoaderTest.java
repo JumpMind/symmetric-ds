@@ -135,9 +135,22 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     }
 
     protected void load(ByteArrayOutputStream out, Map<String, List<IColumnFilter>> filters) throws Exception {
+      load(out, filters, null, null);      
+    }
+    
+    protected void load(ByteArrayOutputStream out, Map<String, List<IColumnFilter>> columnFilters, IDataLoaderFilter dataLoaderFilter, IBatchListener batchListener) throws Exception {
+        List<IDataLoaderFilter> dlFilters = new ArrayList<IDataLoaderFilter>();
+        if (dataLoaderFilter != null) {
+            dlFilters.add(dataLoaderFilter);
+        }
+        List<IBatchListener> bListeners = new ArrayList<IBatchListener>();
+        if (batchListener != null) {
+            bListeners.add(batchListener);
+        }
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         IDataLoader dataLoader = getDataLoader();
-        dataLoader.open(TransportUtils.toReader(in), getDataSource(), null, null, filters);
+        
+        dataLoader.open(TransportUtils.toReader(in), getDataSource(), bListeners, dlFilters, columnFilters);
         try {
             while (dataLoader.hasNext()) {
                 dataLoader.load();
