@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
+import org.jumpmind.symmetric.load.IMissingTableHandler;
 import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -178,7 +179,7 @@ public class CsvLoader implements IDataLoader {
                     if (tokens[0].equals(CsvConstants.INSERT)) {
                         if (tableTemplate == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
-                        } else if (tableTemplate.isIgnoreThisTable()) {
+                        } else if (tableTemplate.isIgnoreThisTable() && !willFiltersHandleMissingTable(context)) {
                             logTableIgnored();
                         } else if (!context.isSkipping()) {
                             insert(tokens);
@@ -187,7 +188,7 @@ public class CsvLoader implements IDataLoader {
                     } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                         if (tableTemplate == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
-                        } else if (tableTemplate.isIgnoreThisTable()) {
+                        } else if (tableTemplate.isIgnoreThisTable() && !willFiltersHandleMissingTable(context)) {
                             logTableIgnored();
                         } else if (!context.isSkipping()) {
                             update(tokens);
@@ -196,7 +197,7 @@ public class CsvLoader implements IDataLoader {
                     } else if (tokens[0].equals(CsvConstants.DELETE)) {
                         if (tableTemplate == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
-                        } else if (tableTemplate.isIgnoreThisTable()) {
+                        } else if (tableTemplate.isIgnoreThisTable() && !willFiltersHandleMissingTable(context)) {
                             logTableIgnored();
                         } else if (!context.isSkipping()) {
                             delete(tokens);
@@ -285,6 +286,18 @@ public class CsvLoader implements IDataLoader {
             }
         }
     }   
+    
+    protected boolean willFiltersHandleMissingTable(DataLoaderContext context) {
+        if (filters != null) {
+            for (IDataLoaderFilter filter : filters) {
+                if (filter instanceof IMissingTableHandler
+                        && ((IMissingTableHandler) filter).isHandlingMissingTable(context)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     
     protected void rollback(Exception ex) {
         try {

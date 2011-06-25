@@ -36,7 +36,7 @@ import org.junit.Test;
 
 public class TransformDataLoaderTest extends AbstractDataLoaderTest {
 
-    protected final static String TEST_TABLE = "TEST_TRANSFORM_A";
+    protected final static String TEST_TABLE = "TEST_TRANSFORM_SOURCE";
 
     protected final static String[] TEST_KEYS = { "KEY" };
 
