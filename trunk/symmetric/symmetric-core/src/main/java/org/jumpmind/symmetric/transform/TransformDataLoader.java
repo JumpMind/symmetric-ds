@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.DataLoaderFilterAdapter;
+import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.TableTemplate;
@@ -207,6 +208,12 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             map.put(columnNames[i], columnValues[i]);
         }
         return map;
+    }
+    
+    @Override
+    public boolean isHandlingMissingTable(DataLoaderContext context) {
+        List<TransformTable> tablesToTransform = findTablesToTransform(context);
+        return tablesToTransform != null && tablesToTransform.size() > 0;
     }
 
     class TransformCache {

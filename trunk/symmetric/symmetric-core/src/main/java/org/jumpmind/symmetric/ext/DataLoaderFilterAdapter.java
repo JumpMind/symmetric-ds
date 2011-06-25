@@ -1,12 +1,14 @@
 package org.jumpmind.symmetric.ext;
 
+import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.load.IMissingTableHandler;
 import org.jumpmind.symmetric.model.IncomingBatch;
 
-abstract public class DataLoaderFilterAdapter implements IDataLoaderFilter, IBatchListener {
+abstract public class DataLoaderFilterAdapter implements IDataLoaderFilter, IBatchListener, IMissingTableHandler {
 
     protected boolean autoRegister;
 
@@ -35,18 +37,21 @@ abstract public class DataLoaderFilterAdapter implements IDataLoaderFilter, IBat
     }
 
     public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
-
-        return false;
+        return true;
     }
 
     public boolean filterUpdate(IDataLoaderContext context, String[] columnValues,
             String[] keyValues) {
 
-        return false;
+        return true;
     }
 
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
 
+        return true;
+    }
+    
+    public boolean isHandlingMissingTable(DataLoaderContext ctx) {
         return false;
     }
 
