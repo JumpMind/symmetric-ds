@@ -57,60 +57,67 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
                 originalkeyValues = toMap(keyNames, keyValues);
             }
             for (TransformTable transformTable : tablesToTransform) {
-                TransformedData pk = getPrimaryKeyValues(transformTable, originalkeyValues);
-                TransformedData row = cache.lookupRow(pk);
-                if (row == null) {
-                    row = pk;
+                TransformedData pkData = getPrimaryKeyValues(transformTable, originalkeyValues);
+                TransformedData data = cache.lookupData(pkData);
+                if (data == null) {
+                    data = pkData;
                 }
 
-                if (row.getDmlType() == null) {
-                    row.setDmlType(dmlType);
+                if (data.getDmlType() == null) {
+                    data.setDmlType(dmlType);
                 }
 
-                if (dmlType != DmlType.DELETE) {
-                    if (dmlType == DmlType.INSERT) {
-                        row.setDmlType(dmlType);
-                    }
-                    for (String columnName : columnNames) {
-                        TransformColumn transformColumn = transformTable
-                                .getTransformColumnFor(columnName);
-                        if (transformColumn != null) {
-                            transform(row, transformColumn, originalValues, false);
-                        }
-                    }
-
-                    cache.cacheRow(row);
-                } else {
-                    // handle the delete action
-                    DeleteAction deleteAction = transformTable.getDeleteAction();
-                    switch (deleteAction) {
-                    case NONE:
-                        break;
-                    case DEL_ROW:
-                        row.setDmlType(DmlType.DELETE);
-                        cache.cacheRow(row);
-                        break;
-                    case NULL_COL:
-                        if (dmlType == DmlType.DELETE) {
-                            row.setDmlType(DmlType.UPDATE);
-                        }
-
-                        for (String columnName : columnNames) {
-                            TransformColumn transformColumn = transformTable
-                                    .getTransformColumnFor(columnName);
-                            if (transformColumn != null) {
-                                row.put(transformColumn.getTargetColumnName(), null, false);
-                            }
-                        }
-                        cache.cacheRow(row);
-                        break;
-                    }
+                if (transformData(dmlType, data, transformTable, originalValues)) {
+                    cache.cacheData(data);
                 }
+
             }
             return true;
         } else {
             return false;
         }
+    }
+
+    protected boolean transformData(DmlType dmlType, TransformedData data,
+            TransformTable transformTable, Map<String, String> originalValues) {
+        boolean persistData = false;
+        if (dmlType != DmlType.DELETE) {
+            if (dmlType == DmlType.INSERT) {
+                data.setDmlType(dmlType);
+            }
+            for (String columnName : originalValues.keySet()) {
+                TransformColumn transformColumn = transformTable.getTransformColumnFor(columnName);
+                if (transformColumn != null) {
+                    transform(data, transformColumn, originalValues, false);
+                }
+            }
+
+            persistData = true;
+        } else {
+            // handle the delete action
+            DeleteAction deleteAction = transformTable.getDeleteAction();
+            switch (deleteAction) {
+            case NONE:
+                break;
+            case DEL_ROW:
+                data.setDmlType(DmlType.DELETE);
+                persistData = true;
+                break;
+            case NULL_COL:
+                if (dmlType == DmlType.DELETE) {
+                    data.setDmlType(DmlType.UPDATE);
+                }
+
+                for (TransformColumn transformColumn : transformTable.getTransformColumns()) {
+                    if (transformColumn != null) {
+                        data.put(transformColumn.getTargetColumnName(), null, false);
+                    }
+                }
+                persistData = true;
+                break;
+            }
+        }
+        return persistData;
     }
 
     protected TransformedData getPrimaryKeyValues(TransformTable table,
@@ -225,7 +232,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         protected List<TransformedData> dataRows = new ArrayList<TransformedData>();
         protected Map<String, Map<String, TransformedData>> indexedDataRows = new HashMap<String, Map<String, TransformedData>>();
 
-        protected TransformedData lookupRow(TransformedData pk) {
+        protected TransformedData lookupData(TransformedData pk) {
             TransformedData row = null;
             Map<String, TransformedData> rows = indexedDataRows
                     .get(pk.getFullyQualifiedTableName());
@@ -236,16 +243,16 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             return row;
         }
 
-        protected void cacheRow(TransformedData row) {
-            if (lookupRow(row) == null) {
-                dataRows.add(row);
-                Map<String, TransformedData> rows = indexedDataRows.get(row
+        protected void cacheData(TransformedData data) {
+            if (lookupData(data) == null) {
+                dataRows.add(data);
+                Map<String, TransformedData> rows = indexedDataRows.get(data
                         .getFullyQualifiedTableName());
                 if (rows == null) {
                     rows = new HashMap<String, TransformedData>();
-                    indexedDataRows.put(row.getFullyQualifiedTableName(), rows);
+                    indexedDataRows.put(data.getFullyQualifiedTableName(), rows);
                 }
-                rows.put(row.getKeyString(), row);
+                rows.put(data.getKeyString(), data);
             }
         }
 
