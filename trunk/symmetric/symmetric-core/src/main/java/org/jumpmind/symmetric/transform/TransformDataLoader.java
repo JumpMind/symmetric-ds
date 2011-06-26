@@ -57,8 +57,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
                 originalkeyValues = toMap(keyNames, keyValues);
             }
             for (TransformTable transformTable : tablesToTransform) {
-                TransformedData pk = getPrimaryKeyValues(transformTable,
-                        originalkeyValues);
+                TransformedData pk = getPrimaryKeyValues(transformTable, originalkeyValues);
                 TransformedData row = cache.lookupRow(pk);
                 if (row == null) {
                     row = pk;
@@ -135,6 +134,11 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         row.put(transformColumn.getTargetColumnName(), value, pk);
     }
 
+    @Override
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
+        batchComplete(loader, batch);
+    }
+
     public void batchComplete(IDataLoader loader, IncomingBatch batch) {
         IDataLoaderContext context = loader.getContext();
         TransformCache cache = getTransformCache(loader.getContext());
@@ -209,7 +213,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         }
         return map;
     }
-    
+
     @Override
     public boolean isHandlingMissingTable(DataLoaderContext context) {
         List<TransformTable> tablesToTransform = findTablesToTransform(context);
@@ -230,7 +234,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             }
 
             return row;
-        }        
+        }
 
         protected void cacheRow(TransformedData row) {
             if (lookupRow(row) == null) {
