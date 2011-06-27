@@ -48,27 +48,28 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
 
     protected boolean transform(DmlType dmlType, IDataLoaderContext context, String[] columnNames,
             String[] columnValues, String[] keyNames, String[] keyValues) {
-        List<TransformTable> tablesToTransform = findTablesToTransform(context);
-        if (tablesToTransform != null && tablesToTransform.size() > 0) {
+        List<TransformTable> transformationsToPerform = findTablesToTransform(context
+                .getTableTemplate().getFullyQualifiedTableName(), context.getTargetNodeId());
+        if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
             TransformCache cache = getTransformCache(context);
             Map<String, String> originalValues = toMap(columnNames, columnValues);
             Map<String, String> originalkeyValues = originalValues;
             if (keyNames != null) {
                 originalkeyValues = toMap(keyNames, keyValues);
             }
-            for (TransformTable transformTable : tablesToTransform) {
-                TransformedData pkData = getPrimaryKeyValues(transformTable, originalkeyValues);
-                TransformedData data = cache.lookupData(pkData);
-                if (data == null) {
-                    data = pkData;
+            for (TransformTable transformation : transformationsToPerform) {
+                TransformedData pkData = getPrimaryKeyValues(transformation, originalkeyValues);
+                TransformedData targetData = cache.lookupData(pkData);
+                if (targetData == null) {
+                    targetData = pkData;
                 }
 
-                if (data.getDmlType() == null) {
-                    data.setDmlType(dmlType);
+                if (targetData.getDmlType() == null) {
+                    targetData.setDmlType(dmlType);
                 }
 
-                if (transformData(dmlType, data, transformTable, originalValues)) {
-                    cache.cacheData(data);
+                if (transformData(dmlType, targetData, transformation, originalValues)) {
+                    cache.cacheData(targetData);
                 }
 
             }
@@ -79,14 +80,14 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     }
 
     protected boolean transformData(DmlType dmlType, TransformedData data,
-            TransformTable transformTable, Map<String, String> originalValues) {
+            TransformTable transformation, Map<String, String> originalValues) {
         boolean persistData = false;
         if (dmlType != DmlType.DELETE) {
             if (dmlType == DmlType.INSERT) {
                 data.setDmlType(dmlType);
             }
             for (String columnName : originalValues.keySet()) {
-                TransformColumn transformColumn = transformTable.getTransformColumnFor(columnName);
+                TransformColumn transformColumn = transformation.getTransformColumnFor(columnName);
                 if (transformColumn != null) {
                     transformColumn(data, transformColumn, originalValues, false);
                 }
@@ -95,7 +96,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             persistData = true;
         } else {
             // handle the delete action
-            DeleteAction deleteAction = transformTable.getDeleteAction();
+            DeleteAction deleteAction = transformation.getDeleteAction();
             switch (deleteAction) {
             case NONE:
                 break;
@@ -108,7 +109,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
                     data.setDmlType(DmlType.UPDATE);
                 }
 
-                for (TransformColumn transformColumn : transformTable.getTransformColumns()) {
+                for (TransformColumn transformColumn : transformation.getTransformColumns()) {
                     if (transformColumn != null) {
                         data.put(transformColumn.getTargetColumnName(), null, false);
                     }
@@ -131,14 +132,14 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         return row;
     }
 
-    protected void transformColumn(TransformedData row, TransformColumn transformColumn,
+    protected void transformColumn(TransformedData data, TransformColumn transformColumn,
             Map<String, String> originalValues, boolean pk) {
         String value = originalValues.get(transformColumn.getSourceColumnName());
         ITransform transform = transforms.get(transformColumn.getTransformType());
         if (transform != null) {
             value = transform.transform(transformColumn, value);
         }
-        row.put(transformColumn.getTargetColumnName(), value, pk);
+        data.put(transformColumn.getTargetColumnName(), value, pk);
     }
 
     @Override
@@ -152,30 +153,30 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         if (cache != null) {
             Iterator<TransformedData> it = cache.dataRows.iterator();
             while (it.hasNext()) {
-                TransformedData row = (TransformedData) it.next();
+                TransformedData data = (TransformedData) it.next();
                 TableTemplate tableTemplate = new TableTemplate(context.getJdbcTemplate(),
-                        dbDialect, row.getTableName(), null, false, row.getSchemaName(),
-                        row.getCatalogName());
-                tableTemplate.setColumnNames(row.getColumnNames());
-                tableTemplate.setKeyNames(row.getKeyNames());
+                        dbDialect, data.getTableName(), null, false, data.getSchemaName(),
+                        data.getCatalogName());
+                tableTemplate.setColumnNames(data.getColumnNames());
+                tableTemplate.setKeyNames(data.getKeyNames());
                 // TODO Need more advanced fallback logic? Support typical
                 // symmetric fallback/recovery settings?
-                switch (row.getDmlType()) {
+                switch (data.getDmlType()) {
                 case INSERT:
                     try {
-                        tableTemplate.insert(context, row.getColumnValues());
+                        tableTemplate.insert(context, data.getColumnValues());
                     } catch (DataIntegrityViolationException ex) {
-                        tableTemplate.update(context, row.getColumnValues(), row.getKeyValues());
+                        tableTemplate.update(context, data.getColumnValues(), data.getKeyValues());
                     }
                     break;
                 case UPDATE:
-                    if (0 == tableTemplate.update(context, row.getColumnValues(),
-                            row.getKeyValues())) {
-                        tableTemplate.insert(context, row.getColumnValues());
+                    if (0 == tableTemplate.update(context, data.getColumnValues(),
+                            data.getKeyValues())) {
+                        tableTemplate.insert(context, data.getColumnValues());
                     }
                     break;
                 case DELETE:
-                    tableTemplate.delete(context, row.getKeyValues());
+                    tableTemplate.delete(context, data.getKeyValues());
                     break;
                 }
             }
@@ -184,11 +185,11 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         }
     }
 
-    protected List<TransformTable> findTablesToTransform(IDataLoaderContext context) {
-        Map<String, List<TransformTable>> transformMap = transformService.findTransformsFor(context
-                .getTargetNode().getNodeGroupId(), true);
-        List<TransformTable> transforms = transformMap.get(context.getTableTemplate()
-                .getFullyQualifiedTableName());
+    protected List<TransformTable> findTablesToTransform(String fullyQualifiedSourceTableName,
+            String targetNodeId) {
+        Map<String, List<TransformTable>> transformMap = transformService.findTransformsFor(
+                targetNodeId, true);
+        List<TransformTable> transforms = transformMap.get(fullyQualifiedSourceTableName);
         return transforms;
     }
 
@@ -223,8 +224,9 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
 
     @Override
     public boolean isHandlingMissingTable(DataLoaderContext context) {
-        List<TransformTable> tablesToTransform = findTablesToTransform(context);
-        return tablesToTransform != null && tablesToTransform.size() > 0;
+        List<TransformTable> transformationsToPerform = findTablesToTransform(context
+                .getTableTemplate().getFullyQualifiedTableName(), context.getTargetNodeId());
+        return transformationsToPerform != null && transformationsToPerform.size() > 0;
     }
 
     class TransformCache {
