@@ -88,7 +88,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             for (String columnName : originalValues.keySet()) {
                 TransformColumn transformColumn = transformTable.getTransformColumnFor(columnName);
                 if (transformColumn != null) {
-                    transform(data, transformColumn, originalValues, false);
+                    transformColumn(data, transformColumn, originalValues, false);
                 }
             }
 
@@ -126,12 +126,12 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
                 table.getTargetSchemaName(), table.getTargetTableName());
         List<TransformColumn> columns = table.getPrimaryKeyColumns();
         for (TransformColumn transformColumn : columns) {
-            transform(row, transformColumn, originalValues, true);
+            transformColumn(row, transformColumn, originalValues, true);
         }
         return row;
     }
 
-    protected void transform(TransformedData row, TransformColumn transformColumn,
+    protected void transformColumn(TransformedData row, TransformColumn transformColumn,
             Map<String, String> originalValues, boolean pk) {
         String value = originalValues.get(transformColumn.getSourceColumnName());
         ITransform transform = transforms.get(transformColumn.getTransformType());
