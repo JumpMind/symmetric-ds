@@ -68,17 +68,18 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     protected boolean perform(TransformedData data, TransformTable transformation,
             Map<String, String> originalValues) {
         boolean persistData = false;
+        
+        for (String columnName : originalValues.keySet()) {
+            List<TransformColumn> transformColumns = transformation.getTransformColumnFor(columnName);
+            for (TransformColumn transformColumn : transformColumns) {
+                transformColumn(data, transformColumn, originalValues, false);
+            }
+        }
+        
         if (data.getTargetDmlType() != DmlType.DELETE) {
             if (data.getTargetDmlType() == DmlType.INSERT && transformation.isUpdateFirst()) {
                 data.setTargetDmlType(DmlType.UPDATE);
             }
-            for (String columnName : originalValues.keySet()) {
-                List<TransformColumn> transformColumns = transformation.getTransformColumnFor(columnName);
-                for (TransformColumn transformColumn : transformColumns) {
-                    transformColumn(data, transformColumn, originalValues, false);
-                }
-            }
-
             persistData = true;
         } else {
             // handle the delete action
@@ -134,11 +135,17 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             try {
                 tableTemplate.insert(context, data.getColumnValues());
             } catch (DataIntegrityViolationException ex) {
+                data.setTargetDmlType(DmlType.UPDATE);
+                tableTemplate.setColumnNames(data.getColumnNames());
+                tableTemplate.setKeyNames(data.getKeyNames());
                 tableTemplate.update(context, data.getColumnValues(), data.getKeyValues());
             }
             break;
         case UPDATE:
             if (0 == tableTemplate.update(context, data.getColumnValues(), data.getKeyValues())) {
+                data.setTargetDmlType(DmlType.INSERT);
+                tableTemplate.setColumnNames(data.getColumnNames());
+                tableTemplate.setKeyNames(data.getKeyNames());
                 tableTemplate.insert(context, data.getColumnValues());
             }
             break;
