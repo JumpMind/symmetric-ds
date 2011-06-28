@@ -73,8 +73,8 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
                 data.setDmlType(DmlType.UPDATE);
             }
             for (String columnName : originalValues.keySet()) {
-                TransformColumn transformColumn = transformation.getTransformColumnFor(columnName);
-                if (transformColumn != null) {
+                List<TransformColumn> transformColumns = transformation.getTransformColumnFor(columnName);
+                for (TransformColumn transformColumn : transformColumns) {
                     transformColumn(data, transformColumn, originalValues, false);
                 }
             }

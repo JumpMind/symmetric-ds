@@ -110,16 +110,14 @@ public class TransformTable {
         return primaryKeyColumns;
     }
 
-    public TransformColumn getTransformColumnFor(String columnName) {
-        TransformColumn foundColumn = null;
+    public List<TransformColumn> getTransformColumnFor(String columnName) {
+        List<TransformColumn> columns = new ArrayList<TransformColumn>(2);
         for (TransformColumn column : transformColumns) {
             if (column.getSourceColumnName().equals(columnName)) {
-                return column;
-            } else if (column.getSourceColumnName().equals("*")) {
-                foundColumn = column;
-            }
+                columns.add(column);
+            } 
         }
-        return foundColumn;
+        return columns;
     }
 
     public void addTransformColumn(TransformColumn column) {
