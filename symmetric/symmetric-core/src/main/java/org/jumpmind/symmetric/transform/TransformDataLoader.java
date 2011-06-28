@@ -68,9 +68,9 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     protected boolean perform(TransformedData data, TransformTable transformation,
             Map<String, String> originalValues) {
         boolean persistData = false;
-        if (data.getDmlType() != DmlType.DELETE) {
-            if (data.getDmlType() == DmlType.INSERT && transformation.isUpdateFirst()) {
-                data.setDmlType(DmlType.UPDATE);
+        if (data.getTargetDmlType() != DmlType.DELETE) {
+            if (data.getTargetDmlType() == DmlType.INSERT && transformation.isUpdateFirst()) {
+                data.setTargetDmlType(DmlType.UPDATE);
             }
             for (String columnName : originalValues.keySet()) {
                 List<TransformColumn> transformColumns = transformation.getTransformColumnFor(columnName);
@@ -87,11 +87,11 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             case NONE:
                 break;
             case DEL_ROW:
-                data.setDmlType(DmlType.DELETE);
+                data.setTargetDmlType(DmlType.DELETE);
                 persistData = true;
                 break;
             case NULL_COL:
-                data.setDmlType(DmlType.UPDATE);
+                data.setTargetDmlType(DmlType.UPDATE);
                 persistData = true;
                 break;
             }
@@ -129,7 +129,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         tableTemplate.setKeyNames(data.getKeyNames());
         // TODO Need more advanced fallback logic? Support typical
         // symmetric fallback/recovery settings?
-        switch (data.getDmlType()) {
+        switch (data.getTargetDmlType()) {
         case INSERT:
             try {
                 tableTemplate.insert(context, data.getColumnValues());

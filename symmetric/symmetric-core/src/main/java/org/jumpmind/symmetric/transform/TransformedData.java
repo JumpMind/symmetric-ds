@@ -11,7 +11,7 @@ import org.jumpmind.symmetric.transform.TransformColumn.IncludeOnType;
 
 public class TransformedData {
 
-    protected DmlType dmlType;
+    protected DmlType targetDmlType;
 
     protected DmlType originalDmlType;
 
@@ -23,16 +23,16 @@ public class TransformedData {
 
     public TransformedData(TransformTable transformation, DmlType dmlType) {
         this.transformation = transformation;
-        this.dmlType = dmlType;
+        this.targetDmlType = dmlType;
         this.originalDmlType = dmlType;
     }
 
-    public DmlType getDmlType() {
-        return dmlType;
+    public DmlType getTargetDmlType() {
+        return targetDmlType;
     }
 
-    public void setDmlType(DmlType dmlType) {
-        this.dmlType = dmlType;
+    public void setTargetDmlType(DmlType dmlType) {
+        this.targetDmlType = dmlType;
     }
 
     public String getTableName() {
@@ -86,9 +86,9 @@ public class TransformedData {
         }
 
         IncludeOnType type = IncludeOnType.DELETE;
-        if (dmlType == DmlType.UPDATE && originalDmlType != DmlType.DELETE) {
+        if (targetDmlType == DmlType.UPDATE && originalDmlType != DmlType.DELETE) {
             type = IncludeOnType.UPDATE;
-        } else if (dmlType == DmlType.INSERT) {
+        } else if (targetDmlType == DmlType.INSERT) {
             type = IncludeOnType.INSERT;
         }
 
