@@ -1,50 +1,30 @@
 package org.jumpmind.symmetric.transform;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
-import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
+import org.jumpmind.symmetric.transform.TransformColumn.IncludeOnType;
 
 public class TransformedData {
 
     protected DmlType dmlType;
-    protected String tableName;
-    protected String catalogName;
-    protected String schemaName;
 
-    protected TreeMap<String, String> columnValues;
-    protected TreeMap<String, String> keyValues;
+    protected DmlType originalDmlType;
 
-    public TransformedData(String catalogName, String schemaName, String tableName) {
-        this.catalogName = catalogName;
-        this.schemaName = schemaName;
-        this.tableName = tableName;
-    }
+    protected Map<TransformColumn.IncludeOnType, TreeMap<String, String>> columnsBy;
 
-    public String[] getKeyNames() {
-        return keyValues.keySet().toArray(new String[keyValues.size()]);
-    }
+    protected Map<TransformColumn.IncludeOnType, TreeMap<String, String>> keysBy;
 
-    public String[] getColumnNames() {
-        return columnValues.keySet().toArray(new String[columnValues.size()]);
-    }
+    protected TransformTable transformation;
 
-    public String getKeyString() {
-        Iterator<String> values = keyValues.values().iterator();
-        if (values.hasNext()) {
-            String keyString = values.next();
-            while (values.hasNext()) {
-                keyString += "||";
-                keyString += values.next();
-            }
-            return keyString;
-        }
-        return null;
-    }
-
-    public String getFullyQualifiedTableName() {
-        return Table.getFullyQualifiedTableName(tableName, schemaName, catalogName);
+    public TransformedData(TransformTable transformation, DmlType dmlType) {
+        this.transformation = transformation;
+        this.dmlType = dmlType;
+        this.originalDmlType = dmlType;
     }
 
     public DmlType getDmlType() {
@@ -56,50 +36,92 @@ public class TransformedData {
     }
 
     public String getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
+        return transformation.getTargetTableName();
     }
 
     public String getCatalogName() {
-        return catalogName;
-    }
-
-    public void setCatalogName(String catalogName) {
-        this.catalogName = catalogName;
+        return transformation.getTargetCatalogName();
     }
 
     public String getSchemaName() {
-        return schemaName;
+        return transformation.getTargetSchemaName();
     }
 
-    public void setSchemaName(String schemaName) {
-        this.schemaName = schemaName;
-    }
-
-    public void put(String columnName, String columnValue, boolean pk) {
-        if (pk) {
+    public void put(TransformColumn column, String columnValue, boolean recordAsKey) {
+        if (recordAsKey) {
+            if (keysBy == null) {
+                keysBy = new HashMap<TransformColumn.IncludeOnType, TreeMap<String, String>>(2);
+            }
+            TreeMap<String, String> keyValues = keysBy.get(column.getIncludeOn());
             if (keyValues == null) {
                 keyValues = new TreeMap<String, String>();
+                keysBy.put(column.getIncludeOn(), keyValues);
             }
-            keyValues.put(columnName, columnValue);
+            keyValues.put(column.getTargetColumnName(), columnValue);
 
         } else {
+            if (columnsBy == null) {
+                columnsBy = new HashMap<TransformColumn.IncludeOnType, TreeMap<String, String>>(2);
+            }
+            TreeMap<String, String> columnValues = columnsBy.get(column.getIncludeOn());
             if (columnValues == null) {
                 columnValues = new TreeMap<String, String>();
+                columnsBy.put(column.getIncludeOn(), columnValues);
             }
-            columnValues.put(columnName, columnValue);
+            columnValues.put(column.getTargetColumnName(), columnValue);
         }
     }
 
+    protected List<String> retrieve(
+            Map<TransformColumn.IncludeOnType, TreeMap<String, String>> source,
+            boolean getColumnNames) {
+        List<String> list = new ArrayList<String>();
+        TreeMap<String, String> values = source.get(IncludeOnType.ALL);
+        if (values != null) {
+            if (getColumnNames) {
+                list.addAll(values.keySet());
+            } else {
+                list.addAll(values.values());
+            }
+        }
+
+        IncludeOnType type = IncludeOnType.DELETE;
+        if (dmlType == DmlType.UPDATE && originalDmlType != DmlType.DELETE) {
+            type = IncludeOnType.UPDATE;
+        } else if (dmlType == DmlType.INSERT) {
+            type = IncludeOnType.INSERT;
+        }
+
+        values = source.get(type);
+        if (values != null) {
+            if (getColumnNames) {
+                list.addAll(values.keySet());
+            } else {
+                list.addAll(values.values());
+            }
+        }
+
+        return list;
+    }
+
+    public String[] getKeyNames() {
+        List<String> list = retrieve(keysBy, true);
+        return list.toArray(new String[list.size()]);
+    }
+
+    public String[] getColumnNames() {
+        List<String> list = retrieve(columnsBy, true);
+        return list.toArray(new String[list.size()]);
+    }
+
     public String[] getColumnValues() {
-        return columnValues.values().toArray(new String[columnValues.size()]);
+        List<String> list = retrieve(columnsBy, false);
+        return list.toArray(new String[list.size()]);
     }
 
     public String[] getKeyValues() {
-        return keyValues.values().toArray(new String[keyValues.size()]);
+        List<String> list = retrieve(keysBy, false);
+        return list.toArray(new String[list.size()]);
     }
 
 }

@@ -1,19 +1,16 @@
 package org.jumpmind.symmetric.transform;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.h2.util.StringUtils;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.DataLoaderFilterAdapter;
 import org.jumpmind.symmetric.load.DataLoaderContext;
-import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
-import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.load.TableTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
 
 public class TransformDataLoader extends DataLoaderFilterAdapter {
@@ -51,27 +48,16 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         List<TransformTable> transformationsToPerform = findTablesToTransform(context
                 .getTableTemplate().getFullyQualifiedTableName(), context.getTargetNodeId());
         if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
-            TransformCache cache = getTransformCache(context);
             Map<String, String> originalValues = toMap(columnNames, columnValues);
             Map<String, String> originalkeyValues = originalValues;
             if (keyNames != null) {
                 originalkeyValues = toMap(keyNames, keyValues);
             }
             for (TransformTable transformation : transformationsToPerform) {
-                TransformedData pkData = getPrimaryKeyValues(transformation, originalkeyValues);
-                TransformedData targetData = cache.lookupData(pkData);
-                if (targetData == null) {
-                    targetData = pkData;
+                TransformedData targetData = create(dmlType, transformation, originalkeyValues);
+                if (perform(targetData, transformation, originalValues)) {
+                    apply(context, targetData);
                 }
-
-                if (targetData.getDmlType() == null) {
-                    targetData.setDmlType(dmlType);
-                }
-
-                if (transformData(dmlType, targetData, transformation, originalValues)) {
-                    cache.cacheData(targetData);
-                }
-
             }
             return true;
         } else {
@@ -79,12 +65,12 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         }
     }
 
-    protected boolean transformData(DmlType dmlType, TransformedData data,
-            TransformTable transformation, Map<String, String> originalValues) {
+    protected boolean perform(TransformedData data, TransformTable transformation,
+            Map<String, String> originalValues) {
         boolean persistData = false;
-        if (dmlType != DmlType.DELETE) {
-            if (dmlType == DmlType.INSERT) {
-                data.setDmlType(dmlType);
+        if (data.getDmlType() != DmlType.DELETE) {
+            if (data.getDmlType() == DmlType.INSERT && transformation.isUpdateFirst()) {
+                data.setDmlType(DmlType.UPDATE);
             }
             for (String columnName : originalValues.keySet()) {
                 TransformColumn transformColumn = transformation.getTransformColumnFor(columnName);
@@ -105,15 +91,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
                 persistData = true;
                 break;
             case NULL_COL:
-                if (dmlType == DmlType.DELETE) {
-                    data.setDmlType(DmlType.UPDATE);
-                }
-
-                for (TransformColumn transformColumn : transformation.getTransformColumns()) {
-                    if (transformColumn != null) {
-                        data.put(transformColumn.getTargetColumnName(), null, false);
-                    }
-                }
+                data.setDmlType(DmlType.UPDATE);
                 persistData = true;
                 break;
             }
@@ -121,11 +99,10 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         return persistData;
     }
 
-    protected TransformedData getPrimaryKeyValues(TransformTable table,
+    protected TransformedData create(DmlType dmlType, TransformTable transformation,
             Map<String, String> originalValues) {
-        TransformedData row = new TransformedData(table.getTargetCatalogName(),
-                table.getTargetSchemaName(), table.getTargetTableName());
-        List<TransformColumn> columns = table.getPrimaryKeyColumns();
+        TransformedData row = new TransformedData(transformation, dmlType);
+        List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
         for (TransformColumn transformColumn : columns) {
             transformColumn(row, transformColumn, originalValues, true);
         }
@@ -133,56 +110,43 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     }
 
     protected void transformColumn(TransformedData data, TransformColumn transformColumn,
-            Map<String, String> originalValues, boolean pk) {
+            Map<String, String> originalValues, boolean recordAsKey) {
         String value = originalValues.get(transformColumn.getSourceColumnName());
+        if (transformColumn.getSourceColumnName().startsWith("\"")) {
+            value = StringUtils.trim(transformColumn.getSourceColumnName(), true, true, "\"");
+        }
         ITransform transform = transforms.get(transformColumn.getTransformType());
         if (transform != null) {
             value = transform.transform(transformColumn, value);
         }
-        data.put(transformColumn.getTargetColumnName(), value, pk);
+        data.put(transformColumn, value, recordAsKey);
     }
 
-    @Override
-    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
-        batchComplete(loader, batch);
-    }
-
-    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
-        IDataLoaderContext context = loader.getContext();
-        TransformCache cache = getTransformCache(loader.getContext());
-        if (cache != null) {
-            Iterator<TransformedData> it = cache.dataRows.iterator();
-            while (it.hasNext()) {
-                TransformedData data = (TransformedData) it.next();
-                TableTemplate tableTemplate = new TableTemplate(context.getJdbcTemplate(),
-                        dbDialect, data.getTableName(), null, false, data.getSchemaName(),
-                        data.getCatalogName());
-                tableTemplate.setColumnNames(data.getColumnNames());
-                tableTemplate.setKeyNames(data.getKeyNames());
-                // TODO Need more advanced fallback logic? Support typical
-                // symmetric fallback/recovery settings?
-                switch (data.getDmlType()) {
-                case INSERT:
-                    try {
-                        tableTemplate.insert(context, data.getColumnValues());
-                    } catch (DataIntegrityViolationException ex) {
-                        tableTemplate.update(context, data.getColumnValues(), data.getKeyValues());
-                    }
-                    break;
-                case UPDATE:
-                    if (0 == tableTemplate.update(context, data.getColumnValues(),
-                            data.getKeyValues())) {
-                        tableTemplate.insert(context, data.getColumnValues());
-                    }
-                    break;
-                case DELETE:
-                    tableTemplate.delete(context, data.getKeyValues());
-                    break;
-                }
+    public void apply(IDataLoaderContext context, TransformedData data) {
+        TableTemplate tableTemplate = new TableTemplate(context.getJdbcTemplate(), dbDialect,
+                data.getTableName(), null, false, data.getSchemaName(), data.getCatalogName());
+        tableTemplate.setColumnNames(data.getColumnNames());
+        tableTemplate.setKeyNames(data.getKeyNames());
+        // TODO Need more advanced fallback logic? Support typical
+        // symmetric fallback/recovery settings?
+        switch (data.getDmlType()) {
+        case INSERT:
+            try {
+                tableTemplate.insert(context, data.getColumnValues());
+            } catch (DataIntegrityViolationException ex) {
+                tableTemplate.update(context, data.getColumnValues(), data.getKeyValues());
             }
-
-            cache.clear();
+            break;
+        case UPDATE:
+            if (0 == tableTemplate.update(context, data.getColumnValues(), data.getKeyValues())) {
+                tableTemplate.insert(context, data.getColumnValues());
+            }
+            break;
+        case DELETE:
+            tableTemplate.delete(context, data.getKeyValues());
+            break;
         }
+
     }
 
     protected List<TransformTable> findTablesToTransform(String fullyQualifiedSourceTableName,
@@ -191,15 +155,6 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
                 targetNodeId, true);
         List<TransformTable> transforms = transformMap.get(fullyQualifiedSourceTableName);
         return transforms;
-    }
-
-    protected TransformCache getTransformCache(IDataLoaderContext context) {
-        TransformCache cache = (TransformCache) context.getContextCache().get(CACHE_KEY);
-        if (cache == null) {
-            cache = new TransformCache();
-            context.getContextCache().put(CACHE_KEY, cache);
-        }
-        return cache;
     }
 
     public void setTransformService(ITransformService transformService) {
@@ -229,39 +184,4 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         return transformationsToPerform != null && transformationsToPerform.size() > 0;
     }
 
-    class TransformCache {
-
-        protected List<TransformedData> dataRows = new ArrayList<TransformedData>();
-        protected Map<String, Map<String, TransformedData>> indexedDataRows = new HashMap<String, Map<String, TransformedData>>();
-
-        protected TransformedData lookupData(TransformedData pk) {
-            TransformedData row = null;
-            Map<String, TransformedData> rows = indexedDataRows
-                    .get(pk.getFullyQualifiedTableName());
-            if (rows != null) {
-                row = rows.get(pk.getKeyString());
-            }
-
-            return row;
-        }
-
-        protected void cacheData(TransformedData data) {
-            if (lookupData(data) == null) {
-                dataRows.add(data);
-                Map<String, TransformedData> rows = indexedDataRows.get(data
-                        .getFullyQualifiedTableName());
-                if (rows == null) {
-                    rows = new HashMap<String, TransformedData>();
-                    indexedDataRows.put(data.getFullyQualifiedTableName(), rows);
-                }
-                rows.put(data.getKeyString(), data);
-            }
-        }
-
-        protected void clear() {
-            dataRows.clear();
-            indexedDataRows.clear();
-        }
-
-    }
 }

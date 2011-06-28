@@ -2,11 +2,14 @@ package org.jumpmind.symmetric.transform;
 
 public class TransformColumn {
 
+    public enum IncludeOnType {INSERT, UPDATE, DELETE, ALL};
+    
     protected String sourceColumnName;
     protected String targetColumnName;
     protected boolean pk;
     protected String transformType;
     protected String transformExpression;
+    protected IncludeOnType includeOn = IncludeOnType.ALL;
 
     public String getSourceColumnName() {
         return sourceColumnName;
@@ -48,4 +51,12 @@ public class TransformColumn {
         this.transformExpression = transformExpression;
     }
 
+    public void setIncludeOn(IncludeOnType includeOn) {
+        this.includeOn = includeOn;
+    }
+    
+    public IncludeOnType getIncludeOn() {
+        return includeOn;
+    }
+    
 }
