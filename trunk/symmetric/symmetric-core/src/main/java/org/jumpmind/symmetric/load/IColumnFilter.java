@@ -30,8 +30,6 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
  * </p>
  * Please implement {@link ITableColumnFilter} instead of this class directly if
  * you want the extension to be auto discovered.
- *
- * 
  */
 public interface IColumnFilter extends IExtensionPoint {
 

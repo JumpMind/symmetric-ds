@@ -18,6 +18,8 @@ public class TransformTable {
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
     protected DeleteAction deleteAction;
+    protected boolean updateFirst;
+    protected int transformOrder;
 
     public String getFullyQualifiedSourceTableName() {
         return Table.getFullyQualifiedTableName(sourceTableName, sourceSchemaName,
@@ -139,5 +141,21 @@ public class TransformTable {
 
     public DeleteAction getDeleteAction() {
         return deleteAction;
+    }
+
+    public void setTransformOrder(int transformOrder) {
+        this.transformOrder = transformOrder;
+    }
+
+    public int getTransformOrder() {
+        return transformOrder;
+    }
+
+    public void setUpdateFirst(boolean updateFirst) {
+        this.updateFirst = updateFirst;
+    }
+
+    public boolean isUpdateFirst() {
+        return updateFirst;
     }
 }
