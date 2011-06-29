@@ -68,9 +68,9 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             }
             try {
                 for (TransformTable transformation : transformationsToPerform) {
-                    TransformedData targetData = create(dmlType, transformation, sourceKeyValues,
+                    TransformedData targetData = create(context, dmlType, transformation, sourceKeyValues,
                             oldSourceValues);
-                    if (perform(targetData, transformation, sourceValues, oldSourceValues)) {
+                    if (perform(context, targetData, transformation, sourceValues, oldSourceValues)) {
                         apply(context, targetData);
                     }
                 }
@@ -83,7 +83,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         }
     }
 
-    protected boolean perform(TransformedData data, TransformTable transformation,
+    protected boolean perform(IDataLoaderContext context, TransformedData data, TransformTable transformation,
             Map<String, String> sourceValues, Map<String, String> oldSourceValues) throws IgnoreRowException {
         boolean persistData = false;
 
@@ -91,7 +91,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             if (transformColumn.getSourceColumnName().startsWith("\"")
                     || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
                 sourceValues.get(transformColumn.getSourceColumnName());
-                transformColumn(data, transformColumn, sourceValues, oldSourceValues, false);
+                transformColumn(context, data, transformColumn, sourceValues, oldSourceValues, false);
             } else {
                 log.warn("TransformSourceColumnNotFound", transformColumn.getSourceColumnName(),
                         transformation.getTransformId());
@@ -122,7 +122,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         return persistData;
     }
 
-    protected TransformedData create(DmlType dmlType, TransformTable transformation,
+    protected TransformedData create(IDataLoaderContext context, DmlType dmlType, TransformTable transformation,
             Map<String, String> sourceValues, Map<String, String> oldSourceValues) throws IgnoreRowException {
         TransformedData row = new TransformedData(transformation, dmlType);
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
@@ -130,13 +130,13 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             log.error("TransformNoPrimaryKeyDefined", transformation.getTransformId());
         } else {
             for (TransformColumn transformColumn : columns) {
-                transformColumn(row, transformColumn, sourceValues, oldSourceValues, true);
+                transformColumn(context, row, transformColumn, sourceValues, oldSourceValues, true);
             }
         }
         return row;
     }
 
-    protected void transformColumn(TransformedData data, TransformColumn transformColumn,
+    protected void transformColumn(IDataLoaderContext context, TransformedData data, TransformColumn transformColumn,
             Map<String, String> sourceValues, Map<String, String> oldSourceValues,
             boolean recordAsKey) throws IgnoreRowException {
         try {
@@ -147,7 +147,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             IColumnTransform transform = transforms.get(transformColumn.getTransformType());
             if (transform != null) {
                 String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
-                value = transform.transform(transformColumn, data, value, oldValue);
+                value = transform.transform(context, transformColumn, data, value, oldValue);
             }
             data.put(transformColumn, value, recordAsKey);
         } catch (IgnoreColumnException e) {

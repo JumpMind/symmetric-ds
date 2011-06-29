@@ -33,6 +33,9 @@ import org.junit.Test;
 
 public class TransformDataLoaderTest extends AbstractDataLoaderTest {
 
+    private static final String SELECT_DECIMAL_FROM_A = "select decimal_a from test_transform_a where id_a=?";
+    private static final String VERIFY_TRANSFORM_A_TABLE = "select count(*) from test_transform_a where id_a=? and s1_a=? and s2_a=?";
+
     public TransformDataLoaderTest() throws Exception {
     }
 
@@ -41,11 +44,27 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         TransformDataLoader dl = getTransformDataLoader();
         load(getSimpleTransformCsv(), null, dl, dl);
         expectCount(1, "test_transform_a");
-        Assert.assertEquals(
-                1,
-                getJdbcTemplate().queryForInt(
-                        "select count(*) from test_transform_a where id_a=? and s1_a=? and s2_a=?",
-                        1, "ONE", "CONSTANT"));
+        Assert.assertEquals(1,
+                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 1, "ONE", "CONSTANT"));
+    }
+    
+    @Test
+    public void testSimpleTableAdditiveUpdateMapping() throws Exception {
+        testSimpleTableMapping();
+        Assert.assertEquals(1000,
+                getJdbcTemplate().queryForInt(SELECT_DECIMAL_FROM_A, 1));
+        TransformDataLoader dl = getTransformDataLoader();
+        load(getSimpleTransformWithAdditiveUpdateCsv("1", "10"), null, dl, dl);
+        expectCount(1, "test_transform_a");
+        Assert.assertEquals(1,
+                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 1, "ONE", "CONSTANT"));
+        Assert.assertEquals(1009,
+                getJdbcTemplate().queryForInt(SELECT_DECIMAL_FROM_A, 1));
+        
+        load(getSimpleTransformWithAdditiveUpdateCsv("9", "8"), null, dl, dl);
+        Assert.assertEquals(1008,
+                getJdbcTemplate().queryForInt(SELECT_DECIMAL_FROM_A, 1));
+
     }
 
     @Test
@@ -53,57 +72,32 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         TransformDataLoader dl = getTransformDataLoader();
         load(getTwoTablesMappedToOneInsertCsv(), null, dl, dl);
         expectCount(2, "test_transform_a");
-        Assert.assertEquals(
-                1,
-                getJdbcTemplate().queryForInt(
-                        "select count(*) from test_transform_a where id_a=? and s1_a=? and s2_a=?",
-                        4, "BAMBOO", "STATUS_4"));
-        Assert.assertEquals(
-                1,
-                getJdbcTemplate().queryForInt(
-                        "select count(*) from test_transform_a where id_a=? and s1_a=? and s2_a=?",
-                        5, "NUGGEE", "STATUS_5"));
+        Assert.assertEquals(1,
+                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 4, "BAMBOO", "STATUS_4"));
+        Assert.assertEquals(1,
+                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 5, "NUGGEE", "STATUS_5"));
     }
-    
+
     @Test
     public void testTwoTablesMappedToOneDeleteUpdates() throws Exception {
         TransformDataLoader dl = getTransformDataLoader();
         load(getTwoTablesMappedToOneInsertCsv(), null, dl, dl);
         expectCount(2, "test_transform_a");
-        Assert.assertEquals(
-                1,
-                getJdbcTemplate().queryForInt(
-                        "select count(*) from test_transform_a where id_a=? and s1_a=? and s2_a=?",
-                        4, "BAMBOO", "STATUS_4"));
-        Assert.assertEquals(
-                1,
-                getJdbcTemplate().queryForInt(
-                        "select count(*) from test_transform_a where id_a=? and s1_a=? and s2_a=?",
-                        5, "NUGGEE", "STATUS_5"));  
+        Assert.assertEquals(1,
+                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 4, "BAMBOO", "STATUS_4"));
+        Assert.assertEquals(1,
+                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 5, "NUGGEE", "STATUS_5"));
         load(getTwoTablesMappedToOneDeleteCsv(), null, dl, dl);
         expectCount(2, "test_transform_a");
-        Assert.assertEquals(
-                1,
-                getJdbcTemplate().queryForInt(
-                        "select count(*) from test_transform_a where id_a=? and s1_a=? and s2_a=?",
-                        4, "BAMBOO", "DELETED"));
-        Assert.assertEquals(
-                1,
-                getJdbcTemplate().queryForInt(
-                        "select count(*) from test_transform_a where id_a=? and s1_a=? and s2_a=?",
-                        5, "NUGGEE", "STATUS_5"));    
-    }    
+        Assert.assertEquals(1,
+                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 4, "BAMBOO", "DELETED"));
+        Assert.assertEquals(1,
+                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 5, "NUGGEE", "STATUS_5"));
+    }
 
     protected void expectCount(int count, String table) {
         Assert.assertEquals(count,
                 getJdbcTemplate().queryForInt(String.format("select count(*) from %s", table)));
-    }
-
-    @Before
-    public void cleanSlate() {
-        getDbDialect().truncateTable("test_transform_a");
-        getDbDialect().truncateTable("test_transform_b");
-        getDbDialect().truncateTable("test_transform_c");
     }
 
     private ByteArrayOutputStream getSimpleTransformCsv() throws Exception {
@@ -114,9 +108,27 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, "SIMPLE", new String[] { "ID" }, new String[] { "ID", "S1", "X", "Y",
-                "Z" });
+                "Z", "TOTAL" });
         writer.write(CsvConstants.INSERT);
-        writer.writeRecord(new String[] { "1", "ONE", "X", "Y", "Z" }, true);
+        writer.writeRecord(new String[] { "1", "ONE", "X", "Y", "Z", "1000" }, true);
+        writer.close();
+        return out;
+    }
+    
+    private ByteArrayOutputStream getSimpleTransformWithAdditiveUpdateCsv(String start, String end) throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = getWriter(out);
+        writer.writeRecord(new String[] { CsvConstants.NODEID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        String nextBatchId = getNextBatchId();
+        writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+        writeTable(writer, "SIMPLE", new String[] { "ID" }, new String[] { "ID", "S1", "X", "Y",
+                "Z", "TOTAL" });
+        writer.write(CsvConstants.OLD);
+        writer.writeRecord(new String[] { "1", "ONE", "X", "Y", "Z", start }, true);
+
+        writer.write(CsvConstants.UPDATE);
+        writer.writeRecord(new String[] { "1", "ONE", "X", "Y", "Z", end, "1" }, true);
         writer.close();
         return out;
     }
@@ -142,7 +154,7 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         writer.close();
         return out;
     }
-    
+
     private ByteArrayOutputStream getTwoTablesMappedToOneDeleteCsv() throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -159,4 +171,11 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         return out;
     }
 
+
+    @Before
+    public void cleanSlate() {
+        getDbDialect().truncateTable("test_transform_a");
+        getDbDialect().truncateTable("test_transform_b");
+        getDbDialect().truncateTable("test_transform_c");
+    }
 }

@@ -50,6 +50,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.transform.IColumnTransform;
+import org.jumpmind.symmetric.transform.TransformDataLoader;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -93,6 +95,8 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
     private ITransportManager transportManager;
 
     private IRouterService routingService;
+    
+    private TransformDataLoader transformDataLoader;
     
     private IDbDialect dbDialect;
 
@@ -279,6 +283,11 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         if (ext instanceof IDatabaseUpgradeListener) {
             dbDialect.addDatabaseUpgradeListener((IDatabaseUpgradeListener)ext);
         }
+        
+        if (ext instanceof IColumnTransform) {
+            IColumnTransform t = (IColumnTransform)ext;
+            transformDataLoader.addTransform(t.getName(), t);
+        }
 
         return installed;
     }   
@@ -333,6 +342,10 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
     
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+    
+    public void setTransformDataLoader(TransformDataLoader transformDataLoader) {
+        this.transformDataLoader = transformDataLoader;
     }
     
 }
