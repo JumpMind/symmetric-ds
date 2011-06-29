@@ -25,6 +25,8 @@
 --drop table TEST_ROUTING_DATA_SUBTABLE;    
 --drop table TEST_LOOKUP_TABLE;
 
+drop table sym_transform_column;
+drop table sym_transform_table;
 drop table sym_data_ref;
 drop table sym_data_gap;
 drop table sym_node_channel_ctl;
