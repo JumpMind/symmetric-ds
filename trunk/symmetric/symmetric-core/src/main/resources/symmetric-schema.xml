@@ -412,13 +412,13 @@
         <column name="update_first" type="BOOLEANINT" size="1" default="0" description="If true, the target actions are attempted as updates first, regardless of the source operation."/>
         <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
-    </table>    
+    </table>
     
     <table name="transform_column" description="Defines the column mappings and optional data transformation for a data loader transformation ">
         <column name="transform_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific transform." />
         <column name="include_on" type="CHAR" size="1" required="true" default="*" primaryKey="true" description="Indicates whether this mapping is included during an insert (I), update (U), delete (D) operation at the target based on the dml type at the source.  A value of * represents the fact that you want to map the column for all operations."/>
         <column name="target_column_name" type="VARCHAR" size="50" required="true" primaryKey="true" description="Name of the target column." />
-        <column name="source_column_name" type="VARCHAR" size="50" required="true" description="Name of the source column." />
+        <column name="source_column_name" type="VARCHAR" size="50" description="Name of the source column." />
         <column name="pk" type="BOOLEANINT" size="1" default="0" description="Indicates whether this mapping defines a primary key to be used to identify the target row.  At least one row must be defined as a pk for each transform_id."/>
         <column name="transform_type" type="VARCHAR" size="50"  description="The name of a specific type of transform.  Custom transformers can be configured as extension points." />
         <column name="transform_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of transform that is configured in transform_type.  See the documentation for each transformer for more details." />
