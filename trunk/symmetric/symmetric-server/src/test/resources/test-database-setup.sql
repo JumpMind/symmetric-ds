@@ -79,7 +79,7 @@ insert into sym_transform_column (transform_id, include_on, source_column_name, 
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('SIMPLE_2_A', '*', 'S1', 'S1_A', 0, null, null, 2);
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
-  values ('SIMPLE_2_A', '*', '"CONSTANT"', 'S2_A', 0, null, null, 3);    
+  values ('SIMPLE_2_A', '*', null, 'S2_A', 0,  'const', 'CONSTANT', 3);    
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('SIMPLE_2_A', '*', 'TOTAL', 'DECIMAL_A', 0, 'additive', null, 4);   
   
@@ -90,7 +90,7 @@ insert into sym_transform_column (transform_id, include_on, source_column_name, 
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('SOURCE1_TO_A', '*', 'S1', 'S1_A', 0, null, null, 2);
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
-  values ('SOURCE1_TO_A', 'I', '"CONSTANT"', 'S2_A', 0, null, null, 3);      
+  values ('SOURCE1_TO_A', 'I', null, 'S2_A', 0, 'const', 'CONSTANT', 3);      
   
 insert into sym_transform_table (transform_id, source_table_name, target_table_name, target_node_group_id, update_first, delete_action, transform_order)
   values ('SOURCE2_TO_A', 'SOURCE_2', 'TEST_TRANSFORM_A', 'test-root-group', 1, 'UPDATE_COL', 1);
@@ -99,7 +99,7 @@ insert into sym_transform_column (transform_id, include_on, source_column_name, 
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('SOURCE2_TO_A', 'U', 'S2', 'S2_A', 0, null, null, 2);
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
-  values ('SOURCE2_TO_A', 'D', '"DELETED"', 'S2_A', 0, null, null, 2);  
+  values ('SOURCE2_TO_A', 'D', null, 'S2_A', 0, 'const', 'DELETED', 2);  
 
 
 

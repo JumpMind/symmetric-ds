@@ -19,5 +19,8 @@
 		class="org.jumpmind.symmetric.transform.AdditiveColumnTransform">
 		<property name="dbDialect" ref="dbDialect" />
 	</bean>
+	
+    <bean id="constantColumnTransform"
+		class="org.jumpmind.symmetric.transform.ConstantColumnTransform"/>
 
 </beans>
