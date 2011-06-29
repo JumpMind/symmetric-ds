@@ -103,7 +103,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
                 data.setTargetDmlType(DmlType.DELETE);
                 persistData = true;
                 break;
-            case NULL_COL:
+            case UPDATE_COL:
                 data.setTargetDmlType(DmlType.UPDATE);
                 persistData = true;
                 break;

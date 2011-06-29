@@ -2,5 +2,5 @@ package org.jumpmind.symmetric.transform;
 
 public enum DeleteAction {
 
-    NONE, NULL_COL, DEL_ROW
+    NONE, UPDATE_COL, DEL_ROW
 }
