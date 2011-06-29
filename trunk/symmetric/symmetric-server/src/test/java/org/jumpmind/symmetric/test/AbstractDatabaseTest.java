@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.test;
 
@@ -53,13 +54,13 @@ public class AbstractDatabaseTest extends AbstractTest {
     protected Log logger = LogFactory.getLog(getClass());
 
     private String database = TestSetupUtil.getRootDbTypes(DatabaseTestSuite.DEFAULT_TEST_PREFIX)[0];
-    
+
     static boolean standalone = true;
-   
+
     public void init(String database) {
         this.database = database;
     }
-    
+
     @Override
     protected String printDatabases() {
         return getDatabase();
@@ -67,13 +68,18 @@ public class AbstractDatabaseTest extends AbstractTest {
 
     public AbstractDatabaseTest() throws Exception {
         if (standalone) {
-            logger.info("Running test in standalone mode against " + database);
-            standalone = false;
-            TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT,
-                    null, database);
+            try {
+                logger.info("Running test in standalone mode against " + database);
+                standalone = false;
+                TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX,
+                        TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null, database);
+            } catch (Exception ex) {
+                logger.error(ex, ex);
+                throw ex;
+            }
         }
     }
-    
+
     public String getDatabase() {
         return database;
     }
@@ -101,11 +107,10 @@ public class AbstractDatabaseTest extends AbstractTest {
     protected IRegistrationService getRegistrationService() {
         return AppUtils.find(Constants.REGISTRATION_SERVICE, getSymmetricEngine());
     }
-    
+
     protected IDataService getDataService() {
         return AppUtils.find(Constants.DATA_SERVICE, getSymmetricEngine());
     }
-
 
     protected INodeService getNodeService() {
         return AppUtils.find(Constants.NODE_SERVICE, getSymmetricEngine());
@@ -122,7 +127,7 @@ public class AbstractDatabaseTest extends AbstractTest {
     protected IOutgoingBatchService getOutgoingBatchService() {
         return AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, getSymmetricEngine());
     }
-    
+
     protected IIncomingBatchService getIncomingBatchService() {
         return AppUtils.find(Constants.INCOMING_BATCH_SERVICE, getSymmetricEngine());
     }
@@ -136,11 +141,13 @@ public class AbstractDatabaseTest extends AbstractTest {
     }
 
     protected JdbcTemplate getJdbcTemplate() {
-        return new JdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE, getSymmetricEngine()));
+        return new JdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE,
+                getSymmetricEngine()));
     }
 
     protected SimpleJdbcTemplate getSimpleJdbcTemplate() {
-        return new SimpleJdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE, getSymmetricEngine()));
+        return new SimpleJdbcTemplate((DataSource) AppUtils.find(Constants.DATA_SOURCE,
+                getSymmetricEngine()));
     }
 
     @SuppressWarnings("unchecked")
@@ -207,16 +214,17 @@ public class AbstractDatabaseTest extends AbstractTest {
     protected void assertNotSame(Object actual, Object expected, String message) {
         Assert.assertNotSame(message, expected, actual);
     }
-    
+
     protected void assertNumberOfRows(int rows, String tableName) {
-        Assert.assertEquals(tableName + " had an unexpected number of rows", rows, getJdbcTemplate().queryForInt("select count(*) from " + tableName));
+        Assert.assertEquals(tableName + " had an unexpected number of rows", rows,
+                getJdbcTemplate().queryForInt("select count(*) from " + tableName));
     }
-    
+
     protected void forceRebuildOfTrigers() {
         getJdbcTemplate().update("update sym_trigger set last_update_time=?", new Date());
         getTriggerRouterService().syncTriggers();
     }
-    
+
     protected int countData() {
         return getDataService().countDataInRange(-1, Integer.MAX_VALUE);
     }
