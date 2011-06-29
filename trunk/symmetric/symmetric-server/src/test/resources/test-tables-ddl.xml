@@ -190,39 +190,39 @@
 
     
     <table name="test_transform_a">
-        <column name="id" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
-        <column name="string_one_value" type="VARCHAR" size="50" />
-        <column name="string_two_value" type="VARCHAR" size="255" />
-        <column name="long_String_Value" type="LONGVARCHAR" />
-        <column name="time_Value" type="TIMESTAMP" />
-        <column name="date_Value" type="DATE" />
-        <column name="boolean_Value" type="BIT" size="1" />
-        <column name="bigInt_Value" type="BIGINT" />
-        <column name="decimal_Value" type="DECIMAL" />
+        <column name="id_a" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
+        <column name="s1_a" type="VARCHAR" size="50" />
+        <column name="s2_a" type="VARCHAR" size="255" />
+        <column name="longstring_a" type="LONGVARCHAR" />
+        <column name="time_a" type="TIMESTAMP" />
+        <column name="date_a" type="DATE" />
+        <column name="boolean_a" type="BIT" size="1" />
+        <column name="bigInt_a" type="BIGINT" />
+        <column name="decimal_a" type="DECIMAL" />
     </table>
     
     <table name="test_transform_b">
-        <column name="id" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
-        <column name="string_one_value" type="VARCHAR" size="50" />
-        <column name="string_two_value" type="VARCHAR" size="255" />
-        <column name="long_String_Value" type="LONGVARCHAR" />
-        <column name="time_Value" type="TIMESTAMP" />
-        <column name="date_Value" type="DATE" />
-        <column name="boolean_Value" type="BIT" size="1" />
-        <column name="bigInt_Value" type="BIGINT" />
-        <column name="decimal_Value" type="DECIMAL" />
+        <column name="id_b" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
+        <column name="s1_b" type="VARCHAR" size="50" />
+        <column name="s2_b" type="VARCHAR" size="255" />
+        <column name="longstring_b" type="LONGVARCHAR" />
+        <column name="time_b" type="TIMESTAMP" />
+        <column name="date_b" type="DATE" />
+        <column name="boolean_b" type="BIT" size="1" />
+        <column name="bigInt_b" type="BIGINT" />
+        <column name="decimal_b" type="DECIMAL" />
     </table>
     
         <table name="test_transform_c">
-        <column name="id" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
-        <column name="string_one_value" type="VARCHAR" size="50" />
-        <column name="string_two_value" type="VARCHAR" size="255" />
-        <column name="long_String_Value" type="LONGVARCHAR" />
-        <column name="time_Value" type="TIMESTAMP" />
-        <column name="date_Value" type="DATE" />
-        <column name="boolean_Value" type="BIT" size="1" />
-        <column name="bigInt_Value" type="BIGINT" />
-        <column name="decimal_Value" type="DECIMAL" />
+        <column name="id_c" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
+        <column name="s1_c" type="VARCHAR" size="50" />
+        <column name="s2_c" type="VARCHAR" size="255" />
+        <column name="longstring_c" type="LONGVARCHAR" />
+        <column name="time_c" type="TIMESTAMP" />
+        <column name="date_c" type="DATE" />
+        <column name="boolean_c" type="BIT" size="1" />
+        <column name="bigInt_c" type="BIGINT" />
+        <column name="decimal_c" type="DECIMAL" />
     </table>
 
 

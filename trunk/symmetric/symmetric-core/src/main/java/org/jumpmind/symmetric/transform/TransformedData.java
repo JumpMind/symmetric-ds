@@ -109,6 +109,12 @@ public class TransformedData {
         return list.toArray(new String[list.size()]);
     }
 
+
+    public String[] getKeyValues() {
+        List<String> list = retrieve(keysBy, false);
+        return list.toArray(new String[list.size()]);
+    }
+    
     public String[] getColumnNames() {
         List<String> list = retrieve(columnsBy, true);
         return list.toArray(new String[list.size()]);
@@ -119,10 +125,6 @@ public class TransformedData {
         return list.toArray(new String[list.size()]);
     }
 
-    public String[] getKeyValues() {
-        List<String> list = retrieve(keysBy, false);
-        return list.toArray(new String[list.size()]);
-    }
 
     public DmlType getSourceDmlType() {
         return sourceDmlType;

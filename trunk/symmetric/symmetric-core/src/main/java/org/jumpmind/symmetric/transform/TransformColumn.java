@@ -2,13 +2,28 @@ package org.jumpmind.symmetric.transform;
 
 public class TransformColumn {
 
-    public enum IncludeOnType {INSERT, UPDATE, DELETE, ALL};
-    
+    public enum IncludeOnType {
+        INSERT, UPDATE, DELETE, ALL;
+        public static IncludeOnType decode(String v) {
+            if (v.equals("I")) {
+                return INSERT;
+            } else if (v.equals("U")) {
+                return UPDATE;
+            } else if (v.equals("D")) {
+                return DELETE;
+            } else {
+                return ALL;
+            }
+        };
+    }
+
+    protected String transformId;
     protected String sourceColumnName;
     protected String targetColumnName;
     protected boolean pk;
     protected String transformType;
     protected String transformExpression;
+    protected int transformOrder;
     protected IncludeOnType includeOn = IncludeOnType.ALL;
 
     public String getSourceColumnName() {
@@ -54,9 +69,24 @@ public class TransformColumn {
     public void setIncludeOn(IncludeOnType includeOn) {
         this.includeOn = includeOn;
     }
-    
+
     public IncludeOnType getIncludeOn() {
         return includeOn;
     }
-    
+
+    public void setTransformOrder(int transformOrder) {
+        this.transformOrder = transformOrder;
+    }
+
+    public int getTransformOrder() {
+        return transformOrder;
+    }
+
+    public void setTransformId(String transformId) {
+        this.transformId = transformId;
+    }
+
+    public String getTransformId() {
+        return transformId;
+    }
 }
