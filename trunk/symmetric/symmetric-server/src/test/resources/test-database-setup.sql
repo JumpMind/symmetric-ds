@@ -72,15 +72,32 @@ insert into TEST_ADD_DL_TABLE_1 values('k3','k4',1,2.0,3,4.0,5,'6',7);
 insert into TEST_ADD_DL_TABLE_1 values('k5','k6',1,3.0,5,7.0,9,'11',13);
 insert into TEST_ADD_DL_TABLE_2 values('k3',1);
 
-insert into SYM_TRANSFORM_TABLE (transform_id, source_table_name, target_table_name, target_node_group_id, update_first, delete_action, transform_order)
+insert into sym_transform_table (transform_id, source_table_name, target_table_name, target_node_group_id, update_first, delete_action, transform_order)
   values ('SIMPLE_2_A', 'SIMPLE', 'TEST_TRANSFORM_A', 'test-root-group', '0', 'DEL_ROW', 1);
-insert into SYM_TRANSFORM_COLUMN (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('SIMPLE_2_A', '*', 'ID', 'id_a', '1', null, null, 1);  
-insert into SYM_TRANSFORM_COLUMN (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('SIMPLE_2_A', '*', 'S1', 's1_a', '0', null, null, 2);
-insert into SYM_TRANSFORM_COLUMN (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('SIMPLE_2_A', '*', '"CONSTANT"', 's2_a', '0', null, null, 3);    
-
+  
+insert into sym_transform_table (transform_id, source_table_name, target_table_name, target_node_group_id, update_first, delete_action, transform_order)
+  values ('SOURCE1_TO_A', 'SOURCE_1', 'TEST_TRANSFORM_A', 'test-root-group', '0', 'DEL_ROW', 1);
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('SOURCE1_TO_A', '*', 'ID', 'id_a', '1', null, null, 1);  
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('SOURCE1_TO_A', '*', 'S1', 's1_a', '0', null, null, 2);
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('SOURCE1_TO_A', 'I', '"CONSTANT"', 's2_a', '0', null, null, 3);      
+  
+insert into sym_transform_table (transform_id, source_table_name, target_table_name, target_node_group_id, update_first, delete_action, transform_order)
+  values ('SOURCE2_TO_A', 'SOURCE_2', 'TEST_TRANSFORM_A', 'test-root-group', '1', 'UPDATE_COL', 1);
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('SOURCE2_TO_A', '*', 'ID2', 'id_a', '1', null, null, 1);  
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('SOURCE2_TO_A', 'U', 'S2', 's2_a', '0', null, null, 2);
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('SOURCE2_TO_A', 'D', '"DELETED"', 's2_a', '0', null, null, 2);  
 
 
 
