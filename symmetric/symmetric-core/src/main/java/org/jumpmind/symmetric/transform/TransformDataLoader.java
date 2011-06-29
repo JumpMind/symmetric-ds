@@ -88,9 +88,8 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         boolean persistData = false;
 
         for (TransformColumn transformColumn : transformation.getTransformColumns()) {
-            if (transformColumn.getSourceColumnName().startsWith("\"")
-                    || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
-                sourceValues.get(transformColumn.getSourceColumnName());
+            if (transformColumn.getSourceColumnName() == null || 
+                    sourceValues.containsKey(transformColumn.getSourceColumnName())) {
                 transformColumn(context, data, transformColumn, sourceValues, oldSourceValues, false);
             } else {
                 log.warn("TransformSourceColumnNotFound", transformColumn.getSourceColumnName(),
@@ -140,10 +139,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             Map<String, String> sourceValues, Map<String, String> oldSourceValues,
             boolean recordAsKey) throws IgnoreRowException {
         try {
-            String value = sourceValues.get(transformColumn.getSourceColumnName());
-            if (transformColumn.getSourceColumnName().startsWith("\"")) {
-                value = StringUtils.trim(transformColumn.getSourceColumnName(), true, true, "\"");
-            }
+            String value = transformColumn.getSourceColumnName() != null ? sourceValues.get(transformColumn.getSourceColumnName()) : null;
             IColumnTransform transform = transforms.get(transformColumn.getTransformType());
             if (transform != null) {
                 String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
