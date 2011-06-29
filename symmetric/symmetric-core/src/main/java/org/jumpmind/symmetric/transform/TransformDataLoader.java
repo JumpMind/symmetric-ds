@@ -27,7 +27,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
 
     private IParameterService parameterService;
 
-    private Map<String, ITransform> transforms = new HashMap<String, ITransform>();
+    private Map<String, IColumnTransform> transforms = new HashMap<String, IColumnTransform>();
 
     public TransformDataLoader() {
         super(true);
@@ -60,16 +60,22 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         List<TransformTable> transformationsToPerform = findTablesToTransform(context
                 .getTableTemplate().getFullyQualifiedTableName(), parameterService.getNodeGroupId());
         if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
-            Map<String, String> originalValues = toMap(columnNames, columnValues);
-            Map<String, String> originalkeyValues = originalValues;
+            Map<String, String> sourceValues = toMap(columnNames, columnValues);
+            Map<String, String> oldSourceValues = toMap(columnNames, context.getOldData());
+            Map<String, String> sourceKeyValues = sourceValues;
             if (keyNames != null) {
-                originalkeyValues = toMap(keyNames, keyValues);
+                sourceKeyValues = toMap(keyNames, keyValues);
             }
-            for (TransformTable transformation : transformationsToPerform) {
-                TransformedData targetData = create(dmlType, transformation, originalkeyValues);
-                if (perform(targetData, transformation, originalValues)) {
-                    apply(context, targetData);
+            try {
+                for (TransformTable transformation : transformationsToPerform) {
+                    TransformedData targetData = create(dmlType, transformation, sourceKeyValues,
+                            oldSourceValues);
+                    if (perform(targetData, transformation, sourceValues, oldSourceValues)) {
+                        apply(context, targetData);
+                    }
                 }
+            } catch (IgnoreRowException e) {
+                // Do nothing.  We are suppose to ignore this row.
             }
             return true;
         } else {
@@ -78,14 +84,14 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     }
 
     protected boolean perform(TransformedData data, TransformTable transformation,
-            Map<String, String> originalValues) {
+            Map<String, String> sourceValues, Map<String, String> oldSourceValues) throws IgnoreRowException {
         boolean persistData = false;
 
         for (TransformColumn transformColumn : transformation.getTransformColumns()) {
             if (transformColumn.getSourceColumnName().startsWith("\"")
-                    || originalValues.containsKey(transformColumn.getSourceColumnName())) {
-                originalValues.get(transformColumn.getSourceColumnName());
-                transformColumn(data, transformColumn, originalValues, false);
+                    || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
+                sourceValues.get(transformColumn.getSourceColumnName());
+                transformColumn(data, transformColumn, sourceValues, oldSourceValues, false);
             } else {
                 log.warn("TransformSourceColumnNotFound", transformColumn.getSourceColumnName(),
                         transformation.getTransformId());
@@ -117,30 +123,36 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     }
 
     protected TransformedData create(DmlType dmlType, TransformTable transformation,
-            Map<String, String> originalValues) {
+            Map<String, String> sourceValues, Map<String, String> oldSourceValues) throws IgnoreRowException {
         TransformedData row = new TransformedData(transformation, dmlType);
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
         if (columns.size() == 0) {
             log.error("TransformNoPrimaryKeyDefined", transformation.getTransformId());
         } else {
             for (TransformColumn transformColumn : columns) {
-                transformColumn(row, transformColumn, originalValues, true);
+                transformColumn(row, transformColumn, sourceValues, oldSourceValues, true);
             }
         }
         return row;
     }
 
     protected void transformColumn(TransformedData data, TransformColumn transformColumn,
-            Map<String, String> originalValues, boolean recordAsKey) {
-        String value = originalValues.get(transformColumn.getSourceColumnName());
-        if (transformColumn.getSourceColumnName().startsWith("\"")) {
-            value = StringUtils.trim(transformColumn.getSourceColumnName(), true, true, "\"");
+            Map<String, String> sourceValues, Map<String, String> oldSourceValues,
+            boolean recordAsKey) throws IgnoreRowException {
+        try {
+            String value = sourceValues.get(transformColumn.getSourceColumnName());
+            if (transformColumn.getSourceColumnName().startsWith("\"")) {
+                value = StringUtils.trim(transformColumn.getSourceColumnName(), true, true, "\"");
+            }
+            IColumnTransform transform = transforms.get(transformColumn.getTransformType());
+            if (transform != null) {
+                String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
+                value = transform.transform(transformColumn, data, value, oldValue);
+            }
+            data.put(transformColumn, value, recordAsKey);
+        } catch (IgnoreColumnException e) {
+            // Do nothing.  We are suppose to ignore the column
         }
-        ITransform transform = transforms.get(transformColumn.getTransformType());
-        if (transform != null) {
-            value = transform.transform(transformColumn, value);
-        }
-        data.put(transformColumn, value, recordAsKey);
     }
 
     public void apply(IDataLoaderContext context, TransformedData data) {
@@ -194,20 +206,24 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         this.dbDialect = dbDialect;
     }
 
-    public void addTransform(String name, ITransform transform) {
+    public void addTransform(String name, IColumnTransform transform) {
         transforms.put(name, transform);
     }
 
     protected Map<String, String> toMap(String[] columnNames, String[] columnValues) {
-        Map<String, String> map = new HashMap<String, String>(columnNames.length);
-        for (int i = 0; i < columnNames.length; i++) {
-            map.put(columnNames[i], columnValues[i]);
+        if (columnValues != null) {
+            Map<String, String> map = new HashMap<String, String>(columnNames.length);
+            for (int i = 0; i < columnNames.length; i++) {
+                map.put(columnNames[i], columnValues[i]);
+            }
+            return map;
+        } else {
+            return new HashMap<String, String>(0);
         }
-        return map;
     }
 
     @Override
-    public boolean isHandlingMissingTable(IDataLoaderContext context) {        
+    public boolean isHandlingMissingTable(IDataLoaderContext context) {
         List<TransformTable> transformationsToPerform = findTablesToTransform(context
                 .getTableTemplate().getFullyQualifiedTableName(), parameterService.getNodeGroupId());
         return transformationsToPerform != null && transformationsToPerform.size() > 0;
