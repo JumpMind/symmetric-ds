@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric.ext;
 
-import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -51,7 +50,7 @@ abstract public class DataLoaderFilterAdapter implements IDataLoaderFilter, IBat
         return true;
     }
     
-    public boolean isHandlingMissingTable(DataLoaderContext ctx) {
+    public boolean isHandlingMissingTable(IDataLoaderContext ctx) {
         return false;
     }
 

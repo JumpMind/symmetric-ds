@@ -9,7 +9,6 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.DataLoaderFilterAdapter;
-import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.load.TableTemplate;
@@ -203,7 +202,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     }
 
     @Override
-    public boolean isHandlingMissingTable(DataLoaderContext context) {
+    public boolean isHandlingMissingTable(IDataLoaderContext context) {        
         List<TransformTable> transformationsToPerform = findTablesToTransform(context
                 .getTableTemplate().getFullyQualifiedTableName(), parameterService.getNodeGroupId());
         return transformationsToPerform != null && transformationsToPerform.size() > 0;

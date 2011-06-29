@@ -7,6 +7,6 @@ package org.jumpmind.symmetric.load;
  */
 public interface IMissingTableHandler {
 
-    public boolean isHandlingMissingTable(DataLoaderContext ctx);
+    public boolean isHandlingMissingTable(IDataLoaderContext ctx);
     
 }
