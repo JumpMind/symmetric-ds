@@ -143,7 +143,8 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             }
             break;
         case UPDATE:
-            if (0 == tableTemplate.update(context, data.getColumnValues(), data.getKeyValues())) {
+            if (0 == tableTemplate.update(context, data.getColumnValues(), data.getKeyValues())
+                    && (data.getSourceDmlType() != DmlType.DELETE)) {
                 data.setTargetDmlType(DmlType.INSERT);
                 tableTemplate.setColumnNames(data.getColumnNames());
                 tableTemplate.setKeyNames(data.getKeyNames());
