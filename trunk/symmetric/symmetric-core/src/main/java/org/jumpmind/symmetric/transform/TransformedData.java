@@ -13,7 +13,7 @@ public class TransformedData {
 
     protected DmlType targetDmlType;
 
-    protected DmlType originalDmlType;
+    protected DmlType sourceDmlType;
 
     protected Map<TransformColumn.IncludeOnType, TreeMap<String, String>> columnsBy;
 
@@ -21,10 +21,10 @@ public class TransformedData {
 
     protected TransformTable transformation;
 
-    public TransformedData(TransformTable transformation, DmlType dmlType) {
+    public TransformedData(TransformTable transformation, DmlType sourceDmlType) {
         this.transformation = transformation;
-        this.targetDmlType = dmlType;
-        this.originalDmlType = dmlType;
+        this.targetDmlType = sourceDmlType;
+        this.sourceDmlType = sourceDmlType;
     }
 
     public DmlType getTargetDmlType() {
@@ -86,7 +86,7 @@ public class TransformedData {
         }
 
         IncludeOnType type = IncludeOnType.DELETE;
-        if (targetDmlType == DmlType.UPDATE && originalDmlType != DmlType.DELETE) {
+        if (targetDmlType == DmlType.UPDATE && sourceDmlType != DmlType.DELETE) {
             type = IncludeOnType.UPDATE;
         } else if (targetDmlType == DmlType.INSERT) {
             type = IncludeOnType.INSERT;
@@ -122,6 +122,10 @@ public class TransformedData {
     public String[] getKeyValues() {
         List<String> list = retrieve(keysBy, false);
         return list.toArray(new String[list.size()]);
+    }
+
+    public DmlType getSourceDmlType() {
+        return sourceDmlType;
     }
 
 }
