@@ -45,8 +45,13 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     }
 
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
-        // TODO send in old column values
-        return !transform(DmlType.DELETE, context, context.getKeyNames(), keyValues,
+        String[] columnNames = context.getKeyNames();
+        String[] columnValues = keyValues;
+        if (context.getOldData() != null) {
+            columnNames = context.getColumnNames();
+            columnValues = context.getOldData();
+        }
+        return !transform(DmlType.DELETE, context, columnNames, columnValues,
                 context.getKeyNames(), keyValues);
     }
 
