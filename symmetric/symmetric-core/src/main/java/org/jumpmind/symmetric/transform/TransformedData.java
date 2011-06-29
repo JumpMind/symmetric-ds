@@ -26,6 +26,10 @@ public class TransformedData {
         this.targetDmlType = sourceDmlType;
         this.sourceDmlType = sourceDmlType;
     }
+    
+    public String getFullyQualifiedTableName() {
+        return transformation.getFullyQualifiedTargetTableName();
+    }
 
     public DmlType getTargetDmlType() {
         return targetDmlType;

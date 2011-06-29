@@ -25,6 +25,11 @@ public class TransformTable {
         return Table.getFullyQualifiedTableName(sourceTableName, sourceSchemaName,
                 sourceCatalogName);
     }
+    
+    public String getFullyQualifiedTargetTableName() {
+        return Table.getFullyQualifiedTableName(targetTableName, targetSchemaName,
+                targetCatalogName);
+    }
 
     public String getTransformId() {
         return transformId;
