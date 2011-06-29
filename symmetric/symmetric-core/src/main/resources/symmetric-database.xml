@@ -75,6 +75,6 @@
         <property name="db2zSeriesProductVersion" value="$[sym.db2.zseries.version]" />
         <property name="queryTimeout" value="$[sym.db.sql.query.timeout.seconds]"/>   
         <property name="forceDelimitedIdentifierModeOn" value="$[sym.db.force.delimited.identifier.mode.on]"/>     
-    </bean>    
+    </bean>
 
 </beans>

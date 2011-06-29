@@ -21,10 +21,6 @@
 package org.jumpmind.symmetric.transform;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -32,15 +28,10 @@ import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
 import org.jumpmind.symmetric.test.TestConstants;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TransformDataLoaderTest extends AbstractDataLoaderTest {
-
-    protected final static String TEST_TABLE = "TEST_TRANSFORM_SOURCE";
-
-    protected final static String[] TEST_KEYS = { "KEY" };
-
-    protected final static String[] TEST_COLUMNS = { "KEY", "COLUMN_1" };
 
     public TransformDataLoaderTest() throws Exception {
     }
@@ -48,70 +39,24 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
     @Test
     public void testSimpleTableMapping() throws Exception {
 
-        cleanSlate();
-
-        ByteArrayOutputStream out = getSimpleTransformCsv();
-
-        TransformDataLoader transformDataLoader = new TransformDataLoader();
-        transformDataLoader.setDbDialect(getDbDialect());
-        transformDataLoader.setTransformService(new ITransformService() {
-            public Map<String, List<TransformTable>> findTransformsFor(String nodeGroupId,
-                    boolean useCache) {
-                Map<String, List<TransformTable>> map = new HashMap<String, List<TransformTable>>();
-                List<TransformTable> list = new ArrayList<TransformTable>();
-                TransformTable transformToB = new TransformTable();
-                transformToB.setSourceTableName(TEST_TABLE);
-                transformToB.setTargetTableName("TEST_TRANSFORM_B");
-                TransformColumn column1B = new TransformColumn();
-                column1B.setSourceColumnName("KEY");
-                column1B.setTargetColumnName("ID");
-                column1B.setPk(true);
-                transformToB.addTransformColumn(column1B);
-
-                TransformColumn column2B = new TransformColumn();
-                column2B.setSourceColumnName("COLUMN_1");
-                column2B.setTargetColumnName("STRING_TWO_VALUE");
-                transformToB.addTransformColumn(column2B);
-
-                list.add(transformToB);
-                
-                TransformTable transformToA = new TransformTable();
-                transformToA.setSourceTableName(TEST_TABLE);
-                transformToA.setTargetTableName("TEST_TRANSFORM_C");
-                TransformColumn column1A = new TransformColumn();
-                column1A.setSourceColumnName("KEY");
-                column1A.setTargetColumnName("ID");
-                column1A.setPk(true);
-                transformToA.addTransformColumn(column1A);
-
-                TransformColumn column2A = new TransformColumn();
-                column2A.setSourceColumnName("COLUMN_1");
-                column2A.setTargetColumnName("STRING_ONE_VALUE");
-                transformToA.addTransformColumn(column2A);
-
-                list.add(transformToA);
-                
-                map.put(transformToA.getFullyQualifiedSourceTableName(), list);
-                return map;
-            }
-        });
-
-        Assert.assertEquals(0,
-                getJdbcTemplate().queryForInt(String.format("select count(*) from %s", "TEST_TRANSFORM_B")));
-        
-        Assert.assertEquals(0,
-                getJdbcTemplate().queryForInt(String.format("select count(*) from %s", "TEST_TRANSFORM_C")));
-
-        load(out, null, transformDataLoader, transformDataLoader);
-
-        Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(String.format("select count(*) from %s where string_two_value=? and string_one_value is null", "TEST_TRANSFORM_B"), "1"));
-        
-        Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(String.format("select count(*) from %s where  string_one_value=? and string_two_value is null", "TEST_TRANSFORM_C"), "1"));
+        TransformDataLoader dl = getTransformDataLoader();
+        load(getSimpleTransformCsv(), null, dl, dl);
+        expectCount(1, "TEST_TRANSFORM_A");
+        Assert.assertEquals(
+                1,
+                getJdbcTemplate().queryForInt(
+                        "select count(*) from TEST_TRANSFORM_A where id_a=? and s1_a=? and s2_a=?",
+                        1, "ONE", "CONSTANT"));
     }
 
-    private void cleanSlate() {
+    protected void expectCount(int count, String table) {
+        Assert.assertEquals(count,
+                getJdbcTemplate().queryForInt(String.format("select count(*) from %s", table)));
+    }
+
+    @Before
+    public void cleanSlate() {
+        getDbDialect().truncateTable("TEST_TRANSFORM_A");
         getDbDialect().truncateTable("TEST_TRANSFORM_B");
         getDbDialect().truncateTable("TEST_TRANSFORM_C");
     }
@@ -123,9 +68,10 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
-        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
+        writeTable(writer, "SIMPLE", new String[] { "ID" }, new String[] { "ID", "S1", "X", "Y",
+                "Z" });
         writer.write(CsvConstants.INSERT);
-        writer.writeRecord(new String[] { "1", "1" }, true);
+        writer.writeRecord(new String[] { "1", "ONE", "X", "Y", "Z" }, true);
         writer.close();
         return out;
     }

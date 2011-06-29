@@ -5,21 +5,28 @@ import java.util.List;
 import java.util.Map;
 
 import org.h2.util.StringUtils;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.DataLoaderFilterAdapter;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.load.TableTemplate;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataIntegrityViolationException;
 
 public class TransformDataLoader extends DataLoaderFilterAdapter {
+
+    protected final ILog log = LogFactory.getLog(getClass());
 
     protected final String CACHE_KEY = "CACHE_KEY_" + this.hashCode();
 
     private ITransformService transformService;
 
     private IDbDialect dbDialect;
+
+    private IParameterService parameterService;
 
     private Map<String, ITransform> transforms = new HashMap<String, ITransform>();
 
@@ -47,7 +54,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     protected boolean transform(DmlType dmlType, IDataLoaderContext context, String[] columnNames,
             String[] columnValues, String[] keyNames, String[] keyValues) {
         List<TransformTable> transformationsToPerform = findTablesToTransform(context
-                .getTableTemplate().getFullyQualifiedTableName(), context.getTargetNodeId());
+                .getTableTemplate().getFullyQualifiedTableName(), parameterService.getNodeGroupId());
         if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
             Map<String, String> originalValues = toMap(columnNames, columnValues);
             Map<String, String> originalkeyValues = originalValues;
@@ -69,14 +76,18 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     protected boolean perform(TransformedData data, TransformTable transformation,
             Map<String, String> originalValues) {
         boolean persistData = false;
-        
-        for (String columnName : originalValues.keySet()) {
-            List<TransformColumn> transformColumns = transformation.getTransformColumnFor(columnName);
-            for (TransformColumn transformColumn : transformColumns) {
+
+        for (TransformColumn transformColumn : transformation.getTransformColumns()) {
+            if (transformColumn.getSourceColumnName().startsWith("\"")
+                    || originalValues.containsKey(transformColumn.getSourceColumnName())) {
+                originalValues.get(transformColumn.getSourceColumnName());
                 transformColumn(data, transformColumn, originalValues, false);
+            } else {
+                log.warn("TransformSourceColumnNotFound", transformColumn.getSourceColumnName(),
+                        transformation.getTransformId());
             }
         }
-        
+
         if (data.getTargetDmlType() != DmlType.DELETE) {
             if (data.getTargetDmlType() == DmlType.INSERT && transformation.isUpdateFirst()) {
                 data.setTargetDmlType(DmlType.UPDATE);
@@ -105,8 +116,12 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             Map<String, String> originalValues) {
         TransformedData row = new TransformedData(transformation, dmlType);
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
-        for (TransformColumn transformColumn : columns) {
-            transformColumn(row, transformColumn, originalValues, true);
+        if (columns.size() == 0) {
+            log.error("TransformNoPrimaryKeyDefined", transformation.getTransformId());
+        } else {
+            for (TransformColumn transformColumn : columns) {
+                transformColumn(row, transformColumn, originalValues, true);
+            }
         }
         return row;
     }
@@ -162,7 +177,8 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             String targetNodeId) {
         Map<String, List<TransformTable>> transformMap = transformService.findTransformsFor(
                 targetNodeId, true);
-        List<TransformTable> transforms = transformMap.get(fullyQualifiedSourceTableName);
+        List<TransformTable> transforms = transformMap != null ? transformMap
+                .get(fullyQualifiedSourceTableName) : null;
         return transforms;
     }
 
@@ -189,8 +205,11 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
     @Override
     public boolean isHandlingMissingTable(DataLoaderContext context) {
         List<TransformTable> transformationsToPerform = findTablesToTransform(context
-                .getTableTemplate().getFullyQualifiedTableName(), context.getTargetNodeId());
+                .getTableTemplate().getFullyQualifiedTableName(), parameterService.getNodeGroupId());
         return transformationsToPerform != null && transformationsToPerform.size() > 0;
     }
 
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
 }

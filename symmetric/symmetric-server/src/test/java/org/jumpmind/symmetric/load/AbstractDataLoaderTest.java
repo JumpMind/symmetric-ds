@@ -44,6 +44,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
+import org.jumpmind.symmetric.transform.TransformDataLoader;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.mock.MockTransportManager;
 import org.junit.Assert;
@@ -89,6 +90,10 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
             incomingBatchService = (IIncomingBatchService) find(Constants.INCOMING_BATCH_SERVICE);
         }
         return incomingBatchService;
+    }
+    
+    protected TransformDataLoader getTransformDataLoader() {
+        return find("transformDataLoader");
     }
 
     protected IDataLoaderService getDataLoaderService() {
@@ -253,7 +258,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         }
         return value;
     }
-
+    
     protected synchronized String getNextBatchId() {
         return Integer.toString(++batchId);
     }
