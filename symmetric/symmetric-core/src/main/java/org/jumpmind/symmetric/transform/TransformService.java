@@ -19,53 +19,116 @@ public class TransformService extends AbstractService implements ITransformServi
     private long lastCacheTimeInMs;
 
     public Map<String, List<TransformTable>> findTransformsFor(String nodeGroupId, boolean useCache) {
+
+        //get the cache timeout
         long cacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TRANSFORM_IN_MS);
 
-        if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                || transformCacheByNodeGroupId == null) {
-            synchronized (this) {
-                if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                        || transformCacheByNodeGroupId == null) {
-                    if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                            || transformCacheByNodeGroupId == null) {
-                        transformCacheByNodeGroupId = new HashMap<String, Map<String, List<TransformTable>>>();
-                        List<TransformColumn> columns = jdbcTemplate.query(
-                                getSql("selectTransformColumn"), new TransformColumnMapper());
-                        List<TransformTable> transforms = jdbcTemplate.query(
-                                getSql("selectTransformTable"), new TransformTableMapper());
-                        for (TransformTable transformTable : transforms) {
-                            Map<String, List<TransformTable>> map = transformCacheByNodeGroupId
-                                    .get(transformTable.getTargetNodeGroupId());
-                            if (map == null) {
-                                map = new HashMap<String, List<TransformTable>>();
-                                transformCacheByNodeGroupId.put(
-                                        transformTable.getTargetNodeGroupId(), map);
-                            }
-                            List<TransformTable> tables = map.get(transformTable
-                                    .getFullyQualifiedSourceTableName());
-                            if (tables == null) {
-                                tables = new ArrayList<TransformTable>();
-                                map.put(transformTable.getFullyQualifiedSourceTableName(), tables);
-                            }
-                            tables.add(transformTable);
-
-                            for (TransformColumn column : columns) {
-                                if (column.getTransformId().equals(transformTable.getTransformId())) {
-                                    transformTable.addTransformColumn(column);
-                                }
-                            }
-                        }
-                        lastCacheTimeInMs = System.currentTimeMillis();
-                    }
-                }
+        //if the cache is expired or the caller doesn't want to use the cache, pull the data and refresh the cache
+        synchronized (this) {
+            if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
+                    || transformCacheByNodeGroupId == null
+                    || useCache == false) {
+                refreshCache();
             }
-        }
-
+        } //end sychronized
         return transformCacheByNodeGroupId != null ? transformCacheByNodeGroupId.get(nodeGroupId)
                 : null;
     }
+    
+    private void refreshCache() {
 
+        //get the cache timeout
+        long cacheTimeoutInMs = parameterService
+        .getLong(ParameterConstants.CACHE_TIMEOUT_TRANSFORM_IN_MS);
+        
+        synchronized (this) {
+            if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
+                    || transformCacheByNodeGroupId == null) {
+
+                transformCacheByNodeGroupId = new HashMap<String, Map<String, List<TransformTable>>>();
+                List<TransformColumn> columns = jdbcTemplate.query(
+                        getSql("selectTransformColumn"), new TransformColumnMapper());
+                List<TransformTable> transforms = getTransformTablesFromDB();
+
+                for (TransformTable transformTable : transforms) {
+                    Map<String, List<TransformTable>> map = transformCacheByNodeGroupId
+                            .get(transformTable.getTargetNodeGroupId());
+                    if (map == null) {
+                        map = new HashMap<String, List<TransformTable>>();
+                        transformCacheByNodeGroupId.put(
+                                transformTable.getTargetNodeGroupId(), map);
+                    }
+                    List<TransformTable> tables = map.get(transformTable
+                            .getFullyQualifiedSourceTableName());
+                    if (tables == null) {
+                        tables = new ArrayList<TransformTable>();
+                        map.put(transformTable.getFullyQualifiedSourceTableName(), tables);
+                    }
+                    tables.add(transformTable);
+
+                    for (TransformColumn column : columns) {
+                        if (column.getTransformId().equals(transformTable.getTransformId())) {
+                            transformTable.addTransformColumn(column);
+                        }
+                    }
+                }
+                lastCacheTimeInMs = System.currentTimeMillis();
+            }
+        } //end synchronize        
+    }    
+    
+    private List<TransformTable> getTransformTablesFromDB() {
+        List<TransformTable> transforms = jdbcTemplate.query(
+                getSql("selectTransformTable"), new TransformTableMapper());
+        
+        return transforms;
+    }
+    
+    public List<TransformTable> getTransformTables() {
+        return this.getTransformTablesFromDB();
+    }    
+    
+    public void saveTransformTable(TransformTable transformTable) {
+        if (jdbcTemplate.update(getSql("updateTransformTableSql"), 
+                transformTable.getSourceCatalogName(),
+                transformTable.getSourceSchemaName(),
+                transformTable.getSourceTableName(),
+                transformTable.getTargetCatalogName(),
+                transformTable.getTargetSchemaName(),
+                transformTable.getTargetTableName(),
+                transformTable.getTargetNodeGroupId(),
+                transformTable.isUpdateFirst(),
+                transformTable.getDeleteAction().toString(),
+                transformTable.getTransformOrder(),
+                transformTable.getTransformId()
+                ) == 0) {
+            jdbcTemplate.update(getSql("insertTransformTableSql"),
+                    transformTable.getSourceCatalogName(),
+                    transformTable.getSourceSchemaName(),
+                    transformTable.getSourceTableName(),
+                    transformTable.getTargetCatalogName(),
+                    transformTable.getTargetSchemaName(),
+                    transformTable.getTargetTableName(),
+                    transformTable.getTargetNodeGroupId(),
+                    transformTable.isUpdateFirst(),
+                    transformTable.getDeleteAction().toString(),
+                    transformTable.getTransformOrder(),
+                    transformTable.getTransformId()
+                    );
+        } //end if
+        refreshCache();
+    } //end method
+    
+    public void deleteTransformTable(String transformTableId) {
+        jdbcTemplate.update(getSql("deleteTransformTableSql"), transformTableId);
+        refreshCache();
+    }    
+    
+    /*
+     * Mappers
+     */
+    
     class TransformTableMapper implements RowMapper<TransformTable> {
         public TransformTable mapRow(ResultSet rs, int rowNum) throws SQLException {
             TransformTable table = new TransformTable();
@@ -98,5 +161,4 @@ public class TransformService extends AbstractService implements ITransformServi
             return col;
         }
     }
-
 }

@@ -25,7 +25,44 @@
           transform_type, transform_expression, transform_order
         from $[sym.sync.table.prefix]_transform_column order by transform_order asc
       </value>
-    </entry>    
-  </util:map>
+    </entry>
+    
+    <entry key="updateTransformTableSql">
+      <value>
+        update 
+           $[sym.sync.table.prefix]_transform_table 
+        set 
+           source_catalog_name=?,
+           source_schema_name=?,
+           source_table_name=?,
+           target_catalog_name=?,
+           target_schema_name=?,
+           target_table_name=?,
+           target_node_group_id=?,
+           update_first=?,
+           delete_action=?,
+           transform_order=?
+        where
+          transform_id=?
+      </value>
+    </entry> 
 
+    <entry key="insertTransformTableSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_transform_table 
+          (source_catalog_name, source_schema_name, source_table_name,
+           target_catalog_name, target_schema_name, target_table_name,
+           target_node_group_id, update_first, delete_action, transform_order,
+           transform_id) 
+        values(?,?,?,?,?,?,?,?,?,?,?)
+      </value>
+    </entry> 
+        
+    <entry key="deleteTransformTableSql">
+      <value>delete from $[sym.sync.table.prefix]_transform_table where transform_id=?</value>
+    </entry>    
+        
+        
+  </util:map>
+  
 </beans>

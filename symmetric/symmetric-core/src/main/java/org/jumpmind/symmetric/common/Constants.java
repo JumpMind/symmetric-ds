@@ -200,4 +200,6 @@ final public class Constants {
     public static final String PROTOCOL_EXT = "ext";
     
     public static final String TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL="all";
+    
+    public static final String TRANSFORM_SERVICE = "transformService";
 }

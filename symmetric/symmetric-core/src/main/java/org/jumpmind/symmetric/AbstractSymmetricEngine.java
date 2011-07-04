@@ -65,6 +65,7 @@ import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.transform.ITransformService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -561,6 +562,10 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public DataSource getDataSource() {
         return AppUtils.find(Constants.DATA_SOURCE, this);
+    }
+    
+    public ITransformService getTransformService() {
+        return AppUtils.find(Constants.TRANSFORM_SERVICE, this);
     }
 
 }

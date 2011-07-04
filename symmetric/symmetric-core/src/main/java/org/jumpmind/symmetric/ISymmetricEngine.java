@@ -26,8 +26,8 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.job.IJobManager;
-import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.OutgoingPurgeJob;
+import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.job.RouterJob;
 import org.jumpmind.symmetric.model.NodeStatus;
@@ -53,6 +53,7 @@ import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.transform.ITransformService;
 import org.springframework.context.ApplicationContext;
 
 public interface ISymmetricEngine {
@@ -243,5 +244,7 @@ public interface ISymmetricEngine {
     public DataSource getDataSource();
     
     public DeploymentType getDeploymentType();
+    
+    public ITransformService getTransformService();
 
 }
