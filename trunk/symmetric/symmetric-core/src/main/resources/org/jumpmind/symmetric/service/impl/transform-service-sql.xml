@@ -27,6 +27,17 @@
       </value>
     </entry>
     
+    <entry key="selectTransformColumnForTable">
+      <value>
+        select 
+          transform_id, include_on, target_column_name, source_column_name, pk,
+          transform_type, transform_expression, transform_order
+        from $[sym.sync.table.prefix]_transform_column 
+        where transform_id = ?
+        order by transform_order asc
+      </value>
+    </entry>
+    
     <entry key="updateTransformTableSql">
       <value>
         update 
@@ -47,6 +58,23 @@
       </value>
     </entry> 
 
+    <entry key="updateTransformColumnSql">
+      <value>
+        update 
+           $[sym.sync.table.prefix]_transform_column 
+        set 
+           source_column_name=?,
+           pk=?,
+           transform_type=?,
+           transform_expression=?,
+           transform_order=?           
+        where
+          transform_id=?
+          and include_on=?
+          and target_column_name=?
+      </value>
+    </entry> 
+
     <entry key="insertTransformTableSql">
       <value>
         insert into $[sym.sync.table.prefix]_transform_table 
@@ -58,10 +86,28 @@
       </value>
     </entry> 
         
+    <entry key="insertTransformColumnSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_transform_column 
+          (transform_id, include_on, target_column_name,
+           source_column_name, pk, transform_type, 
+           transform_expression, transform_order) 
+        values(?,?,?,?,?,?,?,?)
+      </value>
+    </entry> 
+
     <entry key="deleteTransformTableSql">
       <value>delete from $[sym.sync.table.prefix]_transform_table where transform_id=?</value>
     </entry>    
         
+    <entry key="deleteTransformColumnSql">
+      <value>delete from $[sym.sync.table.prefix]_transform_column
+        where
+          transform_id=?
+          and include_on=?
+          and target_column_name=?
+      </value>
+    </entry>    
         
   </util:map>
   

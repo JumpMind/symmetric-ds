@@ -14,6 +14,8 @@ import org.springframework.jdbc.core.RowMapper;
 
 public class TransformService extends AbstractService implements ITransformService {
 
+    // the key for the outer map is the target node group id
+    // the key for the inner map is the fully qualified source table name
     private Map<String, Map<String, List<TransformTable>>> transformCacheByNodeGroupId;
 
     private long lastCacheTimeInMs;
@@ -47,10 +49,10 @@ public class TransformService extends AbstractService implements ITransformServi
                     || transformCacheByNodeGroupId == null) {
 
                 transformCacheByNodeGroupId = new HashMap<String, Map<String, List<TransformTable>>>();
-                List<TransformColumn> columns = jdbcTemplate.query(
-                        getSql("selectTransformColumn"), new TransformColumnMapper());
+                
                 List<TransformTable> transforms = getTransformTablesFromDB();
-
+                List<TransformColumn> columns = getTransformColumnsFromDB();
+                
                 for (TransformTable transformTable : transforms) {
                     Map<String, List<TransformTable>> map = transformCacheByNodeGroupId
                             .get(transformTable.getTargetNodeGroupId());
@@ -85,9 +87,27 @@ public class TransformService extends AbstractService implements ITransformServi
         return transforms;
     }
     
+    private List<TransformColumn> getTransformColumnsFromDB() {
+        List<TransformColumn> columns = jdbcTemplate.query(
+                getSql("selectTransformColumn"), new TransformColumnMapper());
+        
+        return columns;
+    }
+    
     public List<TransformTable> getTransformTables() {
         return this.getTransformTablesFromDB();
     }    
+    
+    public List<TransformColumn> getTransformColumns() {
+        return this.getTransformColumnsFromDB();
+    }
+    
+    public List<TransformColumn> getTransformColumnsForTable() {
+        List<TransformColumn> columns = jdbcTemplate.query(
+                getSql("selectTransformColumnForTable"), new TransformColumnMapper());
+        
+        return columns;
+    }
     
     public void saveTransformTable(TransformTable transformTable) {
         if (jdbcTemplate.update(getSql("updateTransformTableSql"), 
@@ -124,6 +144,27 @@ public class TransformService extends AbstractService implements ITransformServi
         jdbcTemplate.update(getSql("deleteTransformTableSql"), transformTableId);
         refreshCache();
     }    
+    
+    public void saveTransformColumn(TransformColumn transformColumn) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void deleteTransformColumn(String transformTableId,
+            Boolean includeOn, String targetColumnName) {
+        
+        String includeOnAsChar=null;
+        //TODO:  is this a "Y" or "N" or "1" or "0"
+        if (includeOn)
+            includeOnAsChar = "Y";
+        else
+            includeOnAsChar = "N";
+        
+        jdbcTemplate.update(getSql("deleteTransformColumnSql"), 
+                transformTableId, includeOnAsChar, targetColumnName);
+        refreshCache();        
+    }
+    
     
     /*
      * Mappers

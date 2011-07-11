@@ -9,8 +9,18 @@ public interface ITransformService {
     
     public List<TransformTable> getTransformTables();
     
-    public void saveTransformTable(TransformTable transformTable);
+    public List<TransformColumn> getTransformColumns();
+    
+    public List<TransformColumn> getTransformColumnsForTable();
+    
+    public void saveTransformTable(TransformTable transformTable);        
     
     public void deleteTransformTable(String transformTableId);
+    
+    /* methods for transform columns */
 
+    public void saveTransformColumn(TransformColumn transformColumn);
+    
+    public void deleteTransformColumn(String transformTableId, Boolean includeOn, String targetColumnName);
+        
 }
