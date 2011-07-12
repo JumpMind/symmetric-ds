@@ -512,8 +512,12 @@ public class SqlTemplate {
                 case Types.STRUCT:
                 case Types.REF:
                 case Types.DATALINK:
+                    if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equalsIgnoreCase("interval")) {
+                        templateToUse = numberColumnTemplate;
+                        break;
+                    }
                     throw new NotImplementedException(column.getName() + " is of type "
-                            + column.getType());
+                            + column.getType() + " with JDBC type of " + column.getJdbcTypeName());
                 }
 
                 if (dml == DataEventType.DELETE && isLob
@@ -621,6 +625,10 @@ public class SqlTemplate {
                 text += "varbinary(max)\n";
                 break;                
             default:
+                if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().equalsIgnoreCase("interval")) {
+                    text += "interval";
+                    break;
+                }
                 throw new NotImplementedException(columns[i] + " is of type " + columns[i].getType());
             }
         }
