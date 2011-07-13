@@ -113,6 +113,7 @@ public class SqlTemplate {
         sql = AppUtils.replace("externalId", node.getExternalId(), sql);
         sql = AppUtils.replace("nodeId", node.getNodeId(), sql);
         sql = replaceDefaultSchemaAndCatalog(dialect, triggerRouter.getTrigger(), sql);
+        sql = AppUtils.replace("prefixName", dialect.getTablePrefix(), sql);
 
         return sql;
     }
