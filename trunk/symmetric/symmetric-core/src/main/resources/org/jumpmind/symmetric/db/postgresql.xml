@@ -61,10 +61,14 @@
                                 CREATE OR REPLACE FUNCTION $(defaultSchema)$(functionName)(objectId oid) RETURNS text AS $$
                                 DECLARE
                                   encodedBlob text;
+                                  encodedBlobPage text;
                                 BEGIN
-                                  select encode(data, 'base64') into encodedBlob
-                                  from pg_largeobject where loid = objectId;
-                                  RETURN encodedBlob;
+                                  encodedBlob := '';
+                                  FOR encodedBlobPage IN SELECT encode(data, 'escape')
+                                  FROM pg_largeobject WHERE loid = objectId ORDER BY pageno LOOP
+                                    encodedBlob := encodedBlob || encodedBlobPage;
+                                  END LOOP;
+                                  RETURN encode(decode(encodedBlob, 'escape'), 'base64');
                                 EXCEPTION WHEN OTHERS THEN
                                   RETURN '';
                                 END
