@@ -100,7 +100,8 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
         Object[] objectValues = super.getObjectValues(encoding, values, orderedMetaData);
         for (int i = 0; i < orderedMetaData.length; i++) {
-            if (orderedMetaData[i] != null && orderedMetaData[i].getTypeCode() == Types.BLOB) {
+            if (orderedMetaData[i] != null && orderedMetaData[i].getTypeCode() == Types.BLOB
+                    && objectValues[i] != null) {
                 try {
                     objectValues[i] = new SerialBlob((byte[]) objectValues[i]);
                 } catch (Exception e) {
