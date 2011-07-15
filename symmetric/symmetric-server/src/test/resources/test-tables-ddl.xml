@@ -11,12 +11,12 @@
         <column name="id" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
         <column name="string_one_value" type="VARCHAR" size="50" />
         <column name="string_two_value" type="VARCHAR" size="255" />
-        <column name="long_String_Value" type="LONGVARCHAR" />
-        <column name="time_Value" type="TIMESTAMP" />
-        <column name="date_Value" type="DATE" />
-        <column name="boolean_Value" type="BIT" size="1" />
-        <column name="bigInt_Value" type="BIGINT" />
-        <column name="decimal_Value" type="DECIMAL" />
+        <column name="long_string_value" type="LONGVARCHAR" />
+        <column name="time_value" type="TIMESTAMP" />
+        <column name="date_value" type="DATE" />
+        <column name="boolean_value" type="BIT" size="1" />
+        <column name="bigint_value" type="BIGINT" />
+        <column name="decimal_value" type="DECIMAL" />
     </table>
 
     <table name="test_dataloader_table">
