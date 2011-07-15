@@ -28,6 +28,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                 <ref bean="job.watchdog" />
             </list>
         </property>
+        <property name="taskScheduler" ref="symmetricScheduler" />
     </bean>
 
     <bean id="job.abstract" abstract="true" class="org.jumpmind.symmetric.job.AbstractJob" init-method="init">
