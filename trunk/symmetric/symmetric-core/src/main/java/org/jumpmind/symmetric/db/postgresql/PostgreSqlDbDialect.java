@@ -116,7 +116,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return jdbcTemplate.queryForInt("select count(*) from information_schema.triggers where trigger_name = ? "
                 + "and event_object_table = ? and trigger_schema = ?", new Object[] { triggerName.toLowerCase(),
-                tableName.toLowerCase(), schema == null ? getDefaultSchema() : schema }) > 0;
+                tableName, schema == null ? getDefaultSchema() : schema }) > 0;
     }
 
     @Override
@@ -181,11 +181,6 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     public boolean isEmptyStringNulled() {
         return false;
-    }
-
-    @Override
-    public boolean storesLowerCaseNamesInCatalog() {
-        return true;
     }
 
     @Override

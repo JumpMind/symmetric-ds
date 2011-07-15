@@ -925,14 +925,17 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void testCaseSensitiveTableNames() {
         logTestRunning();
-        rootJdbcTemplate.update("insert into TEST_ALL_CAPS values(1, 'HELLO')");
+        String quote = getRootDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getRootDbDialect()
+            .getPlatform().getPlatformInfo().getDelimiterToken() : "";
+        rootJdbcTemplate.update("insert into " + quote + "TEST_ALL_CAPS" + quote + " values(1, 'HELLO')");
         getClientEngine().pull();
-        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from TEST_ALL_CAPS where ALL_CAPS_ID = 1"), 1,
-                "Table name in all caps was not synced");
-        rootJdbcTemplate.update("insert into Test_Mixed_Case values(1, 'Hello')");
+        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from " + quote + "TEST_ALL_CAPS" + quote
+            + " where " + quote + "ALL_CAPS_ID" + quote + " = 1"), 1, "Table name in all caps was not synced");
+        rootJdbcTemplate.update("insert into " + quote + "Test_Mixed_Case" + quote + " values(1, 'Hello')");
         getClientEngine().pull();
-        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from Test_Mixed_Case where Mixed_Case_Id = 1"), 1,
-                "Table name in mixed case was not synced");
+        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from " + quote + "Test_Mixed_Case"
+            + quote + " where " + quote + "Mixed_Case_Id" + quote + " = 1"), 1,
+            "Table name in mixed case was not synced");
     }
 
     @Test(timeout = 120000)

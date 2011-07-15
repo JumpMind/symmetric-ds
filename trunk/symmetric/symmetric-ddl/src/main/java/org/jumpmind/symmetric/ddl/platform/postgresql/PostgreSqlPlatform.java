@@ -84,6 +84,8 @@ public class PostgreSqlPlatform extends PlatformImplBase
         // to BYTEA which back-maps to BLOB)
         info.setHasSize(Types.BINARY,    false);
         info.setHasSize(Types.VARBINARY, false);
+        
+        setDelimitedIdentifierModeOn(true);
 
         setSqlBuilder(new PostgreSqlBuilder(this));
         setModelReader(new PostgreSqlModelReader(this));

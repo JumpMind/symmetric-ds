@@ -157,7 +157,7 @@
                         <entry key="insertPostTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                create trigger $(triggerName) after insert on $(schemaName)$(tableName)
+                                create trigger $(triggerName) after insert on "$(schemaName)$(tableName)"
                                 for each row execute procedure $(schemaName)f$(triggerName)();
                                 ]]>
                             </value>
@@ -193,7 +193,7 @@
                         <entry key="updatePostTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                create trigger $(triggerName) after update on $(schemaName)$(tableName)
+                                create trigger $(triggerName) after update on "$(schemaName)$(tableName)"
                                 for each row execute procedure $(schemaName)f$(triggerName)();
                                 ]]>
                             </value>
@@ -228,14 +228,14 @@
                         <entry key="deletePostTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                create trigger $(triggerName) after delete on $(schemaName)$(tableName)
+                                create trigger $(triggerName) after delete on "$(schemaName)$(tableName)"
                                 for each row execute procedure $(schemaName)f$(triggerName)();
                                 ]]>
                             </value>
                         </entry>
                         <entry key="initialLoadSqlTemplate">
                             <value>
-                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
+                                <![CDATA[select $(columns) from "$(schemaName)$(tableName)" t where $(whereClause)]]>
                             </value>
                         </entry>
                     </map>
