@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
  * @see IJobManager
@@ -32,6 +33,8 @@ public class JobManager implements IJobManager {
     final ILog log = LogFactory.getLog(JobManager.class);
 
     private List<IJob> jobs;
+    
+    private ThreadPoolTaskScheduler taskScheduler;
 
     public IJob getJob(String name) {
         for (IJob job : jobs) {
@@ -64,6 +67,9 @@ public class JobManager implements IJobManager {
     
     public synchronized void destroy () {
         stopJobs();
+        if (taskScheduler != null) {
+            taskScheduler.shutdown();
+        }
     }
 
     public void setJobs(List<IJob> jobs) {
@@ -74,4 +80,7 @@ public class JobManager implements IJobManager {
         return jobs;
     }
 
+    public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
+        this.taskScheduler = taskScheduler;
+    }
 }
