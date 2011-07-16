@@ -32,8 +32,8 @@ import org.springframework.jdbc.core.RowMapper;
 
 public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
 
-    private static final String TABLE_TEST_1 = "TEST_ADD_DL_TABLE_1";
-    private static final String TABLE_TEST_2 = "TEST_ADD_DL_TABLE_2";
+    private static final String TABLE_TEST_1 = "test_add_dl_table_1";
+    private static final String TABLE_TEST_2 = "test_add_dl_table_2";
 
     private DataLoaderContext ctx1;
     private AdditiveDataLoaderFilter filter;
@@ -56,22 +56,22 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         ctx1.chooseTableTemplate();
         ctx1.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_1, null, false, null,
                 null));
-        ctx1.setColumnNames(new String[] { "PK1", "PK2", "ADD1", "ADD2", "ADD3", "OVR1", "OVR2", "OVR3", "NADA1" });
-        ctx1.setKeyNames(new String[] { "PK1", "PK2" });
+        ctx1.setColumnNames(new String[] { "pk1", "pk2", "add1", "add2", "add3", "ovr1", "ovr2", "ovr3", "nada1" });
+        ctx1.setKeyNames(new String[] { "pk1", "pk2" });
 
         ctx2 = new DataLoaderContext();
         ctx2.setSourceNodeId("54321");
         ctx2.setTableName(TABLE_TEST_2);
         ctx2.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_2, null, false, null,
                 null));
-        ctx2.setKeyNames(new String[] { "PK1" });
-        ctx2.setColumnNames(new String[] { "PK1", "ADD1" });
+        ctx2.setKeyNames(new String[] { "pk1" });
+        ctx2.setColumnNames(new String[] { "pk1", "add1" });
 
         filter = new AdditiveDataLoaderFilter();
         filter.setTableName(TABLE_TEST_1);
         filter.setJdbcTemplate(getJdbcTemplate());
-        filter.setAdditiveColumnNames(new String[] { "ADD1", "ADD2", "ADD3" });
-        filter.setOverrideColumnNames(new String[] { "OVR1", "OVR2", "OVR3" });
+        filter.setAdditiveColumnNames(new String[] { "add1", "add2", "add3" });
+        filter.setOverrideColumnNames(new String[] { "ovr1", "ovr2", "ovr3" });
 
         filter2 = new AdditiveDataLoaderFilter();
         filter2.setTableName(TABLE_TEST_1);
@@ -140,13 +140,13 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         jdbcTemplate.query(verifySql.toString(), new Object[] { "k3", "k4" }, new RowMapper<Object>() {
 
             public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-                Assert.assertEquals(rs.getDouble("ADD1"), 2.0, 0.0001);
-                Assert.assertEquals(rs.getDouble("ADD2"), 2.0, 0.0001);
-                Assert.assertEquals(rs.getDouble("ADD3"), 5.0, 0.0001);
-                Assert.assertEquals(rs.getDouble("OVR1"), 3.5, 0.0001);
-                Assert.assertEquals(rs.getDouble("OVR2"), 4.0, 0.0001);
-                Assert.assertEquals(rs.getDouble("OVR3"), 0, 0.0001);
-                Assert.assertEquals(rs.getInt("NADA1"), 7, 0.0001);
+                Assert.assertEquals(rs.getDouble("add1"), 2.0, 0.0001);
+                Assert.assertEquals(rs.getDouble("add2"), 2.0, 0.0001);
+                Assert.assertEquals(rs.getDouble("add3"), 5.0, 0.0001);
+                Assert.assertEquals(rs.getDouble("ovr1"), 3.5, 0.0001);
+                Assert.assertEquals(rs.getDouble("ovr2"), 4.0, 0.0001);
+                Assert.assertEquals(rs.getDouble("ovr3"), 0, 0.0001);
+                Assert.assertEquals(rs.getInt("nada1"), 7, 0.0001);
                 return null;
             }
 
@@ -164,18 +164,18 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         verifySql = new StringBuilder();
         verifySql.append("select * from ");
         verifySql.append(TABLE_TEST_1);
-        verifySql.append(" where PK1=? and PK2=?");
+        verifySql.append(" where pk1=? and pk2=?");
 
         jdbcTemplate.query(verifySql.toString(), new Object[] { "k3", "k4" }, new RowMapper<Object>() {
 
             public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-                Assert.assertEquals(rs.getDouble("ADD1"), 1.0, 0.0001);
-                Assert.assertEquals(rs.getDouble("ADD2"), 2.1, 0.0001);
-                Assert.assertEquals(rs.getDouble("ADD3"), 7.0, 0.0001);
-                Assert.assertEquals(rs.getDouble("OVR1"), 3.5, 0.0001);
-                Assert.assertEquals(rs.getDouble("OVR2"), 5.0, 0.0001);
-                Assert.assertEquals(rs.getDouble("OVR3"), 5, 0.0001);
-                Assert.assertEquals(rs.getInt("NADA1"), 7, 0.0001);
+                Assert.assertEquals(rs.getDouble("add1"), 1.0, 0.0001);
+                Assert.assertEquals(rs.getDouble("add2"), 2.1, 0.0001);
+                Assert.assertEquals(rs.getDouble("add3"), 7.0, 0.0001);
+                Assert.assertEquals(rs.getDouble("ovr1"), 3.5, 0.0001);
+                Assert.assertEquals(rs.getDouble("ovr2"), 5.0, 0.0001);
+                Assert.assertEquals(rs.getDouble("ovr3"), 5, 0.0001);
+                Assert.assertEquals(rs.getInt("nada1"), 7, 0.0001);
                 return null;
             }
 

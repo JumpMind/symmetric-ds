@@ -155,7 +155,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
     
     @Test
     public void testColumnFilterChangingColumnName() throws Exception {
-        String tableName = "TEST_CHANGING_COLUMN_NAME";
+        String tableName = "test_changing_column_name";
         String[] keys = { "id" };
         String[] columns = { "id", "test" };
         String[] values = { "1", "10" };
@@ -175,7 +175,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         filter.setColumnNameMapping(mapping);
         Map<String, List<IColumnFilter>> filters = createColumnFilterList(tableName, filter);
         load(out, filters);
-        Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from TEST_CHANGING_COLUMN_NAME"));
+        Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from test_changing_column_name"));
     }
 
     private void cleanSlate() {
