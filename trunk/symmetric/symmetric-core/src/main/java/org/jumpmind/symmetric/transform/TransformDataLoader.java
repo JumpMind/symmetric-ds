@@ -8,13 +8,14 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.DataLoaderFilterAdapter;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataIntegrityViolationException;
 
-public class TransformDataLoader extends DataLoaderFilterAdapter {
+public class TransformDataLoader extends DataLoaderFilterAdapter implements IBuiltInExtensionPoint {
 
     protected final ILog log = LogFactory.getLog(getClass());
 
@@ -67,14 +68,14 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             }
             try {
                 for (TransformTable transformation : transformationsToPerform) {
-                    TransformedData targetData = create(context, dmlType, transformation, sourceKeyValues,
-                            oldSourceValues);
+                    TransformedData targetData = create(context, dmlType, transformation,
+                            sourceKeyValues, oldSourceValues);
                     if (perform(context, targetData, transformation, sourceValues, oldSourceValues)) {
                         apply(context, targetData);
                     }
                 }
             } catch (IgnoreRowException e) {
-                // Do nothing.  We are suppose to ignore this row.
+                // Do nothing. We are suppose to ignore this row.
             }
             return true;
         } else {
@@ -82,14 +83,16 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         }
     }
 
-    protected boolean perform(IDataLoaderContext context, TransformedData data, TransformTable transformation,
-            Map<String, String> sourceValues, Map<String, String> oldSourceValues) throws IgnoreRowException {
+    protected boolean perform(IDataLoaderContext context, TransformedData data,
+            TransformTable transformation, Map<String, String> sourceValues,
+            Map<String, String> oldSourceValues) throws IgnoreRowException {
         boolean persistData = false;
 
         for (TransformColumn transformColumn : transformation.getTransformColumns()) {
-            if (transformColumn.getSourceColumnName() == null || 
-                    sourceValues.containsKey(transformColumn.getSourceColumnName())) {
-                transformColumn(context, data, transformColumn, sourceValues, oldSourceValues, false);
+            if (transformColumn.getSourceColumnName() == null
+                    || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
+                transformColumn(context, data, transformColumn, sourceValues, oldSourceValues,
+                        false);
             } else {
                 log.warn("TransformSourceColumnNotFound", transformColumn.getSourceColumnName(),
                         transformation.getTransformId());
@@ -120,8 +123,9 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         return persistData;
     }
 
-    protected TransformedData create(IDataLoaderContext context, DmlType dmlType, TransformTable transformation,
-            Map<String, String> sourceValues, Map<String, String> oldSourceValues) throws IgnoreRowException {
+    protected TransformedData create(IDataLoaderContext context, DmlType dmlType,
+            TransformTable transformation, Map<String, String> sourceValues,
+            Map<String, String> oldSourceValues) throws IgnoreRowException {
         TransformedData row = new TransformedData(transformation, dmlType);
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
         if (columns.size() == 0) {
@@ -134,11 +138,12 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
         return row;
     }
 
-    protected void transformColumn(IDataLoaderContext context, TransformedData data, TransformColumn transformColumn,
-            Map<String, String> sourceValues, Map<String, String> oldSourceValues,
-            boolean recordAsKey) throws IgnoreRowException {
+    protected void transformColumn(IDataLoaderContext context, TransformedData data,
+            TransformColumn transformColumn, Map<String, String> sourceValues,
+            Map<String, String> oldSourceValues, boolean recordAsKey) throws IgnoreRowException {
         try {
-            String value = transformColumn.getSourceColumnName() != null ? sourceValues.get(transformColumn.getSourceColumnName()) : null;
+            String value = transformColumn.getSourceColumnName() != null ? sourceValues
+                    .get(transformColumn.getSourceColumnName()) : null;
             IColumnTransform transform = transforms.get(transformColumn.getTransformType());
             if (transform != null) {
                 String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
@@ -146,7 +151,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter {
             }
             data.put(transformColumn, value, recordAsKey);
         } catch (IgnoreColumnException e) {
-            // Do nothing.  We are suppose to ignore the column
+            // Do nothing. We are suppose to ignore the column
         }
     }
 
