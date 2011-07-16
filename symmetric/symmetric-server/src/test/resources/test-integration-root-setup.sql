@@ -70,12 +70,12 @@ insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last
                          values(    '9000',    '1000',                  1, current_timestamp, current_timestamp);
 
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
-                         values(  '10000',               'ONE_COLUMN_TABLE', 'testchannel', current_timestamp,current_timestamp);
+                         values(  '10000',               'one_column_table', 'testchannel', current_timestamp,current_timestamp);
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(  '10000',    '1000',                  1, current_timestamp, current_timestamp);
 
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
-                         values(  '11000',           'NO_PRIMARY_KEY_TABLE', 'testchannel', current_timestamp,current_timestamp);
+                         values(  '11000',           'no_primary_key_table', 'testchannel', current_timestamp,current_timestamp);
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(  '11000',    '1000',                  1, current_timestamp, current_timestamp);
 
@@ -85,9 +85,9 @@ insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last
                          values(  '12000',    '1000',                  1, current_timestamp, current_timestamp);
 
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id, last_update_time,      create_time)
-                         values(  '13000',            'TEST_TARGET_TABLE_A', 'testchannel',  current_timestamp,current_timestamp);
+                         values(  '13000',            'test_target_table_a', 'testchannel',  current_timestamp,current_timestamp);
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,     target_table_name,       create_time,  last_update_time) 
-                  values( '13000',   'test-root-group',    'test-node-group', 'TEST_TARGET_TABLE_B', current_timestamp, current_timestamp);  
+                  values( '13000',   'test-root-group',    'test-node-group', 'test_target_table_b', current_timestamp, current_timestamp);  
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(  '13000',  '13000',                  1, current_timestamp, current_timestamp);
 
