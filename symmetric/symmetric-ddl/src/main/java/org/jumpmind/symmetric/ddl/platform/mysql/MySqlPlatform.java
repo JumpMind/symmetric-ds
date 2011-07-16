@@ -87,6 +87,7 @@ public class MySqlPlatform extends PlatformImplBase
         info.setDefaultSize(Types.BINARY,    254);
         info.setDefaultSize(Types.VARBINARY, 254);
         
+        setDelimitedIdentifierModeOn(true);
         setSqlBuilder(new MySqlBuilder(this));
         setModelReader(new MySqlModelReader(this));
     }
