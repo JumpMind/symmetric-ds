@@ -68,9 +68,9 @@ insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last
                          values(    '3000',    '3000',                  1, current_timestamp, current_timestamp);   
 
 -- AdditiveDataLoaderFilter test data
-insert into TEST_ADD_DL_TABLE_1 values('k3','k4',1,2.0,3,4.0,5,'6',7);
-insert into TEST_ADD_DL_TABLE_1 values('k5','k6',1,3.0,5,7.0,9,'11',13);
-insert into TEST_ADD_DL_TABLE_2 values('k3',1);
+insert into test_add_dl_table_1 values('k3','k4',1,2.0,3,4.0,5,'6',7);
+insert into test_add_dl_table_1 values('k5','k6',1,3.0,5,7.0,9,'11',13);
+insert into test_add_dl_table_2 values('k3',1);
 
 insert into sym_transform_table (transform_id, source_table_name, target_table_name, target_node_group_id, update_first, delete_action, transform_order)
   values ('SIMPLE_2_A', 'SIMPLE', 'TEST_TRANSFORM_A', 'test-root-group', 0, 'DEL_ROW', 1);
