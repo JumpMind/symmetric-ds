@@ -759,15 +759,15 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void oneColumnTableWithPrimaryKeyUpdate() throws Exception {
         logTestRunning();
         boolean oldValue = turnOnNoKeysInUpdateParameter(true);
-        rootJdbcTemplate.update("insert into ONE_COLUMN_TABLE values(1)");
+        rootJdbcTemplate.update("insert into one_column_table values(1)");
         Assert
                 .assertTrue(clientJdbcTemplate
-                        .queryForInt("select count(*) from ONE_COLUMN_TABLE where MY_ONE_COLUMN=1") == 0);
+                        .queryForInt("select count(*) from one_column_table where my_one_column=1") == 0);
         getClientEngine().pull();
         Assert
                 .assertTrue(clientJdbcTemplate
-                        .queryForInt("select count(*) from ONE_COLUMN_TABLE where MY_ONE_COLUMN=1") == 1);
-        rootJdbcTemplate.update("update ONE_COLUMN_TABLE set MY_ONE_COLUMN=1 where MY_ONE_COLUMN=1");
+                        .queryForInt("select count(*) from one_column_table where my_one_column=1") == 1);
+        rootJdbcTemplate.update("update one_column_table set my_one_column=1 where my_one_column=1");
         getClientEngine().pull();
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
@@ -925,16 +925,18 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void testCaseSensitiveTableNames() {
         logTestRunning();
-        String quote = getRootDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getRootDbDialect()
+        String rquote = getRootDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getRootDbDialect()
             .getPlatform().getPlatformInfo().getDelimiterToken() : "";
-        rootJdbcTemplate.update("insert into " + quote + "TEST_ALL_CAPS" + quote + " values(1, 'HELLO')");
+        String cquote = getClientDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getClientDbDialect()
+            .getPlatform().getPlatformInfo().getDelimiterToken() : "";
+        rootJdbcTemplate.update("insert into " + rquote + "TEST_ALL_CAPS" + rquote + " values(1, 'HELLO')");
         getClientEngine().pull();
-        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from " + quote + "TEST_ALL_CAPS" + quote
-            + " where " + quote + "ALL_CAPS_ID" + quote + " = 1"), 1, "Table name in all caps was not synced");
-        rootJdbcTemplate.update("insert into " + quote + "Test_Mixed_Case" + quote + " values(1, 'Hello')");
+        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from " + cquote + "TEST_ALL_CAPS" + cquote
+            + " where " + cquote + "ALL_CAPS_ID" + cquote + " = 1"), 1, "Table name in all caps was not synced");
+        rootJdbcTemplate.update("insert into " + rquote + "Test_Mixed_Case" + rquote + " values(1, 'Hello')");
         getClientEngine().pull();
-        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from " + quote + "Test_Mixed_Case"
-            + quote + " where " + quote + "Mixed_Case_Id" + quote + " = 1"), 1,
+        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from " + cquote + "Test_Mixed_Case"
+            + cquote + " where " + cquote + "Mixed_Case_Id" + cquote + " = 1"), 1,
             "Table name in mixed case was not synced");
     }
 
@@ -978,17 +980,17 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @ParameterExcluder("mssql")
     public void testNoPrimaryKeySync() {
         logTestRunning();
-        rootJdbcTemplate.update("insert into NO_PRIMARY_KEY_TABLE values(1, 2, 'HELLO')");
+        rootJdbcTemplate.update("insert into no_primary_key_table values(1, 2, 'HELLO')");
         getClientEngine().pull();
-        assertEquals(clientJdbcTemplate.queryForInt("select TWO_COLUMN from NO_PRIMARY_KEY_TABLE where ONE_COLUMN=1"),
+        assertEquals(clientJdbcTemplate.queryForInt("select two_column from no_primary_key_table where one_column=1"),
                 2, "Table was not synced");
-        rootJdbcTemplate.update("update NO_PRIMARY_KEY_TABLE set TWO_COLUMN=3 where ONE_COLUMN=1");
+        rootJdbcTemplate.update("update no_primary_key_table set two_column=3 where one_column=1");
         getClientEngine().pull();
-        assertEquals(clientJdbcTemplate.queryForInt("select TWO_COLUMN from NO_PRIMARY_KEY_TABLE where ONE_COLUMN=1"),
+        assertEquals(clientJdbcTemplate.queryForInt("select two_column from no_primary_key_table where one_column=1"),
                 3, "Table was not updated");
-        rootJdbcTemplate.update("delete from NO_PRIMARY_KEY_TABLE");
+        rootJdbcTemplate.update("delete from no_primary_key_table");
         getClientEngine().pull();
-        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from NO_PRIMARY_KEY_TABLE"), 0,
+        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from no_primary_key_table"), 0,
                 "Table was not deleted from");
     }
 
@@ -1107,11 +1109,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void testTargetTableNameSync() throws Exception {
         logTestRunning();
-        Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from TEST_TARGET_TABLE_B"));
-        rootJdbcTemplate.update("insert into TEST_TARGET_TABLE_A values('1','2')");
+        Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_b"));
+        rootJdbcTemplate.update("insert into test_target_table_a values('1','2')");
         getClientEngine().pull();
-        Assert.assertEquals(1, clientJdbcTemplate.queryForInt("select count(*) from TEST_TARGET_TABLE_B"));
-        Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from TEST_TARGET_TABLE_A"));
+        Assert.assertEquals(1, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_b"));
+        Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_a"));
     }
 
     @Test(timeout = 120000)
@@ -1122,13 +1124,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         long oldMaxRowsBeforeCommit = clientParameterService
                 .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT, 5);
-        int oldCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
+        int oldCount = clientJdbcTemplate.queryForInt("select count(*) from one_column_table");
         IStatisticManager statisticManager = AppUtils.find(Constants.STATISTIC_MANAGER, getClientEngine());
         statisticManager.flush();
         rootJdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 con.setAutoCommit(false);
-                PreparedStatement stmt = con.prepareStatement("insert into ONE_COLUMN_TABLE values(?)");
+                PreparedStatement stmt = con.prepareStatement("insert into one_column_table values(?)");
                 for (int i = 400; i < 450; i++) {
                     stmt.setInt(1, i);
                     Assert.assertEquals(1, stmt.executeUpdate());
@@ -1145,7 +1147,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             }
             count++;
         } while (getClientEngine().pull().wasDataProcessed());
-        int newCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
+        int newCount = clientJdbcTemplate.queryForInt("select count(*) from one_column_table");
         Assert.assertEquals(50, newCount - oldCount);
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
                 oldMaxRowsBeforeCommit);
