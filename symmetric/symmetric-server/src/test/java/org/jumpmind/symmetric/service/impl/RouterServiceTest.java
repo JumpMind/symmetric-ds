@@ -52,9 +52,9 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
     private static final String SELECT_COUNT_FROM_SYM_OUTGOING_BATCH_WHERE_NOT = "select count(*) from sym_outgoing_batch where status = 'NE' and node_id!=?";
     private static final String SELECT_COUNT_FROM_SYM_OUTGOING_BATCH = "select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?";
-    final static String TEST_TABLE_1 = "TEST_ROUTING_DATA_1";
-    final static String TEST_TABLE_2 = "TEST_ROUTING_DATA_2";
-    final static String TEST_SUBTABLE = "TEST_ROUTING_DATA_SUBTABLE";
+    final static String TEST_TABLE_1 = "test_routing_data_1";
+    final static String TEST_TABLE_2 = "test_routing_data_2";
+    final static String TEST_SUBTABLE = "test_routing_data_subtable";
 
     final static Node NODE_GROUP_NODE_1 = new Node("00001",TestConstants.TEST_CLIENT_NODE_GROUP);
     final static Node NODE_GROUP_NODE_2 = new Node("00002",TestConstants.TEST_CLIENT_NODE_GROUP);
@@ -126,17 +126,17 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testLookupTableRouting() {
         
-        getDbDialect().truncateTable("TEST_LOOKUP_TABLE");
+        getDbDialect().truncateTable("test_lookup_table");
         
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('A',?)",NODE_GROUP_NODE_1.getExternalId());
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('B',?)",NODE_GROUP_NODE_1.getExternalId());
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('C',?)",NODE_GROUP_NODE_3.getExternalId());
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('D',?)",NODE_GROUP_NODE_3.getExternalId());
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('D',?)",NODE_GROUP_NODE_1.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('A',?)",NODE_GROUP_NODE_1.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('B',?)",NODE_GROUP_NODE_1.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('C',?)",NODE_GROUP_NODE_3.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('D',?)",NODE_GROUP_NODE_3.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('D',?)",NODE_GROUP_NODE_1.getExternalId());
 
         TriggerRouter triggerRouter = getTestRoutingTableTrigger(TEST_TABLE_1);
         triggerRouter.getRouter().setRouterType("lookuptable");
-        triggerRouter.getRouter().setRouterExpression("LOOKUP_TABLE=TEST_LOOKUP_TABLE\nKEY_COLUMN=ROUTING_VARCHAR\nLOOKUP_KEY_COLUMN=COLUMN_ONE\nEXTERNAL_ID_COLUMN=COLUMN_TWO");        
+        triggerRouter.getRouter().setRouterExpression("LOOKUP_TABLE=test_lookup_table\nKEY_COLUMN=ROUTING_VARCHAR\nLOOKUP_KEY_COLUMN=COLUMN_ONE\nEXTERNAL_ID_COLUMN=COLUMN_TWO");        
         getTriggerRouterService().saveTriggerRouter(triggerRouter);
         getTriggerRouterService().syncTriggers();
 
