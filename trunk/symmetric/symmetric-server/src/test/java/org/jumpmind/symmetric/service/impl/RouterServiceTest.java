@@ -743,10 +743,13 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             List<DataGap> gaps = getDataService().findDataGaps();
             Assert.assertEquals(1, gaps.size());
             
-            insert(TEST_TABLE_1, 10, true, null, NODE_GROUP_NODE_1.getNodeId(), true);
+            // evidently, derby only leaves a gap of one, no matter how many rows you insert
+            int gapsize = getDbDialect() instanceof DerbyDbDialect ? 1 : 10;
+            
+            insert(TEST_TABLE_1, gapsize, true, null, NODE_GROUP_NODE_1.getNodeId(), true);
             insert(TEST_TABLE_1, 10, true, null, NODE_GROUP_NODE_1.getNodeId(), false);
 
-            routeAndCreateGaps();
+            routeAndCreateGaps();            
 
             Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
                     .getBatches().size());
@@ -755,14 +758,14 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
             Assert.assertEquals(2, gaps.size());
             DataGap gap = gaps.get(0);
-            Assert.assertEquals(9, gap.getEndId() - gap.getStartId());
+            Assert.assertEquals("The gap's start id was " + gap.getStartId() + " end id was " + gap.getEndId(), gapsize-1, gap.getEndId() - gap.getStartId());
 
             routeAndCreateGaps();
 
             gaps = getDataService().findDataGaps();
             Assert.assertEquals(2, gaps.size());
             gap = gaps.get(0);
-            Assert.assertEquals(9, gap.getEndId() - gap.getStartId());
+            Assert.assertEquals(gapsize-1, gap.getEndId() - gap.getStartId());
         }
     }
     
