@@ -15,6 +15,18 @@ public class TransformColumn {
                 return ALL;
             }
         };
+
+        public String toDbValue() {
+            if (this == INSERT) {
+                return "I";
+            } else if (this == DELETE) {
+                return "D";
+            } else if (this == UPDATE) {
+                return "U";
+            } else {
+                return "*";
+            }
+        }
     }
 
     protected String transformId;
@@ -25,6 +37,13 @@ public class TransformColumn {
     protected String transformExpression;
     protected int transformOrder;
     protected IncludeOnType includeOn = IncludeOnType.ALL;
+
+    public TransformColumn(String transformId) {
+        this.transformId = transformId;
+    }
+
+    public TransformColumn() {
+    }
 
     public String getSourceColumnName() {
         return sourceColumnName;
