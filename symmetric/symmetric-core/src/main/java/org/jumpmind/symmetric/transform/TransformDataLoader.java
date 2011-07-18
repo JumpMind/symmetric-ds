@@ -27,8 +27,6 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
 
     private IParameterService parameterService;
 
-    private Map<String, IColumnTransform> transforms = new HashMap<String, IColumnTransform>();
-
     public TransformDataLoader() {
         super(true);
     }
@@ -144,7 +142,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
         try {
             String value = transformColumn.getSourceColumnName() != null ? sourceValues
                     .get(transformColumn.getSourceColumnName()) : null;
-            IColumnTransform transform = transforms.get(transformColumn.getTransformType());
+            IColumnTransform transform = transformService.getColumnTransforms().get(transformColumn.getTransformType());
             if (transform != null) {
                 String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
                 value = transform.transform(context, transformColumn, data, value, oldValue);
@@ -204,10 +202,6 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
-    }
-
-    public void addTransform(String name, IColumnTransform transform) {
-        transforms.put(name, transform);
     }
 
     protected Map<String, String> toMap(String[] columnNames, String[] columnValues) {
