@@ -13,6 +13,7 @@
 		<property name="dbDialect" ref="dbDialect" />
 		<property name="transformService" ref="transformService" />
 		<property name="parameterService" ref="parameterService" />
+		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
 	</bean>
 
 	<bean id="additiveColumnTransform"
