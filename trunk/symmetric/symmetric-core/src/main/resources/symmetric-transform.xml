@@ -20,6 +20,8 @@
 		<property name="dbDialect" ref="dbDialect" />
 	</bean>
 
+	<bean id="noColumnTransform" class="org.jumpmind.symmetric.transform.NoColumnTransform" />
+
 	<bean id="constantColumnTransform"
 		class="org.jumpmind.symmetric.transform.ConstantColumnTransform" />
 

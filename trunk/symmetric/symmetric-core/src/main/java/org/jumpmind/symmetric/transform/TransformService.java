@@ -20,6 +20,8 @@ public class TransformService extends AbstractService implements ITransformServi
     private Map<String, Map<String, List<TransformTable>>> transformCacheByNodeGroupId;
 
     private long lastCacheTimeInMs;
+    
+    private Map<String, IColumnTransform> columnTransforms = new HashMap<String, IColumnTransform>();
 
     public Map<String, List<TransformTable>> findTransformsFor(String nodeGroupId, boolean useCache) {
 
@@ -172,10 +174,14 @@ public class TransformService extends AbstractService implements ITransformServi
                 targetColumnName);
         refreshCache();
     }
-
-    /*
-     * Mappers
-     */
+    
+    public Map<String, IColumnTransform> getColumnTransforms() {
+        return columnTransforms;
+    }
+    
+    public void addColumnTransform(String name, IColumnTransform transform) {
+        columnTransforms.put(name, transform);
+    }
 
     class TransformTableMapper implements RowMapper<TransformTable> {
         public TransformTable mapRow(ResultSet rs, int rowNum) throws SQLException {

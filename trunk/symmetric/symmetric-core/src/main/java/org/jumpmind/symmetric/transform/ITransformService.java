@@ -5,6 +5,10 @@ import java.util.Map;
 
 public interface ITransformService {
     
+    public Map<String, IColumnTransform> getColumnTransforms();
+    
+    public void addColumnTransform(String name, IColumnTransform transform);
+    
     public Map<String, List<TransformTable>> findTransformsFor(String nodeGroupId, boolean useCache);
     
     public List<TransformTable> getTransformTables();
