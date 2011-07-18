@@ -27,13 +27,14 @@ public class TransformColumn {
                 return "*";
             }
         }
+
     }
 
     protected String transformId;
     protected String sourceColumnName;
     protected String targetColumnName;
     protected boolean pk;
-    protected String transformType;
+    protected String transformType = "none";
     protected String transformExpression;
     protected int transformOrder;
     protected IncludeOnType includeOn = IncludeOnType.ALL;
