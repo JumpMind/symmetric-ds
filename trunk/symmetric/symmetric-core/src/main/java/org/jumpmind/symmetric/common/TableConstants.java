@@ -31,6 +31,8 @@ public class TableConstants {
     public static final String SYM_TRIGGER = "trigger";
     public static final String SYM_TRIGGER_ROUTER = "trigger_router";
     public static final String SYM_ROUTER = "router";
+    public static final String SYM_TRANSFORM_TABLE = "transform_table";
+    public static final String SYM_TRANSFORM_COLUMN = "transform_column";
     public static final String SYM_TRIGGER_HIST = "trigger_hist";
     public static final String SYM_CHANNEL = "channel";
     public static final String SYM_NODE_GROUP = "node_group";

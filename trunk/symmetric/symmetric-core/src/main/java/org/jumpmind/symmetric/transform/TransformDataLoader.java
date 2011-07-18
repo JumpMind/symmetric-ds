@@ -26,6 +26,8 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
     private IDbDialect dbDialect;
 
     private IParameterService parameterService;
+    
+    private String tablePrefix;
 
     public TransformDataLoader() {
         super(true);
@@ -55,30 +57,33 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
 
     protected boolean transform(DmlType dmlType, IDataLoaderContext context, String[] columnNames,
             String[] columnValues, String[] keyNames, String[] keyValues) {
-        List<TransformTable> transformationsToPerform = findTablesToTransform(context
-                .getTableTemplate().getFullyQualifiedTableName(), parameterService.getNodeGroupId());
-        if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
-            Map<String, String> sourceValues = toMap(columnNames, columnValues);
-            Map<String, String> oldSourceValues = toMap(columnNames, context.getOldData());
-            Map<String, String> sourceKeyValues = sourceValues;
-            if (keyNames != null) {
-                sourceKeyValues = toMap(keyNames, keyValues);
-            }
-            try {
-                for (TransformTable transformation : transformationsToPerform) {
-                    TransformedData targetData = create(context, dmlType, transformation,
-                            sourceKeyValues, oldSourceValues);
-                    if (perform(context, targetData, transformation, sourceValues, oldSourceValues)) {
-                        apply(context, targetData);
-                    }
+        if (!context.getTableName().toLowerCase().startsWith(tablePrefix)) {
+            List<TransformTable> transformationsToPerform = findTablesToTransform(context
+                    .getTableTemplate().getFullyQualifiedTableName(),
+                    parameterService.getNodeGroupId());
+            if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
+                Map<String, String> sourceValues = toMap(columnNames, columnValues);
+                Map<String, String> oldSourceValues = toMap(columnNames, context.getOldData());
+                Map<String, String> sourceKeyValues = sourceValues;
+                if (keyNames != null) {
+                    sourceKeyValues = toMap(keyNames, keyValues);
                 }
-            } catch (IgnoreRowException e) {
-                // Do nothing. We are suppose to ignore this row.
+                try {
+                    for (TransformTable transformation : transformationsToPerform) {
+                        TransformedData targetData = create(context, dmlType, transformation,
+                                sourceKeyValues, oldSourceValues);
+                        if (perform(context, targetData, transformation, sourceValues,
+                                oldSourceValues)) {
+                            apply(context, targetData);
+                        }
+                    }
+                } catch (IgnoreRowException e) {
+                    // Do nothing. We are suppose to ignore this row.
+                }
+                return true;
             }
-            return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     protected boolean perform(IDataLoaderContext context, TransformedData data,
@@ -142,7 +147,8 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
         try {
             String value = transformColumn.getSourceColumnName() != null ? sourceValues
                     .get(transformColumn.getSourceColumnName()) : null;
-            IColumnTransform transform = transformService.getColumnTransforms().get(transformColumn.getTransformType());
+            IColumnTransform transform = transformService.getColumnTransforms().get(
+                    transformColumn.getTransformType());
             if (transform != null) {
                 String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
                 value = transform.transform(context, transformColumn, data, value, oldValue);
@@ -225,5 +231,9 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+    
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
     }
 }
