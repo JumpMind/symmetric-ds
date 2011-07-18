@@ -21,6 +21,8 @@
                 <value>$[sym.sync.table.prefix]_trigger</value>
                 <value>$[sym.sync.table.prefix]_router</value>
                 <value>$[sym.sync.table.prefix]_trigger_router</value>
+                <value>$[sym.sync.table.prefix]_transform_table</value>
+                <value>$[sym.sync.table.prefix]_transform_column</value>
                 <value>$[sym.sync.table.prefix]_node_identity</value>
             </list>
         </entry>
@@ -64,6 +66,12 @@
                     <value>1=1</value>
                 </entry>
                 <entry key="$[sym.sync.table.prefix]_trigger_router">
+                    <value>1=1</value>
+                </entry>
+                <entry key="$[sym.sync.table.prefix]_transform_table">
+                    <value>1=1</value>
+                </entry>
+                <entry key="$[sym.sync.table.prefix]_transform_column">
                     <value>1=1</value>
                 </entry>
                 <entry key="$[sym.sync.table.prefix]_node">
