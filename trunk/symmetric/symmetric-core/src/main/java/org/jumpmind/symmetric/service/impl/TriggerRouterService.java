@@ -118,6 +118,21 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         jdbcTemplate.update(getSql("deleteTriggerHistorySql"), history.getTriggerHistoryId());
     }
     
+    public void createTriggersOnChannelForTables(String channelId, String catalogName, String schemaName, List<String> tables, String lastUpdateBy) {
+        for (String table : tables) {
+            Trigger trigger = new Trigger();
+            trigger.setChannelId(channelId);
+            trigger.setSourceCatalogName(catalogName);
+            trigger.setSourceSchemaName(schemaName);
+            trigger.setSourceTableName(table);
+            trigger.setTriggerId(table);
+            trigger.setLastUpdateBy(lastUpdateBy);
+            trigger.setLastUpdateTime(new Date());
+            trigger.setCreateTime(new Date());
+            saveTrigger(trigger);
+        }
+    }
+    
     public void createTriggersOnChannelForTables(String channelId, Set<Table> tables, String lastUpdateBy) {
         for (Table table : tables) {
             Trigger trigger = new Trigger();
