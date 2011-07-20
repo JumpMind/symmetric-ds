@@ -568,4 +568,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         return AppUtils.find(Constants.TRANSFORM_SERVICE, this);
     }
 
+    public String getTablePrefix() {
+        return getParameterService().getTablePrefix();
+    }
 }

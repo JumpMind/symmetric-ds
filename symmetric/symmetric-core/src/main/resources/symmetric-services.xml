@@ -32,6 +32,7 @@
     <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService" scope="singleton">
         <property name="sql" ref="parameterServiceSql" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
     </bean>
 
     <bean id="abstractService" abstract="true" class="org.jumpmind.symmetric.service.impl.AbstractService">

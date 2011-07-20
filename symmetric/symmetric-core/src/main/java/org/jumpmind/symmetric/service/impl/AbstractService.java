@@ -127,5 +127,9 @@ abstract public class AbstractService implements IService, ISqlProvider {
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
     }
+    
+    public String getTablePrefix() {
+        return tablePrefix;
+    }
 
 }
