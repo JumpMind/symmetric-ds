@@ -17,9 +17,9 @@ public class TransformTable {
     protected String targetNodeGroupId;
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
-    protected DeleteAction deleteAction;
-    protected boolean updateFirst;
-    protected int transformOrder;
+    protected DeleteAction deleteAction = DeleteAction.NONE;
+    protected boolean updateFirst = false;
+    protected int transformOrder = 0;
 
     public String getFullyQualifiedSourceTableName() {
         return Table.getFullyQualifiedTableName(sourceTableName, sourceSchemaName,
