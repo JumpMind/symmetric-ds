@@ -1,0 +1,192 @@
+<?xml version="1.0"?>
+<!DOCTYPE database SYSTEM "http://db.apache.org/torque/dtd/database.dtd">
+
+<database name="testdb">
+
+    <table name="test_very_long_table_name_1234">
+        <column name="id" type="VARCHAR" size="100" required="true" primaryKey="true" />
+    </table>
+
+    <table name="test_triggers_table">
+        <column name="id" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
+        <column name="string_one_value" type="VARCHAR" size="50" />
+        <column name="string_two_value" type="VARCHAR" size="255" />
+        <column name="long_String_Value" type="LONGVARCHAR" />
+        <column name="time_Value" type="TIMESTAMP" />
+        <column name="date_Value" type="DATE" />
+        <column name="boolean_Value" type="BIT" size="1" />
+        <column name="bigInt_Value" type="BIGINT" />
+        <column name="decimal_Value" type="DECIMAL" />
+    </table>
+
+    <table name="test_dataloader_table">
+        <column name="string_value" type="VARCHAR" size="50" />
+        <column name="string_required_value" type="VARCHAR" size="50" required="true" />
+        <column name="char_value" type="CHAR" size="50" />
+        <column name="char_required_value" type="CHAR" size="50" required="true" />
+        <column name="date_value" type="DATE" />
+        <column name="id" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
+        <column name="time_value" type="TIMESTAMP" />
+        <column name="boolean_value" type="BIT" size="1" />
+        <column name="integer_value" type="INTEGER" />
+        <column name="decimal_value" type="DECIMAL" size="10,2" />
+        <column name="double_value" type="DOUBLE" />
+    </table>
+
+    <table name="test_order_header">
+        <column name="order_id" type="VARCHAR" size="50" primaryKey="true" required="true" />
+        <column name="customer_id" type="INTEGER" required="true" />
+        <column name="status" type="CHAR" size="1" />
+        <column name="deliver_date" type="DATE" />
+    </table>
+    
+    <table name="test_column_mapping">
+      <column name="id" type="VARCHAR" size="50" primaryKey="true" required="true"/>
+      <column name="column1" type="VARCHAR" size="50" />
+      <column name="column2" type="VARCHAR" size="50" />
+      <column name="field1" type="INTEGER" />
+      <column name="time1" type="TIMESTAMP" />    
+    </table>    
+       
+    <table name="test_order_detail">
+        <column name="order_id" type="VARCHAR" size="50" primaryKey="true" required="true" />
+        <column name="line_number" type="INTEGER" required="true" primaryKey="true" />
+        <column name="item_type" type="CHAR" size="5" required="true" />
+        <column name="item_id" type="VARCHAR" size="20" required="true" />
+        <column name="quantity" type="INTEGER" />
+        <column name="price" type="DECIMAL" size="10,2" />
+    </table>
+
+    <table name="test_store_status">
+        <column name="store_id" type="CHAR" size="5" primaryKey="true" required="true" />
+        <column name="register_id" type="CHAR" size="3" primaryKey="true" required="true" />
+        <column name="status" type="INTEGER" />
+    </table>
+
+    <table name="test_key_word">
+        <column name="id" type="INTEGER" primaryKey="true" required="true" />
+    </table>
+
+    <table name="test_customer">
+        <column name="customer_id" type="INTEGER" primaryKey="true" required="true" />
+        <column name="name" type="VARCHAR" size="50" required="true" />
+        <column name="is_active" type="BOOLEANCHAR" size="1" />
+        <column name="status" type="VARCHAR" size="20" />
+        <column name="address" type="VARCHAR" size="50" required="true" />
+        <column name="city" type="VARCHAR" size="50" required="true" />
+        <column name="state" type="VARCHAR" size="50" required="true" />
+        <column name="zip" type="INTEGER" />
+        <column name="entry_timestamp" type="TIMESTAMP" />
+        <column name="entry_time" type="TIME" />
+        <column name="notes" type="CLOB" />
+        <column name="icon" type="BLOB" />
+    </table>
+
+    <table name="ONE_COLUMN_TABLE">
+        <column name="MY_ONE_COLUMN" type="INTEGER" primaryKey="true" required="true" />
+    </table>
+
+    <table name="NO_PRIMARY_KEY_TABLE">
+        <column name="ONE_COLUMN" type="INTEGER" required="true" />
+        <column name="TWO_COLUMN" type="INTEGER" required="true" />
+        <column name="THREE_COLUMN" type="VARCHAR" size="50" required="true" />
+    </table>
+
+    <table name="INITIAL_LOAD_FROM_CLIENT_TABLE">
+        <column name="ID" type="INTEGER" primaryKey="true" required="true" />
+        <column name="DATA" type="VARCHAR" size="10" />
+    </table>
+
+    <table name="test_sync_incoming_batch">
+        <column name="ID" type="INTEGER" primaryKey="true" required="true" />
+        <column name="DATA" type="VARCHAR" size="10" />
+    </table>
+
+    <table name="test_sync_column_level">
+        <column name="id" type="INTEGER" primaryKey="true" required="true" />
+        <column name="string_value" type="VARCHAR" size="50" />
+        <column name="time_value" type="TIMESTAMP" />
+        <column name="date_value" type="DATE" />
+        <column name="bigint_value" type="BIGINT" />
+        <column name="decimal_value" type="DECIMAL" size="10,2" />
+    </table>
+
+    <table name="TEST_ALL_CAPS">
+        <column name="ALL_CAPS_ID" type="INTEGER" primaryKey="true" required="true" />
+        <column name="NAME" type="VARCHAR" size="50" required="true" />
+    </table>
+
+    <table name="Test_Mixed_Case">
+        <column name="Mixed_Case_Id" type="INTEGER" primaryKey="true" required="true" />
+        <column name="Name" type="VARCHAR" size="50" required="true" />
+    </table>
+
+    <table name="TEST_XML_PUBLISHER">
+        <column name="ID1" type="INTEGER" primaryKey="true" required="true" />
+        <column name="ID2" type="INTEGER" required="true" />
+        <column name="DATA1" type="VARCHAR" size="10" />
+        <column name="DATA2" type="INTEGER" />
+        <column name="DATA3" type="TIMESTAMP" />
+    </table>
+
+    <table name="TEST_ADD_DL_TABLE_1">
+        <column name="PK1" type="VARCHAR" size="100" primaryKey="true" required="true" />
+        <column name="PK2" type="VARCHAR" size="100" primaryKey="true" required="true" />
+        <column name="ADD1" type="DECIMAL" size="10" />
+        <column name="ADD2" type="DECIMAL" size="10,2" />
+        <column name="ADD3" type="INTEGER" />
+        <column name="OVR1" type="DECIMAL" size="10,2" />
+        <column name="OVR2" type="INTEGER" />
+        <column name="OVR3" type="VARCHAR" size="10" />
+        <column name="NADA1" type="INTEGER" />
+    </table>
+
+    <table name="TEST_ADD_DL_TABLE_2">
+        <column name="PK1" type="VARCHAR" size="100" primaryKey="true" required="true" />
+        <column name="ADD1" type="DECIMAL" size="10" />
+    </table>
+
+    <table name="TEST_TARGET_TABLE_A">
+        <column name="ID_FIELD" type="VARCHAR" size="100" primaryKey="true" required="true" />
+        <column name="DESC_FIELD" type="VARCHAR" />
+    </table>
+
+    <table name="TEST_TARGET_TABLE_B">
+        <column name="ID_FIELD" type="VARCHAR" size="100" primaryKey="true" required="true" />
+        <column name="DESC_FIELD" type="VARCHAR" />
+    </table>
+
+    <table name="TEST_CHANGING_COLUMN_NAME">
+        <column name="ID1" type="VARCHAR" size="100" primaryKey="true" required="true" />
+        <column name="TEST" type="DECIMAL" size="10" />
+    </table>
+    
+    <table name="TEST_ROUTING_DATA_1">
+        <column name="PK" type="INTEGER" primaryKey="true"  autoIncrement="true" required="true" />
+        <column name="ROUTING_INT" type="INTEGER" />
+        <column name="ROUTING_VARCHAR" type="VARCHAR" size="10" />
+        <column name="DATA_BLOB" type="BLOB" />
+        <column name="MY_TIME" type="TIMESTAMP" />
+    </table>
+    
+    <table name="TEST_ROUTING_DATA_2">
+        <column name="PK" type="INTEGER" primaryKey="true" autoIncrement="true" required="true" />
+        <column name="ROUTING_INT" type="INTEGER" />
+        <column name="ROUTING_VARCHAR" type="VARCHAR" size="10" />
+        <column name="DATA_BLOB" type="BLOB" />
+        <column name="MY_TIME" type="TIMESTAMP" />
+    </table>    
+    
+    <table name="TEST_ROUTING_DATA_SUBTABLE">
+        <column name="PK" type="INTEGER" primaryKey="true"  autoIncrement="true" required="true" />
+        <column name="FK" type="INTEGER" />
+    </table>
+    
+    <table name="TEST_LOOKUP_TABLE">
+        <column name="COLUMN_ONE" type="VARCHAR" size="10" />
+        <column name="COLUMN_TWO" type="VARCHAR" size="10" />
+    </table>    
+        
+        
+
+</database>
