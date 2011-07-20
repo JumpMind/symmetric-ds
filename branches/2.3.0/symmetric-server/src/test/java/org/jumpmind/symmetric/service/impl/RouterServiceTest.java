@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
@@ -38,8 +39,8 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.route.DataRefRouteReader;
 import org.jumpmind.symmetric.route.ChannelRouterContext;
+import org.jumpmind.symmetric.route.DataRefRouteReader;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Test;
@@ -52,9 +53,9 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
     private static final String SELECT_COUNT_FROM_SYM_OUTGOING_BATCH_WHERE_NOT = "select count(*) from sym_outgoing_batch where status = 'NE' and node_id!=?";
     private static final String SELECT_COUNT_FROM_SYM_OUTGOING_BATCH = "select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?";
-    final static String TEST_TABLE_1 = "TEST_ROUTING_DATA_1";
-    final static String TEST_TABLE_2 = "TEST_ROUTING_DATA_2";
-    final static String TEST_SUBTABLE = "TEST_ROUTING_DATA_SUBTABLE";
+    final static String TEST_TABLE_1 = "test_routing_data_1";
+    final static String TEST_TABLE_2 = "test_routing_data_2";
+    final static String TEST_SUBTABLE = "test_routing_data_subtable";
 
     final static Node NODE_GROUP_NODE_1 = new Node("00001",TestConstants.TEST_CLIENT_NODE_GROUP);
     final static Node NODE_GROUP_NODE_2 = new Node("00002",TestConstants.TEST_CLIENT_NODE_GROUP);
@@ -126,17 +127,17 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testLookupTableRouting() {
         
-        getDbDialect().truncateTable("TEST_LOOKUP_TABLE");
+        getDbDialect().truncateTable("test_lookup_table");
         
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('A',?)",NODE_GROUP_NODE_1.getExternalId());
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('B',?)",NODE_GROUP_NODE_1.getExternalId());
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('C',?)",NODE_GROUP_NODE_3.getExternalId());
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('D',?)",NODE_GROUP_NODE_3.getExternalId());
-        getJdbcTemplate().update("insert into TEST_LOOKUP_TABLE values ('D',?)",NODE_GROUP_NODE_1.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('A',?)",NODE_GROUP_NODE_1.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('B',?)",NODE_GROUP_NODE_1.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('C',?)",NODE_GROUP_NODE_3.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('D',?)",NODE_GROUP_NODE_3.getExternalId());
+        getJdbcTemplate().update("insert into test_lookup_table values ('D',?)",NODE_GROUP_NODE_1.getExternalId());
 
         TriggerRouter triggerRouter = getTestRoutingTableTrigger(TEST_TABLE_1);
         triggerRouter.getRouter().setRouterType("lookuptable");
-        triggerRouter.getRouter().setRouterExpression("LOOKUP_TABLE=TEST_LOOKUP_TABLE\nKEY_COLUMN=ROUTING_VARCHAR\nLOOKUP_KEY_COLUMN=COLUMN_ONE\nEXTERNAL_ID_COLUMN=COLUMN_TWO");        
+        triggerRouter.getRouter().setRouterExpression("LOOKUP_TABLE=test_lookup_table\nKEY_COLUMN=ROUTING_VARCHAR\nLOOKUP_KEY_COLUMN=COLUMN_ONE\nEXTERNAL_ID_COLUMN=COLUMN_TWO");        
         getTriggerRouterService().saveTriggerRouter(triggerRouter);
         getTriggerRouterService().syncTriggers();
 
@@ -697,10 +698,19 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             setUpDefaultTriggerRouterForTable1();
 
             resetBatches();
+            
+            Assert.assertEquals(1,  getDataService().findDataGaps().size());
+            
+            // route again to make sure we still only have one gap
+            getRouterService().routeData();
+            
+            Assert.assertEquals(1,  getDataService().findDataGaps().size());
 
             insertGaps(2, 1, 2);
 
             getRouterService().routeData();
+            
+            // route again to calculate gaps
             getRouterService().routeData();
 
             Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
@@ -712,6 +722,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             DataGap gap = gaps.get(0);
             Assert.assertEquals(0, gap.getEndId() - gap.getStartId());
 
+            // route again to make sure the gaps don't disappear
             getRouterService().routeData();
             getRouterService().routeData();
 
@@ -720,6 +731,83 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             gap = gaps.get(0);
             Assert.assertEquals(0, gap.getEndId() - gap.getStartId());
         }
+    }
+    
+    @Test
+    public void testGapWithGapAtBegining() {
+        if (getDbDialect().canGapsOccurInCapturedDataIds()) {
+            
+            setUpDefaultTriggerRouterForTable1();
+
+            resetBatches();
+
+            List<DataGap> gaps = getDataService().findDataGaps();
+            Assert.assertEquals(1, gaps.size());
+            
+            // evidently, derby only leaves a gap of one, no matter how many rows you insert
+            int gapsize = getDbDialect() instanceof DerbyDbDialect ? 1 : 10;
+            
+            insert(TEST_TABLE_1, gapsize, true, null, NODE_GROUP_NODE_1.getNodeId(), true);
+            insert(TEST_TABLE_1, 10, true, null, NODE_GROUP_NODE_1.getNodeId(), false);
+
+            routeAndCreateGaps();            
+
+            Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
+                    .getBatches().size());
+
+            gaps = getDataService().findDataGaps();
+
+            Assert.assertEquals(2, gaps.size());
+            DataGap gap = gaps.get(0);
+            Assert.assertEquals("The gap's start id was " + gap.getStartId() + " end id was " + gap.getEndId(), gapsize-1, gap.getEndId() - gap.getStartId());
+
+            routeAndCreateGaps();
+
+            gaps = getDataService().findDataGaps();
+            Assert.assertEquals(2, gaps.size());
+            gap = gaps.get(0);
+            Assert.assertEquals(gapsize-1, gap.getEndId() - gap.getStartId());
+        }
+    }
+    
+    @Test
+    public void testGapWithGapAtEnd() {
+        if (getDbDialect().canGapsOccurInCapturedDataIds()) {
+            
+            setUpDefaultTriggerRouterForTable1();
+
+            resetBatches();
+
+            Assert.assertEquals(1, getDataService().findDataGaps().size());
+            
+            long startId = getJdbcTemplate().queryForLong("select max(start_id) from sym_data_gap");
+            
+            getJdbcTemplate().update("update sym_data_gap set status='OK'");
+            getDataService().insertDataGap(new DataGap(startId, startId+10));
+            getDataService().insertDataGap(new DataGap(startId+11,5000000));
+            
+            insertGaps(8, 0, 1);
+
+            routeAndCreateGaps();
+
+            Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
+                    .getBatches().size());
+
+            List<DataGap> gaps = getDataService().findDataGaps();
+
+            Assert.assertEquals(2, gaps.size());
+            DataGap gap = gaps.get(0);
+            Assert.assertEquals(startId+8, gap.getStartId());
+
+            routeAndCreateGaps();
+        }
+    }    
+    
+    private void routeAndCreateGaps() {
+        // one to route unrouted data
+        getRouterService().routeData();
+        // one to create gaps
+        getRouterService().routeData();
     }
 
     @Test
@@ -739,8 +827,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             time.add(Calendar.DATE, -10);
             getJdbcTemplate().update("update sym_data set create_time=?", time.getTime());
 
-            getRouterService().routeData();
-            getRouterService().routeData();
+            routeAndCreateGaps();;
 
             gaps = getDataService().findDataGaps();
             Assert.assertEquals("Gap should have expired", 1, gaps.size());
@@ -758,8 +845,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
             insertGaps(5, 3, 100);
 
-            getRouterService().routeData();
-            getRouterService().routeData();
+            routeAndCreateGaps();
 
             Assert.assertEquals(10, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
                     .getBatches().size());
@@ -768,17 +854,13 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
             Assert.assertEquals(100, gaps.size());
 
-            resetBatches();
-
-            getRouterService().routeData();
-            getRouterService().routeData();
-
-            Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
-                    .getBatches().size());
+            insertGaps(5, 3, 100);
+            
+            routeAndCreateGaps();
 
             gaps = getDataService().findDataGaps();
 
-            Assert.assertEquals(100, gaps.size());
+            Assert.assertEquals(200, gaps.size());
 
             resetGaps();
         }
@@ -793,8 +875,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         
         getJdbcTemplate().update("delete from sym_data_gap");
         
-        getRouterService().routeData();
-        getRouterService().routeData();
+        routeAndCreateGaps();
 
         Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1)
                 .getBatches().size());     
@@ -913,8 +994,10 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
 
     protected void resetBatches() {
-        getRouterService().routeData();
+        routeAndCreateGaps();
         getJdbcTemplate().update("update sym_outgoing_batch set status='OK' where status != 'OK'");
+        long startId = getJdbcTemplate().queryForLong("select max(start_id) from sym_data_gap");
+        getJdbcTemplate().update("update sym_data_gap set status='OK' where start_id != ?", startId);
     }
 
     protected int countBatchesForChannel(OutgoingBatches batches, NodeChannel channel) {
