@@ -88,17 +88,26 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                 public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
                     long lastDataId = -1;
                     while (rs.next()) {
-                        long dataId = rs.getLong(1);
-                        if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
+                        long dataId = rs.getLong(1);                        
+                        if (lastDataId == -1 && dataGap.getStartId() < dataId ) {
+                            // there was a new gap at the start
+                            dataService.insertDataGap(new DataGap(dataGap.getStartId(),dataId -1));
+                        } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
                                 && lastDataId != dataId) {
-                            // found a gap
+                            // found a gap somewhere in the existing gap
                             dataService.insertDataGap(new DataGap(lastDataId + 1, dataId - 1));
                         }
                         lastDataId = dataId;
                     }
                     
+                    // if we found data in the gap
                     if (lastDataId != -1) {
+                        if (!lastGap && lastDataId < dataGap.getEndId()) {
+                            dataService.insertDataGap(new DataGap(lastDataId + 1, dataGap.getEndId()));
+                        }
                         dataService.updateDataGap(dataGap, DataGap.Status.OK);
+                        
+                    // if we did not find data in the gap and it was not the last gap
                     } else if (!lastGap) {
                         if (dataService.countDataInRange(dataGap.getStartId() - 1,
                                 dataGap.getEndId() + 1) == 0) {
