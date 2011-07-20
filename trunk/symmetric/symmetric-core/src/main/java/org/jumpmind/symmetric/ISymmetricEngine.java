@@ -246,5 +246,7 @@ public interface ISymmetricEngine {
     public DeploymentType getDeploymentType();
     
     public ITransformService getTransformService();
+    
+    public String getTablePrefix();
 
 }

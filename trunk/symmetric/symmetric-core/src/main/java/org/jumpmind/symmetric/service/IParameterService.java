@@ -97,4 +97,5 @@ public interface IParameterService {
      */
     public String getSyncUrl();
 
+    public String getTablePrefix();
 }
