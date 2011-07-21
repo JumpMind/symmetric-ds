@@ -409,7 +409,7 @@
         <column name="target_schema_name" type="VARCHAR" size="50"  description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
         <column name="target_table_name" type="VARCHAR" size="50"  description="Optional name for a target table.  Use this if the target table name is different than the source." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The target node group that this transformation belongs to, such as 'store'." />
-        <column name="update_first" type="BOOLEANINT" size="1" default="0" description="If true, the target actions are attempted as updates first, regardless of the source operation."/>
+        <column name="update_first" type="BOOLEANINT" size="1" default="0" description="If true, the target actions are attempted as updates first, regardless of whether the source operation was an insert or an update."/>
         <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
     </table>
@@ -420,7 +420,7 @@
         <column name="target_column_name" type="VARCHAR" size="50" required="true" primaryKey="true" description="Name of the target column." />
         <column name="source_column_name" type="VARCHAR" size="50" description="Name of the source column." />
         <column name="pk" type="BOOLEANINT" size="1" default="0" description="Indicates whether this mapping defines a primary key to be used to identify the target row.  At least one row must be defined as a pk for each transform_id."/>
-        <column name="transform_type" type="VARCHAR" size="50"  description="The name of a specific type of transform.  Custom transformers can be configured as extension points." />
+        <column name="transform_type" type="VARCHAR" size="50" default="copy"  description="The name of a specific type of transform.  Custom transformers can be configured as extension points." />
         <column name="transform_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of transform that is configured in transform_type.  See the documentation for each transformer for more details." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>        
     </table>

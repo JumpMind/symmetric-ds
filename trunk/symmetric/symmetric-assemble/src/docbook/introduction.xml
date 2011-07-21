@@ -30,6 +30,12 @@
                 logic from database-specific implementation details.
             </para>
             <para>
+            In addition to synchronization, SymmetricDS is also capable of performing fairly complex <emphasis>transformations</emphasis> of
+            data as the synchronization data is loaded into a target database.  The transformations can be used to merge source data,
+            make multiple copies of source data across multiple target tables, set defaults in the target tables, etc.  The types of transformation
+            can also be extended to create even more custom transformations. 
+            </para>
+            <para>
                 SymmetricDS is extendable through extension points.  Extension points are custom, reusable Java code that are
                 configured via XML.  Extension points hook into key points in the life-cycle of a synchronization to allow custom 
                 behavior to be injected.  Extension points allow custom behavior such as: publishing data to other sources, transforming data,

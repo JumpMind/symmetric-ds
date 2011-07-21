@@ -887,5 +887,147 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         method which takes a <literal>node_id</literal> as an argument.
         </para>
     </section>
-       
+  
+    <section id="transform-data">
+        <title>Transforming Data</title>
+        <para>
+        New to SymmetricDS 2.4, SymmetricDS is now able to transform synchronized data as it is loaded into the target database through
+        configuration.  With this new feature you can, for example:
+        </para>
+        <itemizedlist>
+                <listitem>
+                    <para>Copy a column from a source table to two (or more) target table columns</para>
+                </listitem>
+                <listitem>
+                    <para>Merge columns from two or more source tables into a single row in a target table</para>
+                </listitem>
+                <listitem>
+                    <para>Insert constants in columns in target tables based on source data synchronizations</para>
+                </listitem>
+                <listitem>
+                    <para>Apply a Bean Shell script to achieve a custom transform when loading into the target database.</para>
+                </listitem>
+         </itemizedlist>
+         <para>
+         These transformations take place on the target, as data is being loaded, but they are initiated due to existence of a source
+         synchronization trigger.  The source trigger creates the synchronization data, while the transformation configuration decides
+         what to do with the sychronization data once it reaches the target.  You have the flexibility of defining different transformation behavior depending on whether the source
+         change that triggered the synchronization was an Insert, Update, or Delete.  In the case of Delete, you even have options on what exactly to do on the target side, 
+         be it a delete of a row, setting columns to specific values, or absolutely nothing at all.
+         </para>
+         <para>
+         A few key concepts are important to keep in mind to understand how SymmetricDS performs transformations.  The first concept is that of the
+         "source operation" or "source DML type".  When a transformation occurs, it is based on the DML type of the operation that took place on the source table itself, be it 
+         an Insert, an Update, or a Delete.  Your transformations can be set up to act based on a particular source DML type, or any DML type.  When transforming, by
+         default the action taken on the target matches that of the action taken on the row in the source (although this behavior can be altered through configuration if needed).
+         </para>
+         <para>
+         Another important concept is the way in which transforms are applied.  Each source operation may map to one or more transforms and result in one
+         or more operations on the target tables.  Each of these target operations are performed as independent operations and must be "complete" from a SQL perspective.  In other words, you
+         must define columns for the transformation that are sufficient to fill in any primary key or other required data in the target table if the source operation
+         was an Insert, for example.
+         </para>  
+        <section id="transform-data-tables">
+        <title>Transform Configuration Tables</title>
+        
+        <para>
+        SymmetricDS stores its transformation configuration in two configuration tables,  <xref linkend="table_transform_table" xrefstyle="table"/> and  
+        <xref linkend="table_transform_column" xrefstyle="table"/>.  Defining a transformation involves configuration in both tables, with the first table
+        defining which source and destination table is involved, and the second table defining the columns involved in the transformation and the behavior of
+        the data for those columns.  We will explain the various options in both tables, explain how the transformation loader works, and then end with a series of examples.
+        </para>
+        <para>
+        To define a transformation, you will first define the source table and target table that applies to a particular transformation.  The source and target tables, along with
+        a unique identifier (the transform_id column) are defined in <xref linkend="table_transform_table" xrefstyle="table"/>.  In addition, you will specify the 
+        target_node_group_id to which the transform will apply.  All four of these values are required.
+        </para>
+        
+        <para>
+        Three additional configuration settings are also defined at the source-target table level:  the order of the transformations, the behavior when deleting, and whether an update should
+        always be attempted first.
+        <itemizedlist>
+            <listitem>transform_order:  For a single source operation that is mapped to a transformation,
+         there could be more than one target operation that takes place.  You may control the order in which the transformations are applied
+         through a configuration parameter defined for each source-target table combination.  This might be important, for example, if
+         the foreign key relationships on the target tables require you to execute the transformations in a particular order.         
+            </listitem>
+            <listitem>delete_action: When a source operation of Delete takes place, you have the option of three different ways to respond to the delete.  The options include:
+             <itemizedlist>
+                <listitem>
+                NONE - The delete results in no target changes.
+                </listitem>
+                <listitem>
+                DEL_ROW - The delete results in a delete of the row.
+                </listitem>
+                <listitem>
+                UPDATE_COL - The delete results in an Update operation on the target which updates specific rows based on the defined transformation.
+                </listitem>
+            </itemizedlist>
+            </listitem>
+            <listitem>update_first: This option overrides the default behavior for an Insert operation.  Instead of attempting the insert first,
+            SymmetricDS will always perform an update first, and then fall back to an insert if that fails.  Note that, by default, fall back
+            logic always applies for Insert and Updates.  All you are controlling with this configuration is whether to always do an Update first, which
+            can have performance benefits under certain situations you may run into.            
+            </listitem>
+        </itemizedlist>
+        </para>
+        
+         <para>
+        For each transformation defined in <xref linkend="table_transform_table" xrefstyle="table"/>, the columns to be transformed (and how they are transformed) are defined
+        in <xref linkend="table_transform_column" xrefstyle="table"/>.  This column-level table typically has several rows for each transformation id, each of which defines
+        the source column name, the target column name, as well as the following details:
+          <itemizedlist>
+                <listitem>
+                include_on:  Defines whether this entry applies to source operations of Insert (I), Update (U), or Delete (D), or any source operation.
+                </listitem>
+                <listitem>
+                pk:  Indicates that this mapping is used to define the "primary key" for identifying the target row.  This is used to define the "where" clause
+                when an Update or Delete on the target is occurring.
+                </listitem>
+                <listitem>
+                transform_type, transform_expression:  Specifies how the data is modified, if at all.  The default available transform types are discussed below.
+                </listitem>
+                <listitem>
+                transform_order: In the event there are more than one column to transform, this defines the relative order in which the transformations are applied.
+                </listitem>
+                </itemizedlist>
+        </para>
+        </section>
+        
+        <section id="transform-data-types">
+        <title>Transformation Types</title>
+            <para> There are several pre-defined transform types available in SymmetricDS.  Additional ones can be defined by creating and configured an
+             extension point which implements the <code>IColumnTransform</code> interface.  The pre-defined transform types include the following (the transform_type
+             entry is shown in parenthesis):
+             <itemizedlist>
+                <listitem>
+                    Copy Column Transform ('copy'):  This transformation type copies the source column value to the target column.  This is the default behavior.
+                </listitem>
+                <listitem>
+                    Constant Transform ('const'):  This transformation type allows you to map a constant value to the given target column.  The constant itself is placed in transform_expression.   
+                </listitem>
+                <listitem>
+                    Additive Transform ('additive'): This transformation type is used for numeric data.  It computes the change between the old and new values on the source
+                    and then adds (or subtracts) the value from the existing value in the target column.  For example, if the source column changed from a 2 to a 4, and the target
+                    column is currently 10, the effect of the transform will to change the target column to a value of 12 ( 10+(4-2) => 12 ).
+                </listitem>
+                <listitem>
+                    Substring Transform ('substr'):  This transformation computes a substring of the source column data and uses the substring as the target column value.  The transform_expression can
+                    be a single integer (n, the beginning index), or a pair of integers (n,m - the beginning and ending index).  The transform behaves as the Java substring function
+                    would using the specified values in transform_expression.
+                </listitem>
+                  <listitem>
+                    Bean Shell Transform ('bsh'):  This transformation allows you to provide a Bean Shell script in transform_expression and executes the script at the time of transformation.
+                </listitem>                         
+             </itemizedlist>
+            </para>
+        </section>
+        
+        <section id="transform-data-examples">
+        <title>Transformation Examples</title>
+            <para>
+            merging example - update first, 
+            </para>        
+        </section>
+    </section>
 </chapter>
