@@ -1,5 +1,7 @@
 package org.jumpmind.symmetric.transform;
 
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -17,7 +19,7 @@ public class SubstrColumnTransform implements IColumnTransform {
     }
 
     public String transform(IDataLoaderContext context, TransformColumn column,
-            TransformedData data, String value, String oldValue) throws IgnoreColumnException,
+            TransformedData data, Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,
             IgnoreRowException {
         if (StringUtils.isNotBlank(value)) {
             String expression = column.getTransformExpression();

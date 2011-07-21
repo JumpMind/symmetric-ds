@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.service.impl.RegistrationServiceTest;
 import org.jumpmind.symmetric.service.impl.RouterServiceTest;
 import org.jumpmind.symmetric.service.impl.StatisticServiceTest;
 import org.jumpmind.symmetric.service.impl.TriggerRouterServiceTest;
+import org.jumpmind.symmetric.transform.TransformDataLoaderTest;
 import org.jumpmind.symmetric.web.NodeConcurrencyFilterTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +55,7 @@ import org.junit.runners.Suite.SuiteClasses;
         DataExtractorServiceTest.class, DataLoaderServiceTest.class, NodeServiceTest.class,
         OutgoingBatchServiceTest.class, ParameterServiceTest.class, PurgeServiceTest.class,
         RegistrationServiceTest.class, StatisticServiceTest.class, XmlPublisherFilterTest.class,
-        AdditiveDataLoaderFilterTest.class, DataServiceTest.class, CleanupTest.class })
+        TransformDataLoaderTest.class, AdditiveDataLoaderFilterTest.class, DataServiceTest.class, CleanupTest.class })
 /**
  * 
  */

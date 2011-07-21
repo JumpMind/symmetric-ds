@@ -66,6 +66,13 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
                 getJdbcTemplate().queryForInt(SELECT_DECIMAL_FROM_A, 1));
 
     }
+    
+    @Test
+    public void testSimpleTableBeanShellMapping() throws Exception {
+        testSimpleTableMapping();
+        Assert.assertEquals("ONE-1",
+                getJdbcTemplate().queryForObject("select longstring_a from test_transform_a where id_a=?", String.class, 1));
+    }    
 
     @Test
     public void testTwoTablesMappedToOneInsert() throws Exception {

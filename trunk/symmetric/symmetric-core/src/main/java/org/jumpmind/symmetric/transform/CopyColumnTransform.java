@@ -1,5 +1,7 @@
 package org.jumpmind.symmetric.transform;
 
+import java.util.Map;
+
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 
 public class CopyColumnTransform implements IColumnTransform {
@@ -13,8 +15,7 @@ public class CopyColumnTransform implements IColumnTransform {
     }
 
     public String transform(IDataLoaderContext context, TransformColumn column,
-            TransformedData data, String value, String oldValue) throws IgnoreColumnException,
-            IgnoreRowException {
+            TransformedData data, Map<String, String> sourceValues, String value, String oldValue) {
         return value;
     }
 

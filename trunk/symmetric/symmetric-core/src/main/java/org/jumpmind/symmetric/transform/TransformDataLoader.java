@@ -151,7 +151,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
                     transformColumn.getTransformType());
             if (transform != null) {
                 String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
-                value = transform.transform(context, transformColumn, data, value, oldValue);
+                value = transform.transform(context, transformColumn, data, sourceValues, value, oldValue);
             }
             data.put(transformColumn, value, recordAsKey);
         } catch (IgnoreColumnException e) {

@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.transform;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -22,7 +23,7 @@ public class AdditiveColumnTransform implements IColumnTransform {
     }
 
     public String transform(IDataLoaderContext context, TransformColumn column,
-            TransformedData data, String value, String oldValue) throws IgnoreColumnException,
+            TransformedData data, Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,
             IgnoreRowException {
         if (StringUtils.isNotBlank(value)) {
             BigDecimal newValue = new BigDecimal(value);

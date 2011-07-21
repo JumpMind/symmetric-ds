@@ -27,5 +27,7 @@
 		class="org.jumpmind.symmetric.transform.ConstantColumnTransform" />
 
 	<bean id="substrColumnTransform" class="org.jumpmind.symmetric.transform.SubstrColumnTransform" />
+	
+	<bean id="bshColumnTransform" class="org.jumpmind.symmetric.transform.BshColumnTransform" />
 
 </beans>
