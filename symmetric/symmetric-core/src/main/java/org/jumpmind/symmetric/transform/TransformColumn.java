@@ -34,7 +34,7 @@ public class TransformColumn {
     protected String sourceColumnName;
     protected String targetColumnName;
     protected boolean pk;
-    protected String transformType = "copy";
+    protected String transformType = CopyColumnTransform.NAME;
     protected String transformExpression;
     protected int transformOrder;
     protected IncludeOnType includeOn = IncludeOnType.ALL;

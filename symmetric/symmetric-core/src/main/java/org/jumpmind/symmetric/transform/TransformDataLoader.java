@@ -59,7 +59,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
             String[] columnValues, String[] keyNames, String[] keyValues) {
         if (!context.getTableName().toLowerCase().startsWith(tablePrefix)) {
             List<TransformTable> transformationsToPerform = findTablesToTransform(context
-                    .getTableTemplate().getFullyQualifiedTableName(),
+                    .getTableTemplate().getFullyQualifiedTableName(true),
                     parameterService.getNodeGroupId());
             if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
                 Map<String, String> sourceValues = toMap(columnNames, columnValues);
@@ -225,7 +225,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
     @Override
     public boolean isHandlingMissingTable(IDataLoaderContext context) {
         List<TransformTable> transformationsToPerform = findTablesToTransform(context
-                .getTableTemplate().getFullyQualifiedTableName(), parameterService.getNodeGroupId());
+                .getTableTemplate().getFullyQualifiedTableName(true), parameterService.getNodeGroupId());
         return transformationsToPerform != null && transformationsToPerform.size() > 0;
     }
 

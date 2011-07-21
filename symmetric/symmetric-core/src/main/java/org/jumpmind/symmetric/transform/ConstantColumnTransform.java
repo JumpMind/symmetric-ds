@@ -2,9 +2,10 @@ package org.jumpmind.symmetric.transform;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 
-public class ConstantColumnTransform implements IColumnTransform {
+public class ConstantColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
     public boolean isAutoRegister() {
         return true;

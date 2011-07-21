@@ -2,16 +2,19 @@ package org.jumpmind.symmetric.transform;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 
-public class CopyColumnTransform implements IColumnTransform {
+public class CopyColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
+    public final static String NAME = "copy";
+    
     public boolean isAutoRegister() {
         return true;
     }
 
     public String getName() {
-        return "copy";
+        return NAME;
     }
 
     public String transform(IDataLoaderContext context, TransformColumn column,

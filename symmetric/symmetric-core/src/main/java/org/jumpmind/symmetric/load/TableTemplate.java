@@ -203,9 +203,12 @@ public class TableTemplate {
         }
         return jdbcTemplate.queryForInt(st.getSql(), objectValues, st.getTypes());
     }
-    
     public String getFullyQualifiedTableName() {
-        String quote = dbDialect.getPlatform().isDelimitedIdentifierModeOn() ? dbDialect.getPlatform()
+        return getFullyQualifiedTableName(false);
+    }
+    
+    public String getFullyQualifiedTableName(boolean preventQuotes) {
+        String quote = !preventQuotes && dbDialect.getPlatform().isDelimitedIdentifierModeOn() ? dbDialect.getPlatform()
             .getPlatformInfo().getDelimiterToken() : "";
         String tableName = quote + (table != null ? table.getName() : this.tableName) + quote;
         if (!StringUtils.isBlank(schema)) {

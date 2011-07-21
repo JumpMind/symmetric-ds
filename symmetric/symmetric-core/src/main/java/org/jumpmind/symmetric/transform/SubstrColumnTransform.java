@@ -4,9 +4,10 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 
-public class SubstrColumnTransform implements IColumnTransform {
+public class SubstrColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
     protected IDbDialect dbDialect;
 

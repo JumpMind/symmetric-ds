@@ -7,10 +7,11 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class AdditiveColumnTransform implements IColumnTransform {
+public class AdditiveColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
     protected IDbDialect dbDialect;
 

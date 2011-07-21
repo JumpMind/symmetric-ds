@@ -2,11 +2,12 @@ package org.jumpmind.symmetric.transform;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 
 import bsh.Interpreter;
 
-public class BshColumnTransform implements IColumnTransform {
+public class BshColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
