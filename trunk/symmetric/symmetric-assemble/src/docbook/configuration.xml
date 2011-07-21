@@ -927,9 +927,12 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
          must define columns for the transformation that are sufficient to fill in any primary key or other required data in the target table if the source operation
          was an Insert, for example.
          </para>  
+         <para>
+         Finally, please note that the tranformation engine does rely on a source trigger / router existing to supply the source data.  The transform configuration will never be
+         used if the source table and target node group does not have a defined trigger / router combination for the source table and target node group.
+         </para>
         <section id="transform-data-tables">
         <title>Transform Configuration Tables</title>
-        
         <para>
         SymmetricDS stores its transformation configuration in two configuration tables,  <xref linkend="table_transform_table" xrefstyle="table"/> and  
         <xref linkend="table_transform_column" xrefstyle="table"/>.  Defining a transformation involves configuration in both tables, with the first table
