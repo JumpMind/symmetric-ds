@@ -113,7 +113,7 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
     
     @Override
     public boolean isBlankCharColumnSpacePadded() {
-        return false;
+        return true;
     }
     
     public boolean isNonBlankCharColumnSpacePadded() {
