@@ -326,11 +326,11 @@
     <section id="defining-transformation">
       <title>Planning Data Transformations</title>
       <para>
-      SymmetricDS also provides the abilty to <emphasis>transform</emphasis> synchornized data instead of simply synchronizing it.  As you plan your
+      SymmetricDS also provides the abilty to <emphasis>transform</emphasis> synchronized data instead of simply synchronizing it.  As you plan your
       SymmetricDS implementation, make notes of cases where a data transformation is needed.  For example, your application may require
       a particular column in your source data to be mapped to two different target tables with possibly different column names.  Or, you might
       need to "merge" one ore more columns of data from two indepdentent tables into one table on the target. Or, you may want to
-      set 'default'' column values on a target table based on a particular event on the source database. All of these operations, and many more,
+      set 'default' column values on a target table based on a particular event on the source database. All of these operations, and many more,
       can be using SymmetricDS' Transformation capabilities.   
       </para>
       <para>
