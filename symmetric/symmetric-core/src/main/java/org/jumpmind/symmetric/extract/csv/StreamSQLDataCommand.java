@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
- * 
+ * Write a SQL statement out to the CSV that will be executed during the data load 
  */
 class StreamSQLDataCommand extends AbstractStreamDataCommand {
 
@@ -38,7 +38,7 @@ class StreamSQLDataCommand extends AbstractStreamDataCommand {
     }
     
     public boolean isTriggerHistoryRequired() {
-        return true;
+        return false;
     }
 
 }
