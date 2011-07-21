@@ -326,15 +326,15 @@
     <section id="defining-transformation">
       <title>Planning Data Transformations</title>
       <para>
-      SymmetricDS also provides the abilty to <emphasis>transform</emphasis> synchronized data instead of simply synchronizing it.  As you plan your
-      SymmetricDS implementation, make notes of cases where a data transformation is needed.  For example, your application may require
+      SymmetricDS also provides the abilty to <emphasis>transform</emphasis> synchronized data instead of simply synchronizing it.  
+      Your application might, for example require
       a particular column in your source data to be mapped to two different target tables with possibly different column names.  Or, you might
-      need to "merge" one ore more columns of data from two indepdentent tables into one table on the target. Or, you may want to
-      set 'default' column values on a target table based on a particular event on the source database. All of these operations, and many more,
-      can be using SymmetricDS' Transformation capabilities.   
+      need to "merge" one or more columns of data from two indepdentent tables into one table on the target. Or, you may want to
+      set default column values on a target table based on a particular event on the source database. All of these operations, and many more,
+      can be accomplished using SymmetricDS' transformation capabilities.   
       </para>
       <para>
-      From a planning perspective, make notes of any special requirements you may have for cases where data is not simply synchronized from one table to another.
+      As you plan your SymmetricDS implementation, make notes of cases where a data transformation is needed.
       Include details such as when the transformation might occur (is it only on an insert, or a delete?), which tables or columns play a part, etc.  
       Complete details of all the transformation features, including how to configure a transformation, are discussed in <xref linkend="transform-data"/>.
       </para>
