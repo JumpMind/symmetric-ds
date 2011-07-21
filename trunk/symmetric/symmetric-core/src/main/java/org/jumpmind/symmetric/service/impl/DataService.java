@@ -154,7 +154,12 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertPurgeEvent(final Node targetNode, final TriggerRouter triggerRouter, boolean isLoad) {
         String sql = dbDialect.createPurgeSqlFor(targetNode, triggerRouter);
-        insertSqlEvent(targetNode, triggerRouter.getTrigger(), sql, isLoad);
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
+                .getTriggerId());
+        Data data = new Data(history.getSourceTableName(), DataEventType.SQL, CsvUtils
+                .escapeCsvData(sql), null, history, triggerRouter.getTrigger().getChannelId(), null, null);
+        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
+                triggerRouter.getRouter().getRouterId(), isLoad);
     }
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql, boolean isLoad) {
