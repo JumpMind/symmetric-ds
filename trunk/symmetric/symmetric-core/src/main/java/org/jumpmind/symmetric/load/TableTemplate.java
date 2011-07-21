@@ -78,7 +78,7 @@ public class TableTemplate {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
         this.tableName = tableName;
-        this.schema = StringUtils.isBlank(schema) ? dbDialect.getDefaultSchema() : schema;
+        this.schema = StringUtils.isBlank(schema) ? null : schema;
         this.catalog = StringUtils.isBlank(catalog) ? null : catalog;
         this.setupColumnFilters(columnFilters, dbDialect);
         this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
