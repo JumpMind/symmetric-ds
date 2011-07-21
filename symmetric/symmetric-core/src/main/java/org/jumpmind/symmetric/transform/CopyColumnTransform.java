@@ -2,14 +2,14 @@ package org.jumpmind.symmetric.transform;
 
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 
-public class NoColumnTransform implements IColumnTransform {
+public class CopyColumnTransform implements IColumnTransform {
 
     public boolean isAutoRegister() {
         return true;
     }
 
     public String getName() {
-        return "none";
+        return "copy";
     }
 
     public String transform(IDataLoaderContext context, TransformColumn column,
