@@ -34,9 +34,6 @@ import org.junit.Test;
 public class TransformDataLoaderTest extends AbstractDataLoaderTest {
 
     private static final String SIMPLE = "SIMPLE";
-    private static final String TEST_TRANSFORM_A = "TEST_TRANSFORM_A";
-    private static final String SELECT_DECIMAL_FROM_A = "select DECIMAL_A from TEST_TRANSFORM_A where ID_A=?";
-    private static final String VERIFY_TRANSFORM_A_TABLE = "select count(*) from TEST_TRANSFORM_A where ID_A=? and S1_A=? and S2_A=?";
 
     public TransformDataLoaderTest() throws Exception {
     }
@@ -45,63 +42,83 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
     public void testSimpleTableMapping() throws Exception {
         TransformDataLoader dl = getTransformDataLoader();
         load(getSimpleTransformCsv(), null, dl, dl);
-        expectCount(1, TEST_TRANSFORM_A);
+        expectCount(1, getTestTransformA());
         Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 1, "ONE", "CONSTANT"));
+                getJdbcTemplate().queryForInt(getVerifyTransformTable(), 1, "ONE", "CONSTANT"));
+    }
+    
+    protected String getVerifyTransformTable() {
+        String quote = getDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getDbDialect().getPlatform()
+                .getPlatformInfo().getDelimiterToken() : "";
+        return "select count(*) from " + quote + "TEST_TRANSFORM_A" + quote + " where " + quote + "ID_A" + quote + "=? and " + quote + "S1_A" + quote + "=? and " + quote + "S2_A" + quote + "=?";
+    }
+    
+    protected String getSelectDecimalFromA() {
+        String quote = getDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getDbDialect().getPlatform()
+                .getPlatformInfo().getDelimiterToken() : "";
+        return "select " + quote + "DECIMAL_A" + quote + " from " + quote + "TEST_TRANSFORM_A" + quote + " where " + quote + "ID_A" + quote + "=?";
+    }
+    
+    protected String getTestTransformA() {
+        String quote = getDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getDbDialect().getPlatform()
+                .getPlatformInfo().getDelimiterToken() : "";
+        return quote + "TEST_TRANSFORM_A" + quote;
     }
     
     @Test
     public void testSimpleTableAdditiveUpdateMapping() throws Exception {
         testSimpleTableMapping();
         Assert.assertEquals(1000,
-                getJdbcTemplate().queryForInt(SELECT_DECIMAL_FROM_A, 1));
+                getJdbcTemplate().queryForInt(getSelectDecimalFromA(), 1));
         TransformDataLoader dl = getTransformDataLoader();
         load(getSimpleTransformWithAdditiveUpdateCsv("1", "10"), null, dl, dl);
-        expectCount(1, TEST_TRANSFORM_A);
+        expectCount(1, getTestTransformA());
         Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 1, "ONE", "CONSTANT"));
+                getJdbcTemplate().queryForInt(getVerifyTransformTable(), 1, "ONE", "CONSTANT"));
         Assert.assertEquals(1009,
-                getJdbcTemplate().queryForInt(SELECT_DECIMAL_FROM_A, 1));
+                getJdbcTemplate().queryForInt(getSelectDecimalFromA(), 1));
         
         load(getSimpleTransformWithAdditiveUpdateCsv("9", "8"), null, dl, dl);
         Assert.assertEquals(1008,
-                getJdbcTemplate().queryForInt(SELECT_DECIMAL_FROM_A, 1));
+                getJdbcTemplate().queryForInt(getSelectDecimalFromA(), 1));
 
     }
     
     @Test
     public void testSimpleTableBeanShellMapping() throws Exception {
+        String quote = getDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getDbDialect().getPlatform()
+                .getPlatformInfo().getDelimiterToken() : "";
         testSimpleTableMapping();
         Assert.assertEquals("ONE-1",
-                getJdbcTemplate().queryForObject("select LONGSTRING_A from TEST_TRANSFORM_A where ID_A=?", String.class, 1));
+                getJdbcTemplate().queryForObject("select " + quote + "LONGSTRING_A" + quote + " from " + quote + "TEST_TRANSFORM_A" + quote + " where " + quote + "ID_A" + quote + "=?", String.class, 1));
     }    
 
     @Test
     public void testTwoTablesMappedToOneInsert() throws Exception {
         TransformDataLoader dl = getTransformDataLoader();
         load(getTwoTablesMappedToOneInsertCsv(), null, dl, dl);
-        expectCount(2, TEST_TRANSFORM_A);
+        expectCount(2, getTestTransformA());
         Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 4, "BAMBOO", "STATUS_4"));
+                getJdbcTemplate().queryForInt(getVerifyTransformTable(), 4, "BAMBOO", "STATUS_4"));
         Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 5, "NUGGEE", "STATUS_5"));
+                getJdbcTemplate().queryForInt(getVerifyTransformTable(), 5, "NUGGEE", "STATUS_5"));
     }
 
     @Test
     public void testTwoTablesMappedToOneDeleteUpdates() throws Exception {
         TransformDataLoader dl = getTransformDataLoader();
         load(getTwoTablesMappedToOneInsertCsv(), null, dl, dl);
-        expectCount(2, TEST_TRANSFORM_A);
+        expectCount(2, getTestTransformA());
         Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 4, "BAMBOO", "STATUS_4"));
+                getJdbcTemplate().queryForInt(getVerifyTransformTable(), 4, "BAMBOO", "STATUS_4"));
         Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 5, "NUGGEE", "STATUS_5"));
+                getJdbcTemplate().queryForInt(getVerifyTransformTable(), 5, "NUGGEE", "STATUS_5"));
         load(getTwoTablesMappedToOneDeleteCsv(), null, dl, dl);
-        expectCount(2, TEST_TRANSFORM_A);
+        expectCount(2, getTestTransformA());
         Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 4, "BAMBOO", "DELETED"));
+                getJdbcTemplate().queryForInt(getVerifyTransformTable(), 4, "BAMBOO", "DELETED"));
         Assert.assertEquals(1,
-                getJdbcTemplate().queryForInt(VERIFY_TRANSFORM_A_TABLE, 5, "NUGGEE", "STATUS_5"));
+                getJdbcTemplate().queryForInt(getVerifyTransformTable(), 5, "NUGGEE", "STATUS_5"));
     }
 
     protected void expectCount(int count, String table) {

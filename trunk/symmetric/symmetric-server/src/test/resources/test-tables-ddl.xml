@@ -187,7 +187,6 @@
         <column name="column_one" type="VARCHAR" size="10" />
         <column name="column_two" type="VARCHAR" size="10" />
     </table>
-
     
     <table name="TEST_TRANSFORM_A">
         <column name="ID_A" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
