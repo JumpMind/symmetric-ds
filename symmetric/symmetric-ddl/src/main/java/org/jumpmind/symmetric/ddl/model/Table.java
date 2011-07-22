@@ -886,11 +886,11 @@ public class Table implements Serializable, Cloneable
     public Column getColumnWithName(String name) {
         Column[] columns = getColumns();
         if (columns != null) {
-        for (Column column : columns) {
-            if (column.getName().equals(name)) {
-                return column;
+            for (Column column : columns) {
+                if (column.getName().equalsIgnoreCase(name)) {
+                    return column;
+                }
             }
-        }
         }
         return null;
     }
