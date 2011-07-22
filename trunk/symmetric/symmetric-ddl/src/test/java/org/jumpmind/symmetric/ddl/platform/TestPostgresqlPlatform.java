@@ -105,11 +105,11 @@ public class TestPostgresqlPlatform extends TestPlatformBase
             "CREATE TABLE \"constraints\"\n"+
             "(\n"+
             "    \"COL_PK\"               VARCHAR(32),\n"+
-            "    \"COL_PK_AUTO_INCR\"     INTEGER UNIQUE DEFAULT nextval('constraints_COL_K_AUTO_INCR_seq'),\n"+
+            "    \"COL_PK_AUTO_INCR\"     INTEGER UNIQUE DEFAULT nextval('\"constraints_COL_K_AUTO_INCR_seq\"'),\n"+
             "    \"COL_NOT_NULL\"         BYTEA NOT NULL,\n"+
             "    \"COL_NOT_NULL_DEFAULT\" DOUBLE PRECISION DEFAULT -2.0 NOT NULL,\n"+
             "    \"COL_DEFAULT\"          CHAR(4) DEFAULT 'test',\n"+
-            "    \"COL_AUTO_INCR\"        BIGINT UNIQUE DEFAULT nextval('constraints_COL_AUTO_INCR_seq'),\n"+
+            "    \"COL_AUTO_INCR\"        BIGINT UNIQUE DEFAULT nextval('\"constraints_COL_AUTO_INCR_seq\"'),\n"+
             "    PRIMARY KEY (\"COL_PK\", \"COL_PK_AUTO_INCR\")\n"+
             ");\n",
             createTestDatabase(COLUMN_CONSTRAINT_TEST_SCHEMA));
