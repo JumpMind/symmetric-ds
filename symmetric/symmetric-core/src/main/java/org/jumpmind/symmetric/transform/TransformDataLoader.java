@@ -7,6 +7,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.DataLoaderFilterAdapter;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -26,7 +27,7 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
     private IDbDialect dbDialect;
 
     private IParameterService parameterService;
-    
+
     private String tablePrefix;
 
     public TransformDataLoader() {
@@ -151,7 +152,8 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
                     transformColumn.getTransformType());
             if (transform != null) {
                 String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
-                value = transform.transform(context, transformColumn, data, sourceValues, value, oldValue);
+                value = transform.transform(context, transformColumn, data, sourceValues, value,
+                        oldValue);
             }
             data.put(transformColumn, value, recordAsKey);
         } catch (IgnoreColumnException e) {
@@ -168,13 +170,21 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
         // symmetric fallback/recovery settings?
         switch (data.getTargetDmlType()) {
         case INSERT:
-            try {
+            Table table = tableTemplate.getTable();
+            try {                
+                if (table.hasAutoIncrementColumn()) {
+                    dbDialect.prepareTableForDataLoad(context.getJdbcTemplate(), table);
+                }
                 tableTemplate.insert(context, data.getColumnValues());
             } catch (DataIntegrityViolationException ex) {
                 data.setTargetDmlType(DmlType.UPDATE);
                 tableTemplate.setColumnNames(data.getColumnNames());
                 tableTemplate.setKeyNames(data.getKeyNames());
                 tableTemplate.update(context, data.getColumnValues(), data.getKeyValues());
+            } finally {
+                if (table.hasAutoIncrementColumn()) {
+                    dbDialect.cleanupAfterDataLoad(context.getJdbcTemplate(), table);
+                }
             }
             break;
         case UPDATE:
@@ -225,14 +235,15 @@ public class TransformDataLoader extends DataLoaderFilterAdapter implements IBui
     @Override
     public boolean isHandlingMissingTable(IDataLoaderContext context) {
         List<TransformTable> transformationsToPerform = findTablesToTransform(context
-                .getTableTemplate().getFullyQualifiedTableName(true), parameterService.getNodeGroupId());
+                .getTableTemplate().getFullyQualifiedTableName(true),
+                parameterService.getNodeGroupId());
         return transformationsToPerform != null && transformationsToPerform.size() > 0;
     }
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
-    
+
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
     }
