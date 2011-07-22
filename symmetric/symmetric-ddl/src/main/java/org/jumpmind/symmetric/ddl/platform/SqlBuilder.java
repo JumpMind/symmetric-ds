@@ -2278,7 +2278,7 @@ public abstract class SqlBuilder
             result.append("_");
             result.append(suffix);
         }
-        return shortenName(result.toString(), getMaxConstraintNameLength());
+        return shortenName(result.toString(), getMaxConstraintNameLength()).toLowerCase();
     }
 
     /**

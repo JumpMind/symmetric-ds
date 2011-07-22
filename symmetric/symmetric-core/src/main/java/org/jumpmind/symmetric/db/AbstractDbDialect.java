@@ -1475,11 +1475,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public void truncateTable(String tableName) {
+        String quote = platform.isDelimitedIdentifierModeOn() ? platform
+                .getPlatformInfo().getDelimiterToken() : "";
         boolean success = false;
         int tryCount = 5;
         while (!success && tryCount > 0) {
             try {
-                jdbcTemplate.update("truncate table " + tableName);
+                jdbcTemplate.update("truncate table " + quote + tableName + quote);
                 success = true;
             } catch (DataAccessException ex) {
                 log.warn(ex);

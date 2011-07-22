@@ -22,6 +22,19 @@ public class AdditiveColumnTransform implements IColumnTransform, IBuiltInExtens
     public String getName() {
         return "additive";
     }
+    
+    public String getFullyQualifiedTableName(String schema, String catalog, String tableName) {
+        String quote = dbDialect.getPlatform().isDelimitedIdentifierModeOn() ? dbDialect.getPlatform()
+            .getPlatformInfo().getDelimiterToken() : "";
+        tableName = quote + tableName + quote;
+        if (!StringUtils.isBlank(schema)) {
+            tableName = schema + "." + tableName;
+        }
+        if (!StringUtils.isBlank(catalog)) {
+            tableName = catalog + "." + tableName;
+        }
+        return tableName;
+    }
 
     public String transform(IDataLoaderContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,
@@ -35,10 +48,14 @@ public class AdditiveColumnTransform implements IColumnTransform, IBuiltInExtens
                     newValue = newValue.subtract(new BigDecimal(oldValue));
                     value = newValue.toString();
                 }
+                
+                String quote = dbDialect.getPlatform().isDelimitedIdentifierModeOn() ? dbDialect.getPlatform()
+                        .getPlatformInfo().getDelimiterToken() : "";
                 JdbcTemplate template = context.getJdbcTemplate();
                 StringBuilder sql = new StringBuilder(String.format("update %s set %s=%s+? where ",
-                        data.getFullyQualifiedTableName(), column.getTargetColumnName(),
-                        column.getTargetColumnName()));
+                        getFullyQualifiedTableName(data.getSchemaName(), data.getCatalogName(), data.getTableName()), 
+                        quote + column.getTargetColumnName() + quote,
+                        quote + column.getTargetColumnName() + quote));
 
                 String[] keyNames = data.getKeyNames();
                 Column[] columns = new Column[keyNames.length + 1];
@@ -48,7 +65,9 @@ public class AdditiveColumnTransform implements IColumnTransform, IBuiltInExtens
                         sql.append("and ");
                     }
                     columns[i + 1] = table.getColumnWithName(keyNames[i]);
+                    sql.append(quote);
                     sql.append(keyNames[i]);
+                    sql.append(quote);
                     sql.append("=? ");
                 }
 
