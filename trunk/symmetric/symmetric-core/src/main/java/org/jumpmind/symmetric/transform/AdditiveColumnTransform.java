@@ -65,6 +65,9 @@ public class AdditiveColumnTransform implements IColumnTransform, IBuiltInExtens
                         sql.append("and ");
                     }
                     columns[i] = table.getColumnWithName(keyNames[i]);
+                    if (columns[i] == null) {
+                        throw new NullPointerException("Could not find a column named: " + keyNames[i] + " on the target table: " + table.getName());
+                    }
                     sql.append(quote);
                     sql.append(keyNames[i]);
                     sql.append(quote);
