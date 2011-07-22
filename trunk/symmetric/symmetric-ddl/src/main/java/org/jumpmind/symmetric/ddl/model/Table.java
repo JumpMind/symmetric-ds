@@ -909,4 +909,13 @@ public class Table implements Serializable, Cloneable
             return false;
         }
     }
+    
+    public boolean hasAutoIncrementColumn() {
+        for (Column column : getColumns()) {
+            if (column.isAutoIncrement()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
