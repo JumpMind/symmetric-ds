@@ -11,12 +11,14 @@ public class BshColumnTransform implements IColumnTransform, IBuiltInExtensionPo
 
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
+    public static final String NAME = "bsh";
+    
     public boolean isAutoRegister() {
         return true;
     }
 
     public String getName() {
-        return "bsh";
+        return NAME;
     }
 
     public String transform(IDataLoaderContext context, TransformColumn column,
