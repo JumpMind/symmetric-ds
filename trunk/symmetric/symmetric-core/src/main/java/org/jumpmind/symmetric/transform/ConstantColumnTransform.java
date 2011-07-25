@@ -7,12 +7,14 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 
 public class ConstantColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
+    public static final String NAME = "const";
+    
     public boolean isAutoRegister() {
         return true;
     }
 
     public String getName() {
-        return "const";
+        return NAME;
     }
 
     public String transform(IDataLoaderContext context, TransformColumn column,

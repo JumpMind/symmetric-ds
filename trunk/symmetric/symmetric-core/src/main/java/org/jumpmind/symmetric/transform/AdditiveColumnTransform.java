@@ -13,6 +13,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class AdditiveColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
+    public static final String NAME = "additive";
+    
     protected IDbDialect dbDialect;
 
     public boolean isAutoRegister() {
@@ -20,7 +22,7 @@ public class AdditiveColumnTransform implements IColumnTransform, IBuiltInExtens
     }
 
     public String getName() {
-        return "additive";
+        return NAME;
     }
     
     public String getFullyQualifiedTableName(String schema, String catalog, String tableName) {

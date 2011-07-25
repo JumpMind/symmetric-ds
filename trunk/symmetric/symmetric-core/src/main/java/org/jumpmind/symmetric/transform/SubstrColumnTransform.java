@@ -10,13 +10,15 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 public class SubstrColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
     protected IDbDialect dbDialect;
+    
+    public static final String NAME = "substr";
 
     public boolean isAutoRegister() {
         return true;
     }
 
     public String getName() {
-        return "substr";
+        return NAME;
     }
 
     public String transform(IDataLoaderContext context, TransformColumn column,
