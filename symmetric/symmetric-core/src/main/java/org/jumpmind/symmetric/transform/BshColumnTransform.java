@@ -11,7 +11,7 @@ public class BshColumnTransform implements IColumnTransform, IBuiltInExtensionPo
 
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
-    public static final String NAME = "bsh";
+    public static final String NAME = "script";
     
     public boolean isAutoRegister() {
         return true;
