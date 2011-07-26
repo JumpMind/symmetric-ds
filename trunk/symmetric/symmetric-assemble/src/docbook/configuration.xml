@@ -1036,26 +1036,3 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         </section>
     </section>
 </chapter>
-
-
-
-
-create table s1 (
-   p1 VARCHAR(50) not null,
-   c1 VARCHAR(50),
-   c2 Integer,
-   PRIMARY KEY(p1)
-);
-
-
-create table t1 (
-   p1 VARCHAR(50) not null,
-   c1 VARCHAR(50),
-   c2 Integer,
-   c3 VARCHAR(50),
-   PRIMARY KEY(p1)
-);
-
-
-
-
