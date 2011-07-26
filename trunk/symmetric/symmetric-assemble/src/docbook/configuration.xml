@@ -676,7 +676,7 @@ values
             for the Bean Shell scripting language can be found at <ulink url="http://www.beanshell.org/">http://www.beanshell.org</ulink>. 
         </para>
         <para>
-            The router_type for a Bean Shell router is 'bsh'.  The router_expression is a valid Bean Shell script that:
+            The router_type for a Bean Shell router is 'script'.  The router_expression is a valid Bean Shell script that:
             <itemizedlist>
                 <listitem>adds node ids to the 'targetNodes' collection which is bound to the script</listitem>
                 <listitem>returns a new collection of node ids</listitem>
@@ -1036,3 +1036,26 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         </section>
     </section>
 </chapter>
+
+
+
+
+create table s1 (
+   p1 VARCHAR(50) not null,
+   c1 VARCHAR(50),
+   c2 Integer,
+   PRIMARY KEY(p1)
+);
+
+
+create table t1 (
+   p1 VARCHAR(50) not null,
+   c1 VARCHAR(50),
+   c2 Integer,
+   c3 VARCHAR(50),
+   PRIMARY KEY(p1)
+);
+
+
+
+
