@@ -26,6 +26,7 @@
         <version.hsqldb>2.2.4</version.hsqldb>
         <version.h2>1.2.140</version.h2>
         <version.postgresql>8.4-701.jdbc4</version.postgresql>
+        <version.mysql>5.1.17</version.mysql>
     </properties>
 
     <scm>
@@ -568,7 +569,7 @@
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.6</version>
+                <version>${version.mysql}</version>
             </dependency>
             <dependency>
                 <groupId>postgresql</groupId>
