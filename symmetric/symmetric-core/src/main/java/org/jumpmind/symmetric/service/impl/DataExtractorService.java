@@ -324,13 +324,25 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         int dataNotRouted = 0;
                         int dataRouted = 0;
                         ts = System.currentTimeMillis();
+                        boolean useReloadChannel = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL);
                         while (rs.next()) {                        	
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, triggerHistory2Use
-                                    .getSourceTableName(), null, triggerHistory2Use, triggerRouter.getTrigger().getChannelId(), null, null);
+                                    .getSourceTableName(), null, triggerHistory2Use, useReloadChannel ? Constants.CHANNEL_RELOAD : triggerRouter.getTrigger().getChannelId(), null, null);
+                            boolean writeData = true;
+                            String routerId = triggerRouter.getRouter().getRouterId();
+                            if (extractorFilters != null) {
+                                for (IExtractorFilter filter : extractorFilters) {
+                                    if (!filter.filterData(data, routerId, ctx)) {
+                                       writeData = false;
+                                       break;
+                                    }
+                                }
+                            }
                             DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, channel);
-                            if (!StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) || 
-                                    routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
-                                dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctxCopy);
+                            writeData &= !StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) || 
+                            routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true);
+                            if (writeData) {
+                                dataExtractor.write(writer, data, routerId, ctxCopy);
                                 dataRouted++;
                             } else {
                                 dataNotRouted++;
