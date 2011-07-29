@@ -76,6 +76,20 @@ public class CsvUtils {
         }
         return out.toString();
     }
+    
+    public static String escapeCsvData(String[] data) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
+        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);        
+        for (String s : data) {
+            try {
+                writer.write(s);
+            } catch (IOException e) {
+            }
+        }
+        writer.close();
+        return out.toString();
+    }
 
     public static int write(Writer writer, String... data) throws IOException {
         StringBuilder buffer = new StringBuilder();
