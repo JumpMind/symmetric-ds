@@ -148,7 +148,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     
     public void inactivateTriggerHistory(TriggerHistory history) {
-        jdbcTemplate.update(getSql("inactivateTriggerHistorySql"), new Object[] { history
+        jdbcTemplate.update(getSql("inactivateTriggerHistorySql"), new Object[] { history.getErrorMessage(), history
                 .getTriggerHistoryId() });
     }
 
@@ -544,10 +544,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 newHistRecord.getLastTriggerBuildReason().getCode(),
                 newHistRecord.getNameForDeleteTrigger(), newHistRecord.getNameForInsertTrigger(),
                 newHistRecord.getNameForUpdateTrigger(), newHistRecord.getSourceSchemaName(),
-                newHistRecord.getSourceCatalogName(), newHistRecord.getTriggerRowHash() },
+                newHistRecord.getSourceCatalogName(), newHistRecord.getTriggerRowHash(), newHistRecord.getErrorMessage() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP,
                         Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT });
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.VARCHAR });
     }
     
     public void deleteTriggerRouter(TriggerRouter triggerRouter) {
@@ -905,7 +905,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     hist.getSourceSchemaName(), hist.getSourceTableName(),
                     hist.getTriggerNameForDmlType(dmlType))) {
                 log.warn("TriggerHistCleanup", hist.getTriggerHistoryId());
-                deleteTriggerHistory(hist);
+                hist.setErrorMessage(ex.getMessage());
+                inactivateTriggerHistory(hist);
             }
             throw ex;
         }
@@ -1015,6 +1016,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             hist.setSourceSchemaName(rs.getString(12));
             hist.setSourceCatalogName(rs.getString(13));
             hist.setTriggerRowHash(rs.getLong(14));
+            hist.setErrorMessage(rs.getString(15));
             if (this.retMap != null) {
                 this.retMap.put((long) hist.getTriggerHistoryId(), hist);
             }
