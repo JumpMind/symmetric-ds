@@ -166,7 +166,7 @@
     </entry>    
     <entry key="inactivateTriggerHistorySql">
       <value>
-        update $[sym.sync.table.prefix]_trigger_hist set inactive_time = current_timestamp where
+        update $[sym.sync.table.prefix]_trigger_hist set inactive_time = current_timestamp, error_message=? where
         trigger_hist_id=?
       </value>
     </entry>
@@ -236,7 +236,7 @@
     </entry>
     <entry key="allTriggerHistSql">
       <value>
-        select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash
+        select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,error_message
         from $[sym.sync.table.prefix]_trigger_hist </value>
     </entry>
     <entry key="triggerHistBySourceTableWhereSql">
@@ -245,7 +245,7 @@
     <entry key="latestTriggerHistSql">
       <value>
         select
-        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash 
+        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,error_message
         from $[sym.sync.table.prefix]_trigger_hist where trigger_hist_id = (select max(trigger_hist_id)
         from $[sym.sync.table.prefix]_trigger_hist where trigger_id=?)
       </value>
@@ -253,15 +253,15 @@
     <entry key="triggerHistSql">
       <value>
         select
-        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash
+        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,error_message
         from $[sym.sync.table.prefix]_trigger_hist where trigger_hist_id = ?
       </value>
     </entry>
     <entry key="insertTriggerHistorySql">
       <value>
         insert into $[sym.sync.table.prefix]_trigger_hist
-        (trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash)
-        values(?,?,?,?,?,?,?,?,?,?,?,?,?)
+        (trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,error_message)
+        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       </value>
     </entry>
     <entry key="deleteTriggerSql">
