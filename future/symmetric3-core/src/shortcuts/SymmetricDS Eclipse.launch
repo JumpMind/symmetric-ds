@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<launchConfiguration type="org.eclipse.ui.externaltools.ProgramLaunchConfigurationType">
-<stringAttribute key="bad_container_name" value="/symmetric3-core/src/shortcuts"/>
-<stringAttribute key="org.eclipse.debug.core.ATTR_REFRESH_SCOPE" value="${workspace}"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="/usr/bin/mvn"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="-Dmaven.test.skip=true eclipse:clean eclipse:eclipse"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:/symmetric3-assemble}"/>
-</launchConfiguration>
