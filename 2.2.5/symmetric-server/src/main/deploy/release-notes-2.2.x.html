@@ -1,0 +1,229 @@
+<html>
+<body>
+
+<h1>
+Version 2.2.5
+</h1>
+        
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-438'>SYMMETRICDS-438</a>] -         SQL 2008r2 Geometry casting problem
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-444'>SYMMETRICDS-444</a>] -         OK status in outgoing batch can get overwritten by statuses of SE and LD
+</li>
+</ul>
+    
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-434'>SYMMETRICDS-434</a>] -         Put tables in quotes in triggers for the SQL Server dialect
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-436'>SYMMETRICDS-436</a>] -         Allow SQL Server collation to be set via a property for use in triggers
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-437'>SYMMETRICDS-437</a>] -         Deploy symmetric to the root of the standalone web server so that other servlets can be added to web.xml and not have to go through the SymmetricServlet
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-441'>SYMMETRICDS-441</a>] -         Add a property to set the maximum number of unprocessed outgoing batch rows to read into memory for a node
+</li>
+</ul>
+    
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-439'>SYMMETRICDS-439</a>] -         Provide a way to override the keystore password on the command line.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-440'>SYMMETRICDS-440</a>] -         Provide a way to specify the keystore type when using SSL
+</li>
+</ul>
+            
+<h1>
+Version 2.2.4
+</h1>        
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-427'>SYMMETRICDS-427</a>] -         SymmetricDS has problems when using a case sensitive Collation with SqlServer such as SQL_Latin1_General_CP437_BIN
+</li>
+</ul>
+    
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-429'>SYMMETRICDS-429</a>] -         Allow NHibernate to work with SymmetricDS
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-431'>SYMMETRICDS-431</a>] -         Fix the reloadTable() JMX method to insert all reload events for a single table (instead of only the first reload it comes across)
+</li>
+</ul>
+<h1>
+Version 2.2.3
+</h1>        
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-419'>SYMMETRICDS-419</a>] -         Sql Server blob sync across catalogs does not work because the base 64 encoding function is not fully qualified.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-420'>SYMMETRICDS-420</a>] -         Sql Server sync of tables with identity columns doesn&#39;t work when syncing across catalogs.  Table name isn&#39;t fully qualified.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-421'>SYMMETRICDS-421</a>] -         The logic for determining support for Postgres transaction identifiers is flawed
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-422'>SYMMETRICDS-422</a>] -         Line feed characters (\r and \n) can get corrupted during transfer depending on the character and the os
+</li>
+</ul>
+    
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-417'>SYMMETRICDS-417</a>] -         Allow for token substitution in target table names, schema names and catalog names
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-424'>SYMMETRICDS-424</a>] -         Keep http connection alive during long file extracts
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-425'>SYMMETRICDS-425</a>] -         default the java.io.tmpdir to ../tmp for the standalone install
+</li>
+</ul>
+        
+<h2>        Task
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-385'>SYMMETRICDS-385</a>] -         Better document SYM_OUTGOING_BATCH and error recovery in Users Guide
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-418'>SYMMETRICDS-418</a>] -         Document trigger.update.capture.changed.data.only.enabled
+</li>
+</ul>
+
+<h1>
+Version 2.2.2
+</h1>        
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-413'>SYMMETRICDS-413</a>] -         Ddlutils blows up on table in DB2
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-415'>SYMMETRICDS-415</a>] -         Wrong version of the ddlutils platform is being returned for a specific DB2 version
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-416'>SYMMETRICDS-416</a>] -         DB2 dialect is resetting auto-increments on sym_trigger_hist, _outgoing_batch, and _data every startup
+</li>
+</ul>
+    
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-414'>SYMMETRICDS-414</a>] -         Change the mis-named property: routing.max.data.to.process.per.channel to routing.largest.gap.size 
+</li>
+</ul>
+        
+<h2>        Task
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-217'>SYMMETRICDS-217</a>] -         Add build date/time to the User Guide.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-381'>SYMMETRICDS-381</a>] -         Create better documentation for initial_load_select
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-390'>SYMMETRICDS-390</a>] -         Document the new PING_BACK_ENABLED flag on SYM_TRIGGER_ROUTER
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-391'>SYMMETRICDS-391</a>] -         Explain gap detection in the users guide
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-392'>SYMMETRICDS-392</a>] -         Document the initialization procedure if an initial load is not needed
+</li>
+</ul>
+
+<h1>
+Version 2.2.1
+</h1>        
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-409'>SYMMETRICDS-409</a>] -         ojdbc6.jar doesn&#39;t work with SymmetricDS
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-410'>SYMMETRICDS-410</a>] -         The service wrapper didn&#39;t get updated for 2.2
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-411'>SYMMETRICDS-411</a>] -         Allow ddlutils to handle functional indexes by removing the logic to verify that a column exists
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-412'>SYMMETRICDS-412</a>] -         Standalone startup issue with 2.2.0
+</li>
+</ul>
+<h1>
+Version 2.2.0
+</h1>        
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-352'>SYMMETRICDS-352</a>] -         Trigger Hist row is inserted, even if the trigger generation failed. 
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-362'>SYMMETRICDS-362</a>] -         Documentation isn&#39;t being packaged during a release
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-367'>SYMMETRICDS-367</a>] -         Nodes actually pull their configuration data 2 times during registration.  It should only happen once.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-368'>SYMMETRICDS-368</a>] -         Possible to extract the wrong target schema when two tables of the same name are syncing
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-369'>SYMMETRICDS-369</a>] -         SymmetricDS doesn&#39;t start up because of xml column in postgres
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-378'>SYMMETRICDS-378</a>] -         Segmentation fault in sym_hex UDF for Firebird
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-382'>SYMMETRICDS-382</a>] -         Oracle timestamp columns should synchronize milliseconds
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-384'>SYMMETRICDS-384</a>] -         Authentification failed when using custom INodePasswordFilter
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-389'>SYMMETRICDS-389</a>] -         Fix IOfflineClientListener.  Add a few more possible exceptions that might cause offline.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-394'>SYMMETRICDS-394</a>] -         During the extract process, if there is an error, then the extract file does not get deleted.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-397'>SYMMETRICDS-397</a>] -         When initial.load.delete.first is set to true and a table that is being synchronized is missing, the initial load fails
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-399'>SYMMETRICDS-399</a>] -         22 million row initial load blew up at the very end because the stats in sym_incoming_batch became too big for the column
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-402'>SYMMETRICDS-402</a>] -         If there is an ER on the reload channel, then other channels have to be sent to correct the error
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-403'>SYMMETRICDS-403</a>] -         symmetric-ddl conflicts with apache ddlutils
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-404'>SYMMETRICDS-404</a>] -         Should always check for duplicate trigger names, not just when the trigger name is &gt; max length
+</li>
+</ul>
+    
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-212'>SYMMETRICDS-212</a>] -         Add option on sym_trigger to not record data in sym_data if none of the columns have changed
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-346'>SYMMETRICDS-346</a>] -         Build a stripped down client only distribution of SymmetricDS
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-365'>SYMMETRICDS-365</a>] -         Refactor JobManager so that a list of jobs can be retrieved and reported on
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-373'>SYMMETRICDS-373</a>] -         XmlPublisherDataRouter should only publish one message, not a message per node.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-374'>SYMMETRICDS-374</a>] -         Only use 1 database connection while loading data.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-388'>SYMMETRICDS-388</a>] -         Improve the push and pull api to return a status code instead of a boolean.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-400'>SYMMETRICDS-400</a>] -         Log the fact that a table is not found by the data loader.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-405'>SYMMETRICDS-405</a>] -         Break the purge job out into 3 different jobs to match how the job is locked.
+</li>
+</ul>
+    
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-268'>SYMMETRICDS-268</a>] -         Support array data types on Postgres
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-342'>SYMMETRICDS-342</a>] -         Add statistics at node level and at the job level.  This is follow up to the new statistics in 2.1
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-366'>SYMMETRICDS-366</a>] -         Add a sym_registration_request table that captures when a node both attempts and successfully registers
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-380'>SYMMETRICDS-380</a>] -         Add batchid element to XML published by the XML data loader and the XML data router.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-395'>SYMMETRICDS-395</a>] -         Use dbms_lob.substr during an initial load on oracle if contains_big_lob column of sym_channel is set to false
+</li>
+</ul>
+    
+<h2>        Task
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-383'>SYMMETRICDS-383</a>] -         Turn on routing.data.reader.type=gap
+</li>
+</ul>
+
+</body>
+</html>
