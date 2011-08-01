@@ -1,0 +1,42 @@
+<assembly>
+    <id>client</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <directory>../symmetric-parent</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>COPYING</include>
+                <include>COPYING.LESSER</include>
+                <include>CREDITS</include>
+                <include>NOTICE</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+    <moduleSets>
+        <moduleSet>
+            <includes>
+                <include>org.jumpmind.symmetric:symmetric-core</include>
+            </includes>
+            <binaries>
+                <unpack>false</unpack>
+                <outputDirectory>/lib</outputDirectory>
+                <dependencySets>
+                    <dependencySet>
+                        <unpack>false</unpack>
+                        <scope>runtime</scope>
+                    </dependencySet>
+                    <dependencySet>
+                        <outputDirectory>/optional</outputDirectory>
+                        <unpack>false</unpack>
+                        <scope>provided</scope>
+                        <useProjectArtifact>false</useProjectArtifact>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+    </moduleSets>
+
+</assembly>
