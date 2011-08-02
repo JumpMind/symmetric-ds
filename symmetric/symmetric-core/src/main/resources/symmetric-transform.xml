@@ -16,6 +16,13 @@
 		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
 	</bean>
 
+    <bean id="transformDataExtractor" class="org.jumpmind.symmetric.transform.TransformDataExtractor">
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="transformService" ref="transformService" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+    </bean>
+
 	<bean id="additiveColumnTransform"
 		class="org.jumpmind.symmetric.transform.AdditiveColumnTransform">
 		<property name="dbDialect" ref="dbDialect" />
