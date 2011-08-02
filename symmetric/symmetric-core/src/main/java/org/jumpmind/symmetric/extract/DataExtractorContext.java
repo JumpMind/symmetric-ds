@@ -20,20 +20,30 @@
 package org.jumpmind.symmetric.extract;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.BinaryEncoding;
+import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Holds the current state of a data extraction
  */
-public class DataExtractorContext implements Cloneable {
+public class DataExtractorContext implements Cloneable, ICacheContext {
 
     private List<String> auditRecordsWritten = new ArrayList<String>();
     private String lastTriggerHistoryId;
     private String lastRouterId;
     private OutgoingBatch batch;
     private IDataExtractor dataExtractor;
+    private IDbDialect dbDialect;
+    private Map<String,Object> cache;
+    private JdbcTemplate jdbcTemplate;
 
     public DataExtractorContext copy(IDataExtractor extractor) {
         this.dataExtractor = extractor;
@@ -41,12 +51,36 @@ public class DataExtractorContext implements Cloneable {
         try {
             newVersion = (DataExtractorContext) super.clone();
             newVersion.auditRecordsWritten = new ArrayList<String>();
+            newVersion.cache = null;
             return newVersion;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
     }
+    
+    public long getBatchId() {
+        return batch != null ? batch.getBatchId() : Constants.UNROUTED_BATCH_ID;
+    }
+    
+    public BinaryEncoding getBinaryEncoding() {
+        return dbDialect.getBinaryEncoding();
+    }
+    
+    public Map<String, Object> getContextCache() {
+        if (cache == null) {
+            cache = new HashMap<String, Object>();
+        }
+        return cache;
+    }
+    
+    public JdbcTemplate getJdbcTemplate() {
+        return jdbcTemplate;
+    }
 
+    public String getTargetNodeId() {
+        return batch != null ? batch.getNodeId() : Constants.UNKNOWN_STRING;
+    }
+    
     public List<String> getHistoryRecordsWritten() {
         return auditRecordsWritten;
     }
@@ -87,4 +121,11 @@ public class DataExtractorContext implements Cloneable {
         }
     }
 
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
+    }
+    
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 }

@@ -5,7 +5,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.ext.ICacheContext;
 
 public class SubstrColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
@@ -21,7 +21,7 @@ public class SubstrColumnTransform implements IColumnTransform, IBuiltInExtensio
         return NAME;
     }
 
-    public String transform(IDataLoaderContext context, TransformColumn column,
+    public String transform(ICacheContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,
             IgnoreRowException {
         if (StringUtils.isNotBlank(value)) {

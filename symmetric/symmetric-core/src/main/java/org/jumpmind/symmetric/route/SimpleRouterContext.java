@@ -29,12 +29,10 @@ import java.util.TreeSet;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * 
- */
 public class SimpleRouterContext implements IRouterContext {
 
     protected NodeChannel channel;
@@ -56,12 +54,16 @@ public class SimpleRouterContext implements IRouterContext {
         this.jdbcTemplate = jdbcTemplate;
         this.nodeId = nodeId;
     }
+
+    public BinaryEncoding getBinaryEncoding() {
+        return null;
+    }    
     
     public long getBatchId() {
         return -1;
     }
 
-    public String getNodeId() {
+    public String getTargetNodeId() {
         return nodeId;
     }
 

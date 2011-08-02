@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.transform;
 import java.util.Map;
 
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.ext.ICacheContext;
 
 import bsh.Interpreter;
 
@@ -21,7 +21,7 @@ public class BshColumnTransform implements IColumnTransform, IBuiltInExtensionPo
         return NAME;
     }
 
-    public String transform(IDataLoaderContext context, TransformColumn column,
+    public String transform(ICacheContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String value, String oldValue)
             throws IgnoreColumnException, IgnoreRowException {
         try {
@@ -42,7 +42,7 @@ public class BshColumnTransform implements IColumnTransform, IBuiltInExtensionPo
         }
     }
 
-    protected Interpreter getInterpreter(IDataLoaderContext context) {
+    protected Interpreter getInterpreter(ICacheContext context) {
         Interpreter interpreter = (Interpreter) context.getContextCache().get(INTERPRETER_KEY);
         if (interpreter == null) {
             interpreter = new Interpreter();
