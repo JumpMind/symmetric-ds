@@ -34,6 +34,6 @@ public interface ICacheContext {
 
     public long getBatchId();
     
-    public String getTargetNodeId();
+    public String getSourceNodeId();
         
 }

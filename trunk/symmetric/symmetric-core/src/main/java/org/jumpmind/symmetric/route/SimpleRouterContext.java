@@ -63,7 +63,7 @@ public class SimpleRouterContext implements IRouterContext {
         return -1;
     }
 
-    public String getTargetNodeId() {
+    public String getSourceNodeId() {
         return nodeId;
     }
 

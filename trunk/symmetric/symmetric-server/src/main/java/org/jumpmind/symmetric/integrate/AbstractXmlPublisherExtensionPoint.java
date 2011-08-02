@@ -147,7 +147,7 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
      *            append XML attributes to this buffer
      */
     protected void addFormattedExtraGroupAttributes(ICacheContext ctx, Element xml) {
-        xml.setAttribute("nodeid", ctx.getTargetNodeId());
+        xml.setAttribute("nodeid", ctx.getSourceNodeId());
         xml.setAttribute("batchid", Long.toString(ctx.getBatchId()));
         if (timeStringGenerator != null) {
             xml.setAttribute("time", timeStringGenerator.getTime());

@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -44,6 +45,7 @@ public class DataExtractorContext implements Cloneable, ICacheContext {
     private IDbDialect dbDialect;
     private Map<String,Object> cache;
     private JdbcTemplate jdbcTemplate;
+    private INodeService nodeService;
 
     public DataExtractorContext copy(IDataExtractor extractor) {
         this.dataExtractor = extractor;
@@ -77,8 +79,8 @@ public class DataExtractorContext implements Cloneable, ICacheContext {
         return jdbcTemplate;
     }
 
-    public String getTargetNodeId() {
-        return batch != null ? batch.getNodeId() : Constants.UNKNOWN_STRING;
+    public String getSourceNodeId() {
+        return nodeService.findIdentityNodeId();
     }
     
     public List<String> getHistoryRecordsWritten() {
@@ -128,4 +130,9 @@ public class DataExtractorContext implements Cloneable, ICacheContext {
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+    
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+    
 }
