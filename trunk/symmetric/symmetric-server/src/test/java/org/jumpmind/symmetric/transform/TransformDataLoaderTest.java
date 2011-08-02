@@ -41,7 +41,7 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
     @Test
     public void testSimpleTableMapping() throws Exception {
         TransformDataLoader dl = getTransformDataLoader();
-        load(getSimpleTransformCsv(), null, dl, dl);
+        load(getSimpleTransformCsv(), null, dl, null);
         expectCount(1, getTestTransformA());
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable(), 1, "ONE", "CONSTANT"));
@@ -71,14 +71,14 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         Assert.assertEquals(1000,
                 getJdbcTemplate().queryForInt(getSelectDecimalFromA(), 1));
         TransformDataLoader dl = getTransformDataLoader();
-        load(getSimpleTransformWithAdditiveUpdateCsv("1", "10"), null, dl, dl);
+        load(getSimpleTransformWithAdditiveUpdateCsv("1", "10"), null, dl, null);
         expectCount(1, getTestTransformA());
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable(), 1, "ONE", "CONSTANT"));
         Assert.assertEquals(1009,
                 getJdbcTemplate().queryForInt(getSelectDecimalFromA(), 1));
         
-        load(getSimpleTransformWithAdditiveUpdateCsv("9", "8"), null, dl, dl);
+        load(getSimpleTransformWithAdditiveUpdateCsv("9", "8"), null, dl, null);
         Assert.assertEquals(1008,
                 getJdbcTemplate().queryForInt(getSelectDecimalFromA(), 1));
 
@@ -96,7 +96,7 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
     @Test
     public void testTwoTablesMappedToOneInsert() throws Exception {
         TransformDataLoader dl = getTransformDataLoader();
-        load(getTwoTablesMappedToOneInsertCsv(), null, dl, dl);
+        load(getTwoTablesMappedToOneInsertCsv(), null, dl, null);
         expectCount(2, getTestTransformA());
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable(), 4, "BAMBOO", "STATUS_4"));
@@ -107,13 +107,13 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
     @Test
     public void testTwoTablesMappedToOneDeleteUpdates() throws Exception {
         TransformDataLoader dl = getTransformDataLoader();
-        load(getTwoTablesMappedToOneInsertCsv(), null, dl, dl);
+        load(getTwoTablesMappedToOneInsertCsv(), null, dl, null);
         expectCount(2, getTestTransformA());
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable(), 4, "BAMBOO", "STATUS_4"));
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable(), 5, "NUGGEE", "STATUS_5"));
-        load(getTwoTablesMappedToOneDeleteCsv(), null, dl, dl);
+        load(getTwoTablesMappedToOneDeleteCsv(), null, dl, null);
         expectCount(2, getTestTransformA());
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable(), 4, "BAMBOO", "DELETED"));

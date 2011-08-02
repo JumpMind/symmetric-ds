@@ -197,7 +197,10 @@
         <property name="sql" ref="acknowledgeServiceSql" />
     </bean>
 
-    <bean id="extractorContext" class="org.jumpmind.symmetric.extract.DataExtractorContext" scope="prototype"/>
+    <bean id="extractorContext" class="org.jumpmind.symmetric.extract.DataExtractorContext" scope="prototype">
+        <property name="dbDialect" ref="dbDialect"/>
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
 
     <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
         <property name="dbDialect" ref="dbDialect" />

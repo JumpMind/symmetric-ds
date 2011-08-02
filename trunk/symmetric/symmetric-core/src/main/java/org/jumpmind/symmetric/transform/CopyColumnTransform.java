@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.transform;
 import java.util.Map;
 
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.ext.ICacheContext;
 
 public class CopyColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
@@ -17,7 +17,7 @@ public class CopyColumnTransform implements IColumnTransform, IBuiltInExtensionP
         return NAME;
     }
 
-    public String transform(IDataLoaderContext context, TransformColumn column,
+    public String transform(ICacheContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String value, String oldValue) {
         return value;
     }

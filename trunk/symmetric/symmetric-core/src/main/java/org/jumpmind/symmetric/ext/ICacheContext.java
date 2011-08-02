@@ -21,12 +21,19 @@ package org.jumpmind.symmetric.ext;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.db.BinaryEncoding;
+import org.springframework.jdbc.core.JdbcTemplate;
+
 public interface ICacheContext {
 
     public Map<String, Object> getContextCache();
     
+    public JdbcTemplate getJdbcTemplate();
+    
+    public BinaryEncoding getBinaryEncoding();
+
     public long getBatchId();
     
-    public String getNodeId();
-    
+    public String getTargetNodeId();
+        
 }
