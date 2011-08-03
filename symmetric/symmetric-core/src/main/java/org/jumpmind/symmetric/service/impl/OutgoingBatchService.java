@@ -72,6 +72,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             batches = getOutgoingBatches(node);
             for (OutgoingBatch outgoingBatch : batches.getBatches()) {
                 outgoingBatch.setStatus(Status.OK);
+                outgoingBatch.setErrorFlag(false);
                 updateOutgoingBatch(outgoingBatch);
             }
         } while (batches.getBatches().size() > 0);
