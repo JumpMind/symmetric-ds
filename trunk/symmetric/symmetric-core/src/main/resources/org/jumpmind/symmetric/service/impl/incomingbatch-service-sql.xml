@@ -35,6 +35,11 @@
         where node_id in (:NODES) and channel_id in (:CHANNELS) and error_flag=1 and create_time &lt;= :CREATE_TIME order by create_time desc
       </value>
     </entry>    
+    <entry key="listIncomingBatchesInErrorForNodeSql">
+      <value>
+        where node_id=? and error_flag=1
+      </value>
+    </entry>    
     <entry key="findIncomingBatchErrorsSql">
       <value>
         where status = 'ER' order by batch_id
