@@ -156,33 +156,37 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         List<Expression> expressions = (List<Expression>) context.getContextCache().get(
                 KEY);
         if (expressions == null) {
-            expressions = new ArrayList<Expression>();
-            String routerExpression = router.getRouterExpression();
-            if (!StringUtils.isBlank(routerExpression)) {
-                context.getContextCache().put(KEY, expressions);
-                String[] expTokens = routerExpression.split("\r\n|\r|\n");
-                if (expTokens != null) {
-                    for (String t : expTokens) {
-                        if (!StringUtils.isBlank(t)) {
-                            String[] tokens = null;
-                            boolean equals = !t.contains("!=");
-                            if (!equals) {
-                                tokens = t.split("!=");
-                            } else {
-                                tokens = t.split("=");
-                            }
-                            if (tokens.length == 2) {
-                                expressions.add(new Expression(equals, tokens));
-                            } else {
-                                log.warn("RouterIllegalColumnMatchExpression", t, routerExpression);
-                            }
-
+            expressions = parse(router.getRouterExpression());
+            context.getContextCache().put(KEY, expressions);
+        }
+        return expressions;
+    }
+    
+    protected List<Expression> parse(String routerExpression) {
+        List<Expression> expressions = new ArrayList<Expression>();       
+        if (!StringUtils.isBlank(routerExpression)) {           
+            String[] expTokens = routerExpression.split("\r\n|\r|\n|\\s*or\\s*|\\s*OR\\s*");
+            if (expTokens != null) {
+                for (String t : expTokens) {
+                    if (!StringUtils.isBlank(t)) {
+                        String[] tokens = null;
+                        boolean equals = !t.contains("!=");
+                        if (!equals) {
+                            tokens = t.split("!=");
+                        } else {
+                            tokens = t.split("=");
                         }
+                        if (tokens.length == 2) {
+                            expressions.add(new Expression(equals, tokens));
+                        } else {
+                            log.warn("RouterIllegalColumnMatchExpression", t, routerExpression);
+                        }
+
                     }
                 }
-            } else {
-                log.warn("RouterIllegalColumnMatchExpression", routerExpression, routerExpression);
             }
+        } else {
+            log.warn("RouterIllegalColumnMatchExpression", routerExpression, routerExpression);
         }
         return expressions;
     }
