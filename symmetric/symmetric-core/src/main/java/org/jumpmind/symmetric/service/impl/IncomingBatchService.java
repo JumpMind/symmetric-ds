@@ -43,6 +43,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @see IIncomingBatchService
@@ -83,6 +84,20 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         } else {
             return new ArrayList<Date>(0);
         }
+    }
+    
+    @Transactional
+    public void markIncomingBatchesOk(String nodeId) {
+        List<IncomingBatch> batches = listIncomingBatchesInErrorFor(nodeId);
+        for (IncomingBatch incomingBatch : batches) {
+            incomingBatch.setErrorFlag(false);
+            incomingBatch.setStatus(Status.OK);
+            updateIncomingBatch(incomingBatch);
+        }        
+    }
+    
+    public List<IncomingBatch> listIncomingBatchesInErrorFor(String nodeId) {
+         return jdbcTemplate.query(getSql("selectIncomingBatchPrefixSql","listIncomingBatchesInErrorForNodeSql"), new IncomingBatchMapper(), nodeId);        
     }
     
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,

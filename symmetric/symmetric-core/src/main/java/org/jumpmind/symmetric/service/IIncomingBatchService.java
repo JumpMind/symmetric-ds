@@ -52,4 +52,8 @@ public interface IIncomingBatchService {
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve);
 
+    public void markIncomingBatchesOk(String nodeId);
+    
+    public List<IncomingBatch> listIncomingBatchesInErrorFor(String nodeId);
+
 }
