@@ -227,11 +227,9 @@
         tr.initial_load_order
       </value>
     </entry>
-    <entry key="inactiveTriggerHistoryWhereSql">
+    <entry key="activeTriggerHistSql">
       <value>
-        where trigger_id not in (
-        select tr.trigger_id from $[sym.sync.table.prefix]_trigger_router tr inner join $[sym.sync.table.prefix]_router r on tr.router_id= r.router_id inner join $[sym.sync.table.prefix]_trigger t on tr.trigger_id=t.trigger_id where r.source_node_group_id=?
-        ) and inactive_time is null
+        where inactive_time is null
       </value>
     </entry>
     <entry key="allTriggerHistSql">

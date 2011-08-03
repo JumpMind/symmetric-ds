@@ -38,6 +38,8 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  */
 public interface ITriggerRouterService {
 
+    public List<TriggerHistory> getActiveTriggerHistories();
+    
     /**
      * Return a list of triggers used when extraction configuration data during 
      * the registration process.

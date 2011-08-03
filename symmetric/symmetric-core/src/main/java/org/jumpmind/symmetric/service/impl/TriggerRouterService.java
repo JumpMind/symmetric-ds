@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -197,18 +196,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     /**
-     * Get a list of trigger histories that need to be inactivated.
+     * Get a list of trigger histories that are currently active
      */
-    protected List<TriggerHistory> getActiveTriggerHistoriesForInactivation() {
-        List<TriggerHistory> hists = jdbcTemplate.query(getSql("allTriggerHistSql",
-                "inactiveTriggerHistoryWhereSql"), new Object[] {parameterService.getNodeGroupId()}, new TriggerHistoryMapper());
-        for (Iterator<TriggerHistory> iterator = hists.iterator(); iterator.hasNext();) {
-            TriggerHistory triggerHistory = iterator.next();
-            if (triggerHistory.getSourceTableName().toLowerCase().startsWith(tablePrefix + "_")) {
-                iterator.remove();
-            }
-        }
-        return hists;
+    public List<TriggerHistory> getActiveTriggerHistories() {
+        return jdbcTemplate.query(getSql("allTriggerHistSql",
+                "activeTriggerHistSql"), new TriggerHistoryMapper());
     }
     
     private String getNewestVersionOfRootConfigChannelTableNames() {
@@ -679,8 +671,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     log.info("TriggersSynchronizing");
                     // make sure channels are read from the database
                     configurationService.reloadChannels();
-                    inactivateTriggers(sqlBuffer);
-                    updateOrCreateDatabaseTriggers(sqlBuffer, gen_always);
+                    List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+                    inactivateTriggers(triggersForCurrentNode, sqlBuffer);
+                    updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, gen_always);
                     resetTriggerRouterCacheByNodeGroupId();
                 } finally {
                     clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
@@ -691,43 +684,55 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             log.info("TriggersSynchronizingFailedLock");
         }
     }
+    
+    protected Set<String> getTriggerIdsFrom(List<Trigger> triggersThatShouldBeActive) {
+        Set<String> triggerIds = new HashSet<String>(triggersThatShouldBeActive.size());
+        for (Trigger trigger : triggersThatShouldBeActive) {
+            triggerIds.add(trigger.getTriggerId());
+        }
+        return triggerIds;
+    }
 
-    protected void inactivateTriggers(StringBuilder sqlBuffer) {
-        List<TriggerHistory> triggers = getActiveTriggerHistoriesForInactivation();
-        for (TriggerHistory history : triggers) {
-            log.info("TriggersRemoving", history.getSourceTableName());
-            dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history
-                    .getSourceSchemaName(), history.getNameForInsertTrigger(), history
-                    .getSourceTableName(), history);
-            dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history
-                    .getSourceSchemaName(), history.getNameForDeleteTrigger(), history
-                    .getSourceTableName(), history);
-            dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history
-                    .getSourceSchemaName(), history.getNameForUpdateTrigger(), history
-                    .getSourceTableName(), history);
+    protected void inactivateTriggers(List<Trigger> triggersThatShouldBeActive,
+            StringBuilder sqlBuffer) {
+        List<TriggerHistory> activeHistories = getActiveTriggerHistories();
+        Set<String> triggerIdsThatShouldBeActive = getTriggerIdsFrom(triggersThatShouldBeActive);
+        for (TriggerHistory history : activeHistories) {
+            if (!triggerIdsThatShouldBeActive.contains(history.getTriggerId())) {
+                log.info("TriggersRemoving", history.getSourceTableName());
+                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getNameForInsertTrigger(),
+                        history.getSourceTableName(), history);
+                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getNameForDeleteTrigger(),
+                        history.getSourceTableName(), history);
+                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getNameForUpdateTrigger(),
+                        history.getSourceTableName(), history);
 
-            if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                if (this.triggerCreationListeners != null) {
-                    for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                        l.triggerInactivated(null, history);
+                if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                    if (this.triggerCreationListeners != null) {
+                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                            l.triggerInactivated(null, history);
+                        }
                     }
                 }
-            }
 
-            boolean triggerExists = dbDialect.doesTriggerExist(history.getSourceCatalogName(),
-                    history.getSourceSchemaName(), history.getSourceTableName(), history
-                            .getNameForInsertTrigger());
-            triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(), history
-                    .getSourceSchemaName(), history.getSourceTableName(), history
-                    .getNameForUpdateTrigger());
-            triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(), history
-                    .getSourceSchemaName(), history.getSourceTableName(), history
-                    .getNameForDeleteTrigger());
-            if (triggerExists) {
-                log.warn("TriggersRemovingFailed", history.getTriggerId(), history
-                        .getTriggerHistoryId());
-            } else {
-                inactivateTriggerHistory(history);
+                boolean triggerExists = dbDialect.doesTriggerExist(history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getSourceTableName(),
+                        history.getNameForInsertTrigger());
+                triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getSourceTableName(),
+                        history.getNameForUpdateTrigger());
+                triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(),
+                        history.getSourceSchemaName(), history.getSourceTableName(),
+                        history.getNameForDeleteTrigger());
+                if (triggerExists) {
+                    log.warn("TriggersRemovingFailed", history.getTriggerId(),
+                            history.getTriggerHistoryId());
+                } else {
+                    inactivateTriggerHistory(history);
+                }
             }
         }
     }
@@ -741,14 +746,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return list;
     }
-
-    protected void updateOrCreateDatabaseTriggers(StringBuilder sqlBuffer, boolean gen_always) {
-        List<Trigger> triggers = new TriggerSelector(toList(getTriggerRoutersForCurrentNode(
+    
+    protected List<Trigger> getTriggersForCurrentNode() {
+        return  new TriggerSelector(toList(getTriggerRoutersForCurrentNode(
                 true).values()))
-                .select();
+        .select();
+    }
 
+    protected void updateOrCreateDatabaseTriggers(List<Trigger> triggers, StringBuilder sqlBuffer, boolean gen_always) {
         for (Trigger trigger : triggers) {
-
             try {
 
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
