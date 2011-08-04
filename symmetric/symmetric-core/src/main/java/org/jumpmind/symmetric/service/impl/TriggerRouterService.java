@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
@@ -42,6 +43,7 @@ import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IExtraConfigTables;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
@@ -754,14 +756,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void updateOrCreateDatabaseTriggers(List<Trigger> triggers, StringBuilder sqlBuffer, boolean gen_always) {
+        
         for (Trigger trigger : triggers) {
             try {
-
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
                 Table table = dbDialect.getTable(trigger.getSourceCatalogName(), trigger
                         .getSourceSchemaName(), trigger.getSourceTableName(), false);
 
+                String errorMessage = null;
+                Channel channel = configurationService.getChannel(trigger.getChannelId());
+                if (channel == null) {
+                    errorMessage = Message.get("TriggerFoundWithInvalidChannelId", trigger.getTriggerId(), trigger.getChannelId(), Constants.CHANNEL_DEFAULT);
+                    log.error("TriggerFoundWithInvalidChannelId", trigger.getTriggerId(), trigger.getChannelId(), Constants.CHANNEL_DEFAULT);
+                    trigger.setChannelId(Constants.CHANNEL_DEFAULT);
+                }
+                
                 if (table != null) {
                     TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(trigger
                             .getTriggerId());
@@ -798,6 +808,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers,
                             trigger, DataEventType.DELETE, reason, latestHistoryBeforeRebuild,
                             newestHistory, trigger.isSyncOnDelete(), table);
+                    
+                    newestHistory.setErrorMessage(errorMessage);
 
                     if (latestHistoryBeforeRebuild != null && newestHistory != null) {
                         inactivateTriggerHistory(latestHistoryBeforeRebuild);

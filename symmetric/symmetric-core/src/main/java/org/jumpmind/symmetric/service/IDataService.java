@@ -90,6 +90,8 @@ public interface IDataService {
      * Count the number of data ids in a range
      */
     public int countDataInRange(long firstDataId, long secondDataId);
+    
+    public void checkForAndUpdateMissingChannelIds(long firstDataId, long lastDataId);
 
     public void saveDataRef(DataRef dataRef);
 

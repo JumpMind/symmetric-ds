@@ -181,6 +181,14 @@ public class DataService extends AbstractService implements IDataService {
     public int countDataInRange(long firstDataId, long secondDataId) {
         return jdbcTemplate.queryForInt(getSql("countDataInRangeSql"), firstDataId, secondDataId);
     }
+    
+    public void checkForAndUpdateMissingChannelIds(long firstDataId, long lastDataId) {
+        int numberUpdated = jdbcTemplate.update(getSql("checkForAndUpdateMissingChannelIdSql"), Constants.CHANNEL_DEFAULT, 
+                firstDataId, lastDataId);
+        if (numberUpdated > 0) {
+            log.warn("DataFoundWithWrongChannelIds", numberUpdated, firstDataId, lastDataId, Constants.CHANNEL_DEFAULT);   
+        }        
+    }
 
     public void insertCreateEvent(final Node targetNode, final TriggerRouter triggerRouter,
             String xml, boolean isLoad) {
