@@ -807,15 +807,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                     newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers,
                             trigger, DataEventType.DELETE, reason, latestHistoryBeforeRebuild,
-                            newestHistory, trigger.isSyncOnDelete(), table);
-                    
-                    newestHistory.setErrorMessage(errorMessage);
+                            newestHistory, trigger.isSyncOnDelete(), table);                    
 
                     if (latestHistoryBeforeRebuild != null && newestHistory != null) {
                         inactivateTriggerHistory(latestHistoryBeforeRebuild);
                     }
 
                     if (newestHistory != null) {
+                        newestHistory.setErrorMessage(errorMessage);
                         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                             if (this.triggerCreationListeners != null) {
                                 for (ITriggerCreationListener l : this.triggerCreationListeners) {
