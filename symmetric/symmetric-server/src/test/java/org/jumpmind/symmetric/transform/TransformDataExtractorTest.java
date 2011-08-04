@@ -103,7 +103,7 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
         Assert.assertEquals("4,BAMBOO,CONSTANT", data.getRowData());
         
         triggerHistory = new TriggerHistory("SOURCE_2", "ID2", "ID2, S2");
-        data = new Data(SIMPLE, DataEventType.INSERT, "4, STATUS4", null,
+        data = new Data("SOURCE_2", DataEventType.INSERT, "4, STATUS4", null,
             triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
         transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
         
@@ -111,6 +111,20 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
         Assert.assertEquals("ID_A,S2_A", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
         Assert.assertEquals("4,STATUS4", data.getRowData());
+    }
+
+    @Test
+    public void testTwoTablesMappedToOneDeleteUpdates() throws Exception {
+        TriggerHistory triggerHistory = new TriggerHistory("SOURCE_2", "ID2", "ID2, S2");
+        Data data = new Data("SOURCE_2", DataEventType.DELETE, null, "4",
+            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
+        data.setOldData("4, STATUS_4");
+        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
+        
+        Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
+        Assert.assertEquals("ID_A,S2_A", data.getTriggerHistory().getColumnNames());
+        Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
+        Assert.assertEquals("4,DELETED", data.getRowData());
     }
 
     @SuppressWarnings("unused")
