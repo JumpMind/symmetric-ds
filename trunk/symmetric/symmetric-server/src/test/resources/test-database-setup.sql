@@ -103,6 +103,10 @@ insert into sym_transform_column (transform_id, include_on, source_column_name, 
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('source2_to_a', 'D', null, 'S2_A', 0, 'const', 'DELETED', 2);
 
-
-
+insert into sym_transform_table (transform_id, source_table_name, target_table_name, target_node_group_id, update_first, delete_action, transform_order)
+  values ('sourceb_to_b', 'SOURCE_B', 'TEST_TRANSFORM_B', 'test-root-group', 1, 'DEL_ROW', 1);
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('sourceb_to_b', '*', 'ID', 'ID_B', 1, null, null, 1);
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('sourceb_to_b', '*', null, 'S1_B', 0, 'lookup', 'select 12 from sym_node_identity', 2);
 
