@@ -35,6 +35,9 @@ public class TransformDataExtractor extends AbstractTransformer implements IExtr
 
         DmlType targetDmlType = transformedData.getTargetDmlType();
         if (targetDmlType != null) {
+            data.setTableName(transformedData.getTableName());
+            triggerHistory.setSourceTableName(transformedData.getTableName());
+            
             String[] columnNames = transformedData.getColumnNames();
             triggerHistory.setColumnNames(CsvUtils.escapeCsvData(columnNames));
 
