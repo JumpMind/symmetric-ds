@@ -27,7 +27,15 @@
       <value>
         select max(data_id) from $[sym.sync.table.prefix]_data_event
       </value>
-    </entry>     
+    </entry>         
+    <entry key="checkForAndUpdateMissingChannelIdSql">
+      <value><![CDATA[
+        update $[sym.sync.table.prefix]_data set channel_id=? 
+            where 
+              data_id >= ? and data_id <= ? and 
+              channel_id not in (select channel_id from sym_channel)
+      ]]></value>
+    </entry>      
     <entry key="countDataInRangeSql">
       <value><![CDATA[
         select count(*) from $[sym.sync.table.prefix]_data where data_id > ? and data_id < ?

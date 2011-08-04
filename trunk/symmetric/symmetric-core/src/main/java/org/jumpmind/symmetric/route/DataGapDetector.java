@@ -132,6 +132,9 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                                         dataGap.getEndId());
                                 dataService.updateDataGap(dataGap, DataGap.Status.SK);
                             }
+                        } else {
+                            dataService.checkForAndUpdateMissingChannelIds(dataGap.getStartId() - 1,
+                                    dataGap.getEndId() + 1);
                         }
                     }
 

@@ -185,6 +185,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void deleteChannel(Channel channel) {
         jdbcTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { channel.getChannelId() });
         jdbcTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getChannelId() });
+        reloadChannels();
     }
 
     public NodeChannel getNodeChannel(String channelId, boolean refreshExtractMillis) {

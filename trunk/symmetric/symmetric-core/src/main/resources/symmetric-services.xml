@@ -67,6 +67,13 @@
                     <property name="maxBatchToSend" value="100" />
                     <property name="enabled" value="true" />
                 </bean>
+                <bean class="org.jumpmind.symmetric.model.Channel">
+                    <property name="channelId" value="default" />
+                    <property name="processingOrder" value="99999" />
+                    <property name="maxBatchSize" value="1000" />
+                    <property name="maxBatchToSend" value="100" />
+                    <property name="enabled" value="true" />
+                </bean>                
             </list>
         </property>        
     </bean>
