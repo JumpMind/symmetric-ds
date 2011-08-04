@@ -31,25 +31,16 @@ public class TransformDataExtractor extends AbstractTransformer implements IExtr
     @Override
     protected void apply(ICacheContext context, TransformedData transformedData) {
         Data data = (Data) context.getContextCache().get(DATA_KEY);
-        TriggerHistory triggerHistory = data.getTriggerHistory();
 
         DmlType targetDmlType = transformedData.getTargetDmlType();
         if (targetDmlType != null) {
+            TriggerHistory triggerHistory = new TriggerHistory(transformedData.getTableName(),
+                    CsvUtils.escapeCsvData(transformedData.getKeyNames()),
+                    CsvUtils.escapeCsvData(transformedData.getColumnNames()));            
+            data.setTriggerHistory(triggerHistory);
             data.setTableName(transformedData.getTableName());
-            triggerHistory.setSourceTableName(transformedData.getTableName());
-            
-            String[] columnNames = transformedData.getColumnNames();
-            triggerHistory.setColumnNames(CsvUtils.escapeCsvData(columnNames));
-
-            String[] columnValues = transformedData.getColumnValues();
-            data.setRowData(CsvUtils.escapeCsvData(columnValues));
-
-            String[] keyNames = transformedData.getKeyNames();
-            triggerHistory.setPkColumnNames(CsvUtils.escapeCsvData(keyNames));
-
-            String[] keyValues = transformedData.getKeyValues();
-            data.setPkData(CsvUtils.escapeCsvData(keyValues));
-
+            data.setRowData(CsvUtils.escapeCsvData(transformedData.getColumnValues()));
+            data.setPkData(CsvUtils.escapeCsvData(transformedData.getKeyValues()));
             data.setOldData(null);
 
         }
