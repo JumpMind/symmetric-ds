@@ -57,10 +57,9 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
         transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
         
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        // TODO: ID_A is the PK, so it should be the first column listed
-        Assert.assertEquals("ID_A,DECIMAL_A,LONGSTRING_A,S1_A,S2_A", data.getTriggerHistory().getColumnNames());
+        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
-        Assert.assertEquals("1,1000,ONE-1,ONE,CONSTANT", data.getRowData());
+        Assert.assertEquals("1,ONE,CONSTANT,1000,ONE-1", data.getRowData());
     }
 
     @Test
@@ -72,10 +71,9 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
         transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        // TODO: ID_A is the PK, so it should be the first column listed
-        Assert.assertEquals("ID_A,DECIMAL_A,LONGSTRING_A,S1_A,S2_A", data.getTriggerHistory().getColumnNames());
+        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
-        Assert.assertEquals("1,9,ONE-1,ONE,CONSTANT", data.getRowData());
+        Assert.assertEquals("1,ONE,CONSTANT,9,ONE-1", data.getRowData());
         // TODO: is it okay for old data to be null after transformation?
 
         data = new Data(SIMPLE, DataEventType.UPDATE, "1, ONE, X, Y, Z, 8", "1",
@@ -84,10 +82,9 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
         transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        // TODO: ID_A is the PK, so it should be the first column listed
-        Assert.assertEquals("ID_A,DECIMAL_A,LONGSTRING_A,S1_A,S2_A", data.getTriggerHistory().getColumnNames());
+        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
-        Assert.assertEquals("1,-1,ONE-1,ONE,CONSTANT", data.getRowData());
+        Assert.assertEquals("1,ONE,CONSTANT,-1,ONE-1", data.getRowData());
     }
 
     @Test

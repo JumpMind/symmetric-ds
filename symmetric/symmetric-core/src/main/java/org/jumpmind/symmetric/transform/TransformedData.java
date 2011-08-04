@@ -2,9 +2,9 @@ package org.jumpmind.symmetric.transform;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.transform.TransformColumn.IncludeOnType;
@@ -15,9 +15,9 @@ public class TransformedData {
 
     protected DmlType sourceDmlType;
 
-    protected Map<TransformColumn.IncludeOnType, TreeMap<String, String>> columnsBy;
+    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> columnsBy;
 
-    protected Map<TransformColumn.IncludeOnType, TreeMap<String, String>> keysBy;
+    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> keysBy;
 
     protected TransformTable transformation;
 
@@ -54,22 +54,22 @@ public class TransformedData {
     public void put(TransformColumn column, String columnValue, boolean recordAsKey) {
         if (recordAsKey) {
             if (keysBy == null) {
-                keysBy = new HashMap<TransformColumn.IncludeOnType, TreeMap<String, String>>(2);
+                keysBy = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
             }
-            TreeMap<String, String> keyValues = keysBy.get(column.getIncludeOn());
+            LinkedHashMap<String, String> keyValues = keysBy.get(column.getIncludeOn());
             if (keyValues == null) {
-                keyValues = new TreeMap<String, String>();
+                keyValues = new LinkedHashMap<String, String>();
                 keysBy.put(column.getIncludeOn(), keyValues);
             }
             keyValues.put(column.getTargetColumnName(), columnValue);
 
         } else {
             if (columnsBy == null) {
-                columnsBy = new HashMap<TransformColumn.IncludeOnType, TreeMap<String, String>>(2);
+                columnsBy = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
             }
-            TreeMap<String, String> columnValues = columnsBy.get(column.getIncludeOn());
+            LinkedHashMap<String, String> columnValues = columnsBy.get(column.getIncludeOn());
             if (columnValues == null) {
-                columnValues = new TreeMap<String, String>();
+                columnValues = new LinkedHashMap<String, String>();
                 columnsBy.put(column.getIncludeOn(), columnValues);
             }
             columnValues.put(column.getTargetColumnName(), columnValue);
@@ -77,10 +77,10 @@ public class TransformedData {
     }
 
     protected List<String> retrieve(
-            Map<TransformColumn.IncludeOnType, TreeMap<String, String>> source,
+            Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> source,
             boolean getColumnNames) {
         List<String> list = new ArrayList<String>();
-        TreeMap<String, String> values = source.get(IncludeOnType.ALL);
+        LinkedHashMap<String, String> values = source.get(IncludeOnType.ALL);
         if (values != null) {
             if (getColumnNames) {
                 list.addAll(values.keySet());
