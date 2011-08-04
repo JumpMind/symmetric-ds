@@ -48,6 +48,7 @@ public class LookupColumnTransform  implements IColumnTransform, IBuiltInExtensi
         String sql = column.getTransformExpression();
         if (StringUtils.isNotBlank(sql)) {
             // TODO: add parameterization of sourceValues into sql
+            // return new SimpleJdbcTemplate(jdbcTemplate).queryForObject(sql, String.class, sourceValues);
             return jdbcTemplate.queryForObject(sql, String.class);
         }
         return value;
