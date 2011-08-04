@@ -508,8 +508,7 @@ values
     router_expression, create_time, last_update_time)
 values
   ('corp-2-store-multiple-matches','corp', 'store', 'column', 
-   'STORE_ID=ALL
-    STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+   'STORE_ID=ALL or STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 ]]></programlisting>                        
          </para>    
          <para>
@@ -521,8 +520,7 @@ values
     router_expression, create_time, last_update_time)
 values
   ('corp-2-store-multiple-matches','corp', 'store', 'column', 
-   'STORE_ID=NULL
-    STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+   'STORE_ID=NULL or STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 ]]></programlisting>    
          </para>                    
     </section>    
