@@ -118,10 +118,28 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
         data.setOldData("4, STATUS_4");
         transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
         
+        // TODO: should not be DELETE
+        Assert.assertEquals("UPDATE", data.getEventType());
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
+        // TODO: should not be S2_A
         Assert.assertEquals("ID_A,S2_A", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
+        // TODO: should not be DELETED
         Assert.assertEquals("4,DELETED", data.getRowData());
+    }
+
+    @Test
+    public void testTableLookup() throws Exception {
+        TriggerHistory triggerHistory = new TriggerHistory("SOURCE_B", "ID", "ID, S1");
+        Data data = new Data("SOURCE_B", DataEventType.INSERT, "9, X", null,
+            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
+        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
+        debug(data);
+
+        Assert.assertEquals("ID_B", data.getTriggerHistory().getPkColumnNames());
+        Assert.assertEquals("ID_B,S1_B", data.getTriggerHistory().getColumnNames());
+        Assert.assertEquals("TEST_TRANSFORM_B", data.getTriggerHistory().getSourceTableName());
+        Assert.assertEquals("9,12", data.getRowData());
     }
 
     @SuppressWarnings("unused")
