@@ -541,7 +541,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 510, batches.getBatches()
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 530, batches.getBatches()
                 .size());
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches
                 .getBatches().get(0).getDataEventCount());
