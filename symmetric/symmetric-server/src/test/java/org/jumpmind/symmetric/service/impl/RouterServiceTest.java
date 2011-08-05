@@ -402,6 +402,13 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         if (deleteChannel) {
             getConfigurationService().saveChannel(unrecognizedChannel, true);
         }
+        
+        NodeChannel otherChannel = getConfigurationService().getNodeChannel(
+                TestConstants.TEST_CHANNEL_ID_OTHER, false);
+        otherChannel.setBatchAlgorithm("nontransactional");
+        otherChannel.setMaxBatchSize(100);
+        getConfigurationService().saveChannel(otherChannel, true);       
+        
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.getRouter().setRouterType("default");
         trigger1.getTrigger().setChannelId(unrecognizedChannel.getChannelId());
