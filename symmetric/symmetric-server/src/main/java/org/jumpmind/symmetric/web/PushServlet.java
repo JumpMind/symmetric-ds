@@ -32,9 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.transport.handler.PushResourceHandler;
 
-/**
- * ,
- */
 public class PushServlet extends AbstractTransportResourceServlet<PushResourceHandler> 
     implements IBuiltInExtensionPoint {
     
