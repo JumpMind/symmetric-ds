@@ -134,7 +134,6 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
         Data data = new Data("SOURCE_B", DataEventType.INSERT, "9, X", null,
             triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
         transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
-        debug(data);
 
         Assert.assertEquals("ID_B", data.getTriggerHistory().getPkColumnNames());
         Assert.assertEquals("ID_B,S1_B", data.getTriggerHistory().getColumnNames());
