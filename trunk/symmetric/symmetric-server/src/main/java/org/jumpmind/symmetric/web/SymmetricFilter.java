@@ -33,10 +33,15 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -68,6 +73,10 @@ public class SymmetricFilter implements Filter {
     private ServletContext servletContext;
 
     private List<Filter> filters;
+    
+    private INodeService nodeService;
+    
+    private static long lastWarningTimestamp = 0;
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
@@ -78,6 +87,7 @@ public class SymmetricFilter implements Filter {
         servletContext = filterConfig.getServletContext();
         filters = new ArrayList<Filter>();
         ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
+        nodeService = (INodeService)ctx.getBean(Constants.NODE_SERVICE);
         Map<String, IServletFilterExtension> filterBeans = new LinkedHashMap<String, IServletFilterExtension>();
         filterBeans.putAll(ctx.getBeansOfType(IServletFilterExtension.class));
         if (ctx.getParent() != null) {
@@ -125,20 +135,39 @@ public class SymmetricFilter implements Filter {
 
         public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
             if (!response.isCommitted()) {
-                if (index < filters.size()) {
-                    final Filter filter = filters.get(index++);
-                    if (filter instanceof AbstractFilter) {
-                        final AbstractFilter builtinFilter = (AbstractFilter) filter;
-                        if (!builtinFilter.isDisabled() && builtinFilter.matches(request)) {
-                            builtinFilter.doFilter(request, response, this);
+                Node node = nodeService.findIdentity(false);
+                if (node != null) {
+                    if (node.isSyncEnabled()) {
+                        if (index < filters.size()) {
+                            final Filter filter = filters.get(index++);
+                            if (filter instanceof AbstractFilter) {
+                                final AbstractFilter builtinFilter = (AbstractFilter) filter;
+                                if (!builtinFilter.isDisabled() && builtinFilter.matches(request)) {
+                                    builtinFilter.doFilter(request, response, this);
+                                } else {
+                                    this.doFilter(request, response);
+                                }
+                            } else {
+                                filter.doFilter(request, response, this);
+                            }
                         } else {
-                            this.doFilter(request, response);
+                            chain.doFilter(request, response);
                         }
                     } else {
-                        filter.doFilter(request, response, this);
+                        if (System.currentTimeMillis() - lastWarningTimestamp > DateUtils.MILLIS_PER_MINUTE) {
+                            log.warn("NodeDisableNotAcceptingWebRequests");
+                            lastWarningTimestamp = System.currentTimeMillis();
+                        }
+                        ServletUtils.sendError((HttpServletResponse) response,
+                                WebConstants.SC_FORBIDDEN);
                     }
                 } else {
-                    chain.doFilter(request, response);
+                    if (System.currentTimeMillis() - lastWarningTimestamp > DateUtils.MILLIS_PER_MINUTE) {
+                        log.warn("NodeNotConfiguredNotAcceptingWebRequests");
+                        lastWarningTimestamp = System.currentTimeMillis();
+                    }
+                    ServletUtils.sendError((HttpServletResponse) response,
+                            WebConstants.SC_FORBIDDEN);
                 }
             }
         }

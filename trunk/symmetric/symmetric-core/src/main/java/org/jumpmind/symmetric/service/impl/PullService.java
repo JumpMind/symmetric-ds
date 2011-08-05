@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service.impl;
 
@@ -55,57 +55,63 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
     synchronized public RemoteNodeStatuses pullData() {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses();
-        if (clusterService.lock(ClusterConstants.PULL)) {
-            try {
-                // register if we haven't already been registered
-                registrationService.registerWithServer();
+        Node identity = nodeService.findIdentity();
+        if (identity == null || identity.isSyncEnabled()) {
+            if (clusterService.lock(ClusterConstants.PULL)) {
+                try {
+                    // register if we haven't already been registered
+                    registrationService.registerWithServer();
 
-                List<Node> nodes = nodeService.findNodesToPull();
-                if (nodes != null && nodes.size() > 0) {
-                    for (Node node : nodes) {
-                        RemoteNodeStatus status = statuses.add(node);
-                        String nodeName = " for " + node;
-                        try {
-                            log.debug("DataPulling", nodeName);
-                            dataLoaderService.loadDataFromPull(node, status);
-                            if (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0) {
-                                log.info("DataPulled", nodeName, status.getDataProcessed(), status.getBatchesProcessed());
-                            } else {
-                                log.debug("DataPulled", nodeName, status.getDataProcessed(), status.getBatchesProcessed());
+                    List<Node> nodes = nodeService.findNodesToPull();
+                    if (nodes != null && nodes.size() > 0) {
+                        for (Node node : nodes) {
+                            RemoteNodeStatus status = statuses.add(node);
+                            String nodeName = " for " + node;
+                            try {
+                                log.debug("DataPulling", nodeName);
+                                dataLoaderService.loadDataFromPull(node, status);
+                                if (status.getDataProcessed() > 0
+                                        || status.getBatchesProcessed() > 0) {
+                                    log.info("DataPulled", nodeName, status.getDataProcessed(),
+                                            status.getBatchesProcessed());
+                                } else {
+                                    log.debug("DataPulled", nodeName, status.getDataProcessed(),
+                                            status.getBatchesProcessed());
+                                }
+                            } catch (ConnectException ex) {
+                                log.warn(
+                                        "TransportFailedConnectionUnavailable",
+                                        (node.getSyncUrl() == null ? parameterService
+                                                .getRegistrationUrl() : node.getSyncUrl()));
+                                fireOffline(ex, node, status);
+                            } catch (ConnectionRejectedException ex) {
+                                log.warn("TransportFailedConnectionBusy");
+                                fireOffline(ex, node, status);
+                            } catch (AuthenticationException ex) {
+                                log.warn("AuthenticationFailed");
+                                fireOffline(ex, node, status);
+                            } catch (SyncDisabledException ex) {
+                                log.warn("SyncDisabled");
+                                fireOffline(ex, node, status);
+                            } catch (SocketException ex) {
+                                log.warn("Message", ex.getMessage());
+                                fireOffline(ex, node, status);
+                            } catch (TransportException ex) {
+                                log.warn("Message", ex.getMessage());
+                                fireOffline(ex, node, status);
+                            } catch (IOException ex) {
+                                log.error(ex);
+                                fireOffline(ex, node, status);
                             }
-                        } catch (ConnectException ex) {
-                            log.warn("TransportFailedConnectionUnavailable",
-                                    (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
-                                            .getSyncUrl()));
-                            fireOffline(ex, node, status);
-                        } catch (ConnectionRejectedException ex) {
-                            log.warn("TransportFailedConnectionBusy");
-                            fireOffline(ex, node, status);
-                        } catch (AuthenticationException ex) {
-                            log.warn("AuthenticationFailed");
-                            fireOffline(ex, node, status);
-                        } catch (SyncDisabledException ex) {
-                            log.warn("SyncDisabled");
-                            fireOffline(ex, node, status);
-                        } catch (SocketException ex) {
-                            log.warn("Message", ex.getMessage());
-                            fireOffline(ex, node, status);
-                        } catch (TransportException ex) {
-                            log.warn("Message", ex.getMessage());
-                            fireOffline(ex, node, status);
-                        } catch (IOException ex) {
-                            log.error(ex);
-                            fireOffline(ex, node, status);
                         }
                     }
+                } finally {
+                    clusterService.unlock(ClusterConstants.PULL);
+
                 }
-            } finally {
-                clusterService.unlock(ClusterConstants.PULL);
-
+            } else {
+                log.info("DataPullingFailedLock");
             }
-
-        } else {
-            log.info("DataPullingFailedLock");
         }
 
         return statuses;

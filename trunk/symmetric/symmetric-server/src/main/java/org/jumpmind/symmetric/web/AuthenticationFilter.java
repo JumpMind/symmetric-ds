@@ -38,8 +38,6 @@ import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler.Au
 
 /**
  * This better be the first filter that executes!
- *
- * ,
  */
 public class AuthenticationFilter extends AbstractTransportFilter<AuthenticationResourceHandler> 
   implements IBuiltInExtensionPoint {
