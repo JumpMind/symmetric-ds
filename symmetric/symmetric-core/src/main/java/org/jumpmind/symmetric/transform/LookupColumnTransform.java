@@ -27,11 +27,12 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
-public class LookupColumnTransform  implements IColumnTransform, IBuiltInExtensionPoint {
+public class LookupColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
 
-    protected JdbcTemplate jdbcTemplate;
-    
+    protected SimpleJdbcTemplate jdbcTemplate;
+
     public static final String NAME = "lookup";
 
     public boolean isAutoRegister() {
@@ -42,20 +43,18 @@ public class LookupColumnTransform  implements IColumnTransform, IBuiltInExtensi
         return NAME;
     }
 
-    public String transform(ICacheContext context, TransformColumn column,
-            TransformedData data, Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,
-            IgnoreRowException {
+    public String transform(ICacheContext context, TransformColumn column, TransformedData data,
+        Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,
+        IgnoreRowException {
         String sql = column.getTransformExpression();
         if (StringUtils.isNotBlank(sql)) {
-            // TODO: add parameterization of sourceValues into sql
-            // return new SimpleJdbcTemplate(jdbcTemplate).queryForObject(sql, String.class, sourceValues);
-            return jdbcTemplate.queryForObject(sql, String.class);
+            return jdbcTemplate.queryForObject(sql, String.class, sourceValues);
         }
         return value;
     }
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcTemplate = new SimpleJdbcTemplate(jdbcTemplate);
     }
 
 }
