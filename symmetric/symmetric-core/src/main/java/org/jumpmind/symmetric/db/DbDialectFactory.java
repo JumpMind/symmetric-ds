@@ -69,6 +69,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     private int queryTimeout;
     
     private boolean forceDelimitedIdentifierModeOn = false;
+    
+    private boolean forceDelimitedIdentifierModeOff = false;
 
     public IDbDialect getObject() throws Exception {
 
@@ -78,6 +80,10 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         
         if (forceDelimitedIdentifierModeOn) {
             pf.setDelimitedIdentifierModeOn(true);
+        }
+        
+        if (forceDelimitedIdentifierModeOff) {
+            pf.setDelimitedIdentifierModeOn(false);
         }
 
         AbstractDbDialect dialect = null;
@@ -184,5 +190,9 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     
     public void setForceDelimitedIdentifierModeOn(boolean forceDelimitedIdentifierModeOn) {
         this.forceDelimitedIdentifierModeOn = forceDelimitedIdentifierModeOn;
+    }
+    
+    public void setForceDelimitedIdentifierModeOff(boolean forceDelimitedIdentifierModeOff) {
+        this.forceDelimitedIdentifierModeOff = forceDelimitedIdentifierModeOff;
     }
 }
