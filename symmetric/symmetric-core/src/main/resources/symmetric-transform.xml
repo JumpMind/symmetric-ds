@@ -43,4 +43,7 @@
 
     <bean id="variableColumnTransform" class="org.jumpmind.symmetric.transform.VariableColumnTransform" />
     
+    <bean id="multiplierColumnTransform" class="org.jumpmind.symmetric.transform.MultiplierColumnTransform">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+    </bean>
 </beans>

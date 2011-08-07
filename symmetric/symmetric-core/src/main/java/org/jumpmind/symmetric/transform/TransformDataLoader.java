@@ -19,16 +19,37 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
     }
 
     public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
-        return !transform(DmlType.INSERT, context, context.getCatalogName(),
-                context.getSchemaName(), context.getTableName(), context.getColumnNames(),
-                columnValues, null, null, null);
+        boolean processRow = true;
+        try {
+            List<TransformedData> transformedData = transform(DmlType.INSERT, context,
+                    context.getCatalogName(), context.getSchemaName(), context.getTableName(),
+                    context.getColumnNames(), columnValues, null, null, null);
+            if (transformedData != null) {
+                apply(context, transformedData);
+                processRow = false;
+            }
+        } catch (IgnoreRowException ex) {
+            processRow = false;
+        }
+        return processRow;
     }
 
     public boolean filterUpdate(IDataLoaderContext context, String[] columnValues,
             String[] keyValues) {
-        return !transform(DmlType.UPDATE, context, context.getCatalogName(),
-                context.getSchemaName(), context.getTableName(), context.getColumnNames(),
-                columnValues, context.getKeyNames(), keyValues, context.getOldData());
+        boolean processRow = true;
+        try {
+            List<TransformedData> transformedData = transform(DmlType.UPDATE, context,
+                    context.getCatalogName(), context.getSchemaName(), context.getTableName(),
+                    context.getColumnNames(), columnValues, context.getKeyNames(), keyValues,
+                    context.getOldData());
+            if (transformedData != null) {
+                apply(context, transformedData);
+                processRow = false;
+            }
+        } catch (IgnoreRowException ex) {
+            processRow = false;
+        }
+        return processRow;
     }
 
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
@@ -38,12 +59,22 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
             columnNames = context.getColumnNames();
             columnValues = context.getOldData();
         }
-        return !transform(DmlType.DELETE, context, context.getCatalogName(),
-                context.getSchemaName(), context.getTableName(), columnNames, columnValues,
-                context.getKeyNames(), keyValues, context.getOldData());
+        boolean processRow = true;
+        try {
+            List<TransformedData> transformedData = transform(DmlType.DELETE, context,
+                    context.getCatalogName(), context.getSchemaName(), context.getTableName(),
+                    columnNames, columnValues, context.getKeyNames(), keyValues,
+                    context.getOldData());
+            if (transformedData != null) {
+                apply(context, transformedData);
+                processRow = false;
+            }
+        } catch (IgnoreRowException ex) {
+            processRow = false;
+        }
+        return processRow;
     }
 
-    @Override
     protected void apply(ICacheContext context, List<TransformedData> dataThatHasBeenTransformed) {
         for (TransformedData data : dataThatHasBeenTransformed) {
             TableTemplate tableTemplate = new TableTemplate(context.getJdbcTemplate(), dbDialect,

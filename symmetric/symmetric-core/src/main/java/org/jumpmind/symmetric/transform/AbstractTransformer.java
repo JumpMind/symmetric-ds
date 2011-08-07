@@ -25,9 +25,10 @@ public abstract class AbstractTransformer {
 
     protected String tablePrefix;
 
-    protected boolean transform(DmlType dmlType, ICacheContext context, String catalogName,
-            String schemaName, String tableName, String[] columnNames, String[] columnValues,
-            String[] keyNames, String[] keyValues, String[] oldData) {
+    protected List<TransformedData> transform(DmlType dmlType, ICacheContext context,
+            String catalogName, String schemaName, String tableName, String[] columnNames,
+            String[] columnValues, String[] keyNames, String[] keyValues, String[] oldData)
+            throws IgnoreRowException {
         if (!tableName.toLowerCase().startsWith(tablePrefix)) {
             List<TransformTable> transformationsToPerform = findTablesToTransform(
                     getFullyQualifiedTableName(catalogName, schemaName, tableName),
@@ -39,26 +40,21 @@ public abstract class AbstractTransformer {
                 if (keyNames != null) {
                     sourceKeyValues = toMap(keyNames, keyValues);
                 }
-                try {
-                    List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
-                    for (TransformTable transformation : transformationsToPerform) {
-                        List<TransformedData> dataToTransform = create(context, dmlType,
-                                transformation, sourceKeyValues, oldSourceValues);
-                        for (TransformedData targetData : dataToTransform) {
-                            if (perform(context, targetData, transformation, sourceValues,
-                                    oldSourceValues)) {
-                                dataThatHasBeenTransformed.add(targetData);
-                            }
+                List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
+                for (TransformTable transformation : transformationsToPerform) {
+                    List<TransformedData> dataToTransform = create(context, dmlType,
+                            transformation, sourceKeyValues, oldSourceValues);
+                    for (TransformedData targetData : dataToTransform) {
+                        if (perform(context, targetData, transformation, sourceValues,
+                                oldSourceValues)) {
+                            dataThatHasBeenTransformed.add(targetData);
                         }
                     }
-                    apply(context, dataThatHasBeenTransformed);
-                } catch (IgnoreRowException e) {
-                    // Do nothing. We are suppose to ignore this row.
                 }
-                return true;
+                return dataThatHasBeenTransformed;
             }
         }
-        return false;
+        return null;
     }
 
     protected boolean perform(ICacheContext context, TransformedData data,
@@ -72,9 +68,13 @@ public abstract class AbstractTransformer {
                 IColumnTransform<?> transform = transformService.getColumnTransforms().get(
                         transformColumn.getTransformType());
                 if (transform == null || transform instanceof ISingleValueColumnTransform) {
-                    String value = (String) transformColumn(context, data, transformColumn,
-                            sourceValues, oldSourceValues);
-                    data.put(transformColumn, value, false);
+                    try {
+                        String value = (String) transformColumn(context, data, transformColumn,
+                                sourceValues, oldSourceValues);
+                        data.put(transformColumn, value, false);
+                    } catch (IgnoreColumnException e) {
+                        // Do nothing. We are ignoring the column
+                    }
                 }
             } else {
                 log.warn("TransformSourceColumnNotFound", transformColumn.getSourceColumnName(),
@@ -106,8 +106,6 @@ public abstract class AbstractTransformer {
         return persistData;
     }
 
-    abstract protected void apply(ICacheContext context, List<TransformedData> dataThatHasBeenTransformed);
-
     protected List<TransformedData> create(ICacheContext context, DmlType dmlType,
             TransformTable transformation, Map<String, String> sourceValues,
             Map<String, String> oldSourceValues) throws IgnoreRowException {
@@ -120,26 +118,30 @@ public abstract class AbstractTransformer {
             for (TransformColumn transformColumn : columns) {
                 List<TransformedData> newDatas = null;
                 for (TransformedData data : datas) {
-                    Object columnValue = transformColumn(context, data, transformColumn,
-                            sourceValues, oldSourceValues);
-                    if (columnValue instanceof String) {
-                        data.put(transformColumn, (String) columnValue, true);
-                    } else if (columnValue instanceof List) {
-                        @SuppressWarnings("unchecked")
-                        List<String> values = (List<String>) columnValue;
-                        if (values.size() > 0) {
-                            data.put(transformColumn, values.get(0), true);
-                            if (values.size() > 1) {
-                                if (newDatas == null) {
-                                    newDatas = new ArrayList<TransformedData>(values.size() - 1);
-                                }
-                                for (int i = 1; i < values.size(); i++) {
-                                    TransformedData newData = data.copy();
-                                    newData.put(transformColumn, values.get(0), true);
-                                    newDatas.add(data);
+                    try {
+                        Object columnValue = transformColumn(context, data, transformColumn,
+                                sourceValues, oldSourceValues);
+                        if (columnValue instanceof String) {
+                            data.put(transformColumn, (String) columnValue, true);
+                        } else if (columnValue instanceof List) {
+                            @SuppressWarnings("unchecked")
+                            List<String> values = (List<String>) columnValue;
+                            if (values.size() > 0) {
+                                data.put(transformColumn, values.get(0), true);
+                                if (values.size() > 1) {
+                                    if (newDatas == null) {
+                                        newDatas = new ArrayList<TransformedData>(values.size() - 1);
+                                    }
+                                    for (int i = 1; i < values.size(); i++) {
+                                        TransformedData newData = data.copy();
+                                        newData.put(transformColumn, values.get(0), true);
+                                        newDatas.add(data);
+                                    }
                                 }
                             }
                         }
+                    } catch (IgnoreColumnException e) {
+                        // Do nothing. We are suppose to ignore the column.
                     }
                 }
                 if (newDatas != null) {
@@ -153,21 +155,17 @@ public abstract class AbstractTransformer {
 
     protected Object transformColumn(ICacheContext context, TransformedData data,
             TransformColumn transformColumn, Map<String, String> sourceValues,
-            Map<String, String> oldSourceValues) throws IgnoreRowException {
+            Map<String, String> oldSourceValues) throws IgnoreRowException, IgnoreColumnException {
         Object returnValue = null;
-        try {
-            String value = transformColumn.getSourceColumnName() != null ? sourceValues
-                    .get(transformColumn.getSourceColumnName()) : null;
-            returnValue = value;
-            IColumnTransform<?> transform = transformService.getColumnTransforms().get(
-                    transformColumn.getTransformType());
-            if (transform != null) {
-                String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
-                returnValue = transform.transform(context, transformColumn, data, sourceValues,
-                        value, oldValue);
-            }
-        } catch (IgnoreColumnException e) {
-            // Do nothing. We are suppose to ignore the column
+        String value = transformColumn.getSourceColumnName() != null ? sourceValues
+                .get(transformColumn.getSourceColumnName()) : null;
+        returnValue = value;
+        IColumnTransform<?> transform = transformService.getColumnTransforms().get(
+                transformColumn.getTransformType());
+        if (transform != null) {
+            String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
+            returnValue = transform.transform(context, transformColumn, data, sourceValues, value,
+                    oldValue);
         }
         return returnValue;
     }

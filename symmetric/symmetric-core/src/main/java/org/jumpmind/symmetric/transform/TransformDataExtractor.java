@@ -13,30 +13,30 @@ import org.jumpmind.symmetric.util.CsvUtils;
 
 public class TransformDataExtractor extends AbstractTransformer {
 
-    protected final String DATA_KEY = "DATA_KEY-" + hashCode();
-
-    public Object filterData(Data data, String routerId, DataExtractorContext context) {
+    public List<Data> transformData(Data data, String routerId, DataExtractorContext context)
+            throws IgnoreRowException {
         DataEventType eventType = data.getEventType();
         DmlType dmlType = toDmlType(eventType);
         if (dmlType != null) {
             TriggerHistory triggerHistory = data.getTriggerHistory();
-            transform(dmlType, context, triggerHistory.getSourceCatalogName(),
-                    triggerHistory.getSourceSchemaName(), data.getTableName(),
-                    triggerHistory.getParsedColumnNames(), data.toParsedRowData(),
+            List<TransformedData> transformedData = transform(dmlType, context,
+                    triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
+                    data.getTableName(), triggerHistory.getParsedColumnNames(),
+                    data.toParsedRowData(),
                     dmlType == DmlType.INSERT ? null : triggerHistory.getParsedPkColumnNames(),
                     dmlType == DmlType.INSERT ? null : data.toParsedPkData(),
                     data.toParsedOldData());
-            return context.getContextCache().get(DATA_KEY);
-        } else {
-            return data;
+            if (transformedData != null) {
+                return apply(context, transformedData);
+            }
         }
 
+        return null;
     }
 
-    @Override
-    protected void apply(ICacheContext context, List<TransformedData> dataThatHasBeenTransformed) {
+    protected List<Data> apply(ICacheContext context,
+            List<TransformedData> dataThatHasBeenTransformed) {
         List<Data> datas = new ArrayList<Data>(dataThatHasBeenTransformed.size());
-        context.getContextCache().put(DATA_KEY, datas);
         for (TransformedData transformedData : dataThatHasBeenTransformed) {
             DmlType targetDmlType = transformedData.getTargetDmlType();
             if (targetDmlType != null) {
@@ -55,6 +55,7 @@ public class TransformDataExtractor extends AbstractTransformer {
                 datas.add(data);
             }
         }
+        return datas;
     }
 
     protected DmlType toDmlType(DataEventType eventType) {

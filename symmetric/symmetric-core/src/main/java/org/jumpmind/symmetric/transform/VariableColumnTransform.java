@@ -6,7 +6,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 
-public class VariableColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
+public class VariableColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
     public static final String NAME = "variable";
     
