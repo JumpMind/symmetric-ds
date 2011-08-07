@@ -5,7 +5,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 
-public class CopyColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
+public class CopyColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
     public final static String NAME = "copy";
     

@@ -27,8 +27,6 @@ import org.jumpmind.symmetric.model.Data;
  * This extension point is called after data has been extracted, but before it
  * has been streamed. It has the ability to inspect each row of data to take
  * some action and indicate, if necessary, that the row should not be streamed.
- *
- * 
  */
 public interface IExtractorFilter extends IExtensionPoint {
 

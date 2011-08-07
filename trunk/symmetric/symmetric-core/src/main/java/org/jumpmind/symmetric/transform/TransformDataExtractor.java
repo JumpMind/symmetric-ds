@@ -1,48 +1,59 @@
 package org.jumpmind.symmetric.transform;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
-import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.util.CsvUtils;
 
-public class TransformDataExtractor extends AbstractTransformer implements IExtractorFilter {
+public class TransformDataExtractor extends AbstractTransformer {
 
     protected final String DATA_KEY = "DATA_KEY-" + hashCode();
 
-    public boolean filterData(Data data, String routerId, DataExtractorContext context) {
+    public Object filterData(Data data, String routerId, DataExtractorContext context) {
         DataEventType eventType = data.getEventType();
         DmlType dmlType = toDmlType(eventType);
         if (dmlType != null) {
-            context.getContextCache().put(DATA_KEY, data);
             TriggerHistory triggerHistory = data.getTriggerHistory();
             transform(dmlType, context, triggerHistory.getSourceCatalogName(),
                     triggerHistory.getSourceSchemaName(), data.getTableName(),
                     triggerHistory.getParsedColumnNames(), data.toParsedRowData(),
-                    triggerHistory.getParsedPkColumnNames(), data.toParsedPkData(),
+                    dmlType == DmlType.INSERT ? null : triggerHistory.getParsedPkColumnNames(),
+                    dmlType == DmlType.INSERT ? null : data.toParsedPkData(),
                     data.toParsedOldData());
+            return context.getContextCache().get(DATA_KEY);
+        } else {
+            return data;
         }
-        return true;
+
     }
 
     @Override
-    protected void apply(ICacheContext context, TransformedData transformedData) {
-        Data data = (Data) context.getContextCache().get(DATA_KEY);
-
-        DmlType targetDmlType = transformedData.getTargetDmlType();
-        if (targetDmlType != null) {
-            TriggerHistory triggerHistory = new TriggerHistory(transformedData.getTableName(),
-                    CsvUtils.escapeCsvData(transformedData.getKeyNames()),
-                    CsvUtils.escapeCsvData(transformedData.getColumnNames()));            
-            data.setTriggerHistory(triggerHistory);
-            data.setTableName(transformedData.getTableName());
-            data.setRowData(CsvUtils.escapeCsvData(transformedData.getColumnValues()));
-            data.setPkData(CsvUtils.escapeCsvData(transformedData.getKeyValues()));
-            data.setOldData(null);
-
+    protected void apply(ICacheContext context, List<TransformedData> dataThatHasBeenTransformed) {
+        List<Data> datas = new ArrayList<Data>(dataThatHasBeenTransformed.size());
+        context.getContextCache().put(DATA_KEY, datas);
+        for (TransformedData transformedData : dataThatHasBeenTransformed) {
+            DmlType targetDmlType = transformedData.getTargetDmlType();
+            if (targetDmlType != null) {
+                Data data = new Data();
+                TriggerHistory triggerHistory = new TriggerHistory(transformedData.getTableName(),
+                        CsvUtils.escapeCsvData(transformedData.getKeyNames()),
+                        CsvUtils.escapeCsvData(transformedData.getColumnNames()));
+                triggerHistory.setSourceCatalogName(transformedData.getCatalogName());
+                triggerHistory.setSourceSchemaName(transformedData.getSchemaName());
+                data.setTriggerHistory(triggerHistory);
+                data.setEventType(toDataEventType(transformedData.getTargetDmlType()));
+                data.setTableName(transformedData.getTableName());
+                data.setRowData(CsvUtils.escapeCsvData(transformedData.getColumnValues()));
+                data.setPkData(CsvUtils.escapeCsvData(transformedData.getKeyValues()));
+                data.setOldData(null);
+                datas.add(data);
+            }
         }
     }
 
@@ -71,6 +82,5 @@ public class TransformDataExtractor extends AbstractTransformer implements IExtr
             return null;
         }
     }
-
 
 }

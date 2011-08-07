@@ -7,7 +7,7 @@ import org.jumpmind.symmetric.ext.ICacheContext;
 
 import bsh.Interpreter;
 
-public class BshColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
+public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 

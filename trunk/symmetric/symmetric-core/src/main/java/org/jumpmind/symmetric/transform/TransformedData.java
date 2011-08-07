@@ -9,7 +9,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.transform.TransformColumn.IncludeOnType;
 
-public class TransformedData {
+public class TransformedData implements Cloneable {
 
     protected DmlType targetDmlType;
 
@@ -54,7 +54,8 @@ public class TransformedData {
     public void put(TransformColumn column, String columnValue, boolean recordAsKey) {
         if (recordAsKey) {
             if (keysBy == null) {
-                keysBy = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
+                keysBy = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(
+                        2);
             }
             LinkedHashMap<String, String> keyValues = keysBy.get(column.getIncludeOn());
             if (keyValues == null) {
@@ -62,18 +63,16 @@ public class TransformedData {
                 keysBy.put(column.getIncludeOn(), keyValues);
             }
             keyValues.put(column.getTargetColumnName(), columnValue);
-
-        } else {
-            if (columnsBy == null) {
-                columnsBy = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
-            }
-            LinkedHashMap<String, String> columnValues = columnsBy.get(column.getIncludeOn());
-            if (columnValues == null) {
-                columnValues = new LinkedHashMap<String, String>();
-                columnsBy.put(column.getIncludeOn(), columnValues);
-            }
-            columnValues.put(column.getTargetColumnName(), columnValue);
         }
+        if (columnsBy == null) {
+            columnsBy = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
+        }
+        LinkedHashMap<String, String> columnValues = columnsBy.get(column.getIncludeOn());
+        if (columnValues == null) {
+            columnValues = new LinkedHashMap<String, String>();
+            columnsBy.put(column.getIncludeOn(), columnValues);
+        }
+        columnValues.put(column.getTargetColumnName(), columnValue);
     }
 
     protected List<String> retrieve(
@@ -132,6 +131,26 @@ public class TransformedData {
 
     public DmlType getSourceDmlType() {
         return sourceDmlType;
+    }
+    
+    public TransformedData copy() {
+        try {
+            TransformedData clone = (TransformedData)this.clone();
+            clone.columnsBy = copy(columnsBy);
+            clone.keysBy = copy(keysBy);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> copy(Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> toCopy) {
+        Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> newMap = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String,String>>(toCopy.size());
+        for (TransformColumn.IncludeOnType key : toCopy.keySet()) {
+            LinkedHashMap<String, String> value = toCopy.get(key);
+            newMap.put(key, new LinkedHashMap<String, String>(value));
+        }
+        return newMap;
     }
 
 }

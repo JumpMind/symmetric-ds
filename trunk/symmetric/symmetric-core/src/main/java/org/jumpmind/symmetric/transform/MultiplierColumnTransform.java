@@ -21,19 +21,20 @@
 
 package org.jumpmind.symmetric.transform;
 
+import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
-public class LookupColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class MultiplierColumnTransform implements IMultipleValueColumnTransform, IBuiltInExtensionPoint {
 
     protected SimpleJdbcTemplate jdbcTemplate;
 
-    public static final String NAME = "lookup";
+    public static final String NAME = "multiplier";
 
     public boolean isAutoRegister() {
         return true;
@@ -43,14 +44,10 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
         return NAME;
     }
 
-    public String transform(ICacheContext context, TransformColumn column, TransformedData data,
-        Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,
-        IgnoreRowException {
-        String sql = column.getTransformExpression();
-        if (StringUtils.isNotBlank(sql)) {
-            return jdbcTemplate.queryForObject(sql, String.class, sourceValues);
-        }
-        return value;
+    public List<String> transform(ICacheContext context, TransformColumn column,
+            TransformedData data, Map<String, String> sourceValues, String value, String oldValue)
+            throws IgnoreColumnException, IgnoreRowException {
+        return jdbcTemplate.query(column.getTransformExpression(), new SingleColumnRowMapper<String>() , sourceValues);
     }
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
