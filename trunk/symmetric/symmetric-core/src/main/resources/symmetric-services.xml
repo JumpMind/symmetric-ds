@@ -126,6 +126,7 @@
         <property name="configurationService" ref="configurationService" />
         <property name="statisticManager" ref="statisticManager" />
         <property name="context" ref="extractorContext" />
+        <property name="transformDataExtractor" ref="transformDataExtractor"/>
     </bean>
 
     <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService" scope="singleton" parent="abstractService">
