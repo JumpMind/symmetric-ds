@@ -11,7 +11,7 @@ import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class AdditiveColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
+public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
     public static final String NAME = "additive";
     

@@ -5,9 +5,9 @@ import java.util.Map;
 
 public interface ITransformService {
     
-    public Map<String, IColumnTransform> getColumnTransforms();
+    public Map<String, IColumnTransform<?>> getColumnTransforms();
     
-    public void addColumnTransform(String name, IColumnTransform transform);
+    public void addColumnTransform(String name, IColumnTransform<?> transform);
     
     public Map<String, List<TransformTable>> findTransformsFor(String nodeGroupId, boolean useCache);
     
@@ -20,8 +20,6 @@ public interface ITransformService {
     public void saveTransformTable(TransformTable transformTable);        
     
     public void deleteTransformTable(String transformTableId);
-    
-    /* methods for transform columns */
 
     public void saveTransformColumn(TransformColumn transformColumn);
     

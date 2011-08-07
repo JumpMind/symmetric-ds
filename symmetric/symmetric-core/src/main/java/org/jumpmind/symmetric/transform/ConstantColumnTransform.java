@@ -5,7 +5,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 
-public class ConstantColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
+public class ConstantColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
     public static final String NAME = "const";
     

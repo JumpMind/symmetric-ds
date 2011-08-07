@@ -7,7 +7,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 
-public class SubstrColumnTransform implements IColumnTransform, IBuiltInExtensionPoint {
+public class SubstrColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
     protected IDbDialect dbDialect;
     
