@@ -40,5 +40,7 @@
     <bean id="lookupColumnTransform" class="org.jumpmind.symmetric.transform.LookupColumnTransform">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
     </bean>
+
+    <bean id="variableColumnTransform" class="org.jumpmind.symmetric.transform.VariableColumnTransform" />
     
 </beans>
