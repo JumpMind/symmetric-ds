@@ -21,8 +21,10 @@
 
 package org.jumpmind.symmetric.transform;
 
+import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
@@ -142,15 +144,16 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
     @Test
     public void testTableLookup() throws Exception {
         TriggerHistory triggerHistory = new TriggerHistory("SOURCE_B", "ID", "ID, S1");
-        Data data = new Data("SOURCE_B", DataEventType.INSERT, "9, X", null, triggerHistory,
-                TestConstants.TEST_CHANNEL_ID, null, null);
-        data = toData(transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID,
-                dataExtractorContext));
+        Data data = new Data("SOURCE_B", DataEventType.INSERT, "9, X", null,
+            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
+        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
 
         Assert.assertEquals("ID_B", data.getTriggerHistory().getPkColumnNames());
-        Assert.assertEquals("ID_B,S1_B", data.getTriggerHistory().getColumnNames());
+        Assert.assertEquals("ID_B,S1_B,S2_B", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_B", data.getTriggerHistory().getSourceTableName());
-        Assert.assertEquals("9,12", data.getRowData());
+        Assert.assertTrue(data.getRowData().startsWith(("9,12,")));
+        Date date = DateUtils.parseDate(data.getRowData().substring(5, 28), new String[] { "yyyy-MM-dd HH:mm:ss.SSS" });
+        Assert.assertNotNull(date);
     }
 
     @Test
