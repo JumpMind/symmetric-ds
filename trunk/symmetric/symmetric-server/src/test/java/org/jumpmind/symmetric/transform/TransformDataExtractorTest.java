@@ -21,23 +21,25 @@
 
 package org.jumpmind.symmetric.transform;
 
+import java.util.List;
+
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
-import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TransformDataExtractorTest extends AbstractDataLoaderTest {
+public class TransformDataExtractorTest extends AbstractDatabaseTest {
 
     private static final String SIMPLE = "SIMPLE";
 
-    private DataExtractorContext dataExtractorContext; 
-    
+    private DataExtractorContext dataExtractorContext;
+
     private TransformDataExtractor transformDataExtractor;
 
     public TransformDataExtractorTest() throws Exception {
@@ -53,36 +55,43 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
     public void testSimpleTableMapping() throws Exception {
         TriggerHistory triggerHistory = new TriggerHistory(SIMPLE, "ID", "ID, S1, X, Y, Z, TOTAL");
         Data data = new Data(SIMPLE, DataEventType.INSERT, "1, ONE, X, Y, Z, 1000", null,
-            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
-        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
-        
+                triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
+        data = toData(transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID,
+                dataExtractorContext));
+
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory().getColumnNames());
+        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory()
+                .getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
         Assert.assertEquals("1,ONE,CONSTANT,1000,ONE-1", data.getRowData());
     }
 
     @Test
-    public void testSimpleTableAdditiveUpdateMapping() throws Exception {    
+    public void testSimpleTableAdditiveUpdateMapping() throws Exception {
         TriggerHistory triggerHistory = new TriggerHistory(SIMPLE, "ID", "ID, S1, X, Y, Z, TOTAL");
         Data data = new Data(SIMPLE, DataEventType.UPDATE, "1, ONE, X, Y, Z, 10", "1",
-            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
+                triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
         data.setOldData("1, ONE, X, Y, Z, 1");
-        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
+
+        data = toData(transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID,
+                dataExtractorContext));
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory().getColumnNames());
+        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory()
+                .getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
         Assert.assertEquals("1,ONE,CONSTANT,9,ONE-1", data.getRowData());
         // TODO: is it okay for old data to be null after transformation?
 
-        data = new Data(SIMPLE, DataEventType.UPDATE, "1, ONE, X, Y, Z, 8", "1",
-            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
+        data = new Data(SIMPLE, DataEventType.UPDATE, "1, ONE, X, Y, Z, 8", "1", triggerHistory,
+                TestConstants.TEST_CHANNEL_ID, null, null);
         data.setOldData("1, ONE, X, Y, Z, 9");
-        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
+        data = toData(transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID,
+                dataExtractorContext));
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory().getColumnNames());
+        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory()
+                .getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
         Assert.assertEquals("1,ONE,CONSTANT,-1,ONE-1", data.getRowData());
     }
@@ -91,19 +100,21 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
     public void testTwoTablesMappedToOneInsert() throws Exception {
         TriggerHistory triggerHistory = new TriggerHistory("SOURCE_1", "ID", "ID, S1, X, Y, Z");
         Data data = new Data("SOURCE_1", DataEventType.INSERT, "4, BAMBOO, X, Y, Z", null,
-            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
-        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
+                triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
+        data = toData(transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID,
+                dataExtractorContext));
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
         Assert.assertEquals("ID_A,S1_A,S2_A", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
         Assert.assertEquals("4,BAMBOO,CONSTANT", data.getRowData());
-        
+
         triggerHistory = new TriggerHistory("SOURCE_2", "ID2", "ID2, S2");
-        data = new Data("SOURCE_2", DataEventType.INSERT, "4, STATUS4", null,
-            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
-        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
-        
+        data = new Data("SOURCE_2", DataEventType.INSERT, "4, STATUS4", null, triggerHistory,
+                TestConstants.TEST_CHANNEL_ID, null, null);
+        data = toData(transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID,
+                dataExtractorContext));
+
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
         Assert.assertEquals("ID_A,S2_A", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
@@ -113,13 +124,13 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
     @Test
     public void testTwoTablesMappedToOneDeleteUpdates() throws Exception {
         TriggerHistory triggerHistory = new TriggerHistory("SOURCE_2", "ID2", "ID2, S2");
-        Data data = new Data("SOURCE_2", DataEventType.DELETE, null, "4",
-            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
+        Data data = new Data("SOURCE_2", DataEventType.DELETE, null, "4", triggerHistory,
+                TestConstants.TEST_CHANNEL_ID, null, null);
         data.setOldData("4, STATUS_4");
-        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
-        
-        // TODO: should not be DELETE
-        Assert.assertEquals("UPDATE", data.getEventType());
+        data = toData(transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID,
+                dataExtractorContext));
+
+        Assert.assertEquals(DataEventType.UPDATE, data.getEventType());
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
         // TODO: should not be S2_A
         Assert.assertEquals("ID_A,S2_A", data.getTriggerHistory().getColumnNames());
@@ -131,9 +142,10 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
     @Test
     public void testTableLookup() throws Exception {
         TriggerHistory triggerHistory = new TriggerHistory("SOURCE_B", "ID", "ID, S1");
-        Data data = new Data("SOURCE_B", DataEventType.INSERT, "9, X", null,
-            triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
-        transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID, dataExtractorContext);
+        Data data = new Data("SOURCE_B", DataEventType.INSERT, "9, X", null, triggerHistory,
+                TestConstants.TEST_CHANNEL_ID, null, null);
+        data = toData(transformDataExtractor.filterData(data, Constants.UNKNOWN_ROUTER_ID,
+                dataExtractorContext));
 
         Assert.assertEquals("ID_B", data.getTriggerHistory().getPkColumnNames());
         Assert.assertEquals("ID_B,S1_B", data.getTriggerHistory().getColumnNames());
@@ -141,8 +153,23 @@ public class TransformDataExtractorTest extends AbstractDataLoaderTest {
         Assert.assertEquals("9,12", data.getRowData());
     }
 
-    @SuppressWarnings("unused")
-    private void debug(Data data) {
+    @Test
+    public void testMultiplyRows() throws Exception {
+
+    }
+
+    protected Data toData(Object value) {
+        if (value instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<Data> list = (List<Data>) value;
+            if (list.size() > 0) {
+                return list.get(0);
+            }
+        }
+        return null;
+    }
+
+    protected void debug(Data data) {
         System.out.println("type: " + data.getEventType());
         System.out.println("keys: " + data.getTriggerHistory().getPkColumnNames());
         System.out.println("columns: " + data.getTriggerHistory().getColumnNames());
