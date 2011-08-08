@@ -138,6 +138,8 @@ public abstract class AbstractTransformer {
                                         newDatas.add(newData);
                                     }
                                 }
+                            } else {
+                                throw new IgnoreRowException();
                             }
                         }
                     } catch (IgnoreColumnException e) {
