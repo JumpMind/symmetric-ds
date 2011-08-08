@@ -111,4 +111,11 @@ insert into sym_transform_column (transform_id, include_on, source_column_name, 
   values ('sourceb_to_b', '*', null, 'S1_B', 0, 'lookup', 'select 12 from sym_node_identity where  9=:ID', 2);
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('sourceb_to_b', '*', null, 'S2_B', 0, 'variable', 'current_timestamp', 3);
+  
+insert into sym_transform_table (transform_id, source_table_name, target_table_name, target_node_group_id, update_first, delete_action, transform_order)
+  values ('one_to_multi', 'SOURCE_5', 'TARGET_5', 'test-root-group', 0, 'NONE', 1);
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('one_to_multi', '*', 'S5_ID', 'ID_TARGET', 1, 'multiply', 'select column_two from test_lookup_table where column_one=:S5_ID', 1);
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('one_to_multi', '*', 'S5_VALUE', 'VALUE_TARGET', 0, 'copy', null, 3);  
 

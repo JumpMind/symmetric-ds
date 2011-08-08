@@ -134,8 +134,8 @@ public abstract class AbstractTransformer {
                                     }
                                     for (int i = 1; i < values.size(); i++) {
                                         TransformedData newData = data.copy();
-                                        newData.put(transformColumn, values.get(0), true);
-                                        newDatas.add(data);
+                                        newData.put(transformColumn, values.get(i), true);
+                                        newDatas.add(newData);
                                     }
                                 }
                             }

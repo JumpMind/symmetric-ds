@@ -134,10 +134,8 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
 
         Assert.assertEquals(DataEventType.UPDATE, data.getEventType());
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        // TODO: should not be S2_A
         Assert.assertEquals("ID_A,S2_A", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
-        // TODO: should not be DELETED
         Assert.assertEquals("4,DELETED", data.getRowData());
     }
 
@@ -159,7 +157,18 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
 
     @Test
     public void testMultiplyRows() throws Exception {
-
+        getDbDialect().truncateTable("test_lookup_table");
+        getJdbcTemplate().update("insert into test_lookup_table values ('A','1')");
+        getJdbcTemplate().update("insert into test_lookup_table values ('A','2')");
+        TriggerHistory triggerHistory = new TriggerHistory("SOURCE_5", "S5_ID", "S5_ID,S5_VALUE");
+        Data data = new Data("SOURCE_5", DataEventType.UPDATE, "A, 5", "A", triggerHistory,
+                TestConstants.TEST_CHANNEL_ID, null, null);
+        List<Data> datas = transformDataExtractor.transformData(data, Constants.UNKNOWN_ROUTER_ID,
+                dataExtractorContext);
+        Assert.assertEquals(2, datas.size());
+        Assert.assertEquals("1,5",datas.get(0).getRowData());
+        Assert.assertEquals("2,5",datas.get(1).getRowData());
+        
     }
 
     protected Data toData(List<Data> list) {
