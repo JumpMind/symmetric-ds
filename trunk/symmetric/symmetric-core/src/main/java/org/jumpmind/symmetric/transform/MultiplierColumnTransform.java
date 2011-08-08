@@ -34,7 +34,7 @@ public class MultiplierColumnTransform implements IMultipleValueColumnTransform,
 
     protected SimpleJdbcTemplate jdbcTemplate;
 
-    public static final String NAME = "multiplier";
+    public static final String NAME = "multiply";
 
     public boolean isAutoRegister() {
         return true;
