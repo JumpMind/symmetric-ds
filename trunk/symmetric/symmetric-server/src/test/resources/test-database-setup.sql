@@ -83,7 +83,7 @@ insert into sym_transform_column (transform_id, include_on, source_column_name, 
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('simple_2_a', '*', 'TOTAL', 'DECIMAL_A', 0, 'additive', null, 4);   
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
-  values ('simple_2_a', '*', null, 'LONGSTRING_A', 0, 'script', 'S1+"-"+ID', 5);    
+  values ('simple_2_a', '*', null, 'LONGSTRING_A', 0, 'bsh', 'S1+"-"+ID', 5);    
   
 insert into sym_transform_table (transform_id, source_table_name, target_table_name, target_node_group_id, update_first, delete_action, transform_order)
   values ('source1_to_a', 'SOURCE_1', 'TEST_TRANSFORM_A', 'test-root-group', 0, 'DEL_ROW', 1);

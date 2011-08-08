@@ -11,7 +11,7 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
 
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
-    public static final String NAME = "script";
+    public static final String NAME = "bsh";
     
     public boolean isAutoRegister() {
         return true;
