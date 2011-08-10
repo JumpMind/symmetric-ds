@@ -155,6 +155,8 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
                     if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
                         log.warn("RoutedDataSelectedInTime", executeTimeInMs, channelId);
+                    } else if (log.isDebugEnabled()) {
+                        log.debug("RoutedDataSelectedInTime", executeTimeInMs, channelId);
                     }
 
                     int toRead = maxQueueSize - dataQueue.size();
