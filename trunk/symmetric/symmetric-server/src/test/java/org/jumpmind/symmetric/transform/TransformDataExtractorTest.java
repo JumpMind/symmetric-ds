@@ -52,7 +52,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         transformDataExtractor = find("transformDataExtractor");
         dataExtractorContext = (DataExtractorContext) find("extractorContext");
         getJdbcTemplate().update("update sym_transform_table set transform_point='EXTRACT'");
-        getSymmetricEngine().getApplicationContext().getBean(ITransformService.class).refreshCache();
+        getSymmetricEngine().getTransformService().resetCache();
     }
 
     @Test

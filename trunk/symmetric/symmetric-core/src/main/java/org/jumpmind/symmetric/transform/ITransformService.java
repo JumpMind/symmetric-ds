@@ -25,6 +25,6 @@ public interface ITransformService {
     
     public void deleteTransformColumn(String transformTableId, Boolean includeOn, String targetColumnName);
     
-    public void refreshCache();
+    public void resetCache();
         
 }

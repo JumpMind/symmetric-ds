@@ -40,8 +40,14 @@ public class TransformService extends AbstractService implements ITransformServi
         return transformsCacheByTransformPoint != null ? transformsCacheByTransformPoint.get(transformPoint)
                 : null;
     }
+    
+    public void resetCache() {
+        synchronized (this) {
+            this.transformsCacheByTransformPoint = null;
+        }
+    }
 
-    public void refreshCache() {
+    protected void refreshCache() {
 
         // get the cache timeout
         long cacheTimeoutInMs = parameterService
