@@ -31,8 +31,7 @@ public abstract class AbstractTransformer {
             throws IgnoreRowException {
         if (!tableName.toLowerCase().startsWith(tablePrefix)) {
             List<TransformTable> transformationsToPerform = findTablesToTransform(
-                    getFullyQualifiedTableName(catalogName, schemaName, tableName),
-                    parameterService.getNodeGroupId());
+                    getFullyQualifiedTableName(catalogName, schemaName, tableName));
             if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
                 Map<String, String> sourceValues = toMap(columnNames, columnValues);
                 Map<String, String> oldSourceValues = toMap(columnNames, oldData);
@@ -182,11 +181,12 @@ public abstract class AbstractTransformer {
         }
         return tableName;
     }
+    
+    abstract protected TransformPoint getTransformPoint();
 
-    protected List<TransformTable> findTablesToTransform(String fullyQualifiedSourceTableName,
-            String targetNodeId) {
+    protected List<TransformTable> findTablesToTransform(String fullyQualifiedSourceTableName) {
         Map<String, List<TransformTable>> transformMap = transformService.findTransformsFor(
-                targetNodeId, true);
+                getTransformPoint(), true);
         List<TransformTable> transforms = transformMap != null ? transformMap
                 .get(fullyQualifiedSourceTableName) : null;
         return transforms;

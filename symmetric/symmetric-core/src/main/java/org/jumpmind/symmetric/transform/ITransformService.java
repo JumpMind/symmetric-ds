@@ -9,7 +9,7 @@ public interface ITransformService {
     
     public void addColumnTransform(String name, IColumnTransform<?> transform);
     
-    public Map<String, List<TransformTable>> findTransformsFor(String nodeGroupId, boolean useCache);
+    public Map<String, List<TransformTable>> findTransformsFor(TransformPoint transformPoint, boolean useCache);
     
     public List<TransformTable> getTransformTables();
     
@@ -24,5 +24,7 @@ public interface ITransformService {
     public void saveTransformColumn(TransformColumn transformColumn);
     
     public void deleteTransformColumn(String transformTableId, Boolean includeOn, String targetColumnName);
+    
+    public void refreshCache();
         
 }

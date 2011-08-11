@@ -33,6 +33,11 @@ public class TransformDataExtractor extends AbstractTransformer {
 
         return null;
     }
+    
+    @Override
+    protected TransformPoint getTransformPoint() {
+        return TransformPoint.EXTRACT;
+    }
 
     protected List<Data> apply(ICacheContext context,
             List<TransformedData> dataThatHasBeenTransformed) {

@@ -14,7 +14,7 @@ public class TransformTable {
     protected String targetCatalogName;
     protected String targetSchemaName;
     protected String targetTableName;
-    protected String targetNodeGroupId;
+    protected TransformPoint transformPoint;
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
     protected DeleteAction deleteAction = DeleteAction.NONE;
@@ -87,12 +87,12 @@ public class TransformTable {
         this.targetTableName = targetTableName;
     }
 
-    public String getTargetNodeGroupId() {
-        return targetNodeGroupId;
+    public void setTransformPoint(TransformPoint transformPoint) {
+        this.transformPoint = transformPoint;
     }
-
-    public void setTargetNodeGroupId(String targetNodeGroupId) {
-        this.targetNodeGroupId = targetNodeGroupId;
+    
+    public TransformPoint getTransformPoint() {
+        return transformPoint;
     }
 
     public void setTransformColumns(List<TransformColumn> transformColumns) {

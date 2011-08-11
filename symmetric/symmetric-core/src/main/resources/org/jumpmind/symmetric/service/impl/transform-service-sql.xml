@@ -14,7 +14,7 @@
 				source_table_name,
 				target_catalog_name, target_schema_name,
 				target_table_name,
-				target_node_group_id,
+				transform_point,
 				transform_order,
 				update_first, delete_action
 				from
@@ -58,7 +58,7 @@
 				target_catalog_name=?,
 				target_schema_name=?,
 				target_table_name=?,
-				target_node_group_id=?,
+				transform_point=?,
 				update_first=?,
 				delete_action=?,
 				transform_order=?
@@ -88,7 +88,7 @@
 				insert into $[sym.sync.table.prefix]_transform_table
 				(source_catalog_name, source_schema_name, source_table_name,
 				target_catalog_name, target_schema_name, target_table_name,
-				target_node_group_id, update_first, delete_action, transform_order,
+				transform_point, update_first, delete_action, transform_order,
 				transform_id)
 				values(?,?,?,?,?,?,?,?,?,?,?)
       </value>
