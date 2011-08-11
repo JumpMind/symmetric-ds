@@ -693,7 +693,7 @@ insert into SYM_ROUTER
   (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-bsh','corp', 'store', 'bsh', 
+  ('corp-2-store-bsh','corp', 'store', 'script', 
     'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);', 
     current_timestamp, current_timestamp);
 ]]></programlisting>
@@ -706,7 +706,7 @@ insert into SYM_ROUTER
   (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-bsh','corp', 'store', 'bsh', 
+  ('corp-2-store-bsh','corp', 'store', 'script', 
     'STORE_ID + "-" + WORKSTATION_NUMBER', 
     current_timestamp, current_timestamp);
 ]]></programlisting>
@@ -720,7 +720,7 @@ insert into SYM_ROUTER
   (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-flag-changed','corp', 'store', 'bsh', 
+  ('corp-2-store-flag-changed','corp', 'store', 'script', 
     'FLAG != null && !FLAG.equals(OLD_FLAG)', 
     current_timestamp, current_timestamp);
 ]]></programlisting>
@@ -889,8 +889,10 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
     <section id="transform-data">
         <title>Transforming Data</title>
         <para>
-        New to SymmetricDS 2.4, SymmetricDS is now able to transform synchronized data as it is loaded into the target database by way of
-        configuration (previously, for most cases a custom data loader would need to have been written).  With this new feature you can, for example:
+        New to SymmetricDS 2.4, SymmetricDS is now able to transform synchronized data by way of
+        configuration (previously, for most cases a custom data loader would need to have been written).  This transformation can take
+        place on a source node, as the data is being extracted, or on the target node, as the data is being loaded.
+        With this new feature you can, for example:
         </para>
         <itemizedlist>
                 <listitem>
@@ -903,13 +905,18 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                     <para>Insert constants in columns in target tables based on source data synchronizations,</para>
                 </listitem>
                 <listitem>
+                    <para>Insert multiple rows of data into a single target table based on one change in a source table,</para>
+                </listitem>
+                <listitem>
                     <para>Apply a Bean Shell script to achieve a custom transform when loading into the target database.</para>
                 </listitem>
          </itemizedlist>
          <para>
-         These transformations take place on the target, as data is being loaded, but they are initiated due to existence of a source
+         These transformations can take place either on the target (as data is being loaded), or on the source (as data is being extracted).  In either case, the transformation is
+         initiated due to existence of a source
          synchronization trigger.  The source trigger creates the synchronization data, while the transformation configuration decides
-         what to do with the sychronization data once it reaches the target.  You have the flexibility of defining different transformation behavior depending on whether the source
+         what to do with the sychronization data as it is either being extracted from the source or loaded into the target.
+         You have the flexibility of defining different transformation behavior depending on whether the source
          change that triggered the synchronization was an Insert, Update, or Delete.  In the case of Delete, you even have options on what exactly to do on the target side, 
          be it a delete of a row, setting columns to specific values, or absolutely nothing at all.
          </para>
@@ -941,7 +948,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         <para>
         To define a transformation, you will first define the source table and target table that applies to a particular transformation.  The source and target tables, along with
         a unique identifier (the transform_id column) are defined in <xref linkend="table_transform_table" xrefstyle="table"/>.  In addition, you will specify the 
-        target_node_group_id to which the transform will apply.  All four of these values are required.
+        source_node_group_id and target_node_group_id to which the transform will apply, along with whether the transform should occur on the Extract step or the Load step.  All of these values are required.
         </para>
         
         <para>
@@ -1016,10 +1023,15 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                 </listitem>
                 <listitem>
                     Substring Transform ('substr'):  This transformation computes a substring of the source column data and uses the substring as the target column value.  The transform_expression can
-                    be a single integer (<code>n</code>, the beginning index), or a pair of comma-separated integers (<code>n,m</code> - the beginning and ending index).  The transform behaves as the Java substring function
-                    would using the specified values in transform_expression.
+                    be a single integer (<code>n</code>, the beginning index), or a pair of comma-separated integers (<code>n,m</code> - the beginning and ending index).  
+                    The transform behaves as the Java substring function would using the specified values in transform_expression.
                 </listitem>
-                  <listitem>
+                <listitem>
+                    Multiplier Transform ('multiply'):  This transformation allows for the creation of multiple rows in the target table based on the transform_expression.  This transform type
+                    can only be used on a primary key column.  The transform_expression is a SQL statement that returns the list to be used to create the multiple targets.
+                </listitem>
+              
+                <listitem>
                     Bean Shell Transform ('bsh'):  This transformation allows you to provide a Bean Shell script in transform_expression and executes the script at the time of transformation.
                 </listitem>                         
              </itemizedlist>
@@ -1029,7 +1041,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         <section id="transform-data-examples">
         <title>Transformation Examples</title>
             <para>
-            merging example - update first, 
+            To be done.
             </para>        
         </section>
     </section>
