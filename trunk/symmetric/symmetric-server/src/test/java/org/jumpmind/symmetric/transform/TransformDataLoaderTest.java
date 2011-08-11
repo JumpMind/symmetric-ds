@@ -37,6 +37,12 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
 
     public TransformDataLoaderTest() throws Exception {
     }
+    
+    @Before
+    public void setup() {
+        getJdbcTemplate().update("update sym_transform_table set transform_point='LOAD'");
+        getSymmetricEngine().getApplicationContext().getBean(ITransformService.class).refreshCache();
+    }
 
     @Test
     public void testSimpleTableMapping() throws Exception {

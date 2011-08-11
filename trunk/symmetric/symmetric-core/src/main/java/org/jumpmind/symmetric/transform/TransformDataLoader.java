@@ -17,6 +17,11 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
 
     public TransformDataLoader() {
     }
+    
+    @Override
+    protected TransformPoint getTransformPoint() {
+        return TransformPoint.LOAD;
+    }
 
     public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
         boolean processRow = true;
@@ -122,8 +127,7 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
 
     public boolean isHandlingMissingTable(IDataLoaderContext context) {
         List<TransformTable> transformationsToPerform = findTablesToTransform(context
-                .getTableTemplate().getFullyQualifiedTableName(true),
-                parameterService.getNodeGroupId());
+                .getTableTemplate().getFullyQualifiedTableName(true));
         return transformationsToPerform != null && transformationsToPerform.size() > 0;
     }
 

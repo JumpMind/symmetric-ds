@@ -17,13 +17,13 @@ public class TransformService extends AbstractService implements ITransformServi
 
     // the key for the outer map is the target node group id
     // the key for the inner map is the fully qualified source table name
-    private Map<String, Map<String, List<TransformTable>>> transformCacheByNodeGroupId;
+    private Map<TransformPoint, Map<String, List<TransformTable>>> transformsCacheByTransformPoint;
 
     private long lastCacheTimeInMs;
     
-    private Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
+    private Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();    
 
-    public Map<String, List<TransformTable>> findTransformsFor(String nodeGroupId, boolean useCache) {
+    public Map<String, List<TransformTable>> findTransformsFor(TransformPoint transformPoint, boolean useCache) {
 
         // get the cache timeout
         long cacheTimeoutInMs = parameterService
@@ -33,15 +33,15 @@ public class TransformService extends AbstractService implements ITransformServi
         // pull the data and refresh the cache
         synchronized (this) {
             if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                    || transformCacheByNodeGroupId == null || useCache == false) {
+                    || transformsCacheByTransformPoint == null || useCache == false) {
                 refreshCache();
             }
         }
-        return transformCacheByNodeGroupId != null ? transformCacheByNodeGroupId.get(nodeGroupId)
+        return transformsCacheByTransformPoint != null ? transformsCacheByTransformPoint.get(transformPoint)
                 : null;
     }
 
-    private void refreshCache() {
+    public void refreshCache() {
 
         // get the cache timeout
         long cacheTimeoutInMs = parameterService
@@ -49,18 +49,18 @@ public class TransformService extends AbstractService implements ITransformServi
 
         synchronized (this) {
             if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                    || transformCacheByNodeGroupId == null) {
+                    || transformsCacheByTransformPoint == null) {
 
-                transformCacheByNodeGroupId = new HashMap<String, Map<String, List<TransformTable>>>();
+                transformsCacheByTransformPoint = new HashMap<TransformPoint, Map<String, List<TransformTable>>>();
 
                 List<TransformTable> transforms = getTransformTablesFromDB();
 
                 for (TransformTable transformTable : transforms) {
-                    Map<String, List<TransformTable>> map = transformCacheByNodeGroupId
-                            .get(transformTable.getTargetNodeGroupId());
+                    Map<String, List<TransformTable>> map = transformsCacheByTransformPoint
+                            .get(transformTable.getTransformPoint());
                     if (map == null) {
                         map = new HashMap<String, List<TransformTable>>();
-                        transformCacheByNodeGroupId.put(transformTable.getTargetNodeGroupId(), map);
+                        transformsCacheByTransformPoint.put(transformTable.getTransformPoint(), map);
                     }
                     List<TransformTable> tables = map.get(transformTable
                             .getFullyQualifiedSourceTableName());
@@ -115,14 +115,14 @@ public class TransformService extends AbstractService implements ITransformServi
                 transformTable.getSourceCatalogName(), transformTable.getSourceSchemaName(),
                 transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
                 transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
-                transformTable.getTargetNodeGroupId(), transformTable.isUpdateFirst(),
+                transformTable.getTransformPoint().toString(), transformTable.isUpdateFirst(),
                 transformTable.getDeleteAction().toString(), transformTable.getTransformOrder(),
                 transformTable.getTransformId()) == 0) {
             jdbcTemplate.update(getSql("insertTransformTableSql"),
                     transformTable.getSourceCatalogName(), transformTable.getSourceSchemaName(),
                     transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
                     transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
-                    transformTable.getTargetNodeGroupId(), transformTable.isUpdateFirst(),
+                    transformTable.getTransformPoint().toString(), transformTable.isUpdateFirst(),
                     transformTable.getDeleteAction().toString(),
                     transformTable.getTransformOrder(), transformTable.getTransformId());
         }
@@ -193,7 +193,7 @@ public class TransformService extends AbstractService implements ITransformServi
             table.setTargetCatalogName(rs.getString(5));
             table.setTargetSchemaName(rs.getString(6));
             table.setTargetTableName(rs.getString(7));
-            table.setTargetNodeGroupId(rs.getString(8));
+            table.setTransformPoint(TransformPoint.valueOf(rs.getString(8)));
             table.setTransformOrder(rs.getInt(9));
             table.setUpdateFirst(rs.getBoolean(10));
             table.setDeleteAction(DeleteAction.valueOf(rs.getString(11)));
