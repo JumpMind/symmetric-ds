@@ -1017,6 +1017,10 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                     Constant Transform ('const'):  This transformation type allows you to map a constant value to the given target column.  The constant itself is placed in transform_expression.   
                 </listitem>
                 <listitem>
+                    Variable Transform ('variable'):  This transformation type allows you to map a built-in variable to the given target column.  The variable name is placed in transform_expression.
+                    The following variables are available: <code>current_timestamp</code> is the current system timestamp.
+                </listitem>
+                <listitem>
                     Additive Transform ('additive'): This transformation type is used for numeric data.  It computes the change between the old and new values on the source
                     and then adds (or subtracts) the value from the existing value in the target column.  For example, if the source column changed from a 2 to a 4, and the target
                     column is currently 10, the effect of the transform will be to change the target column to a value of 12 ( 10+(4-2) => 12 ).
@@ -1033,6 +1037,10 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
               
                 <listitem>
                     Bean Shell Transform ('bsh'):  This transformation allows you to provide a Bean Shell script in transform_expression and executes the script at the time of transformation.
+                    Some variables are provided to the script: <code>COLUMN_NAME</code> is a variable for a source column in the row, where the variable name is the column name in uppercase; 
+                    <code>currentValue</code> is the value of the current source column;
+                    <code>oldValue</code> is the old value of the source column for an updated row;
+                    <code>jdbcTemplate</code> is a Spring JdbcTemplate object for querying or updating the database.
                 </listitem>                         
              </itemizedlist>
             </para>
