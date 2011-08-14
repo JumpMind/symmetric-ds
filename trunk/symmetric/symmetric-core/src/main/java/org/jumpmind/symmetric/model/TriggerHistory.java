@@ -304,4 +304,14 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
         return errorMessage;
     }
 
+    public int toVirtualTriggerHistId() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
+        result = prime * result + ((sourceCatalogName == null) ? 0 : sourceCatalogName.hashCode());
+        result = prime * result + ((sourceSchemaName == null) ? 0 : sourceSchemaName.hashCode());
+        result = prime * result + ((sourceTableName == null) ? 0 : sourceTableName.hashCode());
+        return result;
+    }
+    
 }
