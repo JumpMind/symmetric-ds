@@ -20,6 +20,7 @@
         <property name="dbDialect" ref="dbDialect" />
         <property name="transformService" ref="transformService" />
         <property name="parameterService" ref="parameterService" />
+        <property name="triggerRouterService" ref="triggerRouterService"/>
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
     </bean>
 

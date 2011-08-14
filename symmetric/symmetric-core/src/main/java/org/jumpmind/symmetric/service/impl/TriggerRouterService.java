@@ -72,10 +72,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private IClusterService clusterService;
 
     private IConfigurationService configurationService;
+    
+    private Map<String, Router> routersCache;
 
     private Map<String, TriggerRoutersCache> triggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
     
     private long triggerRouterCacheTime;
+    
+    private long routersCacheTime;
 
     private List<ITriggerCreationListener> triggerCreationListeners;
 
@@ -462,17 +466,31 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     public Router getRouterById(String routerId) {
-        try {
-            return jdbcTemplate.queryForObject(getSql("select","selectRoutersColumnList",
-                    "selectRouterSql"), new RouterMapper(), routerId);
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
+        return getRouterById(routerId, true);
+    }
+    
+    public Router getRouterById(String routerId, boolean refreshCache) {
+        long routerCacheTimeoutInMs = parameterService
+                .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
+        Map<String, Router> cache = this.routersCache;
+        if (cache == null || refreshCache
+                || System.currentTimeMillis() - this.routersCacheTime > routerCacheTimeoutInMs) {
+            synchronized (this) {
+                this.triggerRouterCacheTime = System.currentTimeMillis();
+                List<Router> routers = getRouters();
+                cache = new HashMap<String, Router>(routers.size());
+                for (Router router : routers) {
+                    cache.put(router.getRouterId(), router);
+                }
+                this.routersCache = cache;
+            }
         }
+        return cache.get(routerId);
     }
     
     public List<Router> getRouters() {
-            return jdbcTemplate.query(getSql("select","selectRoutersColumnList",
-                    "selectRoutersSql"), new RouterMapper());
+        return jdbcTemplate.query(getSql("select", "selectRoutersColumnList", "selectRoutersSql"),
+                new RouterMapper());
     }
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId) {

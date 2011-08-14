@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IRouterContext;
+import org.jumpmind.symmetric.service.INodeService;
 
 /**
  * This is an {@link IDataRouter} that can be configured as an extension point. Instead of routing data to other nodes,
@@ -40,7 +41,7 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
 
     boolean onePerBatch = false;
     
-    DataLoaderContext contextForPublishing = new DataLoaderContext();
+    private INodeService nodeService;
     
     public void contextCommitted(IRouterContext context) {
         if (doesXmlExistToPublish(context)) {
@@ -49,6 +50,7 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
     }
     
     public void completeBatch(IRouterContext context, OutgoingBatch batch) {
+        DataLoaderContext contextForPublishing = new DataLoaderContext(nodeService, context.getJdbcTemplate());
         contextForPublishing.setSourceNodeId(batch.getNodeId());
         contextForPublishing.setBatchId(batch.getBatchId());
         if (onePerBatch && doesXmlExistToPublish(contextForPublishing)) {
@@ -83,5 +85,9 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
      */
     public void setOnePerBatch(boolean onePerBatch) {
         this.onePerBatch = onePerBatch;
+    }
+    
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 }

@@ -50,7 +50,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
 
         // Context 1 is for a filtered table; context 2, non-filtered.
 
-        ctx1 = new DataLoaderContext();
+        ctx1 = new DataLoaderContext(this.getNodeService(), this.getJdbcTemplate());
         ctx1.setSourceNodeId("54321");
         ctx1.setTableName(TABLE_TEST_1);
         ctx1.chooseTableTemplate();
@@ -59,7 +59,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         ctx1.setColumnNames(new String[] { "pk1", "pk2", "add1", "add2", "add3", "ovr1", "ovr2", "ovr3", "nada1" });
         ctx1.setKeyNames(new String[] { "pk1", "pk2" });
 
-        ctx2 = new DataLoaderContext();
+        ctx2 = new DataLoaderContext(this.getNodeService(), this.getJdbcTemplate());
         ctx2.setSourceNodeId("54321");
         ctx2.setTableName(TABLE_TEST_2);
         ctx2.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_2, null, false, null,

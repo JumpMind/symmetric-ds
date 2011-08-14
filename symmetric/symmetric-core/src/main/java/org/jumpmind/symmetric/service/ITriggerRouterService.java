@@ -61,6 +61,8 @@ public interface ITriggerRouterService {
     
     public Router getRouterById(String routerId);
     
+    public Router getRouterById(String routerId, boolean refreshCache);
+    
     public List<Router> getRouters();
     
     /**

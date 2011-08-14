@@ -403,13 +403,15 @@
     
     <table name="transform_table" description="Defines a data loader transformation which can be used to map arbitrary tables and columns to other tables and columns.">
         <column name="transform_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific transform." />
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />        
+        <column name="transform_point" type="VARCHAR" size="10" required="true" description="The point during the transport of captured data that a transform happens.  Support values are EXTRACT or LOAD." />
         <column name="source_catalog_name" type="VARCHAR" size="50"  description="Optional name for the catalog the configured table is in." />
         <column name="source_schema_name" type="VARCHAR" size="50"  description="Optional name for the schema a configured table is in." />
         <column name="source_table_name" type="VARCHAR" size="50" required="true"  description="The name of the source table that will be transformed." />
         <column name="target_catalog_name" type="VARCHAR" size="50"  description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
         <column name="target_schema_name" type="VARCHAR" size="50"  description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
         <column name="target_table_name" type="VARCHAR" size="50"  description="Optional name for a target table.  Use this if the target table name is different than the source." />
-        <column name="transform_point" type="VARCHAR" size="10" required="true" description="The point during the transport of captured data that a transform happens.  Support values are EXTRACT or LOAD." />
         <column name="update_first" type="BOOLEANINT" size="1" default="0" description="If true, the target actions are attempted as updates first, regardless of whether the source operation was an insert or an update."/>
         <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>

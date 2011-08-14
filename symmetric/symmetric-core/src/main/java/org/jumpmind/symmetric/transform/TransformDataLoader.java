@@ -17,7 +17,7 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
 
     public TransformDataLoader() {
     }
-    
+
     @Override
     protected TransformPoint getTransformPoint() {
         return TransformPoint.LOAD;
@@ -25,16 +25,20 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
 
     public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
         boolean processRow = true;
-        try {
-            List<TransformedData> transformedData = transform(DmlType.INSERT, context,
-                    context.getCatalogName(), context.getSchemaName(), context.getTableName(),
-                    context.getColumnNames(), columnValues, null, null, null);
-            if (transformedData != null) {
-                apply(context, transformedData);
+        if (isEligibleForTransform(context.getCatalogName(), context.getSchemaName(),
+                context.getTableName())) {
+            try {
+                List<TransformedData> transformedData = transform(DmlType.INSERT, context,
+                        context.getNodeGroupLink(), context.getCatalogName(),
+                        context.getSchemaName(), context.getTableName(), context.getColumnNames(),
+                        columnValues, null, null, null);
+                if (transformedData != null) {
+                    apply(context, transformedData);
+                    processRow = false;
+                }
+            } catch (IgnoreRowException ex) {
                 processRow = false;
             }
-        } catch (IgnoreRowException ex) {
-            processRow = false;
         }
         return processRow;
     }
@@ -42,17 +46,20 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
     public boolean filterUpdate(IDataLoaderContext context, String[] columnValues,
             String[] keyValues) {
         boolean processRow = true;
+        if (isEligibleForTransform(context.getCatalogName(), context.getSchemaName(),
+                context.getTableName())) {
         try {
             List<TransformedData> transformedData = transform(DmlType.UPDATE, context,
-                    context.getCatalogName(), context.getSchemaName(), context.getTableName(),
-                    context.getColumnNames(), columnValues, context.getKeyNames(), keyValues,
-                    context.getOldData());
-            if (transformedData != null) {
-                apply(context, transformedData);
+                    context.getNodeGroupLink(), context.getCatalogName(), context.getSchemaName(),
+ context.getTableName(), context.getColumnNames(),
+                        columnValues, context.getKeyNames(), keyValues, context.getOldData());
+                if (transformedData != null) {
+                    apply(context, transformedData);
+                    processRow = false;
+                }
+            } catch (IgnoreRowException ex) {
                 processRow = false;
             }
-        } catch (IgnoreRowException ex) {
-            processRow = false;
         }
         return processRow;
     }
@@ -65,17 +72,20 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
             columnValues = context.getOldData();
         }
         boolean processRow = true;
-        try {
-            List<TransformedData> transformedData = transform(DmlType.DELETE, context,
-                    context.getCatalogName(), context.getSchemaName(), context.getTableName(),
-                    columnNames, columnValues, context.getKeyNames(), keyValues,
-                    context.getOldData());
-            if (transformedData != null) {
-                apply(context, transformedData);
+        if (isEligibleForTransform(context.getCatalogName(), context.getSchemaName(),
+                context.getTableName())) {
+            try {
+                List<TransformedData> transformedData = transform(DmlType.DELETE, context,
+                        context.getNodeGroupLink(), context.getCatalogName(),
+                        context.getSchemaName(), context.getTableName(), columnNames, columnValues,
+                        context.getKeyNames(), keyValues, context.getOldData());
+                if (transformedData != null) {
+                    apply(context, transformedData);
+                    processRow = false;
+                }
+            } catch (IgnoreRowException ex) {
                 processRow = false;
             }
-        } catch (IgnoreRowException ex) {
-            processRow = false;
         }
         return processRow;
     }
@@ -122,12 +132,12 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                 break;
             }
         }
-
     }
 
     public boolean isHandlingMissingTable(IDataLoaderContext context) {
-        List<TransformTable> transformationsToPerform = findTablesToTransform(context
-                .getTableTemplate().getFullyQualifiedTableName(true));
+        List<TransformTable> transformationsToPerform = findTablesToTransform(
+                context.getNodeGroupLink(),
+                context.getTableTemplate().getFullyQualifiedTableName(true));
         return transformationsToPerform != null && transformationsToPerform.size() > 0;
     }
 
