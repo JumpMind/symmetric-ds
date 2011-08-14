@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -65,6 +66,8 @@ public class DataLoaderContext implements IDataLoaderContext {
     
     private INodeService nodeService;
     
+    private NodeGroupLink nodeGroupLink;
+    
     private transient Node sourceNode;
     
     private transient Node targetNode;
@@ -72,37 +75,43 @@ public class DataLoaderContext implements IDataLoaderContext {
     private JdbcTemplate jdbcTemplate;
 
     public DataLoaderContext(INodeService nodeService, JdbcTemplate jdbcTemplate) {
-        this();
+        this.tableTemplateMap = new HashMap<String, TableTemplate>();
         this.nodeService = nodeService;
         this.jdbcTemplate = jdbcTemplate;
-    }
-    
-    public DataLoaderContext() {
-        this.tableTemplateMap = new HashMap<String, TableTemplate>();
     }
     
     public JdbcTemplate getJdbcTemplate() {
         return jdbcTemplate;
     }
     
+    public NodeGroupLink getNodeGroupLink() {
+        if (nodeGroupLink == null && sourceNodeId != null) {
+            Node sourceNode = nodeService.findNode(sourceNodeId);
+            Node targetNode = getTargetNode();
+            if (sourceNode != null && targetNode != null) {
+                nodeGroupLink = new NodeGroupLink(sourceNode.getNodeGroupId(), getTargetNode()
+                        .getNodeGroupId());
+            }
+        }
+        return nodeGroupLink;
+    }
+    
     public Node getNode() {
           return getSourceNode();
     }   
     
-    public Node getSourceNode()
-    {
-        if (sourceNode == null) {
-            this.sourceNode = nodeService != null && sourceNodeId != null ? nodeService.findNode(this.sourceNodeId) : null; 
+    public Node getSourceNode() {
+        if (sourceNode == null && nodeService != null && sourceNodeId != null) {
+            this.sourceNode = nodeService.findNode(this.sourceNodeId);
         }
-        return this.sourceNode;      
+        return this.sourceNode;
     }
     
-    public Node getTargetNode()
-    {
-        if (targetNode == null) {
-            this.targetNode = nodeService != null ? nodeService.findIdentity() : null; 
+    public Node getTargetNode() {
+        if (targetNode == null && nodeService != null) {
+            this.targetNode = nodeService.findIdentity();
         }
-        return this.targetNode;      
+        return this.targetNode;
     }
     
     public TableTemplate getTableTemplate() {
@@ -187,6 +196,8 @@ public class DataLoaderContext implements IDataLoaderContext {
     public void setSourceNodeId(String sourceNodeId) {        
         this.sourceNodeId = sourceNodeId;
         this.sourceNode = null;
+        this.nodeGroupLink = null;
+        getNodeGroupLink();
     }
     
     @Deprecated
@@ -203,6 +214,9 @@ public class DataLoaderContext implements IDataLoaderContext {
     public void setTargetNodeId(String targetNodeId) {        
         this.targetNodeId = targetNodeId;
         this.targetNode = null;
+        this.nodeGroupLink = null;
+        getTargetNode();
+        getNodeGroupLink();
     }
     
     

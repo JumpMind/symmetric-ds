@@ -18,14 +18,12 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-
 package org.jumpmind.symmetric.transform;
 
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -37,6 +35,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TransformDataExtractorTest extends AbstractDatabaseTest {
+
+    private static final String TEST_ROUTER_ID = "test_2_root";
 
     private static final String SIMPLE = "SIMPLE";
 
@@ -60,7 +60,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         TriggerHistory triggerHistory = new TriggerHistory(SIMPLE, "ID", "ID, S1, X, Y, Z, TOTAL");
         Data data = new Data(SIMPLE, DataEventType.INSERT, "1, ONE, X, Y, Z, 1000", null,
                 triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
-        data = toData(transformDataExtractor.transformData(data, Constants.UNKNOWN_ROUTER_ID,
+        data = toData(transformDataExtractor.transformData(data, TEST_ROUTER_ID,
                 dataExtractorContext));
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
@@ -77,7 +77,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
                 triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
         data.setOldData("1, ONE, X, Y, Z, 1");
 
-        data = toData(transformDataExtractor.transformData(data, Constants.UNKNOWN_ROUTER_ID,
+        data = toData(transformDataExtractor.transformData(data, TEST_ROUTER_ID,
                 dataExtractorContext));
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
@@ -90,7 +90,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         data = new Data(SIMPLE, DataEventType.UPDATE, "1, ONE, X, Y, Z, 8", "1", triggerHistory,
                 TestConstants.TEST_CHANNEL_ID, null, null);
         data.setOldData("1, ONE, X, Y, Z, 9");
-        data = toData(transformDataExtractor.transformData(data, Constants.UNKNOWN_ROUTER_ID,
+        data = toData(transformDataExtractor.transformData(data, TEST_ROUTER_ID,
                 dataExtractorContext));
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
@@ -105,7 +105,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         TriggerHistory triggerHistory = new TriggerHistory("SOURCE_1", "ID", "ID, S1, X, Y, Z");
         Data data = new Data("SOURCE_1", DataEventType.INSERT, "4, BAMBOO, X, Y, Z", null,
                 triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
-        data = toData(transformDataExtractor.transformData(data, Constants.UNKNOWN_ROUTER_ID,
+        data = toData(transformDataExtractor.transformData(data, TEST_ROUTER_ID,
                 dataExtractorContext));
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
@@ -116,7 +116,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         triggerHistory = new TriggerHistory("SOURCE_2", "ID2", "ID2, S2");
         data = new Data("SOURCE_2", DataEventType.INSERT, "4, STATUS4", null, triggerHistory,
                 TestConstants.TEST_CHANNEL_ID, null, null);
-        data = toData(transformDataExtractor.transformData(data, Constants.UNKNOWN_ROUTER_ID,
+        data = toData(transformDataExtractor.transformData(data, TEST_ROUTER_ID,
                 dataExtractorContext));
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
@@ -131,7 +131,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         Data data = new Data("SOURCE_2", DataEventType.DELETE, null, "4", triggerHistory,
                 TestConstants.TEST_CHANNEL_ID, null, null);
         data.setOldData("4, STATUS_4");
-        data = toData(transformDataExtractor.transformData(data, Constants.UNKNOWN_ROUTER_ID,
+        data = toData(transformDataExtractor.transformData(data, TEST_ROUTER_ID,
                 dataExtractorContext));
 
         Assert.assertEquals(DataEventType.UPDATE, data.getEventType());
@@ -146,7 +146,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         TriggerHistory triggerHistory = new TriggerHistory("SOURCE_B", "ID", "ID, S1");
         Data data = new Data("SOURCE_B", DataEventType.INSERT, "9, X", null, triggerHistory,
                 TestConstants.TEST_CHANNEL_ID, null, null);
-        data = toData(transformDataExtractor.transformData(data, Constants.UNKNOWN_ROUTER_ID,
+        data = toData(transformDataExtractor.transformData(data, TEST_ROUTER_ID,
                 dataExtractorContext));
 
         Assert.assertEquals("ID_B", data.getTriggerHistory().getPkColumnNames());
@@ -165,7 +165,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         TriggerHistory triggerHistory = new TriggerHistory("SOURCE_5", "S5_ID", "S5_ID,S5_VALUE");
         Data data = new Data("SOURCE_5", DataEventType.UPDATE, "A, 5", "A", triggerHistory,
                 TestConstants.TEST_CHANNEL_ID, null, null);
-        List<Data> datas = transformDataExtractor.transformData(data, Constants.UNKNOWN_ROUTER_ID,
+        List<Data> datas = transformDataExtractor.transformData(data, TEST_ROUTER_ID,
                 dataExtractorContext);
         Assert.assertEquals(2, datas.size());
         Assert.assertEquals("1,5",datas.get(0).getRowData());

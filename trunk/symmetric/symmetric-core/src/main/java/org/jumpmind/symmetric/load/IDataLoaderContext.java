@@ -24,6 +24,7 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -52,6 +53,8 @@ public interface IDataLoaderContext extends ICacheContext {
      * @return target node id
      */
     public String getTargetNodeId();
+    
+    public NodeGroupLink getNodeGroupLink();
     
     /**
      *Returns the node on which the data was extracted; i.e., the source node

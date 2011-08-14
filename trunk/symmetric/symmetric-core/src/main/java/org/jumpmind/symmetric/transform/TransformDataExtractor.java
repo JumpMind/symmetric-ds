@@ -1,3 +1,23 @@
+/*
+ * Licensed to JumpMind Inc under one or more contributor 
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding 
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU Lesser General Public License (the
+ * "License"); you may not use this file except in compliance
+ * with the License. 
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see           
+ * <http://www.gnu.org/licenses/>.
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License. 
+ */
 package org.jumpmind.symmetric.transform;
 
 import java.util.ArrayList;
@@ -8,10 +28,14 @@ import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 public class TransformDataExtractor extends AbstractTransformer {
+
+    private ITriggerRouterService triggerRouterService;
 
     public List<Data> transformData(Data data, String routerId, DataExtractorContext context)
             throws IgnoreRowException {
@@ -19,21 +43,24 @@ public class TransformDataExtractor extends AbstractTransformer {
         DmlType dmlType = toDmlType(eventType);
         if (dmlType != null) {
             TriggerHistory triggerHistory = data.getTriggerHistory();
-            List<TransformedData> transformedData = transform(dmlType, context,
-                    triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
-                    data.getTableName(), triggerHistory.getParsedColumnNames(),
-                    data.toParsedRowData(),
-                    dmlType == DmlType.INSERT ? null : triggerHistory.getParsedPkColumnNames(),
-                    dmlType == DmlType.INSERT ? null : data.toParsedPkData(),
-                    data.toParsedOldData());
-            if (transformedData != null) {
-                return apply(context, transformedData);
+            Router router = triggerRouterService.getRouterById(routerId, false);
+            if (router != null) {
+                List<TransformedData> transformedData = transform(dmlType, context,
+                        router.getNodeGroupLink(), triggerHistory.getSourceCatalogName(),
+                        triggerHistory.getSourceSchemaName(), data.getTableName(),
+                        triggerHistory.getParsedColumnNames(), data.toParsedRowData(),
+                        dmlType == DmlType.INSERT ? null : triggerHistory.getParsedPkColumnNames(),
+                        dmlType == DmlType.INSERT ? null : data.toParsedPkData(),
+                        data.toParsedOldData());
+                if (transformedData != null) {
+                    return apply(context, transformedData);
+                }
             }
         }
 
         return null;
     }
-    
+
     @Override
     protected TransformPoint getTransformPoint() {
         return TransformPoint.EXTRACT;
@@ -87,6 +114,10 @@ public class TransformDataExtractor extends AbstractTransformer {
         default:
             return null;
         }
+    }
+
+    public void setTriggerRouterService(ITriggerRouterService triggerRouterService) {
+        this.triggerRouterService = triggerRouterService;
     }
 
 }

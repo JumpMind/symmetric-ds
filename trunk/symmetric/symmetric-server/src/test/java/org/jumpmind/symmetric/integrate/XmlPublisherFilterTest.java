@@ -50,7 +50,7 @@ public class XmlPublisherFilterTest extends AbstractDatabaseTest {
 
     @Before
     public void setUp() {
-        ctx = new DataLoaderContext();
+        ctx = new DataLoaderContext(this.getNodeService(), this.getJdbcTemplate());
         ctx.setSourceNodeId("54321");
         ctx.setBatchId(1111);
         ctx.setTableName(TABLE_TEST);

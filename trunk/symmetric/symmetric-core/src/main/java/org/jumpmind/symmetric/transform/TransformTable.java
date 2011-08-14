@@ -15,6 +15,8 @@ public class TransformTable {
     protected String targetSchemaName;
     protected String targetTableName;
     protected TransformPoint transformPoint;
+    protected String sourceNodeGroupId;
+    protected String targetNodeGroupId;
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
     protected DeleteAction deleteAction = DeleteAction.NONE;
@@ -160,5 +162,21 @@ public class TransformTable {
 
     public boolean isUpdateFirst() {
         return updateFirst;
+    }
+    
+    public void setSourceNodeGroupId(String sourceNodeGroupId) {
+        this.sourceNodeGroupId = sourceNodeGroupId;
+    }
+    
+    public String getSourceNodeGroupId() {
+        return sourceNodeGroupId;
+    }
+    
+    public void setTargetNodeGroupId(String targetNodeGroupId) {
+        this.targetNodeGroupId = targetNodeGroupId;
+    }
+    
+    public String getTargetNodeGroupId() {
+        return targetNodeGroupId;
     }
 }

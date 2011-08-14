@@ -11,6 +11,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public abstract class AbstractTransformer {
@@ -24,13 +25,17 @@ public abstract class AbstractTransformer {
     protected IParameterService parameterService;
 
     protected String tablePrefix;
+    
+    protected boolean isEligibleForTransform(String catalogName, String schemaName, String tableName) {
+        return !tableName.toLowerCase().startsWith(tablePrefix);
+    }
 
     protected List<TransformedData> transform(DmlType dmlType, ICacheContext context,
-            String catalogName, String schemaName, String tableName, String[] columnNames,
-            String[] columnValues, String[] keyNames, String[] keyValues, String[] oldData)
-            throws IgnoreRowException {
-        if (!tableName.toLowerCase().startsWith(tablePrefix)) {
-            List<TransformTable> transformationsToPerform = findTablesToTransform(
+            NodeGroupLink nodeGroupLink, String catalogName, String schemaName, String tableName,
+            String[] columnNames, String[] columnValues, String[] keyNames, String[] keyValues,
+            String[] oldData) throws IgnoreRowException {
+        if (isEligibleForTransform(catalogName, schemaName, tableName)) {
+            List<TransformTable> transformationsToPerform = findTablesToTransform(nodeGroupLink,
                     getFullyQualifiedTableName(catalogName, schemaName, tableName));
             if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
                 Map<String, String> sourceValues = toMap(columnNames, columnValues);
@@ -181,12 +186,13 @@ public abstract class AbstractTransformer {
         }
         return tableName;
     }
-    
+
     abstract protected TransformPoint getTransformPoint();
 
-    protected List<TransformTable> findTablesToTransform(String fullyQualifiedSourceTableName) {
+    protected List<TransformTable> findTablesToTransform(NodeGroupLink nodeGroupLink,
+            String fullyQualifiedSourceTableName) {
         Map<String, List<TransformTable>> transformMap = transformService.findTransformsFor(
-                getTransformPoint(), true);
+                nodeGroupLink, getTransformPoint(), true);
         List<TransformTable> transforms = transformMap != null ? transformMap
                 .get(fullyQualifiedSourceTableName) : null;
         return transforms;
