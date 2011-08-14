@@ -154,9 +154,16 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         Assert.assertEquals("ID_B", data.getTriggerHistory().getPkColumnNames());
         Assert.assertEquals("ID_B,S1_B,S2_B", data.getTriggerHistory().getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_B", data.getTriggerHistory().getSourceTableName());
-        Assert.assertTrue(data.getRowData().startsWith(("9,12,")));
-        Date date = DateUtils.parseDate(data.getRowData().substring(5, 28), new String[] { "yyyy-MM-dd HH:mm:ss.SSS" });
-        Assert.assertNotNull(date);
+        String rowData = data.getRowData();
+        Assert.assertTrue(rowData.startsWith(("9,12,")));
+        int endIndex = 28;
+        if (rowData.length() >= endIndex) {
+            Date date = DateUtils.parseDate(rowData.substring(5, endIndex),
+                    new String[] { "yyyy-MM-dd HH:mm:ss.SSS" });
+            Assert.assertNotNull(date);
+        } else {
+            Assert.fail("Row data was less than " + endIndex + ".  The row data was: " + rowData);
+        }
     }
 
     @Test
@@ -170,9 +177,9 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         List<Data> datas = transformDataExtractor.transformData(data, TEST_ROUTER_ID,
                 dataExtractorContext);
         Assert.assertEquals(2, datas.size());
-        Assert.assertEquals("1,5",datas.get(0).getRowData());
-        Assert.assertEquals("2,5",datas.get(1).getRowData());
-        
+        Assert.assertEquals("1,5", datas.get(0).getRowData());
+        Assert.assertEquals("2,5", datas.get(1).getRowData());
+
     }
 
     protected Data toData(List<Data> list) {
