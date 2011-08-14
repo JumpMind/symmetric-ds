@@ -143,6 +143,8 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
 
     @Test
     public void testTableLookup() throws Exception {
+        getDbDialect().truncateTable("test_lookup_table");
+        getJdbcTemplate().update("insert into test_lookup_table values ('9','12')");
         TriggerHistory triggerHistory = new TriggerHistory("SOURCE_B", "ID", "ID, S1");
         Data data = new Data("SOURCE_B", DataEventType.INSERT, "9, X", null, triggerHistory,
                 TestConstants.TEST_CHANNEL_ID, null, null);
