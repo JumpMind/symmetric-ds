@@ -69,9 +69,7 @@ public class TransformService extends AbstractService implements ITransformServi
                 List<TransformTable> transforms = getTransformTablesFromDB();
 
                 for (TransformTable transformTable : transforms) {
-                    NodeGroupLink nodeGroupLink = new NodeGroupLink(
-                            transformTable.getSourceNodeGroupId(),
-                            transformTable.getTargetNodeGroupId());
+                    NodeGroupLink nodeGroupLink = transformTable.getNodeGroupLink();
                     Map<TransformPoint, Map<String, List<TransformTable>>> byTransformPoint = transformsCacheByNodeGroupLinkByTransformPoint
                             .get(nodeGroupLink);
                     if (byTransformPoint == null) {
@@ -137,7 +135,8 @@ public class TransformService extends AbstractService implements ITransformServi
     @Transactional
     public void saveTransformTable(TransformTable transformTable) {
         if (jdbcTemplate.update(getSql("updateTransformTableSql"),
-                transformTable.getSourceNodeGroupId(), transformTable.getTargetNodeGroupId(),
+                transformTable.getNodeGroupLink().getSourceNodeGroupId(), 
+                transformTable.getNodeGroupLink().getTargetNodeGroupId(),
                 transformTable.getSourceCatalogName(), transformTable.getSourceSchemaName(),
                 transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
                 transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
@@ -145,7 +144,8 @@ public class TransformService extends AbstractService implements ITransformServi
                 transformTable.getDeleteAction().toString(), transformTable.getTransformOrder(),
                 transformTable.getTransformId()) == 0) {
             jdbcTemplate.update(getSql("insertTransformTableSql"),
-                    transformTable.getSourceNodeGroupId(), transformTable.getTargetNodeGroupId(),
+                    transformTable.getNodeGroupLink().getSourceNodeGroupId(), 
+                    transformTable.getNodeGroupLink().getTargetNodeGroupId(),
                     transformTable.getSourceCatalogName(), transformTable.getSourceSchemaName(),
                     transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
                     transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
@@ -214,8 +214,7 @@ public class TransformService extends AbstractService implements ITransformServi
         public TransformTable mapRow(ResultSet rs, int rowNum) throws SQLException {
             TransformTable table = new TransformTable();
             table.setTransformId(rs.getString(1));
-            table.setSourceNodeGroupId(rs.getString(2));
-            table.setTargetNodeGroupId(rs.getString(3));
+            table.setNodeGroupLink(new NodeGroupLink(rs.getString(2), rs.getString(3)));
             table.setSourceCatalogName(rs.getString(4));
             table.setSourceSchemaName(rs.getString(5));
             table.setSourceTableName(rs.getString(6));
