@@ -12,6 +12,10 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
     
     protected static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
     
+    protected static final String OPTION_TIMESTAMP = "system_timestamp";
+    
+    private static final String[] OPTIONS = new String[] {OPTION_TIMESTAMP};
+    
     public boolean isAutoRegister() {
         return true;
     }
@@ -19,13 +23,17 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
     public String getName() {
         return NAME;
     }
+    
+    public static String[] getOptions() {
+        return OPTIONS;
+    }
 
     public String transform(ICacheContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,
             IgnoreRowException {
         String varName = column.getTransformExpression();
         if (varName != null) {
-            if (varName.equalsIgnoreCase("current_timestamp")) {
+            if (varName.equalsIgnoreCase(OPTION_TIMESTAMP)) {
                 return DateFormatUtils.format(System.currentTimeMillis(), DATE_PATTERN);
             }
         }
