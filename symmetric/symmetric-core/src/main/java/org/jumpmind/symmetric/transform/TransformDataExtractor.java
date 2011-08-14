@@ -76,6 +76,7 @@ public class TransformDataExtractor extends AbstractTransformer {
                 TriggerHistory triggerHistory = new TriggerHistory(transformedData.getTableName(),
                         CsvUtils.escapeCsvData(transformedData.getKeyNames()),
                         CsvUtils.escapeCsvData(transformedData.getColumnNames()));
+                triggerHistory.setTriggerHistoryId(triggerHistory.toVirtualTriggerHistId());
                 triggerHistory.setSourceCatalogName(transformedData.getCatalogName());
                 triggerHistory.setSourceSchemaName(transformedData.getSchemaName());
                 data.setTriggerHistory(triggerHistory);
