@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 
 public class TransformTable {
 
@@ -15,8 +16,7 @@ public class TransformTable {
     protected String targetSchemaName;
     protected String targetTableName;
     protected TransformPoint transformPoint;
-    protected String sourceNodeGroupId;
-    protected String targetNodeGroupId;
+    protected NodeGroupLink nodeGroupLink;
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
     protected DeleteAction deleteAction = DeleteAction.NONE;
@@ -164,19 +164,11 @@ public class TransformTable {
         return updateFirst;
     }
     
-    public void setSourceNodeGroupId(String sourceNodeGroupId) {
-        this.sourceNodeGroupId = sourceNodeGroupId;
+    public void setNodeGroupLink(NodeGroupLink nodeGroupLink) {
+        this.nodeGroupLink = nodeGroupLink;
     }
     
-    public String getSourceNodeGroupId() {
-        return sourceNodeGroupId;
-    }
-    
-    public void setTargetNodeGroupId(String targetNodeGroupId) {
-        this.targetNodeGroupId = targetNodeGroupId;
-    }
-    
-    public String getTargetNodeGroupId() {
-        return targetNodeGroupId;
+    public NodeGroupLink getNodeGroupLink() {
+        return nodeGroupLink;
     }
 }

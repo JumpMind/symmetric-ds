@@ -40,6 +40,8 @@ public interface ITriggerRouterService {
 
     public List<TriggerHistory> getActiveTriggerHistories();
     
+    public List<TriggerRouter> getTriggerRouters();
+    
     /**
      * Return a list of triggers used when extraction configuration data during 
      * the registration process.

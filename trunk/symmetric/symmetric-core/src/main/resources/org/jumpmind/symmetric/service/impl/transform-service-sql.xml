@@ -94,7 +94,7 @@
 				target_catalog_name, target_schema_name, target_table_name,
 				transform_point, update_first, delete_action, transform_order,
 				transform_id)
-				values(?,?,?,?,?,?,?,?,?,?,?)
+				values(?,?,?,?,?,?,?,?,?,?,?,?,?)
       </value>
 		</entry>
 		<entry key="insertTransformColumnSql">

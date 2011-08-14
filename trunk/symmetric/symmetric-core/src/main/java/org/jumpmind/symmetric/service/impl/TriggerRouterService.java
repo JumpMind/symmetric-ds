@@ -297,9 +297,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRouter;
     }
     
+    private String getTriggerRouterSql() {
+        return getTriggerRouterSql(null);
+    }
+    
     private String getTriggerRouterSql(String sql) {
         return getSql("select", "selectTriggersColumnList", ",", "selectRoutersColumnList", ",",
                 "selectTriggerRoutersColumnList","selectTriggerRoutersSql", sql);
+    }
+    
+    public List<TriggerRouter> getTriggerRouters() {
+        return jdbcTemplate.query(getTriggerRouterSql(), new TriggerRouterMapper());
     }
     
     public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(String catalogName, String schemaName, String tableName, boolean refreshCache) {
