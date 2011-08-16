@@ -36,7 +36,9 @@
 
 	<bean id="substrColumnTransform" class="org.jumpmind.symmetric.transform.SubstrColumnTransform" />
 	
-	<bean id="bshColumnTransform" class="org.jumpmind.symmetric.transform.BshColumnTransform" />
+	<bean id="bshColumnTransform" class="org.jumpmind.symmetric.transform.BshColumnTransform">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />	
+	</bean>
 
     <bean id="lookupColumnTransform" class="org.jumpmind.symmetric.transform.LookupColumnTransform">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
