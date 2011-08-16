@@ -47,7 +47,7 @@ public class MultiplierColumnTransform implements IMultipleValueColumnTransform,
     public List<String> transform(ICacheContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String value, String oldValue)
             throws IgnoreColumnException, IgnoreRowException {
-        return jdbcTemplate.query(column.getTransformExpression(), new SingleColumnRowMapper<String>() , sourceValues);
+        return jdbcTemplate.query(column.getTransformExpression(), new SingleColumnRowMapper<String>(String.class) , sourceValues);
     }
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
