@@ -63,7 +63,13 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
                 return null;
             }
         } catch (Exception ex) {
-            throw new TransformColumnException(ex);
+            if (ex instanceof IgnoreColumnException) {
+                throw (IgnoreColumnException)ex;
+            } else if (ex instanceof IgnoreRowException) {
+                throw (IgnoreRowException)ex;
+            } else {
+                throw new TransformColumnException(ex);
+            }
         }
     }
 
