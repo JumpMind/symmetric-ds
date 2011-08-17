@@ -120,4 +120,9 @@ insert into sym_transform_column (transform_id, include_on, source_column_name, 
   values ('one_to_multi', '*', 'S5_ID', 'ID_TARGET', 1, 'multiply', 'select column_two from test_lookup_table where column_one=:S5_ID', 1);
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('one_to_multi', '*', 'S5_VALUE', 'VALUE_TARGET', 0, 'copy', null, 3);  
+  
+insert into sym_transform_table (transform_id, source_node_group_id, target_node_group_id, source_table_name, target_table_name, transform_point, update_first, delete_action, transform_order)
+  values ('test_ignore_row_from_bsh', 'test-node-group', 'test-root-group', 'SOURCE_6', 'TARGET_6', 'LOAD', 0, 'NONE', 1);
+insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
+  values ('test_ignore_row_from_bsh', '*', 'S6_ID', 'ID_TARGET', 1, 'bsh', 'throw new org.jumpmind.symmetric.transform.IgnoreRowException()', 1);  
 
