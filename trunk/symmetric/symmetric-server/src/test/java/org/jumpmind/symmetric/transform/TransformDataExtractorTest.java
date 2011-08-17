@@ -182,6 +182,19 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
 
     }
 
+    @Test
+    public void testIgnoreRowExceptionFromBshMapping() throws Exception {
+        try {
+            TriggerHistory triggerHistory = new TriggerHistory("SOURCE_6", "S6_ID", "S6_ID");
+            Data data = new Data("SOURCE_6", DataEventType.INSERT, "1", null, triggerHistory,
+                    TestConstants.TEST_CHANNEL_ID, null, null);
+            transformDataExtractor.transformData(data, TEST_ROUTER_ID, dataExtractorContext);
+            Assert.fail("IgnoreRowException should have been thrown");
+        } catch (IgnoreRowException ex) {
+
+        }
+    }
+
     protected Data toData(List<Data> list) {
         if (list != null && list.size() > 0) {
             return list.get(0);
