@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import bsh.EvalError;
 import bsh.Interpreter;
 
 public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
@@ -61,6 +62,15 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
                 return result.toString();
             } else {
                 return null;
+            }
+        } catch (EvalError evalEx) {
+            Throwable ex = evalEx.getCause();
+            if (ex instanceof IgnoreColumnException) {
+                throw (IgnoreColumnException)ex;
+            } else if (ex instanceof IgnoreRowException) {
+                throw (IgnoreRowException)ex;
+            } else {
+                throw new TransformColumnException(ex);
             }
         } catch (Exception ex) {
             if (ex instanceof IgnoreColumnException) {
