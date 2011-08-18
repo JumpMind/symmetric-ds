@@ -48,10 +48,10 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
         boolean processRow = true;
         if (isEligibleForTransform(context.getCatalogName(), context.getSchemaName(),
                 context.getTableName())) {
-        try {
-            List<TransformedData> transformedData = transform(DmlType.UPDATE, context,
-                    context.getNodeGroupLink(), context.getCatalogName(), context.getSchemaName(),
- context.getTableName(), context.getColumnNames(),
+            try {
+                List<TransformedData> transformedData = transform(DmlType.UPDATE, context,
+                        context.getNodeGroupLink(), context.getCatalogName(),
+                        context.getSchemaName(), context.getTableName(), context.getColumnNames(),
                         columnValues, context.getKeyNames(), keyValues, context.getOldData());
                 if (transformedData != null) {
                     apply(context, transformedData);
