@@ -62,10 +62,16 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
         ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
         ps.setFetchSize(jdbcTemplate.getFetchSize());
         ps.setString(1, channelId);
-        for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
+        for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {          
             DataGap gap = dataGaps.get(i);
-            ps.setLong(i*2 + 2, gap.getStartId());
-            ps.setLong(i*2 + 3, gap.getEndId());
+            ps.setLong(i*2 + 2, gap.getStartId());            
+            if ((i+1) == numberOfGapsToQualify && (i+1) < dataGaps.size()) {
+                // there were more gaps than we are going to use in the SQL.  use
+                // the last gap as the end data id for the last range
+                ps.setLong(i*2 + 3, dataGaps.get(dataGaps.size()-1).getEndId());
+            } else {
+                ps.setLong(i*2 + 3, gap.getEndId());
+            }
         }
         return ps;
     }
