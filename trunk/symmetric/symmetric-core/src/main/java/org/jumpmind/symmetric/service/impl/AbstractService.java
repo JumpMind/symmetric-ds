@@ -59,6 +59,10 @@ abstract public class AbstractService implements IService, ISqlProvider {
     public void setJdbcTemplate(JdbcTemplate jdbc) {
         this.jdbcTemplate = jdbc;
     }
+    
+    public JdbcTemplate getJdbcTemplate() {
+        return jdbcTemplate;
+    }
 
     protected SimpleJdbcTemplate getSimpleTemplate() {
         return new SimpleJdbcTemplate(jdbcTemplate);
@@ -115,6 +119,10 @@ abstract public class AbstractService implements IService, ISqlProvider {
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
+    
+    public IParameterService getParameterService() {
+        return parameterService;
+    }
 
     public void setNewTransactionTemplate(TransactionTemplate transactionTemplate) {
         this.newTransactionTemplate = transactionTemplate;
@@ -126,6 +134,10 @@ abstract public class AbstractService implements IService, ISqlProvider {
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+    
+    public IDbDialect getDbDialect() {
+        return dbDialect;
     }
     
     public String getTablePrefix() {

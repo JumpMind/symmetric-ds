@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
@@ -135,5 +136,11 @@ public interface IDataService {
     public void updateDataGap(DataGap gap, DataGap.Status status);
     
     public long findMaxDataId();
+    
+    public IParameterService getParameterService();
+    
+    public IDbDialect getDbDialect();
+    
+    public JdbcTemplate getJdbcTemplate();
 
 }

@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.service.ISqlProvider;
 import org.jumpmind.symmetric.service.impl.AbstractService;
 
 /**
- * 
+ * Factory that creates and initializes the correct {@link IDataToRouteReader}.
  */
 public class DataToRouteReaderFactory extends AbstractService implements ISqlProvider {
 
@@ -38,13 +38,9 @@ public class DataToRouteReaderFactory extends AbstractService implements ISqlPro
     public IDataToRouteReader getDataToRouteReader(ChannelRouterContext context) {
         String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
         if (type == null || type.equals(GAP_DETECTOR_TYPE_REF)) {
-            return new DataRefRouteReader(jdbcTemplate.getDataSource(),
-                    jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize(), dbDialect);
+            return new DataRefRouteReader(this, context, dataService);
         } else if (type == null || type.equals(GAP_DETECTOR_TYPE_GAP)) {
-            return new DataGapRouteReader(jdbcTemplate.getDataSource(),
-                    jdbcTemplate.getQueryTimeout(), dbDialect.getRouterDataPeekAheadCount(), this,
-                    dbDialect.getStreamingResultsFetchSize(), context, dataService, dbDialect.requiresAutoCommitFalseToSetFetchSize(), dbDialect);
+            return new DataGapRouteReader(this, context, dataService);
         } else {
             throw unsupportedType(type);
         }
