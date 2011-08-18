@@ -1040,12 +1040,18 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                 </listitem>
               
                 <listitem>
-                    Bean Shell Transform ('bsh'):  This transformation allows you to provide a Bean Shell script in transform_expression and executes the script at the time of transformation.
+                    Shell Script Transform ('bsh'):  This transformation allows you to provide a Bean Shell script in transform_expression and executes the script at the time of transformation.
                     Some variables are provided to the script: <code>COLUMN_NAME</code> is a variable for a source column in the row, where the variable name is the column name in uppercase; 
                     <code>currentValue</code> is the value of the current source column;
                     <code>oldValue</code> is the old value of the source column for an updated row;
                     <code>jdbcTemplate</code> is a Spring JdbcTemplate object for querying or updating the database.
-                </listitem>                         
+                </listitem> 
+                 <listitem>
+                    Variable Transform ('variable'):  This transformation allows you to place a dynamic variable (such as the current database time) into the target column.
+                 </listitem>                        
+                 <listitem>
+                    Identity Transform ('identity'):  This transformation allows you to insert into a identity column by computing a new identity, not copying the actual identity value from the source.
+                 </listitem>
              </itemizedlist>
             </para>
         </section>
