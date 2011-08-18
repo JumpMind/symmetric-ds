@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.route;
 
 import java.sql.Connection;
@@ -29,8 +30,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import javax.sql.DataSource;
-
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -55,13 +55,11 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
 
     final protected ILog log = LogFactory.getLog(getClass());
 
-    protected int fetchSize;
-
     protected BlockingQueue<Data> dataQueue;
 
     protected ISqlProvider sqlProvider;
 
-    protected DataSource dataSource;
+    protected JdbcTemplate jdbcTemplate;
 
     protected ChannelRouterContext context;
 
@@ -69,34 +67,23 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
 
     protected boolean reading = true;
 
-    protected int maxQueueSize;
-
-    protected static final int DEFAULT_QUERY_TIMEOUT = 300;
-
-    protected int queryTimeout = DEFAULT_QUERY_TIMEOUT;
-    
-    protected boolean requiresAutoCommitFalse = false;
-    
     protected IDbDialect dbDialect;
 
-    public AbstractDataToRouteReader(DataSource dataSource, int queryTimeout, int maxQueueSize,
-            ISqlProvider sqlProvider, int fetchSize, ChannelRouterContext context, IDataService dataService, boolean requiresAutoCommitFalse, IDbDialect dbDialect) {
-        this.maxQueueSize = maxQueueSize;
-        this.dataSource = dataSource;
-        this.dataQueue = new LinkedBlockingQueue<Data>(maxQueueSize);
+    public AbstractDataToRouteReader(ISqlProvider sqlProvider, ChannelRouterContext context,
+            IDataService dataService) {
+        this.jdbcTemplate = dataService != null ? dataService.getJdbcTemplate() : null;
+        this.dbDialect = dataService != null ? dataService.getDbDialect() : null;
+        this.dataQueue = new LinkedBlockingQueue<Data>(dbDialect != null ? dbDialect.getRouterDataPeekAheadCount() : 1000);
         this.sqlProvider = sqlProvider;
         this.context = context;
-        this.fetchSize = fetchSize;
-        this.queryTimeout = queryTimeout;
         this.dataService = dataService;
-        this.requiresAutoCommitFalse = requiresAutoCommitFalse;
-        this.dbDialect = dbDialect;
     }
 
     public Data take() {
         Data data = null;
         try {
-            data = dataQueue.poll(queryTimeout == 0 ? 600 : queryTimeout, TimeUnit.SECONDS);
+            int queryTimeout = jdbcTemplate.getQueryTimeout();
+            data = dataQueue.poll(queryTimeout < 3600 ? 3600 : queryTimeout, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.warn(e);
         }
@@ -111,7 +98,9 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
     /**
      * Start out by selecting only the rows that need routed.
      */
-    abstract protected PreparedStatement prepareStatment(Connection c) throws SQLException;
+    protected PreparedStatement prepareStatment(Connection c) throws SQLException {
+        throw new NotImplementedException();
+    }
 
     protected String getSql(String sqlName, Channel channel) {
         String select = sqlProvider.getSql(sqlName);
@@ -123,7 +112,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         }
         if (!channel.isUsePkDataToRoute()) {
             select = select.replace("d.pk_data", "''");
-        } 
+        }
         return dbDialect == null ? select : dbDialect.massageDataExtractionSql(select, channel);
     }
 
@@ -136,7 +125,6 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
     }
 
     protected void execute() {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);
         jdbcTemplate.execute(new ConnectionCallback<Integer>() {
             public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
                 int dataCount = 0;
@@ -144,14 +132,14 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                 ResultSet rs = null;
                 boolean autoCommit = c.getAutoCommit();
                 try {
-                    if (requiresAutoCommitFalse) {
-                       c.setAutoCommit(false);
+                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                        c.setAutoCommit(false);
                     }
                     String channelId = context.getChannel().getChannelId();
                     ps = prepareStatment(c);
                     long ts = System.currentTimeMillis();
                     rs = ps.executeQuery();
-                    long executeTimeInMs = System.currentTimeMillis()-ts;
+                    long executeTimeInMs = System.currentTimeMillis() - ts;
                     context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
                     if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
                         log.warn("RoutedDataSelectedInTime", executeTimeInMs, channelId);
@@ -159,6 +147,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                         log.debug("RoutedDataSelectedInTime", executeTimeInMs, channelId);
                     }
 
+                    int maxQueueSize = dbDialect.getRouterDataPeekAheadCount();
                     int toRead = maxQueueSize - dataQueue.size();
                     List<Data> memQueue = new ArrayList<Data>(toRead);
                     ts = System.currentTimeMillis();
@@ -207,7 +196,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     rs = null;
                     ps = null;
 
-                    if (requiresAutoCommitFalse) {
+                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
                         c.commit();
                         c.setAutoCommit(autoCommit);
                     }
@@ -219,7 +208,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                             AppUtils.sleep(50);
                         }
                     } while (!done && reading);
-                    
+
                     reading = false;
 
                 }
