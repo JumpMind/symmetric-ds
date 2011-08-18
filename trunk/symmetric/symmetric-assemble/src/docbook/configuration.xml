@@ -382,10 +382,13 @@ values
                 <listitem>Default Router - a router that sends all data to all nodes that belong to the target node group defined in the router.</listitem>
                     <listitem>Column Match Router - a router that compares old or new column values to a constant value or the
                         value of a node's external_id or node_id.</listitem>
-                    <listitem>Sub-select Router - a router that executes a SQL expression against the database to select nodes to
+                    <listitem>Lookup Router - a router which can be configured to determine routing based on an existing or ancillary table specifically for the
+                    purpose of routing data.        
+                    </listitem>
+                    <listitem>Subselect Router - a router that executes a SQL expression against the database to select nodes to
                         route to. This SQL expression can be passed values of old and new column values.</listitem>
-                    <listitem>Bean Shell Router - a router that executes a BSH expression in order to select nodes to route to.
-                        The BSH expression can use the the old and new column values.</listitem>
+                    <listitem>Scripted Router - a router that executes a Bean Shell script expression in order to select nodes to route to.
+                        The script can use the the old and new column values.</listitem>
                     <listitem>Xml Publishing Router - a router the publishes data changes directly to a messaging solution instead
                         of transmitting changes to registered nodes.  This router must be configured manually in XML as an extension point.</listitem>
                 </itemizedlist>
@@ -599,8 +602,8 @@ EXTERNAL_ID_COLUMN=STORE_ID', current_timestamp, current_timestamp);
          </para>            
      </section>
 
-    <section id="configuration-relational-router">
-        <title>Relational Router</title>
+    <section id="configuration-subselect-router">
+        <title>Subselect Router</title>
         <para>
             Sometimes routing decisions need to be made based on data that is not in the current row being synchronized.  Consider an 
             example where an Order table and a OrderLineItem table need to be routed to a specific store.  The Order table has a column 
@@ -670,11 +673,11 @@ values
     <section id="configuration-scripted-router">
         <title>Scripted Router</title>
         <para>
-            When more flexibility is needed in the logic to choose the nodes to route to, then the a Bean Shell router may be used.  Bean Shell is a Java-like scripting language.  Documentation 
+            When more flexibility is needed in the logic to choose the nodes to route to, then the a scripted router may be used.  The currently available scripting language is Bean Shell. Bean Shell is a Java-like scripting language.  Documentation 
             for the Bean Shell scripting language can be found at <ulink url="http://www.beanshell.org/">http://www.beanshell.org</ulink>. 
         </para>
         <para>
-            The router_type for a Bean Shell router is 'script'.  The router_expression is a valid Bean Shell script that:
+            The router_type for a Bean Shell scripted router is 'bsh'.  The router_expression is a valid Bean Shell script that:
             <itemizedlist>
                 <listitem>adds node ids to the 'targetNodes' collection which is bound to the script</listitem>
                 <listitem>returns a new collection of node ids</listitem>
@@ -693,7 +696,7 @@ insert into SYM_ROUTER
   (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-bsh','corp', 'store', 'script', 
+  ('corp-2-store-bsh','corp', 'store', 'bsh', 
     'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);', 
     current_timestamp, current_timestamp);
 ]]></programlisting>
@@ -706,7 +709,7 @@ insert into SYM_ROUTER
   (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-bsh','corp', 'store', 'script', 
+  ('corp-2-store-bsh','corp', 'store', 'bsh', 
     'STORE_ID + "-" + WORKSTATION_NUMBER', 
     current_timestamp, current_timestamp);
 ]]></programlisting>
@@ -720,7 +723,7 @@ insert into SYM_ROUTER
   (router_id, source_node_group_id, target_node_group_id, router_type, 
     router_expression, create_time, last_update_time)
 values
-  ('corp-2-store-flag-changed','corp', 'store', 'script', 
+  ('corp-2-store-flag-changed','corp', 'store', 'bsh', 
     'FLAG != null && !FLAG.equals(OLD_FLAG)', 
     current_timestamp, current_timestamp);
 ]]></programlisting>
@@ -891,7 +894,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         <para>
         New to SymmetricDS 2.4, SymmetricDS is now able to transform synchronized data by way of
         configuration (previously, for most cases a custom data loader would need to have been written).  This transformation can take
-        place on a source node, as the data is being extracted, or on the target node, as the data is being loaded.
+        place on a source node or on a target node, as the data is being loaded or extracted.
         With this new feature you can, for example:
         </para>
         <itemizedlist>
@@ -912,7 +915,7 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                 </listitem>
          </itemizedlist>
          <para>
-         These transformations can take place either on the target (as data is being loaded), or on the source (as data is being extracted).  In either case, the transformation is
+         These transformations can take place either on the target or on the source, and as data is either being extracted or loaded.  In either case, the transformation is
          initiated due to existence of a source
          synchronization trigger.  The source trigger creates the synchronization data, while the transformation configuration decides
          what to do with the sychronization data as it is either being extracted from the source or loaded into the target.
@@ -943,12 +946,13 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
         SymmetricDS stores its transformation configuration in two configuration tables,  <xref linkend="table_transform_table" xrefstyle="table"/> and  
         <xref linkend="table_transform_column" xrefstyle="table"/>.  Defining a transformation involves configuration in both tables, with the first table
         defining which source and destination tables are involved, and the second defining the columns involved in the transformation and the behavior of
-        the data for those columns.  We will explain the various options available in both tables, the various pre-defined transformation types, and then end with a series of examples.
+        the data for those columns.  We will explain the various options available in both tables and the various pre-defined transformation types.<!--  and then end with a series of examples.-->
         </para>
         <para>
         To define a transformation, you will first define the source table and target table that applies to a particular transformation.  The source and target tables, along with
         a unique identifier (the transform_id column) are defined in <xref linkend="table_transform_table" xrefstyle="table"/>.  In addition, you will specify the 
-        source_node_group_id and target_node_group_id to which the transform will apply, along with whether the transform should occur on the Extract step or the Load step.  All of these values are required.
+        source_node_group_id and target_node_group_id to which the transform will apply, along with whether the transform should occur on the Extract step or the Load step (transform_point).
+        All of these values are required.
         </para>
         
         <para>
@@ -1046,11 +1050,11 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
             </para>
         </section>
         
-        <section id="transform-data-examples">
+        <!--  <section id="transform-data-examples">
         <title>Transformation Examples</title>
             <para>
             To be done.
             </para>        
-        </section>
+        </section> -->
     </section>
 </chapter>

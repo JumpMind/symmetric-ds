@@ -49,7 +49,7 @@
 
     <xsl:template name="book.titlepage.recto">
         <fo:block>
-            <fo:table table-layout="fixed" width="175mm">
+             <fo:table table-layout="fixed" width="175mm">
                 <fo:table-column column-width="175mm"/>x
                 <fo:table-body>
                     <fo:table-row>
@@ -79,7 +79,7 @@
                     <fo:table-row>
                         <fo:table-cell text-align="center">
                             <fo:block font-family="Helvetica" font-size="12pt" padding-before="90mm">
-                                <xsl:text>Copyright &copyright; 2007 - 2010 </xsl:text>
+                                <xsl:text>Copyright &copyright; 2007 - 2011 </xsl:text>
                                 <xsl:for-each select="bookinfo/authorgroup/author">
                                     <xsl:if test="position() > 1">
                                         <xsl:text>, </xsl:text>
@@ -99,6 +99,7 @@
         </fo:block>
     </xsl:template>
 
+
     <!-- Prevent blank pages in output-->    
     <xsl:template name="book.titlepage.before.verso"/>
     <xsl:template name="book.titlepage.verso"/>
@@ -106,6 +107,11 @@
 
     <xsl:param name="draft.mode">no</xsl:param>
     <xsl:param name="graphic.default.extension">GIF</xsl:param>
+
+<xsl:template match="processing-instruction('hard-pagebreak')">
+   <fo:block break-after='page'/>
+ </xsl:template>
+ 
 
 <!--###################################################
                       Header
