@@ -2376,22 +2376,17 @@ public abstract class AbstractTableBuilder {
         if (key.getForeignTableName() == null) {
             log.log(LogLevel.WARN, "Foreign key table is null for key " + key);
         } else {
-            Table fkTable = database.findTable(key.getForeignTableName());
-            if (fkTable != null) {
-                writeTableAlterStmt(table);
-                print("ADD CONSTRAINT ");
-                printIdentifier(getForeignKeyName(table, key));
-                print(" FOREIGN KEY (");
-                writeLocalReferences(key);
-                print(") REFERENCES ");
-                printIdentifier(getTableName(database.findTable(key.getForeignTableName())));
-                print(" (");
-                writeForeignReferences(key);
-                print(")");
-                printEndOfStatement();
-            } else {
-                log.log(LogLevel.WARN, "Foreign key table is null for key " + key + " that refers to " + key.getForeignTableName());
-            }
+            writeTableAlterStmt(table);
+            print("ADD CONSTRAINT ");
+            printIdentifier(getForeignKeyName(table, key));
+            print(" FOREIGN KEY (");
+            writeLocalReferences(key);
+            print(") REFERENCES ");
+            printIdentifier(shortenName(key.getForeignTableName(), getMaxTableNameLength()));
+            print(" (");
+            writeForeignReferences(key);
+            print(")");
+            printEndOfStatement();
         }
     }
 
