@@ -345,13 +345,13 @@ public class CsvLoader implements IDataLoader {
 
     protected void prepareTableForDataLoad() {
         if (context != null && context.getTableTemplate() != null) {
-            dbDialect.prepareTableForDataLoad(this.jdbcTemplate, context.getTableTemplate().getTable());
+            dbDialect.allowIdentityInserts(this.jdbcTemplate, context.getTableTemplate().getTable());
         }
     }
 
     protected void cleanupAfterDataLoad() {
         if (context != null && context.getTableTemplate() != null) {
-            dbDialect.cleanupAfterDataLoad(this.jdbcTemplate, context.getTableTemplate().getTable());
+            dbDialect.revertAllowIdentityInserts(this.jdbcTemplate, context.getTableTemplate().getTable());
         }
     }
 

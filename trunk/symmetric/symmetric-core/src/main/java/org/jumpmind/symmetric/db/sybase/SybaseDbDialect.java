@@ -132,14 +132,14 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public void prepareTableForDataLoad(JdbcTemplate jdbcTemplate, Table table) {
+    public void allowIdentityInserts(JdbcTemplate jdbcTemplate, Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
             jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " ON");
         }
     }
 
     @Override
-    public void cleanupAfterDataLoad(JdbcTemplate jdbcTemplate, Table table) {
+    public void revertAllowIdentityInserts(JdbcTemplate jdbcTemplate, Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
             jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " OFF");
         }

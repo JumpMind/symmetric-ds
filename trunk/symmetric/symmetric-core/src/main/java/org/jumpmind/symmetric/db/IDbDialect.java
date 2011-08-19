@@ -62,18 +62,17 @@ public interface IDbDialect {
 
     /**
      * This is called by the data loader each time the table context changes,
-     * giving the dialect an opportunity to do any pre loading work. Only one
-     * table is active at any one point.
+     * giving the dialect an opportunity to allow inserts into identity columns
      */
-    public void prepareTableForDataLoad(JdbcTemplate jdbcTemplate, Table table);
+    public void allowIdentityInserts(JdbcTemplate jdbcTemplate, Table table);
 
     /**
      * This is called by the data loader each time the table context changes
      * away from a table or when the the data loader is closed, giving the
-     * dialect an opportunity to do any post loading work for the given table.
-     * @param jdbcTemplate TODO
+     * dialect an opportunity to reset the state of a table to allow identity 
+     * inserts to work
      */
-    public void cleanupAfterDataLoad(JdbcTemplate jdbcTemplate, Table table);
+    public void revertAllowIdentityInserts(JdbcTemplate jdbcTemplate, Table table);
 
     public Database readPlatformDatabase(boolean includeSymmetricTables);
     

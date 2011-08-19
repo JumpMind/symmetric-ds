@@ -102,8 +102,10 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
             case INSERT:
                 Table table = tableTemplate.getTable();
                 try {
-                    if (table.hasAutoIncrementColumn()) {
-                        dbDialect.prepareTableForDataLoad(context.getJdbcTemplate(), table);
+                    if (Boolean.TRUE.equals(context.getContextCache().get(VariableColumnTransform.OPTION_IDENTITY))) {
+                        dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), table);
+                    } else if (table.hasAutoIncrementColumn()) {
+                        dbDialect.allowIdentityInserts(context.getJdbcTemplate(), table);
                     }
                     tableTemplate.insert((IDataLoaderContext) context, data.getColumnValues());
                 } catch (DataIntegrityViolationException ex) {
@@ -114,7 +116,7 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                             data.getKeyValues());
                 } finally {
                     if (table.hasAutoIncrementColumn()) {
-                        dbDialect.cleanupAfterDataLoad(context.getJdbcTemplate(), table);
+                        dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), table);
                     }
                 }
                 break;

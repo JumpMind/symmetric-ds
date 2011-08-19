@@ -186,10 +186,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
 
-    public void prepareTableForDataLoad(JdbcTemplate jdbcTemplate, Table table) {
+    public void allowIdentityInserts(JdbcTemplate jdbcTemplate, Table table) {
     }
 
-    public void cleanupAfterDataLoad(JdbcTemplate jdbcTemplate, Table table) {
+    public void revertAllowIdentityInserts(JdbcTemplate jdbcTemplate, Table table) {
     }
 
     protected boolean allowsNullForIdentityColumn() {
