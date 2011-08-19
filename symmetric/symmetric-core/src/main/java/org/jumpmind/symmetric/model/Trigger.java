@@ -64,6 +64,8 @@ public class Trigger implements Serializable {
     private boolean syncOnDelete = true;
 
     private boolean syncOnIncomingBatch = false;
+    
+    private boolean useStreamLobs = false;
 
     private String nameForInsertTrigger;
 
@@ -349,6 +351,14 @@ public class Trigger implements Serializable {
 
     public void setCreateTime(Date createdOn) {
         this.createTime = createdOn;
+    }
+    
+    public void setUseStreamLobs(boolean useStreamLobs) {
+        this.useStreamLobs = useStreamLobs;
+    }
+        
+    public boolean isUseStreamLobs() {
+        return useStreamLobs;
     }
     
     public long toHashedValue() {
