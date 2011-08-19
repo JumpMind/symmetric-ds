@@ -29,6 +29,10 @@ abstract public class Log {
     public void error(String msg, Object... params) {
         log(LogLevel.ERROR, msg, params);
     }
+    
+    public void error(Throwable ex, String msg, Object... params) {
+        log(LogLevel.ERROR, ex, msg, params);
+    }
 
     public void error(Throwable ex) {
         log(LogLevel.ERROR, ex);

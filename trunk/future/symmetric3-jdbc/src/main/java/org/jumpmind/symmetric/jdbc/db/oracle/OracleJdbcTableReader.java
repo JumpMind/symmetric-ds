@@ -108,9 +108,6 @@ public class OracleJdbcTableReader extends JdbcTableReader {
                 typeCode = Types.SMALLINT;
             }
             break;
-        case 18:
-            typeCode = Types.REAL;
-            break;
         case 22:
             if (scale == 0) {
                 typeCode = Types.INTEGER;

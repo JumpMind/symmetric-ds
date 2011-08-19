@@ -74,8 +74,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         populateSettings(parameters);
     }
 
-    public SqlDataWriter(IDbDialect dbDialect, Settings settings, List<IColumnFilter> columnFilters,
-            List<IDataFilter> dataFilters) {
+    public SqlDataWriter(IDbDialect dbDialect, Settings settings,
+            List<IColumnFilter> columnFilters, List<IDataFilter> dataFilters) {
         this.dbDialect = dbDialect;
         this.columnFilters = columnFilters;
         this.dataFilters = dataFilters;
@@ -163,9 +163,9 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
         } catch (DataIntegrityViolationException ex) {
             handleDataIntegrityViolationException(ex);
-        } catch (RuntimeException ex) {
-            throw ex;
         } catch (Exception ex) {
+            log.error(ex, "Failed to load data row #%d in batch #%d.  The row data was: %s",
+                    batch.getLineCount(), batch.getBatchId(), data.getRowData());
             throw new DataFailedToLoadException(data, ex);
         }
 
@@ -322,8 +322,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     protected void executeInsertSql(Data data, boolean batchMode) {
         transaction.setInBatchMode(batchMode);
         if (requireNewStatement(data)) {
-            this.dmlStatement = getStatementBuilder(DmlType.INSERT, null,
-                    targetTable.getColumns());
+            this.dmlStatement = getStatementBuilder(DmlType.INSERT, null, targetTable.getColumns());
             transaction.prepare(this.dmlStatement.getSql());
         }
         execute(data, data.toParsedRowData());
