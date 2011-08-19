@@ -103,7 +103,7 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                 Table table = tableTemplate.getTable();
                 try {
                     if (tableTemplate.getFullyQualifiedTableName().equals(
-                            context.getContextCache().get(VariableColumnTransform.OPTION_IDENTITY))) {
+                            context.getContextCache().get(IdentityColumnTransform.class.getName()))) {
                         dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), table);
                     } else if (table.hasAutoIncrementColumn()) {
                         dbDialect.allowIdentityInserts(context.getJdbcTemplate(), table);
