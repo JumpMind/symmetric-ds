@@ -1048,7 +1048,10 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                 </listitem> 
                  <listitem>
                     Variable Transform ('variable'):  This transformation allows you to place a dynamic variable (such as the current database time) into the target column.  The transform_expression's'
-                    currently supported are:  system_timestamp and use_identity.    The use_identity allows you to insert into a identity column by computing a new identity, not copying the actual identity value from the source.
+                    currently supported are:  system_timestamp.
+                 </listitem>                        
+                 <listitem>
+                    Identity Transform ('identity'):  This transformation allows you to insert into a identity column by computing a new identity, not copying the actual identity value from the source.
                  </listitem>
                </itemizedlist>
             </para>
