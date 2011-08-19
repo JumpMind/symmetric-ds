@@ -199,6 +199,7 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
                 case Types.STRUCT:
                 case Types.REF:
                 case Types.DATALINK:
+                default:
                     throw new NotImplementedException(column.getName() + " is of type "
                             + column.getType());
                 }
