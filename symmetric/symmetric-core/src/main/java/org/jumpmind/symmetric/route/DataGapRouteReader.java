@@ -85,7 +85,7 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
             } else {
                 gapClause.append(" or ");
             }
-            gapClause.append("(d.data_id >= ? and d.data_id <= ?)");
+            gapClause.append("(d.data_id between ? and ?)");
         }
         gapClause.append(")");
         return AppUtils.replace("dataRange", gapClause.toString(), sql);
