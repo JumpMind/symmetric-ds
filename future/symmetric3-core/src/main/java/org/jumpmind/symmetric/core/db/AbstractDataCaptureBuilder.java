@@ -173,10 +173,10 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
                     break;
                 case Types.DATE:
                     if (noDateColumnTemplate()) {
-                        templateToUse = getDateTimeColumnTemplate();
-                        break;
+                        templateToUse = getDateTimeColumnTemplate();                        
+                    } else {
+                        templateToUse = getDateColumnTemplate();
                     }
-                    templateToUse = getDateColumnTemplate();
                     break;
                 case Types.TIME:
                     if (noTimeColumnTemplate()) {
@@ -207,7 +207,8 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
                 if (templateToUse != null) {
                     templateToUse = templateToUse.trim();
                 } else {
-                    throw new NotImplementedException();
+                    throw new NotImplementedException(column.getName() + " is of type "
+                            + column.getType());
                 }
 
                 String formattedColumnText = StringUtils.replaceTokens("columnName",

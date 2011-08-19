@@ -140,7 +140,7 @@ public class OracleDataCaptureBuilder extends AbstractDataCaptureBuilder {
 
     @Override
     protected String getBooleanColumnTemplate() {
-        return null;
+        return getNumberColumnTemplate();
     }
 
     @Override
