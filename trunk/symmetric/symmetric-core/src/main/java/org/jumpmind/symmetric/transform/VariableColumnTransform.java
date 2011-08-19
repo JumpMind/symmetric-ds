@@ -10,13 +10,15 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
 
     public static final String NAME = "variable";
     
-    protected static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
+    protected static final String TS_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
+    
+    protected static final String DATE_PATTERN = "yyyy-MM-dd";
     
     protected static final String OPTION_TIMESTAMP = "system_timestamp";
     
-    protected static final String OPTION_IDENTITY = "use_identity";
+    protected static final String OPTION_DATE = "system_date";
     
-    private static final String[] OPTIONS = new String[] {OPTION_TIMESTAMP, OPTION_IDENTITY};
+    private static final String[] OPTIONS = new String[] {OPTION_TIMESTAMP, OPTION_DATE};
     
     public boolean isAutoRegister() {
         return true;
@@ -36,10 +38,9 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
         String varName = column.getTransformExpression();
         if (varName != null) {
             if (varName.equalsIgnoreCase(OPTION_TIMESTAMP)) {
+                return DateFormatUtils.format(System.currentTimeMillis(), TS_PATTERN);
+            } else  if (varName.equalsIgnoreCase(OPTION_DATE)) {
                 return DateFormatUtils.format(System.currentTimeMillis(), DATE_PATTERN);
-            } else if (varName.equalsIgnoreCase(OPTION_IDENTITY)) {
-                context.getContextCache().put(OPTION_IDENTITY, data.getFullyQualifiedTableName());
-                throw new IgnoreColumnException();
             }
         }
         return null;
