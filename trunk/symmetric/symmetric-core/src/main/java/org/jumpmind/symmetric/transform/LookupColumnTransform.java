@@ -21,19 +21,29 @@
 
 package org.jumpmind.symmetric.transform;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 public class LookupColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
+    protected final ILog log = LogFactory.getLog(getClass());
+    
     protected SimpleJdbcTemplate jdbcTemplate;
 
     public static final String NAME = "lookup";
+    
+    protected static final LookupColumnRowMapper lookupColumnRowMapper = new LookupColumnRowMapper();
 
     public boolean isAutoRegister() {
         return true;
@@ -47,12 +57,32 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
         Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,
         IgnoreRowException {
         String sql = column.getTransformExpression();
+        String lookupValue = null;
+        
         if (StringUtils.isNotBlank(sql)) {
-            return jdbcTemplate.queryForObject(sql, String.class, sourceValues);
+            List<String> values = jdbcTemplate.query(sql, lookupColumnRowMapper, sourceValues);
+            int rowCount = values.size();
+            
+            if (rowCount == 1) {
+                lookupValue = values.get(0);
+            } else if (rowCount > 1) {
+                lookupValue = values.get(0);
+                log.warn("LookupColumnTransform.multipleRows", column.getTargetColumnName(), column.getTransformId());
+            } else if (values.size() == 0) {
+                log.warn("LookupColumnTransform.noRows", column.getTargetColumnName(), column.getTransformId());
+            }
+        } else {
+            log.warn("LookupColumnTransform.noSql", column.getTargetColumnName(), column.getTransformId());
         }
-        return value;
+        return lookupValue;
     }
 
+    static class LookupColumnRowMapper implements RowMapper<String> {
+        public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return rs.getString(1);
+        }
+    }
+    
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = new SimpleJdbcTemplate(jdbcTemplate);
     }
