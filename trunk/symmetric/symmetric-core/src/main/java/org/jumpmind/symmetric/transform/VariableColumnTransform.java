@@ -38,7 +38,7 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
             if (varName.equalsIgnoreCase(OPTION_TIMESTAMP)) {
                 return DateFormatUtils.format(System.currentTimeMillis(), DATE_PATTERN);
             } else if (varName.equalsIgnoreCase(OPTION_IDENTITY)) {
-                context.getContextCache().put(OPTION_IDENTITY, Boolean.TRUE);
+                context.getContextCache().put(OPTION_IDENTITY, data.getFullyQualifiedTableName());
                 throw new IgnoreColumnException();
             }
         }
