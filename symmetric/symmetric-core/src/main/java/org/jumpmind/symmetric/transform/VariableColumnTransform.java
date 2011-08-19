@@ -14,7 +14,9 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
     
     protected static final String OPTION_TIMESTAMP = "system_timestamp";
     
-    private static final String[] OPTIONS = new String[] {OPTION_TIMESTAMP};
+    protected static final String OPTION_IDENTITY = "use_identity";
+    
+    private static final String[] OPTIONS = new String[] {OPTION_TIMESTAMP, OPTION_IDENTITY};
     
     public boolean isAutoRegister() {
         return true;
@@ -35,6 +37,9 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
         if (varName != null) {
             if (varName.equalsIgnoreCase(OPTION_TIMESTAMP)) {
                 return DateFormatUtils.format(System.currentTimeMillis(), DATE_PATTERN);
+            } else if (varName.equalsIgnoreCase(OPTION_IDENTITY)) {
+                context.getContextCache().put(OPTION_IDENTITY, Boolean.TRUE);
+                throw new IgnoreColumnException();
             }
         }
         return null;
