@@ -1685,7 +1685,8 @@ public abstract class AbstractTableBuilder {
 
         writeColumns(table);
 
-        if (getDbDialectInfo().isPrimaryKeyEmbedded() && !table.hasUniqueIndexThatMatchesPrimaryKeys()) {
+        if (getDbDialectInfo().isPrimaryKeyEmbedded()
+                && !table.hasUniqueIndexThatMatchesPrimaryKeys()) {
             writeEmbeddedPrimaryKeysStmt(table);
         }
         if (getDbDialectInfo().isForeignKeysEmbedded()) {
@@ -1945,10 +1946,10 @@ public abstract class AbstractTableBuilder {
         if (defaultValue != null) {
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode);
             if (shouldUseQuotes && defaultValue instanceof String) {
-                String value = (String)defaultValue;
+                String value = (String) defaultValue;
                 shouldUseQuotes = !(value.startsWith("'") && value.endsWith("'"));
             }
-            
+
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
                 print(getDbDialectInfo().getValueQuoteToken());
@@ -2375,18 +2376,22 @@ public abstract class AbstractTableBuilder {
         if (key.getForeignTableName() == null) {
             log.log(LogLevel.WARN, "Foreign key table is null for key " + key);
         } else {
-            writeTableAlterStmt(table);
-
-            print("ADD CONSTRAINT ");
-            printIdentifier(getForeignKeyName(table, key));
-            print(" FOREIGN KEY (");
-            writeLocalReferences(key);
-            print(") REFERENCES ");
-            printIdentifier(getTableName(database.findTable(key.getForeignTableName())));
-            print(" (");
-            writeForeignReferences(key);
-            print(")");
-            printEndOfStatement();
+            Table fkTable = database.findTable(key.getForeignTableName());
+            if (fkTable != null) {
+                writeTableAlterStmt(table);
+                print("ADD CONSTRAINT ");
+                printIdentifier(getForeignKeyName(table, key));
+                print(" FOREIGN KEY (");
+                writeLocalReferences(key);
+                print(") REFERENCES ");
+                printIdentifier(getTableName(database.findTable(key.getForeignTableName())));
+                print(" (");
+                writeForeignReferences(key);
+                print(")");
+                printEndOfStatement();
+            } else {
+                log.log(LogLevel.WARN, "Foreign key table is null for key " + key + " that refers to " + key.getForeignTableName());
+            }
         }
     }
 
