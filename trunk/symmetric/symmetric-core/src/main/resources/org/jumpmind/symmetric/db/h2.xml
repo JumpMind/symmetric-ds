@@ -33,6 +33,7 @@
                         </entry>
                     </map>
                 </property>
+                <property name="emptyColumnTemplate" value="''''"/>
                 <property name="stringColumnTemplate" ref="h2StringTemplate" />
                 <property name="clobColumnTemplate" ref="h2StringTemplate" />
                 <property name="blobColumnTemplate">

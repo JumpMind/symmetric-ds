@@ -61,7 +61,7 @@ public class SqlTemplate {
 
     private String functionInstalledSql;
 
-    private String emptyColumnTemplate = "''''";
+    private String emptyColumnTemplate = "''";
     
     private String stringColumnTemplate;
 
