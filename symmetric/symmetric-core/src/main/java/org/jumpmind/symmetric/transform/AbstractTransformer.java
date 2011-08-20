@@ -1,7 +1,6 @@
 package org.jumpmind.symmetric.transform;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +12,7 @@ import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.AppUtils;
 
 public abstract class AbstractTransformer {
 
@@ -38,11 +38,11 @@ public abstract class AbstractTransformer {
             List<TransformTable> transformationsToPerform = findTablesToTransform(nodeGroupLink,
                     getFullyQualifiedTableName(catalogName, schemaName, tableName));
             if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
-                Map<String, String> sourceValues = toMap(columnNames, columnValues);
-                Map<String, String> oldSourceValues = toMap(columnNames, oldData);
+                Map<String, String> sourceValues = AppUtils.toMap(columnNames, columnValues);
+                Map<String, String> oldSourceValues = AppUtils.toMap(columnNames, oldData);
                 Map<String, String> sourceKeyValues = oldSourceValues.size() > 0 ? oldSourceValues : sourceValues;
                 if (keyNames != null && oldSourceValues.size() == 0) {
-                    sourceKeyValues = toMap(keyNames, keyValues);
+                    sourceKeyValues = AppUtils.toMap(keyNames, keyValues);
                 }
                 List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
                 for (TransformTable transformation : transformationsToPerform) {
@@ -116,7 +116,7 @@ public abstract class AbstractTransformer {
         List<TransformedData> datas = new ArrayList<TransformedData>();
         datas.add(new TransformedData(transformation, dmlType));
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
-        if (columns.size() == 0) {
+        if (columns == null || columns.size() == 0) {
             log.error("TransformNoPrimaryKeyDefined", transformation.getTransformId());
         } else {
             for (TransformColumn transformColumn : columns) {
@@ -196,18 +196,6 @@ public abstract class AbstractTransformer {
         List<TransformTable> transforms = transformMap != null ? transformMap
                 .get(fullyQualifiedSourceTableName) : null;
         return transforms;
-    }
-
-    protected Map<String, String> toMap(String[] columnNames, String[] columnValues) {
-        if (columnValues != null) {
-            Map<String, String> map = new HashMap<String, String>(columnNames.length);
-            for (int i = 0; i < columnNames.length; i++) {
-                map.put(columnNames[i], columnValues[i]);
-            }
-            return map;
-        } else {
-            return new HashMap<String, String>(0);
-        }
     }
 
     public void setTransformService(ITransformService transformService) {
