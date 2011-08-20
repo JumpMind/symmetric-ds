@@ -16,13 +16,13 @@
 		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
 	</bean>
 
-    <bean id="transformDataExtractor" class="org.jumpmind.symmetric.transform.TransformDataExtractor">
-        <property name="dbDialect" ref="dbDialect" />
-        <property name="transformService" ref="transformService" />
-        <property name="parameterService" ref="parameterService" />
-        <property name="triggerRouterService" ref="triggerRouterService"/>
-        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
-    </bean>
+	<bean id="transformDataExtractor" class="org.jumpmind.symmetric.transform.TransformDataExtractor">
+		<property name="dbDialect" ref="dbDialect" />
+		<property name="transformService" ref="transformService" />
+		<property name="parameterService" ref="parameterService" />
+		<property name="triggerRouterService" ref="triggerRouterService" />
+		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+	</bean>
 
 	<bean id="additiveColumnTransform"
 		class="org.jumpmind.symmetric.transform.AdditiveColumnTransform">
@@ -34,19 +34,24 @@
 	<bean id="constantColumnTransform"
 		class="org.jumpmind.symmetric.transform.ConstantColumnTransform" />
 
+	<bean id="identityColumnTransform"
+		class="org.jumpmind.symmetric.transform.IdentityColumnTransform" />
+
 	<bean id="substrColumnTransform" class="org.jumpmind.symmetric.transform.SubstrColumnTransform" />
-	
+
 	<bean id="bshColumnTransform" class="org.jumpmind.symmetric.transform.BshColumnTransform">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />	
+		<property name="jdbcTemplate" ref="jdbcTemplate" />
 	</bean>
 
-    <bean id="lookupColumnTransform" class="org.jumpmind.symmetric.transform.LookupColumnTransform">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-    </bean>
+	<bean id="lookupColumnTransform" class="org.jumpmind.symmetric.transform.LookupColumnTransform">
+		<property name="jdbcTemplate" ref="jdbcTemplate" />
+	</bean>
 
-    <bean id="variableColumnTransform" class="org.jumpmind.symmetric.transform.VariableColumnTransform" />
-    
-    <bean id="multiplierColumnTransform" class="org.jumpmind.symmetric.transform.MultiplierColumnTransform">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-    </bean>
+	<bean id="variableColumnTransform"
+		class="org.jumpmind.symmetric.transform.VariableColumnTransform" />
+
+	<bean id="multiplierColumnTransform"
+		class="org.jumpmind.symmetric.transform.MultiplierColumnTransform">
+		<property name="jdbcTemplate" ref="jdbcTemplate" />
+	</bean>
 </beans>

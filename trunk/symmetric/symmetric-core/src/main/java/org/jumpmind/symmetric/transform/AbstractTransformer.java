@@ -25,7 +25,7 @@ public abstract class AbstractTransformer {
     protected IParameterService parameterService;
 
     protected String tablePrefix;
-    
+
     protected boolean isEligibleForTransform(String catalogName, String schemaName, String tableName) {
         return !tableName.toLowerCase().startsWith(tablePrefix);
     }
@@ -40,8 +40,8 @@ public abstract class AbstractTransformer {
             if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
                 Map<String, String> sourceValues = toMap(columnNames, columnValues);
                 Map<String, String> oldSourceValues = toMap(columnNames, oldData);
-                Map<String, String> sourceKeyValues = sourceValues;
-                if (keyNames != null) {
+                Map<String, String> sourceKeyValues = oldSourceValues.size() > 0 ? oldSourceValues : sourceValues;
+                if (keyNames != null && oldSourceValues.size() == 0) {
                     sourceKeyValues = toMap(keyNames, keyValues);
                 }
                 List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
