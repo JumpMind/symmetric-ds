@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.util.CsvUtils;
 class StreamInsertDataCommand extends AbstractStreamDataCommand {
 
     public void execute(Writer writer, Data data, String routerId, DataExtractorContext context) throws IOException {
+        selectAndEnhanceWithLobsIfEnabled(data, context);
         String rowData = data.getRowData();
         if (!StringUtils.isBlank(rowData)) {
             context.incrementByteCount(CsvUtils.write(writer, CsvConstants.INSERT, DELIMITER,

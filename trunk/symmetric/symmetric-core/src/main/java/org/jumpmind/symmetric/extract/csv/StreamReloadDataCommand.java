@@ -21,8 +21,8 @@
 
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.Writer;
 import java.io.IOException;
+import java.io.Writer;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 /**
  * Extract an initial load according to a reload command event.
@@ -38,8 +37,6 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 class StreamReloadDataCommand extends AbstractStreamDataCommand {
 
     private IDataExtractorService dataExtractorService;
-
-    private ITriggerRouterService triggerRouterService;
 
     private INodeService nodeService;
 
@@ -61,10 +58,6 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
 
     public void setDataExtractorService(IDataExtractorService dataExtractorService) {
         this.dataExtractorService = dataExtractorService;
-    }
-
-    public void setTriggerRouterService(ITriggerRouterService triggerService) {
-        this.triggerRouterService = triggerService;
     }
 
     public void setNodeService(INodeService nodeService) {

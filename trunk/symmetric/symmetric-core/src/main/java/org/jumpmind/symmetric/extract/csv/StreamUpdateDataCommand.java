@@ -37,6 +37,7 @@ class StreamUpdateDataCommand extends AbstractStreamDataCommand {
 
     public void execute(Writer out, Data data, String routerId, DataExtractorContext context)
             throws IOException {
+        selectAndEnhanceWithLobsIfEnabled(data, context);
         String rowData = data.getRowData();
         if (!StringUtils.isBlank(rowData)) {
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.UPDATE, DELIMITER, rowData,

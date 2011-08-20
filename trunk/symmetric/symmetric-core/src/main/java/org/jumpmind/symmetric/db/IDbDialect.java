@@ -105,6 +105,8 @@ public interface IDbDialect {
     public String getProductVersion();
 
     public BinaryEncoding getBinaryEncoding();
+    
+    public String encodeForCsv(byte[] data);
 
     public Table getTable(String catalogName, String schemaName, final String tableName, boolean useCache);
 
