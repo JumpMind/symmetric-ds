@@ -210,6 +210,13 @@
         <property name="jdbcTemplate" ref="jdbcTemplate"/>
     </bean>
 
+	<bean id="abstractDataCommand"
+		class="org.jumpmind.symmetric.extract.csv.AbstractStreamDataCommand"
+		abstract="true">
+		<property name="triggerRouterService" ref="triggerRouterService" />
+		<property name="dbDialect" ref="dbDialect" />
+	</bean>
+
     <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
         <property name="dbDialect" ref="dbDialect" />
         <property name="parameterService" ref="parameterService" />
@@ -218,35 +225,34 @@
         <property name="dictionary">
             <map>
                 <entry key="I">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"/>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand" parent="abstractDataCommand"/>
                 </entry>
                 <entry key="U">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"/>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand" parent="abstractDataCommand"/>
                 </entry>
                 <entry key="D">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"/>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand" parent="abstractDataCommand"/>
                 </entry>
                 <entry key="R">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand" parent="abstractDataCommand">
                         <property name="dataExtractorService" ref="dataExtractorService" />
-                        <property name="triggerRouterService" ref="triggerRouterService" />
                         <property name="nodeService" ref="nodeService" />
                     </bean>
                 </entry>
                 <entry key="S">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"/>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand" parent="abstractDataCommand"/>
                 </entry>
                 <entry key="C">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"/>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand" parent="abstractDataCommand"/>
                 </entry>
                 <entry key="X">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamConfigDataCommand">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamConfigDataCommand" parent="abstractDataCommand">
                         <property name="dataExtractorService" ref="dataExtractorService" />
                         <property name="nodeService" ref="nodeService" />
                     </bean>
                 </entry>
                 <entry key="B">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamBshDataCommand"/>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamBshDataCommand" parent="abstractDataCommand"/>
                 </entry>                
             </map>
         </property>

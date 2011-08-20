@@ -52,6 +52,7 @@ import javax.sql.DataSource;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.map.ListOrderedMap;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -173,6 +174,17 @@ abstract public class AbstractDbDialect implements IDbDialect {
         _defaultSizes.put(new Integer(8), "15,0");
         _defaultSizes.put(new Integer(3), "15,15");
         _defaultSizes.put(new Integer(2), "15,15");
+    }
+    
+    public String encodeForCsv(byte[] data) {
+        BinaryEncoding encoding = getBinaryEncoding();
+        if (BinaryEncoding.BASE64.equals(encoding)) {
+            return new String(Base64.encodeBase64(data));
+        } else if (BinaryEncoding.HEX.equals(encoding)) {
+            return new String(Hex.encodeHex(data));
+        } else {
+            throw new NotImplementedException();
+        }
     }
 
     public String toFormattedTimestamp(java.util.Date time) {
@@ -1548,7 +1560,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     public boolean isLob(int type) {
         return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY
-                || type == Types.VARBINARY || type == Types.LONGVARBINARY ||
+                || type == Types.VARBINARY || type == Types.LONGVARBINARY || type == Types.LONGNVARCHAR ||
                 // SQL-Server ntext binary type
                 type == -10;
     }
