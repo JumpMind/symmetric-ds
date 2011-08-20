@@ -108,6 +108,9 @@ public class TransformedData implements Cloneable {
     }
 
     public String[] getKeyNames() {
+        if (keysBy == null) {
+            throw new RuntimeException("No primary key defined for " + transformation.getTransformId());
+        }
         List<String> list = retrieve(keysBy, true);
         return list.toArray(new String[list.size()]);
     }
