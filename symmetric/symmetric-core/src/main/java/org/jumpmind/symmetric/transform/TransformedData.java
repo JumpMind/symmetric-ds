@@ -10,6 +10,8 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.transform.TransformColumn.IncludeOnType;
 
 public class TransformedData implements Cloneable {
+    
+    protected boolean generatedIdentityNeeded = false;
 
     protected DmlType targetDmlType;
 
@@ -148,6 +150,14 @@ public class TransformedData implements Cloneable {
     
     public TransformTable getTransformation() {
         return transformation;
+    }
+    
+    public void setGeneratedIdentityNeeded(boolean generatedIdentityNeeded) {
+        this.generatedIdentityNeeded = generatedIdentityNeeded;
+    }
+    
+    public boolean isGeneratedIdentityNeeded() {
+        return generatedIdentityNeeded;
     }
 
     protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> copy(
