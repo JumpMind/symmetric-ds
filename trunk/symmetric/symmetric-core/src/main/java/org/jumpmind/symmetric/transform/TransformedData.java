@@ -26,7 +26,7 @@ public class TransformedData implements Cloneable {
         this.targetDmlType = sourceDmlType;
         this.sourceDmlType = sourceDmlType;
     }
-    
+
     public String getFullyQualifiedTableName() {
         return transformation.getFullyQualifiedTargetTableName();
     }
@@ -78,32 +78,33 @@ public class TransformedData implements Cloneable {
     protected List<String> retrieve(
             Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> source,
             boolean getColumnNames) {
-        List<String> list = new ArrayList<String>();
-        LinkedHashMap<String, String> values = source.get(IncludeOnType.ALL);
-        if (values != null) {
-            if (getColumnNames) {
-                list.addAll(values.keySet());
-            } else {
-                list.addAll(values.values());
+        List<String> list = new ArrayList<String>(source == null ? 0 : source.size());
+        if (source != null) {
+            LinkedHashMap<String, String> values = source.get(IncludeOnType.ALL);
+            if (values != null) {
+                if (getColumnNames) {
+                    list.addAll(values.keySet());
+                } else {
+                    list.addAll(values.values());
+                }
+            }
+
+            IncludeOnType type = IncludeOnType.DELETE;
+            if (targetDmlType == DmlType.UPDATE && sourceDmlType != DmlType.DELETE) {
+                type = IncludeOnType.UPDATE;
+            } else if (targetDmlType == DmlType.INSERT) {
+                type = IncludeOnType.INSERT;
+            }
+
+            values = source.get(type);
+            if (values != null) {
+                if (getColumnNames) {
+                    list.addAll(values.keySet());
+                } else {
+                    list.addAll(values.values());
+                }
             }
         }
-
-        IncludeOnType type = IncludeOnType.DELETE;
-        if (targetDmlType == DmlType.UPDATE && sourceDmlType != DmlType.DELETE) {
-            type = IncludeOnType.UPDATE;
-        } else if (targetDmlType == DmlType.INSERT) {
-            type = IncludeOnType.INSERT;
-        }
-
-        values = source.get(type);
-        if (values != null) {
-            if (getColumnNames) {
-                list.addAll(values.keySet());
-            } else {
-                list.addAll(values.values());
-            }
-        }
-
         return list;
     }
 
@@ -115,12 +116,11 @@ public class TransformedData implements Cloneable {
         return list.toArray(new String[list.size()]);
     }
 
-
     public String[] getKeyValues() {
         List<String> list = retrieve(keysBy, false);
         return list.toArray(new String[list.size()]);
     }
-    
+
     public String[] getColumnNames() {
         List<String> list = retrieve(columnsBy, true);
         return list.toArray(new String[list.size()]);
@@ -131,14 +131,13 @@ public class TransformedData implements Cloneable {
         return list.toArray(new String[list.size()]);
     }
 
-
     public DmlType getSourceDmlType() {
         return sourceDmlType;
     }
-    
+
     public TransformedData copy() {
         try {
-            TransformedData clone = (TransformedData)this.clone();
+            TransformedData clone = (TransformedData) this.clone();
             clone.columnsBy = copy(columnsBy);
             clone.keysBy = copy(keysBy);
             return clone;
@@ -146,9 +145,11 @@ public class TransformedData implements Cloneable {
             throw new RuntimeException(e);
         }
     }
-    
-    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> copy(Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> toCopy) {
-        Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> newMap = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String,String>>(toCopy.size());
+
+    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> copy(
+            Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> toCopy) {
+        Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> newMap = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(
+                toCopy.size());
         for (TransformColumn.IncludeOnType key : toCopy.keySet()) {
             LinkedHashMap<String, String> value = toCopy.get(key);
             newMap.put(key, new LinkedHashMap<String, String>(value));
