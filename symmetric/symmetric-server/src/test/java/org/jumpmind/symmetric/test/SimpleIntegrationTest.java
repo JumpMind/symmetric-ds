@@ -1418,9 +1418,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
-    // TODO support insert of blob for postgres
+    // TODO support insert of blob test for postgres and informix
     private boolean insertIntoTestUseStreamLob(int id, String lobValue) {
-        if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)) {
+        if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)
+                && !(getRootDbDialect() instanceof InformixDbDialect)) {
             rootJdbcTemplate.update(
                     "insert into test_use_stream_lob (test_id, test_blob) values(?, ?)",
                     new ArgTypePreparedStatementSetter(new Object[] { id, lobValue.getBytes() },
@@ -1433,7 +1434,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     private void assertTestUseStreamBlobInClientDatabase(int id, String value) {
-        if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)) {
+        if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)
+                && !(getRootDbDialect() instanceof InformixDbDialect)) {
             Map<String, Object> values = clientJdbcTemplate.queryForMap(
                     "select test_blob from test_use_stream_lob where test_id=?", id);
             assertEquals(new String((byte[]) values.get("TEST_BLOB")), value,
