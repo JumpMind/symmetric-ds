@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.transform;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,6 +34,8 @@ import bsh.TargetError;
 
 public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
+    protected final ILog log = LogFactory.getLog(getClass());
+    
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
     public static final String NAME = "bsh";
@@ -78,6 +82,7 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             } else if (ex instanceof IgnoreRowException) {
                 throw (IgnoreRowException)ex;
             } else {
+                log.error("BshColumnTransform.exception", column.getTargetColumnName(), column.getTransformId());
                 throw new TransformColumnException(ex);
             }
         }
