@@ -20,7 +20,7 @@ public class IdentityColumnTransform implements ISingleValueColumnTransform, IBu
     public String transform(ICacheContext context, TransformColumn column, TransformedData data,
             Map<String, String> sourceValues, String value, String oldValue)
             throws IgnoreColumnException, IgnoreRowException {        
-        context.getContextCache().put(getClass().getName(), Boolean.TRUE);
+        data.setGeneratedIdentityNeeded(true);
         throw new IgnoreColumnException();
     }
 
