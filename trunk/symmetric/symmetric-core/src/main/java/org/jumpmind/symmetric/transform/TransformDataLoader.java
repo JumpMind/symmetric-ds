@@ -98,11 +98,15 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                     }
                     tableTemplate.insert((IDataLoaderContext) context, data.getColumnValues());
                 } catch (DataIntegrityViolationException ex) {
-                    data.setTargetDmlType(DmlType.UPDATE);
-                    tableTemplate.setColumnNames(data.getColumnNames());
-                    tableTemplate.setKeyNames(data.getKeyNames());
-                    tableTemplate.update((IDataLoaderContext) context, data.getColumnValues(),
-                            data.getKeyValues());
+                    if (data.getKeyNames() != null && data.getKeyNames().length > 0) {
+                        data.setTargetDmlType(DmlType.UPDATE);
+                        tableTemplate.setColumnNames(data.getColumnNames());
+                        tableTemplate.setKeyNames(data.getKeyNames());
+                        tableTemplate.update((IDataLoaderContext) context, data.getColumnValues(),
+                                data.getKeyValues());
+                    } else {
+                         log.warn("TransformNoPrimaryKeyDefinedNoUpdate", data.getTransformation().getTransformId());
+                    }
                 } finally {
                     if (table.hasAutoIncrementColumn()) {
                         dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), table);
@@ -110,12 +114,18 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                 }
                 break;
             case UPDATE:
-                if (0 == tableTemplate.update((IDataLoaderContext) context, data.getColumnValues(),
-                        data.getKeyValues()) && (data.getSourceDmlType() != DmlType.DELETE)) {
-                    data.setTargetDmlType(DmlType.INSERT);
-                    tableTemplate.setColumnNames(data.getColumnNames());
-                    tableTemplate.setKeyNames(data.getKeyNames());
-                    tableTemplate.insert((IDataLoaderContext) context, data.getColumnValues());
+                if (data.getKeyNames() != null && data.getKeyNames().length > 0) {
+                    if (0 == tableTemplate.update((IDataLoaderContext) context,
+                            data.getColumnValues(), data.getKeyValues())
+                            && (data.getSourceDmlType() != DmlType.DELETE)) {
+                        data.setTargetDmlType(DmlType.INSERT);
+                        tableTemplate.setColumnNames(data.getColumnNames());
+                        tableTemplate.setKeyNames(data.getKeyNames());
+                        tableTemplate.insert((IDataLoaderContext) context, data.getColumnValues());
+                    }
+                } else {
+                    log.warn("TransformNoPrimaryKeyDefinedNoUpdate", data.getTransformation()
+                            .getTransformId());
                 }
                 break;
             case DELETE:

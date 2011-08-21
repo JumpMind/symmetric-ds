@@ -96,7 +96,7 @@ insert into sym_trigger        (trigger_id,                source_table_name,   
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(    'test_use_stream_lob',    '1000',                  100, current_timestamp, current_timestamp);
                          
-insert into test_use_stream_lob (test_id, test_clob) values(100, 'This is a test');                         
+--insert into test_use_stream_lob (test_id, test_clob) values(100, 'This is a test');                         
                          
 
 insert into test_customer
