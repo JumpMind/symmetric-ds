@@ -90,7 +90,7 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
             case INSERT:
                 Table table = tableTemplate.getTable();
                 try {
-                    if (tableTemplate.getFullyQualifiedTableName().equals(
+                    if (Boolean.TRUE.equals(
                             context.getContextCache().get(IdentityColumnTransform.class.getName()))) {
                         dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), table);
                     } else if (table.hasAutoIncrementColumn()) {
