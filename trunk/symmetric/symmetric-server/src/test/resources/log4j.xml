@@ -72,6 +72,10 @@
         <priority value="TRACE"/> 
      </category>
       -->
+     
+     <category name="org.jumpmind.symmetric.transform"> 
+        <priority value="DEBUG"/> 
+     </category>        
 
     <root>
         <priority value="WARN" />
