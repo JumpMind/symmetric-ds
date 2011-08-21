@@ -372,20 +372,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     || routingService.shouldDataBeRouted(routingContext,
                                             dataMetaData, oneNodeSet, true);
                             if (writeData) {
-                                try {
-                                    List<Data> transformedData = transformDataExtractor
-                                            .transformData(data, routerId, ctx);
-                                    if (transformedData != null) {
-                                        for (Data data2 : transformedData) {
-                                            dataExtractor.write(writer, data2, routerId, ctxCopy);
-                                            dataRouted++;
-                                        }
-                                    } else {
-                                        dataExtractor.write(writer, data, routerId, ctxCopy);
+                                List<Data> transformedData = transformDataExtractor.transformData(
+                                        data, routerId, ctx);
+                                if (transformedData != null) {
+                                    for (Data data2 : transformedData) {
+                                        dataExtractor.write(writer, data2, routerId, ctxCopy);
                                         dataRouted++;
                                     }
-                                } catch (IgnoreRowException ex) {
-                                    // Ignore this row
+                                } else {
+                                    dataExtractor.write(writer, data, routerId, ctxCopy);
+                                    dataRouted++;
                                 }
 
                             } else {
