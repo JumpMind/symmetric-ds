@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -35,8 +36,9 @@ public abstract class AbstractTransformer {
             String[] columnNames, String[] columnValues, String[] keyNames, String[] keyValues,
             String[] oldData) {
         if (isEligibleForTransform(catalogName, schemaName, tableName)) {
+            String fullyQualifiedName = getFullyQualifiedTableName(catalogName, schemaName, tableName);
             List<TransformTable> transformationsToPerform = findTablesToTransform(nodeGroupLink,
-                    getFullyQualifiedTableName(catalogName, schemaName, tableName));
+                    fullyQualifiedName);
             if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
                 Map<String, String> sourceValues = AppUtils.toMap(columnNames, columnValues);
                 Map<String, String> oldSourceValues = AppUtils.toMap(columnNames, oldData);
@@ -45,23 +47,43 @@ public abstract class AbstractTransformer {
                 if (keyNames != null && oldSourceValues.size() == 0) {
                     sourceKeyValues = AppUtils.toMap(keyNames, keyValues);
                 }
+                
+                if (log.isDebugEnabled()) {
+                    log.debug("TransformStarted", transformationsToPerform.size(), 
+                            dmlType.toString(), fullyQualifiedName, sourceValues);
+                }
+                
                 List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
                 for (TransformTable transformation : transformationsToPerform) {
                     try {
                         List<TransformedData> dataToTransform = create(context, dmlType,
                                 transformation, sourceKeyValues, oldSourceValues);
+                        if (log.isDebugEnabled()) {
+                            log.debug("TransformDataCreated", dataToTransform.size(), transformation.getTransformId(), transformation.getFullyQualifiedTargetTableName());
+                        }
                         for (TransformedData targetData : dataToTransform) {
                             try {
                                 if (perform(context, targetData, transformation, sourceValues,
                                         oldSourceValues)) {
-                                    dataThatHasBeenTransformed.add(targetData);
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("TransformedDataReadyForApplication", targetData.getTargetDmlType().toString(), 
+                                                ArrayUtils.toString(targetData.getColumnNames()), 
+                                                ArrayUtils.toString(targetData.getColumnValues()));
+                                    }
+                                    dataThatHasBeenTransformed.add(targetData);                                    
                                 }
                             } catch (IgnoreRowException ex) {
                                 // ignore this row
+                                if (log.isDebugEnabled()) {
+                                    log.debug("TransformRowIgnored", ArrayUtils.toString(targetData.getKeyValues()));
+                                }
                             }
                         }
                     } catch (IgnoreRowException ex) {
                         // ignore this row
+                        if (log.isDebugEnabled()) {
+                            log.debug("TransformRowIgnored", "transformation aborted during tranformation of key");
+                        }
                     }
                 }
                 return dataThatHasBeenTransformed;
