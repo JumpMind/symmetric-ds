@@ -145,6 +145,10 @@ public class TransformedData implements Cloneable {
             throw new RuntimeException(e);
         }
     }
+    
+    public TransformTable getTransformation() {
+        return transformation;
+    }
 
     protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> copy(
             Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> toCopy) {
