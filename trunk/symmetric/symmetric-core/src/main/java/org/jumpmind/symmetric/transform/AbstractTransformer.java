@@ -33,26 +33,35 @@ public abstract class AbstractTransformer {
     protected List<TransformedData> transform(DmlType dmlType, ICacheContext context,
             NodeGroupLink nodeGroupLink, String catalogName, String schemaName, String tableName,
             String[] columnNames, String[] columnValues, String[] keyNames, String[] keyValues,
-            String[] oldData) throws IgnoreRowException {
+            String[] oldData) {
         if (isEligibleForTransform(catalogName, schemaName, tableName)) {
             List<TransformTable> transformationsToPerform = findTablesToTransform(nodeGroupLink,
                     getFullyQualifiedTableName(catalogName, schemaName, tableName));
             if (transformationsToPerform != null && transformationsToPerform.size() > 0) {
                 Map<String, String> sourceValues = AppUtils.toMap(columnNames, columnValues);
                 Map<String, String> oldSourceValues = AppUtils.toMap(columnNames, oldData);
-                Map<String, String> sourceKeyValues = oldSourceValues.size() > 0 ? oldSourceValues : sourceValues;
+                Map<String, String> sourceKeyValues = oldSourceValues.size() > 0 ? oldSourceValues
+                        : sourceValues;
                 if (keyNames != null && oldSourceValues.size() == 0) {
                     sourceKeyValues = AppUtils.toMap(keyNames, keyValues);
                 }
                 List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
                 for (TransformTable transformation : transformationsToPerform) {
-                    List<TransformedData> dataToTransform = create(context, dmlType,
-                            transformation, sourceKeyValues, oldSourceValues);
-                    for (TransformedData targetData : dataToTransform) {
-                        if (perform(context, targetData, transformation, sourceValues,
-                                oldSourceValues)) {
-                            dataThatHasBeenTransformed.add(targetData);
+                    try {
+                        List<TransformedData> dataToTransform = create(context, dmlType,
+                                transformation, sourceKeyValues, oldSourceValues);
+                        for (TransformedData targetData : dataToTransform) {
+                            try {
+                                if (perform(context, targetData, transformation, sourceValues,
+                                        oldSourceValues)) {
+                                    dataThatHasBeenTransformed.add(targetData);
+                                }
+                            } catch (IgnoreRowException ex) {
+                                // ignore this row
+                            }
                         }
+                    } catch (IgnoreRowException ex) {
+                        // ignore this row
                     }
                 }
                 return dataThatHasBeenTransformed;
