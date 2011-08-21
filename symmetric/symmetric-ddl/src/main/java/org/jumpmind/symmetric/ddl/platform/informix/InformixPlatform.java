@@ -19,6 +19,7 @@ public class InformixPlatform extends PlatformImplBase implements Platform {
 
         info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
         info.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);
+        info.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
         info.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
         info.addNativeTypeMapping(Types.TIME, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
         info.addNativeTypeMapping(Types.BINARY, "BYTE", Types.BINARY);
