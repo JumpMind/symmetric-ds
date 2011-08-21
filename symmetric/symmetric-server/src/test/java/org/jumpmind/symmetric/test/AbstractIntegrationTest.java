@@ -35,9 +35,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * 
- */
 public class AbstractIntegrationTest extends AbstractTest {
 
     protected final Log logger = LogFactory.getLog(getClass());
