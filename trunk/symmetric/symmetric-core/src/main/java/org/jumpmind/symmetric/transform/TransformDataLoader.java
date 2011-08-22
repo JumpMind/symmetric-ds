@@ -91,6 +91,9 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                 Table table = tableTemplate.getTable();
                 try {
                     if (data.isGeneratedIdentityNeeded()) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("TransformEnablingGeneratedIdentity", table.getName());
+                        }
                         dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), table);
                     } else if (table.hasAutoIncrementColumn()) {
                         dbDialect.allowIdentityInserts(context.getJdbcTemplate(), table);
