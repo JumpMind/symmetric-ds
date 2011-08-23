@@ -104,8 +104,10 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                         data.setTargetDmlType(DmlType.UPDATE);
                         tableTemplate.setColumnNames(data.getColumnNames());
                         tableTemplate.setKeyNames(data.getKeyNames());
-                        tableTemplate.update((IDataLoaderContext) context, data.getColumnValues(),
-                                data.getKeyValues());
+                        if (0 == tableTemplate.update((IDataLoaderContext) context, data.getColumnValues(),
+                                data.getKeyValues())) {
+                            throw ex;
+                        }
                     } else {
                          log.warn("Message", ex.getMessage());
                          log.warn("TransformNoPrimaryKeyDefinedNoUpdate", data.getTransformation().getTransformId());
