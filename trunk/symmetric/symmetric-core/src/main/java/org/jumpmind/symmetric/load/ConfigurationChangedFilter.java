@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.transform.ITransformService;
 
 /**
  * An out of the box filter that checks to see if the SymmetricDS configuration
@@ -44,30 +45,38 @@ public class ConfigurationChangedFilter
 
     final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels." + ConfigurationChangedFilter.class.getSimpleName()
             + hashCode();
+    
+    final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms." + ConfigurationChangedFilter.class.getSimpleName()
+    + hashCode();
 
     private IParameterService parameterService;
 
     private IConfigurationService configurationService;
     
     private ITriggerRouterService triggerRouterService;
+    
+    private ITransformService transformService;
 
     private String tablePrefix;
 
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
         recordSyncNeeded(context);
         recordChannelFlushNeeded(context);
+        recordTransformFlushNeeded(context);
         return true;
     }
 
     public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
         recordSyncNeeded(context);
         recordChannelFlushNeeded(context);
+        recordTransformFlushNeeded(context);
         return true;
     }
 
     public boolean filterUpdate(IDataLoaderContext context, String[] columnValues, String[] keyValues) {
         recordSyncNeeded(context);
         recordChannelFlushNeeded(context);
+        recordTransformFlushNeeded(context);
         return true;
     }
 
@@ -82,6 +91,12 @@ public class ConfigurationChangedFilter
             context.getContextCache().put(CTX_KEY_FLUSH_CHANNELS_NEEDED, true);
         }
     }
+    
+    private void recordTransformFlushNeeded(IDataLoaderContext context) {
+        if (isTransformFlushNeeded(context)) {
+            context.getContextCache().put(CTX_KEY_FLUSH_TRANSFORMS_NEEDED, true);
+        }
+    }
 
     private boolean isSyncTriggersNeeded(IDataLoaderContext context) {
         return matchesTable(context, TableConstants.SYM_TRIGGER) 
@@ -91,6 +106,11 @@ public class ConfigurationChangedFilter
 
     private boolean isChannelFlushNeeded(IDataLoaderContext context) {
         return matchesTable(context, TableConstants.SYM_CHANNEL);
+    }
+    
+    private boolean isTransformFlushNeeded(IDataLoaderContext context) {
+        return matchesTable(context, TableConstants.SYM_TRANSFORM_COLUMN) || 
+        matchesTable(context, TableConstants.SYM_TRANSFORM_TABLE);
     }
 
     private boolean matchesTable(IDataLoaderContext context, String tableSuffix) {
@@ -123,6 +143,11 @@ public class ConfigurationChangedFilter
             log.info("ConfigurationChanged");
             triggerRouterService.syncTriggers();
         }
+        if (loader.getContext().getContextCache().get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
+                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+            log.info("ConfigurationChanged");
+            transformService.resetCache();
+        }
     }
 
     public void setParameterService(IParameterService parameterService) {
@@ -141,4 +166,7 @@ public class ConfigurationChangedFilter
         this.configurationService = configurationService;
     }
 
+    public void setTransformService(ITransformService transformService) {
+        this.transformService = transformService;
+    }
 }
