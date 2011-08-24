@@ -32,6 +32,7 @@
         <property name="parameterService" ref="parameterService" />
         <property name="configurationService" ref="configurationService" />
         <property name="triggerRouterService" ref="triggerRouterService" />
+        <property name="transformService" ref="transformService" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
     </bean>
 
