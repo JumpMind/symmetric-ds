@@ -66,6 +66,8 @@ public class Trigger implements Serializable {
     private boolean syncOnIncomingBatch = false;
     
     private boolean useStreamLobs = false;
+    
+    private boolean useCaptureLobs = false;
 
     private String nameForInsertTrigger;
 
@@ -361,6 +363,14 @@ public class Trigger implements Serializable {
         return useStreamLobs;
     }
     
+    public void setUseCaptureLobs(boolean useCaptureLobs) {
+        this.useCaptureLobs = useCaptureLobs;
+    }
+    
+    public boolean isUseCaptureLobs() {
+        return useCaptureLobs;
+    }
+    
     public long toHashedValue() {
         long hashedValue = triggerId != null ? triggerId.hashCode() : 0;
         if (null != sourceTableName) {
@@ -379,10 +389,12 @@ public class Trigger implements Serializable {
             hashedValue += sourceCatalogName.hashCode();
         }
 
-        hashedValue += syncOnUpdate ? 1 : 0;
-        hashedValue += syncOnInsert ? 1 : 0;
-        hashedValue += syncOnDelete ? 1 : 0;
-        hashedValue += syncOnIncomingBatch ? 1 : 0;
+        hashedValue += syncOnUpdate ? "syncOnUpdate".hashCode() : 0;
+        hashedValue += syncOnInsert ? "syncOnInsert".hashCode() : 0;
+        hashedValue += syncOnDelete ? "syncOnDelete".hashCode() : 0;
+        hashedValue += syncOnIncomingBatch ? "syncOnIncomingBatch".hashCode() : 0;
+        hashedValue += useStreamLobs ? "useStreamLobs".hashCode() : 0;
+        hashedValue += useCaptureLobs ? "useCaptureLobs".hashCode() : 0;
 
         if (null != nameForInsertTrigger) {
             hashedValue += nameForInsertTrigger.hashCode();
@@ -414,7 +426,7 @@ public class Trigger implements Serializable {
 
         if (null != txIdExpression) {
             hashedValue += txIdExpression.hashCode();
-        }
+        }        
 
         return hashedValue;
     }

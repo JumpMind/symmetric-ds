@@ -224,7 +224,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             getParameterService().saveParameter(
                     ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, true);
             if (!Constants.ALWAYS_TRUE_CONDITION
-                    .equals(getDbDialect().getDataHasChangedCondition())) {
+                    .equals(getDbDialect().getDataHasChangedCondition(
+                    getTriggerRouterService().getTriggers().get(0)))) {
                 forceRebuildOfTrigers();
                 Assert.assertTrue(getJdbcTemplate().queryForInt(
                         "select count(*) from " + TEST_TRIGGERS_TABLE) > 0);

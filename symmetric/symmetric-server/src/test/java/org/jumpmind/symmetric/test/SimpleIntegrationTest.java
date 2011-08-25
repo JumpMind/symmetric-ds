@@ -156,7 +156,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void initialLoad() {
         logTestRunning();
-        insertIntoTestUseStreamLob(100, THIS_IS_A_TEST);
+        insertIntoTestUseStreamLob(100, "test_use_stream_lob", THIS_IS_A_TEST);
+        insertIntoTestUseStreamLob(100, "test_use_capture_lob", THIS_IS_A_TEST);
         IDbDialect rootDialect = getRootDbDialect();
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 301, "Linus", "1",
                 "42 Blanket Street", "Santa Claus", "IN", 90009, new Date(), new Date(),
@@ -204,7 +205,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 rootJdbcTemplate
                         .queryForInt("select count(*) from sym_node_security where initial_load_enabled=1"),
                 0, "Initial load was not successful accordign to the root");
-        assertTestUseStreamBlobInClientDatabase(100, THIS_IS_A_TEST);
+        assertTestUseStreamBlobInClientDatabase(100, "test_use_stream_lob",THIS_IS_A_TEST);
+        assertTestUseStreamBlobInClientDatabase(100, "test_use_capture_lob",THIS_IS_A_TEST);
     }
 
     private void insertIntoTestTriggerTable(JdbcTemplate jdbcTemplate, IDbDialect dialect,
@@ -1384,9 +1386,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void testClobSyncUsingStreaming() throws Exception {
+    public void testLobSyncUsingStreaming() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
-        if (insertIntoTestUseStreamLob(200, text)) {
+        if (insertIntoTestUseStreamLob(200, "test_use_stream_lob", text)) {
             String rowData = rootJdbcTemplate
                     .queryForObject(
                             "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
@@ -1394,9 +1396,28 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             Assert.assertTrue("Did not find the id in the row data", rowData.contains("200"));
             Assert.assertEquals("\"200\",,,,,,", rowData);
             getClientEngine().pull();
-            assertTestUseStreamBlobInClientDatabase(200, text);
+            assertTestUseStreamBlobInClientDatabase(200, "test_use_stream_lob", text);
         }
     }
+    
+    @Test(timeout = 120000)
+    public void testLobSyncUsingCapture() throws Exception {
+        String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
+        if (insertIntoTestUseStreamLob(200, "test_use_capture_lob", text)) {
+            String rowData = rootJdbcTemplate
+                    .queryForObject(
+                            "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
+                            String.class);
+            Assert.assertTrue("Did not find the id in the row data", rowData.contains("200"));
+            getClientEngine().pull();
+            assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob", text);
+            
+            String updateText = "The text was updated";
+            updateTestUseStreamLob(200, "test_use_capture_lob", updateText);
+            getClientEngine().pull();
+            assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob", updateText);
+        }
+    }    
 
     @Test(timeout = 120000)
     public void cleanupAfterTests() {
@@ -1419,11 +1440,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     // TODO support insert of blob test for postgres and informix
-    private boolean insertIntoTestUseStreamLob(int id, String lobValue) {
+    private boolean insertIntoTestUseStreamLob(int id, String tableName, String lobValue) {
         if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)
                 && !(getRootDbDialect() instanceof InformixDbDialect)) {
             rootJdbcTemplate.update(
-                    "insert into test_use_stream_lob (test_id, test_blob) values(?, ?)",
+                    "insert into "+tableName+" (test_id, test_blob) values(?, ?)",
                     new ArgTypePreparedStatementSetter(new Object[] { id, lobValue.getBytes() },
                             new int[] { Types.INTEGER, Types.BLOB }, getRootDbDialect()
                                     .getLobHandler()));
@@ -1432,12 +1453,27 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             return false;
         }
     }
+    
+    // TODO support insert of blob test for postgres and informix
+    private boolean updateTestUseStreamLob(int id, String tableName, String lobValue) {
+        if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)
+                && !(getRootDbDialect() instanceof InformixDbDialect)) {
+            rootJdbcTemplate.update(
+                    "update "+tableName+" set test_blob=? where test_id=?",
+                    new ArgTypePreparedStatementSetter(new Object[] { lobValue.getBytes(), id },
+                            new int[] {  Types.BLOB, Types.INTEGER }, getRootDbDialect()
+                                    .getLobHandler()));
+            return true;
+        } else {
+            return false;
+        }
+    }    
 
-    private void assertTestUseStreamBlobInClientDatabase(int id, String value) {
+    private void assertTestUseStreamBlobInClientDatabase(int id, String tableName, String value) {
         if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)
                 && !(getRootDbDialect() instanceof InformixDbDialect)) {
             Map<String, Object> values = clientJdbcTemplate.queryForMap(
-                    "select test_blob from test_use_stream_lob where test_id=?", id);
+                    "select test_blob from "+tableName+" where test_id=?", id);
             assertEquals(new String((byte[]) values.get("TEST_BLOB")), value,
                     "The blob column for test_use_stream_lob was not loaded into the client database");
         }

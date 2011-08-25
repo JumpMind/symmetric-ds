@@ -80,7 +80,7 @@
                                     disable_trigger pls_integer;
                                     disable_node_id varchar(50);
                                     procedure setValue (a IN number);
-                                    procedure setNodeValue (node_id IN varchar);
+                                    procedure setNodeValue (node_id IN varchar);                                    
                                 end $[sym.sync.table.prefix]_pkg;
                                 ]]>
                             </value>
@@ -159,7 +159,7 @@
                                       '$(targetTableName)',
                                       'I',
                                       $(triggerHistoryId),
-                                      $(columns),          
+                                      $(oracleToClob)$(columns),          
                                       '$(channelName)',          
                                       $(txIdExpression),
                                       $[sym.sync.table.prefix]_pkg.disable_node_id,  
@@ -177,12 +177,12 @@
                                 create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)
                                 for each row begin
                                   declare 
-                                    var_row_data long;
-                                    var_old_data long;
+                                    var_row_data $(oracleLobType);
+                                    var_old_data $(oracleLobType);
                                   begin
                                   if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
-                                    select $(columns) into var_row_data from dual;
-                                    select $(oldColumns) into var_old_data from dual;
+                                    select $(oracleToClob)$(columns) into var_row_data from dual;
+                                    select $(oracleToClob)$(oldColumns) into var_old_data from dual;
                                     if $(dataHasChangedCondition) then 
                                       insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
                                       values(
@@ -217,7 +217,7 @@
                                       'D',
                                       $(triggerHistoryId),
                                       $(oldKeys),
-                                      $(oldColumns),
+                                      $(oracleToClob)$(oldColumns),
                                       '$(channelName)',  
                                       $(txIdExpression),
                                       $[sym.sync.table.prefix]_pkg.disable_node_id, 
@@ -231,7 +231,7 @@
                         </entry>
                         <entry key="initialLoadSqlTemplate">
                             <value>
-                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t  where $(whereClause)]]>
+                                <![CDATA[select $(oracleToClob)$(columns) from $(schemaName)$(tableName) t  where $(whereClause)]]>
                             </value>
                         </entry>
                     </map>

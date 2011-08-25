@@ -100,6 +100,7 @@ public class SqlTemplate {
         Column[] columns = dialect.orderColumns(triggerHistory.getParsedColumnNames(), table);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT, false, channel, triggerRouter.getTrigger()).columnString;
+
         sql = AppUtils.replace("columns", columnsText, sql);
         sql = AppUtils.replace("whereClause", StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION : triggerRouter.getInitialLoadSelect(), sql);
         sql = AppUtils.replace("tableName", table.getName(), sql);
@@ -114,6 +115,7 @@ public class SqlTemplate {
         sql = AppUtils.replace("nodeId", node.getNodeId(), sql);
         sql = replaceDefaultSchemaAndCatalog(dialect, triggerRouter.getTrigger(), sql);
         sql = AppUtils.replace("prefixName", dialect.getTablePrefix(), sql);
+        sql = AppUtils.replace("oracleToClob", triggerRouter.getTrigger().isUseCaptureLobs() ? "to_clob('')||" : "", sql);
 
         return sql;
     }
@@ -140,6 +142,7 @@ public class SqlTemplate {
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT, false, channel, trigger).columnString;
         sql = AppUtils.replace("columns", columnsText, sql);
+        sql = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
 
         sql = AppUtils.replace("tableName", trigger.getSourceTableName(), sql);
         sql = AppUtils.replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() + "." : "", sql);
@@ -159,7 +162,7 @@ public class SqlTemplate {
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT, false, channel, trigger).toString();
         sql = AppUtils.replace("columns", columnsText, sql);
-
+        sql = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
         sql = AppUtils.replace("tableName", trigger.getSourceTableName(), sql);
         sql = AppUtils.replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() + "." : "", sql);
         sql = AppUtils.replace("whereClause", whereClause, sql);
@@ -231,9 +234,11 @@ public class SqlTemplate {
                 ddl);        
         ddl = AppUtils.replace("syncOnDeleteCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
                 ddl);                
-        ddl = AppUtils.replace("dataHasChangedCondition", dialect.preProcessTriggerSqlClause(dialect.getDataHasChangedCondition()),
+        ddl = AppUtils.replace("dataHasChangedCondition", dialect.preProcessTriggerSqlClause(dialect.getDataHasChangedCondition(trigger)),
                 ddl);        
         ddl = AppUtils.replace("sourceNodeExpression", dialect.getSourceNodeExpression(), ddl);
+        
+        ddl = AppUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? "clob" : "long", ddl);
         
         String syncTriggersExpression = dialect.getSyncTriggersExpression();
         ddl = AppUtils.replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? Constants.ALWAYS_TRUE_CONDITION
@@ -243,6 +248,7 @@ public class SqlTemplate {
         Column[] columns = trigger.orderColumnsForTable(table);
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns, dialect, dml, false, channel, trigger);
         ddl = AppUtils.replace("columns", columnString.toString(), ddl);
+        ddl = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "", ddl);
         
         ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
         
@@ -543,7 +549,7 @@ public class SqlTemplate {
                         .getName()), templateToUse);
                 
                 formattedColumnText = AppUtils.replace("masterCollation", dbDialect.getMasterCollation(), formattedColumnText);
-                
+                                
                 if (isLob) {
                     formattedColumnText = dbDialect.massageForLob(formattedColumnText, channel);
                 }

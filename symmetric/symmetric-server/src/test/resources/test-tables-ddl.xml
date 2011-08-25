@@ -106,6 +106,17 @@
 		<column name="test_longvarbinary" type="LONGVARBINARY" />
 	</table>
 
+	<table name="test_use_capture_lob">
+		<column name="test_id" type="INTEGER" primaryKey="true"
+			required="true" />
+		<column name="test_clob" type="CLOB" />
+		<column name="test_blob" type="BLOB" />
+		<column name="test_varbinary" type="VARBINARY" />
+		<column name="test_binary" type="BINARY" />
+		<column name="test_longvarchar" type="LONGVARCHAR" />
+		<column name="test_longvarbinary" type="LONGVARBINARY" />
+	</table>
+
 	<table name="one_column_table">
 		<column name="my_one_column" type="INTEGER" primaryKey="true"
 			required="true" />
