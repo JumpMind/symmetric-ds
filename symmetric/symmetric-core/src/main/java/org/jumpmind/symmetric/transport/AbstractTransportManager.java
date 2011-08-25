@@ -94,7 +94,7 @@ abstract public class AbstractTransportManager {
         StringBuilder builder = new StringBuilder();
         for (IncomingBatch batch : list) {
             Object value = null;
-            if (batch.getStatus() == Status.OK || batch.getStatus() == Status.SK) {
+            if (batch.getStatus() == Status.OK) {
                 value = WebConstants.ACK_BATCH_OK;
             } else {
                 value = batch.getFailedRowNumber();
