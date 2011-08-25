@@ -156,7 +156,7 @@ public class DerbyFunctions {
         }
         ps.close();
         conn.close();
-        return str == null ? "" : "\"" + str + "\"";
+        return str == null ? "" : escape(str);
     }
 
     private static LanguageConnectionContext getLanguageConnection() throws SQLException {
