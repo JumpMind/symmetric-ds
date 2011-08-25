@@ -359,8 +359,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     protected void handleBatchError(final IncomingBatch batch) {
         try {
-            // if the batch was previously OK, then we don't
-            // want to set it ER.
+            // If we were in the process of skipping a batch
+            // then its status would have been OK.  We should not
+            // set the status to ER.
             if (batch.getStatus() != Status.OK) {
                 batch.setStatus(IncomingBatch.Status.ER);
             }
