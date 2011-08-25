@@ -282,8 +282,12 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     @Override
-    protected String getDbSpecificDataHasChangedCondition() {
-        return "var_row_data != var_old_data";
+    protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
+        if (!trigger.isUseCaptureLobs()) {
+            return "var_row_data != var_old_data";
+        } else {
+            return "dbms_lob.compare(nvl(var_row_data,'Null'),nvl(var_old_data,'Null')) != 0 ";
+        }
     }
  
 }

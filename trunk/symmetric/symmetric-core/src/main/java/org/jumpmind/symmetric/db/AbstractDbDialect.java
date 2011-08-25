@@ -1538,15 +1538,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
     
-    final public String getDataHasChangedCondition() {
+    final public String getDataHasChangedCondition(Trigger trigger) {
         if (parameterService.is(ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY)) {
-            return getDbSpecificDataHasChangedCondition();
+            return getDbSpecificDataHasChangedCondition(trigger);
         } else {
             return Constants.ALWAYS_TRUE_CONDITION;
         }
     }
     
-    protected String getDbSpecificDataHasChangedCondition() {
+    protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
         return Constants.ALWAYS_TRUE_CONDITION;
     }
 

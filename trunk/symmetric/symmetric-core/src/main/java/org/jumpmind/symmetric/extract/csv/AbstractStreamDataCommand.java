@@ -98,14 +98,12 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                 data.setRowData(CsvUtils.escapeCsvData(rowData));
                             } catch (IncorrectResultSizeDataAccessException ex) {
                                 // Row could have been deleted by the time we
-                                // get
-                                // around to extracting
+                                // get around to extracting
                                 log.warn("DataExtractorRowMissingCannotGetLobData",
                                         data.getRowData());
                             } catch (Exception ex) {
                                 // TODO: Should we propagate the exception and
-                                // force
-                                // the batch to ER?
+                                // force the batch to ER?
                                 log.warn("DataExtractorTroubleExtractingLobData", data.getRowData());
                             }
 

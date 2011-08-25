@@ -283,7 +283,7 @@ public interface IDbDialect {
     /**
      * This is a SQL clause that compares the old data to the new data in a trigger.
      */
-    public String getDataHasChangedCondition();
+    public String getDataHasChangedCondition(Trigger trigger);
     
     public Map<String, String> getSqlScriptReplacementTokens();
     

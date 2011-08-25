@@ -154,7 +154,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     @Override
-    protected String getDbSpecificDataHasChangedCondition() {
+    protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
         return "var_row_data != var_old_data";
     }
     
