@@ -359,6 +359,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     protected void handleBatchError(final IncomingBatch batch) {
         try {
+            // if the batch was previously OK, then we don't
+            // want to set it ER.
             if (batch.getStatus() != Status.OK) {
                 batch.setStatus(IncomingBatch.Status.ER);
             }
@@ -478,8 +480,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void batchComplete(IDataLoader loader, IncomingBatch batch) {
             loader.getContext().getBatch().setValues(loader.getStatistics(), true);
-            batch.setStatus(Status.OK);
-            incomingBatchService.updateIncomingBatch(batch);           
+            Status oldStatus = batch.getStatus();
+            try {
+                batch.setStatus(Status.OK);
+                incomingBatchService.updateIncomingBatch(batch);
+            } catch (RuntimeException ex) {
+                batch.setStatus(oldStatus);
+                throw ex;
+            }
         }
         
     }
