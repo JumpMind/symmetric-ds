@@ -469,13 +469,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public List<OutgoingBatch> extract(Node node, IOutgoingTransport targetTransport)
             throws IOException {
-        try {
 
-            List<OutgoingBatch> activeBatches = null;
+        List<OutgoingBatch> activeBatches = null;
 
-            if (!extractingNodes.contains(node.getNodeId())) {
+        if (!extractingNodes.contains(node.getNodeId())) {            
+            try {
                 extractingNodes.add(node.getNodeId());
-
+                
                 IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
 
                 if (!parameterService.is(ParameterConstants.START_ROUTE_JOB)) {
@@ -655,13 +655,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
 
+            } finally {
+                extractingNodes.remove(node.getNodeId());
             }
 
-            return activeBatches != null ? activeBatches : new ArrayList<OutgoingBatch>(0);
-
-        } finally {
-            extractingNodes.remove(node.getNodeId());
         }
+
+        return activeBatches != null ? activeBatches : new ArrayList<OutgoingBatch>(0);
+
     }
 
     protected void networkTransfer(BufferedReader reader, BufferedWriter writer) throws IOException {
