@@ -144,11 +144,6 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public String getIdentifierQuoteString() {
-        return "";
-    }
-
-    @Override
     public void truncateTable(String tableName) {
         jdbcTemplate.update("delete from " + tableName);
     }
