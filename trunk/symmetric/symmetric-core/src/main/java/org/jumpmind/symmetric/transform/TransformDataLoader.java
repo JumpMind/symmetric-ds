@@ -2,9 +2,11 @@ package org.jumpmind.symmetric.transform;
 
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IMissingTableHandler;
@@ -78,17 +80,21 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
         return processRow;
     }
 
-    protected void apply(ICacheContext context, List<TransformedData> dataThatHasBeenTransformed) {
+    protected void apply(IDataLoaderContext context,
+            List<TransformedData> dataThatHasBeenTransformed) {
         for (TransformedData data : dataThatHasBeenTransformed) {
             TableTemplate tableTemplate = new TableTemplate(context.getJdbcTemplate(), dbDialect,
                     data.getTableName(), null, false, data.getSchemaName(), data.getCatalogName());
             tableTemplate.setColumnNames(data.getColumnNames());
             tableTemplate.setKeyNames(data.getKeyNames());
-            // TODO Need more advanced fallback logic? Support typical
-            // symmetric fallback/recovery settings?
             switch (data.getTargetDmlType()) {
             case INSERT:
+                boolean enableFallbackUpdate = parameterService
+                        .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
+                boolean enableFallbackSavepoint = parameterService
+                        .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_SAVEPOINT);
                 Table table = tableTemplate.getTable();
+                Object savePoint = null;
                 try {
                     if (data.isGeneratedIdentityNeeded()) {
                         if (log.isDebugEnabled()) {
@@ -98,19 +104,41 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                     } else if (table.hasAutoIncrementColumn()) {
                         dbDialect.allowIdentityInserts(context.getJdbcTemplate(), table);
                     }
-                    tableTemplate.insert((IDataLoaderContext) context, data.getColumnValues());
+
+                    if (enableFallbackUpdate && dbDialect.requiresSavepointForFallback()) {
+                        if (enableFallbackSavepoint) {
+                            savePoint = dbDialect.createSavepointForFallback(context
+                                    .getJdbcTemplate());
+                        } else if (tableTemplate.count(context, data.getKeyValues()) > 0) {
+                            throw new DataIntegrityViolationException("Row already exists");
+                        }
+                    }
+                    tableTemplate.insert(context, data.getColumnValues());
                 } catch (DataIntegrityViolationException ex) {
-                    if (data.getKeyNames() != null && data.getKeyNames().length > 0) {
-                        data.setTargetDmlType(DmlType.UPDATE);
-                        tableTemplate.setColumnNames(data.getColumnNames());
-                        tableTemplate.setKeyNames(data.getKeyNames());
-                        if (0 == tableTemplate.update((IDataLoaderContext) context, data.getColumnValues(),
-                                data.getKeyValues())) {
-                            throw ex;
+                    if (enableFallbackUpdate) {
+                        dbDialect.rollbackToSavepoint(context.getJdbcTemplate(), savePoint);
+                        if (data.getKeyNames() != null && data.getKeyNames().length > 0) {
+                            data.setTargetDmlType(DmlType.UPDATE);
+                            tableTemplate.setColumnNames(data.getColumnNames());
+                            tableTemplate.setKeyNames(data.getKeyNames());
+                            if (0 == tableTemplate.update(context, data.getColumnValues(),
+                                    data.getKeyValues())) {
+                                throw new SymmetricException("LoaderFallbackUpdateFailed", ex,
+                                        context.getTableTemplate().getTable().toVerboseString(),
+                                        ArrayUtils.toString(data.getColumnValues()),
+                                        ArrayUtils.toString(data.getKeyValues()));
+                            }
+                        } else {
+                            // If not keys are specified we are going to assume
+                            // that this is
+                            // intentional and we will simply log a warning and
+                            // not fail.
+                            log.warn("Message", ex.getMessage());
+                            log.warn("TransformNoPrimaryKeyDefinedNoUpdate", data
+                                    .getTransformation().getTransformId());
                         }
                     } else {
-                         log.warn("Message", ex.getMessage());
-                         log.warn("TransformNoPrimaryKeyDefinedNoUpdate", data.getTransformation().getTransformId());
+                        throw ex;
                     }
                 } finally {
                     if (table.hasAutoIncrementColumn()) {
@@ -119,14 +147,22 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                 }
                 break;
             case UPDATE:
+                boolean enableFallbackInsert = parameterService
+                        .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_INSERT);
                 if (data.getKeyNames() != null && data.getKeyNames().length > 0) {
-                    if (0 == tableTemplate.update((IDataLoaderContext) context,
-                            data.getColumnValues(), data.getKeyValues())
+                    if (0 == tableTemplate.update(context, data.getColumnValues(),
+                            data.getKeyValues())
                             && (data.getSourceDmlType() != DmlType.DELETE)) {
-                        data.setTargetDmlType(DmlType.INSERT);
-                        tableTemplate.setColumnNames(data.getColumnNames());
-                        tableTemplate.setKeyNames(data.getKeyNames());
-                        tableTemplate.insert((IDataLoaderContext) context, data.getColumnValues());
+                        if (enableFallbackInsert) {
+                            data.setTargetDmlType(DmlType.INSERT);
+                            tableTemplate.setColumnNames(data.getColumnNames());
+                            tableTemplate.setKeyNames(data.getKeyNames());
+                            tableTemplate.insert(context, data.getColumnValues());
+                        } else {
+                            throw new SymmetricException("LoaderUpdatingFailed",
+                                    context.getTableName(), ArrayUtils.toString(data
+                                            .getColumnValues()));
+                        }
                     }
                 } else {
                     log.warn("TransformNoPrimaryKeyDefinedNoUpdate", data.getTransformation()
@@ -134,7 +170,18 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                 }
                 break;
             case DELETE:
-                tableTemplate.delete((IDataLoaderContext) context, data.getKeyValues());
+                boolean allowMissingDelete = parameterService
+                        .is(ParameterConstants.DATA_LOADER_ALLOW_MISSING_DELETE);
+                int rows = tableTemplate.delete(context, data.getKeyValues());
+                if (rows == 0) {
+                    if (allowMissingDelete) {
+                        log.warn("LoaderDeleteMissing", context.getTableName(),
+                                ArrayUtils.toString(data.getColumnValues()));
+                    } else {
+                        throw new SymmetricException("LoaderDeleteMissing", context.getTableName(),
+                                ArrayUtils.toString(data.getColumnValues()));
+                    }
+                }
                 break;
             }
         }
