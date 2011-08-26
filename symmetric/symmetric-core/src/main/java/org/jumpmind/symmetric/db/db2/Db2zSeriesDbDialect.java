@@ -128,11 +128,6 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
         return null;
     }
 
-    @Override
-    public String getIdentifierQuoteString() {
-        return "";
-    }
-
     public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
     }
 

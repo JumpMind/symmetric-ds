@@ -145,7 +145,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected String databaseProductVersion;
 
-    protected String identifierQuoteString;
+    protected String identifierQuoteString = "";
 
     protected Set<String> sqlKeywords;
 

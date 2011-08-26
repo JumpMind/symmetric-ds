@@ -166,13 +166,4 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
         return BinaryEncoding.HEX;
     }
 
-    
-    @Override
-    public String getIdentifierQuoteString() {
-       return "";
-    }
-
-
-  
-
 }

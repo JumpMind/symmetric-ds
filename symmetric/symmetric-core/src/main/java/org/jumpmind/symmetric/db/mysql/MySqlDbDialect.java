@@ -48,6 +48,10 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
     
     private String functionTemplateKeySuffix = null;
+    
+    public MySqlDbDialect() {
+         this.identifierQuoteString =  "`";
+    }
 
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
@@ -186,11 +190,6 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
-    }
-
-    @Override
-    public String getIdentifierQuoteString() {
-        return "`";
     }
 
     @Override

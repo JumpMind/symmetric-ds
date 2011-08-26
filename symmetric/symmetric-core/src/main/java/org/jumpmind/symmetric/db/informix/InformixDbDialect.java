@@ -33,8 +33,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 
-    private String identifierQuoteString = "";
-
     private Map<String, String> sqlScriptReplacementTokens;
 
     public InformixDbDialect() {
@@ -139,12 +137,7 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
         }
         return defaultSchema;
     }
-
-    @Override
-    public String getIdentifierQuoteString() {
-        return identifierQuoteString;
-    }
-
+    
     @Override
     public Map<String, String> getSqlScriptReplacementTokens() {
         return sqlScriptReplacementTokens;

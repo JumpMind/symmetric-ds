@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -102,9 +103,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                 log.warn("DataExtractorRowMissingCannotGetLobData",
                                         data.getRowData());
                             } catch (Exception ex) {
-                                // TODO: Should we propagate the exception and
-                                // force the batch to ER?
-                                log.warn("DataExtractorTroubleExtractingLobData", data.getRowData());
+                                throw new SymmetricException("DataExtractorTroubleExtractingLobData", data.getRowData());
                             }
 
                         }
@@ -131,19 +130,21 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
 
     protected String buildSelect(Table table, List<Column> lobColumns, Column[] pkColumns) {
         StringBuilder sql = new StringBuilder("select ");
+        String quote = dbDialect.getIdentifierQuoteString();
         for (Column col : lobColumns) {
-            // TODO quote?
+            sql.append(quote);
             sql.append(col.getName());
+            sql.append(quote);
             sql.append(",");
         }
         sql.delete(sql.length() - 1, sql.length());
         sql.append(" from ");
-        // TODO quote?
         sql.append(table.getFullyQualifiedTableName());
         sql.append(" where ");
         for (Column col : pkColumns) {
-            // TODO quote?
+            sql.append(quote);
             sql.append(col.getName());
+            sql.append(quote);
             sql.append("=? and ");
         }
         sql.delete(sql.length() - 5, sql.length());
