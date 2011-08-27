@@ -602,9 +602,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                                     }
 
-                                    extractedBatchesHandle.remove(currentBatch.getBatchId());
-                                    fileWriter.delete();
-
                                 } finally {
                                     // It doesn't hurt anything to call close
                                     // and delete a second time
@@ -612,6 +609,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                                 }
                             }
+                            
+                            for (OutgoingBatch outgoingBatch : activeBatches) {
+                                File file = extractedBatchesHandle.remove(outgoingBatch.getBatchId());
+                                if (file != null && file.exists()) {
+                                   fileWriter.delete();
+                                }
+                            }
+                            
                         } catch (Exception e) {
                             SQLException se = unwrapSqlException(e);
                             if (currentBatch != null) {
