@@ -27,7 +27,8 @@ package org.jumpmind.symmetric.ddl.platform.oracle;
 public class Oracle10Platform extends Oracle9Platform
 {
     /** Database name of this platform. */
-    public static final String DATABASENAME = "Oracle10";
+    public static final String DATABASENAME10 = "Oracle10";
+    public static final String DATABASENAME11 = "Oracle11";
 
     /**
      * Creates a new platform instance.
