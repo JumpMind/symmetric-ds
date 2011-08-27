@@ -106,6 +106,13 @@ public class OutgoingBatch implements Serializable {
     private Date lastUpdatedTime;
 
     private Date createTime;
+        
+    private long oldDataEventCount = 0;
+    private long oldByteCount = 0;
+    private long oldFilterMillis = 0;
+    private long oldExtractMillis = 0;
+    private long oldLoadMillis = 0;
+    private long oldNetworkMillis = 0;
 
     public OutgoingBatch() {
     }
@@ -118,12 +125,33 @@ public class OutgoingBatch implements Serializable {
     }
 
     public void resetStats() {
+        // save off old stats in case there 
+        // is an error and we want to be able to 
+        // restore the previous stats
+        this.oldByteCount = this.byteCount;
+        this.oldDataEventCount = this.dataEventCount;
+        this.oldExtractMillis = this.extractMillis;
+        this.oldLoadMillis = this.loadMillis;
+        this.oldNetworkMillis = this.networkMillis;
+        this.oldFilterMillis = this.filterMillis;
+        
         this.dataEventCount = 0;
         this.byteCount = 0;
         this.filterMillis = 0;
         this.extractMillis = 0;
         this.loadMillis = 0;
         this.networkMillis = 0;
+    }
+    
+    public void revertStatsOnError() {
+        if (this.oldDataEventCount > 0) {
+            this.byteCount = this.oldByteCount;
+            this.dataEventCount = this.oldDataEventCount;
+            this.extractMillis = this.oldExtractMillis;
+            this.loadMillis = this.oldLoadMillis;
+            this.networkMillis = this.oldNetworkMillis;
+            this.filterMillis = this.oldFilterMillis;
+        }
     }
 
     public void setErrorFlag(boolean errorFlag) {

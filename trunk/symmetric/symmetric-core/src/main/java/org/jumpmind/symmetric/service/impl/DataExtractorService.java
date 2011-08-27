@@ -629,6 +629,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 } else {
                                     currentBatch.setSqlMessage(e.getMessage());
                                 }
+                                currentBatch.revertStatsOnError();
                                 currentBatch.setStatus(OutgoingBatch.Status.ER);
                                 currentBatch.setErrorFlag(true);
                                 outgoingBatchService.updateOutgoingBatch(currentBatch);
