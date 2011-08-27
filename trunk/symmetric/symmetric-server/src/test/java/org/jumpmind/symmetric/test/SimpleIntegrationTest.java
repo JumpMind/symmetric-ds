@@ -142,7 +142,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertTrue("The registration for the client should be opened now.", rootNodeService
                 .findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         getClientEngine().start();
-        getClientEngine().pull();
+        clientPull();
         Assert.assertTrue("The client did not register.", getClientEngine().isRegistered());
         Assert.assertFalse("The registration for the client should be closed now.", rootNodeService
                 .findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
@@ -178,7 +178,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertTrue(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
                 .isInitialLoadEnabled());
         do {
-            getClientEngine().pull();
+            clientPull();
         } while (!rootOutgoingBatchService.isInitialLoadComplete(nodeId));
 
         Assert.assertFalse(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
@@ -224,7 +224,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void syncToClient() {
         logTestRunning();
         // test pulling no data
-        getClientEngine().pull();
+        clientPull();
 
         final byte[] BIG_BINARY = new byte[200];
         for (int i = 0; i < BIG_BINARY.length; i++) {
@@ -237,7 +237,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "300 Grub Street", "New Yorl", "NY", 90009, new Date(), new Date(), TEST_CLOB,
                 BIG_BINARY });
 
-        getClientEngine().pull();
+        clientPull();
         assertEquals(
                 clientJdbcTemplate
                         .queryForInt("select count(*) from test_customer where customer_id=101"),
@@ -270,7 +270,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         logTestRunning();
         // test pulling no data
-        getClientEngine().pull();
+        clientPull();
 
         final int NEW_ZIP = 44444;
         final String NEW_NAME = "JoJo Duh Doh";
@@ -310,7 +310,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         rootJdbcTemplate.update(insertCustomerSql, new ArgTypePreparedStatementSetter(args,
                 argTypes, getRootDbDialect().getLobHandler()));
-        getClientEngine().pull();
+        clientPull();
 
         if (getRootDbDialect().isClobSyncSupported()) {
             if (getClientDbDialect() instanceof InterbaseDbDialect) {
@@ -336,7 +336,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "update test_customer set notes = ?, icon = ? where customer_id = 300",
                 new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect()
                         .getLobHandler()));
-        getClientEngine().pull();
+        clientPull();
 
         if (getRootDbDialect().isClobSyncSupported()) {
             assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), null,
@@ -367,7 +367,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         rootJdbcTemplate.update(insertCustomerSql, new ArgTypePreparedStatementSetter(args,
                 argTypes, getRootDbDialect().getLobHandler()));
-        getClientEngine().pull();
+        clientPull();
     }
 
     @Test(timeout = 120000)
@@ -507,7 +507,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "42", 100, "C", date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-        getClientEngine().pull();
+        clientPull();
         IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
@@ -528,7 +528,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "43", 100, "C", date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
 
-        getClientEngine().pull();
+        clientPull();
         batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 1, "There should be 1 outgoing batch.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "43" })
@@ -541,7 +541,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         // ignore
 
-        getClientEngine().pull();
+        clientPull();
         batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, but there was one.");
@@ -555,7 +555,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         c.setIgnoreEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
 
-        getClientEngine().pull();
+        clientPull();
         batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, but there was one.");
@@ -575,7 +575,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "442", 100, "C", date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-        getClientEngine().pull();
+        clientPull();
         IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
@@ -604,7 +604,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "443", 100, "C", date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-        getClientEngine().pull();
+        clientPull();
 
         batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 0, "There should be 0 outgoing batch.");
@@ -630,7 +630,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "444", 100, "C", date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-        getClientEngine().pull();
+        clientPull();
 
         batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 0, "There should be 0 outgoing batch.");
@@ -650,7 +650,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         c.setIgnoreEnabled(false);
         clientConfigurationService.saveNodeChannel(c, true);
 
-        getClientEngine().pull();
+        clientPull();
 
     }
 
@@ -661,7 +661,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         int rowsUpdated = rootJdbcTemplate
                 .update("update test_sync_column_level set string_value=string_value");
         logger.info("Updated " + rowsUpdated + " test_sync_column_level rows");
-        getClientEngine().pull();
+        clientPull();
         Assert.assertTrue(rowsUpdated > 0);
         Assert.assertTrue(clientIncomingBatchCount <= clientJdbcTemplate
                 .queryForInt("select count(*) from sym_incoming_batch"));
@@ -687,7 +687,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "44", 100, "C", date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-        getClientEngine().pull();
+        clientPull();
         IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
@@ -708,7 +708,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "45", 100, "C", date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
 
-        getClientEngine().pull();
+        clientPull();
         batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 1, "There should be 1 outgoing batch.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "45" })
@@ -721,7 +721,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         // ignore
 
-        getClientEngine().pull();
+        clientPull();
         batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, but there was one.");
@@ -736,7 +736,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         c.setIgnoreEnabled(false);
         clientConfigurationService.saveNodeChannel(c, true);
 
-        getClientEngine().pull();
+        clientPull();
         batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, but there was one.");
@@ -765,7 +765,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void reopenRegistration() {
         logTestRunning();
         getRootEngine().reOpenRegistration(TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        getClientEngine().pull();
+        clientPull();
         Assert.assertEquals(1, rootJdbcTemplate
                 .queryForInt(isRegistrationClosedSql,
                         new Object[] { TestConstants.TEST_CLIENT_EXTERNAL_ID },
@@ -812,7 +812,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Date date = DateUtils.parseDate("2007-01-02", new String[] { "yyyy-MM-dd" });
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "11", 100, null, date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-        getClientEngine().pull();
+        clientPull();
 
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = outgoingBatchService
@@ -826,7 +826,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // Should sync when status = C
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "12", 100, "C", date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-        getClientEngine().pull();
+        clientPull();
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "12" })
                 .size(), 1, "The order record was not sync'd when it should have been.");
         // TODO: make sure event did not fire
@@ -839,12 +839,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update("insert into one_column_table values(1)");
         Assert.assertTrue(clientJdbcTemplate
                 .queryForInt("select count(*) from one_column_table where my_one_column=1") == 0);
-        getClientEngine().pull();
+        clientPull();
         Assert.assertTrue(clientJdbcTemplate
                 .queryForInt("select count(*) from one_column_table where my_one_column=1") == 1);
         rootJdbcTemplate
                 .update("update one_column_table set my_one_column=1 where my_one_column=1");
-        getClientEngine().pull();
+        clientPull();
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = outgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
@@ -857,7 +857,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void syncUpdateCondition() {
         logTestRunning();
         rootJdbcTemplate.update(updateOrderHeaderStatusSql, new Object[] { "C", "1" });
-        getClientEngine().pull();
+        clientPull();
         List<Map<String, Object>> list = clientJdbcTemplate.queryForList(selectOrderHeaderSql,
                 new Object[] { "1" });
         assertEquals(list.size(), 1, "The order record should exist.");
@@ -886,7 +886,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201, "Charlie Dude", "1",
                 "300 Grub Street", "New Yorl", "NY", 90009, new Date(), new Date(), THIS_IS_A_TEST,
                 BINARY_DATA });
-        getClientEngine().pull();
+        clientPull();
         assertEquals(
                 clientJdbcTemplate
                         .queryForInt("select count(*) from test_customer where customer_id=201"),
@@ -895,7 +895,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         rootConfigService.reloadChannels();
 
-        getClientEngine().pull();
+        clientPull();
         getClientEngine().getConfigurationService().reloadChannels();
     }
 
@@ -926,7 +926,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
 
         // do an extra push & pull to make sure we have events cleared out
-        getClientEngine().pull();
+        clientPull();
         clientPush();
 
         Thread.sleep(2000);
@@ -1037,14 +1037,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 : "";
         rootJdbcTemplate.update("insert into " + rquote + "TEST_ALL_CAPS" + rquote
                 + " values(1, 'HELLO')");
-        getClientEngine().pull();
+        clientPull();
         assertEquals(
                 clientJdbcTemplate.queryForInt("select count(*) from " + cquote + "TEST_ALL_CAPS"
                         + cquote + " where " + cquote + "ALL_CAPS_ID" + cquote + " = 1"), 1,
                 "Table name in all caps was not synced");
         rootJdbcTemplate.update("insert into " + rquote + "Test_Mixed_Case" + rquote
                 + " values(1, 'Hello')");
-        getClientEngine().pull();
+        clientPull();
         assertEquals(
                 clientJdbcTemplate.queryForInt("select count(*) from " + cquote + "Test_Mixed_Case"
                         + cquote + " where " + cquote + "Mixed_Case_Id" + cquote + " = 1"), 1,
@@ -1060,7 +1060,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         testFlag = false;
         String scriptData = "org.jumpmind.symmetric.test.SimpleIntegrationTest.testFlag=true;";
         rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
-        getClientEngine().pull();
+        clientPull();
         OutgoingBatches batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         Assert.assertEquals(0, batches.countBatches(true));
@@ -1077,7 +1077,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         testFlag = false;
         String scriptData = "org.jumpmind.symmetric.test.SimpleIntegrationTest.nonExistentFlag=true;";
         rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
-        getClientEngine().pull();
+        clientPull();
         OutgoingBatches batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         Assert.assertEquals(1, batches.countBatches(true));
@@ -1094,19 +1094,19 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void testNoPrimaryKeySync() {
         logTestRunning();
         rootJdbcTemplate.update("insert into no_primary_key_table values(1, 2, 'HELLO')");
-        getClientEngine().pull();
+        clientPull();
         assertEquals(
                 clientJdbcTemplate
                         .queryForInt("select two_column from no_primary_key_table where one_column=1"),
                 2, "Table was not synced");
         rootJdbcTemplate.update("update no_primary_key_table set two_column=3 where one_column=1");
-        getClientEngine().pull();
+        clientPull();
         assertEquals(
                 clientJdbcTemplate
                         .queryForInt("select two_column from no_primary_key_table where one_column=1"),
                 3, "Table was not updated");
         rootJdbcTemplate.update("delete from no_primary_key_table");
-        getClientEngine().pull();
+        clientPull();
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from no_primary_key_table"),
                 0, "Table was not deleted from");
     }
@@ -1138,15 +1138,15 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update(enableKeyWordTriggerSql);
         getRootEngine().syncTriggers();
         getRootEngine().reOpenRegistration(TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        getClientEngine().pull();
+        clientPull();
 
         rootJdbcTemplate.update(insertKeyWordSql.replaceAll("\"", rquote), new Object[] { 1, "x",
                 "a" });
-        getClientEngine().pull();
+        clientPull();
 
         rootJdbcTemplate.update(updateKeyWordSql.replaceAll("\"", rquote), new Object[] { "y", "b",
                 1 });
-        getClientEngine().pull();
+        clientPull();
 
         List<Map<String, Object>> rowList = clientJdbcTemplate.queryForList(
                 selectKeyWordSql.replaceAll("\"", cquote), new Object[] { 1 });
@@ -1171,7 +1171,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         for (int i = 1; i < columns.length; i++) {
             rootJdbcTemplate.update(replace("column", columns[i], updateSyncColumnLevelSql),
                     new Object[] { values[i], id });
-            getClientEngine().pull();
+            clientPull();
             assertEquals(
                     clientJdbcTemplate.queryForInt(
                             replace("column", columns[i], selectSyncColumnLevelSql), new Object[] {
@@ -1196,7 +1196,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             rootJdbcTemplate.update(replace("column", columns[i], updateSyncColumnLevelSql),
                     new Object[] { values[i], id });
         }
-        getClientEngine().pull();
+        clientPull();
     }
 
     @Test(timeout = 120000)
@@ -1212,7 +1212,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientJdbcTemplate.update(deleteSyncColumnLevelSql, new Object[] { id });
         rootJdbcTemplate.update(replace("column", "string_value", updateSyncColumnLevelSql),
                 new Object[] { values[1], id });
-        getClientEngine().pull();
+        clientPull();
 
         for (int i = 1; i < columns.length; i++) {
             assertEquals(
@@ -1235,7 +1235,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update(replace("column", "string_value", updateSyncColumnLevelSql),
                 new Object[] { "same", id });
         clientJdbcTemplate.update(deleteSyncColumnLevelSql, new Object[] { id });
-        getClientEngine().pull();
+        clientPull();
     }
 
     @Test(timeout = 120000)
@@ -1244,7 +1244,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertEquals(0,
                 clientJdbcTemplate.queryForInt("select count(*) from test_target_table_b"));
         rootJdbcTemplate.update("insert into test_target_table_a values('1','2')");
-        getClientEngine().pull();
+        clientPull();
         Assert.assertEquals(1,
                 clientJdbcTemplate.queryForInt("select count(*) from test_target_table_b"));
         Assert.assertEquals(0,
@@ -1289,9 +1289,45 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
                 oldMaxRowsBeforeCommit);
     }
+    
+    @Test(timeout = 120000)
+    public void testLobSyncUsingStreaming() throws Exception {
+        String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
+        if (insertIntoTestUseStreamLob(200, "test_use_stream_lob", text)) {
+            String rowData = rootJdbcTemplate
+                    .queryForObject(
+                            "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
+                            String.class);
+            Assert.assertTrue("Did not find the id in the row data", rowData.contains("200"));
+            Assert.assertEquals("\"200\",,,,,,", rowData);
+            clientPull();
+            assertTestUseStreamBlobInClientDatabase(200, "test_use_stream_lob", text);
+        }
+    }
+    
+    @Test(timeout = 120000)
+    public void testLobSyncUsingCapture() throws Exception {
+        String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
+        if (insertIntoTestUseStreamLob(200, "test_use_capture_lob", text)) {
+            String rowData = rootJdbcTemplate
+                    .queryForObject(
+                            "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
+                            String.class);
+            Assert.assertTrue("Did not find the id in the row data", rowData.contains("200"));
+            clientPull();
+            assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob", text);
+            
+            String updateText = "The text was updated";
+            updateTestUseStreamLob(200, "test_use_capture_lob", updateText);
+            clientPull();
+            assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob", updateText);
+        }
+    }      
 
     @Test(timeout = 120000)
     public void testSyncDisabled() {
+        clientPull();
+        
         logTestRunning();
 
         Node clientIdentity = getClientEngine().getNodeService().findIdentity();
@@ -1316,8 +1352,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertNull(clientNodeSecurity);
 
         // A client pull will result in client getting a SyncDisabled return
-        // code which
-        // will cause the client's identity to be removed.
+        // code which will cause the client's identity to be removed.
         getClientEngine().pull();
         Node clientNodeAfterPull = getClientEngine().getNodeService().findIdentity();
         Assert.assertNull(clientNodeAfterPull);
@@ -1330,8 +1365,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getRootEngine().getParameterService().saveParameter("auto.reload", true);
 
         // A pull will cause the registration to occur and the node identify to
-        // be
-        // reestablished.
+        // be reestablished.
         getClientEngine().pull();
         clientNodeAfterPull = getClientEngine().getNodeService().findIdentity();
         Assert.assertNotNull(clientNodeAfterPull);
@@ -1368,7 +1402,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // A pull will cause the registration to occur and the node identify to
         // be
         // reestablished.
-        getClientEngine().pull();
+        clientPull();
 
         Node clientNodeAfterPull = getClientEngine().getNodeService().findIdentity();
         Assert.assertNotNull(clientNodeAfterPull);
@@ -1383,45 +1417,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         statMgr = (IStatisticManager) getRootEngine().getApplicationContext().getBean(
                 Constants.STATISTIC_MANAGER);
         statMgr.flush();
-    }
-
-    @Test(timeout = 120000)
-    public void testLobSyncUsingStreaming() throws Exception {
-        String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
-        if (insertIntoTestUseStreamLob(200, "test_use_stream_lob", text)) {
-            String rowData = rootJdbcTemplate
-                    .queryForObject(
-                            "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
-                            String.class);
-            Assert.assertTrue("Did not find the id in the row data", rowData.contains("200"));
-            Assert.assertEquals("\"200\",,,,,,", rowData);
-            getClientEngine().pull();
-            assertTestUseStreamBlobInClientDatabase(200, "test_use_stream_lob", text);
-        }
-    }
-    
-    @Test(timeout = 120000)
-    public void testLobSyncUsingCapture() throws Exception {
-        String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
-        if (insertIntoTestUseStreamLob(200, "test_use_capture_lob", text)) {
-            String rowData = rootJdbcTemplate
-                    .queryForObject(
-                            "select row_data from sym_data where data_id = (select max(data_id) from sym_data)",
-                            String.class);
-            Assert.assertTrue("Did not find the id in the row data", rowData.contains("200"));
-            getClientEngine().pull();
-            assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob", text);
-            
-            String updateText = "The text was updated";
-            updateTestUseStreamLob(200, "test_use_capture_lob", updateText);
-            getClientEngine().pull();
-            assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob", updateText);
-        }
-    }    
+    }  
 
     @Test(timeout = 120000)
     public void cleanupAfterTests() {
-        getClientEngine().pull();
+        clientPull();
         getClientEngine().purge();
         getRootEngine().purge();
     }

@@ -169,6 +169,17 @@ public class AbstractIntegrationTest extends AbstractTest {
         }
         return pushed;
     }
+    
+    protected boolean clientPull() {
+        int tries = 0;
+        boolean pulled = false;
+        while (!pulled && tries < 10) {
+            pulled = getClientEngine().pull().wasDataProcessed();
+            AppUtils.sleep(100);
+            tries++;
+        }
+        return pulled;
+    }
 
     @AfterClass
     public static void cleanup() throws Exception {
