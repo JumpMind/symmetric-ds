@@ -72,7 +72,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     outgoingBatch.setErrorFlag(false);
                     log.warn("AckNotUpdatingBatchState", batch.getBatchId(), status.name());
                 }
-                outgoingBatch.setByteCount(batch.getByteCount());
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());
                 outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
