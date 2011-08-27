@@ -200,7 +200,8 @@ public class PlatformFactory
         addPlatform(_platforms, MySql50Platform.DATABASENAME,     MySql50Platform.class);
         addPlatform(_platforms, Oracle8Platform.DATABASENAME,     Oracle8Platform.class);
         addPlatform(_platforms, Oracle9Platform.DATABASENAME,     Oracle9Platform.class);
-        addPlatform(_platforms, Oracle10Platform.DATABASENAME,    Oracle10Platform.class);
+        addPlatform(_platforms, Oracle10Platform.DATABASENAME10,    Oracle10Platform.class);
+        addPlatform(_platforms, Oracle10Platform.DATABASENAME11,    Oracle10Platform.class);
         addPlatform(_platforms, PostgreSqlPlatform.DATABASENAME,  PostgreSqlPlatform.class);
         addPlatform(_platforms, SapDbPlatform.DATABASENAME,       SapDbPlatform.class);
         addPlatform(_platforms, SybasePlatform.DATABASENAME,      SybasePlatform.class);
