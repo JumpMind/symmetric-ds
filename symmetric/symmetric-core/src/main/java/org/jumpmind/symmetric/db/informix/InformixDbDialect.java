@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,13 +37,18 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
     private Map<String, String> sqlScriptReplacementTokens;
 
     public InformixDbDialect() {
+        sqlScriptReplacementTokens = new HashMap<String, String>();
+        sqlScriptReplacementTokens.put("current_timestamp", "current");
+    }
+    
+    @Override
+    public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
+        super.init(pf, queryTimeout, jdbcTemplate);
         Map<String, String> env = System.getenv();
         String clientIdentifierMode = env.get("DELIMIDENT");
         if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
             identifierQuoteString = "\"";
         }
-        sqlScriptReplacementTokens = new HashMap<String, String>();
-        sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
 
     protected void initTablesAndFunctionsForSpecificDialect() {
