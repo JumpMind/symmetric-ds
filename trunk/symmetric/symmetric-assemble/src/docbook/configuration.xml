@@ -460,7 +460,7 @@ values
          </para>            
         <para>
             Consider a table that needs to be routed to all nodes in the target group only when a status column changes values.  The following 
-            SQL statement will insert a column router to accomplish that.            
+            SQL statement will insert a column router to accomplish that.  Note the use of OLD_STATUS, where the OLD_ prefix gives access to the old column value.          
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
   (router_id, source_node_group_id, target_node_group_id, router_type, 
@@ -716,7 +716,7 @@ values
          </para>     
          <para>
             The following example will synchronize to all nodes if the FLAG column has changed, otherwise
-            no nodes will be synchronized.
+            no nodes will be synchronized.  Note that here we make use of OLD_, which provides access to the old column value.
             <programlisting>
 <![CDATA[
 insert into SYM_ROUTER 
