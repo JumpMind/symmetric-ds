@@ -326,6 +326,53 @@ values
             </varlistentry>
         </variablelist>
         </para>
+        <para>
+        There are also several size-related parameters that can be set by channel.  They include:
+         <variablelist>
+            <varlistentry>
+                <term>
+                    <command>max_batch_size</command>
+                </term>
+                <listitem>
+                    <para>
+                       Specifies the maximum number of data events to process within a batch for this channel.
+                    </para>
+                </listitem>
+            </varlistentry>
+         <varlistentry>
+                <term>
+                    <command>max_batch_to_send</command>
+                </term>
+                <listitem>
+                    <para>
+                        Specifies the maximum number of batches to send for a given channel during a 'synchronization' between two nodes.
+                        A 'synchronization' is equivalent to a push or a pull.
+                        For example, if there are 12 batches ready to be sent for a channel and max_batch_to_send is equal to 10,
+                        then only the first 10 batches will be sent even though 12 batches are ready.
+                        </para>
+                </listitem>
+            </varlistentry>
+             <varlistentry>
+                <term>
+                    <command>max_data_to_route</command>
+                </term>
+                <listitem>
+                    <para>
+                        Specifices the maximum number of data rows to route for a channel at a time.
+                     </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        </para>
+        <para>
+        Based on your particular synchronization requirements, you can also specify whether old, new, and primary key data should be read and included during routing for a given channel.  These are controlled by
+        the columns use_old_data_to_route, use_row_data_to_route, and use_pk_data_to_route, respectively.  By default, they are all 1 (true).
+        </para>
+        <para>
+        Finally, if data on a particular channel contains big lobs, you can set the column  contains_big_lob to 1 (true) to provide SymmetricDS the hint that the channel contains big lobs.
+        Some databases have shortcuts that SymmetricDS can take advantage of if it knows that the lob columns in <xref linkend="table_data" xrefstyle="table"/>
+         aren't going to contain large lobs.  The definition of how large a 'big' lob is varies from database to database.
+        </para>
     </section>
        
     <section id="configuration-triggers-and-routers">
