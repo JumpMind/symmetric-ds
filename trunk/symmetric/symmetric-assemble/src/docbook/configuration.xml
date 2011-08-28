@@ -648,7 +648,7 @@ values
         </para>            
         <para>
             In the following example, the STORE_ID is captured from the Order table in the EXTERNAL_DATA column.  EXTERNAL_DATA is always available for routing as a virtual column in a 'column'
-            router.  The router is configured to route based on the captured EXTERNAL_DATA to all nodes whose external_id matches.  Note that other supported node attribute token can also be 
+            router.  The router is configured to route based on the captured EXTERNAL_DATA to all nodes whose external_id matches.  Note that other supported node attribute tokens can also be 
             used for routing.      
             <programlisting>
 <![CDATA[
@@ -667,7 +667,11 @@ values
   ('corp-2-store-ext','corp', 'store', 'column', 
     'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
 ]]></programlisting>
-         </para>            
+         </para>   
+         <para>
+         Note the syntax $(curTriggerValue).$(curColumnPrefix).  This translates into "OLD_" or "NEW_" based on the DML type being run.  In the case of Insert or Update, it's NEW_.  For Delete, it's OLD_ (since there is no
+         new data).  In this way, you can access the DML-appropriate value for your select statement.
+         </para>         
     </section>  
     
     <section id="configuration-scripted-router">
