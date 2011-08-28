@@ -35,8 +35,6 @@ import org.jumpmind.symmetric.ddl.model.Table;
  * so that if the table definition changes while we still have events to process
  * (as may be the case when distributing events to remote locations), then we
  * still have the history of what the columns and primary keys were at the time.
- * 
- * 
  */
 public class TriggerHistory extends AbstractCsvData implements Serializable {
 
@@ -103,9 +101,9 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
     }
 
     public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason) {
-        this();
-        this.sourceTableName = table.getName();
+        this();        
         this.lastTriggerBuildReason = reason;
+        this.sourceTableName = table != null ? table.getName() : trigger.getSourceTableName();
         this.columnNames = getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceCatalogName = trigger.getSourceCatalogName();
@@ -119,6 +117,13 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
         }
 
         tableHash = calculateTableHashFor(table);
+    }
+    
+    public TriggerHistory(Trigger trigger) {
+        this.sourceCatalogName = trigger.getSourceCatalogName();
+        this.sourceSchemaName = trigger.getSourceSchemaName();
+        this.sourceTableName = trigger.getSourceTableName();
+        this.triggerId = trigger.getTriggerId();
     }
 
     public static int calculateTableHashFor(Table table) {
