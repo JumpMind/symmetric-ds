@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,10 +49,6 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
     
     private String functionTemplateKeySuffix = null;
-    
-    public MySqlDbDialect() {
-         this.identifierQuoteString =  "`";
-    }
 
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
@@ -61,6 +58,12 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         } else {
             this.functionTemplateKeySuffix = "_post_5_1_23";
         }
+    }
+    
+    @Override
+    public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
+        super.init(pf, queryTimeout, jdbcTemplate);
+        this.identifierQuoteString =  "`";
     }
     
     @Override
