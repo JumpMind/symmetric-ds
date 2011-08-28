@@ -48,6 +48,8 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
         String clientIdentifierMode = env.get("DELIMIDENT");
         if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
             identifierQuoteString = "\"";
+        } else {
+            identifierQuoteString = "";
         }
     }
 
