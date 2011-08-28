@@ -50,8 +50,18 @@ public interface ITriggerRouterService {
      */
     public List<TriggerRouter> getTriggerRoutersForRegistration(String version, NodeGroupLink nodeGroupLink, String... tablesToExclude);
     
+    /**
+     * Returns a list of triggers that should be active for the current node.
+     * @param refreshCache Indicates that the cache should be refreshed
+     */
+    public List<Trigger> getTriggersForCurrentNode(boolean refreshCache);
+    
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String configurationTypeId);
 
+    /**
+     * Returns a map of trigger routers keyed by trigger id.
+     * @param refreshCache Indicates that the cache should be refreshed
+     */
     public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(boolean refreshCache);
 
     /**

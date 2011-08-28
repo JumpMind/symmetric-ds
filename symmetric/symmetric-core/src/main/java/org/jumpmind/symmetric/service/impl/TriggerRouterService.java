@@ -421,6 +421,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean refreshCache) {
         return getTriggerRoutersCacheForCurrentNode(refreshCache).triggerRoutersByTriggerId;
     }
+    
+    public List<Trigger> getTriggersForCurrentNode(boolean refreshCache) {
+        Map<String, List<TriggerRouter>> triggerRouters = getTriggerRoutersForCurrentNode(refreshCache);
+        List<Trigger> triggers = new ArrayList<Trigger>(triggerRouters.size());
+        for (List<TriggerRouter> list : triggerRouters.values()) {
+            if (list.size() > 0) {
+                triggers.add(list.get(0).getTrigger());
+            }
+        }
+        return triggers;
+    }
 
     protected TriggerRoutersCache getTriggerRoutersCacheForCurrentNode(
             boolean refreshCache) {
@@ -788,6 +799,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected void updateOrCreateDatabaseTriggers(List<Trigger> triggers, StringBuilder sqlBuffer, boolean gen_always) {
         
         for (Trigger trigger : triggers) {
+            TriggerHistory newestHistory = null;
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
@@ -827,7 +839,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         forceRebuildOfTriggers = true;
                     }
 
-                    TriggerHistory newestHistory = rebuildTriggerIfNecessary(sqlBuffer,
+                    newestHistory = rebuildTriggerIfNecessary(sqlBuffer,
                             forceRebuildOfTriggers, trigger, DataEventType.INSERT, reason,
                             latestHistoryBeforeRebuild, null, trigger.isSyncOnInsert(), table);
 
@@ -865,6 +877,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             } catch (Exception ex) {
                 log.error("TriggerSynchronizingFailed", ex, trigger.qualifiedSourceTableName());
+                
+                if (newestHistory != null) {
+                    // Make sure all the triggers are removed from the table
+                    dbDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), newestHistory.getNameForInsertTrigger(), trigger.getSourceTableName(), newestHistory);
+                    dbDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), newestHistory.getNameForUpdateTrigger(), trigger.getSourceTableName(), newestHistory);
+                    dbDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), newestHistory.getNameForDeleteTrigger(), trigger.getSourceTableName(), newestHistory);
+                }
+                
                 if (this.triggerCreationListeners != null) {
                     for (ITriggerCreationListener l : this.triggerCreationListeners) {
                         l.triggerFailed(trigger, ex);
