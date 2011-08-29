@@ -369,7 +369,7 @@ values
         the columns use_old_data_to_route, use_row_data_to_route, and use_pk_data_to_route, respectively.  By default, they are all 1 (true).
         </para>
         <para>
-        Finally, if data on a particular channel contains big lobs, you can set the column  contains_big_lob to 1 (true) to provide SymmetricDS the hint that the channel contains big lobs.
+        Finally, if data on a particular channel contains big lobs, you can set the column  contains_big_lob to 1 (true) to provide SymmetricDS the hint that the channel contains big lobs.  
         Some databases have shortcuts that SymmetricDS can take advantage of if it knows that the lob columns in <xref linkend="table_data" xrefstyle="table"/>
          aren't going to contain large lobs.  The definition of how large a 'big' lob is varies from database to database.
         </para>
@@ -411,6 +411,35 @@ values
 ]]></programlisting>
         </para>
         
+        <para>
+        Two lobs-related settings are also available on  <xref linkend="table_trigger" xrefstyle="table"/>:
+        
+       <variablelist>
+        <varlistentry>
+            <term>
+                <command>use_stream_lobs</command>
+            </term>
+            <listitem>
+                <para>
+                    Specifies whether to capture lob data as the trigger is firing or to stream lob columns from the source tables using callbacks during extraction.
+                    A value of 1 indicates to stream from the source via callback; a value of 0, lob data is captured by the trigger.
+               </para>
+            </listitem>
+        </varlistentry>
+        <varlistentry>
+            <term>
+                <command>use_capture_lobs</command>
+            </term>
+            <listitem>
+                <para>
+                 Provides a hint as to whether this trigger will capture big lobs data.  If set to 1 every effort will be made during data capture in trigger and during data selection for initial load 
+                 to use lob facilities to extract and store data in the database.
+                </para>
+            </listitem>
+       </varlistentry>
+       </variablelist>
+        </para>
+            
         <important>
         <para>
             Note that many databases allow for multiple triggers of the same type to be defined.  
