@@ -110,7 +110,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         }
     }
 
-/**
+    /**
      * Locate the one and only registered {@link StandaloneSymmetricEngine}.  Use {@link #findEngineByName(String)} or
      * {@link #findEngineByUrl(String) if there is more than on engine registered.
      * @throws IllegalStateException This exception happens if more than one engine is 

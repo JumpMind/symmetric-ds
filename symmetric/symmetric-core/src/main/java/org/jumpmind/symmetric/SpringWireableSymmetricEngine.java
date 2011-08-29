@@ -32,8 +32,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * This is the preferred way to wire a SymmetricDS instance into an existing
  * Spring context. It will create its own {@link ApplicationContext} as a child
  * of the Spring {@link ApplicationContext} it is being wired into.
- *
- * 
  */
 public class SpringWireableSymmetricEngine extends AbstractSymmetricEngine implements ApplicationContextAware {
 

@@ -36,4 +36,6 @@ public interface IIncomingTransport {
     public boolean isOpen();
     
     public String getRedirectionUrl();
+    
+    public String getUrl();
 }

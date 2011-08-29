@@ -56,5 +56,9 @@ public class InternalIncomingTransport implements IIncomingTransport {
     public String getRedirectionUrl() {
         return null;
     }
+    
+    public String getUrl() {
+        return "";
+    }
 
 }

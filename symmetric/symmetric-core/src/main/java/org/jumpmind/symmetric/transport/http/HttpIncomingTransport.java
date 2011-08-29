@@ -51,6 +51,10 @@ public class HttpIncomingTransport implements IIncomingTransport {
         this.connection = connection;
         this.parameterService = parameterService;
     }
+    
+    public String getUrl() {
+        return this.connection.getURL().toExternalForm();
+    }
 
     public void close() throws IOException {
         IOUtils.closeQuietly(reader);
