@@ -247,7 +247,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         try {
             long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                     * randomTimeSlot.getRandomValueSeededByExternalId();
-            log.warn("NodeRegistertingFailed", sleepTimeInMs);
+            log.warn("NodeRegisteringFailed", sleepTimeInMs);
             Thread.sleep(sleepTimeInMs);
         } catch (InterruptedException e) {
         }
@@ -267,12 +267,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
         while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
             boolean errorOccurred = false;
             try {
-                log.info("NodeRegisterting", parameterService.getRegistrationUrl());
+                log.info("NodeRegistering");
                 registered = dataLoaderService.loadDataFromPull(null).getStatus() == Status.DATA_PROCESSED;
             } catch (ConnectException e) {
-                log.warn("NodeRegistertingFailedConnection");
+                log.warn("NodeRegisteringFailedConnection");
             } catch (UnknownHostException e) {
-                log.warn("NodeRegistertingFailedConnection");
+                log.warn("NodeRegisteringFailedConnection");
             } catch (Exception e) {
                 log.error(e);
             }
