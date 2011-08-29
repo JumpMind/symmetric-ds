@@ -47,6 +47,15 @@ public class FileIncomingTransport implements IIncomingTransport {
             fileWriter.delete();
         }
     }
+    
+    public String getUrl() {
+        File file = getFile();
+        if (file != null) {
+            return file.getAbsolutePath();
+        } else {
+            return null;
+        }
+    }
 
     public boolean isOpen() {
         return reader != null;
