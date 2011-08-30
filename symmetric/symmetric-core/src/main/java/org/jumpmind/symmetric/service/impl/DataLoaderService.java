@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
+import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
@@ -150,14 +151,17 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (list.size() > 0) {
                 status.updateIncomingStatus(list);
                 local = nodeService.findIdentity();
-                localSecurity = nodeService.findNodeSecurity(local.getNodeId());
-                if (StringUtils.isNotBlank(transport.getRedirectionUrl())) {
-                    // we were redirected for the pull, we need to redirect for the ack
-                    String url = transport.getRedirectionUrl();
-                    url = url.replace(HttpTransportManager.buildRegistrationUrl("", local), "");
-                    remote.setSyncUrl(url);
+                if (local != null) {
+                    localSecurity = nodeService.findNodeSecurity(local.getNodeId());
+                    if (StringUtils.isNotBlank(transport.getRedirectionUrl())) {
+                        // we were redirected for the pull, we need to redirect
+                        // for the ack
+                        String url = transport.getRedirectionUrl();
+                        url = url.replace(HttpTransportManager.buildRegistrationUrl("", local), "");
+                        remote.setSyncUrl(url);
+                    }
+                    sendAck(remote, local, localSecurity, list);
                 }
-                sendAck(remote, local, localSecurity, list);
             }
 
         } catch (RegistrationRequiredException e) {
@@ -260,7 +264,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
             for (IncomingBatch incomingBatch : batchesProcessed) {
                 // TODO I wonder if there is a way to avoid the second update?
-                if (incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
+                if (incomingBatch.getBatchId() != BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION && 
+                        incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
                     log.error("LoaderFailedToUpdateBatch", incomingBatch.getBatchId());
                 }
             }

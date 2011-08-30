@@ -280,7 +280,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
             maxNumberOfAttempts--;
 
             if (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
-                sleepBeforeRegistrationRetry();
                 registered = isRegisteredWithServer();
             } else {
                 Node node = nodeService.findIdentity();
@@ -288,9 +287,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     log.info("NodeRegistered", node.getNodeId());
                 } else if (!errorOccurred) {
                     log.error("NodeRegisteringFailedIdentityMissing");
+                    registered = false;
                 } else {
                     log.error("NodeRegisteringFailedUnavailable");
+                    registered = false;
                 }
+            }
+            
+            if (!registered) {
+                sleepBeforeRegistrationRetry();
             }
         }
 
