@@ -194,7 +194,7 @@ public class SymmetricServlet extends AbstractServlet {
         } else {
             if (req instanceof HttpServletRequest) {
                 HttpServletRequest httpRequest = (HttpServletRequest) req;
-                log.error("ServletNotFoundToHandleRequest", normalizeRequestUri(httpRequest));
+                log.error("ServletNotFoundToHandleRequest", normalizeRequestUri(httpRequest), req.getRemoteHost(), req.getRemoteAddr(), httpRequest.getQueryString());
                 if (res instanceof HttpServletResponse) {
                     ((HttpServletResponse) res).sendRedirect("/");
                 }
