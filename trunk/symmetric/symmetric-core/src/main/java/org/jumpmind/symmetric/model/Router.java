@@ -71,6 +71,15 @@ public class Router implements Serializable {
     public Router() {
         routerId = Integer.toString(maxRouterId++);
     }
+    
+    public void nullOutBlankFields() {
+        if (StringUtils.isBlank(targetCatalogName)) {
+            targetCatalogName = null;
+        } 
+        if (StringUtils.isBlank(targetSchemaName)) {
+            targetSchemaName = null;
+        } 
+    }
 
     public Date getCreateTime() {
         return createTime;

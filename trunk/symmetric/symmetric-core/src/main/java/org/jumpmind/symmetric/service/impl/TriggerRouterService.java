@@ -624,6 +624,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void saveRouter(Router router) {
         router.setLastUpdateTime(new Date());
+        router.nullOutBlankFields();
         if (0 == jdbcTemplate.update(getSql("updateRouterSql"), new Object[] {
                 router.getTargetCatalogName(), router.getTargetSchemaName(),
                 router.getTargetTableName(), router.getNodeGroupLink().getSourceNodeGroupId(),
@@ -664,6 +665,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void saveTrigger(Trigger trigger) {
         trigger.setLastUpdateTime(new Date());
+        trigger.nullOutBlankFields();
         if (0 == jdbcTemplate.update(getSql("updateTriggerSql"), new Object[] {
                 trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                 trigger.getSourceTableName(), trigger.getChannelId(),
