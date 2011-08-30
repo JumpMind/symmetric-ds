@@ -116,6 +116,15 @@ public class Trigger implements Serializable {
                 + "." : "") + schemaPlus;
         return catalogPlus;
     }
+    
+    public void nullOutBlankFields() {
+        if (StringUtils.isBlank(sourceCatalogName)) {
+            sourceCatalogName = null;
+        } 
+        if (StringUtils.isBlank(sourceSchemaName)) {
+            sourceSchemaName = null;
+        } 
+    }
 
     /**
      * When dealing with columns, always use this method to order the columns so
