@@ -908,8 +908,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
             boolean createTables = false;
             for (Table table : tables) {
                 table.setName(tblPrefix + table.getName());
-                fixForeignKeys(table, tblPrefix, false);
-
+                fixForeignKeys(table, tblPrefix);
+                fixIndexes(table, tblPrefix);
                 if (getTable(getDefaultCatalog(), getDefaultSchema(), table.getName(), false) == null) {
                     createTables = true;
                 }
@@ -1069,18 +1069,23 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return database;
     }
     
-    protected void fixForeignKeys(Table table, String tablePrefix, boolean clone)
+    protected void fixForeignKeys(Table table, String tablePrefix)
             throws CloneNotSupportedException {
         ForeignKey[] keys = table.getForeignKeys();
         for (ForeignKey key : keys) {
-            if (clone) {
-                table.removeForeignKey(key);
-                key = (ForeignKey) key.clone();
-                table.addForeignKey(key);
-            }
             String prefixedName = tablePrefix + key.getForeignTableName();
             key.setForeignTableName(prefixedName);
             key.setName(tablePrefix + key.getName());
+        }
+    }
+    
+    protected void fixIndexes(Table table, String tablePrefix) throws CloneNotSupportedException {
+        Index[] indexes = table.getIndices();
+        if (indexes != null) {
+            for (Index index : indexes) {
+                String prefixedName = tablePrefix + index.getName();
+                index.setName(prefixedName);
+            }
         }
     }
 
