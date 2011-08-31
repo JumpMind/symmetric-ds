@@ -73,7 +73,6 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     </bean>        
 
     <bean id="job.stat.flush" parent="job.abstract" class="org.jumpmind.symmetric.job.StatisticFlushJob">
-        <property name="statisticManager" ref="statisticManager" />
         <property name="autoStartParameterName" value="start.stat.flush.job" />
     </bean>
 

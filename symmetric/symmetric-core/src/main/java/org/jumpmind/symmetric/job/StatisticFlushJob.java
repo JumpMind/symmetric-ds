@@ -21,14 +21,11 @@
 
 package org.jumpmind.symmetric.job;
 
-import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 /**
  * Background job that is responsible for writing statistics to database tables.
  */
 public class StatisticFlushJob extends AbstractJob {
-
-    private IStatisticManager statisticManager;
 
     public StatisticFlushJob() {
     }
@@ -37,10 +34,6 @@ public class StatisticFlushJob extends AbstractJob {
     public long doJob() throws Exception {
         statisticManager.flush();
         return -1l;
-    }
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
     }
     
     public String getClusterLockName() {
