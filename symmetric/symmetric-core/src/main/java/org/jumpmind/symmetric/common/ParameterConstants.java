@@ -92,9 +92,7 @@ final public class ParameterConstants {
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
     public final static String CONCURRENT_WORKERS = "http.concurrent.workers.max";
-    public final static String CONCURRENT_RESERVATION_TIMEOUT = "http.concurrent.reservation.timeout.ms";
-    
-     
+    public final static String CONCURRENT_RESERVATION_TIMEOUT = "http.concurrent.reservation.timeout.ms";         
 
     public final static String OUTGOING_BATCH_PEEK_AHEAD_BATCH_COMMIT_SIZE = "outgoing.batches.peek.ahead.batch.commit.size";
     public final static String ROUTING_FLUSH_JDBC_BATCH_SIZE = "routing.flush.jdbc.batch.size";
@@ -185,6 +183,8 @@ final public class ParameterConstants {
     public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";
     
     public final static String DB_MASTER_COLLATION = "db.master.collation";
+    
+    public final static String DB_TREAT_DATE_TIME_AS_VARCHAR = "db.treat.date.time.as.varchar.enabled";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
