@@ -596,7 +596,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
         if (jdbcType != null) {
             column.setTypeCode(jdbcType);
         } else {
-            column.setTypeCode(((Integer) values.get("DATA_TYPE")).intValue());
+            int typeCode = (Integer)values.get("DATA_TYPE");
+            boolean treatDateTimeFieldsAsVarchar = parameterService.is(ParameterConstants.DB_TREAT_DATE_TIME_AS_VARCHAR, false);
+            if (treatDateTimeFieldsAsVarchar && 
+                    (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
+                typeCode = Types.VARCHAR;                
+            }
+            column.setTypeCode(typeCode);
         }
 
         column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
