@@ -208,8 +208,7 @@ public class TableTemplate {
     }
     
     public String getFullyQualifiedTableName(boolean preventQuotes) {
-        String quote = !preventQuotes && dbDialect.getPlatform().isDelimitedIdentifierModeOn() ? dbDialect.getPlatform()
-            .getPlatformInfo().getDelimiterToken() : "";
+        String quote = !preventQuotes ? dbDialect.getIdentifierQuoteString() : "";
         String tableName = quote + (table != null ? table.getName() : this.tableName) + quote;
         if (!StringUtils.isBlank(schema)) {
             tableName = schema + "." + tableName;
