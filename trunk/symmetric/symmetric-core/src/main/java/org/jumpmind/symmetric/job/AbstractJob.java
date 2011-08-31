@@ -90,7 +90,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
     
     private boolean autoStartConfigured;
     
-    private IStatisticManager statisticManager;
+    protected IStatisticManager statisticManager;
 
     protected void init() {
         this.autoStartConfigured = parameterService.is(autoStartParameterName);
