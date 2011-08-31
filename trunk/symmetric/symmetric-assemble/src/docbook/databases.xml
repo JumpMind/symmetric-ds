@@ -258,6 +258,13 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
             <programlisting>grant create routine on *.* to symmetric;</programlisting>
 
         </para>
+        <para>
+            MySQL allows '0000-00-00 00:00:00' to be entered as a value for datetime and timestamp columns.  
+            JDBC can not deal with a date value with a year of 0.  In order to work around this SymmetricDS
+            can be configured to treat date and time columns as varchar columns for data capture and data
+            load.  To enable this feature set the <code>db.treat.date.time.as.varchar.enabled</code> property 
+            to <code>true</code>.
+        </para>
     </section>
     <section id="ap02-postgresql">
         <title>PostgreSQL</title>
