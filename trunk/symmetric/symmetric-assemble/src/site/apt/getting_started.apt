@@ -5,6 +5,21 @@
  Date
  ------ 
 
+User Guide - SymmetricDS 2.4
+ 
+ This guide has been fully updated to reflect new features in SymmetricDS 2.4, including Data Transformation.
+  
+ To get a demo of SymmetricDS 2 running, try the
+ {{{./guide/2.4/html-single/user-guide.html#tutorial}Hands-On}} tutorial.
+
+ {{{./guide/2.4/html-single/user-guide.html}User Guide (Single Page HTML)}}
+
+ {{{./guide/2.4/html/user-guide.html}User Guide (Multi Page HTML)}}
+ 
+ {{{./guide/2.4/pdf/user-guide.pdf}User Guide (PDF)}}
+ 
+ {{{./apidocs-2.4/index.html}JavaDoc for 2.4}}
+ 
 User Guide - SymmetricDS 2.3
  
  To get a demo of SymmetricDS 2 running, try the
