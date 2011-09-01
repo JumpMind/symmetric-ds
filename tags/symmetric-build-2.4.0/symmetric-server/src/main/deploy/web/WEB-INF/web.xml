@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5">
+
+    <display-name>SymmetricDS</display-name>
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:symmetric-engine.xml</param-value>
+    </context-param>
+
+    <filter>
+        <filter-name>SymmetricFilter</filter-name>
+        <filter-class>org.jumpmind.symmetric.web.SymmetricFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>SymmetricFilter</filter-name>
+        <servlet-name>SymmetricServlet</servlet-name>
+    </filter-mapping>
+
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>SymmetricServlet</servlet-name>
+        <servlet-class>org.jumpmind.symmetric.web.SymmetricServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>        
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>SymmetricServlet</servlet-name>
+        <url-pattern>/sync/*</url-pattern>        
+    </servlet-mapping>
+
+</web-app>
