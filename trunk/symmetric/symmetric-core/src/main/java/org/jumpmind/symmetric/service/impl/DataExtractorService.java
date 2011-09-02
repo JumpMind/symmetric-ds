@@ -525,7 +525,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 try {
                                     if (System.currentTimeMillis() - batchesSelectedAtMs > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                                         outgoingBatch = outgoingBatchService
-                                                .findOutgoingBatch(currentBatch.getBatchId());
+                                                .findOutgoingBatch(outgoingBatch.getBatchId());
                                     }
 
                                     currentBatch = outgoingBatch;
