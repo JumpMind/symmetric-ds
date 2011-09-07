@@ -93,7 +93,9 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             // This is for Oracle's NVARCHAR type
             return Types.VARCHAR;
         } else if (typeName != null && typeName.startsWith("NCHAR")) {
-            return Types.CHAR;            
+            return Types.CHAR;
+        } else if (typeName != null && typeName.startsWith("NCLOB")) {
+            return Types.CLOB;
         } else if (typeName != null && typeName.startsWith("BINARY_FLOAT")) {
             return Types.FLOAT;
         } else if (typeName != null && typeName.startsWith("BINARY_DOUBLE")) {
