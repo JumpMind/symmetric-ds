@@ -103,7 +103,9 @@ public class SymmetricWebServer {
     
     protected boolean noDirectBuffer = false;
     
-    protected String webAppDir = DEFAULT_WEBAPP_DIR;    
+    protected String webAppDir = DEFAULT_WEBAPP_DIR;
+    
+    protected String name = "SymmetricDS";
 
     public SymmetricWebServer() {
     }
@@ -253,7 +255,7 @@ public class SymmetricWebServer {
             connector.setHost(host);
             connector.setMaxIdleTime(maxIdleTime);            
             connectors.add(connector);  
-            log.info("WebServerStarting", port);
+            log.info("WebServerStarting", name, port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
@@ -382,5 +384,13 @@ public class SymmetricWebServer {
     
     public void setNoDirectBuffer(boolean noDirectBuffer) {
         this.noDirectBuffer = noDirectBuffer;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public String getName() {
+        return name;
     }
 }
