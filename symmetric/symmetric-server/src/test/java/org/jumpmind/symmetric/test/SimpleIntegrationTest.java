@@ -293,6 +293,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertEquals(NEW_NAME, results.get("NAME"));
 
     }
+    
+    @Test(timeout = 120000)
+    public void testInsertSqlEvent() {
+        Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from sym_node where schema_version='test'") == 0);
+        getRootEngine().getDataService().insertSqlEvent(TestConstants.TEST_CLIENT_NODE, "update sym_node set schema_version='test'", false);        
+        clientPull();
+        Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from sym_node where schema_version='test'") > 0);
+    }
 
     @Test(timeout = 120000)
     public void testEmptyNullLob() {
@@ -1417,15 +1425,15 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         statMgr = (IStatisticManager) getRootEngine().getApplicationContext().getBean(
                 Constants.STATISTIC_MANAGER);
         statMgr.flush();
-    }  
-
+    }
+    
     @Test(timeout = 120000)
     public void cleanupAfterTests() {
         clientPull();
         getClientEngine().purge();
         getRootEngine().purge();
     }
-
+    
     private String replace(String prop, String replaceWith, String sourceString) {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }
