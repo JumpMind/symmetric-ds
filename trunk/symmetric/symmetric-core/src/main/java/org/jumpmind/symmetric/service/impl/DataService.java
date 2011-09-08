@@ -170,10 +170,20 @@ public class DataService extends AbstractService implements IDataService {
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
+    
+    private TriggerHistory findTriggerHistoryForGenericSync() {
+        String triggerTableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER);
+        TriggerHistory history = triggerRouterService.findTriggerHistory(triggerTableName.toUpperCase());
+        if (history == null) {
+            history = triggerRouterService.findTriggerHistory(triggerTableName);
+        }
+        return history;
+    }
 
     public void insertSqlEvent(final Node targetNode, String sql, boolean isLoad) {
-        Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtils.escapeCsvData(sql), null,
-                null, Constants.CHANNEL_CONFIG, null, null);
+        TriggerHistory history = findTriggerHistoryForGenericSync();
+        Data data = new Data(history.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null,
+                history, Constants.CHANNEL_CONFIG, null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
@@ -409,8 +419,9 @@ public class DataService extends AbstractService implements IDataService {
     @Transactional
     public void sendScript(String nodeId, String script, boolean isLoad) {
         Node targetNode = nodeService.findNode(nodeId);
-        Data data = new Data(Constants.NA, DataEventType.BSH, CsvUtils.escapeCsvData(script), null,
-                null, Constants.CHANNEL_CONFIG, null, null);
+        TriggerHistory history = findTriggerHistoryForGenericSync();
+        Data data = new Data(history.getSourceTableName(), DataEventType.BSH, CsvUtils.escapeCsvData(script), null,
+                history, Constants.CHANNEL_CONFIG, null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
