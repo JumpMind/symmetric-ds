@@ -96,6 +96,11 @@ public abstract class TypeMap
     public static final String VARCHAR       = "VARCHAR";
     
     public static final String SQLXML = "SQLXML";
+
+    public static final String NCHAR = "NCHAR";
+    public static final String NVARCHAR = "NVARCHAR";
+    public static final String LONGNVARCHAR = "LONGNVARCHAR";
+    public static final String NCLOB = "NCLOB";
     /** Maps type names to the corresponding {@link java.sql.Types} constants. */
     private static HashMap _typeNameToTypeCode = new HashMap();
     /** Maps {@link java.sql.Types} type code constants to the corresponding type names. */
@@ -146,6 +151,11 @@ public abstract class TypeMap
         _typeNameToTypeCode.put("BOOLEANCHAR", new Integer(Types.CHAR));
         
         registerJdbcType(Types.SQLXML, SQLXML, JdbcTypeCategoryEnum.TEXTUAL);
+
+        registerJdbcType(Types.NCHAR, NCHAR, JdbcTypeCategoryEnum.TEXTUAL);
+        registerJdbcType(Types.NCLOB, NCLOB, JdbcTypeCategoryEnum.TEXTUAL);
+        registerJdbcType(Types.NVARCHAR, NVARCHAR, JdbcTypeCategoryEnum.TEXTUAL);
+        registerJdbcType(Types.LONGNVARCHAR, LONGNVARCHAR, JdbcTypeCategoryEnum.TEXTUAL);
     }
 
     /**

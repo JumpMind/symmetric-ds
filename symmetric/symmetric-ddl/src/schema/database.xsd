@@ -77,6 +77,12 @@
 
       <xsd:enumeration value="BOOLEANINT"/>
       <xsd:enumeration value="BOOLEANCHAR"/>
+
+      <xsd:enumeration value="LONGNVARCHAR"/>
+      <xsd:enumeration value="NCHAR"/>
+      <xsd:enumeration value="NCLOB"/>
+      <xsd:enumeration value="NVARCHAR"/>
+      <xsd:enumeration value="NVARCHAR2"/>
     </xsd:restriction>
   </xsd:simpleType>
 
