@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -131,6 +132,16 @@ public class SqlScript {
             }
         }
     }
+    
+    private void closeQuietly(ResultSet rs) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                log.error(e);
+            }
+        }
+    }
 
     public void execute() {
         execute(false);
@@ -142,6 +153,7 @@ public class SqlScript {
             public Object doInConnection(Connection connection) throws SQLException,
                     DataAccessException {
                 Statement st = null;
+                ResultSet rs = null;
                 int lineCount = 0;
 
                 try {
@@ -172,7 +184,10 @@ public class SqlScript {
                                         if (log.isDebugEnabled()) {
                                             log.debug("Message", toExecute);
                                         }
-                                        st.execute(toExecute);
+                                        if (st.execute(toExecute)) {
+                                            rs = st.getResultSet();
+                                            while(rs.next());
+                                        }
                                         count++;
                                         if (count % commitRate == 0) {
                                             connection.commit();
@@ -210,6 +225,7 @@ public class SqlScript {
                     log.info("ScriptError", lineCount, fileName);
                     throw new RuntimeException(e);
                 } finally {
+                    closeQuietly(rs);
                     closeQuietly(st);
                 }
                 return null;
