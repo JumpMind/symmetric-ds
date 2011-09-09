@@ -168,7 +168,12 @@ public class InterbaseBuilder extends SqlBuilder
      */
     protected String getTriggerName(Table table, Column column)
     {
-        return getConstraintName("trg", table, column.getName(), null);
+        String secondPart = column.getName();
+        // make sure a backup table gets a different name than the original
+        if (table.getName().endsWith("_")) {
+            secondPart += "_";
+        }
+        return getConstraintName("trg", table, secondPart, null);
     }
 
     /**
@@ -180,7 +185,12 @@ public class InterbaseBuilder extends SqlBuilder
      */
     protected String getGeneratorName(Table table, Column column)
     {
-        return getConstraintName("gen", table, column.getName(), null);
+        String secondPart = column.getName();
+        // make sure a backup table gets a different name than the original
+        if (table.getName().endsWith("_")) {
+            secondPart += "_";
+        }
+        return getConstraintName("gen", table, secondPart, null);
     }
 
     /**
@@ -212,6 +222,31 @@ public class InterbaseBuilder extends SqlBuilder
                 result.append("GEN_ID(");
                 result.append(getDelimitedIdentifier(getGeneratorName(table, columns[idx])));
                 result.append(", 0)");
+            }
+            result.append(" FROM RDB$DATABASE");
+            return result.toString();
+        }
+    }
+
+    public String fixLastIdentityValues(Table table)
+    {
+        Column[] columns = table.getAutoIncrementColumns();
+
+        if (columns.length == 0)
+        {
+            return null;
+        }
+        else
+        {
+            StringBuffer result = new StringBuffer();
+    
+            result.append("SELECT ");
+            for (int idx = 0; idx < columns.length; idx++)
+            {
+                result.append("GEN_ID(");
+                result.append(getDelimitedIdentifier(getGeneratorName(table, columns[idx])));
+                result.append(", (SELECT MAX(").append(columns[idx].getName()).append(")+1 FROM ");
+                result.append(table.getName()).append("))");
             }
             result.append(" FROM RDB$DATABASE");
             return result.toString();
@@ -315,7 +350,7 @@ public class InterbaseBuilder extends SqlBuilder
             printIdentifier(getColumnName(change.getNewColumn()));
             print(" POSITION ");
             // column positions start at 1 in Interbase
-            print(prevColumn == null ? "1" : String.valueOf(curTable.getColumnIndex(prevColumn) + 2));
+            print(prevColumn == null ? "1" : String.valueOf(curTable.getColumnIndex(prevColumn) + 1));
             printEndOfStatement();
         }
         if (change.getNewColumn().isAutoIncrement())
