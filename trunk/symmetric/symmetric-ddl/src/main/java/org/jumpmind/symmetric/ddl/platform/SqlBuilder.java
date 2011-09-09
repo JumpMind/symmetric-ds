@@ -51,7 +51,6 @@ import org.jumpmind.symmetric.ddl.alteration.AddTableChange;
 import org.jumpmind.symmetric.ddl.alteration.ColumnAutoIncrementChange;
 import org.jumpmind.symmetric.ddl.alteration.ColumnDataTypeChange;
 import org.jumpmind.symmetric.ddl.alteration.ColumnDefaultValueChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnOrderChange;
 import org.jumpmind.symmetric.ddl.alteration.ColumnRequiredChange;
 import org.jumpmind.symmetric.ddl.alteration.ColumnSizeChange;
 import org.jumpmind.symmetric.ddl.alteration.ModelChange;
@@ -571,7 +570,6 @@ public abstract class SqlBuilder
                                                                          PrimaryKeyChange.class,
                                                                          RemoveColumnChange.class,
                                                                          AddColumnChange.class,
-                                                                         ColumnOrderChange.class,
                                                                          ColumnAutoIncrementChange.class,
                                                                          ColumnDefaultValueChange.class,
                                                                          ColumnRequiredChange.class,
