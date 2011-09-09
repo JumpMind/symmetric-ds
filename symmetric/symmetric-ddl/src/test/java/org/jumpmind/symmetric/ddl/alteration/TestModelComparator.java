@@ -25,7 +25,6 @@ import java.util.List;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.TestBase;
 import org.jumpmind.symmetric.ddl.model.Database;
-import org.jumpmind.symmetric.ddl.model.Table;
 
 /**
  * Tests the model comparison.
@@ -905,50 +904,6 @@ public class TestModelComparator extends TestBase
 
         assertEquals("Col1",
                      change.getNewColumn().getName());
-    }
-
-    /**
-     * Tests the removal of a column.
-     */
-    public void testChangeColumnOrder()
-    {
-        final String MODEL1 = 
-            "<?xml version='1.0' encoding='ISO-8859-1'?>\n" +
-            "<database name='test'>\n" +
-            "  <table name='TableA'>\n" +
-            "    <column name='ColPK' type='INTEGER' primaryKey='true' required='true'/>\n" +
-            "    <column name='Col1' type='DOUBLE'/>\n" +
-            "    <column name='Col2' type='INTEGER' required='true'/>\n" +
-            "    <column name='Col3' type='VARCHAR' size='32'/>\n" +
-            "  </table>\n" +
-            "</database>";
-        final String MODEL2 = 
-            "<?xml version='1.0' encoding='ISO-8859-1'?>\n" +
-            "<database name='test'>\n" +
-            "  <table name='TableA'>\n" +
-            "    <column name='ColPK' type='INTEGER' primaryKey='true' required='true'/>\n" +
-            "    <column name='Col3' type='VARCHAR' size='32'/>\n" +
-            "    <column name='Col2' type='INTEGER' required='true'/>\n" +
-            "    <column name='Col1' type='DOUBLE'/>\n" +
-            "  </table>\n" +
-            "</database>";
-
-        Database model1  = parseDatabaseFromString(MODEL1);
-        Database model2  = parseDatabaseFromString(MODEL2);
-        List     changes = createModelComparator(false).compare(model1, model2);
-
-        assertEquals(1,
-                     changes.size());
-
-        ColumnOrderChange change      = (ColumnOrderChange)changes.get(0);
-        Table             sourceTable = change.getChangedTable();
-
-        assertEquals(3,
-                     change.getNewPosition(sourceTable.getColumn(1)));
-        assertEquals(-1,
-                     change.getNewPosition(sourceTable.getColumn(2)));
-        assertEquals(1,
-                     change.getNewPosition(sourceTable.getColumn(3)));
     }
 
     /**
