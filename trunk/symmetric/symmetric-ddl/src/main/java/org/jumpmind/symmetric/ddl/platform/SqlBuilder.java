@@ -982,6 +982,7 @@ public abstract class SqlBuilder
                 createTable(desiredModel, realTargetTable, parameters);
                 writeCopyDataStatement(tempTable, targetTable);
                 dropTemporaryTable(desiredModel, tempTable);
+                writeFixLastIdentityValues(targetTable);
             }
             else
             {
@@ -1771,6 +1772,27 @@ public abstract class SqlBuilder
     {
         // No default possible as the databases are quite different in this respect
         return null;
+    }
+
+    /**
+     * Generates the SQL to execute that sets the current sequence number.
+     * 
+     * @param table
+     * @param id
+     * @return
+     */
+    public String fixLastIdentityValues(Table table)
+    {
+       return null; 
+    }
+
+    public void writeFixLastIdentityValues(Table table) throws IOException
+    {
+       String sql = fixLastIdentityValues(table);
+       if (sql != null) {
+           print(sql);
+           printEndOfStatement();
+       }
     }
 
     //
