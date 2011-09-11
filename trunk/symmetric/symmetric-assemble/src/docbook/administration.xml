@@ -172,8 +172,84 @@ where source_table_name = 'price_changes';
             Centrally, the trigger changes will not take effect until the Sync Triggers Job runs.
             Instead of waiting for the Sync Triggers Job to run overnight after making a Trigger
             change, you can invoke the syncTriggers() method over JMX or simply restart the SymmetricDS
-            server.
+            server.  A complete record of trigger changes is kept in the table  <xref linkend="table_trigger_hist" xrefstyle="table"/>, 
+            which was discussed in <xref linkend="sync-triggers" />.
         </para>
+    </section>
+     <section id="resync-data">
+        <title>Re-synchronizing Data</title>
+        <para>
+        There may be times where you find you need to re-send or re-synchronize data when the change itself was not captured.  This could be needed, for example,
+        if the data changes occurred prior to SymmetricDS placing triggers on the data tables themselves, or if the data at the destination was accidentally deleted, or for 
+        some other reason.  Two approaches are commonly taken to re-send the data, both of which are discussed below.
+        </para>
+        
+      <important>
+            <para>Be careful when re-sending data using either of these two techniques.  Be sure you are only sending the rows you intend to send and,
+            more importantly, be sure to re-send the data in a way that won't cause foreign key constraint issues at the destination.  In other words,
+            if more than one table is involved, be sure to send any tables which are referred to by other tables by foreign keys first.  Otherwise,
+            the channel's synchronization will block because SymmetricDS is unable to insert or update the row because the foreign key relationship refers to
+            a non-existent row in the destination!
+           </para>
+      </important>
+            
+        <para>One possible approach would be to "touch" the rows in individual tables that need re-sent.  By "touch", we mean to alter the row data in such a way
+        that SymmetricDS detects a data change and therefore includes the data change in the batching and synchronizing steps.  Note that you have to
+        change the data in some meaningful way (e.g., update a time stamp); setting a column to its current value is not sufficient (by default, if there's not an actual data 
+        value change SymmetricDS won't treat the change as something which needs synched.
+        </para>
+        <para>A second approach would be to take advantage of SymmetricDS built-in functionality by simulating a partial "initial load" of the data.  The approach
+        is to manually create "reload" events in <xref linkend="table_data" xrefstyle="table"/> for the necessary tables, thereby resending the desired rows for the given tables.  
+        Again, foreign key constraints must be kept in mind when creating these reload events.  These reload events are created in the source database itself, and
+        the necessary table, trigger-router combination, and channel are included to indicate the direction of synchronization.</para>
+        <para>
+        To create a reload event, you create a <xref linkend="table_data" xrefstyle="table"/> row, using:
+       <itemizedlist>
+        <listitem>data_id:  null</listitem>
+        <listitem>table_name:  name of table to be sent</listitem>
+        <listitem>event_type: 'R', for reload</listitem>
+        <listitem>row_data:  a "where" clause (minus the word 'where') which defines the subset of rows from the table to be sent.  To send all rows, one can use 1=1 for this value.</listitem>
+        <listitem>pk_data:  null</listitem>
+        <listitem>old_data: null</listitem>
+        <listitem>trigger_hist_id:  use the id of the most recent entry (i.e., max(trigger_hist_id) ) in <xref linkend="table_trigger_hist" xrefstyle="table"/> 
+        for the trigger-router combination for your table and router.</listitem>
+        <listitem>channel_id:  the channel in which the table is routed</listitem>
+        <listitem>transaction_id:  pick a value, for example '1'</listitem>
+        <listitem>source_node_id: null</listitem>
+        <listitem>external_data: null</listitem>
+        <listitem>create_time:  current_timestamp</listitem>
+        </itemizedlist>
+        </para>
+        
+        <para>
+        By way of example, take our retail hands-on tutorial covered in <xref linkend="tutorial" />.  Let's say
+        we need to re-send a particular sales transaction from the store to corp over again because we lost the data in corp due to
+        an overzealous delete.  For the tutorial, all transaction-related tables start with <ns:literal>sale_</ns:literal>, 
+        use the <ns:literal>sale_transaction</ns:literal> channel, and are routed using the <ns:literal>store_corp_identity</ns:literal>
+        router.  In addition, the trigger-routers have been set up with an initial load order based on the necessary 
+        foreign key relationships (i.e., transaction tables which are "parents" have a lower initial load order than those of their
+        "children").  An insert statement that would create the necessary "reload" events (three in this case, one for each table) would be as follows
+        (where MISSING_ID is changed to the needed transaciton id):
+       <programlisting>
+       
+insert into sym_data (
+    select null, t.source_table_name, 'R', 'tran_id=''MISSING-ID''', null, null,
+            h.trigger_hist_id, t.channel_id, '1', null, null, current_timestamp
+        from sym_trigger t inner join sym_trigger_router tr on
+            t.trigger_id=tr.trigger_id inner join sym_trigger_hist h on
+            h.trigger_hist_id=(select max(trigger_hist_id) from sym_trigger_hist
+                where trigger_id=t.trigger_id) 
+    where channel_id='sale_transaction' and
+        tr.router_id like 'store_corp_identity' and 
+        (t.SOURCE_TABLE_NAME like 'sale_%') 
+    order by tr.initial_load_order asc);
+    </programlisting>
+    
+    This insert statement generates three rows, one for each configured sale table.  It uses the most recent
+    trigger history id for the corresponding table.  Finally, it takes advantage of the initial load order for each trigger-router to
+    create the three rows in the correct order (the order corresponding to the order in which the tables would have been initial loaded).
+    
+    </para>
     </section>
     <section id="changing-configuration">
         <title>Changing Configuration</title>
