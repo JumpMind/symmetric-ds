@@ -100,7 +100,7 @@ public class FirebirdBuilder extends SqlBuilder
         printEndOfStatement();
 
         print("CREATE TRIGGER ");
-        printIdentifier(getConstraintName("trg", table, column.getName(), null));
+        printIdentifier(getTriggerName(table, column));
         print(" FOR ");
         printlnIdentifier(getTableName(table));
         println("ACTIVE BEFORE INSERT POSITION 0 AS");
@@ -123,12 +123,29 @@ public class FirebirdBuilder extends SqlBuilder
     private void writeAutoIncrementDropStmts(Table table, Column column) throws IOException
     {
         print("DROP TRIGGER ");
-        printIdentifier(getConstraintName("trg", table, column.getName(), null));
+        printIdentifier(getTriggerName(table, column));
         printEndOfStatement();
 
         print("DROP GENERATOR ");
         printIdentifier(getGeneratorName(table, column));
         printEndOfStatement();
+    }
+
+    /**
+     * Determines the name of the trigger for an auto-increment column.
+     * 
+     * @param table  The table
+     * @param column The auto-increment column
+     * @return The trigger name
+     */
+    protected String getTriggerName(Table table, Column column)
+    {
+        String secondPart = column.getName();
+        // make sure a backup table gets a different name than the original
+        if (table.getName().endsWith("_")) {
+            secondPart += "_";
+        }
+        return getConstraintName("trg", table, secondPart, null);
     }
 
     /**
@@ -140,7 +157,12 @@ public class FirebirdBuilder extends SqlBuilder
      */
     protected String getGeneratorName(Table table, Column column)
     {
-    	return getConstraintName("gen", table, column.getName(), null);
+        String secondPart = column.getName();
+        // make sure a backup table gets a different name than the original
+        if (table.getName().endsWith("_")) {
+            secondPart += "_";
+        }
+        return getConstraintName("gen", table, secondPart, null);
     }
 
     /**
