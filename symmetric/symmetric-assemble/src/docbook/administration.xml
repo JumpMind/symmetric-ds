@@ -241,7 +241,7 @@ insert into sym_data (
                 where trigger_id=t.trigger_id) 
     where channel_id='sale_transaction' and
         tr.router_id like 'store_corp_identity' and 
-        (t.SOURCE_TABLE_NAME like 'sale_%') 
+        (t.source_table_name like 'sale_%') 
     order by tr.initial_load_order asc);
     </programlisting>
     
