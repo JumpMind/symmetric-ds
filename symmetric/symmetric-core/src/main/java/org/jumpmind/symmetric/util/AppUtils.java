@@ -294,7 +294,7 @@ public class AppUtils {
      * @param port the port to check for availability
      */
     public static boolean isPortAvailable(int port) {
-        if (port < 65535 || port > 1) {
+        if (port < 1 || port > 65535) {
             throw new IllegalArgumentException("Invalid start port: " + port);
         }
 
