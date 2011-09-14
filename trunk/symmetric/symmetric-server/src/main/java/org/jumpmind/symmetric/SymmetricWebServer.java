@@ -175,7 +175,6 @@ public class SymmetricWebServer {
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime/1000);
-        
         server.setHandler(webapp);
 
         if (!StringUtils.isBlank(propertiesFile)) {

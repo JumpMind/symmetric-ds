@@ -129,6 +129,14 @@
         <property name="uriPattern" value="$[sym.web.base.servlet.path]/ping/*" />
     </bean>
 
+    <bean id="infoServlet"
+        class="org.jumpmind.symmetric.web.InfoServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/info/*" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="configurationService" ref="configurationService" />
+    </bean>
+    
     <bean id="pullServlet"
         class="org.jumpmind.symmetric.web.PullServlet">
         <property name="uriPattern" value="$[sym.web.base.servlet.path]/pull/*" />
@@ -141,7 +149,7 @@
         <property name="uriPattern" value="$[sym.web.base.servlet.path]/push/*" />
         <property name="transportResourceHandler"
             ref="pushResourceHandler" />
-    </bean>
+    </bean>        
 
     <bean id="registrationServlet"
         class="org.jumpmind.symmetric.web.RegistrationServlet">
