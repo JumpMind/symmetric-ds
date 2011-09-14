@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.transport.handler.PullResourceHandler;
 
 /**
- * ,
+ * Responsible for handling pull requests
  */
 public class PullServlet extends AbstractTransportResourceServlet<PullResourceHandler> 
     implements IBuiltInExtensionPoint {
