@@ -138,6 +138,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected Boolean supportsGetGeneratedKeys;
 
     protected String databaseName;
+    
+    protected String driverVersion;
+    
+    protected String driverName;
 
     protected int databaseMajorVersion;
 
@@ -248,6 +252,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 databaseMajorVersion = meta.getDatabaseMajorVersion();
                 databaseMinorVersion = meta.getDatabaseMinorVersion();
                 databaseProductVersion = meta.getDatabaseProductVersion();
+                driverName = meta.getDriverName();
+                driverVersion = meta.getDriverVersion();
                 return null;
             }
         });
@@ -1582,6 +1588,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     public String massageDataExtractionSql(String sql, Channel channel) {
         return sql;
+    }
+    
+    public String getDriverName() {
+        return driverName;
+    }
+    
+    public String getDriverVersion() {
+        return driverVersion;
     }
     
     public String scrubSql(String sql) {
