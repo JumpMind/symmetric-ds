@@ -315,4 +315,8 @@ public interface IDbDialect {
 
     public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener);
     
+    public String getDriverName();
+    
+    public String getDriverVersion();
+    
 }
