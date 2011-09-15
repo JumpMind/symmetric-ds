@@ -64,6 +64,8 @@ public interface IRegistrationService {
      * @return the node id
      */
     public String openRegistration(String nodeGroupId, String externalId);
+    
+    public boolean isRegistrationOpen(String nodeGroupId, String externalId);
 
     /**
      * Re-open registration for a single node that already exists in the
