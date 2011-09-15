@@ -410,6 +410,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
         return s;
     }
+    
+    public boolean isRegistrationOpen(String nodeGroupId, String externalId) {
+        Node node = nodeService.findNodeByExternalId(nodeGroupId, externalId);
+        if (node != null) {
+            NodeSecurity security = nodeService.findNodeSecurity(node.getNodeId());
+            return security != null && security.isRegistrationEnabled();
+        }
+        return false;
+    }
 
     class RegistrationRequestMapper implements RowMapper<RegistrationRequest> {
         public RegistrationRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
