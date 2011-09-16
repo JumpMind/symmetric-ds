@@ -992,6 +992,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             SqlBuilder builder = platform.getSqlBuilder();
             
             if (builder.isAlterDatabase(currentModel, databaseTables, null)) {
+                log.info("TablesAutoUpdatingFoundTablesToAlter");
                 DataSource ds = jdbcTemplate.getDataSource();
                 String delimiter = platform.getPlatformInfo().getSqlCommandDelimiter();
 
@@ -1004,13 +1005,17 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 builder.setWriter(writer);
                 builder.alterDatabase(currentModel, databaseTables, null);
                 String alterSql = writer.toString();
-                log.debug("TablesAutoUpdatingAlterSql", alterSql);
+                if (log.isDebugEnabled()) {
+                    log.debug("TablesAutoUpdatingAlterSql", alterSql);
+                }
                 new SqlScript(alterSql, ds, true, delimiter, null).execute();
                 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener.afterUpgrade(this, tablePrefix, databaseTables);
                     new SqlScript(sql, ds, true, delimiter, null).execute();
                 }
+                
+                log.info("TablesAutoUpdatingDone");
                 return true;
             } else {
                 return false;
