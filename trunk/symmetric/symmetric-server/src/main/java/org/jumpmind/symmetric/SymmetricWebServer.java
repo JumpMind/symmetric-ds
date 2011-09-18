@@ -62,7 +62,7 @@ public class SymmetricWebServer {
 
     protected static final ILog log = LogFactory.getLog(SymmetricWebServer.class);
     
-    protected static final String DEFAULT_WEBAPP_DIR = "../web";    
+    protected static final String DEFAULT_WEBAPP_DIR = System.getProperty("symmetric.default.web.dir","../web");    
 
     public static final String DEFAULT_HTTP_PORT = System.getProperty("symmetric.default.http.port","31415");
     
