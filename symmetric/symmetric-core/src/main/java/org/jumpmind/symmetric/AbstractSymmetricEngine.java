@@ -345,7 +345,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         }
     }
 
-    protected void setupDatabase(boolean force) {
+    public void setupDatabase(boolean force) {
         getConfigurationService().autoConfigDatabase(force);
         if (getUpgradeService().isUpgradeNecessary()) {
             if (getParameterService().is(ParameterConstants.AUTO_UPGRADE)) {

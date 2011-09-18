@@ -187,6 +187,14 @@ public interface ISymmetricEngine {
      */
 
     public boolean isStarting();
+    
+    
+    /**
+     * Attempt to configure the database objects that support SymmetricDS.  If they are 
+     * out of date this method will attempt to alter the tables to bring them up to date.
+     * @param force forces this action to be run regardless of the parameter settings
+     */
+    public void setupDatabase(boolean force);
 
     /**
      * Expose access to the Spring context. This is for advanced use only.
