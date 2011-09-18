@@ -119,8 +119,8 @@ public class SymmetricWebServer {
         this.webAppDir = webappDir;
     }
 
-    public SymmetricWebServer(int maxIdleTime, String propertiesUrl, boolean join, boolean noNio, boolean noDirectBuffer) {
-        this(propertiesUrl, DEFAULT_WEBAPP_DIR);
+    public SymmetricWebServer(String webDirectory, int maxIdleTime, String propertiesUrl, boolean join, boolean noNio, boolean noDirectBuffer) {
+        this(propertiesUrl, webDirectory);
         this.maxIdleTime = maxIdleTime;
         this.join = join;
         this.noDirectBuffer = noDirectBuffer;
