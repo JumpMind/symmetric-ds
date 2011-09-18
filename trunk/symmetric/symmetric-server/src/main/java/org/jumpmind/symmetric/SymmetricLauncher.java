@@ -148,25 +148,22 @@ public class SymmetricLauncher {
     
     private static final String OPTION_KEYSTORE_TYPE ="keystore-type";
 
-    protected static SymmetricWebServer webServer;
+    protected SymmetricWebServer webServer;
 
-    protected static Exception exception;
+    protected Exception exception;
 
-    protected static boolean join = true;
+    protected boolean join = true;
 
     public static void main(String... args) throws Exception {
-      
+       new SymmetricLauncher().execute(args);    
+    }
+    
+    public void execute(String... args) throws Exception {      
         PosixParser parser = new PosixParser();
-        Options options = buildOptions();
+        Options options = new Options();
+        buildOptions(options);
         try {
             CommandLine line = parser.parse(options, args);
-
-            int port = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT);
-            int securePort = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTPS_PORT);
-            int maxIdleTime = 900000;
-            String propertiesFile = null;
-            boolean noNio = false;
-            boolean noDirectBuffer = false;
 
             configureLogging(line);
 
@@ -177,172 +174,10 @@ public class SymmetricLauncher {
                 }
             }
 
-            if (line.hasOption(OPTION_PORT_SERVER)) {
-                port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
-            }
-            
-            if (line.hasOption(OPTION_SECURE_PORT_SERVER)) {
-                securePort = new Integer(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
-            }
-            
-            if (line.hasOption(OPTION_KEYSTORE_PASSWORD)) {
-                System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD, line.getOptionValue(OPTION_KEYSTORE_PASSWORD));
-             }
-             
-            if (line.hasOption(OPTION_KEYSTORE_TYPE)) {
-                System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, line.getOptionValue(OPTION_KEYSTORE_TYPE));
-            }
-             
-            if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
-                maxIdleTime = new Integer(line.getOptionValue(OPTION_MAX_IDLE_TIME));
-            }
-            
-            if (line.hasOption(OPTION_NO_NIO)) {
-                noNio = true;
-            }
 
-            if (line.hasOption(OPTION_NO_DIRECT_BUFFER)) {
-                noDirectBuffer = true;    
+            if (!executeOptions(line)) {            
+                printHelp(options);
             }
-            
-            if (line.hasOption(OPTION_PROPERTIES_GEN)) {
-                generateDefaultProperties(line.getOptionValue(OPTION_PROPERTIES_GEN));
-                System.exit(0);
-                return;
-            }
-
-            // validate that block-size has been set
-            if (line.hasOption(OPTION_PROPERTIES_FILE)) {
-                propertiesFile = "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE);
-                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);
-                if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
-                    throw new SymmetricException("FilePropertiesNotFound", line.getOptionValue(OPTION_PROPERTIES_FILE));
-                }
-            }
-            
-            if (line.hasOption(OPTION_CREATE_WAR)) {
-                generateWar(line.getOptionValue(OPTION_CREATE_WAR), propertiesFile);
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_DDL_GEN)) {
-                testConnection(line);
-                generateDDL(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_DDL_GEN));
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_PURGE)) {
-                testConnection(line);
-                ((IPurgeService) new StandaloneSymmetricEngine(propertiesFile).getApplicationContext().getBean(Constants.PURGE_SERVICE))
-                        .purgeOutgoing();
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_OPEN_REGISTRATION)) {
-                testConnection(line);
-                String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
-                openRegistration(new StandaloneSymmetricEngine(propertiesFile), arg);
-                System.out.println(Message.get("RegistrationOpened", arg));
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_RELOAD_NODE)) {
-                testConnection(line);
-                String arg = line.getOptionValue(OPTION_RELOAD_NODE);
-                String message = reloadNode(new StandaloneSymmetricEngine(propertiesFile), arg);                
-                System.out.println(message);
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_DUMP_BATCH)) {
-                testConnection(line);
-                String arg = line.getOptionValue(OPTION_DUMP_BATCH);
-                dumpBatch(new StandaloneSymmetricEngine(propertiesFile), arg);
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_TRIGGER_GEN)) {
-                testConnection(line);
-                String arg = line.getOptionValue(OPTION_TRIGGER_GEN);
-                boolean gen_always = line.hasOption(OPTION_TRIGGER_GEN_ALWAYS);
-                syncTrigger(new StandaloneSymmetricEngine(propertiesFile), arg, gen_always);
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_AUTO_CREATE)) {
-                testConnection(line);
-                autoCreateDatabase(new StandaloneSymmetricEngine(propertiesFile));
-                System.exit(0);
-                return;
-            }
-            
-            if (line.hasOption(OPTION_EXPORT_SCHEMA)) {
-                testConnection(line);
-                exportSchema(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_EXPORT_SCHEMA));
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_RUN_DDL_XML)) {
-                testConnection(line);
-                runDdlXml(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_RUN_DDL_XML));
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_RUN_SQL)) {
-                testConnection(line);
-                runSql(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_RUN_SQL));
-                System.exit(0);
-                return;
-            }
-            
-            if (line.hasOption(OPTION_RUN_PROFILE)) {
-                testConnection(line);
-                runProfile(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_RUN_PROFILE));
-                System.exit(0);
-                return;
-            }            
-
-            if (line.hasOption(OPTION_LOAD_BATCH)) {
-                testConnection(line);
-                loadBatch(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_LOAD_BATCH));
-                System.exit(0);
-                return;
-            }
-
-            if (line.hasOption(OPTION_ENCRYPT_TEXT)) {
-                testConnection(line);
-                encryptText(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_ENCRYPT_TEXT));
-                return;
-            }
-
-            if (line.hasOption(OPTION_START_CLIENT)) {
-                new StandaloneSymmetricEngine(propertiesFile).start();
-                return;
-            }
-            
-            if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER)
-                    || line.hasOption(OPTION_START_MIXED_SERVER)) {
-                webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join, noNio, noDirectBuffer);
-                if (line.hasOption(OPTION_START_SERVER)) {
-                    webServer.start(port);
-                } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                    webServer.startSecure(securePort);
-                } else if (line.hasOption(OPTION_START_MIXED_SERVER)) {
-                    webServer.startMixed(port, securePort);
-                }
-                return;
-            }
-
-            printHelp(options);
 
         } catch (ParseException exp) {
             exception = exp;
@@ -364,7 +199,7 @@ public class SymmetricLauncher {
         }
     }
     
-    private static void generateWar(String warFileName, String propertiesFileName) throws Exception {
+    private void generateWar(String warFileName, String propertiesFileName) throws Exception {
         final File workingDirectory = new File("../.war");
         FileUtils.deleteDirectory(workingDirectory);
         FileUtils.copyDirectory(new File("../web"), workingDirectory);
@@ -380,27 +215,27 @@ public class SymmetricLauncher {
         FileUtils.deleteDirectory(workingDirectory);
     }
     
-    private static boolean isStartApplicationOption(CommandLine line) {
+    private boolean isStartApplicationOption(CommandLine line) {
         return line.hasOption(OPTION_START_CLIENT) || line.hasOption(OPTION_START_SERVER)
                 || line.hasOption(OPTION_START_SECURE_SERVER)
                 || line.hasOption(OPTION_START_MIXED_SERVER);
     }
     
-    private static File getLog4JFile() throws MalformedURLException {
+    private File getLog4JFile() throws MalformedURLException {
         URL url = new URL(System.getProperty("log4j.configuration", "file:../conf/log4j-blank.xml"));
         return new File(new File(url.getFile()).getParent(), "log4j.xml");
     }
     
-    private static File getLog4JFileDebugEnabled()  throws MalformedURLException {
+    private File getLog4JFileDebugEnabled()  throws MalformedURLException {
         File original = getLog4JFile();
         return new File(original.getParent(), "log4j-debug.xml");
     }
 
-    private static void printHelp(Options options) {
+    private void printHelp(Options options) {
         new HelpFormatter().printHelp("sym", options);
     }
 
-    private static void testConnection(CommandLine line) throws Exception {
+    private void testConnection(CommandLine line) throws Exception {
         if (!line.hasOption(OPTION_SKIP_DB_VALIDATION)) {
             ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {
                     "classpath:/symmetric-properties.xml", "classpath:/symmetric-database.xml" });
@@ -411,7 +246,7 @@ public class SymmetricLauncher {
         }
     }
     
-    private static void configureLogging(CommandLine line) throws MalformedURLException { 
+    private void configureLogging(CommandLine line) throws MalformedURLException { 
         File log4jFile = getLog4JFile();
         if (line.hasOption(OPTION_DEBUG)) {
             log4jFile = getLog4JFileDebugEnabled();
@@ -459,9 +294,12 @@ public class SymmetricLauncher {
             }
         }
     }
+    
+    protected void addPropertiesOption(Options options) {
+        addOption(options, "p", OPTION_PROPERTIES_FILE, true);
+    }
 
-    private static Options buildOptions() {
-        Options options = new Options();
+    protected void buildOptions(Options options) {
         addOption(options, "S", OPTION_START_SERVER, false);
         addOption(options, "C", OPTION_START_CLIENT, false);
         addOption(options, "T", OPTION_START_SECURE_SERVER, false);
@@ -473,7 +311,8 @@ public class SymmetricLauncher {
         addOption(options, "ndb", OPTION_NO_DIRECT_BUFFER, false);
 
         addOption(options, "c", OPTION_DDL_GEN, true);
-        addOption(options, "p", OPTION_PROPERTIES_FILE, true);
+        
+        addPropertiesOption(options);
         addOption(options, "X", OPTION_PURGE, false);
         addOption(options, "g", OPTION_PROPERTIES_GEN, true);
         addOption(options, "r", OPTION_RUN_DDL_XML, true);
@@ -502,14 +341,206 @@ public class SymmetricLauncher {
         
         addOption(options, "kst", OPTION_KEYSTORE_TYPE, true);
 
-        return options;
+    }
+    
+    protected boolean executeOptions(CommandLine line) throws Exception {
+
+        int port = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT);
+        int securePort = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTPS_PORT);
+        String webDir = SymmetricWebServer.DEFAULT_WEBAPP_DIR;
+        int maxIdleTime = 900000;
+        String propertiesFile = null;
+        boolean noNio = false;
+        boolean noDirectBuffer = false;
+
+        if (line.hasOption(OPTION_PORT_SERVER)) {
+            port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
+        }
+        
+        if (line.hasOption(OPTION_SECURE_PORT_SERVER)) {
+            securePort = new Integer(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
+        }
+        
+        if (line.hasOption(OPTION_KEYSTORE_PASSWORD)) {
+            System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD, line.getOptionValue(OPTION_KEYSTORE_PASSWORD));
+         }
+         
+        if (line.hasOption(OPTION_KEYSTORE_TYPE)) {
+            System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, line.getOptionValue(OPTION_KEYSTORE_TYPE));
+        }
+         
+        if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
+            maxIdleTime = new Integer(line.getOptionValue(OPTION_MAX_IDLE_TIME));
+        }
+        
+        if (line.hasOption(OPTION_NO_NIO)) {
+            noNio = true;
+        }
+
+        if (line.hasOption(OPTION_NO_DIRECT_BUFFER)) {
+            noDirectBuffer = true;    
+        }
+        
+        if (line.hasOption(OPTION_PROPERTIES_GEN)) {
+            generateDefaultProperties(line.getOptionValue(OPTION_PROPERTIES_GEN));
+            System.exit(0);
+            return true;
+        }
+
+        // validate that block-size has been set
+        if (line.hasOption(OPTION_PROPERTIES_FILE)) {
+            propertiesFile = "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE);
+            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);
+            if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
+                throw new SymmetricException("FilePropertiesNotFound", line.getOptionValue(OPTION_PROPERTIES_FILE));
+            }
+        } else {
+            propertiesFile = choosePropertiesFile(line, propertiesFile);
+        }
+        
+        if (line.hasOption(OPTION_CREATE_WAR)) {
+            generateWar(line.getOptionValue(OPTION_CREATE_WAR), propertiesFile);
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_DDL_GEN)) {
+            testConnection(line);
+            generateDDL(createEngine(propertiesFile), line.getOptionValue(OPTION_DDL_GEN));
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_PURGE)) {
+            testConnection(line);
+            ((IPurgeService) createEngine(propertiesFile).getApplicationContext().getBean(Constants.PURGE_SERVICE))
+                    .purgeOutgoing();
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_OPEN_REGISTRATION)) {
+            testConnection(line);
+            String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
+            openRegistration(createEngine(propertiesFile), arg);
+            System.out.println(Message.get("RegistrationOpened", arg));
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_RELOAD_NODE)) {
+            testConnection(line);
+            String arg = line.getOptionValue(OPTION_RELOAD_NODE);
+            String message = reloadNode(createEngine(propertiesFile), arg);                
+            System.out.println(message);
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_DUMP_BATCH)) {
+            testConnection(line);
+            String arg = line.getOptionValue(OPTION_DUMP_BATCH);
+            dumpBatch(createEngine(propertiesFile), arg);
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_TRIGGER_GEN)) {
+            testConnection(line);
+            String arg = line.getOptionValue(OPTION_TRIGGER_GEN);
+            boolean gen_always = line.hasOption(OPTION_TRIGGER_GEN_ALWAYS);
+            syncTrigger(createEngine(propertiesFile), arg, gen_always);
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_AUTO_CREATE)) {
+            testConnection(line);
+            autoCreateDatabase(createEngine(propertiesFile));
+            System.exit(0);
+            return true;
+        }
+        
+        if (line.hasOption(OPTION_EXPORT_SCHEMA)) {
+            testConnection(line);
+            exportSchema(createEngine(propertiesFile), line.getOptionValue(OPTION_EXPORT_SCHEMA));
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_RUN_DDL_XML)) {
+            testConnection(line);
+            runDdlXml(createEngine(propertiesFile), line.getOptionValue(OPTION_RUN_DDL_XML));
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_RUN_SQL)) {
+            testConnection(line);
+            runSql(createEngine(propertiesFile), line.getOptionValue(OPTION_RUN_SQL));
+            System.exit(0);
+            return true;
+        }
+        
+        if (line.hasOption(OPTION_RUN_PROFILE)) {
+            testConnection(line);
+            runProfile(createEngine(propertiesFile), line.getOptionValue(OPTION_RUN_PROFILE));
+            System.exit(0);
+            return true;
+        }            
+
+        if (line.hasOption(OPTION_LOAD_BATCH)) {
+            testConnection(line);
+            loadBatch(createEngine(propertiesFile), line.getOptionValue(OPTION_LOAD_BATCH));
+            System.exit(0);
+            return true;
+        }
+
+        if (line.hasOption(OPTION_ENCRYPT_TEXT)) {
+            testConnection(line);
+            encryptText(createEngine(propertiesFile), line.getOptionValue(OPTION_ENCRYPT_TEXT));
+            return true;
+        }
+
+        if (line.hasOption(OPTION_START_CLIENT)) {
+            createEngine(propertiesFile).start();
+            return true;
+        }
+        
+        if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER)
+                || line.hasOption(OPTION_START_MIXED_SERVER)) {
+            webServer = new SymmetricWebServer(chooseWebDir(line, webDir), maxIdleTime, propertiesFile, join, noNio, noDirectBuffer);
+            if (line.hasOption(OPTION_START_SERVER)) {
+                webServer.start(port);
+            } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
+                webServer.startSecure(securePort);
+            } else {
+                webServer.startMixed(port, securePort);
+            }
+            return true;
+        }
+        
+        return false;
+
+    }
+    
+    protected String choosePropertiesFile(CommandLine line, String propertiesFile) {
+        return propertiesFile;
+    }
+    
+    protected String chooseWebDir(CommandLine line, String webDir) {
+        return webDir;
+    }
+    
+    protected ISymmetricEngine createEngine(String propertiesFile) {
+        return new StandaloneSymmetricEngine(propertiesFile);
     }
 
-    private static void addOption(Options options, String opt, String longOpt, boolean hasArg) {
+    protected void addOption(Options options, String opt, String longOpt, boolean hasArg) {
         options.addOption(opt, longOpt, hasArg, Message.get(MESSAGE_BUNDLE + longOpt));
     }
 
-    private static void dumpBatch(ISymmetricEngine engine, String batchId) throws Exception {
+    private void dumpBatch(ISymmetricEngine engine, String batchId) throws Exception {
         IDataExtractorService dataExtractorService = (IDataExtractorService) engine.getApplicationContext().getBean(
                 Constants.DATAEXTRACTOR_SERVICE);
         IOutgoingTransport transport = new InternalOutgoingTransport(System.out);
@@ -517,7 +548,7 @@ public class SymmetricLauncher {
         transport.close();
     }
 
-    private static void loadBatch(ISymmetricEngine engine, String fileName) throws Exception {
+    private void loadBatch(ISymmetricEngine engine, String fileName) throws Exception {
         IDataLoaderService service = (IDataLoaderService) engine.getApplicationContext().getBean(
                 Constants.DATALOADER_SERVICE);
         File file = new File(fileName);
@@ -532,19 +563,19 @@ public class SymmetricLauncher {
         }
     }
 
-    private static void encryptText(ISymmetricEngine engine, String plainText) {
+    private void encryptText(ISymmetricEngine engine, String plainText) {
         ISecurityService service = (ISecurityService) engine.getApplicationContext()
                 .getBean(Constants.SECURITY_SERVICE);
         System.out.println(SecurityConstants.PREFIX_ENC + service.encrypt(plainText));
     }
     
-    private static void exportSchema(ISymmetricEngine engine, String fileName) {        
+    private void exportSchema(ISymmetricEngine engine, String fileName) {        
         Platform platform = engine.getDbDialect().getPlatform();
         Database db = platform.readModelFromDatabase("model");
         new DatabaseIO().write(db, fileName);
     }
 
-    private static void openRegistration(ISymmetricEngine engine, String argument) {
+    private void openRegistration(ISymmetricEngine engine, String argument) {
         argument = argument.replace('\"', ' ');
         int index = argument.trim().indexOf(",");
         if (index < 0) {
@@ -557,12 +588,12 @@ public class SymmetricLauncher {
         registrationService.openRegistration(nodeGroupId, externalId);
     }
 
-    private static String reloadNode(ISymmetricEngine engine, String argument) {
+    private String reloadNode(ISymmetricEngine engine, String argument) {
         IDataService dataService = (IDataService) engine.getApplicationContext().getBean(Constants.DATA_SERVICE);
         return dataService.reloadNode(argument);
     }
 
-    private static void syncTrigger(ISymmetricEngine engine, String fileName, boolean gen_always) throws IOException {
+    private void syncTrigger(ISymmetricEngine engine, String fileName, boolean gen_always) throws IOException {
         if (fileName != null) {
             File file = new File(fileName);
             if (file.getParentFile() != null) {
@@ -577,7 +608,7 @@ public class SymmetricLauncher {
         }
     }
 
-    private static void generateDDL(ISymmetricEngine engine, String fileName) throws IOException {
+    private void generateDDL(ISymmetricEngine engine, String fileName) throws IOException {
         File file = new File(fileName);
         if (file.getParentFile() != null) {
             file.getParentFile().mkdirs();
@@ -587,7 +618,7 @@ public class SymmetricLauncher {
         os.close();
     }
 
-    private static void generateDefaultProperties(String fileName) throws IOException {
+    private void generateDefaultProperties(String fileName) throws IOException {
         File file = new File(fileName);
         if (file.getParentFile() != null) {
             file.getParentFile().mkdirs();
@@ -605,11 +636,11 @@ public class SymmetricLauncher {
         os.close();
     }
 
-    private static void autoCreateDatabase(StandaloneSymmetricEngine engine) {
+    private void autoCreateDatabase(ISymmetricEngine engine) {
         engine.setupDatabase(true);
     }
 
-    private static void runDdlXml(ISymmetricEngine engine, String fileName) throws FileNotFoundException {
+    private void runDdlXml(ISymmetricEngine engine, String fileName) throws FileNotFoundException {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
@@ -621,7 +652,7 @@ public class SymmetricLauncher {
         }
     }
 
-    private static void runSql(ISymmetricEngine engine, String fileName) throws FileNotFoundException,
+    private void runSql(ISymmetricEngine engine, String fileName) throws FileNotFoundException,
             MalformedURLException {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
         File file = new File(fileName);
