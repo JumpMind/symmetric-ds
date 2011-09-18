@@ -81,7 +81,7 @@ public class SymmetricWebServer {
 
     protected boolean join = true;
 
-    protected boolean createJmxServer = true;
+    protected boolean createJmxServer = Boolean.parseBoolean(System.getProperty("symmetric.default.create.jmx.server", "true"));
 
     protected String webHome = "/";
 
