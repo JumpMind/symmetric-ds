@@ -55,9 +55,6 @@ public class OracleJdbcTableReader extends JdbcTableReader {
         }
 
         switch (typeCode) {
-        case Types.DECIMAL:
-            typeCode = mapDecimalTypeCode(typeCode, values);
-            break;
         case Types.FLOAT:
             typeCode = mapFloatTypeCode(typeCode, values);
             break;
@@ -81,46 +78,6 @@ public class OracleJdbcTableReader extends JdbcTableReader {
             break;
         }
 
-        return typeCode;
-    }
-
-    /**
-     * We're back-mapping the NUMBER columns returned by Oracle Note that the
-     * JDBC driver returns DECIMAL for these NUMBER columns
-     */
-    protected int mapDecimalTypeCode(int typeCode, Map<String, Object> values) {
-        int scale = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
-
-        int size = Integer.parseInt((String) values.get("COLUMN_SIZE"));
-        switch (size) {
-        case 1:
-            if (scale == 0) {
-                typeCode = Types.BIT;
-            }
-            break;
-        case 3:
-            if (scale == 0) {
-                typeCode = Types.TINYINT;
-            }
-            break;
-        case 5:
-            if (scale == 0) {
-                typeCode = Types.SMALLINT;
-            }
-            break;
-        case 22:
-            if (scale == 0) {
-                typeCode = Types.INTEGER;
-            }
-            break;
-        case 38:
-            if (scale == 0) {
-                typeCode = Types.BIGINT;
-            } else {
-                typeCode = Types.DOUBLE;
-            }
-            break;
-        }
         return typeCode;
     }
 

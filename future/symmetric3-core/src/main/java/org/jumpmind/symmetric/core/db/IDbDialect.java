@@ -79,7 +79,7 @@ public interface IDbDialect {
     
     public Query createQuery(int expectedNumberOfArgs, Table... tables);
 
-    public Query createQuery(Table... tables);
+    public Query createQuery(Table... tables);    
     
     public DmlStatement createDmlStatement(DmlType dmlType, Table table);
     

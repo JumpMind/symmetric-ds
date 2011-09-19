@@ -660,7 +660,7 @@ public class Table implements Serializable, Cloneable {
 		List<Column> found = new ArrayList<Column>();
 		for (Column column : columns) {
 			if ((onlyPrimaryKeys && column.isPrimaryKey()) || !onlyPrimaryKeys) {
-				if (columnNames.contains(column.getName())) {
+				if (columnNames != null && columnNames.contains(column.getName())) {
 					found.add(column);
 				}
 			}

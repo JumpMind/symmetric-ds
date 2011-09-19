@@ -104,7 +104,8 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     }
 
     protected int update(DmlType type, Table table, Map<String, Object> params) {
-        DmlStatement updateStmt = getDbDialect().createDmlStatement(type, table, params.keySet());
+        DmlStatement updateStmt = getDbDialect().createDmlStatement(type, table,
+                params != null ? params.keySet() : null);
         String sql = updateStmt.getSql();
         int[] types = updateStmt.getTypes();
         Object[] values = updateStmt.buildArgsFrom(params);
