@@ -74,7 +74,20 @@ public class TableCopy {
     }
 
     public void copy() {
+        if (parameters.is(Parameters.LOADER_DELETE_FIRST, false)) {
+            delete(tablesToRead);
+        }
         this.copy(tablesToRead);
+    }
+    
+    public void delete(List<TableToExtract> tables) {
+        for (int i = tables.size()-1; i >=0; i--) {
+            TableToExtract tableToDelete = tables.get(i); 
+            logger.info("(%d of %d) Deleting table %s ", tables.size()-i, tables.size(), tableToDelete
+                    .getTable().getTableName());
+            this.targetPlatform.getSqlTemplate().delete(tableToDelete.getTable(), null);
+            
+        }
     }
 
     public void copy(List<TableToExtract> tables) {
