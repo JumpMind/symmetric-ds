@@ -124,6 +124,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected Platform platform;
 
     protected DatabaseModel cachedModel = new DatabaseModel();
+    
+    protected long lastTimeCachedModelClearedInMs = System.currentTimeMillis();
 
     protected SqlTemplate sqlTemplate;
 
@@ -352,7 +354,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * table metadata directly against information schemas.
      */
     public Table getTable(String catalogName, String schemaName, String tableName, boolean useCache) {
-        Table retTable = cachedModel.findTable(catalogName, schemaName, tableName);
+        if (System.currentTimeMillis()-lastTimeCachedModelClearedInMs > parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_TABLES_IN_MS)) {
+            synchronized (this.getClass()) {
+                cachedModel = new DatabaseModel();
+                lastTimeCachedModelClearedInMs = System.currentTimeMillis();
+            }      
+        }
+        DatabaseModel model = cachedModel;
+        Table retTable = model != null ? model.findTable(catalogName, schemaName, tableName) : null;
         if (retTable == null || !useCache) {
             synchronized (this.getClass()) {
                 try {
