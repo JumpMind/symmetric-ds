@@ -24,6 +24,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -124,5 +125,23 @@ public class ServletUtils {
             }
         }
         return ctx;
+    }
+    
+    /**
+     * Returns the part of the path we are interested in when doing pattern
+     * matching. This should work whether or not the servlet or filter is
+     * explicitly mapped inside of the web.xml since it always strips off the
+     * contextPath.
+     * 
+     * @param httpRequest
+     * @return
+     */
+    public static String normalizeRequestUri(HttpServletRequest httpRequest) {
+        String retVal = httpRequest.getRequestURI();
+        String contextPath = httpRequest.getContextPath();
+        if (retVal.startsWith(contextPath)) {
+            retVal = retVal.substring(contextPath.length());
+        }
+        return retVal;
     }
 }

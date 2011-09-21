@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.web;
 
@@ -33,14 +34,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.context.ApplicationContext;
 
@@ -73,21 +71,20 @@ public class SymmetricFilter implements Filter {
     private ServletContext servletContext;
 
     private List<Filter> filters;
-    
-    private INodeService nodeService;
-    
-    private static long lastWarningTimestamp = 0;
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
-        new SymmetricFilterChain(chain).doFilter(request, response);
+    private INodeService nodeService;
+
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        new SymmetricFilterChain(chain, filters, nodeService.findIdentity(false)).doFilter(request,
+                response);
     }
 
     public void init(FilterConfig filterConfig) throws ServletException {
         servletContext = filterConfig.getServletContext();
         filters = new ArrayList<Filter>();
         ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
-        nodeService = (INodeService)ctx.getBean(Constants.NODE_SERVICE);
+        nodeService = (INodeService) ctx.getBean(Constants.NODE_SERVICE);
         Map<String, IServletFilterExtension> filterBeans = new LinkedHashMap<String, IServletFilterExtension>();
         filterBeans.putAll(ctx.getBeansOfType(IServletFilterExtension.class));
         if (ctx.getParent() != null) {
@@ -95,7 +92,7 @@ public class SymmetricFilter implements Filter {
         }
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file
-        for (final Map.Entry<String, IServletFilterExtension> filterEntry : filterBeans.entrySet()) {            
+        for (final Map.Entry<String, IServletFilterExtension> filterEntry : filterBeans.entrySet()) {
             final Filter filter = filterEntry.getValue();
             if (filter instanceof IExtensionPoint) {
                 String filterKey = filterEntry.getKey();
@@ -116,61 +113,6 @@ public class SymmetricFilter implements Filter {
 
     public ServletContext getServletContext() {
         return servletContext;
-    }
-
-    /**
-     * The chain will visit each filter in turn. When done, it will pass along
-     * to the original chain. The chain skips disabled filters. I'm wondering if
-     * this should be moved to the {@link SymmetricFilter#init(FilterConfig)}.
-     */
-    private class SymmetricFilterChain implements FilterChain {
-
-        private FilterChain chain;
-        private int index;
-
-        public SymmetricFilterChain(FilterChain chain) {
-            this.chain = chain;
-            index = 0;
-        }
-
-        public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-            if (!response.isCommitted()) {
-                Node node = nodeService.findIdentity(false);
-                if (node != null) {
-                    if (node.isSyncEnabled()) {
-                        if (index < filters.size()) {
-                            final Filter filter = filters.get(index++);
-                            if (filter instanceof AbstractFilter) {
-                                final AbstractFilter builtinFilter = (AbstractFilter) filter;
-                                if (!builtinFilter.isDisabled() && builtinFilter.matches(request)) {
-                                    builtinFilter.doFilter(request, response, this);
-                                } else {
-                                    this.doFilter(request, response);
-                                }
-                            } else {
-                                filter.doFilter(request, response, this);
-                            }
-                        } else {
-                            chain.doFilter(request, response);
-                        }
-                    } else {
-                        if (System.currentTimeMillis() - lastWarningTimestamp > DateUtils.MILLIS_PER_MINUTE) {
-                            log.warn("NodeDisableNotAcceptingWebRequests");
-                            lastWarningTimestamp = System.currentTimeMillis();
-                        }
-                        ServletUtils.sendError((HttpServletResponse) response,
-                                WebConstants.SC_FORBIDDEN);
-                    }
-                } else {
-                    if (System.currentTimeMillis() - lastWarningTimestamp > DateUtils.MILLIS_PER_MINUTE) {
-                        log.warn("NodeNotConfiguredNotAcceptingWebRequests");
-                        lastWarningTimestamp = System.currentTimeMillis();
-                    }
-                    ServletUtils.sendError((HttpServletResponse) response,
-                            WebConstants.SC_FORBIDDEN);
-                }
-            }
-        }
     }
 
 }

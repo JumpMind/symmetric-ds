@@ -26,8 +26,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -46,16 +44,9 @@ public class BandwidthSamplerServlet extends AbstractResourceServlet
     
     private static final long serialVersionUID = 1L;
 
-    protected ILog log = LogFactory.getLog(getClass());
-
     IParameterService parameterService;
 
     protected long defaultTestSlowBandwidthDelay = 0;
-
-    @Override
-    protected ILog getLog() {
-        return log;
-    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {

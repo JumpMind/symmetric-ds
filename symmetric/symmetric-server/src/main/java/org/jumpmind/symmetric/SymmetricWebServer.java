@@ -172,6 +172,7 @@ public class SymmetricWebServer {
         setupBasicAuthIfNeeded(server);
         
         webapp = new WebAppContext();
+        webapp.setParentLoaderPriority(true);
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime/1000);

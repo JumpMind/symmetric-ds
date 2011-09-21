@@ -111,7 +111,7 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
         if (isContainerCompatible() && !this.isSpringManaged()) {
             final IServletResource springBean = getSpringBean();
             if (this != springBean) { // this != is deliberate!
-                getLog().info("ServletInitializing", springBean.getClass().getSimpleName());
+                log.info("ServletInitializing", springBean.getClass().getSimpleName());
                 BeanUtils.copyProperties(springBean, this, IServletResource.class);
                 BeanUtils.copyProperties(springBean, this, ITransportResource.class);
                 BeanUtils.copyProperties(springBean, this, this.getClass());

@@ -38,9 +38,6 @@ import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * ,
- */
 public class RegistrationServiceTest extends AbstractDatabaseTest {
 
     protected INodeService nodeService;

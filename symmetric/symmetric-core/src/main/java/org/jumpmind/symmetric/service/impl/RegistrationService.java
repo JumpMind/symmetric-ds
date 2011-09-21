@@ -294,7 +294,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 }
             }
             
-            if (!registered) {
+            if (!registered && maxNumberOfAttempts != 0) {
                 sleepBeforeRegistrationRetry();
             }
         }
