@@ -1,6 +1,39 @@
 <html>
 <body>
 
+ <h1>
+Version 2.4.1
+</h1>
+            
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-505'>SYMMETRICDS-505</a>] -         Support NCLOB column on oracle
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-506'>SYMMETRICDS-506</a>] -         Support DDL create of NChar/NVarchar/Nclob
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-508'>SYMMETRICDS-508</a>] -         SqlScript does not execute a result set if a select is passed to the script.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-509'>SYMMETRICDS-509</a>] -         Schema upgrade fails on Firebird/Interbase
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-512'>SYMMETRICDS-512</a>] -         ojdbc6.jar and ojdbc5.jar from Oracle 11g distribution causes some SymmetricDS tables to be dropped and recreated.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-513'>SYMMETRICDS-513</a>] -         Cached table metadata could get out of sync when in cluster (sync triggers might run on only one node)
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-507'>SYMMETRICDS-507</a>] -         Get rid of the columns out of order detection in ddlutils.  It just causes tables to be rebuilt during upgrades when they really don&#39;t need to be.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-510'>SYMMETRICDS-510</a>] -         Document how to re-send data by creating reload events
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-511'>SYMMETRICDS-511</a>] -         Add new service url that returns information about a node in the properties format:  http://hostname/sync/info
+</li>
+</ul>
+
+
 <h1>
 Version 2.4.0
 </h1>
@@ -112,4 +145,5 @@ Version 2.4.0
 <li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-387'>SYMMETRICDS-387</a>] -         Discuss sym_channel settings and how they effect synchronization in the users guide
 </li>
 </ul>
+
 </html>
