@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.web;
 
@@ -29,17 +29,20 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
- * Super class for SymmetricDS Servlets.  Contains useful Servlet processing methods.
+ * Super class for SymmetricDS Servlets. Contains useful Servlet processing
+ * methods.
  */
 abstract public class AbstractServlet extends HttpServlet {
 
@@ -51,21 +54,18 @@ abstract public class AbstractServlet extends HttpServlet {
         return resp.getOutputStream();
     }
 
-    protected ILog getLog() {
-        return this.log;
-    }
-
     protected InputStream createInputStream(HttpServletRequest req) throws IOException {
         InputStream is = null;
         String contentType = req.getHeader("Content-Type");
         boolean useCompression = contentType != null && contentType.equalsIgnoreCase("gzip");
 
-        if (getLog().isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             StringBuilder b = new StringBuilder();
             BufferedReader reader = null;
             if (useCompression) {
-                getLog().debug("ServletCompressedStreamReceived");
-                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(req.getInputStream())));
+                log.debug("ServletCompressedStreamReceived");
+                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(
+                        req.getInputStream())));
             } else {
                 reader = req.getReader();
             }
@@ -79,7 +79,7 @@ abstract public class AbstractServlet extends HttpServlet {
                 }
             } while (line != null);
 
-            getLog().debug("ServletReceived", b);
+            log.debug("ServletReceived", b);
             is = new ByteArrayInputStream(b.toString().getBytes());
         } else {
             is = req.getInputStream();
@@ -113,8 +113,61 @@ abstract public class AbstractServlet extends HttpServlet {
      *            a message to put in the body of the response
      * @throws IOException
      */
-    protected boolean sendError(HttpServletResponse resp, int statusCode, String message) throws IOException {
+    protected boolean sendError(HttpServletResponse resp, int statusCode, String message)
+            throws IOException {
         return ServletUtils.sendError(resp, statusCode, message);
+    }
+
+    public boolean matches(IServletExtension ext, HttpServletRequest httpRequest) {
+        boolean retVal = true;
+        final String uri = ServletUtils.normalizeRequestUri(httpRequest);
+        if (!ArrayUtils.isEmpty(ext.getUriPatterns())) {
+            retVal = matchesUriPatterns(uri, ext.getUriPatterns());
+        }
+        return retVal;
+    }
+
+    protected boolean matchesUriPatterns(String uri, String[] uriPatterns) {
+        boolean retVal = false;
+        for (int i = 0; !retVal && i < uriPatterns.length; i++) {
+            retVal = matchesUriPattern(uri, uriPatterns[i]);
+        }
+        return retVal;
+    }
+
+    protected boolean matchesUriPattern(String uri, String uriPattern) {
+        boolean retVal = false;
+        String path = StringUtils.defaultIfEmpty(uri, "/");
+        final String pattern = StringUtils.defaultIfEmpty(uriPattern, "/");
+        if ("/".equals(pattern) || "/*".equals(pattern) || pattern.equals(path)) {
+            retVal = true;
+        } else {
+            final String[] patternParts = StringUtils.split(pattern, "/");
+            final String[] pathParts = StringUtils.split(path, "/");
+            boolean matches = true;
+            for (int i = 0; i < patternParts.length && i < pathParts.length && matches; i++) {
+                final String patternPart = patternParts[i];
+                matches = "*".equals(patternPart) || patternPart.equals(pathParts[i]);
+            }
+            retVal = matches;
+        }
+        return retVal;
+    }
+
+    protected void logException(ServletRequest req, Exception ex, boolean isError) {
+        String nodeId = req.getParameter(WebConstants.NODE_ID);
+        String externalId = req.getParameter(WebConstants.EXTERNAL_ID);
+        String address = req.getRemoteAddr();
+        String hostName = req.getRemoteHost();
+        String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
+                : "";
+        if (log.isErrorEnabled() && isError) {
+            log.error("ServletProcessingFailedError", ex, method, externalId, nodeId, address,
+                    hostName);
+        } else if (log.isWarnEnabled()) {
+            log.warn("ServletProcessingFailedWarning", method, externalId, nodeId, address,
+                    hostName, ex.getMessage());
+        }
     }
 
     /**
@@ -137,7 +190,8 @@ abstract public class AbstractServlet extends HttpServlet {
      * @return
      */
     protected String getParameter(HttpServletRequest request, String name, String defaultValue) {
-        return StringUtils.defaultIfEmpty(StringUtils.trimToNull(request.getParameter(name)), defaultValue);
+        return StringUtils.defaultIfEmpty(StringUtils.trimToNull(request.getParameter(name)),
+                defaultValue);
     }
 
     protected long getParameterAsNumber(HttpServletRequest request, String name) {
