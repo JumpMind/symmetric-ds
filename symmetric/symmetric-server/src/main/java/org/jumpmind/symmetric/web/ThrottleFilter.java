@@ -58,10 +58,7 @@ import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
  *    &lt;property name=&quot;checkPoint&quot; value=&quot;long&quot; /&gt;
  *  &lt;/bean&gt;
  * </pre>
- *
- * ,
  */
-
 public class ThrottleFilter extends AbstractFilter implements IBuiltInExtensionPoint {
 
     private final static ILog log = LogFactory.getLog(ThrottleFilter.class);
@@ -116,11 +113,6 @@ public class ThrottleFilter extends AbstractFilter implements IBuiltInExtensionP
 
     public Long getCheckPoint() {
         return checkPoint;
-    }
-
-    @Override
-    protected ILog getLog() {
-        return log;
     }
 
 }

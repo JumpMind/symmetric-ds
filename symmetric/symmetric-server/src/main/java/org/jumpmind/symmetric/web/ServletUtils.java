@@ -142,6 +142,10 @@ public class ServletUtils {
         if (retVal.startsWith(contextPath)) {
             retVal = retVal.substring(contextPath.length());
         }
+        String servletPath = httpRequest.getServletPath();
+        if (retVal.startsWith(servletPath)) {
+            retVal = retVal.substring(servletPath.length());
+        }
         return retVal;
     }
 }

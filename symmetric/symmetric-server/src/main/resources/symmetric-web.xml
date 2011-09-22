@@ -55,9 +55,9 @@
         class="org.jumpmind.symmetric.web.AuthenticationFilter">
         <property name="uriPatterns">
             <list>
-                <value>$[sym.web.base.servlet.path]/pull/*</value>
-                <value>$[sym.web.base.servlet.path]/push/*</value>
-                <value>$[sym.web.base.servlet.path]/ack/*</value>
+                <value>/pull/*</value>
+                <value>/push/*</value>
+                <value>/ack/*</value>
             </list>
         </property>
         <property name="transportResourceHandler"
@@ -77,9 +77,9 @@
         class="org.jumpmind.symmetric.web.InetAddressFilter">
         <property name="uriPatterns">
             <list>
-                <value>$[sym.web.base.servlet.path]/pull/*</value>
-                <value>$[sym.web.base.servlet.path]/push/*</value>
-                <value>$[sym.web.base.servlet.path]/	/*</value>
+                <value>/pull/*</value>
+                <value>/push/*</value>
+                <value>/	/*</value>
             </list>
         </property>
         <property name="transportResourceHandler"
@@ -92,11 +92,10 @@
         <property name="configurationService" ref="configurationService" />
         <property name="uriPatterns">
             <list>
-                <value>$[sym.web.base.servlet.path]/pull/*</value>
-                <value>$[sym.web.base.servlet.path]/push/*</value>
+                <value>/pull/*</value>
+                <value>/push/*</value>
             </list>
         </property>
-        <property name="reservationUriPattern" value="/push/*"/>
         <property name="statisticManager" ref="statisticManager"/>
     </bean>
 
@@ -104,10 +103,10 @@
         class="org.jumpmind.symmetric.web.CompressionFilter">
         <property name="uriPatterns">
             <list>
-                <value>$[sym.web.base.servlet.path]/pull/*</value>
-                <value>$[sym.web.base.servlet.path]/push/*</value>
-                <value>$[sym.web.base.servlet.path]/registration/*</value>
-                <value>$[sym.web.base.servlet.path]/batch/*</value>
+                <value>/pull/*</value>
+                <value>/push/*</value>
+                <value>/registration/*</value>
+                <value>/batch/*</value>
             </list>
         </property>
         <property name="parameterService" ref="parameterService" />        
@@ -117,8 +116,8 @@
         class="org.jumpmind.symmetric.web.ThrottleFilter">
         <property name="uriPatterns">
             <list>
-                <value>$[sym.web.base.servlet.path]/pull/*</value>
-                <value>$[sym.web.base.servlet.path]/push/*</value>
+                <value>/pull/*</value>
+                <value>/push/*</value>
             </list>
         </property>
         <property name="disabled" value="true" />
@@ -126,12 +125,12 @@
 
     <bean id="pingServlet"
         class="org.jumpmind.symmetric.web.PingServlet">
-        <property name="uriPattern" value="$[sym.web.base.servlet.path]/ping/*" />
+        <property name="uriPattern" value="/ping/*" />
     </bean>
 
     <bean id="infoServlet"
         class="org.jumpmind.symmetric.web.InfoServlet">
-        <property name="uriPattern" value="$[sym.web.base.servlet.path]/info/*" />
+        <property name="uriPattern" value="/info/*" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
         <property name="configurationService" ref="configurationService" />
@@ -139,42 +138,42 @@
     
     <bean id="pullServlet"
         class="org.jumpmind.symmetric.web.PullServlet">
-        <property name="uriPattern" value="$[sym.web.base.servlet.path]/pull/*" />
+        <property name="uriPattern" value="/pull/*" />
         <property name="transportResourceHandler"
             ref="pullResourceHandler" />
     </bean>
 
     <bean id="pushServlet"
         class="org.jumpmind.symmetric.web.PushServlet">
-        <property name="uriPattern" value="$[sym.web.base.servlet.path]/push/*" />
+        <property name="uriPattern" value="/push/*" />
         <property name="transportResourceHandler"
             ref="pushResourceHandler" />
     </bean>        
 
     <bean id="registrationServlet"
         class="org.jumpmind.symmetric.web.RegistrationServlet">
-        <property name="uriPattern" value="$[sym.web.base.servlet.path]/registration/*" />
+        <property name="uriPattern" value="/registration/*" />
         <property name="transportResourceHandler"
             ref="registrationResourceHandler" />
     </bean>
 
     <bean id="ackServlet"
         class="org.jumpmind.symmetric.web.AckServlet">
-        <property name="uriPattern" value="$[sym.web.base.servlet.path]/ack/*" />
+        <property name="uriPattern" value="/ack/*" />
         <property name="transportResourceHandler"
             ref="ackResourceHandler" />
     </bean>
 
     <bean id="alertServlet"
         class="org.jumpmind.symmetric.web.AlertServlet">
-        <property name="uriPattern" value="$[sym.web.base.servlet.path]/alert/*" />
+        <property name="uriPattern" value="/alert/*" />
         <property name="transportResourceHandler"
             ref="alertResourceHandler" />
     </bean>
     
     <bean id="batchServlet"
         class="org.jumpmind.symmetric.web.BatchServlet">
-        <property name="uriPattern" value="$[sym.web.base.servlet.path]/batch/*" />
+        <property name="uriPattern" value="/batch/*" />
         <property name="transportResourceHandler"
             ref="batchResourceHandler" />
         <property name="enabled" value="$[sym.web.batch.servlet.enable]"/>            
@@ -183,7 +182,7 @@
     <bean id="bandWidthTestServlet"
         class="org.jumpmind.symmetric.web.BandwidthSamplerServlet">
         <property name="parameterService" ref="parameterService"/>
-        <property name="uriPattern" value="$[sym.web.base.servlet.path]/bandwidth/*" />
+        <property name="uriPattern" value="/bandwidth/*" />
     </bean>
 
 </beans>

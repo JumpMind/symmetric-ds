@@ -21,16 +21,12 @@
 
 package org.jumpmind.symmetric.web;
 
-import javax.servlet.ServletRequest;
 
 /**
  * This interface can be used by a servlet or a filter that is managed by
  * Spring.
  * 
  * @since 1.4.0
- * 
- *
- * 
  */
 public interface IServletResource {
 
@@ -50,14 +46,11 @@ public interface IServletResource {
      * Returns true if the request path matches the uriPattern on this filter.
      * 
      * @param request
-     * @return
      */
-    public abstract boolean matches(ServletRequest request);
+    public abstract boolean matches(String normalizedUri);
 
     /**
      * Returns true if this should be container compatible
-     * 
-     * @return
      */
     public boolean isContainerCompatible();
 

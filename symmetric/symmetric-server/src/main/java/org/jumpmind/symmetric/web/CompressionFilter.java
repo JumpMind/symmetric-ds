@@ -29,8 +29,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 
 /**
@@ -61,8 +59,6 @@ import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
  */
 public class CompressionFilter extends AbstractFilter 
   implements IBuiltInExtensionPoint {
-
-    private static final ILog log = LogFactory.getLog(CompressionFilter.class);
 
     private org.jumpmind.symmetric.web.compression.CompressionFilter delegate;
 
@@ -99,11 +95,6 @@ public class CompressionFilter extends AbstractFilter
     @Override
     public boolean isDisabled() {
         return parameterService.is(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET);
-    }
-
-    @Override
-    protected ILog getLog() {
-        return log;
     }
 
 }

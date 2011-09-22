@@ -35,8 +35,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * This simply makes sure the SymmetricFilter is setup correctly.
- *
- * 
  */
 public class InetAddressFilterTest extends AbstractWebTest {
     public static final String[] HTTP_METHODS = { "GET", "POST", "DELETE", "PUT", "TRACE", "OPTIONS" };

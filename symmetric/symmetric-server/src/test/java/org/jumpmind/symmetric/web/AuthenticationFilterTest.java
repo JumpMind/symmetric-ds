@@ -41,8 +41,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * This simply makes sure the SymmetricFilter is setup correctly.
- *
- * 
  */
 @RunWith(Parameterized.class)
 public class AuthenticationFilterTest extends AbstractSymmetricFilterTest {

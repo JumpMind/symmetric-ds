@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.web;
 
@@ -24,31 +25,35 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * All symmetric servlets and filters (other than {@link SymmetricFilter} and
  * {@link SymmetricServlet}) should extend this class. It it managed by Spring.
- *
+ * 
  * 
  */
-public class ServletResourceTemplate implements IServletResource {
+public class ServletResourceTemplate implements IServletResource, ApplicationContextAware {
     protected ServletContext servletContext;
 
-    private boolean disabled;
+    protected boolean disabled;
     protected String[] uriPatterns;
     protected IParameterService parameterService;
+    private ApplicationContext applicationContext;
 
     public void init(ServletContext servletContext) {
         this.servletContext = servletContext;
+    }
+
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public void setDisabled(boolean disabled) {
@@ -107,32 +112,10 @@ public class ServletResourceTemplate implements IServletResource {
 
     }
 
-    public boolean matches(ServletRequest request) {
+    public boolean matches(String normalizedUri) {
         boolean retVal = true;
-        if (request instanceof HttpServletRequest) {
-            final HttpServletRequest httpRequest = (HttpServletRequest) request;
-            final String uri = normalizeRequestUri(httpRequest);
-            if (!ArrayUtils.isEmpty(uriPatterns)) {
-                retVal = matchesUriPatterns(uri);
-            } 
-        }
-        return retVal;
-    }
-
-    /**
-     * Returns the part of the path we are interested in when doing pattern
-     * matching. This should work whether or not the servlet or filter is
-     * explicitly mapped inside of the web.xml since it always strips off the
-     * contextPath.
-     * 
-     * @param httpRequest
-     * @return
-     */
-    protected String normalizeRequestUri(HttpServletRequest httpRequest) {
-        String retVal = httpRequest.getRequestURI();
-        String contextPath = httpRequest.getContextPath();
-        if (retVal.startsWith(contextPath)) {
-            retVal = retVal.substring(contextPath.length());
+        if (!ArrayUtils.isEmpty(uriPatterns)) {
+            retVal = matchesUriPatterns(normalizedUri);
         }
         return retVal;
     }
@@ -159,21 +142,28 @@ public class ServletResourceTemplate implements IServletResource {
      *            a message to put in the body of the response
      * @throws IOException
      */
-    protected boolean sendError(ServletResponse resp, int statusCode, String message) throws IOException {
+    protected boolean sendError(ServletResponse resp, int statusCode, String message)
+            throws IOException {
         return ServletUtils.sendError(resp, statusCode, message);
     }
 
     protected ApplicationContext getDefaultApplicationContext() {
-        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+        if (applicationContext == null) {
+            applicationContext = WebApplicationContextUtils
+                    .getWebApplicationContext(getServletContext());
+        }
+        return applicationContext;
     }
 
     /**
      * Returns true if this is a spring managed resource.
      */
     public boolean isSpringManaged() {
-        boolean managed = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().contains(this);
-        if (!managed && getDefaultApplicationContext().getParent() != null) {
-            managed = getDefaultApplicationContext().getParent().getBeansOfType(this.getClass()).values()
+        ApplicationContext applicationContext = getDefaultApplicationContext();
+        boolean managed = applicationContext.getBeansOfType(this.getClass()).values()
+                .contains(this);
+        if (!managed && applicationContext.getParent() != null) {
+            managed = applicationContext.getParent().getBeansOfType(this.getClass()).values()
                     .contains(this);
         }
         return managed;
@@ -185,13 +175,15 @@ public class ServletResourceTemplate implements IServletResource {
     public IServletResource getSpringBean() {
         IServletResource retVal = this;
         if (!isSpringManaged()) {
-            Iterator<?> iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
+            ApplicationContext applicationContext = getDefaultApplicationContext();
+            Iterator<?> iterator = applicationContext.getBeansOfType(this.getClass()).values()
+                    .iterator();
             if (iterator.hasNext()) {
                 retVal = (IServletResource) iterator.next();
             }
 
-            if (retVal == null && getDefaultApplicationContext().getParent() != null) {
-                iterator = getDefaultApplicationContext().getParent().getBeansOfType(this.getClass()).values()
+            if (retVal == null && applicationContext.getParent() != null) {
+                iterator = applicationContext.getParent().getBeansOfType(this.getClass()).values()
                         .iterator();
                 if (iterator.hasNext()) {
                     retVal = (IServletResource) iterator.next();

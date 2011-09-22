@@ -49,8 +49,6 @@ public class NodeConcurrencyFilter extends AbstractFilter
     
     private IStatisticManager statisticManager;
 
-    private String reservationUriPattern;
-
     @Override
     public boolean isContainerCompatible() {
         return true;
@@ -64,7 +62,7 @@ public class NodeConcurrencyFilter extends AbstractFilter
         String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
         String method = httpRequest.getMethod();
 
-        if (method.equals("HEAD") && matchesUriPattern(normalizeRequestUri(httpRequest), reservationUriPattern)) {
+        if (method.equals("HEAD") && ServletUtils.normalizeRequestUri(httpRequest).contains("push")) {
             // I read here:
             // http://java.sun.com/j2se/1.5.0/docs/guide/net/http-keepalive.html
             // that keepalive likes to have a known content length. I also read
@@ -98,10 +96,6 @@ public class NodeConcurrencyFilter extends AbstractFilter
 
     public void setConcurrentConnectionManager(IConcurrentConnectionManager concurrentConnectionManager) {
         this.concurrentConnectionManager = concurrentConnectionManager;
-    }
-
-    public void setReservationUriPattern(String reservationUriPattern) {
-        this.reservationUriPattern = reservationUriPattern;
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {

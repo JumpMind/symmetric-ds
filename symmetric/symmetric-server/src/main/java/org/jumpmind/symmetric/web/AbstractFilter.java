@@ -36,19 +36,15 @@ import org.springframework.beans.BeanUtils;
  */
 public abstract class AbstractFilter extends ServletResourceTemplate implements IServletFilterExtension {
 
-    final ILog log = LogFactory.getLog(getClass());
-    
-    protected ILog getLog() {
-       return log;    
-    }
+    final protected ILog log = LogFactory.getLog(getClass());
 
     public void init(FilterConfig filterConfig) throws ServletException {
         init(filterConfig.getServletContext());
         if (isContainerCompatible() && !this.isSpringManaged()) {
             final IServletResource springBean = getSpringBean();
             if (this != springBean) { // this != is deliberate!
-                if (getLog().isInfoEnabled()) {
-                    getLog().info(String.format("Initializing filter %s", springBean.getClass().getSimpleName()));
+                if (log.isInfoEnabled()) {
+                    log.info(String.format("Initializing filter %s", springBean.getClass().getSimpleName()));
                 }
                 BeanUtils.copyProperties(springBean, this, IServletResource.class);
                 BeanUtils.copyProperties(springBean, this, ITransportResource.class);

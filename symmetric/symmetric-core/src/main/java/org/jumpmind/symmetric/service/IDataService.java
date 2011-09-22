@@ -124,7 +124,7 @@ public interface IDataService {
 
     public Data readData(ResultSet results) throws SQLException;
     
-    public List<Integer> listDataIds(long batchId, boolean descending);
+    public List<Number> listDataIds(long batchId, boolean descending);
     
     public List<Data> listData(long batchId, long startDataId, String channelId, boolean descending, int maxRowsToRetrieve);
     
