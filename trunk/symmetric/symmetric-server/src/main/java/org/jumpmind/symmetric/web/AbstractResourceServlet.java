@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.web;
 
@@ -26,22 +27,29 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 
 import org.jumpmind.symmetric.transport.ITransportResource;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * @since 1.4.0
  * 
- * @param <T> 
+ * @param <T>
  */
-public abstract class AbstractResourceServlet extends AbstractServlet implements IServletResource, IServletExtension {
+public abstract class AbstractResourceServlet extends AbstractServlet implements IServletResource,
+        IServletExtension, ApplicationContextAware {
 
     private static final long serialVersionUID = 1L;
     private ServletResourceTemplate servletResourceTemplate = new ServletResourceTemplate();
     private int initOrder;
+    private ApplicationContext applicationContext;
+
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 
     /**
      * Returns true if this should be container compatible
@@ -80,8 +88,8 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
         return servletResourceTemplate.getUriPatterns();
     }
 
-    public boolean matches(ServletRequest request) {
-        return servletResourceTemplate.matches(request);
+    public boolean matches(String normalizedUri) {
+        return servletResourceTemplate.matches(normalizedUri);
     }
 
     public void setDisabled(boolean disabled) {
@@ -119,15 +127,21 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
         }
     }
 
+    public ApplicationContext getApplicationContext() {
+        if (applicationContext == null) {
+            applicationContext = ServletUtils.getApplicationContext(getServletContext());
+        }
+        return applicationContext;
+    }
+
     /**
      * Returns true if this is a spring managed resource.
      */
     protected boolean isSpringManaged() {
-        ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
+        ApplicationContext ctx = getApplicationContext();
         boolean managed = ctx.getBeansOfType(this.getClass()).values().contains(this);
         if (!managed && ctx.getParent() != null) {
-            managed = ctx.getParent().getBeansOfType(this.getClass()).values()
-                    .contains(this);
+            managed = ctx.getParent().getBeansOfType(this.getClass()).values().contains(this);
         }
         return managed;
     }
@@ -137,17 +151,16 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
      */
     @SuppressWarnings("rawtypes")
     protected IServletResource getSpringBean() {
-        IServletResource retVal = this;        
+        IServletResource retVal = this;
         if (!isSpringManaged()) {
-            ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
+            ApplicationContext ctx = getApplicationContext();
             Iterator iterator = ctx.getBeansOfType(this.getClass()).values().iterator();
             if (iterator.hasNext()) {
                 retVal = (IServletResource) iterator.next();
             }
 
             if (retVal == null && ctx.getParent() != null) {
-                iterator = ctx.getParent().getBeansOfType(this.getClass()).values()
-                        .iterator();
+                iterator = ctx.getParent().getBeansOfType(this.getClass()).values().iterator();
                 if (iterator.hasNext()) {
                     retVal = (IServletResource) iterator.next();
                 }

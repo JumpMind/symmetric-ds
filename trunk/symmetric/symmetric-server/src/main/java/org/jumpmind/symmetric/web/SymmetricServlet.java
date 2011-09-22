@@ -87,7 +87,7 @@ public class SymmetricServlet extends AbstractServlet {
         if (servlets.size() == 0) {
             log.error("ServletNoneFound");
         }
-    }
+    }   
 
     @Override
     public void destroy() {
@@ -103,7 +103,7 @@ public class SymmetricServlet extends AbstractServlet {
         for (Iterator<IServletExtension> iterator = servlets.iterator(); retVal == null
                 && iterator.hasNext();) {
             IServletExtension extension = iterator.next();
-            if (!extension.isDisabled() && matches(extension, req)) {
+            if (!extension.isDisabled() && matches(extension, ServletUtils.normalizeRequestUri(req))) {
                 retVal = extension.getServlet();
             }
         }
@@ -111,8 +111,8 @@ public class SymmetricServlet extends AbstractServlet {
     }
 
     @Override
-    public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException,
-            IOException {
+    protected void service(HttpServletRequest req, HttpServletResponse res)
+    throws ServletException, IOException {
         Servlet servlet = findMatchingServlet(req);
         if (servlet != null) {
             try {

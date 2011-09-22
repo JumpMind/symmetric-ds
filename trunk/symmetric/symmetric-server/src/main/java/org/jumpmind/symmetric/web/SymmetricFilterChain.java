@@ -28,14 +28,16 @@ public class SymmetricFilterChain implements FilterChain {
     private int index;
     private List<Filter> filters;
     private Node identity;
+    private String normalizedUri;
 
     private static long lastWarningTimestamp = 0;
 
-    public SymmetricFilterChain(FilterChain chain, List<Filter> filters, Node identity) {
+    public SymmetricFilterChain(FilterChain chain, List<Filter> filters, Node identity, String normalizedUri) {
         this.identity = identity;
         this.filters = filters;
         this.chain = chain;
         this.index = 0;
+        this.normalizedUri = normalizedUri;
     }
 
     public void doFilter(ServletRequest request, ServletResponse response) throws IOException,
@@ -47,7 +49,7 @@ public class SymmetricFilterChain implements FilterChain {
                         final Filter filter = filters.get(index++);
                         if (filter instanceof AbstractFilter) {
                             final AbstractFilter builtinFilter = (AbstractFilter) filter;
-                            if (!builtinFilter.isDisabled() && builtinFilter.matches(request)) {
+                            if (!builtinFilter.isDisabled() && builtinFilter.matches(normalizedUri)) {
                                 builtinFilter.doFilter(request, response, this);
                             } else {
                                 this.doFilter(request, response);

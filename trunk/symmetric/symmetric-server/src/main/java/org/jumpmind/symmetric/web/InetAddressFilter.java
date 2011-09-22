@@ -34,8 +34,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.transport.handler.InetAddressResourceHandler;
 
@@ -48,8 +46,6 @@ public class InetAddressFilter extends AbstractTransportFilter<InetAddressResour
     public static final String INET_ADDRESS_FILTERS = "inetAddressFilters";
 
     public static final String INET_ADDRESS_ALLOW_MULICAST = "inetAddressAllowMultcast";
-
-    private static final ILog log = LogFactory.getLog(InetAddressFilter.class);
 
     private InetAddressResourceHandler authorizer;
 
@@ -101,8 +97,4 @@ public class InetAddressFilter extends AbstractTransportFilter<InetAddressResour
         authorizer.clearFilters();
     }
 
-    @Override
-    protected ILog getLog() {
-        return log;
-    }
 }

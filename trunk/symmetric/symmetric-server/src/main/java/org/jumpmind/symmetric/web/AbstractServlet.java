@@ -118,11 +118,10 @@ abstract public class AbstractServlet extends HttpServlet {
         return ServletUtils.sendError(resp, statusCode, message);
     }
 
-    public boolean matches(IServletExtension ext, HttpServletRequest httpRequest) {
+    public boolean matches(IServletExtension ext, String normalizedUri) {
         boolean retVal = true;
-        final String uri = ServletUtils.normalizeRequestUri(httpRequest);
         if (!ArrayUtils.isEmpty(ext.getUriPatterns())) {
-            retVal = matchesUriPatterns(uri, ext.getUriPatterns());
+            retVal = matchesUriPatterns(normalizedUri, ext.getUriPatterns());
         }
         return retVal;
     }

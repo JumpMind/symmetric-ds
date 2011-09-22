@@ -34,6 +34,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -76,7 +77,7 @@ public class SymmetricFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        new SymmetricFilterChain(chain, filters, nodeService.findIdentity(false)).doFilter(request,
+        new SymmetricFilterChain(chain, filters, nodeService.findIdentity(false), ServletUtils.normalizeRequestUri((HttpServletRequest)request)).doFilter(request,
                 response);
     }
 

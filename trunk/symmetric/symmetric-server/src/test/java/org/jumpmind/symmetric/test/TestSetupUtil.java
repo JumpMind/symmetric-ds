@@ -378,6 +378,7 @@ public class TestSetupUtil {
             String uri, Map<String, String> parameters) {
         final String[] uriParts = StringUtils.split(uri, "?");
         final MockHttpServletRequest request = new MockHttpServletRequest(servletContext, method, uriParts[0]);
+        request.setServletPath("/sync");
         if (uriParts.length > 1) {
             request.setQueryString(uriParts[1]);
         }
