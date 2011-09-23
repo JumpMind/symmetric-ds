@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.route;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -39,8 +40,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
 /**
- * Responsible for managing gaps in data ids to ensure that all captured
- * data is routed for delivery to other nodes.
+ * Responsible for managing gaps in data ids to ensure that all captured data is
+ * routed for delivery to other nodes.
  */
 public class DataGapDetector implements IDataToRouteGapDetector {
 
@@ -55,6 +56,9 @@ public class DataGapDetector implements IDataToRouteGapDetector {
     private IDbDialect dbDialect;
 
     private ISqlProvider sqlProvider;
+
+    public DataGapDetector() {
+    }
 
     public DataGapDetector(IDataService dataService, IParameterService parameterService,
             JdbcTemplate jdbcTemplate, IDbDialect dbDialect, ISqlProvider sqlProvider) {
@@ -74,24 +78,24 @@ public class DataGapDetector implements IDataToRouteGapDetector {
      */
     public void beforeRouting() {
         long ts = System.currentTimeMillis();
-        final List<DataGap> gaps = dataService.findDataGaps();
+        final List<DataGap> gaps = removeAbandonedGaps(dataService.findDataGaps());
         long lastDataId = -1;
         final int dataIdIncrementBy = parameterService
                 .getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
         final long maxDataToSelect = parameterService
                 .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         for (final DataGap dataGap : gaps) {
-            final boolean lastGap = dataGap.equals(gaps.get(gaps.size()-1));            
+            final boolean lastGap = dataGap.equals(gaps.get(gaps.size() - 1));
             String sql = sqlProvider.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
             Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
             lastDataId = jdbcTemplate.query(sql, params, new ResultSetExtractor<Long>() {
                 public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
                     long lastDataId = -1;
                     while (rs.next()) {
-                        long dataId = rs.getLong(1);                        
-                        if (lastDataId == -1 && dataGap.getStartId() < dataId ) {
+                        long dataId = rs.getLong(1);
+                        if (lastDataId == -1 && dataGap.getStartId() < dataId) {
                             // there was a new gap at the start
-                            dataService.insertDataGap(new DataGap(dataGap.getStartId(),dataId -1));
+                            dataService.insertDataGap(new DataGap(dataGap.getStartId(), dataId - 1));
                         } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
                                 && lastDataId != dataId) {
                             // found a gap somewhere in the existing gap
@@ -99,27 +103,32 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                         }
                         lastDataId = dataId;
                     }
-                    
+
                     // if we found data in the gap
                     if (lastDataId != -1) {
                         if (!lastGap && lastDataId < dataGap.getEndId()) {
-                            dataService.insertDataGap(new DataGap(lastDataId + 1, dataGap.getEndId()));
+                            dataService.insertDataGap(new DataGap(lastDataId + 1, dataGap
+                                    .getEndId()));
                         }
                         dataService.updateDataGap(dataGap, DataGap.Status.OK);
-                        
-                    // if we did not find data in the gap and it was not the last gap
+
+                        // if we did not find data in the gap and it was not the
+                        // last gap
                     } else if (!lastGap) {
                         if (dataService.countDataInRange(dataGap.getStartId() - 1,
                                 dataGap.getEndId() + 1) == 0) {
                             if (dbDialect.supportsTransactionViews()) {
-                                long transactionViewClockSyncThresholdInMs = 
-                                    parameterService.getLong(ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS, 60000);
+                                long transactionViewClockSyncThresholdInMs = parameterService
+                                        .getLong(
+                                                ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS,
+                                                60000);
                                 Date createTime = dataService.findCreateTimeOfData(dataGap
                                         .getEndId() + 1);
                                 if (createTime != null
                                         && !dbDialect
                                                 .areDatabaseTransactionsPendingSince(createTime
-                                                        .getTime() + transactionViewClockSyncThresholdInMs)) {
+                                                        .getTime()
+                                                        + transactionViewClockSyncThresholdInMs)) {
                                     if (dataService.countDataInRange(dataGap.getStartId() - 1,
                                             dataGap.getEndId() + 1) == 0) {
                                         log.info("RouterSkippingDataIdsNoTransactions",
@@ -133,11 +142,10 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                                 dataService.updateDataGap(dataGap, DataGap.Status.SK);
                             }
                         } else {
-                            dataService.checkForAndUpdateMissingChannelIds(dataGap.getStartId() - 1,
-                                    dataGap.getEndId() + 1);
+                            dataService.checkForAndUpdateMissingChannelIds(
+                                    dataGap.getStartId() - 1, dataGap.getEndId() + 1);
                         }
                     }
-
 
                     return lastDataId;
                 }
@@ -154,6 +162,27 @@ public class DataGapDetector implements IDataToRouteGapDetector {
             log.info("RoutedGapDetectionTime", updateTimeInMs);
         }
 
+    }
+
+    /**
+     * If the system was shutdown in the middle of processing a large gap we
+     * could end up with a gap containing other gaps.
+     * 
+     * @param gaps
+     */
+    protected List<DataGap> removeAbandonedGaps(List<DataGap> gaps) {
+        List<DataGap> finalList = new ArrayList<DataGap>(gaps);
+        for (final DataGap dataGap1 : gaps) {
+            for (final DataGap dataGap2 : gaps) {
+                if (!dataGap1.equals(dataGap2) && dataGap1.contains(dataGap2)) {
+                    finalList.remove(dataGap2);
+                    if (dataService != null) {
+                        dataService.updateDataGap(dataGap2, DataGap.Status.SK);
+                    }
+                }
+            }
+        }
+        return finalList;
     }
 
     protected boolean isDataGapExpired(long dataId) {

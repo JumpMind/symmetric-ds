@@ -68,4 +68,8 @@ public class DataGap implements Serializable {
         return createTime;
     }
     
+    public boolean contains(DataGap gap) {
+        return startId <= gap.startId && endId >= gap.endId;
+    }
+    
 }
