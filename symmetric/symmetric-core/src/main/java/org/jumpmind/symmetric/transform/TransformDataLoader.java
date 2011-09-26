@@ -144,7 +144,7 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                             if (0 == tableTemplate.update(context, data.getColumnValues(),
                                     data.getKeyValues())) {
                                 throw new SymmetricException("LoaderFallbackUpdateFailed", ex,
-                                        context.getTableTemplate().getTable().toVerboseString(),
+                                        tableTemplate.getTable().toVerboseString(),
                                         ArrayUtils.toString(data.getColumnValues()),
                                         ArrayUtils.toString(data.getKeyValues()));
                             }
