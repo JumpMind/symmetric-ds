@@ -23,6 +23,10 @@ package org.jumpmind.symmetric.web;
  * Constants that are related to the HTTP transport
  */
 public class WebConstants {
+    
+    public static final String INIT_PARAM_MULTI_SERVER_MODE = "multiServerMode";
+    
+    public static final String ATTR_ENGINE_HOLDER = "symmetricEngineHolder";
 
     public static final int REGISTRATION_NOT_OPEN = 656;
 

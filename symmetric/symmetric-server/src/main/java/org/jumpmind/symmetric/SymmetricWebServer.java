@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric;
 
 import java.lang.management.ManagementFactory;
@@ -50,8 +51,8 @@ import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.jumpmind.symmetric.web.ServletUtils;
+import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
@@ -61,13 +62,16 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class SymmetricWebServer {
 
     protected static final ILog log = LogFactory.getLog(SymmetricWebServer.class);
-    
-    protected static final String DEFAULT_WEBAPP_DIR = System.getProperty("symmetric.default.web.dir","../web");    
 
-    public static final String DEFAULT_HTTP_PORT = System.getProperty("symmetric.default.http.port","31415");
-    
-    public static final String DEFAULT_HTTPS_PORT = System.getProperty("symmetric.default.https.port","31417");
-    
+    protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(
+            Constants.SYS_PROP_WEB_DIR, "../web");
+
+    public static final String DEFAULT_HTTP_PORT = System.getProperty(
+            Constants.SYS_PROP_DEFAULT_HTTP_PORT, "31415");
+
+    public static final String DEFAULT_HTTPS_PORT = System.getProperty(
+            Constants.SYS_PROP_DEFAULT_HTTPS_PORT, "31417");
+
     /**
      * The type of HTTP connection to create for this SymmetricDS web server
      */
@@ -76,12 +80,13 @@ public class SymmetricWebServer {
     }
 
     private Server server;
-    
+
     private WebAppContext webapp;
 
     protected boolean join = true;
 
-    protected boolean createJmxServer = Boolean.parseBoolean(System.getProperty("symmetric.default.create.jmx.server", "true"));
+    protected boolean createJmxServer = Boolean.parseBoolean(System.getProperty(
+            Constants.SYS_PROP_CREATE_JMX_SERVER, "true"));
 
     protected String webHome = "/";
 
@@ -90,36 +95,37 @@ public class SymmetricWebServer {
     protected int httpPort = -1;
 
     protected int httpsPort = -1;
-    
+
     protected String basicAuthUsername = null;
-    
+
     protected String basicAuthPassword = null;
 
     protected String propertiesFile = null;
 
     protected String host = null;
-    
+
     protected boolean noNio = false;
-    
+
     protected boolean noDirectBuffer = false;
-    
+
     protected String webAppDir = DEFAULT_WEBAPP_DIR;
-    
+
     protected String name = "SymmetricDS";
 
     public SymmetricWebServer() {
     }
-    
+
     public SymmetricWebServer(String propertiesUrl) {
         this(propertiesUrl, DEFAULT_WEBAPP_DIR);
     }
 
     public SymmetricWebServer(String propertiesUrl, String webappDir) {
-        this.propertiesFile = propertiesUrl ;
+        this.propertiesFile = propertiesUrl;
         this.webAppDir = webappDir;
     }
 
-    public SymmetricWebServer(String webDirectory, int maxIdleTime, String propertiesUrl, boolean join, boolean noNio, boolean noDirectBuffer) {
+    public SymmetricWebServer(String webDirectory, int maxIdleTime, String propertiesUrl,
+            boolean join, boolean noNio, boolean noDirectBuffer) {
         this(propertiesUrl, webDirectory);
         this.maxIdleTime = maxIdleTime;
         this.join = join;
@@ -133,7 +139,7 @@ public class SymmetricWebServer {
     }
 
     public SymmetricWebServer start(int port, String propertiesUrl) throws Exception {
-        this.propertiesFile = propertiesUrl ;
+        this.propertiesFile = propertiesUrl;
         return start(port);
     }
 
@@ -145,7 +151,8 @@ public class SymmetricWebServer {
         } else if (httpsPort > 0) {
             return startSecure(httpsPort);
         } else {
-            throw new IllegalStateException("Either an http or https port needs to be set before starting the server.");
+            throw new IllegalStateException(
+                    "Either an http or https port needs to be set before starting the server.");
         }
     }
 
@@ -162,33 +169,33 @@ public class SymmetricWebServer {
     }
 
     public SymmetricWebServer start(int port, int securePort, Mode mode) throws Exception {
-        
+
         // indicate to the app that we are in standalone mode
-        System.setProperty(Constants.PROP_STANDALONE_WEB, "true");
-        
+        System.setProperty(Constants.SYS_PROP_STANDALONE_WEB, "true");
+
         server = new Server();
 
         server.setConnectors(getConnectors(port, securePort, mode));
         setupBasicAuthIfNeeded(server);
-        
+
         webapp = new WebAppContext();
         webapp.setParentLoaderPriority(true);
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
-        webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime/1000);
+        webapp.getSessionHandler().getSessionManager().setMaxInactiveInterval(maxIdleTime / 1000);
         server.setHandler(webapp);
 
         if (!StringUtils.isBlank(propertiesFile)) {
-            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);    
+            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);
         }
-        
+
         server.start();
 
         if (createJmxServer) {
             int httpJmxPort = port != 0 ? port + 1 : securePort + 1;
             registerHttpJmxAdaptor(httpJmxPort);
         }
-        
+
         if (join) {
             log.info("WebServerAboutToJoin");
             server.join();
@@ -196,44 +203,52 @@ public class SymmetricWebServer {
 
         return this;
     }
-    
+
     protected ServletContext getServletContext() {
         return webapp != null ? webapp.getServletContext() : null;
     }
-    
+
     public ISymmetricEngine getEngine() {
         ISymmetricEngine engine = null;
         ServletContext servletContext = getServletContext();
         if (servletContext != null) {
-           ApplicationContext appContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-           engine = appContext.getBean(ISymmetricEngine.class);
+            SymmetricEngineHolder engineHolder = ServletUtils
+                    .getSymmetricEngineHolder(servletContext);
+            if (engineHolder != null) {
+                if (engineHolder.getEngines().size() == 1) {
+                    return engineHolder.getEngines().values().iterator().next();
+                } else {
+                    throw new IllegalStateException("There are more than "+engineHolder.getEngines().size()+" engines configured.");
+                }
+            }
         }
         return engine;
     }
 
     protected void setupBasicAuthIfNeeded(Server server) {
-        if (StringUtils.isNotBlank(basicAuthUsername) ) {
+        if (StringUtils.isNotBlank(basicAuthUsername)) {
             ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
 
             Constraint constraint = new Constraint();
-            constraint.setName(Constraint.__BASIC_AUTH);;
-            constraint.setRoles(new String[]{SecurityConstants.EMBEDDED_WEBSERVER_DEFAULT_ROLE});
+            constraint.setName(Constraint.__BASIC_AUTH);
+            ;
+            constraint.setRoles(new String[] { SecurityConstants.EMBEDDED_WEBSERVER_DEFAULT_ROLE });
             constraint.setAuthenticate(true);
-    
+
             ConstraintMapping cm = new ConstraintMapping();
             cm.setConstraint(constraint);
             cm.setPathSpec("/*");
-            //sh.setConstraintMappings(new ConstraintMapping[] {cm});
+            // sh.setConstraintMappings(new ConstraintMapping[] {cm});
             sh.addConstraintMapping(cm);
-    
+
             sh.setAuthenticator(new BasicAuthenticator());
-            
+
             HashLoginService loginService = new HashLoginService();
             loginService.putUser(basicAuthUsername, new Password(basicAuthPassword), null);
             sh.setLoginService(loginService);
 
             server.setHandler(sh);
-            
+
         }
     }
 
@@ -245,25 +260,27 @@ public class SymmetricWebServer {
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
             Connector connector = null;
             if (noNio) {
-              connector = new SocketConnector();                
+                connector = new SocketConnector();
             } else {
-              SelectChannelConnector nioConnector = new SelectChannelConnector();              
-              nioConnector.setUseDirectBuffers(!noDirectBuffer);
-              connector = nioConnector;
+                SelectChannelConnector nioConnector = new SelectChannelConnector();
+                nioConnector.setUseDirectBuffers(!noDirectBuffer);
+                connector = nioConnector;
             }
             connector.setPort(port);
             connector.setHost(host);
-            connector.setMaxIdleTime(maxIdleTime);            
-            connectors.add(connector);  
+            connector.setMaxIdleTime(maxIdleTime);
+            connectors.add(connector);
             log.info("WebServerStarting", name, port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
-            String keyStorePassword = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
-            keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
+            String keyStorePassword = System
+                    .getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
+            keyStorePassword = (keyStorePassword != null) ? keyStorePassword
+                    : SecurityConstants.KEYSTORE_PASSWORD;
             ((SslSocketConnector) connector).setKeystore(keyStoreFile);
             ((SslSocketConnector) connector).setKeyPassword(keyStorePassword);
-            if (keyStoreType!=null) {
+            if (keyStoreType != null) {
                 ((SslSocketConnector) connector).setKeystoreType(keyStoreType);
             }
 
@@ -282,7 +299,8 @@ public class SymmetricWebServer {
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             ObjectName name = getHttpJmxAdaptorName();
             mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
-            if (!AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_LOCALHOST_ENABLED, true)) {
+            if (!AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_LOCALHOST_ENABLED,
+                    true)) {
                 mbeanServer.setAttribute(name, new Attribute("Host", "0.0.0.0"));
             }
             mbeanServer.setAttribute(name, new Attribute("Port", new Integer(jmxPort)));
@@ -349,7 +367,7 @@ public class SymmetricWebServer {
     public void setHttpPort(int httpPort) {
         this.httpPort = httpPort;
     }
-    
+
     public int getHttpPort() {
         return httpPort;
     }
@@ -357,7 +375,7 @@ public class SymmetricWebServer {
     public void setHttpsPort(int httpsPort) {
         this.httpsPort = httpsPort;
     }
-    
+
     public int getHttpsPort() {
         return httpsPort;
     }
@@ -373,7 +391,7 @@ public class SymmetricWebServer {
     public void setHost(String host) {
         this.host = host;
     }
-    
+
     public void setBasicAuthPassword(String basicAuthPassword) {
         this.basicAuthPassword = basicAuthPassword;
     }
@@ -381,23 +399,23 @@ public class SymmetricWebServer {
     public void setBasicAuthUsername(String basicAuthUsername) {
         this.basicAuthUsername = basicAuthUsername;
     }
-    
+
     public void setWebAppDir(String webAppDir) {
         this.webAppDir = webAppDir;
     }
-    
+
     public void setNoNio(boolean noNio) {
         this.noNio = noNio;
     }
-    
+
     public void setNoDirectBuffer(boolean noDirectBuffer) {
         this.noDirectBuffer = noDirectBuffer;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }

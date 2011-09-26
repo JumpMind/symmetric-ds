@@ -16,34 +16,24 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 package org.jumpmind.symmetric.web;
 
-import org.jumpmind.symmetric.transport.ITransportResource;
-import org.jumpmind.symmetric.transport.ITransportResourceHandler;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
- * This is a Servlet that is used by a transport.
- * 
- * 
- * @param <T>
- * @since 1.4.0
- * 
- *
- * 
+ * Simple handler that returns a 200 to indicate that SymmetricDS is deployed
+ * and running.
  */
-public abstract class AbstractTransportResourceServlet<T extends ITransportResourceHandler> extends
-        AbstractResourceServlet implements ITransportResource<T> {
+public class PingUriHandler extends AbstractUriHandler {
 
-    private static final long serialVersionUID = 1L;
-    private T transportResourceHandler;
-
-    public void setTransportResourceHandler(T transportResourceHandler) {
-        this.transportResourceHandler = transportResourceHandler;
+    public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
+            ServletException {
     }
 
-    public T getTransportResourceHandler() {
-        return transportResourceHandler;
-    }
 }

@@ -246,11 +246,4 @@
             Implement this extension point to intercept the saving and rendering of the node password.
             </para>
         </section>        
-        <section id="extensions-servlets">
-            <title>IServletExtension</title>
-            <para>
-            Implement this extension point to allow additional Servlets to be registered with SymmetricDS.  This is probably only 
-            useful if SymmetricDS is running in standalone or embedded mode.
-            </para>
-        </section>                      
     </chapter>

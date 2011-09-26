@@ -26,8 +26,22 @@ final public class Constants {
 
     private Constants() {
     }
+        
+    public static final String CLIENT_SPRING_XML = "classpath:/symmetric-client.xml";
     
-    public static final String PROP_STANDALONE_WEB = "standalone.web";
+    public static final String SERVER_SPRING_XML = "classpath:/symmetric-server.xml";
+    
+    public static final String SYS_PROP_STANDALONE_WEB = "symmetric.standalone.web";
+    
+    public static final String SYS_PROP_ENGINES_DIR = "symmetric.engines.dir";
+    
+    public static final String SYS_PROP_WEB_DIR = "symmetric.default.web.dir";
+    
+    public static final String SYS_PROP_DEFAULT_HTTP_PORT = "symmetric.default.http.port";
+    
+    public static final String SYS_PROP_DEFAULT_HTTPS_PORT = "symmetric.default.https.port";
+    
+    public static final String SYS_PROP_CREATE_JMX_SERVER = "symmetric.default.create.jmx.server";
 
     public static final String PLEASE_SET_ME = "please set me";
     
@@ -111,9 +125,9 @@ final public class Constants {
     
     public static final String BANDWIDTH_SERVICE = "bandwidthService";
 
-    public static final String ACK_RESOURCE_HANDLER = "ackResourceHandler";
+    public static final String ACK_RESOURCE_HANDLER = "ackUriHandler";
 
-    public static final String ALERT_RESOURCE_HANDLER = "alertResourceHandler";
+    public static final String ALERT_RESOURCE_HANDLER = "alertUriHandler";
 
     public static final String STATISTIC_MANAGER = "statisticManager";
     
@@ -121,35 +135,15 @@ final public class Constants {
     
     public static final String SECURITY_SERVICE = "securityService";
 
-    public static final String AUTHENTICATION_RESOURCE_HANDLER = "authenticationResourceHandler";
+    public static final String PULL_URI_HANDLER = "pullUriHandler";
 
-    public static final String PULL_RESOURCE_HANDLER = "pullResourceHandler";
+    public static final String PUSH_URI_HANDLER = "pushUriHandler";
 
-    public static final String PUSH_RESOURCE_HANDLER = "pushResourceHandler";
+    public static final String REGISTRATION_URI_HANDLER = "registrationUriHandler";
 
-    public static final String REGISTRATION_RESOURCE_HANDLER = "registrationResourceHandler";
+    public static final String AUTHENTICATION_INTERCEPTOR = "authenticationInterceptor";
 
-    public static final String ACK_SERVLET = "ackResourceHandler";
-
-    public static final String ALERT_SERVLET = "alertResourceHandler";
-
-    public static final String PULL_SERVLET = "pullResourceServlet";
-
-    public static final String INET_ADDRESS_FILTER = "inetAddressFilter";
-
-    public static final String INET_ADDRESS_RESOURCE_HANDLER = "inetAddressResourceHandler";
-
-    public static final String PUSH_SERVLET = "pushResourceServlet";
-
-    public static final String REGISTRATION_SERVLET = "registrationServlet";
-
-    public static final String AUTHENTICATION_FILTER = "authenticationFilter";
-
-    public static final String THROTTLE_FILTER = "throttleFilter";
-
-    public static final String COMPRESSION_FILTER = "compressionFilter";
-
-    public static final String NODE_CONCURRENCY_FILTER = "nodeConcurrencyFilter";
+    public static final String NODE_CONCURRENCY_INTERCEPTOR = "nodeConcurrencyInterceptor";
     
     public static final String DEPLOYMENT_TYPE = "deploymentType";
 

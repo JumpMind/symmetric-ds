@@ -36,8 +36,8 @@ public class DeploymentType {
     private boolean webServerRegistered;
     
     public DeploymentType() {
-        webServerRegistered = System.getProperty(Constants.PROP_STANDALONE_WEB, "false").equals("true");
-        System.getProperties().remove(Constants.PROP_STANDALONE_WEB);
+        webServerRegistered = System.getProperty(Constants.SYS_PROP_STANDALONE_WEB, "false").equals("true");
+        System.getProperties().remove(Constants.SYS_PROP_STANDALONE_WEB);
     }
 
     public void setEngineRegistered(boolean engineRegistered) {

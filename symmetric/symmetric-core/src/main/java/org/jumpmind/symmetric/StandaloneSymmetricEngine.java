@@ -16,13 +16,14 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric;
 
 import java.util.Properties;
 
+import org.jumpmind.symmetric.common.Constants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -41,10 +42,22 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * <p/>
  * When the engine is ready to be started, the {@link #start()} method should be
  * called. It should only be called once.
- *
- * 
  */
 public class StandaloneSymmetricEngine extends AbstractSymmetricEngine {
+
+    private String springXml = Constants.SERVER_SPRING_XML;
+
+    /**
+     * Create a SymmetricDS instance using an existing
+     * {@link ApplicationContext} as the parent. This gives the SymmetricDS
+     * context access to beans in the parent context.
+     */
+    public StandaloneSymmetricEngine(ApplicationContext parentContext, boolean isParentContext,
+            Properties overrideProperties, String overridePropertiesResource1,
+            String overridePropertiesResource2) {
+        init(parentContext, isParentContext, overrideProperties, overridePropertiesResource1,
+                overridePropertiesResource2);
+    }
 
     public StandaloneSymmetricEngine() {
         this(null, false, null, null, null);
@@ -54,11 +67,28 @@ public class StandaloneSymmetricEngine extends AbstractSymmetricEngine {
         this(null, false, overrideProperties, null, null);
     }
 
+    /**
+     * @param overridePropertiesResource
+     *            Pass in a reference to a Spring resource. For example, a
+     *            reference to a properties file would be
+     *            file://path/to/file.properties
+     */
     public StandaloneSymmetricEngine(String overridePropertiesResource) {
         this(null, false, null, overridePropertiesResource, null);
     }
 
-    public StandaloneSymmetricEngine(String overridePropertiesResource1, String overridePropertiesResource2) {
+    /**
+     * @param overridePropertiesResource1
+     *            Pass in a reference to a Spring resource. For example, a
+     *            reference to a properties file would be
+     *            file://path/to/file.properties
+     * @param overridePropertiesResource2
+     *            Pass in a reference to a Spring resource. For example, a
+     *            reference to a properties file would be
+     *            file://path/to/file.properties
+     */
+    public StandaloneSymmetricEngine(String overridePropertiesResource1,
+            String overridePropertiesResource2) {
         this(null, false, null, overridePropertiesResource1, overridePropertiesResource2);
     }
 
@@ -73,18 +103,20 @@ public class StandaloneSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ApplicationContext createContext(ApplicationContext parentContext) {
-        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric-client.xml" }, parentContext);
+        return new ClassPathXmlApplicationContext(new String[] { springXml }, parentContext);
     }
-
 
     /**
-     * Create a SymmetricDS instance using an existing
-     * {@link ApplicationContext} as the parent. This gives the SymmetricDS
-     * context access to beans in the parent context.
+     * @param springXml
+     *            use {@link Constants#CLIENT_SPRING_XML} or
+     *            {@link Constants#SERVER_SPRING_XML}
      */
-    public StandaloneSymmetricEngine(ApplicationContext parentContext, boolean isParentContext,
-            Properties overrideProperties, String overridePropertiesResource1, String overridePropertiesResource2) {
-        init(parentContext, isParentContext, overrideProperties, overridePropertiesResource1,
-                overridePropertiesResource2);
+    public void setSpringXml(String springXml) {
+        this.springXml = springXml;
     }
+
+    public String getSpringXml() {
+        return springXml;
+    }
+
 }
