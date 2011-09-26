@@ -55,97 +55,110 @@ public abstract class AbstractTransformer {
                 
                 List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
                 for (TransformTable transformation : transformationsToPerform) {
-                    try {
-                        List<TransformedData> dataToTransform = create(context, dmlType,
-                                transformation, sourceKeyValues, oldSourceValues);
-                        if (log.isDebugEnabled()) {
-                            log.debug("TransformDataCreated", dataToTransform.size(), transformation.getTransformId(), transformation.getFullyQualifiedTargetTableName());
-                        }
-                        for (TransformedData targetData : dataToTransform) {
-                            try {
-                                if (perform(context, targetData, transformation, sourceValues,
-                                        oldSourceValues)) {
-                                    if (log.isDebugEnabled()) {
-                                        log.debug("TransformedDataReadyForApplication", targetData.getTargetDmlType().toString(), 
-                                                ArrayUtils.toString(targetData.getColumnNames()), 
-                                                ArrayUtils.toString(targetData.getColumnValues()));
-                                    }
-                                    dataThatHasBeenTransformed.add(targetData);                                    
-                                }
-                            } catch (IgnoreRowException ex) {
-                                // ignore this row
-                                if (log.isDebugEnabled()) {
-                                    log.debug("TransformRowIgnored", ArrayUtils.toString(targetData.getKeyValues()));
-                                }
-                            }
-                        }
-                    } catch (IgnoreRowException ex) {
-                        // ignore this row
-                        if (log.isDebugEnabled()) {
-                            log.debug("TransformRowIgnored", "transformation aborted during tranformation of key");
-                        }
-                    }
+                    dataThatHasBeenTransformed.addAll(transform(dmlType, context, transformation,
+                            sourceKeyValues, oldSourceValues, sourceValues));
                 }
                 return dataThatHasBeenTransformed;
             }
         }
         return null;
     }
+    
+    protected List<TransformedData> transform(DmlType dmlType, ICacheContext context,
+            TransformTable transformation, Map<String, String> sourceKeyValues,
+            Map<String, String> oldSourceValues, Map<String, String> sourceValues) {
+        try {
+            List<TransformedData> dataToTransform = create(context, dmlType, transformation,
+                    sourceKeyValues, oldSourceValues, sourceValues);
+            List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>(dataToTransform.size());
+            if (log.isDebugEnabled()) {
+                log.debug("TransformDataCreated", dataToTransform.size(),
+                        transformation.getTransformId(),
+                        transformation.getFullyQualifiedTargetTableName());
+            }
+            for (TransformedData targetData : dataToTransform) {
+                if (perform(context, targetData, transformation, sourceValues, oldSourceValues)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("TransformedDataReadyForApplication", targetData
+                                .getTargetDmlType().toString(), ArrayUtils.toString(targetData
+                                .getColumnNames()), ArrayUtils.toString(targetData
+                                .getColumnValues()));
+                    }
+                    dataThatHasBeenTransformed.add(targetData);
+                }
+            }
+            return dataThatHasBeenTransformed;
+        } catch (IgnoreRowException ex) {
+            // ignore this row
+            if (log.isDebugEnabled()) {
+                log.debug("TransformRowIgnored",
+                        "transformation aborted during tranformation of key");
+            }
+            return new ArrayList<TransformedData>(0);
+        }
+
+    }
 
     protected boolean perform(ICacheContext context, TransformedData data,
             TransformTable transformation, Map<String, String> sourceValues,
             Map<String, String> oldSourceValues) throws IgnoreRowException {
         boolean persistData = false;
-
-        for (TransformColumn transformColumn : transformation.getTransformColumns()) {
-            if (transformColumn.getSourceColumnName() == null
-                    || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
-                IColumnTransform<?> transform = transformService.getColumnTransforms().get(
-                        transformColumn.getTransformType());
-                if (transform == null || transform instanceof ISingleValueColumnTransform) {
-                    try {
-                        String value = (String) transformColumn(context, data, transformColumn,
-                                sourceValues, oldSourceValues);
-                        data.put(transformColumn, value, false);
-                    } catch (IgnoreColumnException e) {
-                        // Do nothing. We are ignoring the column
+        try {
+            for (TransformColumn transformColumn : transformation.getTransformColumns()) {
+                if (transformColumn.getSourceColumnName() == null
+                        || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
+                    IColumnTransform<?> transform = transformService.getColumnTransforms().get(
+                            transformColumn.getTransformType());
+                    if (transform == null || transform instanceof ISingleValueColumnTransform) {
+                        try {
+                            String value = (String) transformColumn(context, data, transformColumn,
+                                    sourceValues, oldSourceValues);
+                            data.put(transformColumn, value, false);
+                        } catch (IgnoreColumnException e) {
+                            // Do nothing. We are ignoring the column
+                        }
                     }
+                } else {
+                    log.warn("TransformSourceColumnNotFound",
+                            transformColumn.getSourceColumnName(), transformation.getTransformId());
                 }
-            } else {
-                log.warn("TransformSourceColumnNotFound", transformColumn.getSourceColumnName(),
-                        transformation.getTransformId());
             }
-        }
 
-        if (data.getTargetDmlType() != DmlType.DELETE) {
-            if (data.getTargetDmlType() == DmlType.INSERT && transformation.isUpdateFirst()) {
-                data.setTargetDmlType(DmlType.UPDATE);
+            if (data.getTargetDmlType() != DmlType.DELETE) {
+                if (data.getTargetDmlType() == DmlType.INSERT && transformation.isUpdateFirst()) {
+                    data.setTargetDmlType(DmlType.UPDATE);
+                }
+                persistData = true;
+            } else {
+                // handle the delete action
+                DeleteAction deleteAction = transformation.getDeleteAction();
+                switch (deleteAction) {
+                case NONE:
+                    break;
+                case DEL_ROW:
+                    data.setTargetDmlType(DmlType.DELETE);
+                    persistData = true;
+                    break;
+                case UPDATE_COL:
+                    data.setTargetDmlType(DmlType.UPDATE);
+                    persistData = true;
+                    break;
+                }
             }
-            persistData = true;
-        } else {
-            // handle the delete action
-            DeleteAction deleteAction = transformation.getDeleteAction();
-            switch (deleteAction) {
-            case NONE:
-                break;
-            case DEL_ROW:
-                data.setTargetDmlType(DmlType.DELETE);
-                persistData = true;
-                break;
-            case UPDATE_COL:
-                data.setTargetDmlType(DmlType.UPDATE);
-                persistData = true;
-                break;
+        } catch (IgnoreRowException ex) {
+            // ignore this row
+            if (log.isDebugEnabled()) {
+                log.debug("TransformRowIgnored", ArrayUtils.toString(data.getKeyValues()));
             }
         }
         return persistData;
     }
 
     protected List<TransformedData> create(ICacheContext context, DmlType dmlType,
-            TransformTable transformation, Map<String, String> sourceValues,
-            Map<String, String> oldSourceValues) throws IgnoreRowException {
+            TransformTable transformation, Map<String, String> sourceKeyValues,
+            Map<String, String> oldSourceValues, Map<String, String> sourceValues) throws IgnoreRowException {
         List<TransformedData> datas = new ArrayList<TransformedData>();
-        datas.add(new TransformedData(transformation, dmlType));
+        datas.add(new TransformedData(transformation, dmlType, sourceKeyValues, oldSourceValues, sourceValues));
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
         if (columns == null || columns.size() == 0) {
             log.error("TransformNoPrimaryKeyDefined", transformation.getTransformId());
@@ -155,7 +168,7 @@ public abstract class AbstractTransformer {
                 for (TransformedData data : datas) {
                     try {
                         Object columnValue = transformColumn(context, data, transformColumn,
-                                sourceValues, oldSourceValues);
+                                sourceKeyValues, oldSourceValues);
                         if (columnValue instanceof String) {
                             data.put(transformColumn, (String) columnValue, true);
                         } else if (columnValue instanceof List) {
