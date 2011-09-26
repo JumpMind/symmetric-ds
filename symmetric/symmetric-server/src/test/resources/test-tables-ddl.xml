@@ -272,6 +272,19 @@
 		<column name="BIGINT_C" type="BIGINT" />
 		<column name="DECIMAL_C" type="DECIMAL" />
 	</table>
+	
+	<table name="TEST_TRANSFORM_D">
+		<column name="ID_D" type="INTEGER" required="true"
+			autoIncrement="true" primaryKey="true" />
+		<column name="S1_D" type="VARCHAR" size="50" />
+		<column name="S2_D" type="VARCHAR" size="255" />
+		<column name="LONGSTRING_D" type="LONGVARCHAR" />
+		<column name="TIME_D" type="TIMESTAMP" />
+		<column name="DATE_D" type="DATE" />
+		<column name="BOOLEAN_D" type="BIT" size="1" />
+		<column name="BIGINT_D" type="BIGINT" />
+		<column name="DECIMAL_D" type="DECIMAL" />
+	</table>	
 
 
 </database>

@@ -10,7 +10,7 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.transform.TransformColumn.IncludeOnType;
 
 public class TransformedData implements Cloneable {
-    
+
     protected boolean generatedIdentityNeeded = false;
 
     protected DmlType targetDmlType;
@@ -23,10 +23,21 @@ public class TransformedData implements Cloneable {
 
     protected TransformTable transformation;
 
-    public TransformedData(TransformTable transformation, DmlType sourceDmlType) {
+    protected Map<String, String> sourceKeyValues;
+
+    protected Map<String, String> oldSourceValues;
+
+    protected Map<String, String> sourceValues;
+
+    public TransformedData(TransformTable transformation, DmlType sourceDmlType,
+            Map<String, String> sourceKeyValues, Map<String, String> oldSourceValues,
+            Map<String, String> sourceValues) {
         this.transformation = transformation;
         this.targetDmlType = sourceDmlType;
         this.sourceDmlType = sourceDmlType;
+        this.sourceKeyValues = sourceKeyValues;
+        this.oldSourceValues = oldSourceValues;
+        this.sourceValues = sourceValues;
     }
 
     public String getFullyQualifiedTableName() {
@@ -144,15 +155,15 @@ public class TransformedData implements Cloneable {
             throw new RuntimeException(e);
         }
     }
-    
+
     public TransformTable getTransformation() {
         return transformation;
     }
-    
+
     public void setGeneratedIdentityNeeded(boolean generatedIdentityNeeded) {
         this.generatedIdentityNeeded = generatedIdentityNeeded;
     }
-    
+
     public boolean isGeneratedIdentityNeeded() {
         return generatedIdentityNeeded;
     }
@@ -166,6 +177,39 @@ public class TransformedData implements Cloneable {
             newMap.put(key, new LinkedHashMap<String, String>(value));
         }
         return newMap;
+    }
+
+    public Map<String, String> getSourceKeyValues() {
+        return sourceKeyValues;
+    }
+
+    public Map<String, String> getOldSourceValues() {
+        return oldSourceValues;
+    }
+
+    public Map<String, String> getSourceValues() {
+        return sourceValues;
+    }
+
+    public boolean hasSameKeyValues(String[] otherKeyValues) {
+        String[] keyValues = getKeyValues();
+        if (otherKeyValues != null) {
+            if (keyValues != null) {
+                if (keyValues.length != otherKeyValues.length) {
+                    return false;
+                }
+                for (int i = 0; i < otherKeyValues.length; i++) {
+                    if (!keyValues[i].equals(otherKeyValues[i])) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+        } else if (keyValues != null) {
+            return false;
+        }
+        return true;
     }
 
 }
