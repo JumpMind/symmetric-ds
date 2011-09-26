@@ -24,6 +24,10 @@ package org.jumpmind.symmetric.web;
  */
 public class WebConstants {
     
+    public static final String METHOD_GET = "GET";
+    
+    public static final String METHOD_HEAD = "HEAD";
+    
     public static final String INIT_PARAM_MULTI_SERVER_MODE = "multiServerMode";
     
     public static final String ATTR_ENGINE_HOLDER = "symmetricEngineHolder";
@@ -35,6 +39,8 @@ public class WebConstants {
     public static final int SYNC_DISABLED = 658;
     
     public static final int SC_FORBIDDEN = 403;
+    
+    public static final int SC_METHOD_NOT_ALLOWED = 405;
     
     public static final int SC_SERVICE_UNAVAILABLE = 503;
 

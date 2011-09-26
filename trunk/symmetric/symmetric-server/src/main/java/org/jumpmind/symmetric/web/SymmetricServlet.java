@@ -66,6 +66,7 @@ public class SymmetricServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
+        String method = req.getMethod();
         ISymmetricEngine engine = findEngine(req);
         IUriHandler handler = findMatchingHandler(engine, req);
         if (handler != null) {
@@ -94,8 +95,12 @@ public class SymmetricServlet extends HttpServlet {
             }
         } else {
             log.error("HandlerNotFound", ServletUtils.normalizeRequestUri(req),
-                    req.getRemoteHost(), req.getRemoteAddr(), req.getQueryString());
-            res.sendRedirect("/");
+                    req.getRemoteHost(), req.getRemoteAddr(), req.getQueryString());            
+            if (method.equals(WebConstants.METHOD_GET)) {
+                res.sendRedirect("/");
+            } else {
+                ServletUtils.sendError(res, HttpServletResponse.SC_FORBIDDEN);                
+            }
         }
     }
 

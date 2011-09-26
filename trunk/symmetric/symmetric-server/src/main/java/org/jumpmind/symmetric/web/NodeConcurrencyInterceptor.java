@@ -52,7 +52,8 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
         String method = req.getMethod();
 
-        if (method.equals("HEAD") && ServletUtils.normalizeRequestUri(req).contains("push")) {
+        if (method.equals(WebConstants.METHOD_HEAD) && 
+                ServletUtils.normalizeRequestUri(req).contains("push")) {
             // I read here:
             // http://java.sun.com/j2se/1.5.0/docs/guide/net/http-keepalive.html
             // that keepalive likes to have a known content length. I also read
