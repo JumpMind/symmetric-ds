@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
@@ -66,6 +67,10 @@ public class DataGap implements Serializable {
     
     public Date getCreateTime() {
         return createTime;
+    }
+    
+    public boolean contains(DataGap gap) {
+        return startId <= gap.startId && endId >= gap.endId;
     }
     
 }
