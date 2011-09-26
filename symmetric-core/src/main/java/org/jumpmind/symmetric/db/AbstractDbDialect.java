@@ -97,6 +97,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 /**
@@ -183,13 +184,17 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
     
     public String encodeForCsv(byte[] data) {
-        BinaryEncoding encoding = getBinaryEncoding();
-        if (BinaryEncoding.BASE64.equals(encoding)) {
-            return new String(Base64.encodeBase64(data));
-        } else if (BinaryEncoding.HEX.equals(encoding)) {
-            return new String(Hex.encodeHex(data));
+        if (data != null) {
+            BinaryEncoding encoding = getBinaryEncoding();
+            if (BinaryEncoding.BASE64.equals(encoding)) {
+                return new String(Base64.encodeBase64(data));
+            } else if (BinaryEncoding.HEX.equals(encoding)) {
+                return new String(Hex.encodeHex(data));
+            } else {
+                throw new NotImplementedException();
+            }
         } else {
-            throw new NotImplementedException();
+            return null;
         }
     }
 
@@ -259,6 +264,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 return null;
             }
         });
+        this.initLobHandler();
     }
     
     public int getQueryTimeoutInSeconds() {
@@ -1589,6 +1595,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return false;
     }
     
+    public boolean isClob(int type) {
+        return type == Types.CLOB || type == Types.LONGVARCHAR; 
+    }
+    
+    public boolean isBlob(int type) {
+        return type == Types.BLOB || type == Types.BINARY
+        || type == Types.VARBINARY || type == Types.LONGVARBINARY || type == -10;
+    }
+    
     public boolean isLob(int type) {
         return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY
                 || type == Types.VARBINARY || type == Types.LONGVARBINARY || type == Types.LONGNVARCHAR ||
@@ -1652,5 +1667,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener) {
         databaseUpgradeListeners.add(listener);
+    }
+    
+    protected void initLobHandler() {
+        lobHandler = new DefaultLobHandler();
     }
 }

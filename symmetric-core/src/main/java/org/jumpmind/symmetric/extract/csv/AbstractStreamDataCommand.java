@@ -20,10 +20,11 @@
  */
 package org.jumpmind.symmetric.extract.csv;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.symmetric.SymmetricException;
@@ -42,6 +43,8 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.lob.LobHandler;
 
 abstract class AbstractStreamDataCommand implements IStreamDataCommand {
 
@@ -61,11 +64,11 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                 Table table = dbDialect.getTable(trigger, true);
                 if (table != null) {
                     if (trigger.isUseStreamLobs()) {
-                        List<Column> lobColumns = getLobColumns(table);
+                        final List<Column> lobColumns = getLobColumns(table);
                         if (lobColumns.size() > 0) {
                             try {
-                                String[] columnNames = triggerHistory.getParsedColumnNames();
-                                String[] rowData = data.toParsedRowData();
+                                final String[] columnNames = triggerHistory.getParsedColumnNames();
+                                final String[] rowData = data.toParsedRowData();
                                 Column[] orderedColumns = dbDialect
                                         .orderColumns(columnNames, table);
                                 Object[] objectValues = dbDialect.getObjectValues(
@@ -81,21 +84,28 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                     args[i] = columnDataMap.get(pkColumns[i].getName());
                                     types[i] = pkColumns[i].getTypeCode();
                                 }
-                                Map<String, Object> lobData = template
-                                        .queryForMap(sql, args, types);
-                                Set<String> lobColumnNames = lobData.keySet();
-                                for (String lobColumnName : lobColumnNames) {
-                                    Object value = lobData.get(lobColumnName);
-                                    String valueForCsv = null;
-                                    if (value instanceof byte[]) {
-                                        valueForCsv = dbDialect.encodeForCsv((byte[]) value);
-                                    } else if (value != null) {
-                                        valueForCsv = value.toString();
+                                template.query(sql, args, types, new RowMapper<Object>() {
+                                    public Object mapRow(ResultSet rs, int rowNum)
+                                            throws SQLException {
+                                        LobHandler lobHandler = dbDialect.getLobHandler();
+                                        for (Column col : lobColumns) {
+                                            String valueForCsv = null;
+                                            if (dbDialect.isBlob(col.getTypeCode())) {
+                                                byte[] blobBytes = lobHandler.getBlobAsBytes(rs,
+                                                        col.getName());
+                                                valueForCsv = dbDialect.encodeForCsv(blobBytes);
+                                            } else {
+                                                String clobText = lobHandler.getClobAsString(rs,
+                                                        col.getName());
+                                                valueForCsv = clobText;
+                                            }
+                                            int index = ArrayUtils.indexOf(columnNames,
+                                                    col.getName());
+                                            rowData[index] = valueForCsv;
+                                        }
+                                        return null;
                                     }
-
-                                    int index = ArrayUtils.indexOf(columnNames, lobColumnName);
-                                    rowData[index] = valueForCsv;
-                                }
+                                });
                                 data.setRowData(CsvUtils.escapeCsvData(rowData));
                             } catch (IncorrectResultSizeDataAccessException ex) {
                                 // Row could have been deleted by the time we
@@ -103,7 +113,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                 log.warn("DataExtractorRowMissingCannotGetLobData",
                                         data.getRowData());
                             } catch (Exception ex) {
-                                throw new SymmetricException("DataExtractorTroubleExtractingLobData", data.getRowData());
+                                throw new SymmetricException("DataExtractorTroubleExtractingLobData", ex, data.getRowData());
                             }
 
                         }
