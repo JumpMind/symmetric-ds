@@ -189,6 +189,15 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                                     data.getOldSourceValues(), data.getSourceValues());
                             for (TransformedData newlyTransformedData : newlyTransformedDatas) {
                                 if (newlyTransformedData.hasSameKeyValues(data.getKeyValues())) {
+                                    if (newlyTransformedData.isGeneratedIdentityNeeded()) {
+                                        if (log.isDebugEnabled()) {
+                                            log.debug("TransformEnablingGeneratedIdentity", tableTemplate.getTable().getName());
+                                        }
+                                        dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), tableTemplate.getTable());
+                                    } else if (tableTemplate.getTable().hasAutoIncrementColumn()) {
+                                        dbDialect.allowIdentityInserts(context.getJdbcTemplate(), tableTemplate.getTable());
+                                    }
+                                    
                                     newlyTransformedData.setTargetDmlType(DmlType.INSERT);
                                     tableTemplate.setColumnNames(newlyTransformedData
                                             .getColumnNames());
