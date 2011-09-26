@@ -69,6 +69,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
+    @Override
     protected void initLobHandler() {
         lobHandler = new OracleLobHandler();
         try {
