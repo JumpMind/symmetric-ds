@@ -153,9 +153,21 @@ public class SymmetricEngineHolder {
     }
 
     public String getEngineName(Properties properties) {
-        String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID);
-        String groupId = properties.getProperty(ParameterConstants.NODE_GROUP_ID);
-        return properties.getProperty(ParameterConstants.ENGINE_NAME, groupId + "-" + externalId);
+        String engineName = properties.getProperty(ParameterConstants.ENGINE_NAME);
+        if (StringUtils.isBlank(engineName)) {
+            String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID);
+            String groupId = properties.getProperty(ParameterConstants.NODE_GROUP_ID);
+            engineName = properties.getProperty(ParameterConstants.ENGINE_NAME, groupId + "-"
+                    + externalId);
+            String engineExt = "";
+            int engineNumber = 0;
+            while (new File(getEnginesDir(), engineName + engineExt + ".properties").exists()) {
+                engineNumber++;
+                engineExt = "-" + engineNumber;
+            }
+            engineName = engineName + engineExt;
+        }
+        return engineName;
     }
 
     public String validateRequiredProperties(Properties properties) {
