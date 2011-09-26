@@ -17,16 +17,18 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -35,7 +37,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * 
+ * Utility methods for working with {@link Servlet}s
  */
 public class ServletUtils {
     /**
@@ -147,5 +149,37 @@ public class ServletUtils {
             retVal = retVal.substring(servletPath.length());
         }
         return retVal;
+    }
+    
+    /**
+     * Returns the parameter with that name, trimmed to null
+     * 
+     * @param request
+     * @param name
+     * @return
+     */
+    public static String getParameter(HttpServletRequest request, String name) {
+        return StringUtils.trimToNull(request.getParameter(name));
+    }
+
+    /**
+     * Returns the parameter with that name, trimmed to null. If the trimmed
+     * string is null, defaults to the defaultValue.
+     * 
+     * @param request
+     * @param name
+     * @return
+     */
+    public static String getParameter(HttpServletRequest request, String name, String defaultValue) {
+        return StringUtils.defaultIfEmpty(StringUtils.trimToNull(request.getParameter(name)), defaultValue);
+    }
+
+    public static long getParameterAsNumber(HttpServletRequest request, String name) {
+        return NumberUtils.toLong(StringUtils.trimToNull(request.getParameter(name)));
+    }
+    
+    public static SymmetricEngineHolder getSymmetricEngineHolder(ServletContext ctx) {
+        return (SymmetricEngineHolder) ctx.getAttribute(
+                WebConstants.ATTR_ENGINE_HOLDER);
     }
 }

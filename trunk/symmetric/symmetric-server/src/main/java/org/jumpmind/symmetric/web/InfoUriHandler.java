@@ -16,9 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
-
+ * under the License. 
+ */
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
@@ -31,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.common.InfoConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -39,23 +37,22 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * Responsible for providing high level information about the node in property format
+ * Responsible for providing high level information about the node in property
+ * format
  */
-public class InfoServlet extends AbstractResourceServlet 
-  implements IBuiltInExtensionPoint {
+public class InfoUriHandler extends AbstractUriHandler {
 
     private static final long serialVersionUID = 1L;
-    
+
     private INodeService nodeService;
-    
+
     private IConfigurationService configurationService;
-    
+
     private IParameterService parameterService;
-    
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-            IOException {
-        resp.setContentType("text/plain");
+
+    public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
+            ServletException {
+        res.setContentType("text/plain");
         Node node = nodeService.findIdentity();
         List<NodeGroup> nodeGroups = configurationService.getNodeGroups();
         Properties properties = new Properties();
@@ -68,9 +65,9 @@ public class InfoServlet extends AbstractResourceServlet
                 b.append(nodeGroup.getNodeGroupId());
                 b.append(",");
             }
-            properties.setProperty(InfoConstants.NODE_GROUP_IDS, b.substring(0, b.length()-1));
+            properties.setProperty(InfoConstants.NODE_GROUP_IDS, b.substring(0, b.length() - 1));
         }
-        
+
         if (node != null) {
             properties.setProperty(InfoConstants.NODE_ID, node.getNodeId());
             properties.setProperty(InfoConstants.DATABASE_TYPE, node.getDatabaseType());
@@ -79,15 +76,15 @@ public class InfoServlet extends AbstractResourceServlet
             properties.setProperty(InfoConstants.TIMEZONE_OFFSET, node.getTimezoneOffset());
             properties.setProperty(InfoConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
         }
-        
-        properties.store(resp.getOutputStream(), "SymmetricDS");
-        resp.flushBuffer();
+
+        properties.store(res.getOutputStream(), "SymmetricDS");
+        res.flushBuffer();
     }
-    
+
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
-    
+
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
     }

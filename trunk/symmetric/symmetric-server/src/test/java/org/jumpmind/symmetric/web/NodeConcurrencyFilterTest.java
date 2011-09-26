@@ -16,17 +16,13 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.web;
 
-import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.common.Constants;
@@ -36,14 +32,12 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-/**
- * 
- */
 public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
     public NodeConcurrencyFilterTest() throws Exception {
@@ -55,7 +49,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         IParameterService parameterService = getParameterService();
         parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS, 3);
 
-        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) find(Constants.NODE_CONCURRENCY_FILTER);
+        NodeConcurrencyInterceptor filter = (NodeConcurrencyInterceptor) find(Constants.NODE_CONCURRENCY_INTERCEPTOR);
 
         MockWorker one = new MockWorker("00001", filter, "pull", "GET");
         MockWorker two = new MockWorker("00002", filter, "pull", "GET");
@@ -63,12 +57,8 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         MockWorker four = new MockWorker("00004", filter, "pull", "GET");
 
         one.start();
-        Thread.sleep(500);
-
         two.start();
-        Thread.sleep(500);
-
-        three.start();
+        three.start();        
         Thread.sleep(500);
 
         four.start();
@@ -105,7 +95,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         IParameterService parameterService = getParameterService();
         parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS, 2);
 
-        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) find(Constants.NODE_CONCURRENCY_FILTER);
+        NodeConcurrencyInterceptor filter = (NodeConcurrencyInterceptor) find(Constants.NODE_CONCURRENCY_INTERCEPTOR);
 
         IConcurrentConnectionManager manager = (IConcurrentConnectionManager) find(Constants.CONCURRENT_CONNECTION_MANGER);
 
@@ -150,60 +140,55 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
         private String servletPath;
         private String httpMethod;
-        Exception inError;
-        NodeConcurrencyFilter filter;
+        boolean inError;
+        NodeConcurrencyInterceptor interceptor;
         String nodeId;
         boolean success = false;
         boolean hold = true;
         boolean reached = false;
 
-        MockWorker(String nodeId, NodeConcurrencyFilter filter, String path, String httpMethod) {
+        MockWorker(String nodeId, NodeConcurrencyInterceptor interceptor, String path,
+                String httpMethod) {
             this.setDaemon(true);
             this.nodeId = nodeId;
-            this.filter = filter;
+            this.interceptor = interceptor;
             this.httpMethod = httpMethod;
             this.servletPath = path;
         }
 
         public void run() {
 
-            MockHttpServletRequest req = new MockHttpServletRequest(httpMethod, "/sync/" + servletPath);
+            MockHttpServletRequest req = new MockHttpServletRequest(httpMethod, "/sync/"
+                    + servletPath);
             req.addParameter(WebConstants.NODE_ID, nodeId);
             req.setServletPath(servletPath);
 
             HttpServletResponse resp = new MockHttpServletResponse();
             try {
-                filter.doFilter(req, resp, new FilterChain() {
-                    public void doFilter(ServletRequest request, ServletResponse response) throws IOException,
-                            ServletException {
-                        reached = true;
-
-                        while (hold) {
-                            try {
-                                Thread.sleep(50);
-                            } catch (InterruptedException e) {
-                            }
-                        }
-
-                        success = true;
+                if (interceptor.before(req, resp)) {
+                    reached = true;
+                    while (hold) {
+                        AppUtils.sleep(50);
                     }
-                });
+                    success = true;
+                    interceptor.after(req, resp);
+                }
             } catch (Exception e) {
-                this.inError = e;
+                this.inError = true;
             }
 
         }
 
     }
 
-    @Test()
+    @Test
     public void testBuildSuspendIgnoreResponseHeaders() throws Exception {
 
         IConfigurationService configurationService = (IConfigurationService) find(Constants.CONFIG_SERVICE);
 
         String nodeId = "00000";
 
-        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) find(Constants.NODE_CONCURRENCY_FILTER);
+        NodeConcurrencyInterceptor filter = (NodeConcurrencyInterceptor) find(Constants.NODE_CONCURRENCY_INTERCEPTOR);
         MockHttpServletResponse resp = new MockHttpServletResponse();
 
         List<NodeChannel> ncs = configurationService.getNodeChannels(nodeId, false);
@@ -222,8 +207,8 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         String suspended = (String) (resp.getHeader(WebConstants.SUSPENDED_CHANNELS));
         String ignored = (String) (resp.getHeader(WebConstants.IGNORED_CHANNELS));
 
-        Assert.assertEquals("",suspended);
-        Assert.assertEquals("",ignored);
+        Assert.assertEquals("", suspended);
+        Assert.assertEquals("", ignored);
 
         // Next, set some with "suspend" and some with "ignore"
 

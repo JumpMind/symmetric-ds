@@ -16,24 +16,25 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.web;
 
-import javax.servlet.Servlet;
+import java.io.IOException;
+import java.util.List;
 
-import org.jumpmind.symmetric.ext.IExtensionPoint;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-/**
- * This extension point allows additional Servlets to be registered with SymmetricDS. 
- */
-public interface IServletExtension extends IExtensionPoint {
+public interface IUriHandler {
+    
+    public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException;
+    
+    public String getUriPattern();
+    
+    public List<IInterceptor> getInterceptors();
+    
+    public boolean isEnabled();
 
-    public Servlet getServlet();
-    
-    public String[] getUriPatterns();
-    
-    public int getInitOrder();
-    
-    public boolean isDisabled();
-    
 }

@@ -20,6 +20,16 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.IOException;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
@@ -27,13 +37,10 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.jumpmind.symmetric.common.logging.NoOpLog;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
-import org.jumpmind.symmetric.web.BandwidthSamplerServlet;
+import org.jumpmind.symmetric.web.BandwidthSamplerUriHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * 
- */
 public class BandwidthServiceUnitTest {
 
     @Test
@@ -42,7 +49,7 @@ public class BandwidthServiceUnitTest {
         BandwidthService service = new BandwidthService();
         service.log = new NoOpLog();
         int port = 9768;
-        BandwidthSamplerServlet servlet = new BandwidthSamplerServlet();
+        BandwidthServlet servlet = new BandwidthServlet();
         Server server = startServer(port, "", servlet);
         BandwidthTestResults bw1 = service.getDownloadResultsFor(String.format(
                 "http://localhost:%s", port), 1000, 2000);
@@ -60,7 +67,7 @@ public class BandwidthServiceUnitTest {
 
     }
 
-    protected Server startServer(int port, String home, BandwidthSamplerServlet servlet)
+    protected Server startServer(int port, String home, BandwidthServlet servlet)
             throws Exception {
         org.eclipse.jetty.server.Server server = new Server();
         Connector connector = new SelectChannelConnector();
@@ -78,6 +85,31 @@ public class BandwidthServiceUnitTest {
 
         server.start();
         return server;
+    }
+    
+    class BandwidthServlet extends BandwidthSamplerUriHandler implements Servlet {
+
+        public void init(ServletConfig config) throws ServletException {
+            
+        }
+
+        public ServletConfig getServletConfig() {
+            return null;
+        }
+
+        public void service(ServletRequest req, ServletResponse res) throws ServletException,
+                IOException {
+           handle((HttpServletRequest)req, (HttpServletResponse)res);            
+        }
+
+        public String getServletInfo() {
+            return null;
+        }
+
+        public void destroy() {
+            
+        }
+        
     }
     
 }

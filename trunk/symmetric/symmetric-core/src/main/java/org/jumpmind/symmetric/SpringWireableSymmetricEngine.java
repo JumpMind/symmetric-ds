@@ -17,12 +17,11 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-
-
 package org.jumpmind.symmetric;
 
 import java.util.Properties;
 
+import org.jumpmind.symmetric.common.Constants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -37,6 +36,8 @@ public class SpringWireableSymmetricEngine extends AbstractSymmetricEngine imple
 
     private Properties properties;
     
+    private String springXml = Constants.SERVER_SPRING_XML;
+    
     public SpringWireableSymmetricEngine() {
     }
     
@@ -50,7 +51,18 @@ public class SpringWireableSymmetricEngine extends AbstractSymmetricEngine imple
     
     @Override
     protected ApplicationContext createContext(ApplicationContext parentContext) {
-        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric-server.xml" }, parentContext);
+        return new ClassPathXmlApplicationContext(new String[] { springXml }, parentContext);
+    }
+    
+    /**
+     * @param springXml use {@link Constants#CLIENT_SPRING_XML} or {@link Constants#SERVER_SPRING_XML}
+     */
+    public void setSpringXml(String springXml) {
+        this.springXml = springXml;
+    }
+    
+    public String getSpringXml() {
+        return springXml;
     }
 
 }

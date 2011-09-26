@@ -590,17 +590,6 @@
                             [&#xA0;Default:&#xA0;true&#xA0;]
                         </para>
                     </listitem>
-                </varlistentry>                         
-                <varlistentry>
-                    <term>
-                        <command>http.download.rate.kb</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            This is the download rate for the HTTP symmetric transport. A value of -1 means full
-                            throttle. [&#xA0;Default:&#xA0;-1&#xA0;]
-                        </para>
-                    </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term>

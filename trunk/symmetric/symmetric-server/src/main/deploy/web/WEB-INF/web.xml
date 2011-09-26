@@ -7,22 +7,12 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     <display-name>SymmetricDS</display-name>
 
     <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:symmetric-engine.xml</param-value>
+        <param-name>multiServerMode</param-name>
+        <param-value>false</param-value>
     </context-param>
-
-    <filter>
-        <filter-name>SymmetricFilter</filter-name>
-        <filter-class>org.jumpmind.symmetric.web.SymmetricFilter</filter-class>
-    </filter>
-
-    <filter-mapping>
-        <filter-name>SymmetricFilter</filter-name>
-        <servlet-name>SymmetricServlet</servlet-name>
-    </filter-mapping>
-
+  
     <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+        <listener-class>org.jumpmind.symmetric.web.SymmetricContextListener</listener-class>        
     </listener>
 
     <servlet>
