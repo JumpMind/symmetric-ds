@@ -19,6 +19,7 @@
  * under the License.  */
 package org.jumpmind.symmetric.db;
 
+import java.sql.Types;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
@@ -279,6 +280,10 @@ public interface IDbDialect {
     public boolean needsToSelectLobData();
     
     public boolean isLob(int type);
+    
+    public boolean isClob(int type);
+    
+    public boolean isBlob(int type);
     
     /**
      * This is a SQL clause that compares the old data to the new data in a trigger.
