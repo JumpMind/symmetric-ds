@@ -155,6 +155,7 @@ final public class ParameterConstants {
     public final static String DBPOOL_USER = "db.user";
     public final static String DBPOOL_PASSWORD = "db.password";
     public final static String DBPOOL_INITIAL_SIZE = "db.pool.initial.size";
+    public final static String DBPOOL_VALIDATION_QUERY = "db.validation.query";
 
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
