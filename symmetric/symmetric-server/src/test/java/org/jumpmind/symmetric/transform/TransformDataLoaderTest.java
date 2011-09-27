@@ -119,18 +119,30 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable("D"), 99, "ABC", "Insert Value 1"));
         Map<String,Object> results = getTransformTableRow("D", 99);
-        Assert.assertEquals(Boolean.TRUE, results.get("BOOLEAN_D"));
+        Assert.assertEquals(Boolean.TRUE, toBoolean(results.get("BOOLEAN_D")));
         Assert.assertEquals(null, results.get("LONGSTRING_D"));
         getJdbcTemplate().update("update TEST_TRANSFORM_D set BOOLEAN_D=0");
         results = getTransformTableRow("D", 99);
-        Assert.assertEquals(Boolean.FALSE, results.get("BOOLEAN_D"));
+        Assert.assertEquals(Boolean.FALSE, toBoolean(results.get("BOOLEAN_D")));
         load(getInsertIntoSource3Csv("Insert Value 1"), null, dl, null);
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable("D"), 99, "ABC", "Insert Value 1"));
         results = getTransformTableRow("D", 99);
-        Assert.assertEquals(Boolean.FALSE, results.get("BOOLEAN_D"));
+        Assert.assertEquals(Boolean.FALSE, toBoolean(results.get("BOOLEAN_D")));
         Assert.assertEquals("Updated", results.get("LONGSTRING_D"));
 
+    }
+        
+    protected Boolean toBoolean(Object val) {
+        if (val instanceof Boolean) {
+            return (Boolean)val;
+        } else if (val instanceof Number) {
+            return ((Number)val).intValue() == 1 ? Boolean.TRUE : Boolean.FALSE;
+        } else if (val != null) {
+            return val.toString().equals("1") ?  Boolean.TRUE : Boolean.FALSE;
+        } else {
+            return Boolean.FALSE;
+        }
     }
 
     protected void expectCount(int count, String table) {
