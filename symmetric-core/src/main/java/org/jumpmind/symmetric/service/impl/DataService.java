@@ -803,8 +803,8 @@ public class DataService extends AbstractService implements IDataService {
         return descending ? " order by d.data_id desc" : "order by d.data_id asc";
     }
     
-    public List<Integer> listDataIds(long batchId, boolean descending) {
-        return jdbcTemplate.query(getSql("selectEventDataIdsSql", getOrderByDataId(descending)), new Object[] {batchId}, new SingleColumnRowMapper<Integer>());
+    public List<Number> listDataIds(long batchId, boolean descending) {
+        return jdbcTemplate.query(getSql("selectEventDataIdsSql", getOrderByDataId(descending)), new Object[] {batchId}, new SingleColumnRowMapper<Number>());
     }
     
     public List<Data> listData(long batchId, long startDataId, String channelId, boolean descending, final int maxRowsToRetrieve) {
