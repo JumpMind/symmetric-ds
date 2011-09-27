@@ -69,11 +69,12 @@ public class SymmetricEngineHolder {
         return enginesDir;
     }
 
-    public void stop() {
+    public synchronized void stop() {
         Set<String> engineNames = engines.keySet();
         for (String engineName : engineNames) {
-            engines.get(engineName).stop();
+            engines.get(engineName).destroy();
         }
+        engines.clear();
     }
 
     public void start() {

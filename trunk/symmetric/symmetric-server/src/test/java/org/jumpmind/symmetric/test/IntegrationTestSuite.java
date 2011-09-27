@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.test;
 
@@ -28,10 +29,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(ParameterizedSuite.class)
-@SuiteClasses( { SimpleIntegrationTest.class, LoadFromClientIntegrationTest.class, CleanupTest.class })
-/**
- * 
- */
+@SuiteClasses({ SimpleIntegrationTest.class, LoadFromClientIntegrationTest.class, CleanupTest.class })
 public class IntegrationTestSuite {
 
     static final String TEST_PREFIX = "test";
@@ -43,7 +41,7 @@ public class IntegrationTestSuite {
 
     String root;
     String client;
-    
+
     public void init(String client, String root) {
         this.client = client;
         this.root = root;
@@ -51,6 +49,7 @@ public class IntegrationTestSuite {
 
     @Test
     public void setup() throws Exception {
+        TestSetupUtil.cleanup();
         AbstractIntegrationTest.standalone = false;
         TestSetupUtil.setup(TEST_PREFIX, TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT, client, root);
     }
