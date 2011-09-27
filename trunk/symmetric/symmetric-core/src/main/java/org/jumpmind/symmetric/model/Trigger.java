@@ -131,20 +131,25 @@ public class Trigger implements Serializable {
      * that the primary keys are first.
      */
     public Column[] orderColumnsForTable(Table table) {
-        List<String> excludedColumnNames = getExcludedColumnNamesAsList();
-        Column[] pks = table.getPrimaryKeyColumns();
-        Column[] cols = table.getColumns();
-        List<Column> orderedColumns = new ArrayList<Column>(cols.length);
-        for (int i = 0; i < pks.length; i++) {
-            orderedColumns.add(pks[i]);
-        }
-        for (int i = 0; i < cols.length; i++) {
-            Column col = cols[i];
-            if (!col.isPrimaryKey() && !excludedColumnNames.contains(col.getName().toLowerCase())) {
-                orderedColumns.add(col);
+        if (table != null) {
+            List<String> excludedColumnNames = getExcludedColumnNamesAsList();
+            Column[] pks = table.getPrimaryKeyColumns();
+            Column[] cols = table.getColumns();
+            List<Column> orderedColumns = new ArrayList<Column>(cols.length);
+            for (int i = 0; i < pks.length; i++) {
+                orderedColumns.add(pks[i]);
             }
+            for (int i = 0; i < cols.length; i++) {
+                Column col = cols[i];
+                if (!col.isPrimaryKey()
+                        && !excludedColumnNames.contains(col.getName().toLowerCase())) {
+                    orderedColumns.add(col);
+                }
+            }
+            return orderedColumns.toArray(new Column[orderedColumns.size()]);
+        } else {
+            return new Column[0];
         }
-        return orderedColumns.toArray(new Column[orderedColumns.size()]);
     }
     
     /**
