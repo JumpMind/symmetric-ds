@@ -66,16 +66,15 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     if (nodes != null && nodes.size() > 0) {
                         for (Node node : nodes) {
                             RemoteNodeStatus status = statuses.add(node);
-                            String nodeName = " for " + node;
                             try {
-                                log.debug("DataPulling", nodeName);
+                                log.debug("DataPulling", node.toString());
                                 dataLoaderService.loadDataFromPull(node, status);
                                 if (status.getDataProcessed() > 0
                                         || status.getBatchesProcessed() > 0) {
-                                    log.info("DataPulled", nodeName, status.getDataProcessed(),
+                                    log.info("DataPulled", node.toString(), status.getDataProcessed(),
                                             status.getBatchesProcessed());
                                 } else {
-                                    log.debug("DataPulled", nodeName, status.getDataProcessed(),
+                                    log.debug("DataPulled", node.toString(), status.getDataProcessed(),
                                             status.getBatchesProcessed());
                                 }
                             } catch (ConnectException ex) {
