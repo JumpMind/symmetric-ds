@@ -78,6 +78,7 @@ public class DatabaseTestSuite {
 
     @Test
     public void setup() throws Exception {
+        TestSetupUtil.cleanup();
         AbstractDatabaseTest.standalone = false;
         TestSetupUtil.setup(DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null, database);
     }
