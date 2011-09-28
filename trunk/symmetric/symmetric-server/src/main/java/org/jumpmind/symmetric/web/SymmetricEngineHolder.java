@@ -95,7 +95,11 @@ public class SymmetricEngineHolder {
     public ISymmetricEngine start(String propertiesFile) {
         ISymmetricEngine engine = null;
         try {
-            engine = new StandaloneSymmetricEngine(propertiesFile, "file://" + propertiesFile);
+            final String filePrefix = "file://";
+            if (StringUtils.isNotBlank(propertiesFile) && !propertiesFile.startsWith(filePrefix)) {
+                propertiesFile = filePrefix + propertiesFile;
+            }
+            engine = new StandaloneSymmetricEngine(null, propertiesFile);
             engine.start();
             return engine;
         } catch (Exception e) {
