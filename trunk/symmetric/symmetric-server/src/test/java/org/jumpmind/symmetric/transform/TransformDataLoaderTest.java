@@ -121,7 +121,7 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         Map<String,Object> results = getTransformTableRow("D", 99);
         Assert.assertEquals(Boolean.TRUE, toBoolean(results.get("BOOLEAN_D")));
         Assert.assertEquals(null, results.get("LONGSTRING_D"));
-        getJdbcTemplate().update("update TEST_TRANSFORM_D set BOOLEAN_D=0");
+        getJdbcTemplate().update("update TEST_TRANSFORM_D set BOOLEAN_D=?", 0);
         results = getTransformTableRow("D", 99);
         Assert.assertEquals(Boolean.FALSE, toBoolean(results.get("BOOLEAN_D")));
         load(getInsertIntoSource3Csv("Insert Value 1"), null, dl, null);
