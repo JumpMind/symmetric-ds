@@ -135,7 +135,7 @@ insert into sym_transform_column (transform_id, include_on, source_column_name, 
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('source3_to_d', '*', 'S2', 'S2_D', 0, null, null, 2);
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
-  values ('source3_to_d', 'I', null, 'BOOLEAN_D', 0, 'const', '1', 3);  
+  values ('source3_to_d', 'I', null, 'BIGINT_D', 0, 'const', '1', 3);  
 insert into sym_transform_column (transform_id, include_on, source_column_name, target_column_name, pk, transform_type, transform_expression, transform_order)
   values ('source3_to_d', 'U', null, 'LONGSTRING_D', 0, 'const', 'Updated', 4);    
 
