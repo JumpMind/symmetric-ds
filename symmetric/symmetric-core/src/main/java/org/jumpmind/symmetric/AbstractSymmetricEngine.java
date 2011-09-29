@@ -128,7 +128,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized boolean start() {
-
+        
         setup();
         
         if (isConfigured()) {
@@ -147,22 +147,22 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                     getTriggerRouterService().syncTriggers();
                     heartbeat(false);
                     jobManager.startJobs();
-                    log.info("SymmetricDSStarted", getParameterService().getString(
-                            ParameterConstants.ENGINE_NAME), getParameterService().getExternalId(),
-                            Version.version(), dbDialect.getName(), dbDialect.getVersion(), dbDialect.getDriverName(), dbDialect.getDriverVersion());
+                    log.info("SymmetricDSStarted");
                     started = true;
                 } finally {
                     starting = false;
                 }
                 
-                return true;
-            } else {
-                return false;
-            }
+            } 
         } else {
             log.warn("SymmetricDSNotStarted");
-            return false;
         }
+        
+        log.info("SymmetricDSInfo", getDeploymentType().getDeploymentType(), getEngineName(),
+                Version.version(), getParameterService().getNodeGroupId(), getParameterService()
+                        .getExternalId(), dbDialect.getName(), dbDialect.getVersion(), dbDialect
+                        .getDriverName(), dbDialect.getDriverVersion());
+        return started;
     }
 
     public synchronized void stop() {
@@ -308,7 +308,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         }
         registerEngine();
     }
-
+    
     public String reloadNode(String nodeId) {
         return getDataService().reloadNode(nodeId);
     }
