@@ -119,30 +119,18 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable("D"), 99, "ABC", "Insert Value 1"));
         Map<String,Object> results = getTransformTableRow("D", 99);
-        Assert.assertEquals(Boolean.TRUE, toBoolean(results.get("BOOLEAN_D")));
+        Assert.assertEquals("1", results.get("BIGINT_D").toString());
         Assert.assertEquals(null, results.get("LONGSTRING_D"));
-        getJdbcTemplate().update("update TEST_TRANSFORM_D set BOOLEAN_D=?", 0);
+        getJdbcTemplate().update(updateBigInt("D"), 0l);
         results = getTransformTableRow("D", 99);
-        Assert.assertEquals(Boolean.FALSE, toBoolean(results.get("BOOLEAN_D")));
+        Assert.assertEquals("0", results.get("BIGINT_D").toString());
         load(getInsertIntoSource3Csv("Insert Value 1"), null, dl, null);
         Assert.assertEquals(1,
                 getJdbcTemplate().queryForInt(getVerifyTransformTable("D"), 99, "ABC", "Insert Value 1"));
         results = getTransformTableRow("D", 99);
-        Assert.assertEquals(Boolean.FALSE, toBoolean(results.get("BOOLEAN_D")));
+        Assert.assertEquals("0", results.get("BIGINT_D").toString());
         Assert.assertEquals("Updated", results.get("LONGSTRING_D"));
 
-    }
-        
-    protected Boolean toBoolean(Object val) {
-        if (val instanceof Boolean) {
-            return (Boolean)val;
-        } else if (val instanceof Number) {
-            return ((Number)val).intValue() == 1 ? Boolean.TRUE : Boolean.FALSE;
-        } else if (val != null) {
-            return val.toString().equals("1") ?  Boolean.TRUE : Boolean.FALSE;
-        } else {
-            return Boolean.FALSE;
-        }
     }
 
     protected void expectCount(int count, String table) {
@@ -245,6 +233,12 @@ public class TransformDataLoaderTest extends AbstractDataLoaderTest {
         String quote = getDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getDbDialect().getPlatform()
                 .getPlatformInfo().getDelimiterToken() : "";
         return getJdbcTemplate().queryForMap("select * from " + quote + "TEST_TRANSFORM_" + tableLetter + quote + " where " + quote + "ID_" + tableLetter + quote + "=?", id);
+    }
+    
+    protected String updateBigInt(String letter) {
+        String quote = getDbDialect().getPlatform().isDelimitedIdentifierModeOn() ? getDbDialect().getPlatform()
+                .getPlatformInfo().getDelimiterToken() : "";
+        return "update " + quote + "TEST_TRANSFORM_" + letter + quote + " set " + quote + "BIGINT_" + letter + quote + "=?";
     }
     
     protected String getSelectDecimalFromA() {
