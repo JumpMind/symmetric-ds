@@ -160,10 +160,14 @@ public class SymmetricEngineHolder {
     public String getEngineName(Properties properties) {
         String engineName = properties.getProperty(ParameterConstants.ENGINE_NAME);
         if (StringUtils.isBlank(engineName)) {
-            String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID);
-            String groupId = properties.getProperty(ParameterConstants.NODE_GROUP_ID);
-            engineName = properties.getProperty(ParameterConstants.ENGINE_NAME, groupId + "-"
-                    + externalId);
+            String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID, "");
+            String groupId = properties.getProperty(ParameterConstants.NODE_GROUP_ID, "");
+            if (externalId.equals(groupId)) {
+                engineName = groupId;
+            } else {
+                engineName = groupId + "-" + externalId;
+            }
+            engineName = properties.getProperty(ParameterConstants.ENGINE_NAME, engineName);
             String engineExt = "";
             int engineNumber = 0;
             while (new File(getEnginesDir(), engineName + engineExt + ".properties").exists()) {
