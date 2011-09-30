@@ -97,7 +97,6 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 /**
@@ -1668,8 +1667,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener) {
         databaseUpgradeListeners.add(listener);
     }
-    
+
+    /**
+     * Override this method to configure a database specific LOB handler for updates
+     */
     protected void initLobHandler() {
-        lobHandler = new DefaultLobHandler();
     }
 }
