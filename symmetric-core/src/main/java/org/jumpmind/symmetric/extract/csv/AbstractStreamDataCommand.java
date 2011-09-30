@@ -44,6 +44,7 @@ import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 abstract class AbstractStreamDataCommand implements IStreamDataCommand {
@@ -88,6 +89,11 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                     public Object mapRow(ResultSet rs, int rowNum)
                                             throws SQLException {
                                         LobHandler lobHandler = dbDialect.getLobHandler();
+                                        if (lobHandler == null) {
+                                            // If there isn't a lob handler already defined for a platform
+                                            // then use the default.  
+                                            lobHandler = new DefaultLobHandler();
+                                        }
                                         for (Column col : lobColumns) {
                                             String valueForCsv = null;
                                             if (dbDialect.isBlob(col.getTypeCode())) {
