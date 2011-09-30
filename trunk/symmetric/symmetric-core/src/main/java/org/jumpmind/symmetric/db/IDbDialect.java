@@ -118,9 +118,9 @@ public interface IDbDialect {
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter);
 
-    public String createCsvDataSql(Trigger trig, Channel channel, String whereClause);
+    public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause);
 
-    public String createCsvPrimaryKeySql(Trigger trig, Channel channel, String whereClause);
+    public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause);
 
     /**
      * @return true if blank characters are padded out

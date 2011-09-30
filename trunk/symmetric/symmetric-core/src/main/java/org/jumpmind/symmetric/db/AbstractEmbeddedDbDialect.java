@@ -48,15 +48,15 @@ abstract public class AbstractEmbeddedDbDialect extends AbstractDbDialect implem
     }
 
     @Override
-    public String createCsvDataSql(Trigger trigger, Channel channel, String whereClause) {
-        String sql = super.createCsvDataSql(trigger, channel, whereClause);
+    public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause) {
+        String sql = super.createCsvDataSql(trigger, triggerHistory, channel, whereClause);
         sql = sql.replace("''", "'");
         return sql;
     }
 
     @Override
-    public String createCsvPrimaryKeySql(Trigger trigger, Channel channel, String whereClause) {
-        String sql = super.createCsvPrimaryKeySql(trigger, channel, whereClause);
+    public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause) {
+        String sql = super.createCsvPrimaryKeySql(trigger, triggerHistory, channel, whereClause);
         sql = sql.replace("''", "'");
         return sql;
     }
