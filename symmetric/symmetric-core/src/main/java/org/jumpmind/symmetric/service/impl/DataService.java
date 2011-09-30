@@ -534,33 +534,34 @@ public class DataService extends AbstractService implements IDataService {
     public Data createData(Trigger trigger, String whereClause) {
         Data data = null;
         if (trigger != null) {
+            TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
+                    .getTriggerId());
+            if (triggerHistory == null) {
+                triggerHistory = triggerRouterService.findTriggerHistory(trigger.getSourceTableName());
+                if (triggerHistory == null) {
+                    triggerHistory = triggerRouterService.findTriggerHistory(trigger.getSourceTableName()
+                            .toUpperCase());
+                }
+            }
+            if (triggerHistory != null) {
+
             String rowData = null;
             String pkData = null;
             if (whereClause != null) {
-                rowData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trigger,
+                rowData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trigger, triggerHistory,
                         configurationService.getChannel(trigger.getChannelId()),
                         whereClause), String.class);
                 if (rowData != null) {
                     rowData = rowData.trim();
                 }
                 pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(
-                        trigger, configurationService.getChannel(trigger.getChannelId()), whereClause), String.class);
+                        trigger, triggerHistory, configurationService.getChannel(trigger.getChannelId()), whereClause), String.class);
                 if (pkData != null) {
                     pkData = pkData.trim();
                 }
             }
-            TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
-                    .getTriggerId());
-            if (history == null) {
-                history = triggerRouterService.findTriggerHistory(trigger.getSourceTableName());
-                if (history == null) {
-                    history = triggerRouterService.findTriggerHistory(trigger.getSourceTableName()
-                            .toUpperCase());
-                }
-            }
-            if (history != null) {
                 data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData,
-                        pkData, history, trigger
+                        pkData, triggerHistory, trigger
                                 .getChannelId(), null, null);
             }
         }

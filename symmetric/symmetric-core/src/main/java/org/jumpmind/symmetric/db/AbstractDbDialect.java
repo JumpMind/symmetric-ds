@@ -326,10 +326,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return String.format(parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL), triggerRouter.qualifiedTargetTableName());
     }
 
-    public String createCsvDataSql(Trigger trigger, Channel channel, String whereClause) {
+    public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause) {
         return sqlTemplate.createCsvDataSql(
                 this,
                 trigger,
+                triggerHistory,
                 getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), 
                 trigger
                         .getSourceTableName(), true),
@@ -337,10 +338,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         whereClause).trim();
     }
 
-    public String createCsvPrimaryKeySql(Trigger trigger, Channel channel, String whereClause) {
+    public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause) {
         return sqlTemplate.createCsvPrimaryKeySql(
                 this,
-                trigger,
+                trigger, triggerHistory,
                 getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
                         .getSourceTableName(), true), 
                         channel, whereClause).trim();
