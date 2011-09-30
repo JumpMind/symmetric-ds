@@ -271,6 +271,11 @@ public interface IDbDialect {
     
     public boolean requiresAutoCommitFalseToSetFetchSize();
     
+    /**
+     * A handler for data loading lobs.  If specified, it will
+     * also be used to stream lobs out of the database if the 
+     * lob streaming feature is turned on.
+     */
     public LobHandler getLobHandler();
     
     /**
