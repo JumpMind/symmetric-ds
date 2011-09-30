@@ -27,8 +27,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Map;
 
-import javax.sql.rowset.serial.SerialBlob;
-
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -40,6 +38,7 @@ import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
 
 /**
  * 
@@ -92,24 +91,6 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         } else {
             return super.overrideJdbcTypeForColumn(values);
         }
-    }
-    
-    @Override
-    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-        Column[] orderedMetaData) {
-
-        Object[] objectValues = super.getObjectValues(encoding, values, orderedMetaData);
-        for (int i = 0; i < orderedMetaData.length; i++) {
-            if (orderedMetaData[i] != null && orderedMetaData[i].getTypeCode() == Types.BLOB
-                    && objectValues[i] != null) {
-                try {
-                    objectValues[i] = new SerialBlob((byte[]) objectValues[i]);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }                
-            }
-        }
-        return objectValues;
     }
 
     @Override
@@ -280,6 +261,12 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         } else {
             return null;
         }
+    }
+    
+    @Override
+    protected void initLobHandler() {
+        super.initLobHandler();
+        ((DefaultLobHandler) lobHandler).setWrapAsLob(true);
     }
 
     
