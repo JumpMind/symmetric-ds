@@ -285,8 +285,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 : getDataExtractor(node.getSymmetricVersion());
 
         // The table to use for the SQL may be different than the configured
-        // table if there is a
-        // legacy table that is swapped out by the dataExtractor.
+        // table if there is a legacy table that is swapped out by the dataExtractor.
         Table tableForSql = dbDialect.getTable(triggerRouter.getTrigger().getSourceCatalogName(),
                 triggerRouter.getTrigger().getSourceSchemaName(),
                 dataExtractor.getLegacyTableName(triggerRouter.getTrigger().getSourceTableName()),

@@ -110,8 +110,7 @@ public class SqlTemplate {
                         "whereClause",
                         StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                                 : triggerRouter.getInitialLoadSelect(), sql);       
-        sql = AppUtils.replace("tableName", triggerHistory == null ? quote(triggerRouter.getTrigger().getSourceTableName(), dialect)
-                : quote(triggerHistory.getSourceTableName(), dialect), sql);
+        sql = AppUtils.replace("tableName", quote(table.getName(), dialect), sql);
         sql = AppUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger(), dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
         sql = AppUtils.replace(
                 "primaryKeyWhereString",
@@ -192,8 +191,7 @@ public class SqlTemplate {
         sql = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
                 sql);
 
-        sql = AppUtils.replace("tableName", triggerHistory == null ? quote(trigger.getSourceTableName(), dialect)
-                : quote(triggerHistory.getSourceTableName(), dialect), sql);
+        sql = AppUtils.replace("tableName", quote(table.getName(), dialect), sql);
         sql = AppUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
 
         sql = AppUtils.replace("whereClause", whereClause, sql);
@@ -218,8 +216,7 @@ public class SqlTemplate {
         sql = AppUtils.replace("columns", columnsText, sql);
         sql = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
                 sql);
-        sql = AppUtils.replace("tableName", triggerHistory == null ? quote(trigger.getSourceTableName(), dialect)
-                : quote(triggerHistory.getSourceTableName(), dialect), sql);
+        sql = AppUtils.replace("tableName", quote(table.getName(), dialect), sql);
         sql = AppUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
         sql = AppUtils.replace("whereClause", whereClause, sql);
         sql = AppUtils.replace("primaryKeyWhereString",
