@@ -39,8 +39,8 @@ public class TableCopy {
     protected Parameters parameters;
     protected List<TableToExtract> tablesToRead;
     protected File targetFile;
-    
-    public TableCopy() {     
+
+    public TableCopy() {
     }
 
     public TableCopy(TableCopyProperties properties) {
@@ -53,7 +53,9 @@ public class TableCopy {
         if (targetFile == null) {
             this.target = properties.getTargetDataSource();
             this.targetPlatform = JdbcDbDialectFactory.createPlatform(target, parameters);
-        } else if (targetFile.exists()) {
+        } else if (properties.isOverwriteTargetFile()) {
+            targetFile.delete();
+        } else if (targetFile.exists()) {        
             throw new IllegalStateException(targetFile.getName() + " already exists");
         }
 
@@ -79,14 +81,14 @@ public class TableCopy {
         }
         this.copy(tablesToRead);
     }
-    
+
     public void delete(List<TableToExtract> tables) {
-        for (int i = tables.size()-1; i >=0; i--) {
-            TableToExtract tableToDelete = tables.get(i); 
-            logger.info("(%d of %d) Deleting table %s ", tables.size()-i, tables.size(), tableToDelete
-                    .getTable().getTableName());
+        for (int i = tables.size() - 1; i >= 0; i--) {
+            TableToExtract tableToDelete = tables.get(i);
+            logger.info("(%d of %d) Deleting table %s ", tables.size() - i, tables.size(),
+                    tableToDelete.getTable().getTableName());
             this.targetPlatform.getSqlTemplate().delete(tableToDelete.getTable(), null);
-            
+
         }
     }
 
@@ -97,11 +99,18 @@ public class TableCopy {
                     .getTable().getTableName());
             Batch batch = new Batch(batchId++);
             int expectedCount = this.sourcePlatform.getSqlTemplate().queryForInt(
-                    this.sourcePlatform.getDataCaptureBuilder().createTableExtractCountSql(tableToRead,
-                            parameters));
+                    this.sourcePlatform.getDataCaptureBuilder().createTableExtractCountSql(
+                            tableToRead, parameters));
+            long ts = System.currentTimeMillis();
             DataProcessor processor = new DataProcessor(new SqlTableDataReader(this.sourcePlatform,
                     batch, tableToRead), getDataWriter(expectedCount));
             processor.process(new DataContext(parameters));
+            long totalTableCopyTime = System.currentTimeMillis() - ts;
+            logger.info(
+                    "It took %d ms to copy table %s.  It took %d ms to read the data and %d ms to write the data.",
+                    totalTableCopyTime, tableToRead.getTable().getTableName(),
+                    batch.getDataReadMillis(), batch.getDataWriteMillis());
+
         }
     }
 
@@ -123,6 +132,8 @@ public class TableCopy {
 
         if (targetFile != null) {
             try {
+                this.targetFile.getParentFile().mkdirs();
+                
                 return new CsvDataWriter(this.targetFile, progressFilter);
             } catch (IOException e) {
                 throw new IoException(e);
@@ -177,21 +188,26 @@ public class TableCopy {
     }
 
     public static void main(String[] args) {
-        if (args != null && args.length > 0) {
-            File propFile = new File(args[0]);
-            if (propFile.exists() && !propFile.isDirectory()) {
-                TableCopyProperties properties = new TableCopyProperties(propFile);
-                new TableCopy(properties).copy();
+        try {
+            if (args != null && args.length > 0) {
+                File propFile = new File(args[0]);
+                if (propFile.exists() && !propFile.isDirectory()) {
+                    TableCopyProperties properties = new TableCopyProperties(propFile);
+                    new TableCopy(properties).copy();
+                } else {
+                    System.err.println(String.format("Could not find the properties file named %s",
+                            args[0]));
+                }
             } else {
-                System.err.println(String.format("Could not find the properties file named %s",
-                        args[0]));
+                System.err
+                        .println("Please provide the name of a configuration file as an argument to this utility.  Example content is as follows:");
+                System.err.println();
+                System.err.println(IoUtils.toString(TableCopyProperties.getExampleInputStream()));
+                System.exit(-1);
             }
-        } else {
-            System.err
-                    .println("Please provide the name of a configuration file as an argument to this utility.  Example content is as follows:");
-            System.err.println();
-            System.err.println(IoUtils.toString(TableCopyProperties.getExampleInputStream()));
-
+        } catch (IllegalStateException ex) {
+            logger.error(ex.getMessage());
+            System.exit(-1);
         }
     }
 

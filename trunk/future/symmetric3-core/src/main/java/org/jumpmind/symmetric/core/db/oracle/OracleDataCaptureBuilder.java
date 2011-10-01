@@ -39,11 +39,6 @@ public class OracleDataCaptureBuilder extends AbstractDataCaptureBuilder {
     }
 
     @Override
-    protected String getTableExtractSqlTemplate() {
-        return "select $(columns) as ROW_DATA, 'I' as EVENT_TYPE from $(schemaName)$(tableName) t  where $(whereClause)";
-    }
-
-    @Override
     protected Map<String, String> getFunctionTemplatesToInstall() {
         Map<String, String> functionTemplatesToInstall = new HashMap<String, String>();
         functionTemplatesToInstall

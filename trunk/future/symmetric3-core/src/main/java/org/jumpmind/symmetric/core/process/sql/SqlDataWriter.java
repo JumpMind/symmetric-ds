@@ -32,6 +32,8 @@ import org.jumpmind.symmetric.core.process.IDataWriter;
  */
 public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
+    private static final String STAT_DATABASE_TIME = "databaseTime";
+
     protected IDbDialect dbDialect;
 
     protected Table targetTable;
@@ -341,7 +343,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     protected void processInsert(Data data, boolean batchMode, boolean filter) {
         if (!filter || filterData(data, batch, targetTable, ctx)) {
             try {
-                batch.startTimer();
+                batch.startTimer(STAT_DATABASE_TIME);
                 // TODO add save point logic for postgresql
                 executeInsertSql(data, batchMode);
                 batch.incrementInsertCount();
@@ -355,7 +357,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                     throw e;
                 }
             } finally {
-                batch.incrementDatabaseMillis(batch.endTimer());
+                batch.incrementDatabaseMillis(batch.endTimer(STAT_DATABASE_TIME));
             }
         }
     }
@@ -363,7 +365,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     protected void processUpdate(Data data, boolean filter) {
         if (!filter || filterData(data, batch, targetTable, ctx)) {
             try {
-                batch.startTimer();
+                batch.startTimer(STAT_DATABASE_TIME);
                 int updateCount = executeUpdateSql(data);
                 if (updateCount == 0) {
                     if (settings.enableFallbackForUpdate) {
@@ -396,14 +398,14 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                     throw e;
                 }
             } finally {
-                batch.incrementDatabaseMillis(batch.endTimer());
+                batch.incrementDatabaseMillis(batch.endTimer(STAT_DATABASE_TIME));
             }
         }
     }
 
     protected void processDelete(Data data, boolean batchMode, boolean filter) {
         if (!filter || filterData(data, batch, targetTable, ctx)) {
-            batch.startTimer();
+            batch.startTimer(STAT_DATABASE_TIME);
             try {
                 int updateCount = executeDeleteSql(data, batchMode);
                 if (!batchMode && updateCount == 0) {
@@ -415,7 +417,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                     batch.incrementDeleteCount();
                 }
             } finally {
-                batch.incrementDatabaseMillis(batch.endTimer());
+                batch.incrementDatabaseMillis(batch.endTimer(STAT_DATABASE_TIME));
             }
         }
     }

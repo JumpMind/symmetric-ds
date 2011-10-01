@@ -37,6 +37,10 @@ public class TableCopyProperties extends DriverDataSourceProperties {
             return null;
         }
     }
+    
+    public boolean isOverwriteTargetFile() {
+        return getProperty("db.target.file.overwrite", "true").equalsIgnoreCase("true");
+    }
 
     public String getConditionForTable(String tableName) {
         return getProperty("copy.tables." + tableName + ".condition", "");

@@ -26,11 +26,11 @@ abstract public class AbstractDataWriter implements IDataWriter {
     protected boolean filterData(Data data, Batch batch, Table targetTable, DataContext ctx) {
         boolean continueToLoad = true;
         if (dataFilters != null) {
-            batch.startTimer();
+            batch.startTimer("filter");
             for (IDataFilter filter : dataFilters) {
                 continueToLoad &= filter.filter(ctx, targetTable, data);
             }
-            batch.incrementFilterMillis(batch.endTimer());
+            batch.incrementFilterMillis(batch.endTimer("filter"));
         }
         return continueToLoad;
     }

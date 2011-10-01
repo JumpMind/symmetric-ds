@@ -4,10 +4,13 @@ import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.IDataCaptureBuilder;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.ISqlReadCursor;
+import org.jumpmind.symmetric.core.db.ISqlRowMapper;
 import org.jumpmind.symmetric.core.db.ISqlTemplate;
-import org.jumpmind.symmetric.core.db.mapper.DataMapper;
+import org.jumpmind.symmetric.core.db.Row;
 import org.jumpmind.symmetric.core.model.Batch;
+import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
+import org.jumpmind.symmetric.core.model.DataEventType;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 import org.jumpmind.symmetric.core.process.DataContext;
@@ -72,7 +75,8 @@ public class SqlTableDataReader implements IDataReader {
             Parameters parameters = this.dbDialect.getParameters();
             String sql = builder.createTableExtractSql(tableToRead, parameters,
                     parameters.is(Parameters.DB_SUPPORT_BIG_LOBS, false));
-            this.readCursor = connection.queryForCursor(sql, new DataMapper());
+            this.readCursor = connection.queryForCursor(sql, new DataFromSqlTableMapper(tableToRead
+                    .getTable().getColumns()));
         }
         if (readCursor != null) {
             data = readCursor.next();
@@ -90,5 +94,32 @@ public class SqlTableDataReader implements IDataReader {
     }
 
     public void open(DataContext context) {
+    }
+
+    class DataFromSqlTableMapper implements ISqlRowMapper<Data> {
+
+        private Column[] columns;
+
+        public DataFromSqlTableMapper(Column[] columns) {
+            this.columns = columns;
+        }
+
+        public Data mapRow(Row row) {
+            Data data = new Data();
+            StringBuilder rowData = new StringBuilder();
+            if (columns != null && columns.length > 0) {
+                for (Column column : columns) {
+                    String value = (String) row.get(column.getName());
+                    if (value != null) {
+                        rowData.append(value);
+                    }
+                    rowData.append(",");
+                }
+                data.setRowData(rowData.substring(0, rowData.length() - 1));
+            }
+            data.setEventType(DataEventType.INSERT);
+            return data;
+        }
+
     }
 }
