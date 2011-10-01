@@ -8,6 +8,9 @@ import org.jumpmind.symmetric.core.model.Table;
 
 public class DataProcessor {
 
+    private static final String STAT_WRITE_DATA = "statWriteData";
+    private static final String STAT_READ_DATA = "statReadData";
+
     static final Log log = LogFactory.getLog(DataProcessor.class);
 
     protected IDataReader dataReader;
@@ -88,12 +91,17 @@ public class DataProcessor {
         int dataRow = 0;
         Data data = null;
         do {
+            batch.startTimer(STAT_READ_DATA);
             data = dataReader.nextData();
+            batch.incrementDataWriteMillis(batch.endTimer(STAT_READ_DATA));
             if (data != null) {
                 try {
                     dataRow++;
                     if (processTable) {
-                        if (dataWriter.writeData(data) && listener != null) {
+                        batch.startTimer(STAT_WRITE_DATA);
+                        boolean needsCommit = dataWriter.writeData(data);
+                        batch.incrementDataWriteMillis(batch.endTimer(STAT_WRITE_DATA));
+                        if (needsCommit && listener != null) {
                             listener.batchEarlyCommit(batch, dataRow);
                         }
                     }

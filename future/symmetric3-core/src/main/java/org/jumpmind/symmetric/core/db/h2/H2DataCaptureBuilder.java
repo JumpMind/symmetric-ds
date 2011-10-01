@@ -50,11 +50,6 @@ public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
     protected String getWrappedBlobColumnTemplate() {
         return null;
     }
-
-    @Override
-    protected String getTableExtractSqlTemplate() {
-        return "select $(columns) as ROW_DATA, 'I' as EVENT_TYPE from $(schemaName)$(tableName) t where $(whereClause)";
-    }
     
     @Override
     protected Map<String, String> getFunctionTemplatesToInstall() {

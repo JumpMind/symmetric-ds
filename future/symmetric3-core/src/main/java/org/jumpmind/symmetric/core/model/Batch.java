@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.core.model;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Batch {
     
@@ -25,8 +27,11 @@ public class Batch {
     protected long fallbackInsertCount;
     protected long fallbackUpdateCount;
     protected long fallbackUpdateWithNewKeysCount;
+    protected long dataReadMillis;
+    protected long dataWriteMillis;
     protected long missingDeleteCount;
-    protected long timerMillis;
+    
+    protected Map<String, Long> timers = new HashMap<String, Long>();
 
     public Batch(long batchId) {
         this();
@@ -97,17 +102,30 @@ public class Batch {
     public void incrementDatabaseMillis(long millis) {
         databaseMillis += millis;
     }
+    
+    public void incrementDataReadMillis(long millis) {
+        dataReadMillis += millis;
+    }
 
+    public void incrementDataWriteMillis(long millis) {
+        dataWriteMillis += millis;
+    }
+    
     public void incrementByteCount(long count) {
         byteCount += count;
     }
 
-    public void startTimer() {
-        timerMillis = System.currentTimeMillis();
+    public void startTimer(String name) {
+        timers.put(name, System.currentTimeMillis());
     }
 
-    public long endTimer() {
-        return System.currentTimeMillis() - timerMillis;
+    public long endTimer(String name) {
+        Long startTime = (Long)timers.remove(name);
+        if (startTime != null) {
+            return System.currentTimeMillis() - startTime;
+        } else {
+            return 0l;
+        }
     }
 
     public long getFallbackInsertCount() {
@@ -126,6 +144,14 @@ public class Batch {
         this.fallbackUpdateCount = fallbackUpdateCount;
     }
 
+    public long getDataReadMillis() {
+        return dataReadMillis;
+    }
+    
+    public long getDataWriteMillis() {
+        return dataWriteMillis;
+    }
+    
     public long getLineCount() {
         return lineCount;
     }
@@ -217,4 +243,5 @@ public class Batch {
     public long getSqlRowsAffectedCount() {
         return sqlRowsAffectedCount;
     }
+
 }

@@ -40,8 +40,6 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
 
     abstract protected String getWrappedBlobColumnTemplate();
 
-    abstract protected String getTableExtractSqlTemplate();
-
     protected String getTableExtractCountSqlTemplate() {
         return "select count(*) from $(schemaName)$(tableName) t where $(whereClause)";
     }
@@ -108,15 +106,25 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
         return false;
     }
 
+    protected String getTableExtractSqlTemplate() {
+        return "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)";
+    }    
+
     private ColumnString buildColumnString(String origTableAlias, String tableAlias,
-            String columnPrefix, Column[] columns, boolean isOld, boolean supportsBigLobs) {
+            String columnPrefix, Column[] columns, boolean isOld, boolean supportsBigLobs,
+            boolean concat) {
         String columnsText = "";
         boolean isLob = false;
 
         final String triggerConcatCharacter = getTriggerConcatCharacter();
 
-        String lastCommandToken = isEscapeForDatabaseInserts() ? (triggerConcatCharacter + "'',''" + triggerConcatCharacter)
-                : (triggerConcatCharacter + "','" + triggerConcatCharacter);
+        String lastCommandToken = null;
+        if (concat) {
+            lastCommandToken = isEscapeForDatabaseInserts() ? (triggerConcatCharacter + "'',''" + triggerConcatCharacter)
+                    : (triggerConcatCharacter + "','" + triggerConcatCharacter);
+        } else {
+            lastCommandToken = ",";
+        }
 
         for (int i = 0; i < columns.length; i++) {
             Column column = columns[i];
@@ -173,7 +181,7 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
                     break;
                 case Types.DATE:
                     if (noDateColumnTemplate()) {
-                        templateToUse = getDateTimeColumnTemplate();                        
+                        templateToUse = getDateTimeColumnTemplate();
                     } else {
                         templateToUse = getDateColumnTemplate();
                     }
@@ -218,7 +226,12 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
                     formattedColumnText = massageForLobs(formattedColumnText, supportsBigLobs);
                 }
 
-                columnsText = columnsText + "\n          " + formattedColumnText + lastCommandToken;
+                String columnAlias = "";
+                if (!concat) {
+                    columnAlias = " AS " + column.getName();
+                }
+                columnsText = columnsText + "\n          " + formattedColumnText + columnAlias
+                        + lastCommandToken;
             }
 
         }
@@ -304,20 +317,20 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
     public String createTableExtractSql(TableToExtract tableToExtract,
             Map<String, String> replacementTokens, boolean supportsBigLobs) {
         return replaceTemplateVariables(getTableExtractSqlTemplate(), tableToExtract,
-                replacementTokens, supportsBigLobs);
+                replacementTokens, supportsBigLobs, false);
     }
 
     public String createTableExtractCountSql(TableToExtract tableToExtract,
             Map<String, String> replacementTokens) {
         return replaceTemplateVariables(getTableExtractCountSqlTemplate(), tableToExtract,
-                replacementTokens, false);
+                replacementTokens, false, false);
     }
 
-    public String replaceTemplateVariables(String sql, TableToExtract tableToExtract,
-            Map<String, String> replacementTokens, boolean supportsBigLobs) {
+    protected String replaceTemplateVariables(String sql, TableToExtract tableToExtract,
+            Map<String, String> replacementTokens, boolean supportsBigLobs, boolean concatColumns) {
         Column[] columns = tableToExtract.getTable().getColumns();
         String columnsText = buildColumnString(getTableExtractSqlTableAlias(),
-                getTableExtractSqlTableAlias(), "", columns, false, supportsBigLobs).columnString;
+                getTableExtractSqlTableAlias(), "", columns, false, supportsBigLobs, concatColumns).columnString;
         sql = StringUtils.replaceTokens("columns", columnsText, sql);
         sql = StringUtils
                 .replaceTokens(
@@ -346,7 +359,8 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
 
         Column[] columns = tableToExtract.getTable().getPrimaryKeyColumnsArray();
         String columnsText = buildColumnString(getTableExtractSqlTableAlias(),
-                getTableExtractSqlTableAlias(), "", columns, false, supportsBigLobs).toString();
+                getTableExtractSqlTableAlias(), "", columns, false, supportsBigLobs, true)
+                .toString();
         sql = StringUtils.replaceTokens("columns", columnsText, sql);
 
         sql = StringUtils.replaceTokens("tableName", tableToExtract.getTable().getTableName(), sql);
@@ -371,7 +385,8 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
     }
 
     protected String replaceTemplateVariables(DataEventType dml, TriggerHistory history,
-            String tablePrefix, Table metaData, String ddl, boolean supportsBigLobs) {
+            String tablePrefix, Table metaData, String ddl, boolean supportsBigLobs,
+            boolean concatColumns) {
 
         Trigger trigger = history.getTrigger();
         boolean resolveSchemaAndCatalogs = history.getSourceCatalogName() != null
@@ -423,7 +438,7 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
 
         Column[] columns = trigger.orderColumnsForTable(metaData);
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, getNewTriggerValue(),
-                getNewColumnPrefix(), columns, false, supportsBigLobs);
+                getNewColumnPrefix(), columns, false, supportsBigLobs, concatColumns);
         ddl = StringUtils.replaceTokens("columns", columnString.toString(), ddl);
 
         ddl = replaceDefaultSchemaAndCatalog(metaData, ddl);
@@ -435,7 +450,7 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
         ddl = StringUtils.replaceTokens(
                 "oldColumns",
                 buildColumnString(ORIG_TABLE_ALIAS, getOldTriggerValue(), getOldColumnPrefix(),
-                        columns, true, supportsBigLobs).toString(), ddl);
+                        columns, true, supportsBigLobs, concatColumns).toString(), ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
@@ -452,7 +467,7 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
         ddl = StringUtils.replaceTokens(
                 "oldKeys",
                 buildColumnString(ORIG_TABLE_ALIAS, getOldTriggerValue(), getOldColumnPrefix(),
-                        columns, true, supportsBigLobs).toString(), ddl);
+                        columns, true, supportsBigLobs, concatColumns).toString(), ddl);
         ddl = StringUtils.replaceTokens("oldNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoin(getOldTriggerValue(), getNewTriggerValue(), columns), ddl);
         ddl = StringUtils.replaceTokens("tableNewPrimaryKeyJoin",
@@ -517,13 +532,15 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
             throw new NotImplementedException(dml.name() + " trigger is not implemented by "
                     + dbDialect.getClass().getName());
         }
-        return replaceTemplateVariables(dml, history, tablePrefix, metaData, ddl, supportsBigLobs);
+        return replaceTemplateVariables(dml, history, tablePrefix, metaData, ddl, supportsBigLobs,
+                true);
     }
 
     public String createPostTriggerDDL(DataEventType dml, TriggerHistory history,
             String tablePrefix, Table metaData, boolean supportsBigLobs) {
         String ddl = getPostTriggerTemplate();
-        return replaceTemplateVariables(dml, history, tablePrefix, metaData, ddl, supportsBigLobs);
+        return replaceTemplateVariables(dml, history, tablePrefix, metaData, ddl, supportsBigLobs,
+                true);
     }
 
     private String buildVirtualTableSql(String oldTriggerValue, String newTriggerValue,
