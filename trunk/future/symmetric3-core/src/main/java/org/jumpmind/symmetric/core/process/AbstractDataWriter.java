@@ -16,13 +16,20 @@ abstract public class AbstractDataWriter implements IDataWriter {
     protected List<IColumnFilter> columnFilters;
 
     protected List<IDataFilter> dataFilters;
-    
-    protected static List<IDataFilter> toList(IDataFilter filter) {
-        List<IDataFilter> list = new ArrayList<IDataFilter>(1);
-        list.add(filter);
-        return list;
+
+    protected static List<IDataFilter> toList(IDataFilter... filters) {
+        if (filters != null) {
+            List<IDataFilter> list = new ArrayList<IDataFilter>(filters.length);
+            for (IDataFilter filter : filters) {
+                list.add(filter);
+            }
+            return list;
+        } else {
+            return new ArrayList<IDataFilter>(0);
+        }
+
     }
-    
+
     protected boolean filterData(Data data, Batch batch, Table targetTable, DataContext ctx) {
         boolean continueToLoad = true;
         if (dataFilters != null) {

@@ -93,7 +93,7 @@ public class DataProcessor {
         do {
             batch.startTimer(STAT_READ_DATA);
             data = dataReader.nextData();
-            batch.incrementDataWriteMillis(batch.endTimer(STAT_READ_DATA));
+            batch.incrementDataReadMillis(batch.endTimer(STAT_READ_DATA));
             if (data != null) {
                 try {
                     dataRow++;
