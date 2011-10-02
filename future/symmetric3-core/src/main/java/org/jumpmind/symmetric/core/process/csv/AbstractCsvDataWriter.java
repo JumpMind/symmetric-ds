@@ -1,10 +1,5 @@
 package org.jumpmind.symmetric.core.process.csv;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,9 +16,7 @@ import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
 import org.jumpmind.symmetric.csv.CsvConstants;
 
-public class CsvDataWriter extends AbstractDataWriter implements IDataWriter {
-
-    protected PrintWriter writer;
+abstract public class AbstractCsvDataWriter extends AbstractDataWriter implements IDataWriter {
 
     protected DataContext context;
 
@@ -33,26 +26,13 @@ public class CsvDataWriter extends AbstractDataWriter implements IDataWriter {
 
     protected Set<Table> processedTables = new HashSet<Table>();
 
-    protected boolean closeWriter = false;
-
     protected String delimiter = ",";
 
-    public CsvDataWriter() {
+    public AbstractCsvDataWriter() {
     }
 
-    public CsvDataWriter(File file, IDataFilter filter) throws IOException {
-        this(new PrintWriter(new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8")),
-                true, filter);
-    }
-
-    public CsvDataWriter(PrintWriter writer, boolean closeWriter, IDataFilter filter) {
-        this(writer, closeWriter, toList(filter));
-    }
-
-    public CsvDataWriter(PrintWriter writer, boolean closeWriter, List<IDataFilter> filters) {
-        this.writer = writer;
-        this.closeWriter = closeWriter;
-        this.dataFilters = filters;
+    public AbstractCsvDataWriter(IDataFilter... filters) {
+        this.dataFilters = toList(filters);
     }
 
     public void open(DataContext context) {
@@ -64,12 +44,6 @@ public class CsvDataWriter extends AbstractDataWriter implements IDataWriter {
         BinaryEncoding binaryEncoding = context.getBinaryEncoding();
         if (binaryEncoding != null) {
             println(CsvConstants.BINARY, binaryEncoding.name());
-        }
-    }
-
-    public void close() {
-        if (closeWriter) {
-            this.writer.close();
         }
     }
 
@@ -119,7 +93,7 @@ public class CsvDataWriter extends AbstractDataWriter implements IDataWriter {
                 break;
             }
         }
-        
+
         return false;
     }
 
@@ -137,9 +111,11 @@ public class CsvDataWriter extends AbstractDataWriter implements IDataWriter {
             buffer.append(delimiter);
             buffer.append(columns[i].getName());
         }
-        writer.println(buffer.toString());
+        println(buffer.toString());
         return buffer.length();
     }
+
+    abstract protected void println(String data);
 
     protected int println(String... data) {
         StringBuilder buffer = new StringBuilder();
@@ -149,7 +125,7 @@ public class CsvDataWriter extends AbstractDataWriter implements IDataWriter {
             }
             buffer.append(data[i]);
         }
-        writer.println(buffer.toString());
+        println(buffer.toString());
         return buffer.length();
     }
 
@@ -159,22 +135,6 @@ public class CsvDataWriter extends AbstractDataWriter implements IDataWriter {
 
     public String getDelimiter() {
         return delimiter;
-    }
-
-    public PrintWriter getWriter() {
-        return writer;
-    }
-
-    public void setWriter(PrintWriter writer) {
-        this.writer = writer;
-    }
-
-    public boolean isCloseWriter() {
-        return closeWriter;
-    }
-
-    public void setCloseWriter(boolean closeWriter) {
-        this.closeWriter = closeWriter;
     }
 
 }

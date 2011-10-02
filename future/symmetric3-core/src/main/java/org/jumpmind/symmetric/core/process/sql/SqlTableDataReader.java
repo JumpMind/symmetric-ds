@@ -73,7 +73,8 @@ public class SqlTableDataReader implements IDataReader {
             ISqlTemplate connection = this.dbDialect.getSqlTemplate();
             IDataCaptureBuilder builder = this.dbDialect.getDataCaptureBuilder();
             Parameters parameters = this.dbDialect.getParameters();
-            String sql = builder.createTableExtractSql(tableToRead, parameters,
+            String sql = 
+                builder.createTableExtractSql(tableToRead, parameters,
                     parameters.is(Parameters.DB_SUPPORT_BIG_LOBS, false));
             this.readCursor = connection.queryForCursor(sql, new DataFromSqlTableMapper(tableToRead
                     .getTable().getColumns()));
@@ -109,7 +110,7 @@ public class SqlTableDataReader implements IDataReader {
             StringBuilder rowData = new StringBuilder();
             if (columns != null && columns.length > 0) {
                 for (Column column : columns) {
-                    String value = (String) row.get(column.getName());
+                    String value = (String)row.get(column.getName());
                     if (value != null) {
                         rowData.append(value);
                     }

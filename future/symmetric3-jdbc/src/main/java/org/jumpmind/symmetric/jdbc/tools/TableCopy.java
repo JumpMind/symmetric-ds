@@ -21,7 +21,7 @@ import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.DataProcessor;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
-import org.jumpmind.symmetric.core.process.csv.CsvDataWriter;
+import org.jumpmind.symmetric.core.process.csv.FileCsvDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlTableDataReader;
 import org.jumpmind.symmetric.core.process.sql.TableToExtract;
@@ -134,7 +134,7 @@ public class TableCopy {
             try {
                 this.targetFile.getParentFile().mkdirs();
                 
-                return new CsvDataWriter(this.targetFile, progressFilter);
+                return new FileCsvDataWriter(this.targetFile, progressFilter);
             } catch (IOException e) {
                 throw new IoException(e);
             }
