@@ -61,6 +61,7 @@ public class CsvDataReader implements IDataReader {
             String catalogName = null;
             String[] parsedOldData = null;
             while (csvReader.readRecord()) {
+                batch.incrementReadByteCount(csvReader.getRawRecord().length());
                 String[] tokens = csvReader.getValues();
                 if (tokens[0].equals(CsvConstants.BATCH)) {
                     return new Batch(Long.parseLong(tokens[1]), channelId);

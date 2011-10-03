@@ -28,6 +28,8 @@ abstract public class AbstractCsvDataWriter extends AbstractDataWriter implement
 
     protected String delimiter = ",";
 
+    protected boolean flushNodeId = true;
+
     public AbstractCsvDataWriter() {
     }
 
@@ -37,18 +39,21 @@ abstract public class AbstractCsvDataWriter extends AbstractDataWriter implement
 
     public void open(DataContext context) {
         this.context = context;
-        String sourceNodeId = context.getSourceNodeId();
-        if (StringUtils.isNotBlank(sourceNodeId)) {
-            println(CsvConstants.NODEID, sourceNodeId);
-        }
-        BinaryEncoding binaryEncoding = context.getBinaryEncoding();
-        if (binaryEncoding != null) {
-            println(CsvConstants.BINARY, binaryEncoding.name());
-        }
     }
 
     public void startBatch(Batch batch) {
         this.batch = batch;
+        if (flushNodeId) {
+            String sourceNodeId = context.getSourceNodeId();
+            if (StringUtils.isNotBlank(sourceNodeId)) {
+                println(CsvConstants.NODEID, sourceNodeId);
+            }
+            BinaryEncoding binaryEncoding = context.getBinaryEncoding();
+            if (binaryEncoding != null) {
+                println(CsvConstants.BINARY, binaryEncoding.name());
+            }
+            flushNodeId = false;
+        }
         if (StringUtils.isNotBlank(batch.getChannelId())) {
             println(CsvConstants.CHANNEL, batch.getChannelId());
         }

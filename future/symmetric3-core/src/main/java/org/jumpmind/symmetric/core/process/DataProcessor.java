@@ -46,21 +46,22 @@ public class DataProcessor {
                 batch = dataReader.nextBatch();
                 if (batch != null) {
                     int dataRow = 0;
-                    boolean processBatch = listener == null ? true : listener.batchBegin(batch);
+                    boolean processBatch = listener == null ? true : listener
+                            .batchBegin(ctx, batch);
                     if (processBatch) {
                         if (!dataWriterOpened) {
                             dataWriter.open(ctx);
                         }
                         dataWriter.startBatch(batch);
                     }
-                    dataRow += forEachTableInBatch(processBatch, batch);
+                    dataRow += forEachTableInBatch(ctx, processBatch, batch);
                     if (processBatch) {
                         if (listener != null) {
-                            listener.batchBeforeCommit(batch);
+                            listener.batchBeforeCommit(ctx, batch);
                         }
                         dataWriter.finishBatch(batch);
                         if (listener != null) {
-                            listener.batchCommit(batch);
+                            listener.batchCommit(ctx, batch);
                         }
                     }
                 }
@@ -71,23 +72,25 @@ public class DataProcessor {
         }
     }
 
-    protected int forEachTableInBatch(boolean processBatch, Batch batch) {
+    protected int forEachTableInBatch(DataContext ctx, boolean processBatch, Batch batch) {
         int dataRow = 0;
         Table table = null;
         do {
             table = dataReader.nextTable();
             if (table != null) {
-                boolean processTable = false;
-                if (processBatch) {
-                    processTable = dataWriter.writeTable(table);
+                if (listener == null || listener.processTable(ctx, batch, table)) {
+                    boolean processTable = false;
+                    if (processBatch) {
+                        processTable = dataWriter.writeTable(table);
+                    }
+                    dataRow += forEachDataInTable(ctx, processTable, batch);
                 }
-                dataRow += forEachDataInTable(processTable, batch);
             }
         } while (table != null);
         return dataRow;
     }
 
-    protected int forEachDataInTable(boolean processTable, Batch batch) {
+    protected int forEachDataInTable(DataContext ctx, boolean processTable, Batch batch) {
         int dataRow = 0;
         Data data = null;
         do {
@@ -102,7 +105,7 @@ public class DataProcessor {
                         boolean needsCommit = dataWriter.writeData(data);
                         batch.incrementDataWriteMillis(batch.endTimer(STAT_WRITE_DATA));
                         if (needsCommit && listener != null) {
-                            listener.batchEarlyCommit(batch, dataRow);
+                            listener.batchEarlyCommit(ctx, batch, dataRow);
                         }
                     }
                 } catch (Exception ex) {

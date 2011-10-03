@@ -35,7 +35,7 @@ abstract public class AbstractDataWriter implements IDataWriter {
         if (dataFilters != null) {
             batch.startTimer("filter");
             for (IDataFilter filter : dataFilters) {
-                continueToLoad &= filter.filter(ctx, targetTable, data);
+                continueToLoad &= filter.filter(ctx, batch, targetTable, data);
             }
             batch.incrementFilterMillis(batch.endTimer("filter"));
         }
