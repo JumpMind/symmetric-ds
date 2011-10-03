@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.android.db;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.db.AbstractDataCaptureBuilder;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 
@@ -10,6 +11,10 @@ public class SQLiteDataCaptureBuilder extends AbstractDataCaptureBuilder {
     public SQLiteDataCaptureBuilder(IDbDialect dbDialect) {
         super(dbDialect);
         // TODO Auto-generated constructor stub
+    }
+    
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.BASE64;
     }
 
     @Override

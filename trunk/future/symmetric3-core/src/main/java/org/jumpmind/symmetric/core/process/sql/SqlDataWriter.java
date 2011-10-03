@@ -188,7 +188,9 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     protected void flush() {
         try {
-            transaction.flush();
+            if (transaction != null) {
+                transaction.flush();
+            }
         } catch (DataIntegrityViolationException ex) {
             handleDataIntegrityViolationException(ex);
         }
@@ -344,15 +346,19 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         if (!filter || filterData(data, batch, targetTable, ctx)) {
             try {
                 batch.startTimer(STAT_DATABASE_TIME);
+                batch.incrementInsertCount();
                 // TODO add save point logic for postgresql
                 executeInsertSql(data, batchMode);
-                batch.incrementInsertCount();
             } catch (DataIntegrityViolationException e) {
+                if (!batchMode) {
+                    batch.decrementInsertCount(1);
+                }
                 if (settings.enableFallbackForInsert && !batchMode) {
                     this.dmlStatement = null;
                     // TODO rollback to save point
                     batch.incrementFallbackUpdateCount();
                     executeUpdateSql(data);
+                    this.dmlStatement = null;
                 } else {
                     throw e;
                 }
@@ -474,13 +480,17 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     private void commit() {
         flush();
-        this.transaction.commit();
+        if (transaction != null) {
+            this.transaction.commit();
+        }
         uncommittedRows = 0;
     }
 
     public void close() {
         commit();
-        this.transaction.close();
+        if (transaction != null) {
+            this.transaction.close();
+        }
     }
 
     public void finishBatch(Batch batch) {

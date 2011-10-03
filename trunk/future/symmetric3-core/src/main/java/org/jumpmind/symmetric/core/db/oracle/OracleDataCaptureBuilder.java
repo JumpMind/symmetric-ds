@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.core.db.oracle;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.AbstractDataCaptureBuilder;
 import org.jumpmind.symmetric.core.model.Parameters;
@@ -13,6 +14,10 @@ public class OracleDataCaptureBuilder extends AbstractDataCaptureBuilder {
         super(dbDialect);
     }
 
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.BASE64;
+    }
+    
     @Override
     protected String getClobColumnTemplate() {
         return "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\','\\'),'\"','\"')||'\"')";

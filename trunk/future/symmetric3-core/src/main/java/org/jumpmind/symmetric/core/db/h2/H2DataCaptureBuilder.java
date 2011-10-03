@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.core.db.h2;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.AbstractDataCaptureBuilder;
 import org.jumpmind.symmetric.core.db.SqlConstants;
@@ -12,6 +13,10 @@ public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
 
     public H2DataCaptureBuilder(IDbDialect dbPlatform) {
         super(dbPlatform);
+    }
+
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.BASE64;
     }
 
     @Override
@@ -50,7 +55,7 @@ public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
     protected String getWrappedBlobColumnTemplate() {
         return null;
     }
-    
+
     @Override
     protected Map<String, String> getFunctionTemplatesToInstall() {
         Map<String, String> functionTemplatesToInstall = new HashMap<String, String>();

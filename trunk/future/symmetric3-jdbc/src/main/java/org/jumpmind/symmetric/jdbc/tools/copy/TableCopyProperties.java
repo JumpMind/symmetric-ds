@@ -26,9 +26,15 @@ public class TableCopyProperties extends DriverDataSourceProperties {
     }
 
     public String[] getTables() {
-        return getProperty("copy.tables", "").split(",");
+        String tables = getProperty("copy.tables", "");
+        if (StringUtils.isNotBlank(tables.trim())) {
+            return tables.split(",");
+        } else {
+            return new String[0];
+        }
+
     }
-    
+
     public File getTargetFileDir() {
         String fileName = getProperty("db.target.file.dir");
         if (StringUtils.isNotBlank(fileName)) {
@@ -37,13 +43,13 @@ public class TableCopyProperties extends DriverDataSourceProperties {
             return null;
         }
     }
-    
+
     public File[] getSourceFiles() {
-        String dbSourceFiles = getProperty("db.source.files");        
+        String dbSourceFiles = getProperty("db.source.files");
         if (StringUtils.isNotBlank(dbSourceFiles)) {
             String[] fileNames = dbSourceFiles.split(",");
             File[] files = new File[fileNames.length];
-            for(int i =0; i < files.length; i++) {
+            for (int i = 0; i < files.length; i++) {
                 files[i] = new File(fileNames[i].trim());
             }
             return files;

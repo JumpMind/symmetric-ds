@@ -33,11 +33,11 @@ public class CsvDataReader implements IDataReader {
     protected Object next;
     protected Batch batch;
     protected Table table;
-    
+
     public CsvDataReader(StringBuilder input) {
         this(new BufferedReader(new StringReader(input.toString())), true);
     }
-    
+
     public CsvDataReader(String input) {
         this(new BufferedReader(new StringReader(input)), true);
     }
@@ -60,9 +60,15 @@ public class CsvDataReader implements IDataReader {
             String schemaName = null;
             String catalogName = null;
             String[] parsedOldData = null;
+            long bytesRead = 0;
             while (csvReader.readRecord()) {
-                batch.incrementReadByteCount(csvReader.getRawRecord().length());
                 String[] tokens = csvReader.getValues();
+                if (batch == null) {
+                    bytesRead += csvReader.getRawRecord().length();
+                } else {
+                    batch.incrementReadByteCount(csvReader.getRawRecord().length() + bytesRead);
+                    bytesRead = 0;
+                }
                 if (tokens[0].equals(CsvConstants.BATCH)) {
                     return new Batch(Long.parseLong(tokens[1]), channelId);
                 } else if (tokens[0].equals(CsvConstants.NODEID)) {

@@ -120,7 +120,7 @@ abstract public class AbstractCsvDataWriter extends AbstractDataWriter implement
         return buffer.length();
     }
 
-    abstract protected void println(String data);
+    abstract protected void print(String data);
 
     protected int println(String... data) {
         StringBuilder buffer = new StringBuilder();
@@ -130,7 +130,8 @@ abstract public class AbstractCsvDataWriter extends AbstractDataWriter implement
             }
             buffer.append(data[i]);
         }
-        println(buffer.toString());
+        buffer.append("\n");
+        print(buffer.toString());
         return buffer.length();
     }
 

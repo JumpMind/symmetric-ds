@@ -11,7 +11,7 @@ import org.jumpmind.symmetric.core.model.Database;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
 
-public interface IDbDialect {
+public interface IDbDialect {    
 
     public DbDialectInfo getDbDialectInfo();
     

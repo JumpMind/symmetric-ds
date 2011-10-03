@@ -56,6 +56,9 @@ public class TableCopy {
                 System.err.println(IoUtils.toString(TableCopyProperties.getExampleInputStream()));
                 System.exit(-1);
             }
+        } catch (TableNotFoundException ex) {
+            logger.error(ex.getMessage());
+            System.exit(-1);
         } catch (IllegalStateException ex) {
             logger.error(ex.getMessage());
             System.exit(-1);
@@ -105,7 +108,10 @@ public class TableCopy {
                 table.setCatalogName(null);
                 tablesToRead.add(new TableToExtract(table, condition));
             } else {
-                throw new TableNotFoundException(tableName);
+                if (sourceDbDialect != null
+                        || !parameters.is(Parameters.LOADER_CREATE_TABLE_IF_DOESNT_EXIST, false)) {
+                    throw new TableNotFoundException(tableName);
+                }
             }
         }
 
@@ -169,11 +175,14 @@ public class TableCopy {
                     processor.process(new DataContext(parameters));
                     long totalTableCopyTime = System.currentTimeMillis() - ts;
                     if (loadListener.getTable() != null) {
+                        Batch batch = loadListener.getBatch();
                         logger.info(
-                                "It took %d ms to copy table %s.  It took %d ms to read the data and %d ms to write the data.",
+                                "It took %d ms to copy table %s.  It took %d ms to read the data and %d ms to write the data. %d rows were inserted.",
                                 totalTableCopyTime, loadListener.getTable().getTableName(),
-                                loadListener.getBatch().getDataReadMillis(), loadListener
-                                        .getBatch().getDataWriteMillis());
+                                batch.getDataReadMillis(), batch.getDataWriteMillis(), batch.getInsertCount());
+                        if (batch.getFallbackUpdateCount() > 0) {
+                            logger.info("The data loader fell back to an update %d times during the load", batch.getFallbackUpdateCount());
+                        }
                     }
                 } catch (IOException ex) {
                     throw new IoException(ex);
