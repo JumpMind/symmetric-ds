@@ -7,26 +7,57 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.jumpmind.symmetric.core.common.IoException;
+import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 
 public class FileCsvDataWriter extends AbstractCsvDataWriter {
 
-    FileChannel channel = null;
+    protected FileChannel channel = null;
 
-    protected boolean closeFileOnClose = true;
+    protected File dir;
 
-    public FileCsvDataWriter(File file, IDataFilter... filters) throws IOException {
+    protected File extractingFile;
+
+    public FileCsvDataWriter(File dir, IDataFilter... filters) {
         super(filters);
-        channel = new FileOutputStream(file).getChannel();
+        dir.mkdirs();
+        this.dir = dir;
+    }
+
+    @Override
+    public void startBatch(Batch batch) {
+        try {
+            close();
+            extractingFile = new File(dir, toFileName(batch, true));
+            if (extractingFile.exists()) {
+                extractingFile.delete();
+            }
+            channel = new FileOutputStream(extractingFile).getChannel();
+            super.startBatch(batch);
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        }
+    }
+
+    protected String toFileName(Batch batch, boolean extracting) {
+        return (batch.getSourceNodeId() != null ? (batch.getSourceNodeId() + "-") : "")
+                + Long.toString(batch.getBatchId()) + ".csv" + (extracting ? ".extracting" : "");
     }
 
     public void close() {
-        if (closeFileOnClose) {
+        if (channel != null) {
             try {
                 channel.close();
+                channel = null;
             } catch (IOException ex) {
                 // do nothing. it doesn't really matter.
             }
+        }
+
+        if (extractingFile != null && extractingFile.exists()) {
+            File targetFile = new File(dir, toFileName(batch, false));
+            targetFile.delete();
+            extractingFile.renameTo(targetFile);
         }
     }
 
@@ -40,13 +71,4 @@ public class FileCsvDataWriter extends AbstractCsvDataWriter {
             throw new IoException(ex);
         }
     }
-
-    public void setCloseFileOnClose(boolean closeFileOnClose) {
-        this.closeFileOnClose = closeFileOnClose;
-    }
-
-    public boolean isCloseFileOnClose() {
-        return closeFileOnClose;
-    }
-
 }

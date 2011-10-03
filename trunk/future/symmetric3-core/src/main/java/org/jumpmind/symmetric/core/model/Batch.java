@@ -15,7 +15,7 @@ public class Batch {
     protected Date startTime;
     protected long filterMillis;
     protected long databaseMillis;
-    protected long byteCount;
+    protected long readByteCount;
     protected long lineCount;
     protected long expectedRowCount;
     protected long insertCount;
@@ -111,8 +111,8 @@ public class Batch {
         dataWriteMillis += millis;
     }
     
-    public void incrementByteCount(long count) {
-        byteCount += count;
+    public void incrementReadByteCount(long count) {
+        readByteCount += count;
     }
 
     public void startTimer(String name) {
@@ -212,12 +212,12 @@ public class Batch {
         this.filterMillis = filterMillis;
     }
 
-    public long getByteCount() {
-        return byteCount;
+    public long getReadByteCount() {
+        return readByteCount;
     }
 
-    public void setByteCount(long byteCount) {
-        this.byteCount = byteCount;
+    public void setReadByteCount(long byteCount) {
+        this.readByteCount = byteCount;
     }
 
     public String getSourceNodeId() {

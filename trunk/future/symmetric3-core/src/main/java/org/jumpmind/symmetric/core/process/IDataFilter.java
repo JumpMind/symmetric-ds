@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.core.process;
 
 import org.jumpmind.symmetric.core.ext.IExtensionPoint;
+import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Table;
 
@@ -34,6 +35,6 @@ public interface IDataFilter extends IExtensionPoint {
      * @return true if the row should be loaded. false if the filter has handled
      *         the row and it should be ignored.
      */
-    public boolean filter(DataContext context, Table table, Data data);
+    public boolean filter(DataContext context, Batch batch, Table table, Data data);
 
 }

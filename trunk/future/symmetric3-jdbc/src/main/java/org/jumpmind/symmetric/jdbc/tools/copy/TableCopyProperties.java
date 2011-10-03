@@ -29,8 +29,8 @@ public class TableCopyProperties extends DriverDataSourceProperties {
         return getProperty("copy.tables", "").split(",");
     }
     
-    public File getTargetFile() {
-        String fileName = getProperty("db.target.file");
+    public File getTargetFileDir() {
+        String fileName = getProperty("db.target.file.dir");
         if (StringUtils.isNotBlank(fileName)) {
             return new File(fileName);
         } else {
@@ -38,8 +38,18 @@ public class TableCopyProperties extends DriverDataSourceProperties {
         }
     }
     
-    public boolean isOverwriteTargetFile() {
-        return getProperty("db.target.file.overwrite", "true").equalsIgnoreCase("true");
+    public File[] getSourceFiles() {
+        String dbSourceFiles = getProperty("db.source.files");        
+        if (StringUtils.isNotBlank(dbSourceFiles)) {
+            String[] fileNames = dbSourceFiles.split(",");
+            File[] files = new File[fileNames.length];
+            for(int i =0; i < files.length; i++) {
+                files[i] = new File(fileNames[i].trim());
+            }
+            return files;
+        } else {
+            return null;
+        }
     }
 
     public String getConditionForTable(String tableName) {

@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.jdbc.tools;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +19,12 @@ import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Data;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.core.model.Table;
+import org.jumpmind.symmetric.core.process.AbstractDataProcessorListener;
 import org.jumpmind.symmetric.core.process.DataContext;
 import org.jumpmind.symmetric.core.process.DataProcessor;
 import org.jumpmind.symmetric.core.process.IDataFilter;
 import org.jumpmind.symmetric.core.process.IDataWriter;
+import org.jumpmind.symmetric.core.process.csv.CsvDataReader;
 import org.jumpmind.symmetric.core.process.csv.FileCsvDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlDataWriter;
 import org.jumpmind.symmetric.core.process.sql.SqlTableDataReader;
@@ -32,161 +36,6 @@ public class TableCopy {
 
     static final Log logger = LogFactory.getLog(TableCopy.class);
 
-    protected DataSource source;
-    protected DataSource target;
-    protected IDbDialect targetPlatform;
-    protected IDbDialect sourcePlatform;
-    protected Parameters parameters;
-    protected List<TableToExtract> tablesToRead;
-    protected File targetFile;
-
-    public TableCopy() {
-    }
-
-    public TableCopy(TableCopyProperties properties) {
-        this.parameters = new Parameters(properties);
-
-        this.source = properties.getSourceDataSource();
-        this.sourcePlatform = JdbcDbDialectFactory.createPlatform(source, parameters);
-
-        this.targetFile = properties.getTargetFile();
-        if (targetFile == null) {
-            this.target = properties.getTargetDataSource();
-            this.targetPlatform = JdbcDbDialectFactory.createPlatform(target, parameters);
-        } else if (properties.isOverwriteTargetFile()) {
-            targetFile.delete();
-        } else if (targetFile.exists()) {        
-            throw new IllegalStateException(targetFile.getName() + " already exists");
-        }
-
-        String[] tableNames = properties.getTables();
-
-        tablesToRead = new ArrayList<TableToExtract>();
-        for (String tableName : tableNames) {
-            Table table = sourcePlatform.findTable(tableName, false);
-            if (table != null) {
-                String condition = properties.getConditionForTable(tableName);
-                table.setSchemaName(null);
-                table.setCatalogName(null);
-                tablesToRead.add(new TableToExtract(table, condition));
-            } else {
-                throw new TableNotFoundException(tableName);
-            }
-        }
-    }
-
-    public void copy() {
-        if (parameters.is(Parameters.LOADER_DELETE_FIRST, false)) {
-            delete(tablesToRead);
-        }
-        this.copy(tablesToRead);
-    }
-
-    public void delete(List<TableToExtract> tables) {
-        for (int i = tables.size() - 1; i >= 0; i--) {
-            TableToExtract tableToDelete = tables.get(i);
-            logger.info("(%d of %d) Deleting table %s ", tables.size() - i, tables.size(),
-                    tableToDelete.getTable().getTableName());
-            this.targetPlatform.getSqlTemplate().delete(tableToDelete.getTable(), null);
-
-        }
-    }
-
-    public void copy(List<TableToExtract> tables) {
-        long batchId = 1;
-        for (TableToExtract tableToRead : tables) {
-            logger.info("(%d of %d) Copying table %s ", batchId, tables.size(), tableToRead
-                    .getTable().getTableName());
-            Batch batch = new Batch(batchId++);
-            int expectedCount = this.sourcePlatform.getSqlTemplate().queryForInt(
-                    this.sourcePlatform.getDataCaptureBuilder().createTableExtractCountSql(
-                            tableToRead, parameters));
-            long ts = System.currentTimeMillis();
-            DataProcessor processor = new DataProcessor(new SqlTableDataReader(this.sourcePlatform,
-                    batch, tableToRead), getDataWriter(expectedCount));
-            processor.process(new DataContext(parameters));
-            long totalTableCopyTime = System.currentTimeMillis() - ts;
-            logger.info(
-                    "It took %d ms to copy table %s.  It took %d ms to read the data and %d ms to write the data.",
-                    totalTableCopyTime, tableToRead.getTable().getTableName(),
-                    batch.getDataReadMillis(), batch.getDataWriteMillis());
-
-        }
-    }
-
-    protected IDataWriter getDataWriter(final int expectedCount) {
-        IDataFilter progressFilter = new IDataFilter() {
-            int statementCount = 0;
-            int percent = 0;
-
-            public boolean filter(DataContext context, Table table, Data data) {
-                statementCount++;
-                int currentPercent = (int) (((double) statementCount / (double) expectedCount) * 100);
-                if (currentPercent != percent) {
-                    percent = currentPercent;
-                    logger.info(buildProgressBar(percent, expectedCount, percent < 100));
-                }
-                return true;
-            }
-        };
-
-        if (targetFile != null) {
-            try {
-                this.targetFile.getParentFile().mkdirs();
-                
-                return new FileCsvDataWriter(this.targetFile, progressFilter);
-            } catch (IOException e) {
-                throw new IoException(e);
-            }
-        } else {
-            return new SqlDataWriter(this.targetPlatform, parameters, progressFilter);
-        }
-    }
-
-    protected String buildProgressBar(int percent, int expectedCount, boolean includeCarriageReturn) {
-        StringBuilder b = new StringBuilder("|");
-        for (int i = 1; i <= 25; i++) {
-            if (percent >= i * 4) {
-                b.append("=");
-            } else {
-                b.append(" ");
-            }
-        }
-        b.append("| ");
-        b.append(percent);
-        b.append("% of ");
-        b.append(expectedCount);
-        b.append(" rows");
-        if (includeCarriageReturn) {
-            b.append("\r");
-        }
-        return b.toString();
-    }
-
-    public Parameters getParameters() {
-        return parameters;
-    }
-
-    public DataSource getSource() {
-        return source;
-    }
-
-    public IDbDialect getSourcePlatform() {
-        return sourcePlatform;
-    }
-
-    public List<TableToExtract> getTablesToRead() {
-        return tablesToRead;
-    }
-
-    public DataSource getTarget() {
-        return target;
-    }
-
-    public IDbDialect getTargetPlatform() {
-        return targetPlatform;
-    }
-
     public static void main(String[] args) {
         try {
             if (args != null && args.length > 0) {
@@ -194,9 +43,11 @@ public class TableCopy {
                 if (propFile.exists() && !propFile.isDirectory()) {
                     TableCopyProperties properties = new TableCopyProperties(propFile);
                     new TableCopy(properties).copy();
+                    System.exit(0);
                 } else {
                     System.err.println(String.format("Could not find the properties file named %s",
                             args[0]));
+                    System.exit(-1);
                 }
             } else {
                 System.err
@@ -208,6 +59,241 @@ public class TableCopy {
         } catch (IllegalStateException ex) {
             logger.error(ex.getMessage());
             System.exit(-1);
+        }
+    }
+
+    protected DataSource sourceDataSource;
+    protected DataSource targetDataSource;
+    protected IDbDialect targetDbDialect;
+    protected IDbDialect sourceDbDialect;
+    protected Parameters parameters;
+    protected List<TableToExtract> tablesToRead;
+    protected File[] sourceFiles;
+    protected File targetFileDir;
+
+    public TableCopy() {
+    }
+
+    public TableCopy(TableCopyProperties properties) {
+        this.parameters = new Parameters(properties);
+
+        this.sourceFiles = properties.getSourceFiles();
+        if (this.sourceFiles == null || this.sourceFiles.length == 0) {
+            this.sourceDataSource = properties.getSourceDataSource();
+            this.sourceDbDialect = JdbcDbDialectFactory
+                    .createPlatform(sourceDataSource, parameters);
+        }
+
+        this.targetFileDir = properties.getTargetFileDir();
+        if (targetFileDir == null) {
+            this.targetDataSource = properties.getTargetDataSource();
+            this.targetDbDialect = JdbcDbDialectFactory
+                    .createPlatform(targetDataSource, parameters);
+        }
+
+        IDbDialect dialect2UseForMetadataLookup = sourceDbDialect != null ? sourceDbDialect
+                : targetDbDialect;
+
+        String[] tableNames = properties.getTables();
+
+        tablesToRead = new ArrayList<TableToExtract>();
+        for (String tableName : tableNames) {
+            Table table = dialect2UseForMetadataLookup.findTable(tableName, false);
+            if (table != null) {
+                String condition = properties.getConditionForTable(tableName);
+                table.setSchemaName(null);
+                table.setCatalogName(null);
+                tablesToRead.add(new TableToExtract(table, condition));
+            } else {
+                throw new TableNotFoundException(tableName);
+            }
+        }
+
+    }
+
+    public void copy() {
+        if (parameters.is(Parameters.LOADER_DELETE_FIRST, false)) {
+            delete(tablesToRead);
+        }
+        if (sourceFiles == null) {
+            this.copyFromTables(tablesToRead);
+        } else {
+            this.copyFromFiles(sourceFiles);
+        }
+    }
+
+    public void delete(List<TableToExtract> tables) {
+        if (tables != null) {
+            for (int i = tables.size() - 1; i >= 0; i--) {
+                TableToExtract tableToDelete = tables.get(i);
+                logger.info("(%d of %d) Deleting table %s ", tables.size() - i, tables.size(),
+                        tableToDelete.getTable().getTableName());
+                this.targetDbDialect.getSqlTemplate().delete(tableToDelete.getTable(), null);
+            }
+        }
+    }
+
+    public void copyFromTables(List<TableToExtract> tables) {
+        long batchId = 1;
+        for (TableToExtract tableToRead : tables) {
+            logger.info("(%d of %d) Copying table %s ", batchId, tables.size(), tableToRead
+                    .getTable().getTableName());
+            Batch batch = new Batch(batchId++);
+            int expectedCount = this.sourceDbDialect.getSqlTemplate().queryForInt(
+                    this.sourceDbDialect.getDataCaptureBuilder().createTableExtractCountSql(
+                            tableToRead, parameters));
+            long ts = System.currentTimeMillis();
+            DataProcessor processor = new DataProcessor(new SqlTableDataReader(
+                    this.sourceDbDialect, batch, tableToRead), getDataWriter(true, expectedCount));
+            processor.process(new DataContext(parameters));
+            long totalTableCopyTime = System.currentTimeMillis() - ts;
+            logger.info(
+                    "It took %d ms to copy table %s.  It took %d ms to read the data and %d ms to write the data.",
+                    totalTableCopyTime, tableToRead.getTable().getTableName(),
+                    batch.getDataReadMillis(), batch.getDataWriteMillis());
+
+        }
+    }
+
+    public void copyFromFiles(File[] sourceFiles) {
+        for (File file : sourceFiles) {
+            if (file.exists()) {
+                long ts = System.currentTimeMillis();
+                BufferedReader reader = null;
+                try {
+                    reader = new BufferedReader(new FileReader(file));
+                    DataProcessor processor = new DataProcessor(new CsvDataReader(reader, false),
+                            getDataWriter(false, file.length()));
+                    LoadListenerListener loadListener = new LoadListenerListener();
+                    processor.setListener(loadListener);
+                    processor.process(new DataContext(parameters));
+                    long totalTableCopyTime = System.currentTimeMillis() - ts;
+                    if (loadListener.getTable() != null) {
+                        logger.info(
+                                "It took %d ms to copy table %s.  It took %d ms to read the data and %d ms to write the data.",
+                                totalTableCopyTime, loadListener.getTable().getTableName(),
+                                loadListener.getBatch().getDataReadMillis(), loadListener
+                                        .getBatch().getDataWriteMillis());
+                    }
+                } catch (IOException ex) {
+                    throw new IoException(ex);
+                } finally {
+                    IoUtils.closeQuietly(reader);
+                }
+            } else {
+                logger.error("Could not find " + file.getName());
+            }
+        }
+
+    }
+
+    /**
+     * @param expectedSizeIsInRows
+     *            If true, the expected size will be in row count format. If
+     *            false, the expected size will be in bytes.
+     * @param expectedSize
+     * @return
+     */
+    protected IDataWriter getDataWriter(final boolean expectedSizeIsInRows, final long expectedSize) {
+        IDataFilter progressFilter = new IDataFilter() {
+            long statementCount = 0;
+            long currentBatchSize = 0;
+            long totalBatchSize = 0;
+            int percent = 0;
+
+            public boolean filter(DataContext context, Batch batch, Table table, Data data) {
+                statementCount++;
+                if (batch.getReadByteCount() < currentBatchSize) {
+                    totalBatchSize += currentBatchSize;
+                }
+                currentBatchSize = batch.getReadByteCount();
+                long actualSize = statementCount;
+                if (!expectedSizeIsInRows) {
+                    actualSize = currentBatchSize + totalBatchSize;
+                }
+                int currentPercent = (int) (((double) actualSize / (double) expectedSize) * 100);
+                if (currentPercent != percent) {
+                    percent = currentPercent;
+                    logger.info(buildProgressBar(percent, expectedSizeIsInRows, expectedSize,
+                            percent < 100));
+                }
+                return true;
+            }
+        };
+
+        if (targetFileDir != null) {
+            return new FileCsvDataWriter(this.targetFileDir, progressFilter);
+        } else {
+            return new SqlDataWriter(this.targetDbDialect, parameters, progressFilter);
+        }
+    }
+
+    protected String buildProgressBar(int percent, boolean expectedSizeIsInRows, long expectedSize,
+            boolean includeCarriageReturn) {
+        StringBuilder b = new StringBuilder("|");
+        for (int i = 1; i <= 25; i++) {
+            if (percent >= i * 4) {
+                b.append("=");
+            } else {
+                b.append(" ");
+            }
+        }
+        b.append("| ");
+        b.append(percent);
+        b.append("% of ");
+        b.append(expectedSize);
+        b.append(expectedSizeIsInRows ? " rows" : " bytes");
+        if (includeCarriageReturn) {
+            b.append("\r");
+        }
+        return b.toString();
+    }
+
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    public DataSource getSource() {
+        return sourceDataSource;
+    }
+
+    public IDbDialect getSourcePlatform() {
+        return sourceDbDialect;
+    }
+
+    public List<TableToExtract> getTablesToRead() {
+        return tablesToRead;
+    }
+
+    public DataSource getTarget() {
+        return targetDataSource;
+    }
+
+    public IDbDialect getTargetPlatform() {
+        return targetDbDialect;
+    }
+
+    class LoadListenerListener extends AbstractDataProcessorListener {
+        private Table table;
+        private Batch batch;
+
+        public boolean processTable(DataContext context, Batch batch, Table table) {
+            this.table = table;
+            return true;
+        }
+
+        @Override
+        public boolean batchBegin(DataContext context, Batch batch) {
+            this.batch = batch;
+            return true;
+        }
+
+        public Batch getBatch() {
+            return batch;
+        }
+
+        public Table getTable() {
+            return table;
         }
     }
 

@@ -57,6 +57,24 @@ abstract public class IoUtils {
             // ignore
         }
     }
+    
+    /**
+     * Unconditionally close an <code>Reader</code>.
+     * <p>
+     * Equivalent to {@link Reader#close()}, except any exceptions will be ignored.
+     * This is typically used in finally blocks.
+     *
+     * @param input  the Reader to close, may be null or already closed
+     */
+    public static void closeQuietly(Reader input) {
+        try {
+            if (input != null) {
+                input.close();
+            }
+        } catch (IOException ioe) {
+            // ignore
+        }
+    }
 
     /**
      * Get the contents of a <code>Reader</code> as a list of Strings, one entry
