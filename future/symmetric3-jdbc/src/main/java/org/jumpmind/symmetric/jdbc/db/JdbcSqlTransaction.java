@@ -19,6 +19,8 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     protected boolean inBatchMode = true;
 
     protected Connection dbConnection;
+    
+    protected String psql;
 
     protected PreparedStatement pstmt;
     
@@ -188,8 +190,9 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 throw new IllegalStateException(
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
-            JdbcSqlTemplate.close(pstmt);
+            JdbcSqlTemplate.close(pstmt);            
             pstmt = dbConnection.prepareStatement(sql);
+            psql = sql;
         } catch (SQLException ex) {
             throw sqlConnection.translate(ex);
         }

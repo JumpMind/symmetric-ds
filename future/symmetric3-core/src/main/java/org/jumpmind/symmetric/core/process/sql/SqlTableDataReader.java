@@ -95,6 +95,7 @@ public class SqlTableDataReader implements IDataReader {
     }
 
     public void open(DataContext context) {
+        context.setBinaryEncoding(dbDialect.getDataCaptureBuilder().getBinaryEncoding());
     }
 
     class DataFromSqlTableMapper implements ISqlRowMapper<Data> {

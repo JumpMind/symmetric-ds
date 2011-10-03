@@ -62,8 +62,8 @@ public class FileCsvDataWriter extends AbstractCsvDataWriter {
     }
 
     @Override
-    protected void println(String data) {
-        try {
+    protected void print(String data) {
+        try {            
             byte[] bytes = data.getBytes();
             ByteBuffer byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length);
             channel.write(byteBuffer);
