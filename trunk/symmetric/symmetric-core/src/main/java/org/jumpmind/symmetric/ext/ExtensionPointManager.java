@@ -285,7 +285,7 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         }
         
         if (ext instanceof IColumnTransform) {
-            IColumnTransform t = (IColumnTransform)ext;
+            IColumnTransform<?> t = (IColumnTransform<?>)ext;
             transformService.addColumnTransform(t.getName(), t);
         }
 
