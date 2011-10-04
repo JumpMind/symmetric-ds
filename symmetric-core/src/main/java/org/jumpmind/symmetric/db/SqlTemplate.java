@@ -131,23 +131,19 @@ public class SqlTemplate {
     }
 
     protected String getSourceTablePrefix(Trigger trigger, IDbDialect dbDialect) {
-        String quote = dbDialect.getIdentifierQuoteString() != null ? dbDialect
-                .getIdentifierQuoteString() : "";
-        String schemaPlus = (trigger.getSourceSchemaName() != null ? quote
-                + trigger.getSourceSchemaName() + quote + "." : "");
-        String catalogPlus = (trigger.getSourceCatalogName() != null ? quote
-                + trigger.getSourceCatalogName() + quote + "." : "")
+        String schemaPlus = (trigger.getSourceSchemaName() != null ?
+                trigger.getSourceSchemaName() + "." : "");
+        String catalogPlus = (trigger.getSourceCatalogName() != null ?
+                trigger.getSourceCatalogName() + "." : "")
                 + schemaPlus;
         return catalogPlus;
     }
     
     protected String getSourceTablePrefix(TriggerHistory triggerHistory, IDbDialect dbDialect) {
-        String quote = dbDialect.getIdentifierQuoteString() != null ? dbDialect
-                .getIdentifierQuoteString() : "";
-        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? quote
-                + triggerHistory.getSourceSchemaName() + quote + "." : "");
-        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? quote
-                + triggerHistory.getSourceCatalogName() + quote + "." : "")
+        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? 
+                triggerHistory.getSourceSchemaName() + "." : "");
+        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? 
+                triggerHistory.getSourceCatalogName() + "." : "")
                 + schemaPlus;
         return catalogPlus;
     }    
@@ -169,13 +165,11 @@ public class SqlTemplate {
         boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
         || trigger.getSourceSchemaName() != null;
         
-        String quote = dbDialect.getIdentifierQuoteString() != null ? dbDialect.getIdentifierQuoteString() : "";
-
         sql = AppUtils.replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
-                && defaultSchema.length() > 0 ? quote + defaultSchema + quote + "." : "", sql);
+                && defaultSchema.length() > 0 ? defaultSchema + "." : "", sql);
 
         return AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs
-                && defaultCatalog != null && defaultCatalog.length() > 0 ? quote + defaultCatalog + quote + "."
+                && defaultCatalog != null && defaultCatalog.length() > 0 ? defaultCatalog + "."
                 : "", sql);
     }
 
