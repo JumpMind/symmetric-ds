@@ -78,7 +78,7 @@ public class CsvExtractor extends CsvExtractor16 {
             CsvUtils.writeLineFeed(out);
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames()));
             CsvUtils.writeLineFeed(out);
-            context.getHistoryRecordsWritten().add(triggerHistoryId);
+            context.addHistoryRecordWritten(data.getTableName(), triggerHistoryId);
         } else if (!context.isLastDataFromSameTriggerAndRouter(triggerHistoryId, routerId)) {
             writeTable(data, routerId, out, context);
         }
