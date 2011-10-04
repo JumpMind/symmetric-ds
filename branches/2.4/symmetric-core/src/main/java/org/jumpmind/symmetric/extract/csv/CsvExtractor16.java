@@ -72,15 +72,14 @@ public class CsvExtractor16 extends CsvExtractor14 {
                                     data.getTableName(), data.getTriggerHistory().getSourceTableName()));
         }
         String triggerHistId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
-        if (!context.getHistoryRecordsWritten().contains(triggerHistId)) {
-            
+        if (!context.getHistoryRecordsWritten().contains(triggerHistId)) {            
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName()));
             CsvUtils.writeLineFeed(out);
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames()));
             CsvUtils.writeLineFeed(out);
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames()));
             CsvUtils.writeLineFeed(out);
-            context.getHistoryRecordsWritten().add(triggerHistId);
+            context.addHistoryRecordWritten(data.getTableName(), triggerHistId);
         } else if (!context.isLastDataFromSameTriggerAndRouter(triggerHistId, routerId)) {
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName()));
             CsvUtils.writeLineFeed(out);
