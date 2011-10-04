@@ -19,9 +19,8 @@
  * under the License.  */
 package org.jumpmind.symmetric.extract;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.common.Constants;
@@ -37,7 +36,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public class DataExtractorContext implements Cloneable, ICacheContext {
 
-    private List<String> auditRecordsWritten = new ArrayList<String>();
+    private Map<String, String> historyRecordsWritten = new HashMap<String,String>();
     private String lastTriggerHistoryId;
     private String lastRouterId;
     private OutgoingBatch batch;
@@ -52,7 +51,7 @@ public class DataExtractorContext implements Cloneable, ICacheContext {
         DataExtractorContext newVersion;
         try {
             newVersion = (DataExtractorContext) super.clone();
-            newVersion.auditRecordsWritten = new ArrayList<String>();
+            newVersion.historyRecordsWritten = new HashMap<String, String>();
             newVersion.cache = null;
             return newVersion;
         } catch (CloneNotSupportedException e) {
@@ -83,12 +82,16 @@ public class DataExtractorContext implements Cloneable, ICacheContext {
         return nodeService.findIdentityNodeId();
     }
     
-    public List<String> getHistoryRecordsWritten() {
-        return auditRecordsWritten;
+    public Collection<String> getHistoryRecordsWritten() {
+        return historyRecordsWritten.values();
+    }
+    
+    public void addHistoryRecordWritten(String tableName, String triggerHistoryId) {
+        this.historyRecordsWritten.put(tableName, triggerHistoryId);
     }
 
-    public void setLastTriggerHistoryId(String tableName) {
-        lastTriggerHistoryId = tableName;
+    public void setLastTriggerHistoryId(String triggerHistoryId) {
+        lastTriggerHistoryId = triggerHistoryId;
     }
     
     public void setLastRouterId(String lastRouterId) {

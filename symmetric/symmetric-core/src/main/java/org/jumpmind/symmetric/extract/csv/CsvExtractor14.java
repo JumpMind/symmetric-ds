@@ -98,7 +98,7 @@ public class CsvExtractor14 implements IDataExtractor {
                 CsvUtils.writeLineFeed(out);
                 CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
                 CsvUtils.writeLineFeed(out);
-                context.getHistoryRecordsWritten().add(historyId);
+                context.addHistoryRecordWritten(data.getTableName(), historyId);
             } else if (!context.isLastDataFromSameTriggerAndRouter(historyId, routerId)) {
                 CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
                 CsvUtils.writeLineFeed(out);
