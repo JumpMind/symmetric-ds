@@ -25,11 +25,11 @@ public class OracleJdbcTableReader extends JdbcTableReader {
     /**
      * Creates a new model reader for Oracle 8 databases.
      * 
-     * @param platform
+     * @param dbDialect
      *            The platform that this model reader belongs to
      */
-    public OracleJdbcTableReader(IJdbcDbDialect platform) {
-        super(platform);
+    public OracleJdbcTableReader(IJdbcDbDialect dbDialect) {
+        super(dbDialect);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
@@ -48,6 +48,8 @@ public class OracleJdbcTableReader extends JdbcTableReader {
             typeCode = Types.VARCHAR;
         } else if (typeName != null && typeName.startsWith("NCHAR")) {
             typeCode = Types.CHAR;
+        } else if (typeName != null && typeName.startsWith("NCLOB")) {
+            return Types.CLOB;
         } else if (typeName != null && typeName.startsWith("BINARY_FLOAT")) {
             typeCode = Types.FLOAT;
         } else if (typeName != null && typeName.startsWith("BINARY_DOUBLE")) {

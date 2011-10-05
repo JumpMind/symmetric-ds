@@ -109,23 +109,8 @@ public class OracleDataCaptureBuilder extends AbstractDataCaptureBuilder {
     }
 
     @Override
-    protected String getEmptyColumnTemplate() {
-        return null;
-    }
-
-    @Override
     protected String getStringColumnTemplate() {
         return "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')),'\"'))";
-    }
-
-    @Override
-    protected String getXmlColumnTemplate() {
-        return null;
-    }
-
-    @Override
-    protected String getArrayColumnTemplate() {
-        return null;
     }
 
     @Override
@@ -156,21 +141,6 @@ public class OracleDataCaptureBuilder extends AbstractDataCaptureBuilder {
     @Override
     protected String getTriggerConcatCharacter() {
         return "||";
-    }
-
-    @Override
-    protected String getOldColumnPrefix() {
-        return null;
-    }
-
-    @Override
-    protected String getNewColumnPrefix() {
-        return null;
-    }
-
-    @Override
-    protected String getPostTriggerTemplate() {
-        return null;
     }
 
     @Override
@@ -232,16 +202,6 @@ public class OracleDataCaptureBuilder extends AbstractDataCaptureBuilder {
     @Override
     protected String getTransactionTriggerExpression() {
         return  "$(prefixName)_transaction_id()";
-    }
-
-    @Override
-    protected boolean isTransactionIdOverrideSupported() {
-        return true;
-    }
-
-    @Override
-    protected String preProcessTriggerSqlClause(String sqlClause) {
-        return null;
     }
 
     @Override

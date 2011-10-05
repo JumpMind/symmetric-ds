@@ -20,7 +20,7 @@ public class QueryTest {
     @Test
     public void testSelectFromTable1() {
         Object[] args = new Object[] { 1, "someValue" };
-        Query query = Query.create(TABLE1).where(TABLE1.getColumn(0), "=", args[0])
+        Query query = Query.create("", TABLE1).where(TABLE1.getColumn(0), "=", args[0])
                 .and(TABLE1.getColumn(1), "!=", args[1]);
         Assert.assertEquals(
                 "select t.column1, t.column2 from table1 t where t.column1=? and t.column2!=?",
@@ -36,7 +36,7 @@ public class QueryTest {
     @Test
     public void testSelectWithJoin() {
         Object[] args = new Object[] { 1, "someValue" };
-        Query query = Query.create(TABLE1, TABLE2).where(TABLE1.getColumn(0), "=", args[0])
+        Query query = Query.create("", TABLE1, TABLE2).where(TABLE1.getColumn(0), "=", args[0])
                 .and(TABLE2.getColumn(1), "!=", args[1]);
         Assert.assertEquals(
                 "select t1.column1, t1.column2, t2.column1, t2.text from table1 t1 inner join table2 t2 on t1.column1=t2.column1 where t1.column1=? and t2.text!=?",

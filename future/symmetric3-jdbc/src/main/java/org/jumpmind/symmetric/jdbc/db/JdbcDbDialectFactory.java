@@ -9,28 +9,38 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.core.common.Log;
+import org.jumpmind.symmetric.core.common.LogFactory;
+import org.jumpmind.symmetric.core.db.DbDialectNotFoundException;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.SqlException;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.jdbc.db.h2.H2DbDialect;
 import org.jumpmind.symmetric.jdbc.db.oracle.OracleDbDialect;
+import org.jumpmind.symmetric.jdbc.db.postgres.PostgresDbDialect;
 
 public class JdbcDbDialectFactory {
+    
+    final protected Log log = LogFactory.getLog(getClass());
 
     private static Map<String, Class<? extends IDbDialect>> platforms = null;
 
     public static AbstractJdbcDbDialect createPlatform(DataSource dataSource, Parameters parameters) {
-        String platformId = lookupPlatformId(dataSource, true);
-        AbstractJdbcDbDialect platform = createNewPlatformInstance(platformId, dataSource,
+        String dbDialectId = lookupDialectId(dataSource, true);
+        AbstractJdbcDbDialect dbDialect = createNewDialectInstance(dbDialectId, dataSource,
                 parameters);
-        if (platform == null) {
-            platformId = lookupPlatformId(dataSource, false);
-            platform = createNewPlatformInstance(platformId, dataSource, parameters);
+        if (dbDialect == null) {
+            dbDialectId = lookupDialectId(dataSource, false);
+            dbDialect = createNewDialectInstance(dbDialectId, dataSource, parameters);
         }
-        return platform;
+        
+        if (dbDialect == null) {
+            throw new DbDialectNotFoundException(dbDialectId);
+        }
+        return dbDialect;
     }
 
-    private static AbstractJdbcDbDialect createNewPlatformInstance(String databaseName,
+    private static AbstractJdbcDbDialect createNewDialectInstance(String databaseName,
             DataSource dataSource, Parameters parameters) {
         Class<? extends IDbDialect> platformClass = getDbDialects().get(databaseName.toLowerCase());
 
@@ -47,7 +57,7 @@ public class JdbcDbDialectFactory {
         }
     }
 
-    public static String lookupPlatformId(DataSource dataSource, boolean includeVersion)
+    public static String lookupDialectId(DataSource dataSource, boolean includeVersion)
             throws SqlException {
         Connection connection = null;
 
@@ -88,6 +98,7 @@ public class JdbcDbDialectFactory {
         Map<String, Class<? extends IDbDialect>> platforms = new HashMap<String, Class<? extends IDbDialect>>();
         platforms.put("oracle", OracleDbDialect.class);
         platforms.put("h2", H2DbDialect.class);
+        platforms.put("postgresql", PostgresDbDialect.class);
         return platforms;
     }
 

@@ -138,12 +138,6 @@ public class SQLiteDataCaptureBuilder extends AbstractDataCaptureBuilder {
     }
 
     @Override
-    protected String getPostTriggerTemplate() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     protected String getInsertTriggerTemplate() {
         // TODO Auto-generated method stub
         return null;

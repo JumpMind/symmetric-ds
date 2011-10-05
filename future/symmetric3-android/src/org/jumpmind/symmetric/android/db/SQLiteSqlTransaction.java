@@ -104,5 +104,15 @@ public class SQLiteSqlTransaction implements ISqlTransaction {
         }
         return ret;
     }
+    
+    public Object createSavepoint() {
+        return null;
+    }
+    
+    public void releaseSavepoint(Object savePoint) {
+    }
+    
+    public void rollback(Object savePoint) {
+    }
 
 }

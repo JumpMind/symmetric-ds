@@ -69,25 +69,10 @@ public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
     protected String getFunctionInstalledSqlTemplate() {
         return "select count(*) from INFORMATION_SCHEMA.FUNCTION_ALIASES where ALIAS_NAME='$(functionName)'";
     }
-
-    @Override
-    protected String getEmptyColumnTemplate() {
-        return null;
-    }
-
+    
     @Override
     protected String getStringColumnTemplate() {
         return "case when $(tableAlias)\"$(columnName)\" is null then '''' else ''\"''||replace(replace($(tableAlias)\"$(columnName)\",''\\'',''\\\\''),''\"'',''\\\"'')||''\"'' end";
-    }
-
-    @Override
-    protected String getXmlColumnTemplate() {
-        return null;
-    }
-
-    @Override
-    protected String getArrayColumnTemplate() {
-        return null;
     }
 
     @Override
@@ -131,11 +116,6 @@ public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
     }
 
     @Override
-    protected String getPostTriggerTemplate() {
-        return null;
-    }
-
-    @Override
     protected String getInsertTriggerTemplate() {
         return "CREATE TABLE $(triggerName)_CONFIG (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB);"
                 + "INSERT INTO $(triggerName)_CONFIG values(    "
@@ -172,11 +152,6 @@ public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
     @Override
     protected String getTransactionTriggerExpression() {
         return "TRANSACTION_ID()";
-    }
-
-    @Override
-    protected boolean isTransactionIdOverrideSupported() {
-        return true;
     }
 
     @Override

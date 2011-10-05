@@ -30,6 +30,7 @@ import java.util.Set;
 import org.jumpmind.symmetric.core.common.CollectionUtils;
 import org.jumpmind.symmetric.core.common.NotImplementedException;
 import org.jumpmind.symmetric.core.model.Column;
+import org.jumpmind.symmetric.core.model.Table;
 
 /**
  * Represents and builds a SQL DML statement based on a column defintions
@@ -54,30 +55,30 @@ public class DmlStatement {
 
     protected Column[] preFilteredColumns;
 
-    public DmlStatement(DmlType type, String tableName, Column[] keys, Column[] columns,
+    public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys, Column[] columns,
             Column[] preFilteredColumns, boolean isDateOverrideToTimestamp,
             String identifierQuoteString) {
         this.keys = keys;
         this.columns = columns;
         this.preFilteredColumns = preFilteredColumns;
-        quote = identifierQuoteString == null ? "" : identifierQuoteString;
+        this.quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
-            sql = buildInsertSql(tableName, columns);
+            sql = buildInsertSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, quote), columns);
             types = buildTypes(columns, isDateOverrideToTimestamp);
         } else if (type == DmlType.UPDATE) {
-            sql = buildUpdateSql(tableName, keys, columns);
+            sql = buildUpdateSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, quote), keys, columns);
             types = buildTypes(keys, columns, isDateOverrideToTimestamp);
         } else if (type == DmlType.DELETE) {
-            sql = buildDeleteSql(tableName, keys);
+            sql = buildDeleteSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, quote), keys);
             types = buildTypes(keys, isDateOverrideToTimestamp);
         } else if (type == DmlType.COUNT) {
-            sql = buildCountSql(tableName, keys);
+            sql = buildCountSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, quote), keys);
             types = buildTypes(keys, isDateOverrideToTimestamp);
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
         dmlType = type;
-    }
+    }    
 
     protected Column[] removeKeysFromColumns(Column[] keys, Column[] columns) {
         Column[] columnsWithoutKeys = new Column[columns.length - keys.length];
@@ -119,7 +120,7 @@ public class DmlStatement {
         return types;
     }
 
-    public String buildInsertSql(String tableName, String[] columnNames) {
+    protected String buildInsertSql(String tableName, String[] columnNames) {
         StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
         appendColumns(sql, columnNames);
         sql.append(") values (");
@@ -128,8 +129,10 @@ public class DmlStatement {
         return sql.toString();
     }
 
-    public String buildInsertSql(String tableName, Column[] columns) {
-        StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
+    protected String buildInsertSql(String fullQualifiedTableName, Column[] columns) {
+        StringBuilder sql = new StringBuilder("insert into ");
+        sql.append(fullQualifiedTableName);
+        sql.append(" (");
         int columnCount = appendColumns(sql, columns);
         sql.append(") values (");
         appendColumnQuestions(sql, columnCount);
@@ -137,8 +140,8 @@ public class DmlStatement {
         return sql.toString();
     }
 
-    public String buildUpdateSql(String tableName, String[] keyNames, String[] columnNames) {
-        StringBuilder sql = new StringBuilder("update ").append(tableName).append(" set ");
+    protected String buildUpdateSql(String fullQualifiedTableName, String[] keyNames, String[] columnNames) {
+        StringBuilder sql = new StringBuilder("update ").append(fullQualifiedTableName).append(" set ");
         appendColumnEquals(sql, columnNames, ", ");
         if (keyNames != null && keyNames.length > 0) {
             sql.append(" where ");
@@ -147,8 +150,8 @@ public class DmlStatement {
         return sql.toString();
     }
 
-    public String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
-        StringBuilder sql = new StringBuilder("update ").append(tableName).append(" set ");
+    protected String buildUpdateSql(String fullQualifiedTableName, Column[] keyColumns, Column[] columns) {
+        StringBuilder sql = new StringBuilder("update ").append(fullQualifiedTableName).append(" set ");
         appendColumnEquals(sql, columns, ", ");
         if (keyColumns != null && keyColumns.length > 0) {
             sql.append(" where ");
@@ -157,8 +160,8 @@ public class DmlStatement {
         return sql.toString();
     }
 
-    public String buildDeleteSql(String tableName, String[] keyNames) {
-        StringBuilder sql = new StringBuilder("delete from ").append(tableName);
+    protected String buildDeleteSql(String fullQualifiedTableName, String[] keyNames) {
+        StringBuilder sql = new StringBuilder("delete from ").append(fullQualifiedTableName);
         if (keyNames != null && keyNames.length > 0) {
             sql.append(" where ");
             appendColumnEquals(sql, keyNames, " and ");
@@ -166,8 +169,8 @@ public class DmlStatement {
         return sql.toString();
     }
 
-    public String buildDeleteSql(String tableName, Column[] keyColumns) {
-        StringBuilder sql = new StringBuilder("delete from ").append(tableName);
+    protected String buildDeleteSql(String fullQualifiedTableName, Column[] keyColumns) {
+        StringBuilder sql = new StringBuilder("delete from ").append(fullQualifiedTableName);
         if (keyColumns != null && keyColumns.length > 0) {
             sql.append(" where ");
             appendColumnEquals(sql, keyColumns, " and ");
@@ -175,21 +178,21 @@ public class DmlStatement {
         return sql.toString();
     }
 
-    public String buildCountSql(String tableName, Column[] keyColumns) {
-        StringBuilder sql = new StringBuilder("select count(*) from ").append(tableName).append(
+    protected String buildCountSql(String fullQualifiedTableName, Column[] keyColumns) {
+        StringBuilder sql = new StringBuilder("select count(*) from ").append(fullQualifiedTableName).append(
                 " where ");
         appendColumnEquals(sql, keyColumns, " and ");
         return sql.toString();
     }
 
-    public void appendColumnEquals(StringBuilder sql, String[] names, String separator) {
+    protected void appendColumnEquals(StringBuilder sql, String[] names, String separator) {
         for (int i = 0; i < names.length; i++) {
             sql.append(quote).append(names[i]).append(quote).append(" = ?")
                     .append(i + 1 < names.length ? separator : "");
         }
     }
 
-    public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
+    protected void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
         int existingCount = 0;
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
@@ -201,14 +204,14 @@ public class DmlStatement {
         }
     }
 
-    public void appendColumns(StringBuilder sql, String[] names) {
+    protected void appendColumns(StringBuilder sql, String[] names) {
         for (int i = 0; i < names.length; i++) {
             sql.append(quote).append(names[i]).append(quote)
                     .append(i + 1 < names.length ? "," : "");
         }
     }
 
-    public int appendColumns(StringBuilder sql, Column[] columns) {
+    protected int appendColumns(StringBuilder sql, Column[] columns) {
         int existingCount = 0;
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
@@ -221,7 +224,7 @@ public class DmlStatement {
         return existingCount;
     }
 
-    public void appendColumnQuestions(StringBuilder sql, int number) {
+    protected void appendColumnQuestions(StringBuilder sql, int number) {
         for (int i = 0; i < number; i++) {
             sql.append("?").append(i + 1 < number ? "," : "");
         }

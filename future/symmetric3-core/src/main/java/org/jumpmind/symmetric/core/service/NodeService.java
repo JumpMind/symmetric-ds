@@ -37,7 +37,7 @@ public class NodeService extends AbstractParameterizedService {
     public void saveNode(Node node) {
         dbDialect.getSqlTemplate().save(getTable(SymmetricTables.NODE), getParams(node));
     }
-    
+
     public void saveNodeGroup(NodeGroup nodeGroup) {
         dbDialect.getSqlTemplate().save(getTable(SymmetricTables.NODE_GROUP), getParams(nodeGroup));
     }
@@ -68,8 +68,8 @@ public class NodeService extends AbstractParameterizedService {
      */
     public Node findNode(String id) {
         List<Node> list = dbDialect.getSqlTemplate().query(
-                new Query(1, getTable(SymmetricTables.NODE)).where("NODE_ID", "=", id),
-                NODE_MAPPER);
+                new Query(dbDialect.getDbDialectInfo().getIdentifierQuoteString(), 1,
+                        getTable(SymmetricTables.NODE)).where("NODE_ID", "=", id), NODE_MAPPER);
         return (Node) getFirstEntry(list);
     }
 
@@ -85,8 +85,9 @@ public class NodeService extends AbstractParameterizedService {
         try {
             if (nodeId != null) {
                 List<NodeSecurity> list = dbDialect.getSqlTemplate().query(
-                        new Query(1, getTables(SymmetricTables.NODE_SECURITY)).where("NODE_ID",
-                                "=", nodeId), NODE_SECURITY_MAPPER);
+                        new Query(dbDialect.getDbDialectInfo().getIdentifierQuoteString(), 1,
+                                getTables(SymmetricTables.NODE_SECURITY)).where("NODE_ID", "=",
+                                nodeId), NODE_SECURITY_MAPPER);
 
                 NodeSecurity security = (NodeSecurity) getFirstEntry(list);
                 if (security == null && createIfNotFound) {
@@ -119,7 +120,7 @@ public class NodeService extends AbstractParameterizedService {
         dbDialect.getSqlTemplate().delete(tables.getSymmetricTable(SymmetricTables.NODE_IDENTITY),
                 new Row("NODE_ID", nodeId));
     }
-    
+
     public String findIdentityNodeId() {
         Node node = findIdentity();
         return node != null ? node.getNodeId() : null;
@@ -128,8 +129,9 @@ public class NodeService extends AbstractParameterizedService {
     public Node findIdentity(boolean useCache) {
         if (cachedNodeIdentity == null || useCache == false) {
             List<Node> list = dbDialect.getSqlTemplate().query(
-                    new Query(0, tables.getSymmetricTables(SymmetricTables.NODE,
-                            SymmetricTables.NODE_IDENTITY)), NODE_MAPPER);
+                    new Query(dbDialect.getDbDialectInfo().getIdentifierQuoteString(), 0,
+                            tables.getSymmetricTables(SymmetricTables.NODE,
+                                    SymmetricTables.NODE_IDENTITY)), NODE_MAPPER);
             cachedNodeIdentity = getFirstEntry(list);
         }
         return cachedNodeIdentity;
@@ -139,7 +141,7 @@ public class NodeService extends AbstractParameterizedService {
         dbDialect.getSqlTemplate().save(getTable(SymmetricTables.NODE_IDENTITY),
                 new Row("NODE_ID", nodeId));
     }
-    
+
     protected Map<String, Object> getParams(NodeGroup nodeGroup) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("NODE_GROUP_ID", nodeGroup.getNodeGroupId());
