@@ -2,6 +2,27 @@
 <body>
 
  <h1>
+Version 2.4.2
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-514'>SYMMETRICDS-514</a>] -         If gap detection is interrupt you could end up with overlapping gaps which in turn could cause integrity violations.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-515'>SYMMETRICDS-515</a>] -         Issue with use_stream_lobs
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-518'>SYMMETRICDS-518</a>] -         Fix NullPointerException in transform dataloader&#39;s fallback logging
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-519'>SYMMETRICDS-519</a>] -         When a transformed row is being loaded (from the dataloader) and it encounters a conflict it should re-transform the original data
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-520'>SYMMETRICDS-520</a>] -         PostgreSQL - Quotes around tables in trigger creation.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-522'>SYMMETRICDS-522</a>] -         When multiple transformations with different columns sets and the same target table are defined the metadata that gets written out during extract can be wrong
+</li>
+</ul>
+
+ <h1>
 Version 2.4.1
 </h1>
             
