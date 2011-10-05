@@ -5,12 +5,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.jumpmind.symmetric.core.db.ISqlTransaction;
+import org.jumpmind.symmetric.core.db.SqlException;
 
 /**
  * TODO Support Oracle's non-standard way of batching
@@ -20,11 +22,11 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     protected boolean inBatchMode = true;
 
     protected Connection dbConnection;
-    
+
     protected String psql;
 
     protected PreparedStatement pstmt;
-    
+
     protected IJdbcDbDialect dbDialect;
 
     protected JdbcSqlTemplate sqlConnection;
@@ -79,9 +81,15 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public void rollback() {
+        rollback(true);
+    }
+
+    protected void rollback(boolean clearMarkers) {
         if (dbConnection != null) {
             try {
-                markers.clear();
+                if (clearMarkers) {
+                    markers.clear();
+                }
                 dbConnection.rollback();
             } catch (SQLException ex) {
                 // do nothing
@@ -125,7 +133,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
         return rowsUpdated;
     }
-    
+
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
         return execute(this.dbConnection, new IConnectionCallback<T>() {
             @SuppressWarnings("unchecked")
@@ -148,24 +156,23 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             }
         });
     }
-    
 
     public <T> T execute(Connection c, IConnectionCallback<T> callback) {
         try {
             return callback.execute(c);
         } catch (SQLException ex) {
             throw this.sqlConnection.translate(ex);
-        } 
-    }    
+        }
+    }
 
     /**
-     * According to the executeUpdate() javadoc -2 means that the result was successful, but
-     * that the number of rows affected is unknown. since we know that only one
-     * row is suppose to be affected, we'll default to 1.
+     * According to the executeUpdate() javadoc -2 means that the result was
+     * successful, but that the number of rows affected is unknown. since we
+     * know that only one row is suppose to be affected, we'll default to 1.
      * 
      * @param value
      */
-    private final int normalizeUpdateCount(int value) {
+    protected final int normalizeUpdateCount(int value) {
         if (value == Statement.SUCCESS_NO_INFO) {
             value = 1;
         }
@@ -191,7 +198,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 throw new IllegalStateException(
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
-            JdbcSqlTemplate.close(pstmt);            
+            JdbcSqlTemplate.close(pstmt);
             pstmt = dbConnection.prepareStatement(sql);
             psql = sql;
         } catch (SQLException ex) {
@@ -234,6 +241,30 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             markers.clear();
         }
         return ret;
+    }
+
+    public Object createSavepoint() {
+        try {
+            return dbConnection.setSavepoint();
+        } catch (SQLException e) {
+            throw new SqlException(e);
+        }
+    }
+
+    public void releaseSavepoint(Object savePoint) {
+        try {
+            dbConnection.releaseSavepoint((Savepoint) savePoint);
+        } catch (SQLException e) {
+            throw new SqlException(e);
+        }
+    }
+
+    public void rollback(Object savePoint) {
+        try {
+            dbConnection.rollback((Savepoint) savePoint);
+        } catch (SQLException e) {
+            throw new SqlException(e);
+        }
     }
 
 }

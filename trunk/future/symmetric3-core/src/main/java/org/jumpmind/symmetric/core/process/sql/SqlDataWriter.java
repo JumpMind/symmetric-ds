@@ -54,7 +54,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     protected DataContext ctx;
 
-    protected boolean currentBatchMode = false;
+    protected boolean currentlyInBatchInsertMode = false;
 
     public SqlDataWriter(IDbDialect dbDialect) {
         this(dbDialect, new Settings());
@@ -123,16 +123,16 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     public void startBatch(Batch batch) {
         this.dmlStatement = null;
         this.batch = batch;
-        this.currentBatchMode = settings.batchMode;
+        this.currentlyInBatchInsertMode = settings.batchMode;
     }
 
     public boolean writeData(Data data) {
-        if (!currentBatchMode && settings.batchMode
+        if (!currentlyInBatchInsertMode && settings.batchMode
                 && consecutiveSuccessfulDmlCount > settings.successCountBeforeUseBatch) {
             log.info("Reentering batch mode for the rest of batch %d", batch.getBatchId());
-            currentBatchMode = true;
+            currentlyInBatchInsertMode = true;
         }
-        boolean committed = writeData(data, currentBatchMode, true);
+        boolean committed = writeData(data, currentlyInBatchInsertMode, true);
         this.lastData = data;
         return committed;
     }
@@ -184,9 +184,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     protected void handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         if (transaction.isInBatchMode()) {
-            log.log(LogLevel.WARN, "Exiting batch mode for batch %d",
-                    batch.getBatchId());
-            this.currentBatchMode = false;
+            log.log(LogLevel.WARN, "Exiting batch mode for batch %d", batch.getBatchId());
+            this.currentlyInBatchInsertMode = false;
             resendFailedDataInNonBatchMode();
         } else {
             throw ex;
@@ -223,6 +222,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                 Parameters.LOADER_ENABLE_IGNORE_COLLISIONS_INSERT, false);
         settings.enableFallbackForInsert = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_INSERT,
                 true);
+        settings.enableFallbackUsingSavepoints = parameters.is(
+                Parameters.LOADER_ENABLE_FALLBACK_SAVEPOINT, true);
         settings.enableFallbackForUpdate = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_UPDATE,
                 true);
         settings.allowMissingDeletes = parameters.is(Parameters.LOADER_ALLOW_MISSING_DELETES, true);
@@ -355,25 +356,37 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     protected void processInsert(Data data, boolean batchMode, boolean filter) {
         if (!filter || filterData(data, batch, targetTable, ctx)) {
+            Object savePoint = null;
             try {
                 batch.startTimer(STAT_DATABASE_TIME);
                 batch.incrementInsertCount();
-                // TODO add save point logic for postgresql
+                if (!currentlyInBatchInsertMode && settings.enableFallbackUsingSavepoints
+                        && settings.enableFallbackForInsert && dbDialect.requiresSavepoints()) {
+                    savePoint = transaction.createSavepoint();
+                }
                 executeInsertSql(data, batchMode);
+                if (savePoint != null) {
+                    transaction.releaseSavepoint(savePoint);
+                }
+
                 consecutiveSuccessfulDmlCount++;
             } catch (DataIntegrityViolationException e) {
                 consecutiveSuccessfulDmlCount = 0;
+                if (savePoint != null) {
+                    transaction.rollback(savePoint);
+                }
                 if (!batchMode) {
                     batch.decrementInsertCount(1);
-                }
-                if (settings.ignoreInsertCollision && !batchMode) {
-                    batch.incrementInsertCollisionCount();
-                } else if (settings.enableFallbackForInsert && !batchMode) {
-                    this.dmlStatement = null;
-                    // TODO rollback to save point
-                    batch.incrementFallbackUpdateCount();
-                    executeUpdateSql(data);
-                    this.dmlStatement = null;
+                    if (settings.ignoreInsertCollision) {
+                        batch.incrementInsertCollisionCount();
+                    } else if (settings.enableFallbackForInsert) {
+                        this.dmlStatement = null;
+                        batch.incrementFallbackUpdateCount();
+                        executeUpdateSql(data);
+                        this.dmlStatement = null;
+                    } else {
+                        throw e;
+                    }
                 } else {
                     throw e;
                 }
@@ -491,8 +504,9 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
             }
         }
 
-        return dbDialect.createDmlStatement(dmlType, targetTable.getFullyQualifiedTableName(),
-                lookupColumns, changingColumns, preFilteredColumns);
+        return dbDialect.createDmlStatement(dmlType, targetTable.getCatalogName(),
+                targetTable.getSchemaName(), targetTable.getTableName(), lookupColumns,
+                changingColumns, preFilteredColumns);
 
     }
 
@@ -520,6 +534,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         protected int maxRowsBeforeBatchFlush;
 
         protected boolean enableFallbackForInsert;
+
+        protected boolean enableFallbackUsingSavepoints;
 
         protected boolean ignoreInsertCollision;
 

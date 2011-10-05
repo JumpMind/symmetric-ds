@@ -32,5 +32,11 @@ public interface ISqlTransaction {
     public int flush();
 
     public <T> List<T> getUnflushedMarkers(boolean clear);
+    
+    public Object createSavepoint();
+    
+    public void releaseSavepoint(Object savePoint);
+    
+    public void rollback(Object savePoint);
 
 }

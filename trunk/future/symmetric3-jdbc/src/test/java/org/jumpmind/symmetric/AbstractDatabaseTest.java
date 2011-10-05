@@ -35,8 +35,8 @@ abstract public class AbstractDatabaseTest {
         IJdbcDbDialect result = null;
         if (useExisting) {
             if (platform == null) {
-                platform = JdbcDbDialectFactory.createPlatform(createDataSource(),
-                        new Parameters());
+                platform = JdbcDbDialectFactory
+                        .createPlatform(createDataSource(), new Parameters());
             }
             result = platform;
         } else {
@@ -67,7 +67,10 @@ abstract public class AbstractDatabaseTest {
     }
 
     protected void delete(String tableName) {
-        getDbDialect(true).getSqlTemplate().update(String.format("delete from %s", tableName));
+        IDbDialect dbDialect = getDbDialect(true);
+        String quoteString = dbDialect.getDbDialectInfo().getIdentifierQuoteString();
+        dbDialect.getSqlTemplate().update(
+                String.format("delete from %s%s%s", quoteString, tableName, quoteString));
     }
 
     protected void insertTestTableRows(int count) {
@@ -84,19 +87,20 @@ abstract public class AbstractDatabaseTest {
     }
 
     protected int count(String tableName, String where) {
-        IDbDialect platform = getDbDialect(false);
-        ISqlTemplate connection = platform.getSqlTemplate();
-        return connection.queryForInt(String.format("select count(*) from %s %s %s", tableName,
-                StringUtils.isNotBlank(where) ? "where" : "", StringUtils.isNotBlank(where) ? where
-                        : ""));
+        IDbDialect dbDialect = getDbDialect(false);
+        ISqlTemplate connection = dbDialect.getSqlTemplate();
+        String quoteString = dbDialect.getDbDialectInfo().getIdentifierQuoteString();
+        return connection.queryForInt(String.format("select count(*) from %s%s%s %s %s",
+                quoteString, tableName, quoteString, StringUtils.isNotBlank(where) ? "where" : "",
+                StringUtils.isNotBlank(where) ? where : ""));
     }
 
     protected void prepareInsertIntoTestTable(ISqlTransaction transaction, String tableName,
             int flushAt, boolean batchMode) {
         transaction.setInBatchMode(batchMode);
         transaction.setNumberOfRowsBeforeBatchFlush(flushAt);
-        transaction.prepare(
-                String.format("insert into %s (TEST_ID, TEST_TEXT) values(?, ?)", tableName));
+        transaction.prepare(String.format("insert into %s (TEST_ID, TEST_TEXT) values(?, ?)",
+                tableName));
     }
 
     protected int batchInsertIntoTestTable(int numberToInsert, int numberToStartAt,
@@ -112,8 +116,8 @@ abstract public class AbstractDatabaseTest {
 
     protected void printOutTable(String tableName) {
         log.log(LogLevel.INFO,
-                getDbDialect().getSqlTemplate()
-                        .query(String.format("select * from %s", tableName)).toString());
+                getDbDialect().getSqlTemplate().query(String.format("select * from %s", tableName))
+                        .toString());
     }
 
 }

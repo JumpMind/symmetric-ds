@@ -10,33 +10,32 @@ public class Query {
 
     protected Table[] tables;
 
-    protected boolean quoteTable = false;
-
-    protected boolean quoteColumns = false;
-
     protected List<Object> args;
 
     protected List<Integer> argTypes;
 
     protected StringBuilder sql;
+    
+    protected String quoteString;
 
-    static public Query create(int expectedNumberOfArgs, Table... tables) {
-        return new Query(expectedNumberOfArgs, tables);
+    static public Query create(String quoteString, int expectedNumberOfArgs, Table... tables) {
+        return new Query(quoteString, expectedNumberOfArgs, tables);
     }
 
-    static public Query create(Table... tables) {
-        return new Query(0, tables);
+    static public Query create(String quoteString, Table... tables) {
+        return new Query(quoteString, 0, tables);
     }
 
-    public Query(int expectedNumberOfArgs, String... tables) {
-        this(expectedNumberOfArgs, buildTables(tables));
+    public Query(String quoteString, int expectedNumberOfArgs, String... tables) {
+        this(quoteString, expectedNumberOfArgs, buildTables(tables));
     }
 
-    public Query(int expectedNumberOfArgs, Table... tables) {
+    public Query(String quoteString, int expectedNumberOfArgs, Table... tables) {
+        this.quoteString = quoteString;
         this.tables = tables;
         this.args = new ArrayList<Object>(expectedNumberOfArgs);
         this.argTypes = new ArrayList<Integer>(expectedNumberOfArgs);
-        this.sql = select(tables);
+        this.sql = select(quoteString, tables);
     }
 
     public String getSql() {
@@ -125,37 +124,21 @@ public class Query {
         return this;
     }
 
-    public void setQuoteColumns(boolean quoteColumns) {
-        this.quoteColumns = quoteColumns;
-    }
-
-    public boolean isQuoteColumns() {
-        return quoteColumns;
-    }
-
-    public void setQuoteTable(boolean quoteTable) {
-        this.quoteTable = quoteTable;
-    }
-
-    public boolean isQuoteTable() {
-        return quoteTable;
-    }
-
     @Override
     public String toString() {
         return getSql();
     }
 
-    protected static StringBuilder select(Table[] tables) {
+    protected static StringBuilder select(String quoteString, Table[] tables) {
         if (tables != null && tables.length > 0) {
             StringBuilder sql = new StringBuilder("select ");
             if (hasColumns(tables)) {
                 addColumnList(sql, tables);
-                addTables(sql, tables);
+                addTables(sql, quoteString, tables);
             } else {
                 if (tables.length == 1) {
                     sql.append("* from ");
-                    sql.append(tables[0].getFullyQualifiedTableName());
+                    sql.append(tables[0].getFullyQualifiedTableName(quoteString));
                 } else {
                     throw new IllegalStateException(
                             "Cannot join tables if columns are not specified");
@@ -190,7 +173,7 @@ public class Query {
         return tableAlias;
     }
 
-    protected static void addTables(StringBuilder sql, Table... tables) {
+    protected static void addTables(StringBuilder sql, String quoteString, Table... tables) {
         sql.append("from ");
         for (int i = 0; i < tables.length; i++) {
             Table lastTable = i > 0 ? tables[i - 1] : null;
@@ -198,7 +181,7 @@ public class Query {
             String tableAlias = getTableAlias(i, tables);
             if (lastTable != null) {
                 sql.append("inner join ");
-                sql.append(table.getFullyQualifiedTableName());
+                sql.append(table.getFullyQualifiedTableName(quoteString));
                 sql.append(" ");
                 sql.append(tableAlias);
                 sql.append(" on ");                
@@ -216,7 +199,7 @@ public class Query {
                     sql.append(columns.size() > 1 && ++columnIndex < columns.size() ? " AND " : " ");
                 }
             } else {
-                sql.append(table.getFullyQualifiedTableName());
+                sql.append(table.getFullyQualifiedTableName(quoteString));
                 sql.append(" ");
                 sql.append(tableAlias);
                 sql.append(" ");

@@ -140,12 +140,14 @@ public class ConfigurationService extends AbstractParameterizedService {
     }
 
     public List<Channel> selectChannels() {
-        return dbDialect.getSqlTemplate().query(new Query(0, getTable(SymmetricTables.CHANNEL)),
-                CHANNEL_MAPPER);
+        return dbDialect.getSqlTemplate().query(
+                new Query(dbDialect.getDbDialectInfo().getIdentifierQuoteString(), 0,
+                        getTable(SymmetricTables.CHANNEL)), CHANNEL_MAPPER);
     }
-    
+
     public void saveNodeChannelControl(NodeChannelControl nodeChannelCtl, boolean reloadChannels) {
-        dbDialect.getSqlTemplate().save(getTable(SymmetricTables.NODE_CHANNEL_CTL), getParams(nodeChannelCtl));
+        dbDialect.getSqlTemplate().save(getTable(SymmetricTables.NODE_CHANNEL_CTL),
+                getParams(nodeChannelCtl));
         if (reloadChannels) {
             reloadChannels();
         }
@@ -153,8 +155,9 @@ public class ConfigurationService extends AbstractParameterizedService {
 
     public List<NodeChannelControl> selectNodeChannelControlsFor(String nodeId) {
         return dbDialect.getSqlTemplate().query(
-                new Query(1, getTable(SymmetricTables.NODE_CHANNEL_CTL)).where("NODE_ID", "=",
-                        nodeId), NODE_CHANNEL_CONTROL_MAPPER);
+                new Query(dbDialect.getDbDialectInfo().getIdentifierQuoteString(), 1,
+                        getTable(SymmetricTables.NODE_CHANNEL_CTL)).where("NODE_ID", "=", nodeId),
+                NODE_CHANNEL_CONTROL_MAPPER);
     }
 
     public void autoConfigRegistrationServer() {
@@ -217,14 +220,14 @@ public class ConfigurationService extends AbstractParameterizedService {
         params.put("USE_ROW_DATA_TO_ROUTE", channel.isUseRowDataToRoute());
         return params;
     }
-    
-    public Map<String,Object> getParams(NodeChannelControl control) {
+
+    public Map<String, Object> getParams(NodeChannelControl control) {
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("CHANNEL_ID", control.getChannelId());                
-        params.put("IGNORE_ENABLED", control.isIgnoreEnabled());         
-        params.put("LAST_EXTRACT_TIME", control.getLastExtractTime());   
-        params.put("NODE_ID", control.getNodeId());                      
-        params.put("SUSPEND_ENABLED", control.isSuspendEnabled());       
+        params.put("CHANNEL_ID", control.getChannelId());
+        params.put("IGNORE_ENABLED", control.isIgnoreEnabled());
+        params.put("LAST_EXTRACT_TIME", control.getLastExtractTime());
+        params.put("NODE_ID", control.getNodeId());
+        params.put("SUSPEND_ENABLED", control.isSuspendEnabled());
         return params;
     }
 

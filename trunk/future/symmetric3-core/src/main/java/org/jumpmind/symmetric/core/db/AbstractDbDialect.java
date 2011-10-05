@@ -61,8 +61,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public AbstractDbDialect(Parameters parameters) {
         this.localParameters = parameters == null ? new Parameters() : parameters;
+        validateParameters(this.localParameters);
         this.databaseDefinition = new SymmetricTables(parameters.get(Parameters.DB_TABLE_PREFIX,
                 SymmetricTables.DEFAULT_PREFIX));
+    }
+
+    protected void validateParameters(Parameters parameters) {
     }
 
     public SymmetricTables getSymmetricTables() {
@@ -322,32 +326,35 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public Query createQuery(int expectedNumberOfArgs, Table... tables) {
-        return Query.create(expectedNumberOfArgs, tables);
+        return Query.create(getDbDialectInfo().getIdentifierQuoteString(), expectedNumberOfArgs,
+                tables);
     }
 
     public Query createQuery(Table... tables) {
-        return Query.create(tables);
+        return Query.create(getDbDialectInfo().getIdentifierQuoteString(), tables);
     }
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table) {
-        return createDmlStatement(dmlType, table.getFullyQualifiedTableName(),
-                table.getPrimaryKeyColumnsArray(), table.getColumns());
+        return createDmlStatement(dmlType, table.getCatalogName(), table.getSchemaName(),
+                table.getTableName(), table.getPrimaryKeyColumnsArray(), table.getColumns());
     }
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table, Set<String> columnFilter) {
-        return createDmlStatement(dmlType, table.getFullyQualifiedTableName(),
-                table.getColumnSet(columnFilter, true), table.getColumnSet(columnFilter, false));
+        return createDmlStatement(dmlType, table.getCatalogName(), table.getSchemaName(),
+                table.getTableName(), table.getColumnSet(columnFilter, true),
+                table.getColumnSet(columnFilter, false));
     }
 
-    public DmlStatement createDmlStatement(DmlType dmlType, String tableName, Column[] keys,
-            Column[] columns) {
-        return createDmlStatement(dmlType, tableName, keys, columns, null);
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
+            String tableName, Column[] keys, Column[] columns) {
+        return createDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns, null);
     }
 
-    public DmlStatement createDmlStatement(DmlType dmlType, String tableName, Column[] keys,
-            Column[] columns, Column[] preFilteredColumns) {
-        return new DmlStatement(dmlType, tableName, keys, columns, preFilteredColumns,
-                dialectInfo.isDateOverridesToTimestamp(), dialectInfo.getIdentifierQuoteString());
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
+            String tableName, Column[] keys, Column[] columns, Column[] preFilteredColumns) {
+        return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
+                preFilteredColumns, dialectInfo.isDateOverridesToTimestamp(),
+                dialectInfo.getIdentifierQuoteString());
     }
 
     public void refreshParameters(Parameters parameters) {
@@ -365,5 +372,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
         }
         new SqlScript(ddlWriter.toString(), this, false).execute(true);
+    }
+
+    public boolean requiresSavepoints() {
+        return false;
     }
 }

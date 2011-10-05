@@ -26,7 +26,7 @@ abstract public class AbstractJdbcDbDialect extends AbstractDbDialect implements
         this.dataSource = dataSource;
     }
 
-    public ISqlTemplate getSqlTemplate() {
+    final public ISqlTemplate getSqlTemplate() {
         return getJdbcSqlConnection();
     }
 
@@ -61,9 +61,13 @@ abstract public class AbstractJdbcDbDialect extends AbstractDbDialect implements
         boolean integrityError = false;
         if (ex instanceof SQLException) {
             int sqlErrorCode = ((SQLException) ex).getErrorCode();
+            String sqlState = ((SQLException) ex).getSQLState();
             int[] codes = getDataIntegritySqlErrorCodes();
             for (int i : codes) {
                 if (sqlErrorCode == i) {
+                    integrityError = true;
+                    break;
+                } else if (sqlState.equals(Integer.toString(i))) {
                     integrityError = true;
                     break;
                 }

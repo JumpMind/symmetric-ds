@@ -58,11 +58,11 @@ public class OracleTableBuilder extends AbstractTableBuilder {
     /**
      * Creates a new builder instance.
      * 
-     * @param platform
-     *            The platform this builder belongs to
+     * @param dialect
+     *            The dialect this builder belongs to
      */
-    public OracleTableBuilder(IDbDialect platform) {
-        super(platform);
+    public OracleTableBuilder(IDbDialect dialect) {
+        super(dialect);
         addEscapedCharSequence("'", "''");
 
         _isoDatePattern = Pattern.compile("\\d{4}\\-\\d{2}\\-\\d{2}");

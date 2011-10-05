@@ -52,6 +52,8 @@ public class Parameters extends HashMap<String, String> {
     
     public final static String LOADER_DELETE_FIRST = "dataloader.delete.first";
 
+    public final static String LOADER_ENABLE_FALLBACK_SAVEPOINT = "dataloader.enable.fallback.savepoint";
+    
     public final static String LOADER_ENABLE_FALLBACK_UPDATE = "dataloader.enable.fallback.update";
 
     public final static String LOADER_ENABLE_FALLBACK_INSERT = "dataloader.enable.fallback.insert";
@@ -83,13 +85,17 @@ public class Parameters extends HashMap<String, String> {
     protected List<IParameterFilter> parameterFilters = new ArrayList<IParameterFilter>();
 
     public Parameters() {
+        put(LOADER_MAX_ROWS_BEFORE_BATCH_FLUSH, "1000");
+        put(LOADER_MAX_ROWS_BEFORE_COMMIT, "1000");
     }
 
     public Parameters(List<IParameterFilter> parameterFilters) {
+        this();
         this.parameterFilters.addAll(parameterFilters);
     }
 
     public Parameters(Properties properties) {
+        this();
         putAll(properties);
     }
 

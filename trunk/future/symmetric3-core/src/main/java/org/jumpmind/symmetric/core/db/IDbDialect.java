@@ -39,7 +39,7 @@ public interface IDbDialect {
 
     public String getDefaultSchema();
 
-    public ISqlTemplate getSqlTemplate();
+    public ISqlTemplate getSqlTemplate();        
 
     public IDataCaptureBuilder getDataCaptureBuilder();
 
@@ -85,13 +85,15 @@ public interface IDbDialect {
     
     public DmlStatement createDmlStatement(DmlType dmlType, Table table, Set<String> columnFilter);
     
-    public DmlStatement createDmlStatement(DmlType dmlType, String tableName, Column[] keys, Column[] columns);
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName, String tableName, Column[] keys, Column[] columns);
     
-    public DmlStatement createDmlStatement(DmlType dmlType, String tableName, Column[] keys, Column[] columns,
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName, String tableName, Column[] keys, Column[] columns,
             Column[] preFilteredColumns);
     
     public void refreshParameters(Parameters parameters);
     
     public void removeSymmetric();
-    
+        
+    public boolean requiresSavepoints();
+       
 }

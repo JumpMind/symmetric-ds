@@ -84,7 +84,7 @@ public class CsvDataReader implements IDataReader {
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
                     String tableName = tokens[1];
                     table = tables.get(Table.getFullyQualifiedTableName(tableName, schemaName,
-                            catalogName));
+                            catalogName, ""));
                     if (table != null) {
                         return table;
                     } else {
@@ -103,7 +103,7 @@ public class CsvDataReader implements IDataReader {
                                 && keys.contains(tokens[i]));
                         table.addColumn(column);
                     }
-                    tables.put(table.getFullyQualifiedTableName(), table);
+                    tables.put(table.getFullyQualifiedTableName(""), table);
                     return table;
                 } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                     return null;

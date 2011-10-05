@@ -15,7 +15,7 @@ public class TableNotFoundException extends SqlException {
     }
 
     public TableNotFoundException(Table table) {
-        super("Could not find table " + table.getFullyQualifiedTableName());
+        super("Could not find table " + table.getFullyQualifiedTableName(""));
     }
 
 }

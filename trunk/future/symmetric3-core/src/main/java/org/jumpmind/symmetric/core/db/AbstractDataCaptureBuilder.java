@@ -48,13 +48,13 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
 
     abstract protected String getFunctionInstalledSqlTemplate();
 
-    abstract protected String getEmptyColumnTemplate();
+    protected String getEmptyColumnTemplate() {return null;}
 
     abstract protected String getStringColumnTemplate();
 
-    abstract protected String getXmlColumnTemplate();
+    protected String getXmlColumnTemplate() {return null;}
 
-    abstract protected String getArrayColumnTemplate();
+    protected String getArrayColumnTemplate() {return null;}
 
     abstract protected String getNumberColumnTemplate();
 
@@ -68,23 +68,31 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
 
     abstract protected String getTriggerConcatCharacter();
 
-    abstract protected String getOldColumnPrefix();
+    protected String getOldColumnPrefix()  {return null;}
 
-    abstract protected String getNewColumnPrefix();
-
-    abstract protected String getPostTriggerTemplate();
+    protected String getNewColumnPrefix() {return null;}
 
     abstract protected String getInsertTriggerTemplate();
 
     abstract protected String getUpdateTriggerTemplate();
 
     abstract protected String getDeleteTriggerTemplate();
+    
+    protected String getPostInsertTriggerTemplate() {return null;}
+
+    protected String getPostUpdateTriggerTemplate() {return null;}
+
+    protected String getPostDeleteTriggerTemplate() {return null;}
 
     abstract protected String getTransactionTriggerExpression();
 
-    abstract protected boolean isTransactionIdOverrideSupported();
+    protected boolean isTransactionIdOverrideSupported() {
+        return true;
+    }
 
-    abstract protected String preProcessTriggerSqlClause(String sqlClause);
+    protected String preProcessTriggerSqlClause(String sqlClause) {
+        return sqlClause;
+    }
 
     abstract protected String getDataHasChangedCondition();
 
@@ -339,7 +347,7 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
                                 : tableToExtract.getCondition(), sql);
         sql = StringUtils.replaceTokens("tableName", tableToExtract.getTable().getTableName(), sql);
         sql = StringUtils.replaceTokens("schemaName", tableToExtract.getTable()
-                .getQualifiedTablePrefix(), sql);
+                .getQualifiedTablePrefix(dbDialect.getDbDialectInfo().getIdentifierQuoteString()), sql);
         sql = StringUtils.replaceTokens(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(getTableExtractSqlTableAlias(), tableToExtract.getTable()
@@ -538,7 +546,18 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
 
     public String createPostTriggerDDL(DataEventType dml, TriggerHistory history,
             String tablePrefix, Table metaData, boolean supportsBigLobs) {
-        String ddl = getPostTriggerTemplate();
+        String ddl = null;
+        switch (dml) {
+        case INSERT:
+            ddl = getPostInsertTriggerTemplate();
+            break;
+        case UPDATE:
+            ddl = getPostUpdateTriggerTemplate();
+            break;
+        case DELETE:
+            ddl = getPostDeleteTriggerTemplate();
+            break;
+        }
         return replaceTemplateVariables(dml, history, tablePrefix, metaData, ddl, supportsBigLobs,
                 true);
     }
