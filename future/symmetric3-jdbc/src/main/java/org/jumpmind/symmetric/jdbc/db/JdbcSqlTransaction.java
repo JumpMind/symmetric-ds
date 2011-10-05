@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -165,7 +166,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
      * @param value
      */
     private final int normalizeUpdateCount(int value) {
-        if (value == -2) {
+        if (value == Statement.SUCCESS_NO_INFO) {
             value = 1;
         }
         return value;

@@ -7,11 +7,11 @@ import org.jumpmind.symmetric.core.common.ArrayUtils;
 import org.jumpmind.symmetric.core.common.LogLevel;
 import org.jumpmind.symmetric.core.common.StringUtils;
 import org.jumpmind.symmetric.core.db.DataIntegrityViolationException;
+import org.jumpmind.symmetric.core.db.DmlStatement;
+import org.jumpmind.symmetric.core.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.core.db.IDbDialect;
 import org.jumpmind.symmetric.core.db.ISqlTransaction;
 import org.jumpmind.symmetric.core.db.SqlScript;
-import org.jumpmind.symmetric.core.db.DmlStatement;
-import org.jumpmind.symmetric.core.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.core.model.Batch;
 import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Data;
@@ -45,6 +45,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     protected Data lastData;
 
     protected int uncommittedRows = 0;
+
+    protected int consecutiveSuccessfulDmlCount = 0;
 
     protected Settings settings;
 
@@ -125,6 +127,11 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     }
 
     public boolean writeData(Data data) {
+        if (!currentBatchMode && settings.batchMode
+                && consecutiveSuccessfulDmlCount > settings.successCountBeforeUseBatch) {
+            log.info("Reentering batch mode for the rest of batch %d", batch.getBatchId());
+            currentBatchMode = true;
+        }
         boolean committed = writeData(data, currentBatchMode, true);
         this.lastData = data;
         return committed;
@@ -177,7 +184,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     protected void handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         if (transaction.isInBatchMode()) {
-            log.log(LogLevel.WARN, "Exiting batch mode for the rest of batch %d",
+            log.log(LogLevel.WARN, "Exiting batch mode for batch %d",
                     batch.getBatchId());
             this.currentBatchMode = false;
             resendFailedDataInNonBatchMode();
@@ -212,6 +219,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     protected void populateSettings(Parameters parameters) {
         settings.maxRowsBeforeBatchFlush = parameters.getInt(
                 Parameters.LOADER_MAX_ROWS_BEFORE_BATCH_FLUSH, 10);
+        settings.ignoreInsertCollision = parameters.is(
+                Parameters.LOADER_ENABLE_IGNORE_COLLISIONS_INSERT, false);
         settings.enableFallbackForInsert = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_INSERT,
                 true);
         settings.enableFallbackForUpdate = parameters.is(Parameters.LOADER_ENABLE_FALLBACK_UPDATE,
@@ -225,6 +234,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                 Parameters.LOADER_DONT_INCLUDE_PKS_IN_UPDATE, false);
         settings.autoCreateTable = parameters.is(Parameters.LOADER_CREATE_TABLE_IF_DOESNT_EXIST,
                 false);
+        settings.successCountBeforeUseBatch = parameters.getInt(
+                Parameters.LOADER_SUCCESSFUL_COUNT_BEFORE_USE_BATCHING_ENABLED, 100);
 
         List<IDataFilter> filters = parameters.instantiate(Parameters.LOADER_DATA_FILTERS);
         if (filters.size() > 0) {
@@ -349,11 +360,15 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                 batch.incrementInsertCount();
                 // TODO add save point logic for postgresql
                 executeInsertSql(data, batchMode);
+                consecutiveSuccessfulDmlCount++;
             } catch (DataIntegrityViolationException e) {
+                consecutiveSuccessfulDmlCount = 0;
                 if (!batchMode) {
                     batch.decrementInsertCount(1);
                 }
-                if (settings.enableFallbackForInsert && !batchMode) {
+                if (settings.ignoreInsertCollision && !batchMode) {
+                    batch.incrementInsertCollisionCount();
+                } else if (settings.enableFallbackForInsert && !batchMode) {
                     this.dmlStatement = null;
                     // TODO rollback to save point
                     batch.incrementFallbackUpdateCount();
@@ -374,6 +389,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                 batch.startTimer(STAT_DATABASE_TIME);
                 int updateCount = executeUpdateSql(data);
                 if (updateCount == 0) {
+                    consecutiveSuccessfulDmlCount = 0;
                     if (settings.enableFallbackForUpdate) {
                         // The row was missing, fallback to an insert
                         executeInsertSql(data, false);
@@ -382,9 +398,11 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
                         throw new DataFailedToLoadException(data, "There were no rows to update");
                     }
                 } else {
+                    consecutiveSuccessfulDmlCount++;
                     batch.incrementUpdateCount();
                 }
             } catch (DataIntegrityViolationException e) {
+                consecutiveSuccessfulDmlCount = 0;
                 // If we got here, most likely scenario is that the update
                 // has already run and updated the primary key.
                 // Let's attempt to run the update using the new
@@ -503,6 +521,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
         protected boolean enableFallbackForInsert;
 
+        protected boolean ignoreInsertCollision;
+
         protected boolean enableFallbackForUpdate;
 
         protected boolean allowMissingDeletes;
@@ -516,6 +536,8 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
         protected boolean dontIncludeKeysInUpdateStatement;
 
         protected boolean autoCreateTable;
+
+        protected int successCountBeforeUseBatch;
 
     }
 
