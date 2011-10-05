@@ -183,6 +183,10 @@ public class TableCopy {
                         if (batch.getFallbackUpdateCount() > 0) {
                             logger.info("The data loader fell back to an update %d times during the load", batch.getFallbackUpdateCount());
                         }
+                        if (batch.getInsertCollisionCount() > 0) {
+                            logger.info("The data loader collided %d times during the load.  All row collisions were ignored.", batch.getInsertCollisionCount());
+                        }
+
                     }
                 } catch (IOException ex) {
                     throw new IoException(ex);

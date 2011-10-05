@@ -30,6 +30,7 @@ public class Batch {
     protected long dataReadMillis;
     protected long dataWriteMillis;
     protected long missingDeleteCount;
+    protected long insertCollisionCount;
     
     protected Map<String, Long> timers = new HashMap<String, Long>();
 
@@ -49,6 +50,10 @@ public class Batch {
 
     public long incrementLineCount() {
         return ++lineCount;
+    }
+    
+    public long incrementInsertCollisionCount() {
+        return ++insertCollisionCount;
     }
 
     public long incrementFallbackInsertCount() {
@@ -113,6 +118,10 @@ public class Batch {
     
     public void incrementReadByteCount(long count) {
         readByteCount += count;
+    }
+    
+    public void incrementInsertCollisionCount(long count) {
+        insertCollisionCount+=count;
     }
 
     public void startTimer(String name) {
@@ -244,4 +253,7 @@ public class Batch {
         return sqlRowsAffectedCount;
     }
 
+    public long getInsertCollisionCount() {
+        return insertCollisionCount;
+    }
 }

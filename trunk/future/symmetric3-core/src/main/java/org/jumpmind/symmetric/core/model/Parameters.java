@@ -55,8 +55,12 @@ public class Parameters extends HashMap<String, String> {
     public final static String LOADER_ENABLE_FALLBACK_UPDATE = "dataloader.enable.fallback.update";
 
     public final static String LOADER_ENABLE_FALLBACK_INSERT = "dataloader.enable.fallback.insert";
+    
+    public final static String LOADER_ENABLE_IGNORE_COLLISIONS_INSERT = "dataloader.enable.ignore.collisions.inserts";
 
     public final static String LOADER_ALLOW_MISSING_DELETES = "dataloader.allow.missing.delete";
+    
+    public final static String LOADER_SUCCESSFUL_COUNT_BEFORE_USE_BATCHING_ENABLED = "dataloader.success.count.before.use.batching";
 
     public final static String LOADER_DATA_FILTERS = "dataloader.filters";
 
