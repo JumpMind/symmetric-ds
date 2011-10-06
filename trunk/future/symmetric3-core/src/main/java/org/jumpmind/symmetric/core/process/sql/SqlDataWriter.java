@@ -129,7 +129,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
     public boolean writeData(Data data) {
         if (!currentlyInBatchInsertMode && settings.batchMode
                 && consecutiveSuccessfulDmlCount > settings.successCountBeforeUseBatch) {
-            log.info("Reentering batch mode for the rest of batch %d", batch.getBatchId());
+            log.info("Reentering batch mode for the rest of batch %d                                     ", batch.getBatchId());
             currentlyInBatchInsertMode = true;
         }
         boolean committed = writeData(data, currentlyInBatchInsertMode, true);
@@ -184,7 +184,7 @@ public class SqlDataWriter extends AbstractDataWriter implements IDataWriter {
 
     protected void handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         if (transaction.isInBatchMode()) {
-            log.log(LogLevel.WARN, "Exiting batch mode for batch %d", batch.getBatchId());
+            log.log(LogLevel.WARN, "Exiting batch mode for batch %d                                           ", batch.getBatchId());
             this.currentlyInBatchInsertMode = false;
             resendFailedDataInNonBatchMode();
         } else {
