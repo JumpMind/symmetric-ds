@@ -177,7 +177,7 @@ public class SqlDataWriterTest extends AbstractDatabaseTest {
         Batch batch = writeToTestTable(
                 true,
                 new Data(testTable.getTableName(), DataEventType.SQL, String.format(
-                        "\"update %s%s%s set TEST_TEXT='it worked!'\"", quoteString,
+                        "\"update \\%s%s\\%s set TEST_TEXT='it worked!'\"", quoteString,
                         testTable.getTableName(), quoteString)));
         Assert.assertEquals(10, count(testTable.getTableName()));
         Assert.assertEquals(10, count(testTable.getTableName(), "TEST_TEXT='it worked!'"));
