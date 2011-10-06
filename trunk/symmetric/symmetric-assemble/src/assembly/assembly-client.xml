@@ -5,7 +5,7 @@
     </formats>
     <fileSets>
         <fileSet>
-            <directory>../symmetric-parent</directory>
+            <directory>/</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>COPYING</include>
