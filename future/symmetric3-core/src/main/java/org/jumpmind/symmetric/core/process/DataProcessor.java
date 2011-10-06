@@ -102,6 +102,7 @@ public class DataProcessor {
                     dataRow++;
                     if (processTable) {
                         batch.startTimer(STAT_WRITE_DATA);
+                        batch.incrementLineCount();
                         boolean needsCommit = dataWriter.writeData(data);
                         batch.incrementDataWriteMillis(batch.endTimer(STAT_WRITE_DATA));
                         if (needsCommit && listener != null) {

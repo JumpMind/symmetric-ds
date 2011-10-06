@@ -177,14 +177,19 @@ public class TableCopy {
                     if (loadListener.getTable() != null) {
                         Batch batch = loadListener.getBatch();
                         logger.info(
-                                "It took %d ms to copy table %s.  It took %d ms to read the data and %d ms to write the data. %d rows were inserted.",
-                                totalTableCopyTime, loadListener.getTable().getTableName(),
-                                batch.getDataReadMillis(), batch.getDataWriteMillis(), batch.getInsertCount());
+                                "It took %d ms to copy %d rows from table %s.  It took %d ms to read the data and %d ms to write the data. %d rows were inserted.",
+                                totalTableCopyTime, batch.getLineCount(), loadListener.getTable()
+                                        .getTableName(), batch.getDataReadMillis(), batch
+                                        .getDataWriteMillis(), batch.getInsertCount());
                         if (batch.getFallbackUpdateCount() > 0) {
-                            logger.info("The data loader fell back to an update %d times during the load", batch.getFallbackUpdateCount());
+                            logger.info(
+                                    "The data loader fell back to an update %d times during the load",
+                                    batch.getFallbackUpdateCount());
                         }
                         if (batch.getInsertCollisionCount() > 0) {
-                            logger.info("The data loader collided %d times during the load.  All row collisions were ignored.", batch.getInsertCollisionCount());
+                            logger.info(
+                                    "The data loader collided %d times during the load.  All row collisions were ignored.",
+                                    batch.getInsertCollisionCount());
                         }
 
                     }
@@ -227,8 +232,7 @@ public class TableCopy {
                 int currentPercent = (int) (((double) actualSize / (double) expectedSize) * 100);
                 if (currentPercent != percent) {
                     percent = currentPercent;
-                    logger.info(buildProgressBar(percent, expectedSizeIsInRows, expectedSize,
-                            percent < 100));
+                    logger.info(buildProgressBar(percent, batch.getLineCount()));
                 }
                 return true;
             }
@@ -241,8 +245,7 @@ public class TableCopy {
         }
     }
 
-    protected String buildProgressBar(int percent, boolean expectedSizeIsInRows, long expectedSize,
-            boolean includeCarriageReturn) {
+    protected String buildProgressBar(int percent, long lineCount) {
         StringBuilder b = new StringBuilder("|");
         for (int i = 1; i <= 25; i++) {
             if (percent >= i * 4) {
@@ -253,12 +256,10 @@ public class TableCopy {
         }
         b.append("| ");
         b.append(percent);
-        b.append("% of ");
-        b.append(expectedSize);
-        b.append(expectedSizeIsInRows ? " rows" : " bytes");
-        if (includeCarriageReturn) {
-            b.append("\r");
-        }
+        b.append("% Processed ");
+        b.append(lineCount);
+        b.append(" rows ");
+        b.append("\r");
         return b.toString();
     }
 
