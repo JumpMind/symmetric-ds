@@ -5,7 +5,7 @@
     </formats>
     <fileSets>
         <fileSet>
-            <directory>/</directory>
+            <directory>.</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>COPYING</include>
