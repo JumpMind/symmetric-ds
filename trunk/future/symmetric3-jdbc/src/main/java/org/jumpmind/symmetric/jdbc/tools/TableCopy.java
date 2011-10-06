@@ -154,9 +154,10 @@ public class TableCopy {
             processor.process(new DataContext(parameters));
             long totalTableCopyTime = System.currentTimeMillis() - ts;
             logger.info(
-                    "It took %d ms to copy table %s.  It took %d ms to read the data and %d ms to write the data.",
-                    totalTableCopyTime, tableToRead.getTable().getTableName(),
-                    batch.getDataReadMillis(), batch.getDataWriteMillis());
+                    "It took %d ms to copy %d rows from table %s.  It took %d ms to read the data and %d ms to write the data.",
+                    totalTableCopyTime, batch.getLineCount(),
+                    tableToRead.getTable().getTableName(), batch.getDataReadMillis(),
+                    batch.getDataWriteMillis());
 
         }
     }
