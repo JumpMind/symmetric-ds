@@ -287,7 +287,7 @@
         <column name="trigger_hist_id" type="INTEGER" required="true"  description="The foreign key to the trigger_hist entry that contains the primary key and column names for the table being synchronized." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this data belongs to, such as 'prices'" />
         <column name="transaction_id" type="VARCHAR" size="255"  description="An optional transaction identifier that links multiple data changes together as the same transaction." />
-        <column name="source_node_id" type="VARCHAR" size="50"  description="If this data was capture" />
+        <column name="source_node_id" type="VARCHAR" size="50"  description="If the data was inserted by a SymmetricDS data loader, then the id of the source node is record so that data is not re-routed back to it." />
         <column name="external_data" type="VARCHAR" size="50"  description="A field that can be populated by a trigger that uses the EXTERNAL_SELECT" />        
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_d_channel_id">
@@ -327,7 +327,7 @@
         <column name="batch_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="A unique id for the batch." />
         <column name="node_id" type="VARCHAR" size="50"  description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
-        <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be newly created (NE), sent to a Node (SE), acknowledged as successful (OK), and error (ER)." />
+        <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be currently routing (RE), newly created and ready for replication (NE), being queried from the database (QE), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK) or error (ER)." />
         <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />               
         <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />        
         <column name="byte_count" type="BIGINT" required="true" default="0"  description="The number of bytes that were sent as part of this batch." />
