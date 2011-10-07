@@ -24,6 +24,15 @@ public class TableCopyProperties extends DriverDataSourceProperties {
 
     public TableCopyProperties() {
     }
+    
+    public String getSourceSchema() {
+        return getProperty("db.source.schema");
+    }
+    
+    public String getSourceCatalog() {
+        return getProperty("db.source.catalog");
+    }
+
 
     public String[] getTables() {
         String tables = getProperty("copy.tables", "");

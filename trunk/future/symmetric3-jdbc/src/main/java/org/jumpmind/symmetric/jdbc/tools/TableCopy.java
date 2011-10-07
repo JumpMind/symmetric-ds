@@ -101,7 +101,8 @@ public class TableCopy {
 
         tablesToRead = new ArrayList<TableToExtract>();
         for (String tableName : tableNames) {
-            Table table = dialect2UseForMetadataLookup.findTable(tableName, false);
+            Table table = dialect2UseForMetadataLookup.findTable(properties.getSourceCatalog(),
+                    properties.getSourceSchema(), tableName, false);
             if (table != null) {
                 String condition = properties.getConditionForTable(tableName);
                 table.setSchemaName(null);
