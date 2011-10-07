@@ -141,7 +141,8 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                                 context, data.getTransformation(), data.getSourceKeyValues(),
                                 data.getOldSourceValues(), data.getSourceValues());
                         for (TransformedData newlyTransformedData : newlyTransformedDatas) {
-                            if (newlyTransformedData.hasSameKeyValues(data.getKeyValues())) {
+                            if (newlyTransformedData.hasSameKeyValues(data.getKeyValues()) ||
+                            		data.isGeneratedIdentityNeeded()) {
                                 if (newlyTransformedData.getKeyNames() != null
                                         && newlyTransformedData.getKeyNames().length > 0) {
                                     tableTemplate.setColumnNames(newlyTransformedData
@@ -164,6 +165,8 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                                             newlyTransformedData.getTransformation()
                                                     .getTransformId());
                                 }
+                            } else {
+                            	log.debug("TransformMatchingFallbackNotFound", DmlType.UPDATE.name());
                             }
                         }
 
@@ -188,7 +191,8 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                                     context, data.getTransformation(), data.getSourceKeyValues(),
                                     data.getOldSourceValues(), data.getSourceValues());
                             for (TransformedData newlyTransformedData : newlyTransformedDatas) {
-                                if (newlyTransformedData.hasSameKeyValues(data.getKeyValues())) {
+                                if (newlyTransformedData.hasSameKeyValues(data.getKeyValues()) ||
+                                		newlyTransformedData.isGeneratedIdentityNeeded()) {
                                     if (newlyTransformedData.isGeneratedIdentityNeeded()) {
                                         if (log.isDebugEnabled()) {
                                             log.debug("TransformEnablingGeneratedIdentity", tableTemplate.getTable().getName());
@@ -204,6 +208,8 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                                     tableTemplate.setKeyNames(newlyTransformedData.getKeyNames());
                                     tableTemplate.insert(context,
                                             newlyTransformedData.getColumnValues());
+                                } else {
+                                	log.debug("TransformMatchingFallbackNotFound", DmlType.INSERT.name());
                                 }
                             }
                         } else {
