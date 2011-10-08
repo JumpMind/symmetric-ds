@@ -64,7 +64,7 @@ public class FileCsvDataWriter extends AbstractCsvDataWriter {
     @Override
     protected void print(String data) {
         try {            
-            byte[] bytes = data.getBytes();
+            byte[] bytes = data.getBytes("UTF-8");
             ByteBuffer byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length);
             channel.write(byteBuffer);
         } catch (IOException ex) {
