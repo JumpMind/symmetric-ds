@@ -1,7 +1,11 @@
 package org.jumpmind.symmetric.core.process.csv;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,9 +29,8 @@ import org.jumpmind.symmetric.csv.CsvUtils;
 
 public class CsvDataReader implements IDataReader {
 
-    protected BufferedReader reader;
+    protected Reader reader;
     protected CsvReader csvReader;
-    protected boolean closeReader;
     protected DataContext context;
     protected Map<String, Table> tables = new HashMap<String, Table>();
     protected Object next;
@@ -35,16 +38,25 @@ public class CsvDataReader implements IDataReader {
     protected Table table;
 
     public CsvDataReader(StringBuilder input) {
-        this(new BufferedReader(new StringReader(input.toString())), true);
+        this(new BufferedReader(new StringReader(input.toString())));
     }
 
     public CsvDataReader(String input) {
-        this(new BufferedReader(new StringReader(input)), true);
+        this(new BufferedReader(new StringReader(input)));
     }
 
-    public CsvDataReader(BufferedReader reader, boolean closeReader) {
+    public CsvDataReader(Reader reader) {
         this.reader = reader;
-        this.closeReader = closeReader;
+    }
+
+    public CsvDataReader(File file) {
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            InputStreamReader in = new InputStreamReader(fis, "UTF-8");
+            this.reader = new BufferedReader(in);
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        }
     }
 
     public void open(DataContext context) {
@@ -204,7 +216,7 @@ public class CsvDataReader implements IDataReader {
     }
 
     public void close() {
-        if (closeReader && csvReader != null) {
+        if (csvReader != null) {
             csvReader.close();
         }
     }

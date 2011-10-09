@@ -1,15 +1,11 @@
 package org.jumpmind.symmetric.jdbc.tools;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.core.common.IoException;
 import org.jumpmind.symmetric.core.common.IoUtils;
 import org.jumpmind.symmetric.core.common.Log;
 import org.jumpmind.symmetric.core.common.LogFactory;
@@ -167,38 +163,30 @@ public class TableCopy {
         for (File file : sourceFiles) {
             if (file.exists()) {
                 long ts = System.currentTimeMillis();
-                BufferedReader reader = null;
-                try {
-                    reader = new BufferedReader(new FileReader(file));
-                    DataProcessor processor = new DataProcessor(new CsvDataReader(reader, false),
-                            getDataWriter(false, file.length()));
-                    LoadListenerListener loadListener = new LoadListenerListener();
-                    processor.setListener(loadListener);
-                    processor.process(new DataContext(parameters));
-                    long totalTableCopyTime = System.currentTimeMillis() - ts;
-                    if (loadListener.getTable() != null) {
-                        Batch batch = loadListener.getBatch();
+                DataProcessor processor = new DataProcessor(new CsvDataReader(file), getDataWriter(
+                        false, file.length()));
+                LoadListenerListener loadListener = new LoadListenerListener();
+                processor.setListener(loadListener);
+                processor.process(new DataContext(parameters));
+                long totalTableCopyTime = System.currentTimeMillis() - ts;
+                if (loadListener.getTable() != null) {
+                    Batch batch = loadListener.getBatch();
+                    logger.info(
+                            "It took %d ms to copy %d rows from table %s.  It took %d ms to read the data and %d ms to write the data. %d rows were inserted.",
+                            totalTableCopyTime, batch.getLineCount(), loadListener.getTable()
+                                    .getTableName(), batch.getDataReadMillis(), batch
+                                    .getDataWriteMillis(), batch.getInsertCount());
+                    if (batch.getFallbackUpdateCount() > 0) {
                         logger.info(
-                                "It took %d ms to copy %d rows from table %s.  It took %d ms to read the data and %d ms to write the data. %d rows were inserted.",
-                                totalTableCopyTime, batch.getLineCount(), loadListener.getTable()
-                                        .getTableName(), batch.getDataReadMillis(), batch
-                                        .getDataWriteMillis(), batch.getInsertCount());
-                        if (batch.getFallbackUpdateCount() > 0) {
-                            logger.info(
-                                    "The data loader fell back to an update %d times during the load",
-                                    batch.getFallbackUpdateCount());
-                        }
-                        if (batch.getInsertCollisionCount() > 0) {
-                            logger.info(
-                                    "The data loader collided %d times during the load.  All row collisions were ignored.",
-                                    batch.getInsertCollisionCount());
-                        }
-
+                                "The data loader fell back to an update %d times during the load",
+                                batch.getFallbackUpdateCount());
                     }
-                } catch (IOException ex) {
-                    throw new IoException(ex);
-                } finally {
-                    IoUtils.closeQuietly(reader);
+                    if (batch.getInsertCollisionCount() > 0) {
+                        logger.info(
+                                "The data loader collided %d times during the load.  All row collisions were ignored.",
+                                batch.getInsertCollisionCount());
+                    }
+
                 }
             } else {
                 logger.error("Could not find " + file.getName());

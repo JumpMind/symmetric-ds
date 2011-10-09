@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.core.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.jumpmind.symmetric.csv.CsvUtils;
+
 /**
  * This is the data that changed due to a data sync trigger firing.
  */
@@ -111,15 +113,15 @@ public class Data extends AbstractCsvData implements Serializable {
 
     public Data() {
     }
-    
+
     public void putParsedRowData(String[] tokens) {
         putData(ROW_DATA, tokens);
     }
-    
+
     public void putParsedOldData(String[] tokens) {
         putData(OLD_DATA, tokens);
     }
-    
+
     public void putParsedPkData(String[] tokens) {
         putData(PK_DATA, tokens);
     }
@@ -166,6 +168,12 @@ public class Data extends AbstractCsvData implements Serializable {
     }
 
     public String getRowData() {
+        if (rowData == null) {
+            String[] data = toParsedRowData();
+            if (data != null && data.length > 0) {
+                rowData = CsvUtils.escapeCsvData(data);
+            }
+        }
         return rowData;
     }
 
@@ -174,6 +182,12 @@ public class Data extends AbstractCsvData implements Serializable {
     }
 
     public String getPkData() {
+        if (pkData == null) {
+            String[] data = toParsedPkData();
+            if (data != null && data.length > 0) {
+                pkData = CsvUtils.escapeCsvData(data);
+            }
+        }
         return pkData;
     }
 
@@ -182,6 +196,12 @@ public class Data extends AbstractCsvData implements Serializable {
     }
 
     public String getOldData() {
+        if (oldData == null) {
+            String[] data = toParsedOldData();
+            if (data != null && data.length > 0) {
+                oldData = CsvUtils.escapeCsvData(data);
+            }
+        }
         return oldData;
     }
 
@@ -228,6 +248,5 @@ public class Data extends AbstractCsvData implements Serializable {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-        
 
 }
