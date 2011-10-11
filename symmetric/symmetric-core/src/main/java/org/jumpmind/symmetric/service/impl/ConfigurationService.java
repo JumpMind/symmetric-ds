@@ -317,7 +317,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     log.info("ChannelAutoConfiguring", defaultChannel.getChannelId());
                     saveChannel(defaultChannel, true);
                 } else {
-                    log.info("ChannelExists", defaultChannel.getChannelId());
+                    log.debug("ChannelExists", defaultChannel.getChannelId());
                 }
             }
             reloadChannels();

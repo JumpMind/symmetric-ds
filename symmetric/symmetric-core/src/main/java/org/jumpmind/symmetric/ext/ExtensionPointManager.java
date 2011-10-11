@@ -72,7 +72,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class ExtensionPointManager implements IExtensionPointManager, BeanFactoryAware {
 
-    final ILog log = LogFactory.getLog(getClass());
+    private ILog log = LogFactory.getLog(getClass());
 
     private IDataLoaderService dataLoaderService;
 
@@ -306,6 +306,7 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+        this.log = LogFactory.getLog(parameterService);
     }
 
     public void setNodeService(INodeService nodeService) {

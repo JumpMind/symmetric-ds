@@ -14,6 +14,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     </bean>
 
     <bean id="jobManager" class="org.jumpmind.symmetric.job.JobManager">
+        <property name="parameterService" ref="parameterService"/>
         <property name="jobs">
             <list>
                 <ref bean="job.routing" />

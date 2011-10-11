@@ -72,7 +72,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
-    protected final ILog log = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new HashMap<String, ISymmetricEngine>();
     private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
@@ -233,6 +233,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected void init(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        this.log = LogFactory.getLog(getParameterService());
         dbDialect = AppUtils.find(Constants.DB_DIALECT, this);
         jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
         jdbcTemplate = AppUtils.find(Constants.JDBC_TEMPLATE, this);

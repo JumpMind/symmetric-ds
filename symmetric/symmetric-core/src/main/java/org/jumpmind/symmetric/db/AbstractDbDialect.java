@@ -104,7 +104,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
  */
 abstract public class AbstractDbDialect implements IDbDialect {
 
-    protected final ILog log = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
@@ -1483,6 +1483,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+        this.log = LogFactory.getLog(parameterService);
     }
 
     public String getIdentifierQuoteString() {
