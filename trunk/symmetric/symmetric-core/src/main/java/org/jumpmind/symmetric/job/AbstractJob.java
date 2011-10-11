@@ -48,7 +48,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
 
     protected DataSource dataSource;
 
-    protected final ILog log = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     protected IParameterService parameterService;
 
@@ -220,6 +220,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+        this.log = LogFactory.getLog(parameterService);
     }
 
     public void setRequiresRegistration(boolean requiresRegistration) {

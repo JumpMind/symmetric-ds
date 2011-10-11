@@ -16,18 +16,30 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.common.logging;
 
 import org.apache.commons.logging.LogConfigurationException;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * 
+ * Used to create a SymmetricDS {@link ILog} logger.
  */
 public class LogFactory {
 
     public static ILog getLog(Class<?> clazz) throws LogConfigurationException {
         return new CommonsResourceLog(org.apache.commons.logging.LogFactory.getLog(clazz));
+    }
+
+    public static ILog getLog(String name) throws LogConfigurationException {
+        return new CommonsResourceLog(org.apache.commons.logging.LogFactory.getLog(name));
+    }
+
+    public static ILog getLog(IParameterService parameterService) throws LogConfigurationException {
+        return new CommonsResourceLog(org.apache.commons.logging.LogFactory.getLog("org.jumpmind."
+                + parameterService.getString(ParameterConstants.ENGINE_NAME)));
     }
 }

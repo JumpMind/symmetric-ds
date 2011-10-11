@@ -118,6 +118,7 @@ abstract public class AbstractService implements IService, ISqlProvider {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+        this.log = LogFactory.getLog(parameterService);
     }
     
     public IParameterService getParameterService() {
