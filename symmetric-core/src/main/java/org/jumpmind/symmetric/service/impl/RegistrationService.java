@@ -121,7 +121,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             nodeId = StringUtils.isBlank(node.getNodeId()) ? nodeService.getNodeIdGenerator()
                     .selectNodeId(nodeService, node) : node.getNodeId();
             security = nodeService.findNodeSecurity(nodeId);
-        } else if (security == null || !security.isRegistrationEnabled()) {
+        } else if (targetNode == null || security == null || !security.isRegistrationEnabled()) {
             saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.RQ,
                     remoteHost, remoteAddress));
             return false;
@@ -347,6 +347,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
             String nodeId = nodeService.getNodeIdGenerator().generateNodeId(nodeService, node);
             Node existingNode = nodeService.findNode(nodeId);
             if (existingNode == null) {
+                // make sure there isn't a node security row lying around w/out a node row
+                nodeService.deleteNodeSecurity(nodeId);
                 String password = nodeService.getNodeIdGenerator().generatePassword(nodeService,
                         node);
                 password = filterPasswordOnSaveIfNeeded(password);
