@@ -80,7 +80,9 @@ public abstract class AbstractTransformer {
                         transformation.getTransformId(),
                         transformation.getFullyQualifiedTargetTableName());
             }
+            int transformNumber = 0;
             for (TransformedData targetData : dataToTransform) {
+            	transformNumber++;
                 if (perform(context, targetData, transformation, sourceValues, oldSourceValues)) {
                     if (log.isDebugEnabled()) {
                         log.debug("TransformedDataReadyForApplication", targetData
@@ -89,6 +91,8 @@ public abstract class AbstractTransformer {
                                 .getColumnValues()));
                     }
                     dataThatHasBeenTransformed.add(targetData);
+                } else {
+                    log.debug("TransformNotPerformed", transformNumber);
                 }
             }
             return dataThatHasBeenTransformed;
@@ -137,8 +141,6 @@ public abstract class AbstractTransformer {
                 // handle the delete action
                 DeleteAction deleteAction = transformation.getDeleteAction();
                 switch (deleteAction) {
-                case NONE:
-                    break;
                 case DEL_ROW:
                     data.setTargetDmlType(DmlType.DELETE);
                     persistData = true;
@@ -146,7 +148,14 @@ public abstract class AbstractTransformer {
                 case UPDATE_COL:
                     data.setTargetDmlType(DmlType.UPDATE);
                     persistData = true;
+                    break;                    
+                case NONE:
+                default:
+                	if (log.isDebugEnabled()) {
+                		log.debug("TransformNoActionNotConfiguredToDelete", transformation.getTransformId());
+                	}
                     break;
+
                 }
             }
         } catch (IgnoreRowException ex) {
