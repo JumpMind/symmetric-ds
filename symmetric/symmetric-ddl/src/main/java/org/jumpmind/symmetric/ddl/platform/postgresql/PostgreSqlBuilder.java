@@ -136,7 +136,7 @@ public class PostgreSqlBuilder extends SqlBuilder
      */
     protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException
     {
-        print("UNIQUE DEFAULT nextval('");
+        print(" DEFAULT nextval('");
         printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
         print("')");
     }
