@@ -80,15 +80,20 @@ public abstract class AbstractTransformer {
                         transformation.getTransformId(),
                         transformation.getFullyQualifiedTargetTableName());
             }
+            int transformNumber = 0;
             for (TransformedData targetData : dataToTransform) {
+                transformNumber++;
                 if (perform(context, targetData, transformation, sourceValues, oldSourceValues)) {
                     if (log.isDebugEnabled()) {
                         log.debug("TransformedDataReadyForApplication", targetData
-                                .getTargetDmlType().toString(), ArrayUtils.toString(targetData
+                                .getTargetDmlType().toString(), transformNumber, 
+                                ArrayUtils.toString(targetData
                                 .getColumnNames()), ArrayUtils.toString(targetData
                                 .getColumnValues()));
                     }
                     dataThatHasBeenTransformed.add(targetData);
+                } else {
+                    log.debug("TransformNotPerformed", transformNumber);
                 }
             }
             return dataThatHasBeenTransformed;
@@ -137,8 +142,6 @@ public abstract class AbstractTransformer {
                 // handle the delete action
                 DeleteAction deleteAction = transformation.getDeleteAction();
                 switch (deleteAction) {
-                case NONE:
-                    break;
                 case DEL_ROW:
                     data.setTargetDmlType(DmlType.DELETE);
                     persistData = true;
@@ -147,6 +150,11 @@ public abstract class AbstractTransformer {
                     data.setTargetDmlType(DmlType.UPDATE);
                     persistData = true;
                     break;
+                case NONE:
+                default:
+                    if (log.isDebugEnabled()) {
+                        log.debug("TransformNoActionNotConfiguredToDelete", transformation.getTransformId());
+                    }                    
                 }
             }
         } catch (IgnoreRowException ex) {
