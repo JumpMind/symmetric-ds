@@ -86,7 +86,7 @@ public abstract class AbstractTransformer {
                 if (perform(context, targetData, transformation, sourceValues, oldSourceValues)) {
                     if (log.isDebugEnabled()) {
                         log.debug("TransformedDataReadyForApplication", targetData
-                                .getTargetDmlType().toString(), ArrayUtils.toString(targetData
+                                .getTargetDmlType().toString(), transformNumber, ArrayUtils.toString(targetData
                                 .getColumnNames()), ArrayUtils.toString(targetData
                                 .getColumnValues()));
                     }
