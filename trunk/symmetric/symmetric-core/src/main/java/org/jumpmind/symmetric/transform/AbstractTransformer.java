@@ -48,6 +48,10 @@ public abstract class AbstractTransformer {
                     sourceKeyValues = AppUtils.toMap(keyNames, keyValues);
                 }
                 
+                if (dmlType == DmlType.DELETE) {
+                    sourceValues = oldSourceValues;
+                }
+                
                 if (log.isDebugEnabled()) {
                     log.debug("TransformStarted", transformationsToPerform.size(), 
                             dmlType.toString(), fullyQualifiedName, sourceValues);
