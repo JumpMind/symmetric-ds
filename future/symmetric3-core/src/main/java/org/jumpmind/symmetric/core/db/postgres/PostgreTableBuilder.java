@@ -122,7 +122,7 @@ public class PostgreTableBuilder extends AbstractTableBuilder {
      * {@inheritDoc}
      */
     protected void writeColumnAutoIncrementStmt(Table table, Column column) {
-        print("UNIQUE DEFAULT nextval('");
+        print(" DEFAULT nextval('");
         printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
         print("')");
     }
