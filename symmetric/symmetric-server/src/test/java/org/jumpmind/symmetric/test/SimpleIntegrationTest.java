@@ -388,7 +388,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "101", 100, null, date },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "101", 1, "STK\0",
+        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "101", 1, "STK",
                 "110000065", 3, 3.33 });
 
         boolean pushedData = clientPush();
