@@ -112,12 +112,20 @@ public class Oracle8ModelReader extends JdbcModelReader
 
         return table;
     }
+    
+    protected void retypeIfNecessary(Map values) {
+        int typeCode = ((Integer)values.get("DATA_TYPE")).intValue();
+        if (typeCode == -101) {
+            values.put("DATA_TYPE", Types.TIMESTAMP);
+        }   
+    }
 
 	/**
      * {@inheritDoc}
      */
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
+        retypeIfNecessary(values);
 		Column column = super.readColumn(metaData, values);
 
 		if (column.getDefaultValue() != null)
