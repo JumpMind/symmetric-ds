@@ -132,7 +132,7 @@ public class PlatformFactory
         Platform platform = createNewPlatformInstance(nameVersion);
         if (platform == null) {
             String dbType = PlatformUtils.determineDatabaseType(dataSource);
-            _log.warn("The name/version pair returned for the database, "
+            _log.debug("The name/version pair returned for the database, "
                     + nameVersion
                     + ",  was not mapped to a known database platform.  Defaulting to using just the database type of "
                     + dbType);
