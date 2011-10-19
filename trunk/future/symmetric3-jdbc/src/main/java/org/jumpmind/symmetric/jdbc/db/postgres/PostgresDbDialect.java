@@ -147,6 +147,11 @@ public class PostgresDbDialect extends AbstractJdbcDbDialect {
         }
         return objectValues;
     }
+    
+    @Override
+    protected String cleanTextForTextBasedColumns(String text) {
+        return text.replace("\0", "");
+    }
 
     @Override
     public String getDefaultSchema() {
