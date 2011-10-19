@@ -154,6 +154,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             objectValue = createArray(column, value);
                         }
                     }
+                    if (objectValue instanceof String) {
+                        objectValue = cleanTextForTextBasedColumns((String)objectValue);
+                    }
                     list.add(objectValue);
                 }
             } catch (Exception ex) {
@@ -164,6 +167,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
 
         return list.toArray();
+    }
+    
+    protected String cleanTextForTextBasedColumns(String text) {
+        return text;
     }
 
     protected Array createArray(Column column, final String value) {
