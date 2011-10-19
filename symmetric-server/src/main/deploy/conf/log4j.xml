@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+
+    <appender name="ROLLING" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="../logs/symmetric.log" />
+        <param name="MaxFileSize" value="10000KB" />
+        <param name="MaxBackupIndex" value="3" />
+        <param name="Append" value="true" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c{1}] [%t] %m%n" />
+        </layout>
+    </appender>
+
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%c{1} - %m%n" />
+        </layout>
+    </appender>
+
+    <category name="org">
+        <priority value="WARN" />
+    </category>
+
+    <category name="org.jumpmind">
+        <priority value="INFO" />
+    </category>
+    
+    <category name="org.jumpmind.symmetric.ddlutils">
+        <priority value="WARN" />
+    </category>    
+    
+    <category name="org.jumpmind.symmetric.job.HeartbeatJob">
+        <priority value="INFO" />
+    </category>    
+
+    <!-- Disable the not found override properties file warnings to avoid confusion -->
+    <category name="org.jumpmind.symmetric.config.PropertiesFactoryBean">
+        <priority value="ERROR" />
+    </category>
+
+    <category name="org.jumpmind.symmetric.service.impl.ParameterService">
+        <priority value="ERROR" />
+    </category>
+
+    <category name="org.jumpmind.symmetric.db.SqlScript">
+        <priority value="ERROR" />
+    </category>
+
+    <category name="org.springframework">
+        <priority value="ERROR" />
+    </category>
+
+    <category name="org.jumpmind.symmetric.ddl.platform.derby">
+        <priority value="ERROR" />
+    </category>
+
+    <!--
+        Enable this to see extract output <category name="org.jumpmind.symmetric.util.CsvUtils"> <priority value="DEBUG"
+        /> </category>
+    -->
+    
+    <!-- Enable this to see debug messages in JMS publishing extensions
+    <category name="org.jumpmind.symmetric.integrate">
+        <priority value="DEBUG" />
+    </category>        
+     -->
+
+    <!-- Change the "CONSOLE" to "ROLLING" to log to a file instead -->
+    <root>
+        <priority value="INFO" />
+        <appender-ref ref="ROLLING" />
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</log4j:configuration>
