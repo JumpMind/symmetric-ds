@@ -95,7 +95,7 @@ public class SymmetricEngineHolder {
     public ISymmetricEngine start(String propertiesFile) {
         ISymmetricEngine engine = null;
         try {
-            final String filePrefix = "file://";
+            final String filePrefix = "file:///";
             if (StringUtils.isNotBlank(propertiesFile) && !propertiesFile.startsWith(filePrefix)) {
                 propertiesFile = filePrefix + propertiesFile;
             }
