@@ -463,12 +463,12 @@ public class RouterService extends AbstractService implements IRouterService {
         List<TriggerRouter> triggerRouters = null;
         if (data != null) {
             if (data.getTriggerHistory() != null) {
-            triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(false).get(
-                    (data.getTriggerHistory().getTriggerId()));
-            if (triggerRouters == null || triggerRouters.size() == 0) {
-                triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(true).get(
+                triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(false).get(
                         (data.getTriggerHistory().getTriggerId()));
-            }
+                if (triggerRouters == null || triggerRouters.size() == 0) {
+                    triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(true)
+                            .get((data.getTriggerHistory().getTriggerId()));
+                }
             } else {
                 log.warn("TriggerHistMissing", data.getDataId());
             }
