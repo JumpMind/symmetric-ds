@@ -281,6 +281,11 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             return null;
         }
     }
+    
+    @Override
+    protected String cleanTextForTextBasedColumns(String text) {
+        return text.replace("\0", "");
+    }
 
     
 }
