@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c{1}] [%t] %m%n" />
+        </layout>
+    </appender>
+
+    <category name="org.jumpmind">
+        <priority value="INFO" />
+    </category>
+
+    <category name="org.jumpmind.symmetric.ddlutils">
+        <priority value="WARN" />
+    </category>
+    
+    <category name="org.jumpmind.symmetric.ddl">
+        <priority value="WARN" />
+    </category>
+        
+    <!-- Disable the not found override properties file warnings to avoid confusion -->
+    <category name="org.jumpmind.symmetric.config.PropertiesFactoryBean">
+        <priority value="ERROR" />
+    </category>
+
+    <category name="org.jumpmind.symmetric.service.impl.ParameterService">
+        <priority value="ERROR" />
+    </category>
+
+    <category name="org.springframework">
+        <priority value="ERROR" />
+    </category>
+
+    <!-- Enable this to see SQL output during unit tests      -->
+    <category name="org.springframework.jdbc.core.JdbcTemplate">
+        <priority value="WARN" />
+    </category>
+ 
+    <category name="org.springframework.jmx.export.MBeanExporter">
+        <priority value="ERROR" />
+    </category>
+
+    <category name="org.firebirdsql">
+        <priority value="DEBUG" />
+    </category>
+
+    <category name="org.jumpmind.symmetric.ddl.platform.derby">
+        <priority value="ERROR" />
+    </category>
+
+    <category name="org.jumpmind.symmetric.db.SqlScript">
+        <priority value="ERROR" />
+    </category>
+    
+    <!-- To enable router stats set this to DEBUG     -->
+    <category name="org.jumpmind.symmetric.service.impl.RouterService">
+        <priority value="INFO" />
+    </category>
+
+
+    <!-- Enable this to see CSV extract output
+    <category name="org.jumpmind.symmetric.util.CsvUtils"> 
+        <priority value="DEBUG"/> 
+     </category>
+    -->    
+    
+    <!-- Show statement parameters
+     <category name="org.springframework.jdbc.core.StatementCreatorUtils"> 
+        <priority value="TRACE"/> 
+     </category>
+      -->
+     
+     <category name="org.jumpmind.symmetric.transform"> 
+        <priority value="DEBUG"/> 
+     </category>        
+
+    <root>
+        <priority value="WARN" />
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</log4j:configuration>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd"
+	default-lazy-init="true">
+
+	<bean id="db2Dialect"
+		class="org.jumpmind.symmetric.db.db2.Db2DbDialect"
+		scope="prototype">
+		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
+		<property name="parameterService" ref="parameterService" />
+		<property name="streamingResultsFetchSize"
+			value="$[sym.db.jdbc.streaming.results.fetch.size]" />				
+		<property name="sqlTemplate">
+			<bean class="org.jumpmind.symmetric.db.SqlTemplate">
+				<property name="functionInstalledSql">
+					<value>
+						<![CDATA[select count(*) from syscat.functions where funcname = '$(functionName)']]>
+					</value>
+				</property>
+				<property name="stringColumnTemplate">
+					<value>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ]]>
+					</value>
+				</property>
+				<property name="clobColumnTemplate">
+					<value>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar(32672)) || '"' end ]]>
+					</value>
+				</property>
+				<property name="blobColumnTemplate">
+					<value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || hex(cast($(tableAlias)."$(columnName)" as varchar(16336) for bit data)) || '"' end]]>
+					</value>
+				</property>
+				<property name="numberColumnTemplate">
+					<value>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || trim(char($(tableAlias)."$(columnName)")) || '"' end ]]>
+					</value>
+				</property>
+				<property name="datetimeColumnTemplate">
+					<value>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char(year(timestamp_iso($(tableAlias)."$(columnName)"))))||'-'||substr(digits(month(timestamp_iso($(tableAlias)."$(columnName)"))),9)||'-'||substr(digits(day(timestamp_iso($(tableAlias)."$(columnName)"))),9)||' '||substr(digits(hour(timestamp_iso($(tableAlias)."$(columnName)"))),9)||':'||substr(digits(minute(timestamp_iso($(tableAlias)."$(columnName)"))),9)||':'||substr(digits(second(timestamp_iso($(tableAlias)."$(columnName)"))),9)||'.'||rtrim(char(microsecond(timestamp_iso($(tableAlias)."$(columnName)")))) || '"' end ]]>
+					</value>
+				</property>
+				<property name="triggerConcatCharacter" value="||" />
+				<property name="newTriggerValue" value="new" />
+				<property name="oldTriggerValue" value="old" />
+				<property name="sqlTemplates">
+					<map>
+						<entry key="insertTriggerTemplate">
+							<value>
+								<![CDATA[
+                                CREATE TRIGGER $(schemaName)$(triggerName) 
+                                AFTER INSERT ON $(schemaName)$(tableName) 
+                                REFERENCING NEW AS NEW
+                                FOR EACH ROW MODE DB2SQL
+                                BEGIN ATOMIC
+                                    IF $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
+                                        INSERT into $(defaultSchema)$(prefixName)_data 
+                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                        VALUES('$(targetTableName)', 'I', $(triggerHistoryId),
+                                            $(columns), 
+                                            '$(channelName)', $(txIdExpression), $(sourceNodeExpression),
+                                            $(externalSelect),
+                                            CURRENT_TIMESTAMP);
+                                    END IF;
+                                END
+                                ]]>
+							</value>
+						</entry>
+						<entry key="updateTriggerTemplate">
+							<value>
+								<![CDATA[
+                                CREATE TRIGGER $(schemaName)$(triggerName)
+                                AFTER UPDATE ON $(schemaName)$(tableName) 
+                                REFERENCING OLD AS OLD NEW AS NEW
+                                FOR EACH ROW MODE DB2SQL 
+                                BEGIN ATOMIC
+                                    DECLARE var_row_data VARCHAR(16336);
+                                    DECLARE var_old_data VARCHAR(16336);
+                                    IF $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
+                                        SET var_row_data = $(columns);
+                                        SET var_old_data = $(oldColumns);
+                                        IF $(dataHasChangedCondition) THEN 
+                                            INSERT into $(defaultSchema)$(prefixName)_data 
+                                                (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                            VALUES('$(targetTableName)', 'U', $(triggerHistoryId),
+                                                $(oldKeys),
+                                                var_row_data,
+                                                var_old_data,
+                                                '$(channelName)', 
+                                                $(txIdExpression), 
+                                                $(sourceNodeExpression),
+                                                $(externalSelect),                                            
+                                                CURRENT_TIMESTAMP);
+                                        END IF;
+                                    END IF;
+                                END
+                                ]]>
+							</value>
+						</entry>
+						<entry key="deleteTriggerTemplate">
+							<value>
+								<![CDATA[
+                                CREATE TRIGGER $(schemaName)$(triggerName) 
+                                AFTER DELETE ON $(schemaName)$(tableName) 
+                                REFERENCING OLD AS OLD
+                                FOR EACH ROW MODE DB2SQL 
+                                BEGIN ATOMIC
+                                    IF $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
+                                        INSERT into $(defaultSchema)$(prefixName)_data 
+                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                        VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),
+                                            $(oldKeys),
+                                            $(oldColumns),
+                                            '$(channelName)', 
+                                            $(txIdExpression), 
+                                            $(sourceNodeExpression),
+                                            $(externalSelect),                                            
+                                            CURRENT_TIMESTAMP);
+                                    END IF;
+                                END
+                                ]]>
+							</value>
+						</entry>
+						<entry key="initialLoadSqlTemplate">
+							<value>
+								<![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
+							</value>
+						</entry>
+					</map>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+    <bean id="db2v9Dialect" 
+          class="org.jumpmind.symmetric.db.db2.Db2v9DbDialect" 
+          parent="db2Dialect" 
+          scope="prototype"/>
+    
+</beans>

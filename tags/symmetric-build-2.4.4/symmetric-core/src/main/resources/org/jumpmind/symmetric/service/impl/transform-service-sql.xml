@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+	default-lazy-init="true">
+
+	<util:map id="transformServiceSql">
+		<entry key="selectTransformTable">
+			<value>
+				select
+				transform_id, source_node_group_id, target_node_group_id, 
+				source_catalog_name, source_schema_name,
+				source_table_name,
+				target_catalog_name, target_schema_name,
+				target_table_name,
+				transform_point,
+				transform_order,
+				update_first, delete_action
+				from
+				$[sym.sync.table.prefix]_transform_table order by transform_order
+				asc
+      </value>
+		</entry>
+		<entry key="selectTransformColumn">
+			<value>
+				select
+				transform_id, include_on, target_column_name,
+				source_column_name, pk,
+				transform_type, transform_expression,
+				transform_order
+				from $[sym.sync.table.prefix]_transform_column order
+				by transform_order
+				asc
+      </value>
+		</entry>
+		<entry key="selectTransformColumnForTable">
+			<value>
+				select
+				transform_id, include_on, target_column_name,
+				source_column_name, pk,
+				transform_type, transform_expression,
+				transform_order
+				from $[sym.sync.table.prefix]_transform_column
+				where
+				transform_id = ?
+				order by transform_order asc
+      </value>
+		</entry>
+		<entry key="updateTransformTableSql">
+			<value>
+				update
+				$[sym.sync.table.prefix]_transform_table
+				set
+				source_node_group_id=?, 
+				target_node_group_id=?,
+				source_catalog_name=?,
+				source_schema_name=?,
+				source_table_name=?,
+				target_catalog_name=?,
+				target_schema_name=?,
+				target_table_name=?,
+				transform_point=?,
+				update_first=?,
+				delete_action=?,
+				transform_order=?
+				where
+				transform_id=?
+      </value>
+		</entry>
+		<entry key="updateTransformColumnSql">
+			<value>
+				update
+				$[sym.sync.table.prefix]_transform_column
+				set
+				source_column_name=?,
+				pk=?,
+				transform_type=?,
+				transform_expression=?,
+				transform_order=?
+				where
+				transform_id=?
+				and include_on=?
+				and
+				target_column_name=?
+      </value>
+		</entry>
+		<entry key="insertTransformTableSql">
+			<value>
+				insert into $[sym.sync.table.prefix]_transform_table
+				(source_node_group_id, target_node_group_id, source_catalog_name, 
+				source_schema_name, source_table_name,
+				target_catalog_name, target_schema_name, target_table_name,
+				transform_point, update_first, delete_action, transform_order,
+				transform_id)
+				values(?,?,?,?,?,?,?,?,?,?,?,?,?)
+      </value>
+		</entry>
+		<entry key="insertTransformColumnSql">
+			<value>
+				insert into $[sym.sync.table.prefix]_transform_column
+				(transform_id, include_on, target_column_name,
+				source_column_name,
+				pk, transform_type,
+				transform_expression, transform_order)
+				values(?,?,?,?,?,?,?,?)
+      </value>
+		</entry>
+		<entry key="deleteTransformTableSql">
+			<value>delete from $[sym.sync.table.prefix]_transform_table where
+				transform_id=?</value>
+		</entry>
+		<entry key="deleteTransformColumnsSql">
+			<value>delete from $[sym.sync.table.prefix]_transform_column where
+				transform_id=?</value>
+		</entry>
+		<entry key="deleteTransformColumnSql">
+			<value>delete from $[sym.sync.table.prefix]_transform_column
+				where
+				transform_id=?
+				and include_on=?
+				and target_column_name=?
+      </value>
+		</entry>
+	</util:map>
+
+</beans>
