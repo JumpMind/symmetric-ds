@@ -81,6 +81,8 @@ import org.jumpmind.symmetric.ddl.platform.informix.InformixModelReader;
 import org.jumpmind.symmetric.ddlutils.JdbcModelReaderSupport;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
+import org.jumpmind.symmetric.load.StatementBuilder;
+import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
@@ -1679,5 +1681,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * Override this method to configure a database specific LOB handler for updates
      */
     protected void initLobHandler() {
+    }
+    
+    public StatementBuilder createStatementBuilder(DmlType type, String tableName, Column[] keys,
+            Column[] columns, Column[] preFilteredColumns) {
+        return new StatementBuilder(type, tableName, keys,
+                columns,
+                preFilteredColumns, isDateOverrideToTimestamp(), getIdentifierQuoteString());
     }
 }

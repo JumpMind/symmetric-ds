@@ -61,21 +61,19 @@ public class StatementBuilder {
         this.preFilteredColumns = preFilteredColumns;
         quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
-            sql = buildInsertSql(tableName, columns);
-            types = buildTypes(columns, isDateOverrideToTimestamp);
+            sql = buildInsertSql(tableName, keys, columns);
         } else if (type == DmlType.UPDATE) {
             sql = buildUpdateSql(tableName, keys, columns);
-            types = buildTypes(keys, columns, isDateOverrideToTimestamp);
         } else if (type == DmlType.DELETE) {
             sql = buildDeleteSql(tableName, keys);
-            types = buildTypes(keys, isDateOverrideToTimestamp);
         } else if (type == DmlType.COUNT) {
             sql = buildCountSql(tableName, keys);
-            types = buildTypes(keys, isDateOverrideToTimestamp);
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
         dmlType = type;
+        types = buildTypes(keys, columns, isDateOverrideToTimestamp);
+
     }
 
     protected Column[] removeKeysFromColumns(Column[] keys, Column[] columns) {
@@ -93,9 +91,20 @@ public class StatementBuilder {
     }
 
     protected int[] buildTypes(Column[] keys, Column[] columns, boolean isDateOverrideToTimestamp) {
-        int[] columnTypes = buildTypes(columns, isDateOverrideToTimestamp);
-        int[] keyTypes = buildTypes(keys, isDateOverrideToTimestamp);
-        return ArrayUtils.addAll(columnTypes, keyTypes);
+        switch (dmlType) {
+        case UPDATE:
+            int[] columnTypes = buildTypes(columns, isDateOverrideToTimestamp);
+            int[] keyTypes = buildTypes(keys, isDateOverrideToTimestamp);
+            return ArrayUtils.addAll(columnTypes, keyTypes);
+        case INSERT:
+            return buildTypes(columns, isDateOverrideToTimestamp);
+        case DELETE:
+            return buildTypes(keys, isDateOverrideToTimestamp);
+        case COUNT:
+            return buildTypes(keys, isDateOverrideToTimestamp);
+        }
+        return null;
+
     }
 
     protected int[] buildTypes(Column[] columns, boolean isDateOverrideToTimestamp) {
@@ -127,7 +136,7 @@ public class StatementBuilder {
         return sql.toString();
     }
 
-    public String buildInsertSql(String tableName, Column[] columns) {
+    public String buildInsertSql(String tableName, Column[] keys, Column[] columns) {
         StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
         int columnCount = appendColumns(sql, columns);
         sql.append(") values (");
@@ -258,5 +267,17 @@ public class StatementBuilder {
 
     public Column[] getPreFilteredColumns() {
         return preFilteredColumns;
+    }
+    
+    public String[] getValueArray(String[] columnValues, String[] keyValues) {
+        switch (dmlType) {
+        case UPDATE:
+            return (String[]) ArrayUtils.addAll(columnValues, keyValues);
+        case INSERT:
+            return columnValues;
+        case DELETE:
+            return keyValues;
+        }
+        return null;
     }
 }

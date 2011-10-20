@@ -18,8 +18,6 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-
-
 package org.jumpmind.symmetric.db.postgresql;
 
 import java.sql.Array;
@@ -38,6 +36,8 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.load.StatementBuilder;
+import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -286,6 +286,14 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     @Override
     protected String cleanTextForTextBasedColumns(String text) {
         return text.replace("\0", "");
+    }
+    
+    @Override
+    public StatementBuilder createStatementBuilder(DmlType type, String tableName, Column[] keys,
+            Column[] columns, Column[] preFilteredColumns) {
+        return new PostgresSqlStatementBuilder(type, tableName, keys,
+                columns,
+                preFilteredColumns, isDateOverrideToTimestamp(), getIdentifierQuoteString());
     }
 
     

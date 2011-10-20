@@ -111,10 +111,7 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
             case INSERT:
                 boolean enableFallbackUpdate = parameterService
                         .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
-                boolean enableFallbackSavepoint = parameterService
-                        .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_SAVEPOINT);
                 Table table = tableTemplate.getTable();
-                Object savePoint = null;
                 try {
                     if (data.isGeneratedIdentityNeeded()) {
                         if (log.isDebugEnabled()) {
@@ -125,18 +122,11 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                         dbDialect.allowIdentityInserts(context.getJdbcTemplate(), table);
                     }
 
-                    if (enableFallbackUpdate && dbDialect.requiresSavepointForFallback()) {
-                        if (enableFallbackSavepoint) {
-                            savePoint = dbDialect.createSavepointForFallback(context
-                                    .getJdbcTemplate());
-                        } else if (tableTemplate.count(context, data.getKeyValues()) > 0) {
-                            throw new DataIntegrityViolationException("Row already exists");
-                        }
+                    if (tableTemplate.insert(context, data.getColumnValues(), data.getKeyValues()) <= 0) {
+                        throw new DataIntegrityViolationException("Insert not executed");
                     }
-                    tableTemplate.insert(context, data.getColumnValues());
                 } catch (DataIntegrityViolationException ex) {
                     if (enableFallbackUpdate) {
-                        dbDialect.rollbackToSavepoint(context.getJdbcTemplate(), savePoint);
                         List<TransformedData> newlyTransformedDatas = transform(DmlType.UPDATE,
                                 context, data.getTransformation(), data.getSourceKeyValues(),
                                 data.getOldSourceValues(), data.getSourceValues());
@@ -206,8 +196,8 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                                     tableTemplate.setColumnNames(newlyTransformedData
                                             .getColumnNames());
                                     tableTemplate.setKeyNames(newlyTransformedData.getKeyNames());
-                                    tableTemplate.insert(context,
-                                            newlyTransformedData.getColumnValues());
+                                    tableTemplate.insert(context, 
+                                            newlyTransformedData.getColumnValues(), newlyTransformedData.getKeyValues());
                                 } else {
                                 	log.debug("TransformMatchingFallbackNotFound", DmlType.INSERT.name());
                                 }

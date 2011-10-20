@@ -117,9 +117,9 @@ public class TableTemplate {
         return table == null;
     }
 
-    public int insert(IDataLoaderContext ctx, String[] columnValues) {
+    public int insert(IDataLoaderContext ctx, String[] columnValues, String[] keyValues) {
         StatementBuilder st = getStatementBuilder(ctx, DmlType.INSERT, columnNames);
-        return execute(ctx, st, columnValues);
+        return execute(ctx, st, columnValues, keyValues);
     }
 
     public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues) {
@@ -143,8 +143,7 @@ public class TableTemplate {
                         .toArray(new String[changedColumnNameList.size()]));
                 columnValues = (String[]) changedColumnValueList
                         .toArray(new String[changedColumnValueList.size()]);
-                String[] values = (String[]) ArrayUtils.addAll(columnValues, keyValues);
-                return execute(ctx, st, values);
+                return execute(ctx, st, columnValues, keyValues);
             } else {
                 // There was no change to apply
                 return 1;
@@ -188,7 +187,7 @@ public class TableTemplate {
 
     public int delete(IDataLoaderContext ctx, String[] keyValues) {
         StatementBuilder st = getStatementBuilder(ctx, DmlType.DELETE, columnNames);
-        return execute(ctx, st, keyValues);
+        return execute(ctx, st, null, keyValues);
     }
 
     public int count(IDataLoaderContext ctx, String[] keyValues) {
@@ -233,10 +232,9 @@ public class TableTemplate {
 
             String tableName = getFullyQualifiedTableName();
             
-            st = new StatementBuilder(type, tableName, getColumnMetaData(keyNames),
+            st = dbDialect.createStatementBuilder(type, tableName, getColumnMetaData(keyNames),
                     getColumnMetaData(this.filteredColumnNames),
-                    getColumnMetaData(preFilteredColumnNames), dbDialect
-                            .isDateOverrideToTimestamp(), dbDialect.getIdentifierQuoteString());
+                    getColumnMetaData(preFilteredColumnNames));
 
             if (type != DmlType.UPDATE) {
                 statementMap.put(type, st);
@@ -253,8 +251,8 @@ public class TableTemplate {
         return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, getColumnMetaData(keyNames));
     }
 
-    final private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values) {
-        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, st
+    final private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] columnValues, String[] keyValues) {
+        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), st.getValueArray(columnValues, keyValues), st
                 .getMetaData(true));
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
@@ -265,7 +263,33 @@ public class TableTemplate {
         return jdbcTemplate.update(st.getSql(), new ArgTypePreparedStatementSetter(objectValues, st
                 .getTypes(), dbDialect.getLobHandler()));
     }
+    
+    public String[] parseKeys(String[] tokens, int startIndex) {
+        if (getKeyNames() == null) {
+            throw new RuntimeException("Key names were not specified for table "
+                    + getTableName());
+        }
+        int keyLength = getKeyNames().length;
+        return parseValues("key", tokens, startIndex, startIndex + keyLength);
+    }
+    
+    public String[] parseValues(String name, String[] tokens, int startIndex, int endIndex) {
+        if (tokens.length < endIndex) {
+            throw new RuntimeException("Expected to have " + (endIndex - startIndex) + " " + name + " values for "
+                    + getTableName() + ": " + ArrayUtils.toString(tokens));
+        }
+        return (String[]) ArrayUtils.subarray(tokens, startIndex, endIndex);
+    }
 
+    public String[] parseColumns(String[] tokens, int startIndex) {
+        if (getColumnNames() == null) {
+            throw new RuntimeException("Column names were not specified for table "
+                    + getTableName());
+        }
+        int columnLength = getColumnNames().length;
+        return parseValues("column", tokens, startIndex, startIndex + columnLength);
+    }
+    
     public void setKeyNames(String[] keyNames) {
         this.keyNames = keyNames;
         clear();

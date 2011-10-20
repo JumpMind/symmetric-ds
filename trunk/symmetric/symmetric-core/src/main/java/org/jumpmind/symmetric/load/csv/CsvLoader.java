@@ -282,7 +282,11 @@ public class CsvLoader implements IDataLoader {
                 }
                 cleanupAfterDataLoad();                
             } finally {
-                dbDialect.enableSyncTriggers(jdbcTemplate);
+                try {
+                    dbDialect.enableSyncTriggers(jdbcTemplate);
+                } catch (Exception ex) {
+                    log.error(ex);
+                }
             }
         }
     }   
@@ -302,7 +306,7 @@ public class CsvLoader implements IDataLoader {
     protected void rollback(Exception ex) {
         try {
             connection.rollback();
-        } catch (SQLException ex2) {
+        } catch (Exception ex2) {
             log.warn(ex2);
         } finally {
             fireBatchRolledback(ex);
@@ -357,7 +361,7 @@ public class CsvLoader implements IDataLoader {
 
     protected int insert(String[] tokens) {
         stats.incrementStatementCount();
-        String[] columnValues = parseColumns(tokens, 1);
+        String[] columnValues = context.getTableTemplate().parseColumns(tokens, 1);
         int rows = 0;
 
         boolean continueToLoad = true;
@@ -370,28 +374,20 @@ public class CsvLoader implements IDataLoader {
         }
 
         if (continueToLoad) {
+            String keyValues[] = context.getTableTemplate().parseKeys(tokens, 1);
             boolean enableFallbackUpdate = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
-            boolean enableFallbackSavepoint = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_SAVEPOINT);
-            Object savepoint = null;            
             try {
                 stats.startTimer();
-                if (enableFallbackUpdate && dbDialect.requiresSavepointForFallback()) {
-                    if (enableFallbackSavepoint) {
-                        savepoint = dbDialect.createSavepointForFallback(jdbcTemplate);
-                    } else if (context.getTableTemplate().count(context, parseKeys(tokens, 1)) > 0) {
-                        throw new DataIntegrityViolationException("Row already exists");
-                    }
+                rows = context.getTableTemplate().insert(context, columnValues, keyValues);
+                if (rows <= 0) {
+                    throw new DataIntegrityViolationException("Insert was not processed");
                 }
-                rows = context.getTableTemplate().insert(context, columnValues);
             } catch (DataIntegrityViolationException e) {
-                // TODO: modify sql-error-codes.xml for unique constraint vs
-                // foreign key
+                // TODO: modify sql-error-codes.xml for unique constraint vs. foreign key
                 if (enableFallbackUpdate) {
-                    dbDialect.rollbackToSavepoint(jdbcTemplate, savepoint);
                     if (log.isDebugEnabled()) {
                         log.debug("LoaderInsertingFailedUpdating", context.getTableName(), ArrayUtils.toString(tokens));
-                    }
-                    String keyValues[] = parseKeys(tokens, 1);
+                    }                    
                     stats.incrementFallbackUpdateCount();
                     rows = context.getTableTemplate().update(context, columnValues, keyValues);
                     if (rows == 0) {
@@ -411,8 +407,9 @@ public class CsvLoader implements IDataLoader {
 
     protected int update(String[] tokens) {
         stats.incrementStatementCount();
-        String columnValues[] = parseColumns(tokens, 1);
-        String keyValues[] = parseKeys(tokens, 1 + columnValues.length);
+        TableTemplate tableTemplate = context.getTableTemplate();
+        String columnValues[] = tableTemplate.parseColumns(tokens, 1);
+        String keyValues[] = tableTemplate.parseKeys(tokens, 1 + columnValues.length);
         int rows = 0;
         boolean continueToLoad = true;
         if (filters != null) {
@@ -433,7 +430,7 @@ public class CsvLoader implements IDataLoader {
                     log.debug("LoaderUpdatingFailedInserting", context.getTableName(), ArrayUtils.toString(tokens));
 
                     stats.incrementFallbackInsertCount();
-                    rows = context.getTableTemplate().insert(context, columnValues);
+                    rows = context.getTableTemplate().insert(context, columnValues, keyValues);
                 } else {
                     stats.incrementDatabaseMillis(stats.endTimer());
                     throw new SymmetricException("LoaderUpdatingFailed", context.getTableName(), ArrayUtils
@@ -449,7 +446,7 @@ public class CsvLoader implements IDataLoader {
 
     protected int delete(String[] tokens) {
         stats.incrementStatementCount();
-        String keyValues[] = parseKeys(tokens, 1);
+        String keyValues[] = context.getTableTemplate().parseKeys(tokens, 1);
         int rows = 0;
         boolean continueToLoad = true;
 
@@ -495,32 +492,6 @@ public class CsvLoader implements IDataLoader {
         if (context.getTableTemplate() != null) {
             context.getTableTemplate().resetMetaData(false);
         }
-    }
-
-    protected String[] parseKeys(String[] tokens, int startIndex) {
-        if (context.getTableTemplate().getKeyNames() == null) {
-            throw new RuntimeException("Key names were not specified for table "
-                    + context.getTableTemplate().getTableName());
-        }
-        int keyLength = context.getTableTemplate().getKeyNames().length;
-        return parseValues("key", tokens, startIndex, startIndex + keyLength);
-    }
-
-    protected String[] parseColumns(String[] tokens, int startIndex) {
-        if (context.getTableTemplate().getColumnNames() == null) {
-            throw new RuntimeException("Column names were not specified for table "
-                    + context.getTableTemplate().getTableName());
-        }
-        int columnLength = context.getTableTemplate().getColumnNames().length;
-        return parseValues("column", tokens, startIndex, startIndex + columnLength);
-    }
-
-    protected String[] parseValues(String name, String[] tokens, int startIndex, int endIndex) {
-        if (tokens.length < endIndex) {
-            throw new RuntimeException("Expected to have " + (endIndex - startIndex) + " " + name + " values for "
-                    + context.getTableTemplate().getTableName() + ": " + ArrayUtils.toString(tokens));
-        }
-        return (String[]) ArrayUtils.subarray(tokens, startIndex, endIndex);
     }
 
     public IDataLoader clone() {
