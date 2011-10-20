@@ -67,6 +67,8 @@ public class Column implements Cloneable, Serializable
     private String _defaultValue;
     
     private String jdbcTypeName;
+    
+    private boolean distributedKey;
 
     /**
      * Returns the name of the column.
@@ -624,5 +626,13 @@ public class Column implements Cloneable, Serializable
     
     public String getJdbcTypeName() {
         return jdbcTypeName;
+    }
+    
+    public boolean isDistributedKey() {
+        return distributedKey;
+    }
+    
+    public void setDistributedKey(boolean distributedKey) {
+        this.distributedKey = distributedKey;
     }
 }

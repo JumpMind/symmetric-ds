@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -917,5 +918,16 @@ public class Table implements Serializable, Cloneable
             }
         }
         return false;
+    }
+    
+    public Column[] getDistributedKeyColumns() {
+        @SuppressWarnings("unchecked")
+        Collection<Column> columns = CollectionUtils.select(_columns, new Predicate() {
+            public boolean evaluate(Object input) {
+                return ((Column)input).isDistributedKey();
+            }
+        });
+
+        return columns.toArray(new Column[columns.size()]);
     }
 }
