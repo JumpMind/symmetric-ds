@@ -26,8 +26,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- *
- * 
+ * Copies data that is being loaded to another table with the same structure and a different name.
  */
 public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
     private static final ILog log = LogFactory.getLog(DuplicateTableDataLoaderFilter.class);
@@ -49,7 +48,7 @@ public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
         if (context.getTableName().equals(originalTableName)) {
             TableTemplate tableTemplate = getTableTemplate(context);
-            tableTemplate.insert(context, keyValues);
+            tableTemplate.delete(context, keyValues);
         }
         return true;
     }
@@ -57,7 +56,7 @@ public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
     public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
         if (context.getTableName().equals(originalTableName)) {
             TableTemplate tableTemplate = getTableTemplate(context);
-            tableTemplate.insert(context, columnValues);
+            tableTemplate.insert(context, columnValues, tableTemplate.parseKeys(columnValues, 1));
         }
         return true;
     }
