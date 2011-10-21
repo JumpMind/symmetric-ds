@@ -18,7 +18,7 @@
                 
                 <property name="functionInstalledSql">
                     <value>
-                        <![CDATA[select count(*) from user_source where line = 1 and (type = 'FUNCTION' or type = 'PACKAGE') and name=upper('$(functionName)')]]>
+                        <![CDATA[select count(*) from user_source where line = 1 and ((type = 'FUNCTION' and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))]]>
                     </value>
                 </property>               
                 <property name="functionTemplatesToInstall">
@@ -72,7 +72,7 @@
                                 ]]>
                             </value>
                         </entry>
-                        <entry key="set_node_value">
+                        <entry key="pkg_package">
                             <value>
                                 <![CDATA[ 
                                 CREATE OR REPLACE package $[sym.sync.table.prefix]_pkg as
@@ -84,7 +84,7 @@
                                 ]]>
                             </value>
                         </entry>                        
-                        <entry key="disable_trigger">
+                        <entry key="pkg_package body">
                             <value>
                                 <![CDATA[ 
                                 CREATE OR REPLACE package body $[sym.sync.table.prefix]_pkg as
