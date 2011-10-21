@@ -115,7 +115,8 @@ public class Oracle8ModelReader extends JdbcModelReader
     
     protected void retypeIfNecessary(Map values) {
         int typeCode = ((Integer)values.get("DATA_TYPE")).intValue();
-        if (typeCode == -101) {
+        // TIMESTAMP WITH TIMEZONE and TIMESTAMP WITH LOCAL TIME ZONE (See oracle.jdbc.OracleTypes)
+        if (typeCode == -101 || typeCode == -102) {
             values.put("DATA_TYPE", Types.TIMESTAMP);
         }   
     }
