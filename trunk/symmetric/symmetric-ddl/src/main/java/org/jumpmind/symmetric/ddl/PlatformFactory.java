@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.ddl.platform.cloudscape.CloudscapePlatform;
 import org.jumpmind.symmetric.ddl.platform.db2.Db2v8Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
+import org.jumpmind.symmetric.ddl.platform.greenplum.GreenplumPlatform;
 import org.jumpmind.symmetric.ddl.platform.h2.H2Platform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb2.HsqlDb2Platform;
@@ -128,9 +129,12 @@ public class PlatformFactory
      */
     public static synchronized Platform createNewPlatformInstance(DataSource dataSource) throws DdlUtilsException
     {
+        //connects to the database and uses actual metadata info to get db name and version
+        //to determine platform
         String nameVersion = PlatformUtils.determineDatabaseNameVersion(dataSource);
         Platform platform = createNewPlatformInstance(nameVersion);
         if (platform == null) {
+            //uses the driver info to try and infer a platform
             String dbType = PlatformUtils.determineDatabaseType(dataSource);
             _log.debug("The name/version pair returned for the database, "
                     + nameVersion
@@ -190,6 +194,7 @@ public class PlatformFactory
         addPlatform(_platforms, Db2v8Platform.DATABASENAMES,       Db2v8Platform.class);
         addPlatform(_platforms, DerbyPlatform.DATABASENAME,       DerbyPlatform.class);
         addPlatform(_platforms, FirebirdPlatform.DATABASENAME,    FirebirdPlatform.class);
+        addPlatform(_platforms, GreenplumPlatform.DATABASENAME,   GreenplumPlatform.class);
         addPlatform(_platforms, HsqlDbPlatform.DATABASENAME,      HsqlDbPlatform.class);
         addPlatform(_platforms, HsqlDb2Platform.DATABASENAME,     HsqlDb2Platform.class);
         addPlatform(_platforms, InterbasePlatform.DATABASENAME,   InterbasePlatform.class);

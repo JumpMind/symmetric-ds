@@ -21,7 +21,9 @@ package org.jumpmind.symmetric.ddl;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -34,6 +36,7 @@ import org.jumpmind.symmetric.ddl.platform.cloudscape.CloudscapePlatform;
 import org.jumpmind.symmetric.ddl.platform.db2.Db2Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
+import org.jumpmind.symmetric.ddl.platform.greenplum.GreenplumPlatform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
 import org.jumpmind.symmetric.ddl.platform.interbase.InterbasePlatform;
 import org.jumpmind.symmetric.ddl.platform.mckoi.MckoiPlatform;
@@ -325,6 +328,14 @@ public class PlatformUtils
             DatabaseMetaData metaData = connection.getMetaData();
             String productName = metaData.getDatabaseProductName();
             int majorVersion = metaData.getDatabaseMajorVersion();
+            /** if the productName is PostgreSQL, it could be either PostgreSQL or Greenplum */
+            /** query the metadata to determine which one it is */
+            if (productName.equalsIgnoreCase(PostgreSqlPlatform.DATABASENAME)) {
+                if (isGreenplumDatabase(connection)) {
+                    productName = GreenplumPlatform.DATABASE;
+                    majorVersion = getGreenplumVersion(connection);
+                }
+            }
             String productString = productName;
             if (majorVersion > 0) {
                 productString += majorVersion;
@@ -345,6 +356,74 @@ public class PlatformUtils
         }
     }    
 
+    private static boolean isGreenplumDatabase(Connection connection) {
+
+        Statement stmt = null;
+        ResultSet rs = null;
+        String productName = null;    
+        boolean isGreenplum = false;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(GreenplumPlatform.SQL_GET_GREENPLUM_NAME);
+            while (rs.next()) {
+                productName = rs.getString(1);
+            }            
+            if (productName != null && productName.equalsIgnoreCase(GreenplumPlatform.DATABASE)) {
+                isGreenplum = true;
+            }
+        }
+        catch (SQLException ex) {
+            // ignore the exception, if it is caught, then this is most likely not 
+            // a greenplum database
+        }
+        finally {
+            try {
+                rs.close();
+                stmt.close();
+            }
+            catch (SQLException ex) {                
+            }
+        }
+        return isGreenplum;
+    } 
+    
+    private static int getGreenplumVersion(Connection connection) {
+        Statement stmt = null;
+        ResultSet rs = null;
+        String versionName = null;
+        int productVersion = 0;        
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(GreenplumPlatform.SQL_GET_GREENPLUM_VERSION);
+            while (rs.next()) {
+                versionName = rs.getString(1);                
+            }            
+            //take up to the first "." for version number
+            if (versionName.indexOf('.') != -1) {
+                versionName = versionName.substring(0,versionName.indexOf('.'));                
+            }
+            try {
+                productVersion = Integer.parseInt(versionName);
+            }
+            catch (NumberFormatException ex) {
+                // if we can't convert this to a version number, leave it 0
+            }
+        }
+        catch (SQLException ex) {
+            // ignore the exception, if it is caught, then this is most likely not 
+            // a greenplum database
+        }
+        finally {
+            try {
+                rs.close();
+                stmt.close();
+            }
+            catch (SQLException ex) {                
+            }
+        }
+        return productVersion;
+    }     
+    
     /**
      * Tries to determine the database type for the given jdbc driver and connection url.
      * 
