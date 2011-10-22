@@ -357,7 +357,6 @@ public class PlatformUtils
     }    
 
     private static boolean isGreenplumDatabase(Connection connection) {
-
         Statement stmt = null;
         ResultSet rs = null;
         String productName = null;    
@@ -371,15 +370,17 @@ public class PlatformUtils
             if (productName != null && productName.equalsIgnoreCase(GreenplumPlatform.DATABASE)) {
                 isGreenplum = true;
             }
-        }
-        catch (SQLException ex) {
+        }catch (SQLException ex) {
             // ignore the exception, if it is caught, then this is most likely not 
             // a greenplum database
-        }
-        finally {
+        } finally {
             try {
-                rs.close();
-                stmt.close();
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
             }
             catch (SQLException ex) {                
             }
