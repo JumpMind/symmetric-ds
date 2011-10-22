@@ -55,7 +55,8 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * 
+ * Factory class that is responsible for creating the appropriate {@link IDbDialect} for
+ * the configured database. 
  */
 public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAware {
 

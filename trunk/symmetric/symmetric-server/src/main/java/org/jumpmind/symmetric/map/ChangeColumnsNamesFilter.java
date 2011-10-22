@@ -87,8 +87,8 @@ public class ChangeColumnsNamesFilter implements ITableColumnFilter, INodeGroupE
         return columnNames;
     }
 
-    public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table,
-            Object[] columnValues) {
+    public String[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table,
+            String[] columnValues) {
         return columnValues;
     }
 

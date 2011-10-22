@@ -35,18 +35,22 @@ public class PostgresSqlStatementBuilder extends StatementBuilder {
 
     @Override
     public String buildInsertSql(String tableName, Column[] keyColumns, Column[] columns) {
-        StringBuilder sql = new StringBuilder("insert into ");
-        sql.append(tableName);
-        sql.append("(");
-        int columnCount = appendColumns(sql, columns);
-        sql.append(") (select ");
-        appendColumnQuestions(sql, columnCount);
-        sql.append(" where (select 1 from ");
-        sql.append(tableName);
-        sql.append(" where  ");
-        appendColumnEquals(sql, keyColumns, " and ");
-        sql.append(") is null)");
-        return sql.toString();
+        if (keyColumns != null && keyColumns.length > 0 && keyColumns[0] != null) {
+            StringBuilder sql = new StringBuilder("insert into ");
+            sql.append(tableName);
+            sql.append("(");
+            int columnCount = appendColumns(sql, columns);
+            sql.append(") (select ");
+            appendColumnQuestions(sql, columnCount);
+            sql.append(" where (select 1 from ");
+            sql.append(tableName);
+            sql.append(" where  ");
+            appendColumnEquals(sql, keyColumns, " and ");
+            sql.append(") is null)");
+            return sql.toString();
+        } else {
+            return super.buildInsertSql(tableName, keys, columns);
+        }
     }
 
     @Override
