@@ -192,14 +192,14 @@ public class TableTemplate {
 
     public int count(IDataLoaderContext ctx, String[] keyValues) {
         StatementBuilder st = getStatementBuilder(ctx, DmlType.COUNT, columnNames);
-        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), keyValues,
-                st.getKeys());
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
-                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(),
-                        objectValues);
+                keyValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(),
+                        keyValues);
             }
         }
+        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), keyValues,
+                st.getKeys());
         return jdbcTemplate.queryForInt(st.getSql(), objectValues, st.getTypes());
     }
     public String getFullyQualifiedTableName() {
@@ -252,14 +252,15 @@ public class TableTemplate {
     }
 
     final private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] columnValues, String[] keyValues) {
-        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), st.getValueArray(columnValues, keyValues), st
-                .getMetaData(true));
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
-                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(),
-                        objectValues);
+                columnValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(),
+                        columnValues);
             }
         }
+        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), 
+                st.getValueArray(columnValues, keyValues), 
+                st.getMetaData(false));
         return jdbcTemplate.update(st.getSql(), new ArgTypePreparedStatementSetter(objectValues, st
                 .getTypes(), dbDialect.getLobHandler()));
     }

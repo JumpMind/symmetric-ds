@@ -25,6 +25,9 @@ import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
 /**
+ * This filter will be deprecated in the future.  Please use the data transformation
+ * feature of SymmetricDS to accomplish filtering at the column level.
+ * 
  * This is an extension point that can be implemented to filter out columns from
  * use by the dataloader. One column filter may be added per target table.
  * </p>
@@ -51,5 +54,5 @@ public interface IColumnFilter extends IExtensionPoint {
      * 
      * @return the column values
      */
-    public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table, Object[] columnValues);
+    public String[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table, String[] columnValues);
 }

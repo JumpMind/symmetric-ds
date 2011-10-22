@@ -43,7 +43,7 @@ public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtension
     
     private String[] tables;
 
-    private Map<String, Object> additionalColumns;
+    private Map<String, String> additionalColumns;
     
     private boolean autoRegister = true;
     
@@ -73,12 +73,12 @@ public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtension
         this.nodeGroupIdsToApplyTo = nodeGroupIdsToApplyTo;
     }
     
-    public Map<String, Object> getAdditionalColumns() {
+    public Map<String, String> getAdditionalColumns() {
         return additionalColumns;
     }
 
-    public void setAdditionalColumns(Map<String, Object> columns) {
-        this.additionalColumns = new TreeMap<String, Object>(columns);
+    public void setAdditionalColumns(Map<String, String> columns) {
+        this.additionalColumns = new TreeMap<String, String>(columns);
     }
 
     public String[] filterColumnsNames(IDataLoaderContext ctx, DmlType dml, Table table,
@@ -99,21 +99,21 @@ public class AddColumnsFilter implements ITableColumnFilter, INodeGroupExtension
         }
     }
 
-    public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table,
-            Object[] columnValues) {
+    public String[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table,
+            String[] columnValues) {
         if (additionalColumns != null) {
-            Object[] columnValuesPlus = new Object[columnValues.length + additionalColumns.size()];
+            String[] columnValuesPlus = new String[columnValues.length + additionalColumns.size()];
             for (int i = 0; i < columnValues.length; i++) {
                columnValuesPlus[i] = columnValues[i];
             }
             
             int i = columnValues.length;
             for (String extraCol : additionalColumns.keySet()) {
-                Object extraValue = additionalColumns.get(extraCol);
+                String extraValue = additionalColumns.get(extraCol);
                 if (TokenConstants.EXTERNAL_ID.equals(extraValue)) {
                     extraValue = ctx.getSourceNode() != null ? ctx.getSourceNode().getExternalId() : null;
                 } else if (TokenConstants.NODE_ID.equals(extraValue)) {
-                    extraValue = ctx.getSourceNode();
+                    extraValue = ctx.getSourceNode().getNodeId();
                 } else if (TokenConstants.NODE_GROUP_ID.equals(extraValue)) {
                     extraValue = ctx.getSourceNode() != null ? ctx.getSourceNode().getNodeGroupId() : null;
                 } else if (extraValue instanceof String && extraValue.toString().startsWith(":")){

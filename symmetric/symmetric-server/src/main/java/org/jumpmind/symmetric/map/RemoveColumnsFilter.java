@@ -112,19 +112,19 @@ public class RemoveColumnsFilter implements ITableColumnFilter, INodeGroupExtens
     }
 
     @SuppressWarnings("unchecked")
-    public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table,
-            Object[] columnValues) {
+    public String[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table,
+            String[] columnValues) {
         if (dml != DmlType.DELETE) {
             Map<DmlType, List<Integer>> columnIndex = (Map<DmlType, List<Integer>>) ctx
                     .getContextCache().get(cacheKey);
             if (columnIndex != null) {
                 List<Integer> indexes = columnIndex.get(dml);
                 if (indexes != null) {
-                    Object[] sourceValues = columnValues;
-                    columnValues = new Object[columnValues.length - indexes.size()];
+                    String[] sourceValues = columnValues;
+                    columnValues = new String[columnValues.length - indexes.size()];
                     int targetIndex = 0;
                     int sourceIndex = 0;
-                    for (Object sourceValue : sourceValues) {
+                    for (String sourceValue : sourceValues) {
                         if (!indexes.contains(sourceIndex)) {
                             columnValues[targetIndex++] = sourceValue;
                         }

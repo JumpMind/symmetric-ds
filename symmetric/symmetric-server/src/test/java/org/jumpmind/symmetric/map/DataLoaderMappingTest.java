@@ -63,7 +63,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         cleanSlate();
 
         AddColumnsFilter filter = new AddColumnsFilter();
-        Map<String, Object> additionalColumns = new HashMap<String, Object>();
+        Map<String, String> additionalColumns = new HashMap<String, String>();
         additionalColumns.put("column2", ADDITIONAL_COLUMN_VALUE);
         filter.setAdditionalColumns(additionalColumns);
         filter.setTables(new String[] { TEST_TABLE });
@@ -88,9 +88,9 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         ByteArrayOutputStream out = getStandardCsv();
 
         AddColumnsFilter filter = new AddColumnsFilter();
-        Map<String, Object> additionalColumns = new HashMap<String, Object>();
+        Map<String, String> additionalColumns = new HashMap<String, String>();
         additionalColumns.put("column2", ADDITIONAL_COLUMN_VALUE_1);
-        additionalColumns.put("field1", ADDITIONAL_COLUMN_VALUE_2);
+        additionalColumns.put("field1", Integer.toString(ADDITIONAL_COLUMN_VALUE_2));
         filter.setAdditionalColumns(additionalColumns);
         filter.setTables(new String[] { TEST_TABLE });
         Map<String, List<IColumnFilter>> filters = createColumnFilterList(TEST_TABLE, filter);
@@ -115,9 +115,9 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         ByteArrayOutputStream out = getStandardCsv();
 
         AddColumnsFilter filter = new AddColumnsFilter();
-        Map<String, Object> additionalColumns = new HashMap<String, Object>();
+        Map<String, String> additionalColumns = new HashMap<String, String>();
         additionalColumns.put("column2", ADDITIONAL_COLUMN_VALUE_1);
-        additionalColumns.put("field1", ADDITIONAL_COLUMN_VALUE_2);
+        additionalColumns.put("field1", Integer.toString(ADDITIONAL_COLUMN_VALUE_2));
         additionalColumns.put("another_id_column", ":id");
         filter.setAdditionalColumns(additionalColumns);
         filter.setTables(new String[] { TEST_TABLE });
@@ -140,7 +140,7 @@ public class DataLoaderMappingTest extends AbstractDataLoaderTest {
         ByteArrayOutputStream out = getStandardCsv();
 
         AddColumnsFilter filter = new AddColumnsFilter();
-        Map<String, Object> additionalColumns = new HashMap<String, Object>();
+        Map<String, String> additionalColumns = new HashMap<String, String>();
         additionalColumns.put("column2", TokenConstants.EXTERNAL_ID);
         filter.setAdditionalColumns(additionalColumns);
         filter.setTables(new String[] { TEST_TABLE });

@@ -68,17 +68,17 @@ public class AutoIncrementColumnFilter implements IColumnFilter {
 
     }
 
-    public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table,
-            Object[] columnValues) {
+    public String[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table,
+            String[] columnValues) {
         if (dml == DmlType.UPDATE && indexesToRemove != null) {
-            ArrayList<Object> values = new ArrayList<Object>();
+            ArrayList<String> values = new ArrayList<String>();
             CollectionUtils.addAll(values, columnValues);
             for (int index : indexesToRemove) {
                 if (index >= 0) {
                     values.remove(index);
                 }
             }
-            return values.toArray(new Object[values.size()]);
+            return values.toArray(new String[values.size()]);
         }
         return columnValues;
     }
