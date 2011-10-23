@@ -16,6 +16,7 @@
 
     <bean id="hsqldbDialect" class="org.jumpmind.symmetric.db.hsqldb.HsqlDbDialect"
         scope="prototype">
+        <property name="primaryKeyViolationSqlStates" value="23505"/>
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="parameterService" ref="parameterService" />
         <property name="defaultSchema" value="$[sym.db.default.schema]" />
