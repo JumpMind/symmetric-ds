@@ -165,6 +165,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     protected int queryTimeoutInSeconds = 300;
     
+    protected int[] primaryKeyViolationCodes;
+    
+    protected String[] primaryKeyViolationSqlStates;
+    
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
     
     protected AbstractDbDialect() {
@@ -1688,5 +1692,58 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return new StatementBuilder(type, tableName, keys,
                 columns,
                 preFilteredColumns, isDateOverrideToTimestamp(), getIdentifierQuoteString());
+    }
+    
+    public void setPrimaryKeyViolationCodes(int[] primaryKeyViolationCodes) {
+        this.primaryKeyViolationCodes = primaryKeyViolationCodes;
+    }
+    
+    public void setPrimaryKeyViolationSqlStates(String[] primaryKeyViolationSqlStates) {
+        this.primaryKeyViolationSqlStates = primaryKeyViolationSqlStates;
+    }
+    
+    public boolean isPrimaryKeyViolation(Exception ex) {
+        boolean primaryKeyViolation = false;
+        if (primaryKeyViolationCodes != null || primaryKeyViolationSqlStates != null) {
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                if (primaryKeyViolationCodes != null) {
+                    int errorCode = sqlEx.getErrorCode();
+                    for (int primaryKeyViolationCode : primaryKeyViolationCodes) {
+                        if (primaryKeyViolationCode == errorCode) {
+                            primaryKeyViolation = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (primaryKeyViolationSqlStates != null) {
+                    String sqlState = sqlEx.getSQLState();
+                    if (sqlState != null) {
+                        for (String primaryKeyViolationSqlState : primaryKeyViolationSqlStates) {
+                            if (primaryKeyViolationSqlState != null
+                                    && primaryKeyViolationSqlState.equals(sqlState)) {
+                                primaryKeyViolation = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return primaryKeyViolation;
+    }
+    
+    protected SQLException findSQLException(Throwable ex) {
+        if (ex instanceof SQLException) {
+            return (SQLException)ex;
+        } else {
+            Throwable cause = ex.getCause();
+            if (cause != null && !cause.equals(ex)) {
+                return findSQLException(ex);
+            }
+        }
+        return null;
     }
 }
