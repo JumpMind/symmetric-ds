@@ -58,7 +58,6 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
@@ -375,32 +374,43 @@ public class CsvLoader implements IDataLoader {
 
         if (continueToLoad) {
             String keyValues[] = context.getTableTemplate().parseKeys(tokens, 1);
-            boolean enableFallbackUpdate = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
+            boolean attemptFallbackUpdate = false;
+            RuntimeException insertException = null;
             try {
                 stats.startTimer();
-                rows = context.getTableTemplate().insert(context, columnValues, keyValues);
-                if (rows <= 0) {
-                    throw new DataIntegrityViolationException("Insert was not processed");
+                try {
+                    rows = context.getTableTemplate().insert(context, columnValues, keyValues);
+                    if (rows == 0) {
+                        attemptFallbackUpdate =  parameterService
+                        .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
+                    }
+                } catch (RuntimeException e) {
+                    insertException = e;
+                    attemptFallbackUpdate = dbDialect.isPrimaryKeyViolation(e)
+                            && parameterService
+                                    .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
+                    if (!attemptFallbackUpdate) {
+                        throw e;
+                    }
                 }
-            } catch (DataIntegrityViolationException e) {
-                // TODO: modify sql-error-codes.xml for unique constraint vs. foreign key
-                if (enableFallbackUpdate) {
+
+                if (attemptFallbackUpdate) {
                     if (log.isDebugEnabled()) {
-                        log.debug("LoaderInsertingFailedUpdating", context.getTableName(), ArrayUtils.toString(tokens));
-                    }                    
+                        log.debug("LoaderInsertingFailedUpdating", context.getTableName(),
+                                ArrayUtils.toString(tokens));
+                    }
                     stats.incrementFallbackUpdateCount();
                     rows = context.getTableTemplate().update(context, columnValues, keyValues);
                     if (rows == 0) {
-                        throw new SymmetricException("LoaderFallbackUpdateFailed", e, context.getTableTemplate().getTable().toVerboseString(), ArrayUtils
-                                .toString(tokens), ArrayUtils.toString(keyValues));
+                        throw new SymmetricException("LoaderFallbackUpdateFailed", insertException, context
+                                .getTableTemplate().getTable().toVerboseString(),
+                                ArrayUtils.toString(tokens), ArrayUtils.toString(keyValues));
                     }
-                } else {
-                    log.error("LoaderInsertingFailed", context.getTableName(), ArrayUtils.toString(tokens));
-                    throw e;
                 }
+
             } finally {
                 stats.incrementDatabaseMillis(stats.endTimer());
-            }           
+            }
         }
         return rows;
     }

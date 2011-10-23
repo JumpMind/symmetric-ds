@@ -335,4 +335,11 @@ public interface IDbDialect {
     public StatementBuilder createStatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
             Column[] preFilteredColumns);
     
+    /**
+     * Check to see if the passed in exception (or a nested exception) was caused by a primary key violation.
+     * @param ex The exception to check
+     * @return true if the exception was caused by a primary key violation
+     */
+    public boolean isPrimaryKeyViolation(Exception ex);
+    
 }

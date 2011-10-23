@@ -16,6 +16,7 @@
 
     <bean id="h2Dialect" class="org.jumpmind.symmetric.db.h2.H2DbDialect"
         scope="prototype">
+        <property name="primaryKeyViolationCodes" value="23001"/>
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="parameterService" ref="parameterService" />
         <property name="defaultSchema" value="$[sym.db.default.schema]" />

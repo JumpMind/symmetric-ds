@@ -8,6 +8,7 @@
 
     <bean id="informixDialect" class="org.jumpmind.symmetric.db.informix.InformixDbDialect"
         scope="prototype">
+        <property name="primaryKeyViolationCodes" value="-268"/>
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="parameterService" ref="parameterService" />
         <property name="defaultSchema" value="$[sym.db.default.schema]" />

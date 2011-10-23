@@ -8,6 +8,7 @@
 
     <bean id="firebirdDialect" class="org.jumpmind.symmetric.db.firebird.FirebirdDbDialect"
         scope="prototype">
+        <property name="primaryKeyViolationCodes" value="335544665"/>
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="parameterService" ref="parameterService" />
         <property name="defaultSchema" value="$[sym.db.default.schema]" />

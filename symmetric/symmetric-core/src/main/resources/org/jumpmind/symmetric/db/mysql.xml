@@ -16,6 +16,7 @@
 
     <bean id="mysqlDialect" class="org.jumpmind.symmetric.db.mysql.MySqlDbDialect"
         scope="prototype">
+        <property name="primaryKeyViolationCodes" value="1062" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="parameterService" ref="parameterService" />
         <property name="defaultSchema" value="$[sym.db.default.schema]" />

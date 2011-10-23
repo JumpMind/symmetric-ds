@@ -32,7 +32,6 @@ import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IMissingTableHandler;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.load.TableTemplate;
-import org.springframework.dao.DataIntegrityViolationException;
 
 public class TransformDataLoader extends AbstractTransformer implements IBuiltInExtensionPoint,
         IDataLoaderFilter, IMissingTableHandler {
@@ -109,30 +108,42 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
             tableTemplate.setKeyNames(data.getKeyNames());
             switch (data.getTargetDmlType()) {
             case INSERT:
-                boolean enableFallbackUpdate = parameterService
-                        .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
                 Table table = tableTemplate.getTable();
+                boolean attemptFallbackUpdate = false;
+                RuntimeException insertException = null;
                 try {
-                    if (data.isGeneratedIdentityNeeded()) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("TransformEnablingGeneratedIdentity", table.getName());
+                    try {
+                        if (data.isGeneratedIdentityNeeded()) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("TransformEnablingGeneratedIdentity", table.getName());
+                            }
+                            dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), table);
+                        } else if (table.hasAutoIncrementColumn()) {
+                            dbDialect.allowIdentityInserts(context.getJdbcTemplate(), table);
                         }
-                        dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), table);
-                    } else if (table.hasAutoIncrementColumn()) {
-                        dbDialect.allowIdentityInserts(context.getJdbcTemplate(), table);
-                    }
 
-                    if (tableTemplate.insert(context, data.getColumnValues(), data.getKeyValues()) <= 0) {
-                        throw new DataIntegrityViolationException("Insert not executed");
+                        if (tableTemplate.insert(context, data.getColumnValues(),
+                                data.getKeyValues()) == 0) {
+                            attemptFallbackUpdate = parameterService
+                                    .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
+                        }
+                    } catch (RuntimeException ex) {
+                        insertException = ex;
+                        if (dbDialect.isPrimaryKeyViolation(ex)
+                                && parameterService
+                                        .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE)) {
+                            attemptFallbackUpdate = true;
+                        } else {
+                            throw ex;
+                        }
                     }
-                } catch (DataIntegrityViolationException ex) {
-                    if (enableFallbackUpdate) {
+                    if (attemptFallbackUpdate) {
                         List<TransformedData> newlyTransformedDatas = transform(DmlType.UPDATE,
                                 context, data.getTransformation(), data.getSourceKeyValues(),
                                 data.getOldSourceValues(), data.getSourceValues());
                         for (TransformedData newlyTransformedData : newlyTransformedDatas) {
-                            if (newlyTransformedData.hasSameKeyValues(data.getKeyValues()) ||
-                            		data.isGeneratedIdentityNeeded()) {
+                            if (newlyTransformedData.hasSameKeyValues(data.getKeyValues())
+                                    || data.isGeneratedIdentityNeeded()) {
                                 if (newlyTransformedData.getKeyNames() != null
                                         && newlyTransformedData.getKeyNames().length > 0) {
                                     tableTemplate.setColumnNames(newlyTransformedData
@@ -142,7 +153,8 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                                             newlyTransformedData.getColumnValues(),
                                             newlyTransformedData.getKeyValues())) {
                                         throw new SymmetricException("LoaderFallbackUpdateFailed",
-                                                ex, tableTemplate.getTable().toVerboseString(),
+                                                insertException, tableTemplate.getTable()
+                                                        .toVerboseString(),
                                                 ArrayUtils.toString(data.getColumnValues()),
                                                 ArrayUtils.toString(data.getKeyValues()));
                                     }
@@ -150,19 +162,19 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
                                     // If not keys are specified we are going to
                                     // assume that this is intentional and we
                                     // will simply log a warning and not fail.
-                                    log.warn("Message", ex.getMessage());
+                                    log.warn("Message", insertException.getMessage());
                                     log.warn("TransformNoPrimaryKeyDefinedNoUpdate",
                                             newlyTransformedData.getTransformation()
                                                     .getTransformId());
                                 }
                             } else {
-                            	log.debug("TransformMatchingFallbackNotFound", DmlType.UPDATE.name());
+                                log.debug("TransformMatchingFallbackNotFound",
+                                        DmlType.UPDATE.name());
                             }
                         }
 
-                    } else {
-                        throw ex;
                     }
+
                 } finally {
                     if (table.hasAutoIncrementColumn()) {
                         dbDialect.revertAllowIdentityInserts(context.getJdbcTemplate(), table);
