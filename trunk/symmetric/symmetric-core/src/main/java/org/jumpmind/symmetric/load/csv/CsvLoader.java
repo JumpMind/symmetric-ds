@@ -383,6 +383,11 @@ public class CsvLoader implements IDataLoader {
                     if (rows == 0) {
                         attemptFallbackUpdate =  parameterService
                         .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
+                        if (!attemptFallbackUpdate) {
+                            throw new SymmetricException("LoaderInsertingFailed", insertException, context
+                                    .getTableTemplate().getTable().toVerboseString(),
+                                    ArrayUtils.toString(tokens));
+                        }
                     }
                 } catch (RuntimeException e) {
                     insertException = e;
