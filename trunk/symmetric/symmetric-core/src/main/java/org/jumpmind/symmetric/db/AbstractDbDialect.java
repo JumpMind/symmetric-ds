@@ -1741,7 +1741,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         } else {
             Throwable cause = ex.getCause();
             if (cause != null && !cause.equals(ex)) {
-                return findSQLException(ex);
+                return findSQLException(cause);
             }
         }
         return null;
