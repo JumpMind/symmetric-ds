@@ -920,11 +920,11 @@ public class Table implements Serializable, Cloneable
         return false;
     }
     
-    public Column[] getDistributedKeyColumns() {
+    public Column[] getDistributionKeyColumns() {
         @SuppressWarnings("unchecked")
         Collection<Column> columns = CollectionUtils.select(_columns, new Predicate() {
             public boolean evaluate(Object input) {
-                return ((Column)input).isDistributedKey();
+                return ((Column)input).isDistributionKey();
             }
         });
 
