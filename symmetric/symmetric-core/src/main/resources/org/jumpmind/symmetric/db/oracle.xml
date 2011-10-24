@@ -105,7 +105,7 @@
                 </property>
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')),'"'))]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, $(oracleToClob)'', '"'||replace(replace($(oracleToClob)$(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"')]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
@@ -119,7 +119,7 @@
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
-                    <value>
+                    <value>	
                         <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as number($[sym.oracle.template.precision]))||'"')]]>
                     </value>
                 </property>
@@ -130,17 +130,17 @@
                 </property>                
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.FF3')),'"'))]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.FF3'))||'"']]>
                     </value>
                 </property>               
                 <property name="dateColumnTemplate" >
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"'))]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS'))||'"']]>
                     </value>
                 </property>
                 <property name="timeColumnTemplate" >
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"'))]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS'))||'"']]>
                     </value>
                 </property>                
                 <property name="triggerConcatCharacter" value="||"/>
