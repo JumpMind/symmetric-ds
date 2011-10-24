@@ -438,8 +438,8 @@ public class JdbcModelReader
      * @param connection The connection
      * @param name       The name of the resulting database; <code>null</code> when the default name (the catalog)
      *                   is desired which might be <code>null</code> itself though
-     * @param catalog    The catalog to acess in the database; use <code>null</code> for the default value
-     * @param schema     The schema to acess in the database; use <code>null</code> for the default value
+     * @param catalog    The catalog to access in the database; use <code>null</code> for the default value
+     * @param schema     The schema to access in the database; use <code>null</code> for the default value
      * @param tableTypes The table types to process; use <code>null</code> or an empty list for the default ones
      * @return The database model
      */
@@ -529,6 +529,7 @@ public class JdbcModelReader
                     return collator.compare(obj1.getName().toUpperCase(), obj2.getName().toUpperCase());
                 }
             });
+            
             return tables;
         }
         finally
@@ -566,11 +567,11 @@ public class JdbcModelReader
             table.addForeignKeys(readForeignKeys(metaData, tableName));
             table.addIndices(readIndices(metaData, tableName));
 
-            Collection primaryKeys = readPrimaryKeyNames(metaData, tableName);
+            Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
 
-            for (Iterator it = primaryKeys.iterator(); it.hasNext();)
+            for (Iterator<String> it = primaryKeys.iterator(); it.hasNext();)
             {
-                table.findColumn((String)it.next(), true).setPrimaryKey(true);
+                table.findColumn(it.next(), true).setPrimaryKey(true);
             }
 
             if (getPlatformInfo().isSystemIndicesReturned())
@@ -608,7 +609,7 @@ public class JdbcModelReader
     protected void removeInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table) throws SQLException
     {
         Column[] pks         = table.getPrimaryKeyColumns();
-        List     columnNames = new ArrayList();
+        List<String>     columnNames = new ArrayList<String>();
 
         for (int columnIdx = 0; columnIdx < pks.length; columnIdx++)
         {
@@ -640,7 +641,7 @@ public class JdbcModelReader
      */
     protected void removeInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk) throws SQLException
     {
-        List    columnNames  = new ArrayList();
+        List<String>    columnNames  = new ArrayList<String>();
         boolean mustBeUnique = !getPlatformInfo().isSystemForeignKeyIndicesAlwaysNonUnique();
 
         for (int columnIdx = 0; columnIdx < fk.getReferenceCount(); columnIdx++)
