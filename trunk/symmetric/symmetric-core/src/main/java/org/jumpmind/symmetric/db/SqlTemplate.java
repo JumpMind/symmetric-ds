@@ -305,8 +305,6 @@ public class SqlTemplate {
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue,
                 newColumnPrefix, columns, dialect, dml, false, channel, trigger);
         ddl = AppUtils.replace("columns", columnString.toString(), ddl);
-        ddl = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
-                ddl);
 
         ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
 
@@ -320,6 +318,9 @@ public class SqlTemplate {
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
                         dialect, dml, true, channel, trigger).toString(), ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
+        
+        ddl = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
+                ddl);
 
         // some column templates need tableName and schemaName
         ddl = AppUtils.replace("tableName", history == null ? quote(trigger.getSourceTableName(), dialect)
