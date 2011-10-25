@@ -710,23 +710,26 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always) {
-        if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
-            synchronized (this) {
-                try {
-                    log.info("TriggersSynchronizing");
-                    // make sure channels are read from the database
-                    configurationService.reloadChannels();
-                    List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
-                    inactivateTriggers(triggersForCurrentNode, sqlBuffer);
-                    updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, gen_always);
-                    resetTriggerRouterCacheByNodeGroupId();
-                } finally {
-                    clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
-                    log.info("TriggersSynchronized");
+        if (dbDialect.getPlatform().getPlatformInfo().isTriggersSupported()) {
+            if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
+                synchronized (this) {
+                    try {
+                        log.info("TriggersSynchronizing");
+                        // make sure channels are read from the database
+                        configurationService.reloadChannels();
+                        List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+                        inactivateTriggers(triggersForCurrentNode, sqlBuffer);
+                        updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer,
+                                gen_always);
+                        resetTriggerRouterCacheByNodeGroupId();
+                    } finally {
+                        clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
+                        log.info("TriggersSynchronized");
+                    }
                 }
+            } else {
+                log.info("TriggersSynchronizingFailedLock");
             }
-        } else {
-            log.info("TriggersSynchronizingFailedLock");
         }
     }
     
