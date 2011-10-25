@@ -132,6 +132,11 @@ public class TableTemplate {
                 Column column = allMetaData.get(columnNames[i].trim().toUpperCase());
                 if (column != null) {
                     if (doesColumnNeedUpdated(ctx, i, column, keyValues, columnValues)) {
+                        // if one of the columns being updated is a partition key,
+                        // return -1 and fallback to a delete / insert
+                        if (column.isDistributionKey()) {
+                            return -1;
+                        }
                         changedColumnNameList.add(columnNames[i]);
                         changedColumnMetaList.add(column);
                         changedColumnValueList.add(columnValues[i]);

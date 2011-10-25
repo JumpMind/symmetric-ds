@@ -453,6 +453,9 @@ public class CsvLoader implements IDataLoader {
                 }
             } else if (rows > 1) {
                 log.warn("LoaderRowsUpdatingFailed", rows, context.getTableName(), ArrayUtils.toString(tokens));
+            } else if (rows < 0) {
+                rows = context.getTableTemplate().delete(context, keyValues);
+                rows = context.getTableTemplate().insert(context, columnValues, keyValues);
             }
             stats.incrementDatabaseMillis(stats.endTimer());
         }
