@@ -23,6 +23,8 @@ import java.lang.reflect.Field;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,145 +35,147 @@ import org.apache.commons.logging.LogFactory;
 public class PlatformInfo
 {
     /* The Log to which logging calls will be made. */
-    private final Log _log = LogFactory.getLog(PlatformInfo.class);
+    private final Log log = LogFactory.getLog(PlatformInfo.class);
 
     // properties influencing the definition of columns
     
     /* Whether the database requires the explicit stating of NULL as the default value. */
-    private boolean _nullAsDefaultValueRequired = false;
+    private boolean nullAsDefaultValueRequired = false;
 
     /* Whether default values can be defined for LONGVARCHAR/LONGVARBINARY columns. */
-    private boolean _defaultValuesForLongTypesSupported = true;
+    private boolean defaultValuesForLongTypesSupported = true;
 
     // properties influencing the specification of table constraints
     
     /* Whether primary key constraints are embedded inside the create table statement. */
-    private boolean _primaryKeyEmbedded = true;
+    private boolean primaryKeyEmbedded = true;
     
     /* Whether foreign key constraints are embedded inside the create table statement. */
-    private boolean _foreignKeysEmbedded = false;
+    private boolean foreignKeysEmbedded = false;
 
     /* Whether embedded foreign key constraints are explicitly named. */
-    private boolean _embeddedForeignKeysNamed = false;
+    private boolean embeddedForeignKeysNamed = false;
 
     /* Whether non-unique indices are supported. */
-    private boolean _indicesSupported = true;
+    private boolean indicesSupported = true;
 
     /* Whether indices are embedded inside the create table statement. */
-    private boolean _indicesEmbedded = false;
+    private boolean indicesEmbedded = false;
+    
+    private boolean triggersSupported = true;
 
     /* Whether identity specification is supported for non-primary key columns. */
-    private boolean _nonPKIdentityColumnsSupported = true;
+    private boolean nonPKIdentityColumnsSupported = true;
 
     /* Whether the auto-increment definition is done via the DEFAULT part of the column definition. */
-    private boolean _defaultValueUsedForIdentitySpec = false;
+    private boolean defaultValueUsedForIdentitySpec = false;
 
     // properties influencing the reading of models from live databases
     
     /* Whether system indices (database-generated indices for primary and foreign keys) are returned when
         reading a model from a database. */
-    private boolean _systemIndicesReturned = true;
+    private boolean systemIndicesReturned = true;
 
     /* Whether system indices for foreign keys are always non-unique or can be
         unique (i.e. if a primary key column is used to establish the foreign key). */
-    private boolean _systemForeignKeyIndicesAlwaysNonUnique = false;
+    private boolean systemForeignKeyIndicesAlwaysNonUnique = false;
     
     /* Whether the database returns a synthetic default value for non-identity required columns. */ 
-    private boolean _syntheticDefaultValueForRequiredReturned = false;
+    private boolean syntheticDefaultValueForRequiredReturned = false;
 
     /* Whether the platform is able to determine auto increment status from an existing database. */ 
-    private boolean _identityStatusReadingSupported = true;
+    private boolean identityStatusReadingSupported = true;
 
     // other DDL/DML properties
 
     /* Whether comments are supported. */
-    private boolean _sqlCommentsSupported = true;
+    private boolean sqlCommentsSupported = true;
 
     /* Whether delimited identifiers are supported or not. */
-    private boolean _delimitedIdentifiersSupported = true;
+    private boolean delimitedIdentifiersSupported = true;
     
     /* Whether an ALTER TABLE is needed to drop indexes. */
-    private boolean _alterTableForDropUsed = false;
+    private boolean alterTableForDropUsed = false;
 
     /* Whether the platform allows for the explicit specification of values for identity columns in INSERT
         and UPDATE statements. */ 
-    private boolean _identityOverrideAllowed = true;
+    private boolean identityOverrideAllowed = true;
 
     /* Whether the values of identity columns can be read back from the database after insertion. */ 
-    private boolean _lastIdentityValueReadable = true;
+    private boolean lastIdentityValueReadable = true;
 
     /* Whether auto-commit mode for the reading of the values of identity columns after insertion
         shall be used. */ 
-    private boolean _autoCommitModeForLastIdentityValueReading = true;
+    private boolean autoCommitModeForLastIdentityValueReading = true;
 
     /* Specifies the maximum length that a table name can have for this database (-1 if there is no limit). */
-    private int _maxTableNameLength = -1;
+    private int maxTableNameLength = -1;
 
     /* Specifies the maximum length that a column name can have for this database (-1 if there is no limit). */
-    private int _maxColumnNameLength = -1;
+    private int maxColumnNameLength = -1;
 
     /* Specifies the maximum length that a constraint name can have for this database (-1 if there is no limit). */
-    private int _maxConstraintNameLength = -1;
+    private int maxConstraintNameLength = -1;
 
     /* Specifies the maximum length that a foreign key name can have for this database (-1 if there is no limit). */
-    private int _maxForeignKeyNameLength = -1;
+    private int maxForeignKeyNameLength = -1;
 
     /* The string used for delimiting SQL identifiers, eg. table names, column names etc. */
-    private String _delimiterToken = "\"";
+    private String delimiterToken = "\"";
 
     /* The string used for escaping values when generating textual SQL statements. */
-    private String _valueQuoteToken = "'";
+    private String valueQuoteToken = "'";
 
     /* The string that starts a comment. */
-    private String _commentPrefix = "--";
+    private String commentPrefix = "--";
 
     /* The string that ends a comment. */
-    private String _commentSuffix = "";
+    private String commentSuffix = "";
 
     /* The text separating individual sql commands. */
-    private String _sqlCommandDelimiter = ";";
+    private String sqlCommandDelimiter = ";";
     
     private boolean storesUpperCaseInCatalog = false;
 
     /* Contains non-default mappings from jdbc to native types. */
-    private HashMap _nativeTypes = new HashMap();
+    private Map<Integer,String> nativeTypes = new HashMap<Integer,String>();
 
     /* Contains the jdbc types corresponding to the native types for non-default mappings. */
-    private HashMap _targetJdbcTypes = new HashMap();
+    private Map<Integer, Integer> targetJdbcTypes = new HashMap<Integer, Integer>();
 
     /* Contains those JDBC types whose corresponding native types have a null value as the default value. */
-    private HashSet<Integer> _typesWithNullDefault = new HashSet<Integer>();
+    private Set<Integer> typesWithNullDefault = new HashSet<Integer>();
 
     /* Contains those JDBC types whose corresponding native types are types that have a size on this platform. */
-    private HashSet<Integer> _typesWithSize = new HashSet<Integer>();
+    private Set<Integer> typesWithSize = new HashSet<Integer>();
 
     /* Contains the default sizes for those JDBC types whose corresponding native types require a size. */
-    private HashMap _typesDefaultSizes = new HashMap();
+    private Map<Integer, Integer> typesDefaultSizes = new HashMap<Integer, Integer>();
 
     /* Contains those JDBC types whose corresponding native types are types that have precision and scale on this platform. */
-    private HashSet<Integer> _typesWithPrecisionAndScale = new HashSet<Integer>();
+    private HashSet<Integer> typesWithPrecisionAndScale = new HashSet<Integer>();
 
     /*
      * Creates a new platform info object.
      */
     public PlatformInfo()
     {
-        _typesWithNullDefault.add(new Integer(Types.CHAR));
-        _typesWithNullDefault.add(new Integer(Types.VARCHAR));
-        _typesWithNullDefault.add(new Integer(Types.LONGVARCHAR));
-        _typesWithNullDefault.add(new Integer(Types.CLOB));
-        _typesWithNullDefault.add(new Integer(Types.BINARY));
-        _typesWithNullDefault.add(new Integer(Types.VARBINARY));
-        _typesWithNullDefault.add(new Integer(Types.LONGVARBINARY));
-        _typesWithNullDefault.add(new Integer(Types.BLOB));
+        this.typesWithNullDefault.add(new Integer(Types.CHAR));
+        this.typesWithNullDefault.add(new Integer(Types.VARCHAR));
+        this.typesWithNullDefault.add(new Integer(Types.LONGVARCHAR));
+        this.typesWithNullDefault.add(new Integer(Types.CLOB));
+        this.typesWithNullDefault.add(new Integer(Types.BINARY));
+        this.typesWithNullDefault.add(new Integer(Types.VARBINARY));
+        this.typesWithNullDefault.add(new Integer(Types.LONGVARBINARY));
+        this.typesWithNullDefault.add(new Integer(Types.BLOB));
 
-        _typesWithSize.add(new Integer(Types.CHAR));
-        _typesWithSize.add(new Integer(Types.VARCHAR));
-        _typesWithSize.add(new Integer(Types.BINARY));
-        _typesWithSize.add(new Integer(Types.VARBINARY));
+        this.typesWithSize.add(new Integer(Types.CHAR));
+        this.typesWithSize.add(new Integer(Types.VARCHAR));
+        this.typesWithSize.add(new Integer(Types.BINARY));
+        this.typesWithSize.add(new Integer(Types.VARBINARY));
 
-        _typesWithPrecisionAndScale.add(new Integer(Types.DECIMAL));
-        _typesWithPrecisionAndScale.add(new Integer(Types.NUMERIC));
+        this.typesWithPrecisionAndScale.add(new Integer(Types.DECIMAL));
+        this.typesWithPrecisionAndScale.add(new Integer(Types.NUMERIC));
     }
 
     // properties influencing the definition of columns
@@ -184,7 +188,7 @@ public class PlatformInfo
      */
     public boolean isNullAsDefaultValueRequired()
     {
-        return _nullAsDefaultValueRequired;
+        return nullAsDefaultValueRequired;
     }
     /*
      * Specifies whether a NULL needs to be explicitly stated when the column
@@ -195,7 +199,7 @@ public class PlatformInfo
      */
     public void setNullAsDefaultValueRequired(boolean requiresNullAsDefaultValue)
     {
-        _nullAsDefaultValueRequired = requiresNullAsDefaultValue;
+        this.nullAsDefaultValueRequired = requiresNullAsDefaultValue;
     }
 
     /*
@@ -205,7 +209,7 @@ public class PlatformInfo
      */
     public boolean isDefaultValuesForLongTypesSupported()
     {
-        return _defaultValuesForLongTypesSupported;
+        return defaultValuesForLongTypesSupported;
     }
 
     /*
@@ -215,7 +219,7 @@ public class PlatformInfo
      */
     public void setDefaultValuesForLongTypesSupported(boolean isSupported)
     {
-        _defaultValuesForLongTypesSupported = isSupported;
+        this.defaultValuesForLongTypesSupported = isSupported;
     }
 
     // properties influencing the specification of table constraints
@@ -229,7 +233,7 @@ public class PlatformInfo
      */
     public boolean isPrimaryKeyEmbedded()
     {
-        return _primaryKeyEmbedded;
+        return primaryKeyEmbedded;
     }
 
     /*
@@ -240,7 +244,7 @@ public class PlatformInfo
      */
     public void setPrimaryKeyEmbedded(boolean primaryKeyEmbedded)
     {
-        _primaryKeyEmbedded = primaryKeyEmbedded;
+        this.primaryKeyEmbedded = primaryKeyEmbedded;
     }
 
     /*
@@ -252,7 +256,7 @@ public class PlatformInfo
      */
     public boolean isForeignKeysEmbedded()
     {
-        return _foreignKeysEmbedded;
+        return foreignKeysEmbedded;
     }
 
     /*
@@ -263,7 +267,7 @@ public class PlatformInfo
      */
     public void setForeignKeysEmbedded(boolean foreignKeysEmbedded)
     {
-        _foreignKeysEmbedded = foreignKeysEmbedded;
+        this.foreignKeysEmbedded = foreignKeysEmbedded;
     }
 
     /*
@@ -273,7 +277,7 @@ public class PlatformInfo
      */
     public boolean isEmbeddedForeignKeysNamed()
     {
-        return _embeddedForeignKeysNamed;
+        return embeddedForeignKeysNamed;
     }
 
     /*
@@ -283,7 +287,7 @@ public class PlatformInfo
      */
     public void setEmbeddedForeignKeysNamed(boolean embeddedForeignKeysNamed)
     {
-        _embeddedForeignKeysNamed = embeddedForeignKeysNamed;
+        this.embeddedForeignKeysNamed = embeddedForeignKeysNamed;
     }
 
     /*
@@ -293,7 +297,7 @@ public class PlatformInfo
      */
     public boolean isIndicesSupported()
     {
-        return _indicesSupported;
+        return indicesSupported;
     }
 
     /*
@@ -303,7 +307,7 @@ public class PlatformInfo
      */
     public void setIndicesSupported(boolean supportingIndices)
     {
-        _indicesSupported = supportingIndices;
+        this.indicesSupported = supportingIndices;
     }
 
     /*
@@ -314,7 +318,7 @@ public class PlatformInfo
      */
     public boolean isIndicesEmbedded()
     {
-        return _indicesEmbedded;
+        return indicesEmbedded;
     }
 
     /*
@@ -325,7 +329,7 @@ public class PlatformInfo
      */
     public void setIndicesEmbedded(boolean indicesEmbedded)
     {
-        _indicesEmbedded = indicesEmbedded;
+        this.indicesEmbedded = indicesEmbedded;
     }
 
     /*
@@ -335,7 +339,7 @@ public class PlatformInfo
      */
     public boolean isNonPKIdentityColumnsSupported()
     {
-        return _nonPKIdentityColumnsSupported;
+        return nonPKIdentityColumnsSupported;
     }
 
     /*
@@ -346,7 +350,7 @@ public class PlatformInfo
      */
     public void setNonPKIdentityColumnsSupported(boolean supportingNonPKIdentityColumns)
     {
-        _nonPKIdentityColumnsSupported = supportingNonPKIdentityColumns;
+        this.nonPKIdentityColumnsSupported = supportingNonPKIdentityColumns;
     }
 
     /*
@@ -357,7 +361,7 @@ public class PlatformInfo
      */
     public boolean isDefaultValueUsedForIdentitySpec()
     {
-        return _defaultValueUsedForIdentitySpec;
+        return defaultValueUsedForIdentitySpec;
     }
 
     /*
@@ -369,7 +373,7 @@ public class PlatformInfo
      */
     public void setDefaultValueUsedForIdentitySpec(boolean identitySpecUsesDefaultValue)
     {
-        _defaultValueUsedForIdentitySpec = identitySpecUsesDefaultValue;
+        this.defaultValueUsedForIdentitySpec = identitySpecUsesDefaultValue;
     }
 
     // properties influencing the reading of models from live databases
@@ -382,7 +386,7 @@ public class PlatformInfo
      */
     public boolean isSystemIndicesReturned()
     {
-        return _systemIndicesReturned;
+        return systemIndicesReturned;
     }
 
     /*
@@ -394,7 +398,7 @@ public class PlatformInfo
      */
     public void setSystemIndicesReturned(boolean returningSystemIndices)
     {
-        _systemIndicesReturned = returningSystemIndices;
+        this.systemIndicesReturned = returningSystemIndices;
     }
 
     /*
@@ -406,7 +410,7 @@ public class PlatformInfo
      */
     public boolean isSystemForeignKeyIndicesAlwaysNonUnique()
     {
-        return _systemForeignKeyIndicesAlwaysNonUnique;
+        return systemForeignKeyIndicesAlwaysNonUnique;
     }
 
     /*
@@ -418,7 +422,7 @@ public class PlatformInfo
      */
     public void setSystemForeignKeyIndicesAlwaysNonUnique(boolean alwaysNonUnique)
     {
-        _systemForeignKeyIndicesAlwaysNonUnique = alwaysNonUnique;
+        this.systemForeignKeyIndicesAlwaysNonUnique = alwaysNonUnique;
     }
 
     /*
@@ -430,7 +434,7 @@ public class PlatformInfo
      */
     public boolean isSyntheticDefaultValueForRequiredReturned()
     {
-        return _syntheticDefaultValueForRequiredReturned;
+        return syntheticDefaultValueForRequiredReturned;
     }
 
     /*
@@ -442,7 +446,7 @@ public class PlatformInfo
      */
     public void setSyntheticDefaultValueForRequiredReturned(boolean returningDefaultValue)
     {
-        _syntheticDefaultValueForRequiredReturned = returningDefaultValue;
+        this.syntheticDefaultValueForRequiredReturned = returningDefaultValue;
     }
 
     /*
@@ -454,7 +458,7 @@ public class PlatformInfo
      */
     public boolean getIdentityStatusReadingSupported()
     {
-        return _identityStatusReadingSupported;
+        return identityStatusReadingSupported;
     }
 
     /*
@@ -466,7 +470,7 @@ public class PlatformInfo
      */
     public void setIdentityStatusReadingSupported(boolean canReadAutoIncrementStatus)
     {
-        _identityStatusReadingSupported = canReadAutoIncrementStatus;
+        this.identityStatusReadingSupported = canReadAutoIncrementStatus;
     }
 
     // other ddl properties
@@ -478,7 +482,7 @@ public class PlatformInfo
      */
     public boolean isSqlCommentsSupported()
     {
-        return _sqlCommentsSupported;
+        return sqlCommentsSupported;
     }
 
     /*
@@ -488,7 +492,7 @@ public class PlatformInfo
      */
     public void setSqlCommentsSupported(boolean commentsSupported)
     {
-        _sqlCommentsSupported = commentsSupported;
+        this.sqlCommentsSupported = commentsSupported;
     }
 
     /*
@@ -498,7 +502,7 @@ public class PlatformInfo
      */
     public boolean isDelimitedIdentifiersSupported()
     {
-        return _delimitedIdentifiersSupported;
+        return delimitedIdentifiersSupported;
     }
 
     /*
@@ -508,7 +512,7 @@ public class PlatformInfo
      */
     public void setDelimitedIdentifiersSupported(boolean areSupported)
     {
-        _delimitedIdentifiersSupported = areSupported;
+        this.delimitedIdentifiersSupported = areSupported;
     }
 
     /*
@@ -519,7 +523,7 @@ public class PlatformInfo
      */
     public boolean isAlterTableForDropUsed()
     {
-        return _alterTableForDropUsed;
+        return alterTableForDropUsed;
     }
 
     /*
@@ -530,7 +534,7 @@ public class PlatformInfo
      */
     public void setAlterTableForDropUsed(boolean useAlterTableForDrop)
     {
-        _alterTableForDropUsed = useAlterTableForDrop;
+        this.alterTableForDropUsed = useAlterTableForDrop;
     }
 
     /*
@@ -541,7 +545,7 @@ public class PlatformInfo
      */
     public boolean isIdentityOverrideAllowed()
     {
-        return _identityOverrideAllowed;
+        return identityOverrideAllowed;
     }
 
     /*
@@ -552,7 +556,7 @@ public class PlatformInfo
      */
     public void setIdentityOverrideAllowed(boolean identityOverrideAllowed)
     {
-        _identityOverrideAllowed = identityOverrideAllowed;
+        this.identityOverrideAllowed = identityOverrideAllowed;
     }
 
     /*
@@ -563,7 +567,7 @@ public class PlatformInfo
      */
     public boolean isLastIdentityValueReadable()
     {
-        return _lastIdentityValueReadable;
+        return lastIdentityValueReadable;
     }
 
     /*
@@ -574,7 +578,7 @@ public class PlatformInfo
      */
     public void setLastIdentityValueReadable(boolean lastIdentityValueReadable)
     {
-        _lastIdentityValueReadable = lastIdentityValueReadable;
+        this.lastIdentityValueReadable = lastIdentityValueReadable;
     }
 
     /*
@@ -586,7 +590,7 @@ public class PlatformInfo
      */
     public boolean isAutoCommitModeForLastIdentityValueReading()
     {
-        return _autoCommitModeForLastIdentityValueReading;
+        return autoCommitModeForLastIdentityValueReading;
     }
 
     /*
@@ -599,7 +603,7 @@ public class PlatformInfo
      */
     public void setAutoCommitModeForLastIdentityValueReading(boolean autoCommitModeForLastIdentityValueReading)
     {
-        _autoCommitModeForLastIdentityValueReading = autoCommitModeForLastIdentityValueReading;
+        this.autoCommitModeForLastIdentityValueReading = autoCommitModeForLastIdentityValueReading;
     }
 
     /*
@@ -609,7 +613,7 @@ public class PlatformInfo
      */
     public int getMaxTableNameLength()
     {
-        return _maxTableNameLength;
+        return maxTableNameLength;
     }
 
     /*
@@ -619,7 +623,7 @@ public class PlatformInfo
      */
     public int getMaxColumnNameLength()
     {
-        return _maxColumnNameLength;
+        return maxColumnNameLength;
     }
 
     /*
@@ -629,7 +633,7 @@ public class PlatformInfo
      */
     public int getMaxConstraintNameLength()
     {
-        return _maxConstraintNameLength;
+        return maxConstraintNameLength;
     }
 
     /*
@@ -639,7 +643,7 @@ public class PlatformInfo
      */
     public int getMaxForeignKeyNameLength()
     {
-        return _maxForeignKeyNameLength;
+        return maxForeignKeyNameLength;
     }
 
     /*
@@ -650,10 +654,10 @@ public class PlatformInfo
      */
     public void setMaxIdentifierLength(int maxIdentifierLength)
     {
-        _maxTableNameLength      = maxIdentifierLength;
-        _maxColumnNameLength     = maxIdentifierLength;
-        _maxConstraintNameLength = maxIdentifierLength;
-        _maxForeignKeyNameLength = maxIdentifierLength;
+        this.maxTableNameLength      = maxIdentifierLength;
+        this.maxColumnNameLength     = maxIdentifierLength;
+        this.maxConstraintNameLength = maxIdentifierLength;
+        this.maxForeignKeyNameLength = maxIdentifierLength;
     }
 
     /*
@@ -663,7 +667,7 @@ public class PlatformInfo
      */
     public void setMaxTableNameLength(int maxTableNameLength)
     {
-        _maxTableNameLength = maxTableNameLength;
+        this.maxTableNameLength = maxTableNameLength;
     }
 
     /*
@@ -673,7 +677,7 @@ public class PlatformInfo
      */
     public void setMaxColumnNameLength(int maxColumnNameLength)
     {
-        _maxColumnNameLength = maxColumnNameLength;
+        this.maxColumnNameLength = maxColumnNameLength;
     }
 
     /*
@@ -683,7 +687,7 @@ public class PlatformInfo
      */
     public void setMaxConstraintNameLength(int maxConstraintNameLength)
     {
-        _maxConstraintNameLength = maxConstraintNameLength;
+        this.maxConstraintNameLength = maxConstraintNameLength;
     }
 
     /*
@@ -693,7 +697,7 @@ public class PlatformInfo
      */
     public void setMaxForeignKeyNameLength(int maxForeignKeyNameLength)
     {
-        _maxForeignKeyNameLength = maxForeignKeyNameLength;
+        this.maxForeignKeyNameLength = maxForeignKeyNameLength;
     }
 
     /*
@@ -704,7 +708,7 @@ public class PlatformInfo
      */
     public String getDelimiterToken()
     {
-        return _delimiterToken;
+        return delimiterToken;
     }
 
     /*
@@ -714,7 +718,7 @@ public class PlatformInfo
      */
     public void setDelimiterToken(String delimiterToken)
     {
-        _delimiterToken = delimiterToken;
+        this.delimiterToken = delimiterToken;
     }
 
     /*
@@ -726,7 +730,7 @@ public class PlatformInfo
      */
     public String getValueQuoteToken()
     {
-        return _valueQuoteToken;
+        return valueQuoteToken;
     }
 
     /*
@@ -737,7 +741,7 @@ public class PlatformInfo
      */
     public void setValueQuoteToken(String valueQuoteChar)
     {
-        _valueQuoteToken = valueQuoteChar;
+        this.valueQuoteToken = valueQuoteChar;
     }
 
     /*
@@ -747,7 +751,7 @@ public class PlatformInfo
      */
     public String getCommentPrefix()
     {
-        return _commentPrefix;
+        return commentPrefix;
     }
 
     /*
@@ -757,7 +761,7 @@ public class PlatformInfo
      */
     public void setCommentPrefix(String commentPrefix)
     {
-        _commentPrefix = (commentPrefix == null ? "" : commentPrefix);
+        this.commentPrefix = (commentPrefix == null ? "" : commentPrefix);
     }
 
     /*
@@ -768,7 +772,7 @@ public class PlatformInfo
      */
     public String getCommentSuffix()
     {
-        return _commentSuffix;
+        return commentSuffix;
     }
 
     /*
@@ -778,7 +782,7 @@ public class PlatformInfo
      */
     public void setCommentSuffix(String commentSuffix)
     {
-        _commentSuffix = (commentSuffix == null ? "" : commentSuffix);
+        this.commentSuffix = (commentSuffix == null ? "" : commentSuffix);
     }
 
     /*
@@ -788,7 +792,7 @@ public class PlatformInfo
      */
     public String getSqlCommandDelimiter()
     {
-        return _sqlCommandDelimiter;
+        return sqlCommandDelimiter;
     }
 
     /*
@@ -798,7 +802,7 @@ public class PlatformInfo
      */
     public void setSqlCommandDelimiter(String sqlCommandDelimiter)
     {
-        _sqlCommandDelimiter = sqlCommandDelimiter;
+        this.sqlCommandDelimiter = sqlCommandDelimiter;
     }
 
     /*
@@ -809,7 +813,7 @@ public class PlatformInfo
      */
     public String getNativeType(int typeCode)
     {
-        return (String)_nativeTypes.get(new Integer(typeCode));
+        return (String)this.nativeTypes.get(new Integer(typeCode));
     }
 
     /*
@@ -824,7 +828,7 @@ public class PlatformInfo
      */
     public int getTargetJdbcType(int typeCode)
     {
-        Integer targetJdbcType = (Integer)_targetJdbcTypes.get(new Integer(typeCode));
+        Integer targetJdbcType = (Integer)targetJdbcTypes.get(new Integer(typeCode));
 
         return targetJdbcType == null ? typeCode : targetJdbcType.intValue(); 
     }
@@ -837,7 +841,7 @@ public class PlatformInfo
      */
     public void addNativeTypeMapping(int jdbcTypeCode, String nativeType)
     {
-        _nativeTypes.put(new Integer(jdbcTypeCode), nativeType);
+        this.nativeTypes.put(new Integer(jdbcTypeCode), nativeType);
     }
 
     /*
@@ -851,7 +855,7 @@ public class PlatformInfo
     public void addNativeTypeMapping(int jdbcTypeCode, String nativeType, int targetJdbcTypeCode)
     {
         addNativeTypeMapping(jdbcTypeCode, nativeType);
-        _targetJdbcTypes.put(new Integer(jdbcTypeCode), new Integer(targetJdbcTypeCode));
+        this.targetJdbcTypes.put(new Integer(jdbcTypeCode), new Integer(targetJdbcTypeCode));
     }
 
     /*
@@ -879,7 +883,7 @@ public class PlatformInfo
         catch (Exception ex)
         {
             // ignore -> won't be defined
-            _log.warn("Cannot add native type mapping for undefined jdbc type "+jdbcTypeName, ex);
+            this.log.warn("Cannot add native type mapping for undefined jdbc type "+jdbcTypeName, ex);
         }
     }
 
@@ -911,7 +915,7 @@ public class PlatformInfo
         catch (Exception ex)
         {
             // ignore -> won't be defined
-            _log.warn("Cannot add native type mapping for undefined jdbc type "+jdbcTypeName+", target jdbc type "+targetJdbcTypeName, ex);
+            this.log.warn("Cannot add native type mapping for undefined jdbc type "+jdbcTypeName+", target jdbc type "+targetJdbcTypeName, ex);
         }
     }
 
@@ -924,7 +928,7 @@ public class PlatformInfo
      */
     public boolean hasNullDefault(int sqlTypeCode)
     {
-        return _typesWithNullDefault.contains(new Integer(sqlTypeCode));
+        return typesWithNullDefault.contains(new Integer(sqlTypeCode));
     }
     
     /*
@@ -938,11 +942,11 @@ public class PlatformInfo
     {
         if (hasNullDefault)
         {
-            _typesWithNullDefault.add(new Integer(sqlTypeCode));
+            this.typesWithNullDefault.add(new Integer(sqlTypeCode));
         }
         else
         {
-            _typesWithNullDefault.remove(new Integer(sqlTypeCode));
+            this.typesWithNullDefault.remove(new Integer(sqlTypeCode));
         }
     }
 
@@ -955,7 +959,7 @@ public class PlatformInfo
      */
     public boolean hasSize(int sqlTypeCode)
     {
-        return _typesWithSize.contains(new Integer(sqlTypeCode));
+        return typesWithSize.contains(new Integer(sqlTypeCode));
     }
 
     /*
@@ -969,11 +973,11 @@ public class PlatformInfo
     {
         if (hasSize)
         {
-            _typesWithSize.add(new Integer(sqlTypeCode));
+            this.typesWithSize.add(new Integer(sqlTypeCode));
         }
         else
         {
-            _typesWithSize.remove(new Integer(sqlTypeCode));
+            this.typesWithSize.remove(new Integer(sqlTypeCode));
         }
     }
 
@@ -985,7 +989,7 @@ public class PlatformInfo
      */
     public Integer getDefaultSize(int jdbcTypeCode)
     {
-        return (Integer)_typesDefaultSizes.get(new Integer(jdbcTypeCode));
+        return (Integer)typesDefaultSizes.get(new Integer(jdbcTypeCode));
     }
 
     /*
@@ -996,7 +1000,7 @@ public class PlatformInfo
      */
     public void setDefaultSize(int jdbcTypeCode, int defaultSize)
     {
-        _typesDefaultSizes.put(new Integer(jdbcTypeCode), new Integer(defaultSize));
+        this.typesDefaultSizes.put(new Integer(jdbcTypeCode), new Integer(defaultSize));
     }
     
     /*
@@ -1019,7 +1023,7 @@ public class PlatformInfo
         catch (Exception ex)
         {
             // ignore -> won't be defined
-            _log.warn("Cannot add default size for undefined jdbc type "+jdbcTypeName, ex);
+            this.log.warn("Cannot add default size for undefined jdbc type "+jdbcTypeName, ex);
         }
     }
 
@@ -1033,7 +1037,7 @@ public class PlatformInfo
      */
     public boolean hasPrecisionAndScale(int sqlTypeCode)
     {
-        return _typesWithPrecisionAndScale.contains(new Integer(sqlTypeCode));
+        return typesWithPrecisionAndScale.contains(new Integer(sqlTypeCode));
     }
 
     /*
@@ -1048,11 +1052,11 @@ public class PlatformInfo
     {
         if (hasPrecisionAndScale)
         {
-            _typesWithPrecisionAndScale.add(new Integer(sqlTypeCode));
+            this.typesWithPrecisionAndScale.add(new Integer(sqlTypeCode));
         }
         else
         {
-            _typesWithPrecisionAndScale.remove(new Integer(sqlTypeCode));
+            this.typesWithPrecisionAndScale.remove(new Integer(sqlTypeCode));
         }
     }
     
@@ -1063,4 +1067,13 @@ public class PlatformInfo
     public boolean isStoresUpperCaseInCatalog() {
         return storesUpperCaseInCatalog;
     }
+    
+    public void setTriggersSupported(boolean triggersSupported) {
+        this.triggersSupported = triggersSupported;
+    }
+    
+    public boolean isTriggersSupported() {
+        return triggersSupported;
+    }
+    
 }

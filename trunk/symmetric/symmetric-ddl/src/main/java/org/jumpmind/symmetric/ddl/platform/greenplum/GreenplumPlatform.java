@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.ddl.platform.greenplum;
 
+import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.postgresql.PostgreSqlPlatform;
 
 public class GreenplumPlatform extends PostgreSqlPlatform {
@@ -14,6 +15,8 @@ public class GreenplumPlatform extends PostgreSqlPlatform {
     
     public GreenplumPlatform() {
         super();
+        PlatformInfo info = getPlatformInfo();
+        info.setTriggersSupported(false);
         setModelReader(new GreenplumModelReader(this));
     }
     
