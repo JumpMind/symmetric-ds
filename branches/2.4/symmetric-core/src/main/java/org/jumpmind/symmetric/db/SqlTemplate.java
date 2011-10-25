@@ -317,10 +317,7 @@ public class SqlTemplate {
                 "oldColumns",
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
                         dialect, dml, true, channel, trigger).toString(), ddl);
-        ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
-        
-        ddl = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
-                ddl);
+        ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);       
 
         // some column templates need tableName and schemaName
         ddl = AppUtils.replace("tableName", history == null ? quote(trigger.getSourceTableName(), dialect)
@@ -362,6 +359,10 @@ public class SqlTemplate {
         ddl = AppUtils.replace("oldColumnPrefix", oldColumnPrefix, ddl);
         ddl = AppUtils.replace("prefixName", tablePrefix, ddl);
         ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
+        
+        ddl = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
+                ddl);
+        
         switch (dml) {
         case DELETE:
             ddl = AppUtils.replace("curTriggerValue", oldTriggerValue, ddl);
