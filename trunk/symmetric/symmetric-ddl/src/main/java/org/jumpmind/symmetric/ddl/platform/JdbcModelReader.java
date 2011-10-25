@@ -806,7 +806,10 @@ public class JdbcModelReader
             throws SQLException {
         Column column = new Column();
         column.setName((String) values.get("COLUMN_NAME"));
-        column.setDefaultValue((String) values.get("COLUMN_DEF"));
+        String defaultValue = (String) values.get("COLUMN_DEF");
+        if (defaultValue != null) {
+            column.setDefaultValue(defaultValue.trim());
+        }
         Integer jdbcType = overrideJdbcTypeForColumn(values);
         if (jdbcType != null) {
             column.setTypeCode(jdbcType);

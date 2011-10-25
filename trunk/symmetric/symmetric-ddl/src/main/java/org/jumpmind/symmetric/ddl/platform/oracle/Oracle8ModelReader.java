@@ -140,12 +140,6 @@ public class Oracle8ModelReader extends JdbcModelReader
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
 		Column column = super.readColumn(metaData, values);
-
-		if (column.getDefaultValue() != null)
-		{
-			// Oracle pads the default value with spaces
-			column.setDefaultValue(column.getDefaultValue().trim());
-		}
 		if (column.getTypeCode() == Types.DECIMAL)
 		{
 			// We're back-mapping the NUMBER columns returned by Oracle
@@ -207,10 +201,6 @@ public class Oracle8ModelReader extends JdbcModelReader
 		}
 		else if ((column.getTypeCode() == Types.DATE) || (column.getTypeCode() == Types.TIMESTAMP))
 		{
-			// Oracle has only one DATE/TIME type, so we can't know which it is and thus map
-			// it back to TIMESTAMP
-			column.setTypeCode(Types.TIMESTAMP);
-
 			// we also reverse the ISO-format adaptation, and adjust the default value to timestamp
 			if (column.getDefaultValue() != null)
 			{
