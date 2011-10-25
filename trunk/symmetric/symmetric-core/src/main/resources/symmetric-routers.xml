@@ -36,7 +36,10 @@
         </entry>
         <entry key="trigger">
             <bean class="org.jumpmind.symmetric.route.TriggerDataRouter"/>
-        </entry>                    
+        </entry> 
+        <entry key="symconfig">
+            <bean class="org.jumpmind.symmetric.route.ConfigurationRouter"/>
+        </entry>                   
 	</util:map>
 
 	<util:map id="batchAlgorithms">
