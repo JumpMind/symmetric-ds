@@ -32,10 +32,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * A dialect that is specific to DB2 databases
  */
 public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
-
-    @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
-    }
     
     protected boolean createTablesIfNecessary() {
         boolean tablesCreated = super.createTablesIfNecessary();

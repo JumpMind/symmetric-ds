@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric.ddl.platform.oracle;
 
-import java.sql.Types;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -23,8 +22,6 @@ import java.sql.Types;
 
 /*
  * The platform for Oracle 10.
- *
- * @version $Revision: 231306 $
  */
 public class Oracle10Platform extends Oracle9Platform
 {
@@ -39,7 +36,6 @@ public class Oracle10Platform extends Oracle9Platform
     {
         super();
         setSqlBuilder(new Oracle10Builder(this));
-        setModelReader(new Oracle10ModelReader(this));
     }
 
     /*

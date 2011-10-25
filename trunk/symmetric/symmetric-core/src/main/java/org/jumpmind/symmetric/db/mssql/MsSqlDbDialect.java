@@ -49,10 +49,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
  */
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
-    
-    @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
-    }
 
     @Override
     protected boolean allowsNullForIdentityColumn() {

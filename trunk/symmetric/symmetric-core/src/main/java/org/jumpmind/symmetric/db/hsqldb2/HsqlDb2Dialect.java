@@ -152,10 +152,6 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
-    }
-
-    @Override
     public boolean canGapsOccurInCapturedDataIds() {
         return false;
     }
