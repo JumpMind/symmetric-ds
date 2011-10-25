@@ -34,14 +34,14 @@ import org.jumpmind.symmetric.ddl.model.Index;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
-/**
+/*
  * The SQL Builder for PostgresSql.
  * 
  * @version $Revision: 504014 $
  */
 public class PostgreSqlBuilder extends SqlBuilder
 {
-    /**
+    /*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to
@@ -60,7 +60,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         addEscapedCharSequence("\t", "\\t");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Table table) throws IOException
@@ -78,7 +78,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void writeExternalIndexDropStmt(Table table, Index index) throws IOException
@@ -88,7 +88,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createTable(Database database, Table table, Map parameters) throws IOException
@@ -105,7 +105,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         super.createTable(database, table, parameters);
     }
 
-    /**
+    /*
      * Creates the auto-increment sequence that is then used in the column.
      *  
      * @param table  The table
@@ -118,7 +118,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Creates the auto-increment sequence that is then used in the column.
      *  
      * @param table  The table
@@ -131,7 +131,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException
@@ -141,7 +141,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         print("')");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getSelectLastIdentityValues(Table table)
@@ -172,7 +172,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void processTableStructureChanges(Database currentModel,
@@ -215,7 +215,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         super.processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable, parameters, changes);
     }
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel The current database schema
@@ -235,7 +235,7 @@ public class PostgreSqlBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel The current database schema

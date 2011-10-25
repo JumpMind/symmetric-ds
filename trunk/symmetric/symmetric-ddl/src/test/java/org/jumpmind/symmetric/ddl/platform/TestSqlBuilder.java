@@ -26,14 +26,14 @@ import org.jumpmind.symmetric.ddl.TestBase;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
 
-/**
+/*
  * Test the base SqlBuilder class.
  * 
  * @version $Revision: $
  */
 public class TestSqlBuilder extends TestBase
 {
-    /**
+    /*
      * Tests the {@link SqlBuilder#getUpdateSql(Table, Map, boolean)} method.
      */
     public void testUpdateSql()

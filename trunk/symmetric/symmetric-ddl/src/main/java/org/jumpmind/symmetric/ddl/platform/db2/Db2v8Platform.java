@@ -19,17 +19,17 @@ package org.jumpmind.symmetric.ddl.platform.db2;
  * under the License.
  */
 
-/**
+/*
  * The DB2 platform implementation for DB2 v8 and above.
  * 
  * @version $Revision: $
  */
 public class Db2v8Platform extends Db2Platform
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String[] DATABASENAMES = {"DB2v8","DB2/LINUX9","DB2"};
 
-    /**
+    /*
      * Creates a new platform instance.
      */
     public Db2v8Platform()

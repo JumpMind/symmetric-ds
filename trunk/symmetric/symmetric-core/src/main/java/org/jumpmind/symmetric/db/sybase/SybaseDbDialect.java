@@ -27,7 +27,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +44,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * Sybase dialect was tested with jconn4 JDBC driver.
  * Based on the MsSqlDbDialect.
  *
@@ -69,17 +68,7 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
-    }
-    
-    @Override
-    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
-        String typeName = (String) values.get("TYPE_NAME");
-        if (typeName != null && typeName.toUpperCase().startsWith("TEXT")) {
-            return Types.LONGVARCHAR;          
-        } else {
-            return super.overrideJdbcTypeForColumn(values);
-        }
-    }    
+    }  
 
     @Override
     public IColumnFilter newDatabaseColumnFilter() {

@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.ddl.platform.sqlite;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,12 +17,12 @@ import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 import org.jumpmind.symmetric.ddl.platform.MetaDataColumnDescriptor;
 
-/**
+/*
  * Reads a database model from a SQLite database.
  */
 public class SqLiteModelReader extends JdbcModelReader {
 
-    /**
+    /*
      * Creates a new model reader for H2 databases.
      * 
      * @param platform
@@ -84,14 +85,14 @@ public class SqLiteModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk,
+    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk,
             Index index) {
         String name = index.getName();
         return name != null && name.startsWith("CONSTRAINT_INDEX_");
     }
 
     @Override
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index) {
+    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, Index index) {
         String name = index.getName();
         return name != null && name.startsWith("PRIMARY_KEY_");
     }

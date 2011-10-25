@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * 
  */
 public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
@@ -66,7 +66,7 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
         return exists;
     }
 
-    /**
+    /*
      * This is for use in the java triggers so we can create a virtual table w/
      * old and new columns values to bump SQL expressions up against.
      */
@@ -133,7 +133,7 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
         return " " + tablePrefix + "_get_session(''sync_prevented'') is null ";
     }
 
-    /**
+    /*
      * An expression which the java trigger can string replace
      */
     @Override
@@ -147,7 +147,7 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
         return "call IDENTITY()";
     }
 
-    @Override
+   @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }
@@ -162,11 +162,6 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
 
     public boolean isEmptyStringNulled() {
         return false;
-    }
-
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
-        return true;
     }
 
     @Override

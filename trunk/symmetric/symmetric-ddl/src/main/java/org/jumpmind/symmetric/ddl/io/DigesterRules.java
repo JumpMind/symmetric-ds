@@ -24,7 +24,7 @@ import java.util.List;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.RulesBase;
 
-/**
+/*
  * An extended rules implementation that is able to match case-insensitively. Per default,
  * the rules are matches disregarding the case.
  * 
@@ -32,10 +32,10 @@ import org.apache.commons.digester.RulesBase;
  */
 public class DigesterRules extends RulesBase
 {
-    /** Whether to be case sensitive or not. */
+    /* Whether to be case sensitive or not. */
     private boolean _caseSensitive = false;
 
-    /**
+    /*
      * Determines whether this rules object matches case sensitively.
      *
      * @return <code>true</code> if the case of the pattern matters
@@ -45,7 +45,7 @@ public class DigesterRules extends RulesBase
         return _caseSensitive;
     }
 
-    /**
+    /*
      * Specifies whether this rules object shall match case sensitively.
      *
      * @param beCaseSensitive <code>true</code> if the case of the pattern shall matter
@@ -55,7 +55,7 @@ public class DigesterRules extends RulesBase
         _caseSensitive = beCaseSensitive;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void add(String pattern, Rule rule)
@@ -63,7 +63,7 @@ public class DigesterRules extends RulesBase
         super.add(_caseSensitive ? pattern : pattern.toLowerCase(), rule);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected List lookup(String namespaceURI, String pattern)

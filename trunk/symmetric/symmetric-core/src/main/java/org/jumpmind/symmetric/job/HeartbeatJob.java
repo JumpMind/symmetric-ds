@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataService;
 
-/**
+/*
  * Background job that is responsible for updating this node's heart beat time.
  */
 public class HeartbeatJob extends AbstractJob {

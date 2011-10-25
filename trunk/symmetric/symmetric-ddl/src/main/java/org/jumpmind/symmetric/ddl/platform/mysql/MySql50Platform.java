@@ -21,17 +21,17 @@ package org.jumpmind.symmetric.ddl.platform.mysql;
 
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 
-/**
+/*
  * The platform implementation for MySQL 5 and above.
  * 
  * @version $Revision: 231306 $
  */
 public class MySql50Platform extends MySqlPlatform
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME = "MySQL5";
 
-    /**
+    /*
      * Creates a new platform instance.
      */
     public MySql50Platform()
@@ -47,7 +47,7 @@ public class MySql50Platform extends MySqlPlatform
         setModelReader(new MySql50ModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()

@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.ddl.platform.db2;
  * under the License.
  */
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -40,21 +41,21 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 
-/**
+/*
  * Reads a database model from a Db2 UDB database.
  *
  * @version $Revision: $
  */
 public class Db2ModelReader extends JdbcModelReader
 {
-	/** Known system tables that Db2 creates (e.g. automatic maintenance). */
+	/* Known system tables that Db2 creates (e.g. automatic maintenance). */
 	private static final String[] KNOWN_SYSTEM_TABLES = { "STMG_DBSIZE_INFO", "HMON_ATM_INFO", "HMON_COLLECTION", "POLICY" };
-	/** The regular expression pattern for the time values that Db2 returns. */
+	/* The regular expression pattern for the time values that Db2 returns. */
 	private Pattern _db2TimePattern;
-	/** The regular expression pattern for the timestamp values that Db2 returns. */
+	/* The regular expression pattern for the timestamp values that Db2 returns. */
 	private Pattern _db2TimestampPattern;
 
-	/**
+	/*
      * Creates a new model reader for Db2 databases.
      * 
      * @param platform The platform that this model reader belongs to
@@ -78,10 +79,8 @@ public class Db2ModelReader extends JdbcModelReader
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-	protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    @Override
+	protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
 	{
         String tableName = (String)values.get("TABLE_NAME");
 
@@ -93,19 +92,17 @@ public class Db2ModelReader extends JdbcModelReader
         	}
         }
 
-        Table table = super.readTable(metaData, values);
+        Table table = super.readTable(connection, metaData, values);
 
         if (table != null)
         {
             // Db2 does not return the auto-increment status via the database metadata
-            determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
+            determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
         }
         return table;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+    @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
 		Column column = super.readColumn(metaData, values);
@@ -174,10 +171,8 @@ public class Db2ModelReader extends JdbcModelReader
 		return column;
 	}
 
-	/**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException
+    @Override
+    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException
     {
         // Db2 uses the form "SQL060205225246220" if the primary key was defined during table creation
         // When the ALTER TABLE way was used however, the index has the name of the primary key

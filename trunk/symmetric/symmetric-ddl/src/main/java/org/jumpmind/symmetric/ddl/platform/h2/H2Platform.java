@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
-/**
+/*
  * The platform implementation for the H2 database. From patch at <a
  * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
@@ -34,16 +34,16 @@ import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
  */
 public class H2Platform extends PlatformImplBase implements Platform {
 
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String[] DATABASENAMES = {"H2","H21"};
     
-    /** The standard H2 driver. */
+    /* The standard H2 driver. */
     public static final String JDBC_DRIVER = "org.h2.Driver";
     
-    /** The sub protocol used by the H2 driver. */
+    /* The sub protocol used by the H2 driver. */
     public static final String JDBC_SUBPROTOCOL = "h2";
 
-    /**
+    /*
      * Creates a new instance of the H2 platform.
      */
     public H2Platform() {
@@ -74,11 +74,13 @@ public class H2Platform extends PlatformImplBase implements Platform {
         info.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
+        info.setStoresUpperCaseInCatalog(true);
+        
         setSqlBuilder(new H2Builder(this));
         setModelReader(new H2ModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName() {

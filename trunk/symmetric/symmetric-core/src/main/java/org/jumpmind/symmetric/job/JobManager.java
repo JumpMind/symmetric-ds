@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-/**
+/*
  * @see IJobManager
  */
 public class JobManager implements IJobManager {
@@ -46,7 +46,7 @@ public class JobManager implements IJobManager {
         return null;
     }
     
-    /**
+    /*
      * Start the jobs if they are configured to be started in
      * symmetric.properties
      */

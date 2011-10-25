@@ -37,23 +37,23 @@ import org.jumpmind.symmetric.ddl.model.Database;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-/**
+/*
  * This class provides functions to read and write database models from/to XML.
  * 
  * @version $Revision: 481151 $
  */
 public class DatabaseIO
 {
-    /** The name of the XML attribute use to denote that teh content of a data XML
+    /* The name of the XML attribute use to denote that teh content of a data XML
         element uses Base64 encoding. */
     public static final String BASE64_ATTR_NAME = "base64";
 
-    /** Whether to validate the XML. */
+    /* Whether to validate the XML. */
     private boolean _validateXml = true;
-    /** Whether to use the internal dtd that comes with DdlUtils. */
+    /* Whether to use the internal dtd that comes with DdlUtils. */
     private boolean _useInternalDtd = true;
 
-    /**
+    /*
      * Returns whether XML is validated upon reading it.
      * 
      * @return <code>true</code> if read XML is validated
@@ -63,7 +63,7 @@ public class DatabaseIO
         return _validateXml;
     }
 
-    /**
+    /*
      * Specifies whether XML shall be validated upon reading it.
      * 
      * @param validateXml <code>true</code> if read XML shall be validated
@@ -73,7 +73,7 @@ public class DatabaseIO
         _validateXml = validateXml;
     }
 
-    /**
+    /*
      * Returns whether the internal dtd that comes with DdlUtils is used.
      * 
      * @return <code>true</code> if parsing uses the internal dtd
@@ -83,7 +83,7 @@ public class DatabaseIO
         return _useInternalDtd;
     }
 
-    /**
+    /*
      * Specifies whether the internal dtd is to be used.
      *
      * @param useInternalDtd Whether to use the internal dtd 
@@ -93,7 +93,7 @@ public class DatabaseIO
         _useInternalDtd = useInternalDtd;
     }
 
-    /**
+    /*
      * Returns the commons-betwixt mapping file as an {@link org.xml.sax.InputSource} object.
      * Per default, this will be classpath resource under the path <code>/mapping.xml</code>.
      *  
@@ -104,7 +104,7 @@ public class DatabaseIO
         return new InputSource(getClass().getResourceAsStream("mapping.xml"));
     }
     
-    /**
+    /*
      * Returns a new bean reader configured to read database models.
      * 
      * @return The reader
@@ -126,7 +126,7 @@ public class DatabaseIO
         return reader;
     }
 
-    /**
+    /*
      * Returns a new bean writer configured to writer database models.
      * 
      * @param output The target output writer
@@ -153,7 +153,7 @@ public class DatabaseIO
         }
     }
 
-    /**
+    /*
      * Reads the database model contained in the specified file.
      * 
      * @param filename The model file name
@@ -175,7 +175,7 @@ public class DatabaseIO
         return model;
     }
 
-    /**
+    /*
      * Reads the database model contained in the specified file.
      * 
      * @param file The model file
@@ -197,7 +197,7 @@ public class DatabaseIO
         return model;
     }
 
-    /**
+    /*
      * Reads the database model given by the reader.
      * 
      * @param reader The reader that returns the model XML
@@ -219,7 +219,7 @@ public class DatabaseIO
         return model;
     }
 
-    /**
+    /*
      * Reads the database model from the given input source.
      *
      * @param source The input source
@@ -241,7 +241,7 @@ public class DatabaseIO
         return model;
     }
 
-    /**
+    /*
      * Writes the database model to the specified file.
      * 
      * @param model    The database model
@@ -274,7 +274,7 @@ public class DatabaseIO
         }
     }
 
-    /**
+    /*
      * Writes the database model to the given output stream. Note that this method
      * does not flush the stream.
      * 
@@ -286,7 +286,7 @@ public class DatabaseIO
         write(model, getWriter(new OutputStreamWriter(output)));
     }
 
-    /**
+    /*
      * Writes the database model to the given output writer. Note that this method
      * does not flush the writer.
      * 
@@ -298,7 +298,7 @@ public class DatabaseIO
         write(model, getWriter(output));
     }
 
-    /**
+    /*
      * Internal method that writes the database model using the given bean writer.
      * 
      * @param model  The database model

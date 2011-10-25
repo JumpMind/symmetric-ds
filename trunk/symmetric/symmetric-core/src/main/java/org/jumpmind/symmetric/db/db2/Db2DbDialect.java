@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * A dialect that is specific to DB2 databases
  */
 public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
@@ -110,11 +110,6 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public boolean supportsTransactionId() {
         return false;
-    }
-
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
-        return true;
     }
 
     @Override

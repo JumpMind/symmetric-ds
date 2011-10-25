@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 
-/**
+/*
  * The default implementation of the {@link IOfflineServerListener}.  
  */
 public class DefaultOfflineServerListener implements IOfflineServerListener,
@@ -42,7 +42,7 @@ public class DefaultOfflineServerListener implements IOfflineServerListener,
     protected INodeService nodeService;
     protected IOutgoingBatchService outgoingBatchService;
     
-    /**
+    /*
      * Handle a client node that was determined to be offline.
      * Syncing is disabled for the node, node security is deleted, and cleanup processing is done for
      * outgoing batches.

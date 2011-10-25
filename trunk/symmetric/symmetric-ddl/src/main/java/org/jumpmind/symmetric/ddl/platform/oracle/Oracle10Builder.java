@@ -25,14 +25,14 @@ import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Table;
 
-/**
+/*
  * The SQL builder for Oracle 10.
  * 
  * @version $Revision: $
  */
 public class Oracle10Builder extends Oracle8Builder
 {
-    /**
+    /*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to
@@ -42,7 +42,7 @@ public class Oracle10Builder extends Oracle8Builder
         super(platform);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Table table) throws IOException

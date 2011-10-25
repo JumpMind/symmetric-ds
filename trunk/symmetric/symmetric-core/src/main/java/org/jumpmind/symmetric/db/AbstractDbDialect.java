@@ -39,10 +39,7 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +48,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -60,9 +56,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.db.interbase.InterbaseDbDialect;
-import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.sybase.SybaseDbDialect;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.io.DatabaseIO;
@@ -70,15 +64,8 @@ import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.ForeignKey;
 import org.jumpmind.symmetric.ddl.model.Index;
-import org.jumpmind.symmetric.ddl.model.IndexColumn;
-import org.jumpmind.symmetric.ddl.model.NonUniqueIndex;
 import org.jumpmind.symmetric.ddl.model.Table;
-import org.jumpmind.symmetric.ddl.model.UniqueIndex;
-import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.symmetric.ddl.platform.MetaDataColumnDescriptor;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
-import org.jumpmind.symmetric.ddl.platform.informix.InformixModelReader;
-import org.jumpmind.symmetric.ddlutils.JdbcModelReaderSupport;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.StatementBuilder;
@@ -101,7 +88,7 @@ import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
 
-/**
+/*
  * The abstract class for database dialects.
  */
 abstract public class AbstractDbDialect implements IDbDialect {
@@ -130,8 +117,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected long lastTimeCachedModelClearedInMs = System.currentTimeMillis();
 
     protected SqlTemplate sqlTemplate;
-
-    private Map<Integer, String> _defaultSizes;
 
     protected IParameterService parameterService;
 
@@ -172,20 +157,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
     
     protected AbstractDbDialect() {
-        _defaultSizes = new HashMap<Integer, String>();
-        _defaultSizes.put(new Integer(1), "254");
-        _defaultSizes.put(new Integer(12), "254");
-        _defaultSizes.put(new Integer(-1), "254");
-        _defaultSizes.put(new Integer(-2), "254");
-        _defaultSizes.put(new Integer(-3), "254");
-        _defaultSizes.put(new Integer(-4), "254");
-        _defaultSizes.put(new Integer(4), "32");
-        _defaultSizes.put(new Integer(-5), "64");
-        _defaultSizes.put(new Integer(7), "7,0");
-        _defaultSizes.put(new Integer(6), "15,0");
-        _defaultSizes.put(new Integer(8), "15,0");
-        _defaultSizes.put(new Integer(3), "15,15");
-        _defaultSizes.put(new Integer(2), "15,15");
     }
     
     public String encodeForCsv(byte[] data) {
@@ -240,7 +211,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    /**
+    /*
      * Provide a default implementation of this method using DDLUtils,
      * getMaxColumnNameLength()
      */
@@ -276,7 +247,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return queryTimeoutInSeconds;
     }
 
-    abstract protected void initTablesAndFunctionsForSpecificDialect();
+    protected void initTablesAndFunctionsForSpecificDialect() {}
 
     public void initTablesAndFunctions() {
         initTablesAndFunctionsForSpecificDialect();
@@ -358,7 +329,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 .getSourceTableName(), useCache);
     }
 
-    /**
+    /*
      * This method uses the ddlutil's model reader which uses the jdbc metadata
      * to lookup up table metadata.
      * <p/>
@@ -413,7 +384,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return sqlKeywords;
     }
 
-    /**
+    /*
      * Returns a new {@link Table} object.
      */
     protected Table getTable(String catalogName, String schemaName, String tblName) {
@@ -433,8 +404,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 	                        table = getTableCaseSensitive(catalogName, schemaName, StringUtils
 	                                .lowerCase(tblName));
 	                        if (table == null) {
-	                            table = getTableCaseSensitive(catalogName, schemaName,
-	                                    getPlatformTableName(catalogName, schemaName, tblName));
+	                            table = getTableCaseSensitive(catalogName, schemaName, tblName);
 	                        }
 	                    }
 	                }
@@ -452,12 +422,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return table;
     }
 
-    protected String getPlatformTableName(String catalogName, String schemaName, String tblName) {
-        return tblName;
-    }
-
     protected Table getTableCaseSensitive(String catalogName, String schemaName,
-            final String tblName) {
+            final String tablename) {
         Table table = null;
         try {
             // If we don't provide a default schema or catalog, then on some
@@ -468,33 +434,21 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     : catalogName;
             table = (Table) jdbcTemplate.execute(new ConnectionCallback<Table>() {
                 public Table doInConnection(Connection c) throws SQLException, DataAccessException {
-                    Table table = null;
-                    DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
-                    metaData.setMetaData(c.getMetaData());
-                    metaData.setCatalog(catalog);
-                    metaData.setSchemaPattern(schema);
-                    metaData.setTableTypes(null);
-                    String tableName = tblName;
-                    if (storesUpperCaseNamesInCatalog()) {
-                        tableName = tblName.toUpperCase();
-                    } else if (storesLowerCaseNamesInCatalog()) {
-                        tableName = tblName.toLowerCase();
-                    }
-
-                    ResultSet tableData = null;
-                    try {
-                        tableData = metaData.getTables(getTableNamePattern(tableName));
-                        while (tableData != null && tableData.next()) {
-                            Map<String, Object> values = readColumns(tableData,
-                                    initColumnsForTable());
-                            table = readTable(metaData, values);
+                    Table table = platform.readTableFromDatabase(c, catalog, schema, tablename);
+                    if (table != null) {
+                        boolean treatDateTimeFieldsAsVarchar = parameterService.is(
+                                ParameterConstants.DB_TREAT_DATE_TIME_AS_VARCHAR, false);
+                        Column[] columns = table.getColumns();
+                        for (Column column : columns) {
+                            int typeCode = column.getTypeCode();
+                            if (treatDateTimeFieldsAsVarchar
+                                    && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
+                                typeCode = Types.VARCHAR;
+                            }
+                            column.setTypeCode(typeCode);
                         }
-                    } finally {
-                        JdbcUtils.closeResultSet(tableData);
+                        makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
                     }
-
-                    makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
-
                     return table;
                 }
             });
@@ -507,11 +461,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return table;
     }
 
-    protected String getTableNamePattern(String tableName) {
-        return tableName;
-    }
-
-    /**
+    /*
      * Treat tables with no primary keys as a table with all primary keys.
      */
     protected void makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(Table table) {
@@ -523,259 +473,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     column.setPrimaryKey(true);
                 }
             }
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
-        String tableName = (String) values.get("TABLE_NAME");
-        Table table = null;
-        if (tableName != null && tableName.length() > 0) {
-            table = new Table();
-            table.setName(tableName);
-            table.setType((String) values.get("TABLE_TYPE"));
-            table.setCatalog((String) values.get("TABLE_CAT"));
-            table.setSchema((String) values.get("TABLE_SCHEM"));
-            table.setDescription((String) values.get("REMARKS"));
-            table.addColumns(readColumns(metaData, tableName));
-            if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
-                table.addIndices(readIndices(metaData, tableName));
-            }
-            Collection primaryKeys = readPrimaryKeyNames(metaData, tableName);
-            for (Iterator it = primaryKeys.iterator(); it.hasNext(); table.findColumn(
-                    (String) it.next(), true).setPrimaryKey(true))
-                ;
-
-            if (this instanceof InformixDbDialect) {
-                InformixModelReader reader = (InformixModelReader) platform.getModelReader();
-                reader.removeSystemIndices(metaData, table);
-            }
-
-            if (this instanceof MsSqlDbDialect || this instanceof InformixDbDialect ||
-            		this instanceof SybaseDbDialect) {
-                determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
-            }
-        }
-        return table;
-    }
-
-    protected List<MetaDataColumnDescriptor> initColumnsForTable() {
-        List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", 12));
-        result.add(new MetaDataColumnDescriptor("TABLE_TYPE", 12, "UNKNOWN"));
-        result.add(new MetaDataColumnDescriptor("TABLE_CAT", 12));
-        result.add(new MetaDataColumnDescriptor("TABLE_SCHEM", 12));
-        result.add(new MetaDataColumnDescriptor("REMARKS", 12));
-        return result;
-    }
-
-    protected List<MetaDataColumnDescriptor> initColumnsForColumn() {
-        List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
-        result.add(new MetaDataColumnDescriptor("COLUMN_DEF", 12));
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", 12));
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", 12));
-        result.add(new MetaDataColumnDescriptor("TYPE_NAME", 12));
-        result.add(new MetaDataColumnDescriptor("DATA_TYPE", 4, new Integer(1111)));
-        result.add(new MetaDataColumnDescriptor("NUM_PREC_RADIX", 4, new Integer(10)));
-        result.add(new MetaDataColumnDescriptor("DECIMAL_DIGITS", 4, new Integer(0)));
-        result.add(new MetaDataColumnDescriptor("COLUMN_SIZE", 12));
-        result.add(new MetaDataColumnDescriptor("IS_NULLABLE", 12, "YES"));
-        result.add(new MetaDataColumnDescriptor("REMARKS", 12));
-        return result;
-    }
-
-    protected List<MetaDataColumnDescriptor> initColumnsForPK() {
-        List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", 12));
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", 12));
-        result.add(new MetaDataColumnDescriptor("PK_NAME", 12));
-        return result;
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName)
-            throws SQLException {
-        ResultSet columnData = null;
-        try {
-            columnData = metaData.getColumns(getTableNamePattern(tableName), null);
-            List<Column> columns = new ArrayList<Column>();
-            Map values = null;
-            for (; columnData.next(); columns.add(readColumn(metaData, values))) {
-                values = readColumns(columnData, initColumnsForColumn());
-            }
-            return columns;
-        } finally {
-            JdbcUtils.closeResultSet(columnData);
-        }
-    }
-
-    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
-        return null;
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
-        Column column = new Column();
-        column.setName((String) values.get("COLUMN_NAME"));
-        column.setDefaultValue((String) values.get("COLUMN_DEF"));
-        column.setJdbcTypeName((String)values.get("TYPE_NAME"));
-        Integer jdbcType = overrideJdbcTypeForColumn(values);
-        if (jdbcType != null) {
-            column.setTypeCode(jdbcType);
-        } else {
-            int typeCode = (Integer)values.get("DATA_TYPE");
-            boolean treatDateTimeFieldsAsVarchar = parameterService.is(ParameterConstants.DB_TREAT_DATE_TIME_AS_VARCHAR, false);
-            if (treatDateTimeFieldsAsVarchar && 
-                    (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
-                typeCode = Types.VARCHAR;                
-            }
-            column.setTypeCode(typeCode);
-        }
-
-        column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
-        String size = (String) values.get("COLUMN_SIZE");
-        int scale = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
-        if (size == null)
-            size = (String) _defaultSizes.get(new Integer(column.getTypeCode()));
-        column.setSize(size);
-        if (scale != 0)
-            column.setScale(scale);
-        column.setRequired("NO".equalsIgnoreCase(((String) values.get("IS_NULLABLE")).trim()));
-        column.setDescription((String) values.get("REMARKS"));
-        return column;
-    }
-
-    protected void determineAutoIncrementFromResultSetMetaData(final Table table,
-            final Column columnsToCheck[]) throws SQLException {
-        final JdbcModelReaderSupport reader = new JdbcModelReaderSupport(platform);
-        final String catalogSeparator;
-        if (this instanceof InformixDbDialect) {
-            catalogSeparator = ":";
-        } else {
-            catalogSeparator = ".";
-        }
-        jdbcTemplate.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                reader.determineAutoIncrementFromResultSetMetaData(conn, table, table.getColumns(),
-                        catalogSeparator);
-                return null;
-            }
-        });
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected Map<String, Object> readColumns(ResultSet resultSet, List columnDescriptors)
-            throws SQLException {
-        HashMap<String, Object> values = new HashMap<String, Object>();
-        MetaDataColumnDescriptor descriptor;
-        for (Iterator it = columnDescriptors.iterator(); it.hasNext(); values.put(descriptor
-                .getName(), descriptor.readColumn(resultSet))) {
-            descriptor = (MetaDataColumnDescriptor) it.next();
-        }                
-        return values;
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData,
-            String tableName) throws SQLException {
-        ResultSet pkData = null;
-        try {
-            List<String> pks = new ArrayList<String>();
-            Map values;
-            for (pkData = metaData.getPrimaryKeys(getTableNamePattern(tableName)); pkData.next(); pks
-                    .add(readPrimaryKeyName(metaData, values))) {
-                values = readColumns(pkData, initColumnsForPK());
-            }
-            return pks;
-        } finally {
-            JdbcUtils.closeResultSet(pkData);
-        }
-
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected String readPrimaryKeyName(DatabaseMetaDataWrapper metaData, Map values)
-            throws SQLException {
-        return (String) values.get("COLUMN_NAME");
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected List initColumnsForIndex() {
-        List result = new ArrayList();
-
-        result.add(new MetaDataColumnDescriptor("INDEX_NAME", Types.VARCHAR));
-        // we're also reading the table name so that a model reader impl can
-        // filter manually
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("NON_UNIQUE", Types.BIT, Boolean.TRUE));
-        result.add(new MetaDataColumnDescriptor("ORDINAL_POSITION", Types.TINYINT, new Short(
-                (short) 0)));
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("TYPE", Types.TINYINT));
-
-        return result;
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName)
-            throws SQLException {
-	if (this instanceof InformixDbDialect) {
-            InformixModelReader reader = (InformixModelReader) platform.getModelReader();
-            return reader.readIndices(metaData, tableName);
-	}
-	
-        Map indices = new ListOrderedMap();
-        ResultSet indexData = null;
-
-        try {
-            indexData = metaData.getIndices(getTableNamePattern(tableName), false, false);
-
-            while (indexData.next()) {
-                Map values = readColumns(indexData, initColumnsForIndex());
-
-                readIndex(metaData, values, indices);
-            }
-        } finally {
-            if (indexData != null) {
-                indexData.close();
-            }
-        }
-        return indices.values();
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected void readIndex(DatabaseMetaDataWrapper metaData, Map values, Map knownIndices)
-            throws SQLException {
-        Short indexType = (Short) values.get("TYPE");
-
-        // we're ignoring statistic indices
-        if ((indexType != null) && (indexType.shortValue() == DatabaseMetaData.tableIndexStatistic)) {
-            return;
-        }
-
-        String indexName = (String) values.get("INDEX_NAME");
-
-        if (indexName != null) {
-            Index index = (Index) knownIndices.get(indexName);
-
-            if (index == null) {
-                if (((Boolean) values.get("NON_UNIQUE")).booleanValue()) {
-                    index = new NonUniqueIndex();
-                } else {
-                    index = new UniqueIndex();
-                }
-
-                index.setName(indexName);
-                knownIndices.put(indexName, index);
-            }
-
-            IndexColumn indexColumn = new IndexColumn();
-
-            indexColumn.setName((String) values.get("COLUMN_NAME"));
-            if (values.containsKey("ORDINAL_POSITION")) {
-                indexColumn.setOrdinalPosition(((Short) values.get("ORDINAL_POSITION")).intValue());
-            }
-            index.addColumn(indexColumn);
         }
     }
 
@@ -801,7 +498,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    /**
+    /*
      * Create the configured trigger. The catalog will be changed to the source
      * schema if the source schema is configured.
      */
@@ -859,7 +556,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         });
     }
 
-    /**
+    /*
      * Provide the option switch a connection's schema for trigger installation.
      */
     protected String switchCatalogForTriggerInstall(String catalog, Connection c)
@@ -983,7 +680,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return database;
     }
 
-    /**
+    /*
      * @return true if SQL was executed.
      */
     protected boolean createTablesIfNecessary() {
@@ -1460,14 +1157,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    public boolean storesUpperCaseNamesInCatalog() {
-        return false;
-    }
-
-    public boolean storesLowerCaseNamesInCatalog() {
-        return false;
-    }
-
     public void setSqlTemplate(SqlTemplate sqlTemplate) {
         this.sqlTemplate = sqlTemplate;
     }
@@ -1517,7 +1206,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
     }
 
-    /**
+    /*
      * Returns the current schema name
      * 
      * @return String
@@ -1526,7 +1215,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return StringUtils.isBlank(defaultSchema) ? null : defaultSchema;
     }
 
-    /**
+    /*
      * Sets the current schema name from properties file
      * 
      * @param currentSchema
@@ -1552,14 +1241,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    /**
+    /*
      * @return the lobHandler.
      */
     public LobHandler getLobHandler() {
         return lobHandler;
     }
 
-    /**
+    /*
      * @param lobHandler
      *            The lobHandler to set.
      */
@@ -1681,7 +1370,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         databaseUpgradeListeners.add(listener);
     }
 
-    /**
+    /*
      * Override this method to configure a database specific LOB handler for updates
      */
     protected void initLobHandler() {

@@ -21,25 +21,25 @@ package org.jumpmind.symmetric.ddl.model;
 
 import junit.framework.TestCase;
 
-/**
+/*
  * Test case for DDLUTILS-6.
  * 
  * @version $Revision: 289996 $
  */
 public class TestArrayAccessAtTable extends TestCase
 {
-    /** The tested table. */
+    /* The tested table. */
     private Table          _testedTable;
-    /** The first tested column. */
+    /* The first tested column. */
     private Column         _column1;
-    /** The second tested column. */
+    /* The second tested column. */
     private Column         _column2;
-    /** The tested unique index. */
+    /* The tested unique index. */
     private UniqueIndex    _uniqueIndex;
-    /** The tested non-unique index. */
+    /* The tested non-unique index. */
     private NonUniqueIndex _nonUniqueIndex;
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void setUp()
@@ -63,7 +63,7 @@ public class TestArrayAccessAtTable extends TestCase
         _testedTable.addIndex(_nonUniqueIndex);
     }
 
-    /**
+    /*
      * Tests that the primary key columns are correctly extracted.
      */
     public void testGetPrimaryKeyColumns()
@@ -76,7 +76,7 @@ public class TestArrayAccessAtTable extends TestCase
                    primaryKeyColumns[0]);
     }
 
-    /**
+    /*
      * Tests that the columns are correctly extracted.
      */
     public void testGetColumns()
@@ -91,7 +91,7 @@ public class TestArrayAccessAtTable extends TestCase
                    columns[1]);
     }
 
-    /**
+    /*
      * Tests that the non-unique indices are correctly extracted.
      */
     public void testGetNonUniqueIndices()
@@ -104,7 +104,7 @@ public class TestArrayAccessAtTable extends TestCase
                    nonUniqueIndices[0]);
     }
 
-    /**
+    /*
      * Tests that the unique indices are correctly extracted.
      */
     public void testGetUniqueIndices()

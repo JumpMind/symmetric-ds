@@ -24,23 +24,23 @@ import java.sql.Types;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
-/**
+/*
  * The platform implementation for MySQL.
  * 
  * @version $Revision: 231306 $
  */
 public class MySqlPlatform extends PlatformImplBase
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME     = "MySQL";
-    /** The standard MySQL jdbc driver. */
+    /* The standard MySQL jdbc driver. */
     public static final String JDBC_DRIVER      = "com.mysql.jdbc.Driver";
-    /** The old MySQL jdbc driver. */
+    /* The old MySQL jdbc driver. */
     public static final String JDBC_DRIVER_OLD  = "org.gjt.mm.mysql.Driver";
-    /** The subprotocol used by the standard MySQL driver. */
+    /* The subprotocol used by the standard MySQL driver. */
     public static final String JDBC_SUBPROTOCOL = "mysql";
 
-    /**
+    /*
      * Creates a new platform instance.
      */
     public MySqlPlatform()
@@ -92,7 +92,7 @@ public class MySqlPlatform extends PlatformImplBase
         setModelReader(new MySqlModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()

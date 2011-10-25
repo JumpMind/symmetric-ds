@@ -21,10 +21,8 @@
 
 package org.jumpmind.symmetric.db.oracle;
 
-import java.sql.Types;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -45,7 +43,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-/**
+/*
  * A dialect that is specific to Oracle databases
  */
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
@@ -79,32 +77,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             ((OracleLobHandler) lobHandler).setNativeJdbcExtractor(nativeJdbcExtractor);
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
-        String typeName = (String) values.get("TYPE_NAME");
-        if (typeName != null && typeName.startsWith("DATE")) {
-            return Types.DATE;
-        } else if (typeName != null && typeName.startsWith("TIMESTAMP")) {
-            // This is for Oracle's TIMESTAMP(9)
-            return Types.TIMESTAMP;
-        } else if (typeName != null && typeName.startsWith("NVARCHAR")) {
-            // This is for Oracle's NVARCHAR type
-            return Types.VARCHAR;
-        } else if (typeName != null && typeName.startsWith("LONGNVARCHAR")) {
-            return Types.LONGVARCHAR;            
-        } else if (typeName != null && typeName.startsWith("NCHAR")) {
-            return Types.CHAR;
-        } else if (typeName != null && typeName.startsWith("NCLOB")) {
-            return Types.CLOB;
-        } else if (typeName != null && typeName.startsWith("BINARY_FLOAT")) {
-            return Types.FLOAT;
-        } else if (typeName != null && typeName.startsWith("BINARY_DOUBLE")) {
-            return Types.DOUBLE;
-        } else {
-            return super.overrideJdbcTypeForColumn(values);
         }
     }
 
@@ -187,11 +159,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                         new Object[] { triggerName, tableName }) > 0;
     }
 
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
-        return true;
-    }
-
     public void purge() {
         jdbcTemplate.update("purge recyclebin");
     }
@@ -229,11 +196,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                     "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
         }
         return defaultSchema;
-    }
-
-    @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
-
     }
 
     @Override

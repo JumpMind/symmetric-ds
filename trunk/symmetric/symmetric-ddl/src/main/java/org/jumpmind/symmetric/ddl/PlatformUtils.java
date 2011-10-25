@@ -31,7 +31,6 @@ import java.util.Map.Entry;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.ddl.platform.axion.AxionPlatform;
 import org.jumpmind.symmetric.ddl.platform.cloudscape.CloudscapePlatform;
 import org.jumpmind.symmetric.ddl.platform.db2.Db2Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
@@ -39,15 +38,13 @@ import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddl.platform.greenplum.GreenplumPlatform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
 import org.jumpmind.symmetric.ddl.platform.interbase.InterbasePlatform;
-import org.jumpmind.symmetric.ddl.platform.mckoi.MckoiPlatform;
 import org.jumpmind.symmetric.ddl.platform.mssql.MSSqlPlatform;
 import org.jumpmind.symmetric.ddl.platform.mysql.MySqlPlatform;
 import org.jumpmind.symmetric.ddl.platform.oracle.Oracle8Platform;
 import org.jumpmind.symmetric.ddl.platform.postgresql.PostgreSqlPlatform;
-import org.jumpmind.symmetric.ddl.platform.sapdb.SapDbPlatform;
 import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
 
-/**
+/*
  * Utility functions for dealing with database platforms.
  * 
  * @version $Revision: 279421 $
@@ -59,91 +56,90 @@ public class PlatformUtils
     
     // Extended drivers that support more than one database
 
-    /** The DataDirect Connect DB2 jdbc driver. */
+    /* The DataDirect Connect DB2 jdbc driver. */
     public static final String JDBC_DRIVER_DATADIRECT_DB2        = "com.ddtek.jdbc.db2.DB2Driver";
-    /** The DataDirect Connect SQLServer jdbc driver. */
+    /* The DataDirect Connect SQLServer jdbc driver. */
     public static final String JDBC_DRIVER_DATADIRECT_SQLSERVER  = "com.ddtek.jdbc.sqlserver.SQLServerDriver";
-    /** The DataDirect Connect Oracle jdbc driver. */
+    /* The DataDirect Connect Oracle jdbc driver. */
     public static final String JDBC_DRIVER_DATADIRECT_ORACLE     = "com.ddtek.jdbc.oracle.OracleDriver";
-    /** The DataDirect Connect Sybase jdbc driver. */
+    /* The DataDirect Connect Sybase jdbc driver. */
     public static final String JDBC_DRIVER_DATADIRECT_SYBASE     = "com.ddtek.jdbc.sybase.SybaseDriver";
-    /** The i-net DB2 jdbc driver. */
+    /* The i-net DB2 jdbc driver. */
     public static final String JDBC_DRIVER_INET_DB2              = "com.inet.drda.DRDADriver";
-    /** The i-net Oracle jdbc driver. */
+    /* The i-net Oracle jdbc driver. */
     public static final String JDBC_DRIVER_INET_ORACLE           = "com.inet.ora.OraDriver";
-    /** The i-net SQLServer jdbc driver. */
+    /* The i-net SQLServer jdbc driver. */
     public static final String JDBC_DRIVER_INET_SQLSERVER        = "com.inet.tds.TdsDriver";
-    /** The i-net Sybase jdbc driver. */
+    /* The i-net Sybase jdbc driver. */
     public static final String JDBC_DRIVER_INET_SYBASE           = "com.inet.syb.SybDriver";
-    /** The i-net pooled jdbc driver for SQLServer and Sybase. */
+    /* The i-net pooled jdbc driver for SQLServer and Sybase. */
     public static final String JDBC_DRIVER_INET_POOLED           = "com.inet.pool.PoolDriver";
-    /** The JNetDirect SQLServer jdbc driver. */
+    /* The JNetDirect SQLServer jdbc driver. */
     public static final String JDBC_DRIVER_JSQLCONNECT_SQLSERVER = "com.jnetdirect.jsql.JSQLDriver";
-    /** The jTDS jdbc driver for SQLServer and Sybase. */
+    /* The jTDS jdbc driver for SQLServer and Sybase. */
     public static final String JDBC_DRIVER_JTDS                  = "net.sourceforge.jtds.jdbc.Driver";
 
-    /** The subprotocol used by the DataDirect DB2 driver. */
+    /* The subprotocol used by the DataDirect DB2 driver. */
     public static final String JDBC_SUBPROTOCOL_DATADIRECT_DB2            = "datadirect:db2";
-    /** The subprotocol used by the DataDirect SQLServer driver. */
+    /* The subprotocol used by the DataDirect SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_DATADIRECT_SQLSERVER      = "datadirect:sqlserver";
-    /** The subprotocol used by the DataDirect Oracle driver. */
+    /* The subprotocol used by the DataDirect Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_DATADIRECT_ORACLE         = "datadirect:oracle";
-    /** The subprotocol used by the DataDirect Sybase driver. */
+    /* The subprotocol used by the DataDirect Sybase driver. */
     public static final String JDBC_SUBPROTOCOL_DATADIRECT_SYBASE         = "datadirect:sybase";
-    /** The subprotocol used by the i-net DB2 driver. */
+    /* The subprotocol used by the i-net DB2 driver. */
     public static final String JDBC_SUBPROTOCOL_INET_DB2                  = "inetdb2";
-    /** The subprotocol used by the i-net Oracle driver. */
+    /* The subprotocol used by the i-net Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_INET_ORACLE               = "inetora";
-    /** A subprotocol used by the i-net SQLServer driver. */
+    /* A subprotocol used by the i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER            = "inetdae";
-    /** A subprotocol used by the i-net SQLServer driver. */
+    /* A subprotocol used by the i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER6           = "inetdae6";
-    /** A subprotocol used by the i-net SQLServer driver. */
+    /* A subprotocol used by the i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER7           = "inetdae7";
-    /** A subprotocol used by the i-net SQLServer driver. */
+    /* A subprotocol used by the i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER7A          = "inetdae7a";
-    /** A subprotocol used by the pooled i-net SQLServer driver. */
+    /* A subprotocol used by the pooled i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER_POOLED_1   = "inetpool:inetdae";
-    /** A subprotocol used by the pooled i-net SQLServer driver. */
+    /* A subprotocol used by the pooled i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER6_POOLED_1  = "inetpool:inetdae6";
-    /** A subprotocol used by the pooled i-net SQLServer driver. */
+    /* A subprotocol used by the pooled i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER7_POOLED_1  = "inetpool:inetdae7";
-    /** A subprotocol used by the pooled i-net SQLServer driver. */
+    /* A subprotocol used by the pooled i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER7A_POOLED_1 = "inetpool:inetdae7a";
-    /** A subprotocol used by the pooled i-net SQLServer driver. */
+    /* A subprotocol used by the pooled i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER_POOLED_2   = "inetpool:jdbc:inetdae";
-    /** A subprotocol used by the pooled i-net SQLServer driver. */
+    /* A subprotocol used by the pooled i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER6_POOLED_2  = "inetpool:jdbc:inetdae6";
-    /** A subprotocol used by the pooled i-net SQLServer driver. */
+    /* A subprotocol used by the pooled i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER7_POOLED_2  = "inetpool:jdbc:inetdae7";
-    /** A subprotocol used by the pooled i-net SQLServer driver. */
+    /* A subprotocol used by the pooled i-net SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SQLSERVER7A_POOLED_2 = "inetpool:jdbc:inetdae7a";
-    /** The subprotocol used by the i-net Sybase driver. */
+    /* The subprotocol used by the i-net Sybase driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SYBASE               = "inetsyb";
-    /** The subprotocol used by the pooled i-net Sybase driver. */
+    /* The subprotocol used by the pooled i-net Sybase driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SYBASE_POOLED_1      = "inetpool:inetsyb";
-    /** The subprotocol used by the pooled i-net Sybase driver. */
+    /* The subprotocol used by the pooled i-net Sybase driver. */
     public static final String JDBC_SUBPROTOCOL_INET_SYBASE_POOLED_2      = "inetpool:jdbc:inetsyb";
-    /** The subprotocol used by the JNetDirect SQLServer driver. */
+    /* The subprotocol used by the JNetDirect SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_JSQLCONNECT_SQLSERVER     = "JSQLConnect";
-    /** The subprotocol used by the jTDS SQLServer driver. */
+    /* The subprotocol used by the jTDS SQLServer driver. */
     public static final String JDBC_SUBPROTOCOL_JTDS_SQLSERVER            = "jtds:sqlserver";
-    /** The subprotocol used by the jTDS Sybase driver. */
+    /* The subprotocol used by the jTDS Sybase driver. */
     public static final String JDBC_SUBPROTOCOL_JTDS_SYBASE               = "jtds:sybase";
 
-    /** Maps the sub-protocl part of a jdbc connection url to a OJB platform name. */
+    /* Maps the sub-protocl part of a jdbc connection url to a OJB platform name. */
     private static HashMap<String,String> jdbcSubProtocolToPlatform = new HashMap<String,String>();
-    /** Maps the jdbc driver name to a OJB platform name. */
+    /* Maps the jdbc driver name to a OJB platform name. */
     private static HashMap<String,String> jdbcDriverToPlatform      = new HashMap<String,String>();
 
-    /**
+    /*
      * Creates a new instance.
      */
     static
     {
         // Note that currently Sapdb and MaxDB have equal subprotocols and
         // drivers so we have no means to distinguish them
-        jdbcSubProtocolToPlatform.put(AxionPlatform.JDBC_SUBPROTOCOL,                           AxionPlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(CloudscapePlatform.JDBC_SUBPROTOCOL_1,                    CloudscapePlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(CloudscapePlatform.JDBC_SUBPROTOCOL_2,                    CloudscapePlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(Db2Platform.JDBC_SUBPROTOCOL,                             Db2Platform.DATABASENAME);
@@ -156,8 +152,6 @@ public class PlatformUtils
         jdbcSubProtocolToPlatform.put(FirebirdPlatform.JDBC_SUBPROTOCOL,                        FirebirdPlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(HsqlDbPlatform.JDBC_SUBPROTOCOL,                          HsqlDbPlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(InterbasePlatform.JDBC_SUBPROTOCOL,                       InterbasePlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(SapDbPlatform.JDBC_SUBPROTOCOL,                           SapDbPlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(MckoiPlatform.JDBC_SUBPROTOCOL,                           MckoiPlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(MSSqlPlatform.JDBC_SUBPROTOCOL,                           MSSqlPlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(MSSqlPlatform.JDBC_SUBPROTOCOL_NEW,                       MSSqlPlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(MSSqlPlatform.JDBC_SUBPROTOCOL_INTERNAL,                  MSSqlPlatform.DATABASENAME);
@@ -190,7 +184,6 @@ public class PlatformUtils
         jdbcSubProtocolToPlatform.put(PlatformUtils.JDBC_SUBPROTOCOL_INET_SYBASE_POOLED_2,      SybasePlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(PlatformUtils.JDBC_SUBPROTOCOL_JTDS_SYBASE,               SybasePlatform.DATABASENAME);
 
-        jdbcDriverToPlatform.put(AxionPlatform.JDBC_DRIVER,                       AxionPlatform.DATABASENAME);
         jdbcDriverToPlatform.put(Db2Platform.JDBC_DRIVER,                         Db2Platform.DATABASENAME);
         jdbcDriverToPlatform.put(Db2Platform.JDBC_DRIVER_OLD1,                    Db2Platform.DATABASENAME);
         jdbcDriverToPlatform.put(Db2Platform.JDBC_DRIVER_OLD2,                    Db2Platform.DATABASENAME);
@@ -202,8 +195,6 @@ public class PlatformUtils
         jdbcDriverToPlatform.put(FirebirdPlatform.JDBC_DRIVER,                    FirebirdPlatform.DATABASENAME);
         jdbcDriverToPlatform.put(HsqlDbPlatform.JDBC_DRIVER,                      HsqlDbPlatform.DATABASENAME);
         jdbcDriverToPlatform.put(InterbasePlatform.JDBC_DRIVER,                   InterbasePlatform.DATABASENAME);
-        jdbcDriverToPlatform.put(SapDbPlatform.JDBC_DRIVER,                       SapDbPlatform.DATABASENAME);
-        jdbcDriverToPlatform.put(MckoiPlatform.JDBC_DRIVER,                       MckoiPlatform.DATABASENAME);
         jdbcDriverToPlatform.put(MSSqlPlatform.JDBC_DRIVER,                       MSSqlPlatform.DATABASENAME);
         jdbcDriverToPlatform.put(MSSqlPlatform.JDBC_DRIVER_NEW,                   MSSqlPlatform.DATABASENAME);
         jdbcDriverToPlatform.put(PlatformUtils.JDBC_DRIVER_DATADIRECT_SQLSERVER,  MSSqlPlatform.DATABASENAME);
@@ -222,7 +213,7 @@ public class PlatformUtils
         jdbcDriverToPlatform.put(PlatformUtils.JDBC_DRIVER_INET_SYBASE,           SybasePlatform.DATABASENAME);
     }
 
-    /**
+    /*
      * Tries to determine the database type for the given data source. Note that this will establish
      * a connection to the database.
      * 
@@ -328,8 +319,8 @@ public class PlatformUtils
             DatabaseMetaData metaData = connection.getMetaData();
             String productName = metaData.getDatabaseProductName();
             int majorVersion = metaData.getDatabaseMajorVersion();
-            /** if the productName is PostgreSQL, it could be either PostgreSQL or Greenplum */
-            /** query the metadata to determine which one it is */
+            /* if the productName is PostgreSQL, it could be either PostgreSQL or Greenplum */
+            /* query the metadata to determine which one it is */
             if (productName.equalsIgnoreCase(PostgreSqlPlatform.DATABASENAME)) {
                 if (isGreenplumDatabase(connection)) {
                     productName = GreenplumPlatform.DATABASE;
@@ -425,7 +416,7 @@ public class PlatformUtils
         return productVersion;
     }     
     
-    /**
+    /*
      * Tries to determine the database type for the given jdbc driver and connection url.
      * 
      * @param driverName        The fully qualified name of the JDBC driver 

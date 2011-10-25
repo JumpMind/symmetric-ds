@@ -27,19 +27,19 @@ import org.jumpmind.symmetric.ddl.TestBase;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.platform.TestPlatform;
 
-/**
+/*
  * Tests the generation of the alteration statements.
  * 
  * @version $Revision: $
  */
 public class TestAlterationAlgorithm extends TestBase
 {
-    /** The tested platform. */
+    /* The tested platform. */
     private Platform _platform;
-    /** The writer that the builder of the platform writes to. */
+    /* The writer that the builder of the platform writes to. */
     private StringWriter _writer;
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void setUp() throws Exception
@@ -51,7 +51,7 @@ public class TestAlterationAlgorithm extends TestBase
         _platform.setDelimitedIdentifierModeOn(true);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void tearDown() throws Exception
@@ -60,7 +60,7 @@ public class TestAlterationAlgorithm extends TestBase
         _writer   = null;
     }
 
-    /**
+    /*
      * Returns the SQL for altering the first into the second database.
      * 
      * @param currentSchema The current schema XML 
@@ -77,7 +77,7 @@ public class TestAlterationAlgorithm extends TestBase
         return _writer.toString();
     }
 
-    /**
+    /*
      * Test where no change is made to the model.
      */
     public void testNoChange() throws IOException
@@ -105,7 +105,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(modelXml, modelXml));
     }
 
-    /**
+    /*
      * Tests the addition of a table.
      */
     public void testAddTable() throws IOException
@@ -137,7 +137,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of a table that has an index.
      */
     public void testAddTableWithIndex() throws IOException
@@ -175,7 +175,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of a table that has a unique index.
      */
     public void testAddTableWithUniqueIndex() throws IOException
@@ -213,7 +213,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of a table that has a foreign key to an existing one.
      */
     public void testAddTableWithForeignKey() throws IOException
@@ -251,7 +251,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of two tables that have foreign key to each other.
      */
     public void testAddTablesWithForeignKeys() throws IOException
@@ -297,7 +297,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of a table.
      */
     public void testRemoveTable() throws IOException
@@ -325,7 +325,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of a table with an index.
      */
     public void testRemoveTableWithIndex() throws IOException
@@ -357,7 +357,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of a table with a foreign key to an existing table.
      */
     public void testRemoveTableWithForeignKey() throws IOException
@@ -390,7 +390,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of a table that is referenced by a foreign key of an existing table.
      */
     public void testRemoveTableReferencedByForeignKey() throws IOException
@@ -424,7 +424,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of two tables that have foreign key to each other.
      */
     public void testRemoveTablesWithForeignKeys() throws IOException
@@ -460,7 +460,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of an index to an existing table.
      */
     public void testAddIndex() throws IOException
@@ -490,7 +490,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of an unique index to an existing table.
      */
     public void testAddUniqueIndex() throws IOException
@@ -520,7 +520,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of an index from a table.
      */
     public void testRemoveIndex() throws IOException
@@ -550,7 +550,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of an unique index from a table.
      */
     public void testRemoveUniqueIndex() throws IOException
@@ -580,7 +580,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of a primary key to an existing table.
      */
     public void testAddPrimaryKey() throws IOException
@@ -607,7 +607,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of a primary key and a column to an existing table.
      */
     public void testAddPrimaryKeyAndColumn() throws IOException
@@ -652,7 +652,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of a primary key from an existing table.
      */
     public void testRemovePrimaryKey() throws IOException
@@ -692,7 +692,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of a column to an existing table.
      */
     public void testAddColumn() throws IOException
@@ -733,7 +733,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of a column from an existing table.
      */
     public void testRemoveColumn() throws IOException
@@ -772,7 +772,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of a primary key column to an existing table.
      */
     public void testAddPrimaryKeyColumn() throws IOException
@@ -813,7 +813,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of a primary key column from an existing table.
      */
     public void testRemovePrimaryKeyColumn() throws IOException
@@ -852,7 +852,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of columns to the primary key of a table and the foreign key
      * of another table referencing it.
      */
@@ -930,7 +930,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of columns from the primary key of a table and the foreign key
      * of another table referencing it.
      */
@@ -1004,7 +1004,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of an index column to an existing table.
      */
     public void testAddIndexColumn() throws IOException
@@ -1058,7 +1058,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of an index column from an existing table.
      */
     public void testRemoveIndexColumn() throws IOException
@@ -1110,7 +1110,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of an unique index column to an existing table.
      */
     public void testAddUniqueIndexColumn() throws IOException
@@ -1164,7 +1164,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of an unique index column from an existing table.
      */
     public void testRemoveUniqueIndexColumn() throws IOException
@@ -1217,7 +1217,7 @@ public class TestAlterationAlgorithm extends TestBase
     }
 
 
-    /**
+    /*
      * Tests the addition of a column to a table with an index.
      */
     public void testAddColumnToTableWithIndex() throws IOException
@@ -1269,7 +1269,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of a column to a table that has a foreign key.
      */
     public void testAddColumnToTableWithForeignKey() throws IOException
@@ -1328,7 +1328,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of a column to a table that is referenced by a foreign key.
      */
     public void testAddColumnToTableReferencedByForeignKey() throws IOException
@@ -1385,7 +1385,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of an existing column to a primary key.
      */
     public void testAddExistingColumnToPrimaryKey() throws IOException
@@ -1427,7 +1427,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of a column from a primary key.
      */
     public void testRemoveColumnFromPrimaryKey() throws IOException
@@ -1469,7 +1469,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of existing columns to a primary and the referencing foreign key.
      */
     public void testAddExistingColumnsToPrimaryAndForeignKey() throws IOException
@@ -1530,7 +1530,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of existing columns from a primary and the referencing foreign key.
      */
     public void testRemoveExistingColumnsFromPrimaryAndForeignKey() throws IOException
@@ -1591,7 +1591,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of an existing column to an index.
      */
     public void testAddExistingColumnToIndex() throws IOException
@@ -1628,7 +1628,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the addition of an existing column from an index.
      */
     public void testRemoveExistingColumnFromIndex() throws IOException
@@ -1665,7 +1665,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the removal of a column from a table referenced by a foreign key.
      */
     public void testRemoveColumnFromTableReferencedByForeignKey() throws IOException
@@ -1720,7 +1720,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a column's datatype.
      */
     public void testChangeColumnDatatype() throws IOException
@@ -1762,7 +1762,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a primary key column's datatype.
      */
     public void testChangePrimaryKeyColumnDatatype() throws IOException
@@ -1804,7 +1804,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a index column's datatype.
      */
     public void testChangeIndexColumnDatatype() throws IOException
@@ -1853,7 +1853,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of the datatype of the columns of a primary key and the referencing foreign key.
      */
     public void testChangePrimaryAndForeignKeyColumnsDatatype() throws IOException
@@ -1923,7 +1923,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a column's size.
      */
     public void testChangeColumnSize() throws IOException
@@ -1965,7 +1965,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a primary key column's size.
      */
     public void testChangePrimaryKeyColumnSize() throws IOException
@@ -2007,7 +2007,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a index column's size.
      */
     public void testChangeIndexColumnSize() throws IOException
@@ -2056,7 +2056,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of the size of the columns of a primary key and the referencing foreign key.
      */
     public void testChangePrimaryAndForeignKeyColumnsSize() throws IOException
@@ -2126,7 +2126,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a column's default value.
      */
     public void testChangeColumnDefault() throws IOException
@@ -2168,7 +2168,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a primary key column's default value.
      */
     public void testChangePrimaryKeyColumnDefault() throws IOException
@@ -2210,7 +2210,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a index column's default value.
      */
     public void testChangeIndexColumnDefault() throws IOException
@@ -2259,7 +2259,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of the default value of the columns of a primary key and the referencing foreign key.
      */
     public void testChangePrimaryAndForeignKeyColumnsDefault() throws IOException
@@ -2329,7 +2329,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a column's auto-increment attribute.
      */
     public void testChangeColumnAutoIncrement() throws IOException
@@ -2371,7 +2371,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a primary key column's auto-increment attribute.
      */
     public void testChangePrimaryKeyColumnAutoIncrement() throws IOException
@@ -2413,7 +2413,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a index column's auto-increment attribute.
      */
     public void testChangeIndexColumnAutoIncrement() throws IOException
@@ -2462,7 +2462,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of the auto-increment attribute of the columns of a primary key
      * and the referencing foreign key.
      */
@@ -2517,7 +2517,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a column's required attribute.
      */
     public void testChangeColumnRequired() throws IOException
@@ -2559,7 +2559,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a primary key column's required attribute.
      */
     public void testChangePrimaryKeyColumnRequired() throws IOException
@@ -2601,7 +2601,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of a index column's required attribute.
      */
     public void testChangeIndexColumnRequired() throws IOException
@@ -2650,7 +2650,7 @@ public class TestAlterationAlgorithm extends TestBase
             getAlterDatabaseSQL(model1Xml, model2Xml));
     }
 
-    /**
+    /*
      * Tests the change of the required attribute of the columns of a primary key
      * and the referencing foreign key.
      */

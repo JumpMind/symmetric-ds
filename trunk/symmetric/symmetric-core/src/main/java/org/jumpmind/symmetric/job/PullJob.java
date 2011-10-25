@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 
-/**
+/*
  * Background job that pulls data from remote nodes and then loads it.
  */
 public class PullJob extends AbstractJob {

@@ -19,17 +19,17 @@ package org.jumpmind.symmetric.ddl.platform.sybase;
  * under the License.
  */
 
-/**
+/*
  * The platform implementation for Sybase ASE 15 and above.
  * 
  * @version $Revision:  $
  */
 public class SybaseASE15Platform extends SybasePlatform
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME     = "SybaseASE15";
     
-    /**
+    /*
      * Creates a new platform instance.
      */
     public SybaseASE15Platform()
@@ -37,7 +37,7 @@ public class SybaseASE15Platform extends SybasePlatform
         super();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()

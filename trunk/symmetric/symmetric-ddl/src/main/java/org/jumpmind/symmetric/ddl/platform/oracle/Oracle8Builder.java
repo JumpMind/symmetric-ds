@@ -46,21 +46,21 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 import org.jumpmind.symmetric.ddl.util.Jdbc3Utils;
 
-/**
+/*
  * The SQL Builder for Oracle.
  *
  * @version $Revision: 517050 $
  */
 public class Oracle8Builder extends SqlBuilder
 {
-	/** The regular expression pattern for ISO dates, i.e. 'YYYY-MM-DD'. */
+	/* The regular expression pattern for ISO dates, i.e. 'YYYY-MM-DD'. */
 	private Pattern _isoDatePattern;
-	/** The regular expression pattern for ISO times, i.e. 'HH:MI:SS'. */
+	/* The regular expression pattern for ISO times, i.e. 'HH:MI:SS'. */
 	private Pattern _isoTimePattern;
-	/** The regular expression pattern for ISO timestamps, i.e. 'YYYY-MM-DD HH:MI:SS.fffffffff'. */
+	/* The regular expression pattern for ISO timestamps, i.e. 'YYYY-MM-DD HH:MI:SS.fffffffff'. */
 	private Pattern _isoTimestampPattern;
 
-	/**
+	/*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to
@@ -84,7 +84,7 @@ public class Oracle8Builder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createTable(Database database, Table table, Map parameters) throws IOException
@@ -105,7 +105,7 @@ public class Oracle8Builder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Table table) throws IOException
@@ -124,7 +124,7 @@ public class Oracle8Builder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Creates the sequence necessary for the auto-increment of the given column.
      * 
      * @param table  The table
@@ -138,7 +138,7 @@ public class Oracle8Builder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Creates the trigger necessary for the auto-increment of the given column.
      * 
      * @param table  The table
@@ -199,7 +199,7 @@ public class Oracle8Builder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * Drops the sequence used for the auto-increment of the given column.
      * 
      * @param table  The table
@@ -213,7 +213,7 @@ public class Oracle8Builder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Drops the trigger used for the auto-increment of the given column.
      * 
      * @param table  The table
@@ -227,7 +227,7 @@ public class Oracle8Builder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void createTemporaryTable(Database database, Table table, Map parameters) throws IOException
@@ -235,7 +235,7 @@ public class Oracle8Builder extends SqlBuilder
         createTable(database, table, parameters);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void dropTemporaryTable(Database database, Table table) throws IOException
@@ -243,7 +243,7 @@ public class Oracle8Builder extends SqlBuilder
         dropTable(table);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropExternalForeignKeys(Table table) throws IOException
@@ -251,7 +251,7 @@ public class Oracle8Builder extends SqlBuilder
         // no need to as we drop the table with CASCASE CONSTRAINTS
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void writeExternalIndexDropStmt(Table table, Index index) throws IOException
@@ -263,7 +263,7 @@ public class Oracle8Builder extends SqlBuilder
         printEndOfStatement();
     }
 
-	/**
+	/*
      * {@inheritDoc}
      */
     protected void printDefaultValue(Object defaultValue, int typeCode) throws IOException
@@ -287,7 +287,7 @@ public class Oracle8Builder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected String getNativeDefaultValue(Column column)
@@ -324,7 +324,7 @@ public class Oracle8Builder extends SqlBuilder
         return super.getNativeDefaultValue(column);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException
@@ -332,7 +332,7 @@ public class Oracle8Builder extends SqlBuilder
         // we're using sequences instead
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getSelectLastIdentityValues(Table table)
@@ -362,7 +362,7 @@ public class Oracle8Builder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void processTableStructureChanges(Database currentModel,
@@ -453,7 +453,7 @@ public class Oracle8Builder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel The current database schema
@@ -478,7 +478,7 @@ public class Oracle8Builder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel The current database schema
@@ -503,7 +503,7 @@ public class Oracle8Builder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a primary key from a table.
      * 
      * @param currentModel The current database schema

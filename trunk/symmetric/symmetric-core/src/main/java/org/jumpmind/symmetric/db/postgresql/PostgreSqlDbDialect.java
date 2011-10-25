@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * Support for PostgreSQL
  */
 public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
@@ -82,18 +82,6 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return true;
     }
-
-    @Override
-    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
-        String typeName = (String) values.get("TYPE_NAME");
-        if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
-            return Types.TIMESTAMP;
-        } else if (typeName != null && typeName.equalsIgnoreCase("OID")) {
-            return Types.BLOB;
-        } else {
-            return super.overrideJdbcTypeForColumn(values);
-        }
-    }
     
     @Override
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
@@ -119,7 +107,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
                 + "and event_object_table = ? and trigger_schema = ?", new Object[] { triggerName.toLowerCase(),
                 tableName, schema == null ? getDefaultSchema() : schema }) > 0;
     }
-
+    
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName, TriggerHistory oldHistory) {

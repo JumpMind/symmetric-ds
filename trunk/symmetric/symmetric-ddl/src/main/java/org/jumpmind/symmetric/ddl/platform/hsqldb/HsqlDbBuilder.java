@@ -34,14 +34,14 @@ import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
-/**
+/*
  * The SQL Builder for the HsqlDb database.
  * 
  * @version $Revision: 518485 $
  */
 public class HsqlDbBuilder extends SqlBuilder
 {
-    /**
+    /*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to
@@ -52,7 +52,7 @@ public class HsqlDbBuilder extends SqlBuilder
         addEscapedCharSequence("'", "''");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Table table) throws IOException
@@ -63,7 +63,7 @@ public class HsqlDbBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getSelectLastIdentityValues(Table table) 
@@ -71,7 +71,7 @@ public class HsqlDbBuilder extends SqlBuilder
         return "CALL IDENTITY()";
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void processTableStructureChanges(Database currentModel,
@@ -132,7 +132,7 @@ public class HsqlDbBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel The current database schema
@@ -157,7 +157,7 @@ public class HsqlDbBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel The current database schema

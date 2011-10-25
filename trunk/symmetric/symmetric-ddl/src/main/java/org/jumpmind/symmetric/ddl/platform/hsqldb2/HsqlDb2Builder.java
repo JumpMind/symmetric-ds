@@ -39,14 +39,12 @@ import org.jumpmind.symmetric.ddl.model.Index;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
-/**
+/*
  * The SQL Builder for the HsqlDb database.
- * 
- * @version $Revision: 518485 $
  */
 public class HsqlDb2Builder extends SqlBuilder
 {
-    /**
+    /*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to
@@ -57,9 +55,7 @@ public class HsqlDb2Builder extends SqlBuilder
         addEscapedCharSequence("'", "''");
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void dropTable(Table table) throws IOException
     { 
         print("DROP TABLE ");
@@ -68,9 +64,7 @@ public class HsqlDb2Builder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public String getSelectLastIdentityValues(Table table) 
     {
         return "CALL IDENTITY()";
@@ -85,9 +79,7 @@ public class HsqlDb2Builder extends SqlBuilder
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected void processTableStructureChanges(Database currentModel,
                                                 Database desiredModel,
                                                 Table    sourceTable,
@@ -164,7 +156,7 @@ public class HsqlDb2Builder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel The current database schema
@@ -189,7 +181,7 @@ public class HsqlDb2Builder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel The current database schema

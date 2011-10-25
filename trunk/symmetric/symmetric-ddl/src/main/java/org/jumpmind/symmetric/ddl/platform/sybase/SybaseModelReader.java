@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.ddl.platform.sybase;
  * under the License.
  */
 
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,19 +49,17 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 
-/**
+/*
  * Reads a database model from a Sybase database.
- *
- * @version $Revision: $
  */
 public class SybaseModelReader extends JdbcModelReader
 {
-	/** The regular expression pattern for the ISO dates. */
+	/* The regular expression pattern for the ISO dates. */
 	private Pattern _isoDatePattern;
-	/** The regular expression pattern for the ISO times. */
+	/* The regular expression pattern for the ISO times. */
 	private Pattern _isoTimePattern;
 
-	/**
+	/*
      * Creates a new model reader for Sybase databases.
      * 
      * @param platform The platform that this model reader belongs to
@@ -85,24 +84,30 @@ public class SybaseModelReader extends JdbcModelReader
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-	protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    @Override
+	protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
 	{
-        Table table = super.readTable(metaData, values);
+        Table table = super.readTable(connection, metaData, values);
 
         if (table != null)
         {
             // Sybase does not return the auto-increment status via the database metadata
-            determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
+            determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
         }
         return table;
 	}
+	    
+    @Override
+    protected Integer overrideJdbcTypeForColumn(Map<String, Object> values) {
+        String typeName = (String) values.get("TYPE_NAME");
+        if (typeName != null && typeName.toUpperCase().startsWith("TEXT")) {
+            return Types.LONGVARCHAR;          
+        } else {
+            return super.overrideJdbcTypeForColumn(values);
+        }
+    }  
 
-	/**
-     * {@inheritDoc}
-     */
+    @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
 		Column column = super.readColumn(metaData, values);
@@ -142,9 +147,7 @@ public class SybaseModelReader extends JdbcModelReader
 		return column;
 	}
 
-    /**
-	 * {@inheritDoc}
-	 */
+    @Override
 	protected void readIndex(DatabaseMetaDataWrapper metaData, Map values, Map knownIndices) throws SQLException
 	{
 		if (getPlatform().isDelimitedIdentifierModeOn())
@@ -167,10 +170,8 @@ public class SybaseModelReader extends JdbcModelReader
 		super.readIndex(metaData, values, knownIndices);
 	}
 
-	/**
-     * {@inheritDoc}
-     */
-    protected Collection readForeignKeys(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
+    @Override
+    protected Collection readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
         // Sybase (or jConnect) does not return the foreign key names, thus we have to
         // read the foreign keys manually from the system tables
@@ -190,8 +191,8 @@ public class SybaseModelReader extends JdbcModelReader
         query.append(tableName);
         query.append("' AND remotetables.type = 'U' AND refs.reftabid = remotetables.id");
 
-        Statement         stmt     = getConnection().createStatement();
-        PreparedStatement prepStmt = getConnection().prepareStatement("SELECT name FROM syscolumns WHERE id = ? AND colid = ?");
+        Statement         stmt     = connection.createStatement();
+        PreparedStatement prepStmt = connection.prepareStatement("SELECT name FROM syscolumns WHERE id = ? AND colid = ?");
         ArrayList         result   = new ArrayList();
 
         try
@@ -254,10 +255,8 @@ public class SybaseModelReader extends JdbcModelReader
         return result;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException
+    @Override
+    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException
     {
         // We can simply check the sysindexes table where a specific flag is set for pk indexes
         StringBuffer query = new StringBuffer();
@@ -268,7 +267,7 @@ public class SybaseModelReader extends JdbcModelReader
         query.append(index.getName());
         query.append("' AND sysobjects.id = sysindexes.id AND (sysindexes.status & 2048) > 0");
         
-        Statement stmt = getConnection().createStatement();
+        Statement stmt = connection.createStatement();
 
         try
         {

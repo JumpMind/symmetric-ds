@@ -53,19 +53,19 @@ import org.jumpmind.symmetric.ddl.platform.CreationParameters;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 import org.jumpmind.symmetric.ddl.util.Jdbc3Utils;
 
-/**
+/*
  * The SQL Builder for the Microsoft SQL Server.
  * 
  * @version $Revision: 504014 $
  */
 public class MSSqlBuilder extends SqlBuilder
 {
-    /** We use a generic date format. */
+    /* We use a generic date format. */
     private DateFormat _genericDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    /** We use a generic date format. */
+    /* We use a generic date format. */
     private DateFormat _genericTimeFormat = new SimpleDateFormat("HH:mm:ss");
 
-    /**
+    /*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to
@@ -76,7 +76,7 @@ public class MSSqlBuilder extends SqlBuilder
         addEscapedCharSequence("'", "''");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createTable(Database database, Table table, Map parameters) throws IOException
@@ -85,7 +85,7 @@ public class MSSqlBuilder extends SqlBuilder
         super.createTable(database, table, parameters);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Table table) throws IOException
@@ -120,7 +120,7 @@ public class MSSqlBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropExternalForeignKeys(Table table) throws IOException
@@ -129,7 +129,7 @@ public class MSSqlBuilder extends SqlBuilder
         super.dropExternalForeignKeys(table);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected DateFormat getValueDateFormat()
@@ -137,7 +137,7 @@ public class MSSqlBuilder extends SqlBuilder
         return _genericDateFormat;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected DateFormat getValueTimeFormat()
@@ -145,7 +145,7 @@ public class MSSqlBuilder extends SqlBuilder
         return _genericTimeFormat;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected String getValueAsString(Column column, Object value)
@@ -199,7 +199,7 @@ public class MSSqlBuilder extends SqlBuilder
         return super.getValueAsString(column, value);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected String getNativeDefaultValue(Column column)
@@ -216,7 +216,7 @@ public class MSSqlBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException
@@ -224,7 +224,7 @@ public class MSSqlBuilder extends SqlBuilder
         print("IDENTITY (1,1) ");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void writeExternalIndexDropStmt(Table table, Index index) throws IOException
@@ -236,7 +236,7 @@ public class MSSqlBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey) throws IOException
@@ -254,7 +254,7 @@ public class MSSqlBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Returns the statement that turns on the ability to write delimited identifiers.
      * 
      * @return The quotation-on statement
@@ -271,7 +271,7 @@ public class MSSqlBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * Writes the statement that turns on the ability to write delimited identifiers.
      */
     private void writeQuotationOnStatement() throws IOException
@@ -279,7 +279,7 @@ public class MSSqlBuilder extends SqlBuilder
         print(getQuotationOnStatement());
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getSelectLastIdentityValues(Table table)
@@ -287,7 +287,7 @@ public class MSSqlBuilder extends SqlBuilder
         return "SELECT @@IDENTITY";
     }
 
-    /**
+    /*
      * Returns the SQL to enable identity override mode.
      * 
      * @param table The table to enable the mode for
@@ -306,7 +306,7 @@ public class MSSqlBuilder extends SqlBuilder
         return result.toString();
     }
 
-    /**
+    /*
      * Returns the SQL to disable identity override mode.
      * 
      * @param table The table to disable the mode for
@@ -325,7 +325,7 @@ public class MSSqlBuilder extends SqlBuilder
         return result.toString();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getDeleteSql(Table table, Map pkValues, boolean genPlaceholders)
@@ -333,7 +333,7 @@ public class MSSqlBuilder extends SqlBuilder
         return getQuotationOnStatement() + super.getDeleteSql(table, pkValues, genPlaceholders);
     }
     
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getInsertSql(Table table, Map columnValues, boolean genPlaceholders)
@@ -341,7 +341,7 @@ public class MSSqlBuilder extends SqlBuilder
         return getQuotationOnStatement() + super.getInsertSql(table, columnValues, genPlaceholders);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getUpdateSql(Table table, Map columnValues, boolean genPlaceholders)
@@ -349,7 +349,7 @@ public class MSSqlBuilder extends SqlBuilder
         return getQuotationOnStatement() + super.getUpdateSql(table, columnValues, genPlaceholders);
     }
 
-    /**
+    /*
      * Prints the given identifier with enforced single quotes around it regardless of whether 
      * delimited identifiers are turned on or not.
      * 
@@ -362,7 +362,7 @@ public class MSSqlBuilder extends SqlBuilder
         print("'");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void writeCopyDataStatement(Table sourceTable, Table targetTable) throws IOException
@@ -389,7 +389,7 @@ public class MSSqlBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void processChanges(Database currentModel, Database desiredModel, List changes, CreationParameters params) throws IOException
@@ -479,7 +479,7 @@ public class MSSqlBuilder extends SqlBuilder
         super.processChanges(currentModel, desiredModel, changes, params);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void processTableStructureChanges(Database currentModel,
@@ -591,7 +591,7 @@ public class MSSqlBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel The current database schema
@@ -611,7 +611,7 @@ public class MSSqlBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel The current database schema
@@ -631,7 +631,7 @@ public class MSSqlBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a primary key from a table.
      * 
      * @param currentModel The current database schema
@@ -669,7 +669,7 @@ public class MSSqlBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes a change to a column.
      * 
      * @param sourceTable  The current table

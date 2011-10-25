@@ -21,14 +21,14 @@ package org.jumpmind.symmetric.ddl.platform.db2;
 
 import org.jumpmind.symmetric.ddl.Platform;
 
-/**
+/*
  * The SQL Builder for DB2 v8 and above.
  * 
  * @version $Revision: $
  */
 public class Db2v8Builder extends Db2Builder
 {
-    /**
+    /*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to

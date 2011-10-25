@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IPurgeService;
 
-/**
+/*
  * Background job that is responsible for purging already synchronized data
  */
 public class IncomingPurgeJob extends AbstractJob {

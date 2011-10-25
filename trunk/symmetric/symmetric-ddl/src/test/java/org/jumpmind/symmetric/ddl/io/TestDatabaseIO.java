@@ -38,17 +38,17 @@ import org.jumpmind.symmetric.ddl.model.ModelException;
 import org.jumpmind.symmetric.ddl.model.Reference;
 import org.jumpmind.symmetric.ddl.model.Table;
 
-/**
+/*
  * Tests the database reading/writing via the {@link org.jumpmind.symmetric.ddl.io.DatabaseIO} class.
  * 
  * @version $Revision: 289996 $
  */
 public class TestDatabaseIO extends TestCase
 {
-    /** The log for the tests. */
+    /* The log for the tests. */
     private final Log _log = LogFactory.getLog(TestDatabaseIO.class);
 
-    /**
+    /*
      * Reads the database model from the given string.
      * 
      * @param modelAsXml The database model XML
@@ -63,7 +63,7 @@ public class TestDatabaseIO extends TestCase
         return dbIO.read(new StringReader(modelAsXml));
     }
 
-    /**
+    /*
      * Writes the given database model to a string.
      * 
      * @param model The database model
@@ -77,7 +77,7 @@ public class TestDatabaseIO extends TestCase
         return StringUtils.replace(writer.toString(), "\r\n", "\n");
     }
 
-    /**
+    /*
      * Tests a simple database model.
      */
     public void testSimple() throws Exception
@@ -139,7 +139,7 @@ public class TestDatabaseIO extends TestCase
             writeModel(model));
     }
 
-    /**
+    /*
      * Tests a database model containing a foreignkey.
      */
     public void testForeignkey() throws Exception
@@ -270,7 +270,7 @@ public class TestDatabaseIO extends TestCase
             writeModel(model));
     }
 
-    /**
+    /*
      * Tests a database model with indices.
      */
     public void testIndices1() throws Exception
@@ -412,7 +412,7 @@ public class TestDatabaseIO extends TestCase
             writeModel(model));
     }
 
-    /**
+    /*
      * Tests a database model with indices, both uniques and non-uniques.
      */
     public void testIndices2() throws Exception
@@ -529,7 +529,7 @@ public class TestDatabaseIO extends TestCase
             writeModel(model));
     }
 
-    /**
+    /*
      * Tests a complex database model with multiple tables, foreign keys, indices and uniques.
      */
     public void testComplex() throws Exception
@@ -957,7 +957,7 @@ public class TestDatabaseIO extends TestCase
             writeModel(model));
     }
 
-    /**
+    /*
      * Tests that an exception is generated when the database element has no name attribute.
      */
     public void testDatabaseWithoutName()
@@ -980,7 +980,7 @@ public class TestDatabaseIO extends TestCase
         {}
     }
 
-    /**
+    /*
      * Tests that an exception is generated when the table element has no name attribute.
      */
     public void testTableWithoutName()
@@ -1003,7 +1003,7 @@ public class TestDatabaseIO extends TestCase
         {}
     }
 
-    /**
+    /*
      * Tests that an exception is generated when two table elements have the same value in their name attributes.
      */
     public void testTwoTablesWithTheSameName()
@@ -1032,7 +1032,7 @@ public class TestDatabaseIO extends TestCase
         {}
     }
 
-    /**
+    /*
      * Tests that an exception is generated when the column element has no name attribute.
      */
     public void testColumnWithoutName()
@@ -1054,7 +1054,7 @@ public class TestDatabaseIO extends TestCase
         {}
     }
 
-    /**
+    /*
      * Tests that an exception is generated when two column elements within the same table
      * element have the same value in their name attributes.
      */
@@ -1080,7 +1080,7 @@ public class TestDatabaseIO extends TestCase
         {}
     }
 
-    /**
+    /*
      * Tests that an exception is generated when the column element has no type attribute.
      */
     public void testColumnWithoutType()
@@ -1102,7 +1102,7 @@ public class TestDatabaseIO extends TestCase
         {}
     }
 
-    /**
+    /*
      * Tests that an exception is generated when two indices have the same value in their name attributes.
      */
     public void testTwoIndicesWithTheSameName()
@@ -1137,7 +1137,7 @@ public class TestDatabaseIO extends TestCase
         {}
     }
 
-    /**
+    /*
      * Tests that an exception is generated when two unique indices have the
      * same value in their name attributes.
      */
@@ -1173,7 +1173,7 @@ public class TestDatabaseIO extends TestCase
         {}
     }
 
-    /**
+    /*
      * Tests that an exception is generated when a unique and a normal index
      * have the same value in their name attributes.
      */
@@ -1209,7 +1209,7 @@ public class TestDatabaseIO extends TestCase
         {}
     }
 
-    /**
+    /*
      * Regression test ensuring that wrong XML is not read (regarding betwixt issue #37369).
      */
     public void testFaultReadOfTable() 
@@ -1223,7 +1223,7 @@ public class TestDatabaseIO extends TestCase
         assertEquals(0, database.getTableCount());
     }
 
-    /**
+    /*
      * Tests the Torque/Turbine extensions BOOLEANINT & BOOLEANCHAR.
      */
     public void testTurbineExtension() throws Exception

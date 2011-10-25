@@ -23,14 +23,14 @@ import org.jumpmind.symmetric.ddl.TestPlatformBase;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.platform.mysql.MySqlPlatform;
 
-/**
+/*
  * Tests the MySQL platform.
  * 
  * @version $Revision: 231110 $
  */
 public class TestMySqlPlatform extends TestPlatformBase
 {
-    /** The database schema for testing escaping of character sequences. */
+    /* The database schema for testing escaping of character sequences. */
     public static final String COLUMN_CHAR_SEQUENCES_TO_ESCAPE =
         "<?xml version='1.0' encoding='ISO-8859-1'?>\n" +
         "<database name='escapetest'>\n" +
@@ -40,7 +40,7 @@ public class TestMySqlPlatform extends TestPlatformBase
         "  </table>\n" +
         "</database>";
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected String getDatabaseName()
@@ -48,7 +48,7 @@ public class TestMySqlPlatform extends TestPlatformBase
         return MySqlPlatform.DATABASENAME;
     }
 
-    /**
+    /*
      * Tests the column types.
      */
     public void testColumnTypes() throws Exception
@@ -92,7 +92,7 @@ public class TestMySqlPlatform extends TestPlatformBase
             createTestDatabase(COLUMN_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the column constraints.
      */
     public void testColumnConstraints() throws Exception
@@ -120,7 +120,7 @@ public class TestMySqlPlatform extends TestPlatformBase
             getBuilderOutput());
     }
 
-    /**
+    /*
      * Tests the table constraints.
      */
     public void testTableConstraints() throws Exception
@@ -160,7 +160,7 @@ public class TestMySqlPlatform extends TestPlatformBase
             createTestDatabase(TABLE_CONSTRAINT_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the usage of creation parameters.
      */
     public void testCreationParameters1() throws Exception
@@ -197,7 +197,7 @@ public class TestMySqlPlatform extends TestPlatformBase
             getBuilderOutput());
     }
 
-    /**
+    /*
      * Tests the proper escaping of character sequences where MySQL requires it.
      */
     public void testCharacterEscaping() throws Exception

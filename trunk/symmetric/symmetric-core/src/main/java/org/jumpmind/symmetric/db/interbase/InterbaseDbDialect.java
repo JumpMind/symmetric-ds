@@ -31,7 +31,7 @@ import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 
-/**
+/*
  * Database dialect for <a href="http://www.embarcadero.com/products/interbase/">Interbase</a>.
  */
 
@@ -143,11 +143,6 @@ public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect 
 
     public boolean isEmptyStringNulled() {
         return false;
-    }
-
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
-        return true;
     }
 
     @Override

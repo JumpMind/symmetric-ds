@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IPushService;
 
-/**
+/*
  * Background job that is responsible for pushing data to linked nodes.
  */
 public class PushJob extends AbstractJob {

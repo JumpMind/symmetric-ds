@@ -46,14 +46,14 @@ import org.jumpmind.symmetric.ddl.platform.CreationParameters;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 import org.jumpmind.symmetric.ddl.util.Jdbc3Utils;
 
-/**
+/*
  * The SQL Builder for Sybase.
  * 
  * @version $Revision: 532976 $
  */
 public class SybaseBuilder extends SqlBuilder
 {
-    /**
+    /*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to
@@ -64,7 +64,7 @@ public class SybaseBuilder extends SqlBuilder
         addEscapedCharSequence("'", "''");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createTable(Database database, Table table, Map parameters) throws IOException
@@ -73,7 +73,7 @@ public class SybaseBuilder extends SqlBuilder
         super.createTable(database, table, parameters);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
 	protected void writeTableCreationStmtEnding(Table table, Map parameters) throws IOException
@@ -145,7 +145,7 @@ public class SybaseBuilder extends SqlBuilder
         super.writeTableCreationStmtEnding(table, parameters);
     }
 
-    /**
+    /*
 	 * {@inheritDoc}
 	 */
 	protected void writeColumn(Table table, Column column) throws IOException
@@ -175,7 +175,7 @@ public class SybaseBuilder extends SqlBuilder
         }
 	}
 
-	/**
+	/*
      * {@inheritDoc}
      */
     protected String getNativeDefaultValue(Column column)
@@ -191,7 +191,7 @@ public class SybaseBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Table table) throws IOException
@@ -208,7 +208,7 @@ public class SybaseBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey) throws IOException
@@ -226,7 +226,7 @@ public class SybaseBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void writeExternalIndexDropStmt(Table table, Index index) throws IOException
@@ -238,7 +238,7 @@ public class SybaseBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropExternalForeignKeys(Table table) throws IOException
@@ -247,7 +247,7 @@ public class SybaseBuilder extends SqlBuilder
         super.dropExternalForeignKeys(table);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getSelectLastIdentityValues(Table table)
@@ -255,7 +255,7 @@ public class SybaseBuilder extends SqlBuilder
         return "SELECT @@IDENTITY";
     }
 
-    /**
+    /*
      * Returns the SQL to enable identity override mode.
      * 
      * @param table The table to enable the mode for
@@ -272,7 +272,7 @@ public class SybaseBuilder extends SqlBuilder
         return result.toString();
     }
 
-    /**
+    /*
      * Returns the SQL to disable identity override mode.
      * 
      * @param table The table to disable the mode for
@@ -289,7 +289,7 @@ public class SybaseBuilder extends SqlBuilder
         return result.toString();
     }
 
-    /**
+    /*
      * Returns the statement that turns on the ability to write delimited identifiers.
      * 
      * @return The quotation-on statement
@@ -306,7 +306,7 @@ public class SybaseBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * Writes the statement that turns on the ability to write delimited identifiers.
      */
     private void writeQuotationOnStatement() throws IOException
@@ -315,7 +315,7 @@ public class SybaseBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Prints the given identifier with enforced single quotes around it regardless of whether 
      * delimited identifiers are turned on or not.
      * 
@@ -328,7 +328,7 @@ public class SybaseBuilder extends SqlBuilder
         print("'");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void writeCopyDataStatement(Table sourceTable, Table targetTable) throws IOException
@@ -352,7 +352,7 @@ public class SybaseBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeCastExpression(Column sourceColumn, Column targetColumn) throws IOException
@@ -374,7 +374,7 @@ public class SybaseBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void processChanges(Database currentModel, Database desiredModel, List changes, CreationParameters params) throws IOException
@@ -386,7 +386,7 @@ public class SybaseBuilder extends SqlBuilder
         super.processChanges(currentModel, desiredModel, changes, params);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void processTableStructureChanges(Database currentModel,
@@ -515,7 +515,7 @@ public class SybaseBuilder extends SqlBuilder
     }
 
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel The current database schema
@@ -535,7 +535,7 @@ public class SybaseBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel The current database schema
@@ -555,7 +555,7 @@ public class SybaseBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a primary key from a table.
      * 
      * @param currentModel The current database schema
@@ -592,7 +592,7 @@ public class SybaseBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the change of the default value of a column. Note that this method is only
      * used if it is the only change to that column.
      * 
@@ -626,7 +626,7 @@ public class SybaseBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes a change to a column.
      * 
      * @param sourceTable  The current table

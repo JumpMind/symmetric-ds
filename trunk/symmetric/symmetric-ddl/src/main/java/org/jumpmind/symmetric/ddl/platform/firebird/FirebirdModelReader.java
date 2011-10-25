@@ -41,14 +41,14 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 
-/**
+/*
  * The Jdbc Model Reader for Firebird.
  *
  * @version $Revision: $
  */
 public class FirebirdModelReader extends JdbcModelReader
 {
-    /**
+    /*
      * Creates a new model reader for Firebird databases.
      * 
      * @param platform The platform that this model reader belongs to
@@ -61,24 +61,20 @@ public class FirebirdModelReader extends JdbcModelReader
         setDefaultTablePattern("%");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    @Override
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
-        Table table = super.readTable(metaData, values);
+        Table table = super.readTable(connection, metaData, values);
 
         if (table != null)
         {
-        	determineAutoIncrementColumns(table);
+        	determineAutoIncrementColumns(connection, table);
         }
 
         return table;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected Collection readColumns(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
         ResultSet columnData = null;
@@ -129,9 +125,7 @@ public class FirebirdModelReader extends JdbcModelReader
         }
     }
 
-    /**
-	 * {@inheritDoc}
-	 */
+    @Override
 	protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
 	{
 		Column column = super.readColumn(metaData, values);
@@ -147,12 +141,12 @@ public class FirebirdModelReader extends JdbcModelReader
 		return column;
 	}
 
-	/**
+	/*
      * Helper method that determines the auto increment status using Firebird's system tables.
      *
      * @param table The table
      */
-    protected void determineAutoIncrementColumns(Table table) throws SQLException
+    protected void determineAutoIncrementColumns(Connection connection, Table table) throws SQLException
     {
     	// Since for long table and column names, the generator name will be shortened
     	// we have to determine for each column whether there is a generator for it
@@ -171,7 +165,7 @@ public class FirebirdModelReader extends JdbcModelReader
     		names.put(name, columns[idx]);
     	}
 
-    	Statement stmt = getConnection().createStatement();
+    	Statement stmt = connection.createStatement();
 
     	try
     	{
@@ -195,9 +189,7 @@ public class FirebirdModelReader extends JdbcModelReader
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected Collection readPrimaryKeyNames(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
         List      pks   = new ArrayList();
@@ -245,10 +237,8 @@ public class FirebirdModelReader extends JdbcModelReader
         return pks;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected Collection readForeignKeys(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
+    @Override
+    protected Collection readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
         Map       fks    = new ListOrderedMap();
         ResultSet fkData = null;
@@ -295,10 +285,8 @@ public class FirebirdModelReader extends JdbcModelReader
         return fks.values();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
+    @Override
+    protected Collection readIndices(Connection connection, DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
         // Jaybird is not able to read indices when delimited identifiers are turned on,
         // so we gather the data manually using Firebird's system tables
@@ -309,7 +297,7 @@ public class FirebirdModelReader extends JdbcModelReader
         query.append(" a.RDB$FIELD_POSITION ORDINAL_POSITION, a.RDB$FIELD_NAME COLUMN_NAME, 3 INDEX_TYPE");
         query.append(" FROM RDB$INDEX_SEGMENTS a, RDB$INDICES b WHERE a.RDB$INDEX_NAME=b.RDB$INDEX_NAME AND b.RDB$RELATION_NAME = ?");
 
-        PreparedStatement stmt      = getConnection().prepareStatement(query.toString());
+        PreparedStatement stmt      = connection.prepareStatement(query.toString());
         ResultSet         indexData = null;
 
         stmt.setString(1, getPlatform().isDelimitedIdentifierModeOn() ? tableName : tableName.toUpperCase());
@@ -341,10 +329,8 @@ public class FirebirdModelReader extends JdbcModelReader
         return indices.values();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException
+    @Override
+    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException
     {
         String       tableName = getPlatform().getSqlBuilder().getTableName(table);
         String       indexName = getPlatform().getSqlBuilder().getIndexName(index);
@@ -352,7 +338,7 @@ public class FirebirdModelReader extends JdbcModelReader
 
         query.append("SELECT RDB$CONSTRAINT_NAME FROM RDB$RELATION_CONSTRAINTS where RDB$RELATION_NAME=? AND RDB$CONSTRAINT_TYPE=? AND RDB$INDEX_NAME=?");
 
-        PreparedStatement stmt = getConnection().prepareStatement(query.toString());
+        PreparedStatement stmt = connection.prepareStatement(query.toString());
 
         try 
         {
@@ -373,10 +359,8 @@ public class FirebirdModelReader extends JdbcModelReader
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index) throws SQLException
+    @Override
+    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index) throws SQLException
     {
         String       tableName = getPlatform().getSqlBuilder().getTableName(table);
         String       indexName = getPlatform().getSqlBuilder().getIndexName(index);
@@ -385,7 +369,7 @@ public class FirebirdModelReader extends JdbcModelReader
 
         query.append("SELECT RDB$CONSTRAINT_NAME FROM RDB$RELATION_CONSTRAINTS where RDB$RELATION_NAME=? AND RDB$CONSTRAINT_TYPE=? AND RDB$CONSTRAINT_NAME=? AND RDB$INDEX_NAME=?");
 
-        PreparedStatement stmt = getConnection().prepareStatement(query.toString());
+        PreparedStatement stmt = connection.prepareStatement(query.toString());
 
         try 
         {
@@ -407,9 +391,7 @@ public class FirebirdModelReader extends JdbcModelReader
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public String determineSchemaOf(Connection connection, String schemaPattern, Table table) throws SQLException
     {
         ResultSet tableData  = null;
@@ -492,4 +474,16 @@ public class FirebirdModelReader extends JdbcModelReader
             }
         }
     }
+    
+    @Override
+    protected String getTableNamePattern(String tableName) {
+        /*
+         * When looking up a table definition, Jaybird treats underscore (_) in
+         * the table name as a wildcard, so it needs to be escaped, or you'll
+         * get back column names for more than one table. Example:
+         * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
+         */
+        return tableName.replaceAll("\\_", "\\\\_");
+    }
+
 }

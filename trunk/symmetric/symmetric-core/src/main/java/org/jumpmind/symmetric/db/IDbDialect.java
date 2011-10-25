@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Database;
@@ -42,7 +41,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.lob.LobHandler;
 
-/**
+/*
  * A dialect is the interface that insulates SymmetricDS from database implementation specifics. 
  */
 public interface IDbDialect {
@@ -51,7 +50,7 @@ public interface IDbDialect {
             Trigger trigger, TriggerHistory hist, Channel channel, 
             String tablePrefix, Table table);
 
-    /**
+    /*
      * Get the name of this symmetric instance. This can be set in
      * symmetric.properties using the symmetric.runtime.engine.name property.
      */
@@ -62,13 +61,13 @@ public interface IDbDialect {
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 
-    /**
+    /*
      * This is called by the data loader each time the table context changes,
      * giving the dialect an opportunity to allow inserts into identity columns
      */
     public void allowIdentityInserts(JdbcTemplate jdbcTemplate, Table table);
 
-    /**
+    /*
      * This is called by the data loader each time the table context changes
      * away from a table or when the the data loader is closed, giving the
      * dialect an opportunity to reset the state of a table to allow identity 
@@ -78,13 +77,13 @@ public interface IDbDialect {
 
     public Database readPlatformDatabase(boolean includeSymmetricTables);
     
-    /**
+    /*
      * For performance reasons, the as table metadata is read in, it is cached.
      * This method will clear that cache.
      */
     public void resetCachedTableModel();
 
-    /**
+    /*
      * Check to see if the database is configured for symmetric already, or if
      * it needs configured.
      * 
@@ -124,12 +123,12 @@ public interface IDbDialect {
 
     public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause);
 
-    /**
+    /*
      * @return true if blank characters are padded out
      */
     public boolean isBlankCharColumnSpacePadded();
     
-    /**
+    /*
      * @return true if non-blank characters are padded out
      */
     public boolean isNonBlankCharColumnSpacePadded();
@@ -138,7 +137,7 @@ public interface IDbDialect {
 
     public boolean isEmptyStringNulled();
 
-    /**
+    /*
      * Get the maximum size the name of a trigger can be for the database
      * platform. If the generated symmetric trigger name is greater than the max
      * trigger name, symmetric will truncate the name, then log a warning
@@ -146,15 +145,11 @@ public interface IDbDialect {
      */
     public int getMaxTriggerNameLength();
 
-    public boolean storesUpperCaseNamesInCatalog();
-
-    public boolean storesLowerCaseNamesInCatalog();
-
     public boolean supportsTransactionId();
     
     public int getQueryTimeoutInSeconds();
     
-    /**
+    /*
      * Use this call to check to see if the implemented database dialect supports 
      * a way to check on pending database transactions.
      */
@@ -174,7 +169,7 @@ public interface IDbDialect {
 
     public IColumnFilter newDatabaseColumnFilter();
 
-    /**
+    /*
      * Implement this if the database has some type of cleanup functionality
      * that needs to be run when dropping database objects. An example is
      * Oracle's 'purge recyclebin'
@@ -209,7 +204,7 @@ public interface IDbDialect {
 
     public boolean isClobSyncSupported();
 
-    /**
+    /*
      * An indicator as to whether the ability to override the default
      * transaction id provided by the dialect can be overridden in the trigger
      * configuration.
@@ -240,14 +235,14 @@ public interface IDbDialect {
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames, String[] values);
 
-    /**
+    /*
      * Get the string prepended to the Symmetric configuration tables.
      * 
      * @return
      */
     public String getTablePrefix();
     
-    /**
+    /*
      * Get the max number of data objects to load before processing.  This parameter typically comes
      * from the {@link ParameterConstants#ROUTING_PEEK_AHEAD_WINDOW} parameter, unless the dialect chooses
      * to override how it is retrieved.
@@ -256,7 +251,7 @@ public interface IDbDialect {
 
     public boolean supportsOpenCursorsAcrossCommit();
 
-    /**
+    /*
      * Retrieves a list of keywords for the database.
      */
     public Set<String> getSqlKeywords();
@@ -275,14 +270,14 @@ public interface IDbDialect {
     
     public boolean requiresAutoCommitFalseToSetFetchSize();
     
-    /**
+    /*
      * A handler for data loading lobs.  If specified, it will
      * also be used to stream lobs out of the database if the 
      * lob streaming feature is turned on.
      */
     public LobHandler getLobHandler();
     
-    /**
+    /*
      * Returns true if the trigger select lob data back from the original table.
      */
     public boolean needsToSelectLobData();
@@ -293,7 +288,7 @@ public interface IDbDialect {
     
     public boolean isBlob(int type);
     
-    /**
+    /*
      * This is a SQL clause that compares the old data to the new data in a trigger.
      */
     public String getDataHasChangedCondition(Trigger trigger);
@@ -304,7 +299,7 @@ public interface IDbDialect {
     
     public StringBuilder scrubSql(StringBuilder sql);
     
-    /**
+    /*
      * Indicates whether captured data can contain gaps.
      */
     public boolean canGapsOccurInCapturedDataIds();
@@ -313,7 +308,7 @@ public interface IDbDialect {
     
     public String massageForLob(String sql, Channel channel);
     
-    /**
+    /*
      * Indicates that the dialect relies on SQL that is to be inserted into the database for use
      * by embedded Java triggers.  H2 is an example dialect that needs this feature.
      * @return
@@ -335,7 +330,7 @@ public interface IDbDialect {
     public StatementBuilder createStatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
             Column[] preFilteredColumns);
     
-    /**
+    /*
      * Check to see if the passed in exception (or a nested exception) was caused by a primary key violation.
      * @param ex The exception to check
      * @return true if the exception was caused by a primary key violation

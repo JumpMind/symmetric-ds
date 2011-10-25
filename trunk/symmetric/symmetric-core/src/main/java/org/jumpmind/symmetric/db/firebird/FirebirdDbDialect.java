@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * Database dialect for <a href="http://www.firebirdsql.org/">Firebird</a>.
  */
 public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
@@ -84,17 +84,6 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected String getTableNamePattern(String tableName) {
-        /*
-         * When looking up a table definition, Jaybird treats underscore (_) in
-         * the table name as a wildcard, so it needs to be escaped, or you'll
-         * get back column names for more than one table. Example:
-         * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
-         */
-        return tableName.replaceAll("\\_", "\\\\_");
-    }
-
-    @Override
     public boolean supportsReturningKeys() {
         return true;
     }
@@ -119,11 +108,6 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public boolean isEmptyStringNulled() {
         return false;
-    }
-
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
-        return true;
     }
 
     @Override

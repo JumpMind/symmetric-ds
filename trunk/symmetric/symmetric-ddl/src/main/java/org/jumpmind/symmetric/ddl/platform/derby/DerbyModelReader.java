@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.ddl.platform.derby;
  * under the License.
  */
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -31,14 +32,14 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 
-/**
+/*
  * Reads a database model from a Derby database.
  *
  * @version $Revision: $
  */
 public class DerbyModelReader extends JdbcModelReader
 {
-    /**
+    /*
      * Creates a new model reader for Derby databases.
      * 
      * @param platform The platform that this model reader belongs to
@@ -48,9 +49,7 @@ public class DerbyModelReader extends JdbcModelReader
         super(platform);
     }
     
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
         Column column       = super.readColumn(metaData, values);
@@ -74,23 +73,19 @@ public class DerbyModelReader extends JdbcModelReader
         return column;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
+    @Override
+    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
     {
         return isInternalIndex(index);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index)
+    @Override
+    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, Index index)
     {
         return isInternalIndex(index);
     }
 
-    /**
+    /*
      * Determines whether the index is an internal index, i.e. one created by Derby.
      * 
      * @param index The index to check

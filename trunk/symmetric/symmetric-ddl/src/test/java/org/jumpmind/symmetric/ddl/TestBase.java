@@ -28,17 +28,17 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.ddl.io.DatabaseIO;
 import org.jumpmind.symmetric.ddl.model.Database;
 
-/**
+/*
  * Base class for DdlUtils tests.
  * 
  * @version $Revision: $
  */
 public abstract class TestBase extends TestCase
 {
-    /** The log for the tests. */
+    /* The log for the tests. */
     private final Log _log = LogFactory.getLog(getClass());
 
-    /**
+    /*
      * Returns the log.
      * 
      * @return The log
@@ -48,7 +48,7 @@ public abstract class TestBase extends TestCase
         return _log;
     }
 
-    /**
+    /*
      * Parses the database defined in the given XML definition.
      * 
      * @param dbDef The database XML definition
@@ -63,7 +63,7 @@ public abstract class TestBase extends TestCase
         return dbIO.read(new StringReader(dbDef));
     }
 
-    /**
+    /*
      * Compares the two strings but ignores any whitespace differences. It also
      * recognizes special delimiter chars.
      * 
@@ -78,7 +78,7 @@ public abstract class TestBase extends TestCase
         assertEquals(processedExpected, processedActual);
     }
 
-    /**
+    /*
      * Compresses the whitespaces in the given string to a single space. Also
      * recognizes special delimiter chars and removes whitespaces before them.
      * 

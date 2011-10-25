@@ -25,25 +25,25 @@ import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
-/**
+/*
  * The platform implementation for the SQLite database.
  * 
  * @version $Revision: 231306 $
  */
 public class SqLitePlatform extends PlatformImplBase implements Platform {
 
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME = "SQLite3";
     
-    /** The standard H2 driver. */
+    /* The standard H2 driver. */
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     
-    /** The sub protocol used by the H2 driver. */
+    /* The sub protocol used by the H2 driver. */
   // public static final String JDBC_SUBPROTOCOL = "h2";
 
     /* Below here copied from H2.  May still need tweaking */
     
-    /**
+    /*
      * Creates a new instance of the H2 platform.
      */
     public SqLitePlatform() {
@@ -78,7 +78,7 @@ public class SqLitePlatform extends PlatformImplBase implements Platform {
         setModelReader(new SqLiteModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName() {

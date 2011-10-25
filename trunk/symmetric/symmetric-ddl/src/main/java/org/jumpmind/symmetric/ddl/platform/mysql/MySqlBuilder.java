@@ -40,14 +40,14 @@ import org.jumpmind.symmetric.ddl.model.ForeignKey;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
-/**
+/*
  * The SQL Builder for MySQL.
  * 
  * @version $Revision: 518498 $
  */
 public class MySqlBuilder extends SqlBuilder
 {
-    /**
+    /*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to
@@ -70,7 +70,7 @@ public class MySqlBuilder extends SqlBuilder
         addEscapedCharSequence("_",      "\\_");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Table table) throws IOException
@@ -80,7 +80,7 @@ public class MySqlBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException
@@ -88,7 +88,7 @@ public class MySqlBuilder extends SqlBuilder
         print("AUTO_INCREMENT");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected boolean shouldGeneratePrimaryKeys(Column[] primaryKeyColumns)
@@ -98,7 +98,7 @@ public class MySqlBuilder extends SqlBuilder
         return true;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      * Normally mysql will return the LAST_INSERT_ID as the column name for the inserted id.
      * Since ddlutils expects the real column name of the field that is autoincrementing, the
@@ -114,7 +114,7 @@ public class MySqlBuilder extends SqlBuilder
         return "SELECT LAST_INSERT_ID() " + autoIncrementKeyName;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeTableCreationStmtEnding(Table table, Map parameters) throws IOException
@@ -143,7 +143,7 @@ public class MySqlBuilder extends SqlBuilder
         super.writeTableCreationStmtEnding(table, parameters);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey) throws IOException
@@ -162,7 +162,7 @@ public class MySqlBuilder extends SqlBuilder
         }
     }    
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void processTableStructureChanges(Database currentModel,
@@ -240,7 +240,7 @@ public class MySqlBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel The current database schema
@@ -269,7 +269,7 @@ public class MySqlBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel The current database schema
@@ -289,7 +289,7 @@ public class MySqlBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a primary key from a table.
      * 
      * @param currentModel The current database schema
@@ -308,7 +308,7 @@ public class MySqlBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the change of the primary key of a table.
      * 
      * @param currentModel The current database schema
@@ -328,7 +328,7 @@ public class MySqlBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes a change to a column.
      * 
      * @param sourceTable  The current table

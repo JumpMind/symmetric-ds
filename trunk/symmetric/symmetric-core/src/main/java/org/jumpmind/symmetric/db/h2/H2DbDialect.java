@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * 
  */
 public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
@@ -97,7 +97,7 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
         return " @sync_prevented is null ";
     }
 
-    /**
+    /*
      * An expression which the java trigger can string replace
      */
     @Override
@@ -125,11 +125,6 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
 
     public boolean isEmptyStringNulled() {
         return false;
-    }
-
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
-        return true;
     }
 
     @Override
