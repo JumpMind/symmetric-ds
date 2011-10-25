@@ -20,7 +20,6 @@ package org.jumpmind.symmetric.ddl.platform.oracle;
  */
 
 import java.sql.Types;
-import java.util.Map;
 
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
@@ -78,7 +77,7 @@ public class Oracle8Platform extends PlatformImplBase
         info.addNativeTypeMapping(Types.REF,           "BLOB",             Types.BLOB);
         info.addNativeTypeMapping(Types.SMALLINT,      "NUMBER(5)");
         info.addNativeTypeMapping(Types.STRUCT,        "BLOB",             Types.BLOB);
-        info.addNativeTypeMapping(Types.TIME,          "DATE",             Types.TIMESTAMP);
+        info.addNativeTypeMapping(Types.TIME,          "DATE",             Types.DATE);
         info.addNativeTypeMapping(Types.TIMESTAMP,     "DATE");
         info.addNativeTypeMapping(Types.TINYINT,       "NUMBER(3)");
         info.addNativeTypeMapping(Types.VARBINARY,     "RAW");
@@ -95,7 +94,7 @@ public class Oracle8Platform extends PlatformImplBase
         info.setStoresUpperCaseInCatalog(true);
 
         setSqlBuilder(new Oracle8Builder(this));
-        setModelReader(new Oracle8ModelReader(this));
+        setModelReader(new OracleModelReader(this));
     }
 
     /*

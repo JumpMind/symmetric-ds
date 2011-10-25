@@ -52,9 +52,9 @@ import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 /*
  * Reads a database model from an Oracle 8 database.
  */
-public class Oracle8ModelReader extends JdbcModelReader
+public class OracleModelReader extends JdbcModelReader
 {
-    private final Log _log = LogFactory.getLog(Oracle8ModelReader.class);
+    private final Log _log = LogFactory.getLog(OracleModelReader.class);
     
 	/* The regular expression pattern for the Oracle conversion of ISO dates. */
 	private Pattern _oracleIsoDatePattern;
@@ -68,7 +68,7 @@ public class Oracle8ModelReader extends JdbcModelReader
      * 
      * @param platform The platform that this model reader belongs to
      */
-    public Oracle8ModelReader(Platform platform)
+    public OracleModelReader(Platform platform)
     {
         super(platform);
         setDefaultCatalogPattern(null);
@@ -88,26 +88,47 @@ public class Oracle8ModelReader extends JdbcModelReader
         	throw new DdlUtilsException(ex);
         }
     }
-
+    
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
-    {
-        String tableName = (String)values.get("TABLE_NAME");
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values)
+            throws SQLException {
+        // Oracle 10 added the recycle bin which contains dropped database
+        // objects not yet purged
+        // Since we don't want entries from the recycle bin, we filter them out
+        boolean tableHasBeenDeleted = isTableInRecycleBin(connection, values);
 
-        // system table ?
-        if (tableName.indexOf('$') > 0)
-        {
+        if (!tableHasBeenDeleted) {
+            String tableName = (String) values.get("TABLE_NAME");
+
+            // system table ?
+            if (tableName.indexOf('$') > 0) {
+                return null;
+            }
+
+            Table table = super.readTable(connection, metaData, values);
+            if (table != null) {
+                determineAutoIncrementColumns(connection, table);
+            }
+
+            return table;
+        } else {
             return null;
         }
+    }
+    
+    protected boolean isTableInRecycleBin(Connection connection, Map values) throws SQLException {
+        ResultSet rs = null;
+        PreparedStatement stmt = null;
+        try {
+            stmt = connection.prepareStatement("SELECT * FROM RECYCLEBIN WHERE OBJECT_NAME=?");
+            stmt.setString(1, (String) values.get("TABLE_NAME"));
 
-        Table table = super.readTable(connection, metaData, values);
-
-        if (table != null)
-        {
-            determineAutoIncrementColumns(connection, table);
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            close(rs);
+            close(stmt);
         }
-
-        return table;
     }
     
     @Override

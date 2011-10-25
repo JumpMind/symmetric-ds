@@ -34,10 +34,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
-    }
-
-    @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("select count(*) from sys.systriggers where triggername = ?",

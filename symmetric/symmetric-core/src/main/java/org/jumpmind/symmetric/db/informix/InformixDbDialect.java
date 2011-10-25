@@ -53,9 +53,6 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    protected void initTablesAndFunctionsForSpecificDialect() {
-    }
-
     @Override
     public IColumnFilter newDatabaseColumnFilter() {
         return new AutoIncrementColumnFilter();

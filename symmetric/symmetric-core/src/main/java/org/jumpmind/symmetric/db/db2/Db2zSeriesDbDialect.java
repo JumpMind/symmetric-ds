@@ -132,10 +132,6 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
     public String getSyncTriggersExpression() {
         return "";
     }
-
-    @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
-    }
     
     @Override
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,

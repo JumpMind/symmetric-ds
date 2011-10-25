@@ -33,10 +33,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,8 +54,6 @@ import org.jumpmind.symmetric.ddl.model.UniqueIndex;
 
 /*
  * An utility class to create a Database model from a live database.
- *
- * @version $Revision: 543392 $
  */
 public class JdbcModelReader
 {
@@ -713,7 +711,7 @@ public class JdbcModelReader
      * @param columnsToSearchFor The names of the columns that the index should be for
      * @return <code>true</code> if the index matches the columns
      */
-    protected boolean matches(Index index, List columnsToSearchFor)
+    protected boolean matches(Index index, List<String> columnsToSearchFor)
     {
         if (index.getColumnCount() != columnsToSearchFor.size())
         {
@@ -875,7 +873,7 @@ public class JdbcModelReader
      * @param values   The primary key meta data values as defined by {@link #getColumnsForPK()}
      * @return The primary key name
      */
-    protected String readPrimaryKeyName(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    protected String readPrimaryKeyName(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException
     {
         return (String)values.get("COLUMN_NAME");
     }
@@ -889,7 +887,7 @@ public class JdbcModelReader
      */
     protected Collection<ForeignKey> readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
-        Map       fks    = new ListOrderedMap();
+        Map<String,ForeignKey>       fks    = new LinkedHashMap<String, ForeignKey>();
         ResultSet fkData = null;
 
         try
@@ -898,7 +896,7 @@ public class JdbcModelReader
 
             while (fkData.next())
             {
-                Map values = readColumns(fkData, getColumnsForFK());
+                Map<String,Object> values = readColumns(fkData, getColumnsForFK());
 
                 readForeignKey(metaData, values, fks);
             }
@@ -917,7 +915,7 @@ public class JdbcModelReader
      * @param values   The foreign key meta data as defined by {@link #getColumnsForFK()}
      * @param knownFks The already read foreign keys for the current table
      */
-    protected void readForeignKey(DatabaseMetaDataWrapper metaData, Map values, Map knownFks) throws SQLException
+    protected void readForeignKey(DatabaseMetaDataWrapper metaData, Map<String,Object> values, Map<String,ForeignKey> knownFks) throws SQLException
     {
         String     fkName = (String)values.get("FK_NAME");
         ForeignKey fk     = (ForeignKey)knownFks.get(fkName);
@@ -947,9 +945,9 @@ public class JdbcModelReader
      * @param tableName The name of the table
      * @return The list of indices
      */
-    protected Collection readIndices(Connection connection, DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
+    protected Collection<Index> readIndices(Connection connection, DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
-        Map       indices   = new ListOrderedMap();
+        Map<String,Index>       indices   = new LinkedHashMap<String, Index>();
         ResultSet indexData = null;
 
         try 
@@ -958,7 +956,7 @@ public class JdbcModelReader
 
             while (indexData.next())
             {
-                Map values = readColumns(indexData, getColumnsForIndex());
+                Map<String,Object> values = readColumns(indexData, getColumnsForIndex());
 
                 readIndex(metaData, values, indices);
             }
@@ -977,7 +975,7 @@ public class JdbcModelReader
      * @param values       The index meta data as defined by {@link #getColumnsForIndex()}
      * @param knownIndices The already read indices for the current table
      */
-    protected void readIndex(DatabaseMetaDataWrapper metaData, Map values, Map knownIndices) throws SQLException
+    protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String,Object> values, Map<String,Index> knownIndices) throws SQLException
     {
         Short indexType = (Short)values.get("TYPE");
 
@@ -1206,7 +1204,7 @@ public class JdbcModelReader
 
             while (!found && tableData.next())
             {
-                Map    values    = readColumns(tableData, getColumnsForTable());
+                Map<String,Object>    values    = readColumns(tableData, getColumnsForTable());
                 String tableName = (String)values.get("TABLE_NAME");
 
                 if ((tableName != null) && (tableName.length() > 0))
@@ -1233,14 +1231,8 @@ public class JdbcModelReader
         }
         finally
         {
-            if (columnData != null)
-            {
-                columnData.close();
-            }
-            if (tableData != null)
-            {
-                tableData.close();
-            }
+            close(columnData);
+            close(tableData);
         }
     }
 }

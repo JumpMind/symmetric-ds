@@ -60,11 +60,7 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
     }
-
-    @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
-    }
-
+    
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;

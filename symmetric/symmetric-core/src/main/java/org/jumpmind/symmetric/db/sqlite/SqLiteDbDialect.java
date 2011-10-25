@@ -40,12 +40,6 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
-
-    @Override
-    protected void initTablesAndFunctionsForSpecificDialect() {
-        // TODO Auto-generated method stub
-        
-    }
    
     public String toFormattedTimestamp(java.util.Date time) {
         StringBuilder ts = new StringBuilder("datetime('");
