@@ -44,7 +44,7 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
 
     private String userName;
 
-    /**
+    /*
      * Returns the database user id
      * 
      * @return String
@@ -53,7 +53,7 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
         return userName;
     }
 
-    /**
+    /*
      * Sets the database user id from properties file
      * 
      * @param userName
@@ -104,11 +104,6 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
 
     public boolean isEmptyStringNulled() {
         return false;
-    }
-
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
-        return true;
     }
 
     @Override

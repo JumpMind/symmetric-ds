@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
-/**
+/*
  * Background job that checks to see if triggers need to be regenerated.
  */
 public class SyncTriggersJob extends AbstractJob {

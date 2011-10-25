@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.ddl.platform.h2;
  * under the License.
  */
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,18 +35,17 @@ import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 import org.jumpmind.symmetric.ddl.platform.MetaDataColumnDescriptor;
 
-/**
+/*
  * Reads a database model from a H2 database. From patch <a
  * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  */
 public class H2ModelReader extends JdbcModelReader {
 
-    /**
+    /*
      * Creates a new model reader for H2 databases.
      * 
-     * @param platform
-     *            The platform that this model reader belongs to
+     * @param platform The platform that this model reader belongs to
      */
     public H2ModelReader(Platform platform) {
         super(platform);
@@ -54,7 +54,8 @@ public class H2ModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
         Column column = super.readColumn(metaData, values);
         if (values.get("CHARACTER_MAXIMUM_LENGTH") != null) {
             column.setSize(values.get("CHARACTER_MAXIMUM_LENGTH").toString());
@@ -90,26 +91,28 @@ public class H2ModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk,
-            Index index) {
+    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table,
+            ForeignKey fk, Index index) {
         String name = index.getName();
         return name != null && name.startsWith("CONSTRAINT_INDEX_");
     }
 
     @Override
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index) {
+    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table,
+            Index index) {
         String name = index.getName();
         return name != null && name.startsWith("PRIMARY_KEY_");
     }
-    
+
     @Override
-    protected Table readTable(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
-            throws SQLException {
-        Table table = super.readTable(metaData, values);
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
+        Table table = super.readTable(connection, metaData, values);
 
         if (table != null) {
             // H2 does not return the auto increment status in the meta data
-            determineAutoIncrementFromResultSetMetaData(table, table.getPrimaryKeyColumns());
+            determineAutoIncrementFromResultSetMetaData(connection, table,
+                    table.getPrimaryKeyColumns());
         }
 
         return table;

@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.ddl.platform.postgresql;
  * under the License.
  */
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
@@ -33,14 +34,14 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 
-/**
+/*
  * Reads a database model from a PostgreSql database.
  *
  * @version $Revision: $
  */
 public class PostgreSqlModelReader extends JdbcModelReader
 {
-    /**
+    /*
      * Creates a new model reader for PostgreSql databases.
      * 
      * @param platform The platform that this model reader belongs to
@@ -53,12 +54,10 @@ public class PostgreSqlModelReader extends JdbcModelReader
         setDefaultTablePattern(null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    @Override
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
-        Table table = super.readTable(metaData, values);
+        Table table = super.readTable(connection, metaData, values);
 
         if (table != null)
         {
@@ -92,10 +91,20 @@ public class PostgreSqlModelReader extends JdbcModelReader
         }
         return table;
     }
+    
+    @Override
+    protected Integer overrideJdbcTypeForColumn(Map<String,Object> values) {
+        String typeName = (String) values.get("TYPE_NAME");
+        if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
+            return Types.TIMESTAMP;
+        } else if (typeName != null && typeName.equalsIgnoreCase("OID")) {
+            return Types.BLOB;
+        } else {
+            return super.overrideJdbcTypeForColumn(values);
+        }
+    }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
         Column column = super.readColumn(metaData, values);
@@ -177,7 +186,7 @@ public class PostgreSqlModelReader extends JdbcModelReader
         return column;
     }
 
-    /**
+    /*
      * Extractes the default value from a default value spec of the form
      * "'some value'::character varying" or "'2000-01-01'::date".
      * 
@@ -198,7 +207,7 @@ public class PostgreSqlModelReader extends JdbcModelReader
         return defaultValue;
     }
     
-    /**
+    /*
      * Extractes the default value from a default value spec of the form
      * "-9000000000000000000::bigint".
      * 
@@ -222,19 +231,15 @@ public class PostgreSqlModelReader extends JdbcModelReader
         return defaultValue;
     }
     
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
+    @Override
+    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
     {
         // PostgreSQL does not return an index for a foreign key
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index)
+    @Override
+    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, Index index)
     {
         return table.doesIndexContainOnlyPrimaryKeyColumns(index);
     }

@@ -24,7 +24,7 @@ import java.sql.Types;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
-/**
+/*
  * The platform implementation for the Firebird database.
  * It is assumed that the database is configured with sql dialect 3!
  * 
@@ -32,14 +32,14 @@ import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
  */
 public class FirebirdPlatform extends PlatformImplBase
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME     = "Firebird";
-    /** The standard Firebird jdbc driver. */
+    /* The standard Firebird jdbc driver. */
     public static final String JDBC_DRIVER      = "org.firebirdsql.jdbc.FBDriver";
-    /** The subprotocol used by the standard Firebird driver. */
+    /* The subprotocol used by the standard Firebird driver. */
     public static final String JDBC_SUBPROTOCOL = "firebirdsql";
 
-    /**
+    /*
      * Creates a new Firebird platform instance.
      */
     public FirebirdPlatform()
@@ -76,12 +76,14 @@ public class FirebirdPlatform extends PlatformImplBase
 
         info.setDefaultSize(Types.VARCHAR, 254);
         info.setDefaultSize(Types.CHAR,    254);
+        
+        info.setStoresUpperCaseInCatalog(true);
 
         setSqlBuilder(new FirebirdBuilder(this));
         setModelReader(new FirebirdModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()

@@ -49,7 +49,7 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.CreationParameters;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
-/**
+/*
  * The SQL Builder for the H2 database. From patch <a
  * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
@@ -192,7 +192,7 @@ public class SqLiteBuilder extends SqlBuilder {
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel
@@ -217,7 +217,7 @@ public class SqLiteBuilder extends SqlBuilder {
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel

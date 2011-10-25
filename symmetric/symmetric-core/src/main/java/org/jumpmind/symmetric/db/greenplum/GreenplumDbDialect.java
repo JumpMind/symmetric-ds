@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.db.greenplum;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 
-/**
+/*
  * Support for Greenplum
  */
 public class GreenplumDbDialect extends PostgreSqlDbDialect implements IDbDialect {

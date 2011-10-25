@@ -20,7 +20,7 @@ package org.jumpmind.symmetric.ddl.platform;
  * under the License.
  */
 
-/**
+/*
  * Platform implementation that makes the base functionality available without
  * overriding anything.
  * 
@@ -28,14 +28,14 @@ package org.jumpmind.symmetric.ddl.platform;
  */
 public class TestPlatform extends PlatformImplBase
 {
-    /**
+    /*
      * Creates a new test platform instance.
      */
     public TestPlatform()
     {
         setSqlBuilder(new SqlBuilder(this) {});
     }
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()

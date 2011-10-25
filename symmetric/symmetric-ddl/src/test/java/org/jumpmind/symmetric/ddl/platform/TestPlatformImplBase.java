@@ -21,14 +21,14 @@ package org.jumpmind.symmetric.ddl.platform;
 
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
 
-/**
+/*
  * Tests the {@link org.jumpmind.symmetric.ddl.PlatformImplBase} (abstract) class.
  * 
  * @version $Revision: 279421 $
  */
 abstract public class TestPlatformImplBase extends TestPlatformBase 
 {
-    /** The tested model. */
+    /* The tested model. */
     private static final String TESTED_MODEL =
         "<?xml version='1.0' encoding='ISO-8859-1'?>\n"+
         "<database name='ddlutils'>\n"+
@@ -38,14 +38,14 @@ abstract public class TestPlatformImplBase extends TestPlatformBase
         "  </table>\n"+
         "</database>";
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void setUp()
     {
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected String getDatabaseName()

@@ -26,7 +26,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.ddl.platform.axion.AxionPlatform;
 import org.jumpmind.symmetric.ddl.platform.cloudscape.CloudscapePlatform;
 import org.jumpmind.symmetric.ddl.platform.db2.Db2v8Platform;
 import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
@@ -37,8 +36,6 @@ import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
 import org.jumpmind.symmetric.ddl.platform.hsqldb2.HsqlDb2Platform;
 import org.jumpmind.symmetric.ddl.platform.informix.InformixPlatform;
 import org.jumpmind.symmetric.ddl.platform.interbase.InterbasePlatform;
-import org.jumpmind.symmetric.ddl.platform.maxdb.MaxDbPlatform;
-import org.jumpmind.symmetric.ddl.platform.mckoi.MckoiPlatform;
 import org.jumpmind.symmetric.ddl.platform.mssql.MSSqlPlatform;
 import org.jumpmind.symmetric.ddl.platform.mysql.MySql50Platform;
 import org.jumpmind.symmetric.ddl.platform.mysql.MySqlPlatform;
@@ -46,12 +43,11 @@ import org.jumpmind.symmetric.ddl.platform.oracle.Oracle10Platform;
 import org.jumpmind.symmetric.ddl.platform.oracle.Oracle8Platform;
 import org.jumpmind.symmetric.ddl.platform.oracle.Oracle9Platform;
 import org.jumpmind.symmetric.ddl.platform.postgresql.PostgreSqlPlatform;
-import org.jumpmind.symmetric.ddl.platform.sapdb.SapDbPlatform;
 import org.jumpmind.symmetric.ddl.platform.sqlite.SqLitePlatform;
 import org.jumpmind.symmetric.ddl.platform.sybase.SybaseASE15Platform;
 import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
 
-/**
+/*
  * A factory of {@link org.jumpmind.symmetric.ddl.Platform} instances based on a case
  * insensitive database name. Note that this is a convenience class as the platforms
  * can also simply be created via their constructors.
@@ -60,13 +56,13 @@ import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
  */
 public class PlatformFactory
 {
-    /** The log for this platform. */
+    /* The log for this platform. */
     private static final Log _log = LogFactory.getLog(PlatformFactory.class);
     
-    /** The database name -> platform map. */
+    /* The database name -> platform map. */
     private static Map<String,Class<? extends Platform>> _platforms = null;
 
-    /**
+    /*
      * Returns the platform map.
      * 
      * @return The platform list
@@ -82,7 +78,7 @@ public class PlatformFactory
         return _platforms;
     }
     
-    /**
+    /*
      * Creates a new platform for the given (case insensitive) database name
      * or returns null if the database is not recognized.
      * 
@@ -103,7 +99,7 @@ public class PlatformFactory
         }
     }
 
-    /**
+    /*
      * Creates a new platform for the specified database. This is a shortcut method that uses
      * {@link PlatformUtils#determineDatabaseType(String, String)} to determine the parameter
      * for {@link #createNewPlatformInstance(String)}. Note that no database connection is
@@ -118,7 +114,7 @@ public class PlatformFactory
         return createNewPlatformInstance(PlatformUtils.determineDatabaseType(jdbcDriver, jdbcConnectionUrl));
     }
 
-    /**
+    /*
      * Creates a new platform for the specified database. This is a shortcut method that uses
      * {@link PlatformUtils#determineDatabaseType(DataSource)} to determine the parameter
      * for {@link #createNewPlatformInstance(String)}. Note that this method sets the data source
@@ -146,7 +142,7 @@ public class PlatformFactory
         return platform;
     }
 
-    /**
+    /*
      * Returns a list of all supported platforms.
      * 
      * @return The names of the currently registered platforms
@@ -156,7 +152,7 @@ public class PlatformFactory
         return (String[])getPlatforms().keySet().toArray(new String[0]);
     }
 
-    /**
+    /*
      * Determines whether the indicated platform is supported.
      * 
      * @param platformName The name of the platform
@@ -167,7 +163,7 @@ public class PlatformFactory
         return getPlatforms().containsKey(platformName.toLowerCase());
     }
 
-    /**
+    /*
      * Registers a new platform.
      * 
      * @param platformName  The platform name
@@ -178,7 +174,7 @@ public class PlatformFactory
         addPlatform(getPlatforms(), platformName, platformClass);
     }
 
-    /**
+    /*
      * Registers the known platforms.
      */
     private static void registerPlatforms()
@@ -189,7 +185,6 @@ public class PlatformFactory
         }
         addPlatform(_platforms, SqLitePlatform.DATABASENAME,      SqLitePlatform.class);
         addPlatform(_platforms, InformixPlatform.DATABASENAME,    InformixPlatform.class);
-        addPlatform(_platforms, AxionPlatform.DATABASENAME,       AxionPlatform.class);
         addPlatform(_platforms, CloudscapePlatform.DATABASENAME,  CloudscapePlatform.class);
         addPlatform(_platforms, Db2v8Platform.DATABASENAMES,       Db2v8Platform.class);
         addPlatform(_platforms, DerbyPlatform.DATABASENAME,       DerbyPlatform.class);
@@ -198,8 +193,6 @@ public class PlatformFactory
         addPlatform(_platforms, HsqlDbPlatform.DATABASENAME,      HsqlDbPlatform.class);
         addPlatform(_platforms, HsqlDb2Platform.DATABASENAME,     HsqlDb2Platform.class);
         addPlatform(_platforms, InterbasePlatform.DATABASENAME,   InterbasePlatform.class);
-        addPlatform(_platforms, MaxDbPlatform.DATABASENAME,       MaxDbPlatform.class);
-        addPlatform(_platforms, MckoiPlatform.DATABASENAME,       MckoiPlatform.class);
         addPlatform(_platforms, MSSqlPlatform.DATABASENAME,       MSSqlPlatform.class);
         addPlatform(_platforms, MySqlPlatform.DATABASENAME,       MySqlPlatform.class);
         addPlatform(_platforms, MySql50Platform.DATABASENAME,     MySql50Platform.class);
@@ -208,12 +201,11 @@ public class PlatformFactory
         addPlatform(_platforms, Oracle10Platform.DATABASENAME10,    Oracle10Platform.class);
         addPlatform(_platforms, Oracle10Platform.DATABASENAME11,    Oracle10Platform.class);
         addPlatform(_platforms, PostgreSqlPlatform.DATABASENAME,  PostgreSqlPlatform.class);
-        addPlatform(_platforms, SapDbPlatform.DATABASENAME,       SapDbPlatform.class);
         addPlatform(_platforms, SybasePlatform.DATABASENAME,      SybasePlatform.class);
         addPlatform(_platforms, SybaseASE15Platform.DATABASENAME, SybaseASE15Platform.class);
     }
 
-    /**
+    /*
      * Registers a new platform.
      * 
      * @param platformMap   The map to add the platform info to 

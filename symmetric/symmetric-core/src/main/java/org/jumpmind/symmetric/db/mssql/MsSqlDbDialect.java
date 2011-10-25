@@ -26,8 +26,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -43,7 +41,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
  * 
  * TODO support text and image fields, they cannot be referenced from the
@@ -59,16 +57,6 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
-    }
-    
-    @Override
-    protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
-        String typeName = (String) values.get("TYPE_NAME");
-        if (typeName != null && typeName.startsWith("TEXT")) {
-            return Types.CLOB;          
-        } else {
-            return super.overrideJdbcTypeForColumn(values);
-        }
     }    
 
     @Override
@@ -195,7 +183,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    /**
+    /*
      * SQL Server always pads character fields out to the right to fill out
      * field with space characters.
      * 
@@ -205,7 +193,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    /**
+    /*
      * @return false always
      */
     public boolean isCharColumnSpaceTrimmed() {
@@ -222,7 +210,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    /**
+    /*
      * SQL Server pads an empty string with spaces.
      * 
      * @return false always
@@ -231,7 +219,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
-    /**
+    /*
      * Nothing to do for SQL Server
      */
     public void purge() {
@@ -249,11 +237,6 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
         return defaultSchema;
     }
-
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
-        return parameterService.is(ParameterConstants.STORES_UPPERCASE_NAMES_IN_CATALOG, true);
-    }    
 
     public boolean needsToSelectLobData() {
         return true;

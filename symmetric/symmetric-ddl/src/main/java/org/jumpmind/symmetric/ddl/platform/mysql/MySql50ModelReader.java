@@ -26,14 +26,12 @@ import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 
-/**
+/*
  * Reads a database model from a MySql 5 database.
- *
- * @version $Revision: $
  */
 public class MySql50ModelReader extends MySqlModelReader
 {
-    /**
+    /*
      * Creates a new model reader for MySql 5 databases.
      * 
      * @param platform The platform that this model reader belongs to
@@ -43,9 +41,7 @@ public class MySql50ModelReader extends MySqlModelReader
         super(platform);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
         Column column = super.readColumn(metaData, values);

@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.ddl.platform.hsqldb;
  * under the License.
  */
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -31,14 +32,12 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 
-/**
+/*
  * Reads a database model from a HsqlDb database.
- *
- * @version $Revision: $
  */
 public class HsqlDbModelReader extends JdbcModelReader
 {
-    /**
+    /*
      * Creates a new model reader for HsqlDb databases.
      * 
      * @param platform The platform that this model reader belongs to
@@ -50,12 +49,10 @@ public class HsqlDbModelReader extends JdbcModelReader
         setDefaultSchemaPattern(null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    @Override
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
-        Table table = super.readTable(metaData, values);
+        Table table = super.readTable(connection, metaData, values);
 
         if (table != null)
         {
@@ -64,15 +61,13 @@ public class HsqlDbModelReader extends JdbcModelReader
             // into the database metadata
             // Since Hsqldb only allows IDENTITY for primary key columns, we restrict
             // our search to those columns
-            determineAutoIncrementFromResultSetMetaData(table, table.getPrimaryKeyColumns());
+            determineAutoIncrementFromResultSetMetaData(connection, table, table.getPrimaryKeyColumns());
         }
         
         return table;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
         Column column = super.readColumn(metaData, values);
@@ -85,20 +80,16 @@ public class HsqlDbModelReader extends JdbcModelReader
         return column;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
+    @Override
+    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
     {
         String name = index.getName();
 
         return (name != null) && name.startsWith("SYS_IDX_");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index)
+    @Override
+    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, Index index)
     {
         String name = index.getName();
 

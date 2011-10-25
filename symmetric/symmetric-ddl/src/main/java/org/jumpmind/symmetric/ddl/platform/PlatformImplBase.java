@@ -47,37 +47,37 @@ import org.jumpmind.symmetric.ddl.util.Jdbc3Utils;
 import org.jumpmind.symmetric.ddl.util.JdbcSupport;
 import org.jumpmind.symmetric.ddl.util.SqlTokenizer;
 
-/**
+/*
  * Base class for platform implementations.
  * 
  * @version $Revision: 231110 $
  */
 public abstract class PlatformImplBase extends JdbcSupport implements Platform
 {
-    /** The default name for models read from the database, if no name as given.*/
+    /* The default name for models read from the database, if no name as given.*/
     protected static final String MODEL_DEFAULT_NAME = "default";
 
-    /** The log for this platform. */
+    /* The log for this platform. */
     private final Log _log = LogFactory.getLog(getClass());
 
-    /** The platform info. */
+    /* The platform info. */
     private PlatformInfo _info = new PlatformInfo();
-    /** The sql builder for this platform. */
+    /* The sql builder for this platform. */
     private SqlBuilder _builder;
-    /** The model reader for this platform. */
+    /* The model reader for this platform. */
     private JdbcModelReader _modelReader;
-    /** Whether script mode is on. */
+    /* Whether script mode is on. */
     private boolean _scriptModeOn;
-    /** Whether SQL comments are generated or not. */
+    /* Whether SQL comments are generated or not. */
     private boolean _sqlCommentsOn = false;
-    /** Whether delimited identifiers are used or not. */
+    /* Whether delimited identifiers are used or not. */
     private boolean _delimitedIdentifierModeOn;
-    /** Whether identity override is enabled. */
+    /* Whether identity override is enabled. */
     private boolean _identityOverrideOn;
-    /** Whether read foreign keys shall be sorted alphabetically. */
+    /* Whether read foreign keys shall be sorted alphabetically. */
     private boolean _foreignKeysSorted;
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public SqlBuilder getSqlBuilder()
@@ -85,7 +85,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return _builder;
     }
 
-    /**
+    /*
      * Sets the sql builder for this platform.
      * 
      * @param builder The sql builder
@@ -95,7 +95,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         _builder = builder;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public JdbcModelReader getModelReader()
@@ -107,7 +107,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return _modelReader;
     }
 
-    /**
+    /*
      * Sets the model reader for this platform.
      * 
      * @param modelReader The model reader
@@ -117,7 +117,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         _modelReader = modelReader;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public PlatformInfo getPlatformInfo()
@@ -125,7 +125,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return _info;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public boolean isScriptModeOn()
@@ -133,7 +133,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return _scriptModeOn;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void setScriptModeOn(boolean scriptModeOn)
@@ -141,7 +141,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         _scriptModeOn = scriptModeOn;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public boolean isSqlCommentsOn()
@@ -149,7 +149,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return _sqlCommentsOn;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void setSqlCommentsOn(boolean sqlCommentsOn)
@@ -161,7 +161,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         _sqlCommentsOn = sqlCommentsOn;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public boolean isDelimitedIdentifierModeOn()
@@ -169,7 +169,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return _delimitedIdentifierModeOn;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn)
@@ -181,7 +181,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         _delimitedIdentifierModeOn = delimitedIdentifierModeOn;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public boolean isIdentityOverrideOn()
@@ -189,7 +189,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return _identityOverrideOn;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void setIdentityOverrideOn(boolean identityOverrideOn)
@@ -197,7 +197,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         _identityOverrideOn = identityOverrideOn;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public boolean isForeignKeysSorted()
@@ -205,7 +205,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return _foreignKeysSorted;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void setForeignKeysSorted(boolean foreignKeysSorted)
@@ -213,7 +213,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         _foreignKeysSorted = foreignKeysSorted;
     }
 
-    /**
+    /*
      * Returns the log for this platform.
      * 
      * @return The log
@@ -223,7 +223,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return _log;
     }
 
-    /**
+    /*
      * Logs any warnings associated to the given connection. Note that the connection needs
      * to be open for this.
      * 
@@ -240,7 +240,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public int evaluateBatch(String sql, boolean continueOnError) throws DatabaseOperationException
@@ -257,7 +257,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public int evaluateBatch(Connection connection, String sql, boolean continueOnError) throws DatabaseOperationException
@@ -343,7 +343,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return errors;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void shutdownDatabase() throws DatabaseOperationException
@@ -360,7 +360,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void shutdownDatabase(Connection connection) throws DatabaseOperationException
@@ -368,7 +368,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         // Per default do nothing as most databases don't need this
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createDatabase(String jdbcDriverClassName, String connectionUrl, String username, String password, Map parameters) throws DatabaseOperationException, UnsupportedOperationException
@@ -376,7 +376,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         throw new UnsupportedOperationException("Database creation is not supported for the database platform "+getName());
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropDatabase(String jdbcDriverClassName, String connectionUrl, String username, String password) throws DatabaseOperationException, UnsupportedOperationException
@@ -384,7 +384,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         throw new UnsupportedOperationException("Database deletion is not supported for the database platform "+getName());
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createTables(Database model, boolean dropTablesFirst, boolean continueOnError) throws DatabaseOperationException
@@ -401,7 +401,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createTables(Connection connection, Database model, boolean dropTablesFirst, boolean continueOnError) throws DatabaseOperationException
@@ -411,7 +411,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         evaluateBatch(connection, sql, continueOnError);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getCreateTablesSql(Database model, boolean dropTablesFirst, boolean continueOnError)
@@ -433,7 +433,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return sql;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createTables(Database model, CreationParameters params, boolean dropTablesFirst, boolean continueOnError) throws DatabaseOperationException
@@ -450,7 +450,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createTables(Connection connection, Database model, CreationParameters params, boolean dropTablesFirst, boolean continueOnError) throws DatabaseOperationException
@@ -460,7 +460,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         evaluateBatch(connection, sql, continueOnError);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getCreateTablesSql(Database model, CreationParameters params, boolean dropTablesFirst, boolean continueOnError)
@@ -482,7 +482,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return sql;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void alterTables(Database desiredDb, boolean continueOnError) throws DatabaseOperationException
@@ -499,7 +499,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getAlterTablesSql(Database desiredDb) throws DatabaseOperationException
@@ -516,7 +516,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void alterTables(Database desiredDb, CreationParameters params, boolean continueOnError) throws DatabaseOperationException
@@ -533,7 +533,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getAlterTablesSql(Database desiredDb, CreationParameters params) throws DatabaseOperationException
@@ -550,7 +550,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void alterTables(Connection connection, Database desiredModel, boolean continueOnError) throws DatabaseOperationException
@@ -560,7 +560,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         evaluateBatch(connection, sql, continueOnError);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getAlterTablesSql(Connection connection, Database desiredModel) throws DatabaseOperationException
@@ -583,7 +583,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return sql;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void alterTables(Connection connection, Database desiredModel, CreationParameters params, boolean continueOnError) throws DatabaseOperationException
@@ -593,7 +593,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         evaluateBatch(connection, sql, continueOnError);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getAlterTablesSql(Connection connection, Database desiredModel, CreationParameters params) throws DatabaseOperationException
@@ -616,11 +616,11 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return sql;
     }
 
-	/**
+    /*
      * {@inheritDoc}
      */
-	public void alterTables(String catalog, String schema, String[] tableTypes, Database desiredModel, boolean continueOnError) throws DatabaseOperationException
-	{
+    public void alterTables(String catalog, String schema, String[] tableTypes, Database desiredModel, boolean continueOnError) throws DatabaseOperationException
+    {
         Connection connection = borrowConnection();
 
         try
@@ -631,13 +631,13 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         {
             returnConnection(connection);
         }
-	}
+    }
 
-	/**
+    /*
      * {@inheritDoc}
      */
-	public String getAlterTablesSql(String catalog, String schema, String[] tableTypes, Database desiredModel) throws DatabaseOperationException
-	{
+    public String getAlterTablesSql(String catalog, String schema, String[] tableTypes, Database desiredModel) throws DatabaseOperationException
+    {
         Connection connection = borrowConnection();
 
         try
@@ -648,13 +648,13 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         {
             returnConnection(connection);
         }
-	}
+    }
 
-	/**
+    /*
      * {@inheritDoc}
      */
-	public void alterTables(String catalog, String schema, String[] tableTypes, Database desiredModel, CreationParameters params, boolean continueOnError) throws DatabaseOperationException
-	{
+    public void alterTables(String catalog, String schema, String[] tableTypes, Database desiredModel, CreationParameters params, boolean continueOnError) throws DatabaseOperationException
+    {
         Connection connection = borrowConnection();
 
         try
@@ -665,9 +665,9 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         {
             returnConnection(connection);
         }
-	}
+    }
 
-	/**
+    /*
      * {@inheritDoc}
      */
     public String getAlterTablesSql(String catalog, String schema, String[] tableTypes, Database desiredModel, CreationParameters params) throws DatabaseOperationException
@@ -682,23 +682,23 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         {
             returnConnection(connection);
         }
-	}
+    }
 
-	/**
+    /*
      * {@inheritDoc}
      */
-	public void alterTables(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredModel, boolean continueOnError) throws DatabaseOperationException
+    public void alterTables(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredModel, boolean continueOnError) throws DatabaseOperationException
     {
         String sql = getAlterTablesSql(connection, catalog, schema, tableTypes, desiredModel);
 
         evaluateBatch(connection, sql, continueOnError);
-	}
+    }
 
-	/**
+    /*
      * {@inheritDoc}
      */
-	public String getAlterTablesSql(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredModel) throws DatabaseOperationException
-	{
+    public String getAlterTablesSql(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredModel) throws DatabaseOperationException
+    {
         String   sql          = null;
         Database currentModel = readModelFromDatabase(connection, desiredModel.getName(), catalog, schema, tableTypes);
 
@@ -715,23 +715,23 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
             // won't happen because we're using a string writer
         }
         return sql;
-	}
+    }
 
-	/**
+    /*
      * {@inheritDoc}
      */
-	public void alterTables(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredModel, CreationParameters params, boolean continueOnError) throws DatabaseOperationException
-	{
+    public void alterTables(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredModel, CreationParameters params, boolean continueOnError) throws DatabaseOperationException
+    {
         String sql = getAlterTablesSql(connection, catalog, schema, tableTypes, desiredModel, params);
 
         evaluateBatch(connection, sql, continueOnError);
-	}
+    }
 
-	/**
+    /*
      * {@inheritDoc}
      */
-	public String getAlterTablesSql(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredModel, CreationParameters params) throws DatabaseOperationException
-	{
+    public String getAlterTablesSql(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredModel, CreationParameters params) throws DatabaseOperationException
+    {
         String   sql          = null;
         Database currentModel = readModelFromDatabase(connection, desiredModel.getName(), catalog, schema, tableTypes);
 
@@ -748,9 +748,9 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
             // won't happen because we're using a string writer
         }
         return sql;
-	}
+    }
 
-	/**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Connection connection, Database model, Table table, boolean continueOnError) throws DatabaseOperationException
@@ -760,7 +760,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         evaluateBatch(connection, sql, continueOnError);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Database model, Table table, boolean continueOnError) throws DatabaseOperationException
@@ -777,7 +777,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getDropTableSql(Database model, Table table, boolean continueOnError)
@@ -799,7 +799,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return sql;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTables(Database model, boolean continueOnError) throws DatabaseOperationException
@@ -816,7 +816,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTables(Connection connection, Database model, boolean continueOnError) throws DatabaseOperationException 
@@ -826,7 +826,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         evaluateBatch(connection, sql, continueOnError);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getDropTablesSql(Database model, boolean continueOnError) 
@@ -848,7 +848,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return sql;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */    
     public Database readModelFromDatabase(String name) throws DatabaseOperationException
@@ -865,7 +865,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */    
     public Database readModelFromDatabase(Connection connection, String name) throws DatabaseOperationException
@@ -883,7 +883,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public Database readModelFromDatabase(String name, String catalog, String schema, String[] tableTypes) throws DatabaseOperationException
@@ -900,7 +900,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public Database readModelFromDatabase(Connection connection, String name, String catalog, String schema, String[] tableTypes) throws DatabaseOperationException
@@ -922,8 +922,13 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
             throw new DatabaseOperationException(ex);
         }
     }
+    
+    public Table readTableFromDatabase(Connection connection, String catalogName,
+            String schemaName, String tablename) throws SQLException {
+        return _modelReader.readTable(connection, catalogName, schemaName, tablename);
+    }
 
-    /**
+    /*
      * Allows the platform to postprocess the model just read from the database.
      * 
      * @param model The model
@@ -956,20 +961,20 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         }
     }
     
-	/**
-	 * This is the core method to set the parameter of a prepared statement to a given value.
-	 * The primary purpose of this method is to call the appropriate method on the statement,
-	 * and to give database-specific implementations the ability to change this behavior.
-	 * 
-	 * @param statement The statement
-	 * @param sqlIndex  The parameter index
-	 * @param typeCode  The JDBC type code
-	 * @param value     The value
-	 * @throws SQLException If an error occurred while setting the parameter value
-	 */
-	protected void setStatementParameterValue(PreparedStatement statement, int sqlIndex, int typeCode, Object value) throws SQLException
-	{
-		if (value == null)
+    /*
+     * This is the core method to set the parameter of a prepared statement to a given value.
+     * The primary purpose of this method is to call the appropriate method on the statement,
+     * and to give database-specific implementations the ability to change this behavior.
+     * 
+     * @param statement The statement
+     * @param sqlIndex  The parameter index
+     * @param typeCode  The JDBC type code
+     * @param value     The value
+     * @throws SQLException If an error occurred while setting the parameter value
+     */
+    protected void setStatementParameterValue(PreparedStatement statement, int sqlIndex, int typeCode, Object value) throws SQLException
+    {
+        if (value == null)
         {
             statement.setNull(sqlIndex, typeCode);
         }
@@ -1018,9 +1023,9 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         {
             statement.setObject(sqlIndex, value, typeCode);
         }
-	}
+    }
 
-    /**
+    /*
      * Helper method esp. for the {@link ModelBasedResultSetIterator} class that retrieves
      * the value for a column from the given result set. If a table was specified,
      * and it contains the column, then the jdbc type defined for the column is used for extracting
@@ -1065,7 +1070,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return resultSet.wasNull() ? null : value;
     }
 
-    /**
+    /*
      * Helper method for retrieving the value for a column from the given result set
      * using the type code of the column.
      * 
@@ -1097,70 +1102,70 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         return resultSet.wasNull() ? null : value;
     }
 
-	/**
-	 * This is the core method to retrieve a value for a column from a result set. Its  primary
-	 * purpose is to call the appropriate method on the result set, and to provide an extension
-	 * point where database-specific implementations can change this behavior.
-	 * 
-	 * @param resultSet  The result set to extract the value from
-	 * @param columnName The name of the column; can be <code>null</code> in which case the
+    /*
+     * This is the core method to retrieve a value for a column from a result set. Its  primary
+     * purpose is to call the appropriate method on the result set, and to provide an extension
+     * point where database-specific implementations can change this behavior.
+     * 
+     * @param resultSet  The result set to extract the value from
+     * @param columnName The name of the column; can be <code>null</code> in which case the
      *                   <code>columnIdx</code> will be used instead
      * @param columnIdx  The index of the column's value in the result set; is only used if
      *                   <code>columnName</code> is <code>null</code>
-	 * @param jdbcType   The jdbc type to extract
-	 * @return The value
-	 * @throws SQLException If an error occurred while accessing the result set
-	 */
-	protected Object extractColumnValue(ResultSet resultSet, String columnName, int columnIdx, int jdbcType) throws SQLException
-	{
+     * @param jdbcType   The jdbc type to extract
+     * @return The value
+     * @throws SQLException If an error occurred while accessing the result set
+     */
+    protected Object extractColumnValue(ResultSet resultSet, String columnName, int columnIdx, int jdbcType) throws SQLException
+    {
         boolean useIdx = (columnName == null);
-		Object  value;
+        Object  value;
 
-		switch (jdbcType)
-		{
-		    case Types.CHAR:
-		    case Types.VARCHAR:
-		    case Types.LONGVARCHAR:
-		        value = useIdx ? resultSet.getString(columnIdx) : resultSet.getString(columnName);
-		        break;
-		    case Types.NUMERIC:
-		    case Types.DECIMAL:
-		        value = useIdx ? resultSet.getBigDecimal(columnIdx) : resultSet.getBigDecimal(columnName);
-		        break;
-		    case Types.BIT:
-		        value = new Boolean(useIdx ? resultSet.getBoolean(columnIdx) : resultSet.getBoolean(columnName));
-		        break;
-		    case Types.TINYINT:
-		    case Types.SMALLINT:
-		    case Types.INTEGER:
-		        value = new Integer(useIdx ? resultSet.getInt(columnIdx) : resultSet.getInt(columnName));
-		        break;
-		    case Types.BIGINT:
-		        value = new Long(useIdx ? resultSet.getLong(columnIdx) : resultSet.getLong(columnName));
-		        break;
-		    case Types.REAL:
-		        value = new Float(useIdx ? resultSet.getFloat(columnIdx) : resultSet.getFloat(columnName));
-		        break;
-		    case Types.FLOAT:
-		    case Types.DOUBLE:
-		        value = new Double(useIdx ? resultSet.getDouble(columnIdx) : resultSet.getDouble(columnName));
-		        break;
-		    case Types.BINARY:
-		    case Types.VARBINARY:
-		    case Types.LONGVARBINARY:
-		        value = useIdx ? resultSet.getBytes(columnIdx) : resultSet.getBytes(columnName);
-		        break;
-		    case Types.DATE:
-		        value = useIdx ? resultSet.getDate(columnIdx) : resultSet.getDate(columnName);
-		        break;
-		    case Types.TIME:
-		        value = useIdx ? resultSet.getTime(columnIdx) : resultSet.getTime(columnName);
-		        break;
-		    case Types.TIMESTAMP:
-		        value = useIdx ? resultSet.getTimestamp(columnIdx) : resultSet.getTimestamp(columnName);
-		        break;
-		    case Types.CLOB:
-		        Clob clob = useIdx ? resultSet.getClob(columnIdx) : resultSet.getClob(columnName);
+        switch (jdbcType)
+        {
+            case Types.CHAR:
+            case Types.VARCHAR:
+            case Types.LONGVARCHAR:
+                value = useIdx ? resultSet.getString(columnIdx) : resultSet.getString(columnName);
+                break;
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                value = useIdx ? resultSet.getBigDecimal(columnIdx) : resultSet.getBigDecimal(columnName);
+                break;
+            case Types.BIT:
+                value = new Boolean(useIdx ? resultSet.getBoolean(columnIdx) : resultSet.getBoolean(columnName));
+                break;
+            case Types.TINYINT:
+            case Types.SMALLINT:
+            case Types.INTEGER:
+                value = new Integer(useIdx ? resultSet.getInt(columnIdx) : resultSet.getInt(columnName));
+                break;
+            case Types.BIGINT:
+                value = new Long(useIdx ? resultSet.getLong(columnIdx) : resultSet.getLong(columnName));
+                break;
+            case Types.REAL:
+                value = new Float(useIdx ? resultSet.getFloat(columnIdx) : resultSet.getFloat(columnName));
+                break;
+            case Types.FLOAT:
+            case Types.DOUBLE:
+                value = new Double(useIdx ? resultSet.getDouble(columnIdx) : resultSet.getDouble(columnName));
+                break;
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+                value = useIdx ? resultSet.getBytes(columnIdx) : resultSet.getBytes(columnName);
+                break;
+            case Types.DATE:
+                value = useIdx ? resultSet.getDate(columnIdx) : resultSet.getDate(columnName);
+                break;
+            case Types.TIME:
+                value = useIdx ? resultSet.getTime(columnIdx) : resultSet.getTime(columnName);
+                break;
+            case Types.TIMESTAMP:
+                value = useIdx ? resultSet.getTimestamp(columnIdx) : resultSet.getTimestamp(columnName);
+                break;
+            case Types.CLOB:
+                Clob clob = useIdx ? resultSet.getClob(columnIdx) : resultSet.getClob(columnName);
 
                 if (clob == null)
                 {
@@ -1170,10 +1175,10 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
                 {
                     long length = clob.length();
     
-    		        if (length > Integer.MAX_VALUE)
-    		        {
-    		            value = clob;
-    		        }
+                    if (length > Integer.MAX_VALUE)
+                    {
+                        value = clob;
+                    }
                     else if (length == 0)
                     {
                         // the javadoc is not clear about whether Clob.getSubString
@@ -1181,14 +1186,14 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
                         // thus we do the safe thing and handle it ourselves
                         value = "";
                     }
-    		        else
-    		        {
-    		            value = clob.getSubString(1l, (int)length);
-    		        }
+                    else
+                    {
+                        value = clob.getSubString(1l, (int)length);
+                    }
                 }
-		        break;
-		    case Types.BLOB:
-		        Blob blob = useIdx ? resultSet.getBlob(columnIdx) : resultSet.getBlob(columnName);
+                break;
+            case Types.BLOB:
+                Blob blob = useIdx ? resultSet.getBlob(columnIdx) : resultSet.getBlob(columnName);
 
                 if (blob == null)
                 {
@@ -1198,10 +1203,10 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
                 {
                     long length = blob.length();
     
-    		        if (length > Integer.MAX_VALUE)
-    		        {
-    		            value = blob;
-    		        }
+                    if (length > Integer.MAX_VALUE)
+                    {
+                        value = blob;
+                    }
                     else if (length == 0)
                     {
                         // the javadoc is not clear about whether Blob.getBytes
@@ -1209,32 +1214,32 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
                         // thus we do the safe thing and handle it ourselves
                         value = new byte[0];
                     }
-    		        else
-    		        {
-    		            value = blob.getBytes(1l, (int)length);
-    		        }
+                    else
+                    {
+                        value = blob.getBytes(1l, (int)length);
+                    }
                 }
-		        break;
-		    case Types.ARRAY:
-		        value = useIdx ? resultSet.getArray(columnIdx) : resultSet.getArray(columnName);
-		        break;
-		    case Types.REF:
-		        value = useIdx ? resultSet.getRef(columnIdx) : resultSet.getRef(columnName);
-		        break;
-		    default:
-		        // special handling for Java 1.4/JDBC 3 types
-		        if (Jdbc3Utils.supportsJava14JdbcTypes() &&
-		            (jdbcType == Jdbc3Utils.determineBooleanTypeCode()))
-		        {
-		            value = new Boolean(useIdx ? resultSet.getBoolean(columnIdx) : resultSet.getBoolean(columnName));
-		        }
-		        else
-		        {
-		            value = useIdx ? resultSet.getObject(columnIdx) : resultSet.getObject(columnName);
-		        }
-		        break;
-		}
+                break;
+            case Types.ARRAY:
+                value = useIdx ? resultSet.getArray(columnIdx) : resultSet.getArray(columnName);
+                break;
+            case Types.REF:
+                value = useIdx ? resultSet.getRef(columnIdx) : resultSet.getRef(columnName);
+                break;
+            default:
+                // special handling for Java 1.4/JDBC 3 types
+                if (Jdbc3Utils.supportsJava14JdbcTypes() &&
+                    (jdbcType == Jdbc3Utils.determineBooleanTypeCode()))
+                {
+                    value = new Boolean(useIdx ? resultSet.getBoolean(columnIdx) : resultSet.getBoolean(columnName));
+                }
+                else
+                {
+                    value = useIdx ? resultSet.getObject(columnIdx) : resultSet.getObject(columnName);
+                }
+                break;
+        }
         return resultSet.wasNull() ? null : value;
-	}
+    }
 
 }

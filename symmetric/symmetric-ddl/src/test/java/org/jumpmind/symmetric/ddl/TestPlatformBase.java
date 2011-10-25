@@ -27,14 +27,14 @@ import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 import org.xml.sax.SAXException;
 
-/**
+/*
  * Base class for builder tests.
  * 
  * @version $Revision: 463305 $
  */
 public abstract class TestPlatformBase extends TestBase
 {
-    /** The database schema for testing the column types. */
+    /* The database schema for testing the column types. */
     public static final String COLUMN_TEST_SCHEMA =
         "<?xml version='1.0' encoding='ISO-8859-1'?>\n" +
         "<database name='datatypetest'>\n" +
@@ -73,7 +73,7 @@ public abstract class TestPlatformBase extends TestBase
         "  </table>\n" +
         "</database>";
 
-    /** The database schema for testing column constraints. */
+    /* The database schema for testing column constraints. */
     public static final String COLUMN_CONSTRAINT_TEST_SCHEMA =
         "<?xml version='1.0' encoding='ISO-8859-1'?>\n" +
         "<database name='columnconstraintstest'>\n" +
@@ -87,7 +87,7 @@ public abstract class TestPlatformBase extends TestBase
         "  </table>\n" +
         "</database>";
 
-    /** The database schema for testing table constraints, ie. foreign keys and indices. */
+    /* The database schema for testing table constraints, ie. foreign keys and indices. */
     public static final String TABLE_CONSTRAINT_TEST_SCHEMA =
         "<?xml version='1.0' encoding='ISO-8859-1'?>\n" +
         "<database name='tableconstraintstest'>\n" +
@@ -123,12 +123,12 @@ public abstract class TestPlatformBase extends TestBase
         "  </table>\n" +
         "</database>";
 
-    /** The tested platform. */
+    /* The tested platform. */
     private Platform _platform;
-    /** The writer that the builder of the platform writes to. */
+    /* The writer that the builder of the platform writes to. */
     private StringWriter _writer;
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void setUp() throws Exception
@@ -142,7 +142,7 @@ public abstract class TestPlatformBase extends TestBase
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void tearDown() throws Exception
@@ -151,7 +151,7 @@ public abstract class TestPlatformBase extends TestBase
         _writer   = null;
     }
 
-    /**
+    /*
      * Returns the tested platform.
      * 
      * @return The platform
@@ -161,7 +161,7 @@ public abstract class TestPlatformBase extends TestBase
         return _platform;
     }
 
-    /**
+    /*
      * Returns the info object of the tested platform.
      * 
      * @return The platform info object
@@ -171,7 +171,7 @@ public abstract class TestPlatformBase extends TestBase
         return getPlatform().getPlatformInfo();
     }
 
-    /**
+    /*
      * Returns the SQL builder of the tested platform.
      * 
      * @return The builder object
@@ -181,7 +181,7 @@ public abstract class TestPlatformBase extends TestBase
         return getPlatform().getSqlBuilder();
     }
 
-    /**
+    /*
      * Returns the builder output so far.
      * 
      * @return The output
@@ -191,14 +191,14 @@ public abstract class TestPlatformBase extends TestBase
         return _writer.toString();
     }
 
-    /**
+    /*
      * Returns the name of the tested database.
      * 
      * @return The database name
      */
     protected abstract String getDatabaseName();
 
-    /**
+    /*
      * Creates the database creation sql for the given database schema.
      * 
      * @param schema The database schema XML

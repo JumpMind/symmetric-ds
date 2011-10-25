@@ -26,14 +26,14 @@ import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.TestBase;
 import org.jumpmind.symmetric.ddl.model.Database;
 
-/**
+/*
  * Tests the model comparison.
  * 
  * @version $Revision: $
  */
 public class TestModelComparator extends TestBase
 {
-    /**
+    /*
      * Creates a new model comparator.
      *
      * @param caseSensitive Whether the comparison is case sensitive 
@@ -50,7 +50,7 @@ public class TestModelComparator extends TestBase
         return new ModelComparator(platformInfo, caseSensitive);
     }
 
-    /**
+    /*
      * Tests the addition of a table.
      */
     public void testAddTable()
@@ -86,7 +86,7 @@ public class TestModelComparator extends TestBase
                      change.getNewTable().getName());
     }
 
-    /**
+    /*
      * Tests the removal of a table.
      */
     public void testRemoveTable()
@@ -122,7 +122,7 @@ public class TestModelComparator extends TestBase
                      change.getChangedTable().getName());
     }
 
-    /**
+    /*
      * Tests the addition and removal of a table.
      */
     public void testAddAndRemoveTable()
@@ -158,7 +158,7 @@ public class TestModelComparator extends TestBase
                      change2.getChangedTable().getName());
     }
 
-    /**
+    /*
      * Tests the addition of a foreign key.
      */
     public void testAddForeignKey()
@@ -202,7 +202,7 @@ public class TestModelComparator extends TestBase
                      change.getNewForeignKey().getName());
     }
 
-    /**
+    /*
      * Tests the addition of two tables with foreign keys to each other .
      */
     public void testAddTablesWithForeignKeys()
@@ -256,7 +256,7 @@ public class TestModelComparator extends TestBase
                      fkChange2.getChangedTable().getName());
     }
 
-    /**
+    /*
      * Tests the removal of a foreign key.
      */
     public void testRemoveForeignKey()
@@ -300,7 +300,7 @@ public class TestModelComparator extends TestBase
                      change.getForeignKey().getName());
     }
 
-    /**
+    /*
      * Tests the addition and removal of a foreign key.
      */
     public void testAddAndRemoveForeignKey1()
@@ -350,7 +350,7 @@ public class TestModelComparator extends TestBase
                      change2.getNewForeignKey().getName());
     }
 
-    /**
+    /*
      * Tests the addition and removal of a foreign key because of a change of the references.
      */
     public void testAddAndRemoveForeignKey2()
@@ -407,7 +407,7 @@ public class TestModelComparator extends TestBase
     }
 
 
-    /**
+    /*
      * Tests that the order of the references in a foreign key is not important.
      */
     public void testForeignKeyReferenceOrder()
@@ -454,7 +454,7 @@ public class TestModelComparator extends TestBase
         assertTrue(changes.isEmpty());
     }
 
-    /**
+    /*
      * Tests the addition of an index.
      */
     public void testAddIndex()
@@ -492,7 +492,7 @@ public class TestModelComparator extends TestBase
                      change.getNewIndex().getName());
     }
 
-    /**
+    /*
      * Tests the removal of an index.
      */
     public void testRemoveIndex()
@@ -530,7 +530,7 @@ public class TestModelComparator extends TestBase
                      change.getIndex().getName());
     }
 
-    /**
+    /*
      * Tests the addition and removal of an index because of the change of type of the index.
      */
     public void testAddAndRemoveIndex()
@@ -574,7 +574,7 @@ public class TestModelComparator extends TestBase
                      change2.getNewIndex().getName());
     }
 
-    /**
+    /*
      * Tests the addition and removal of an index because of the change of column order.
      */
     public void testChangeIndexColumnOrder()
@@ -622,7 +622,7 @@ public class TestModelComparator extends TestBase
                      change2.getNewIndex().getName());
     }
 
-    /**
+    /*
      * Tests the addition and removal of an index because of the addition of an index column.
      */
     public void testAddIndexColumn()
@@ -669,7 +669,7 @@ public class TestModelComparator extends TestBase
                      change2.getNewIndex().getName());
     }
 
-    /**
+    /*
      * Tests the addition and removal of an index because of the removal of an index column.
      */
     public void testRemoveIndexColumn()
@@ -716,7 +716,7 @@ public class TestModelComparator extends TestBase
                      change2.getNewIndex().getName());
     }
 
-    /**
+    /*
      * Tests the addition of a primary key.
      */
     public void testAddPrimaryKey()
@@ -751,7 +751,7 @@ public class TestModelComparator extends TestBase
                      change.getPrimaryKeyColumns()[0].getName());
     }
 
-    /**
+    /*
      * Tests the removal of a primary key.
      */
     public void testRemovePrimaryKey()
@@ -786,7 +786,7 @@ public class TestModelComparator extends TestBase
                      change.getPrimaryKeyColumns()[0].getName());
     }
 
-    /**
+    /*
      * Tests the addition of a column to the primary key.
      */
     public void testAddPrimaryKeyColumn()
@@ -829,7 +829,7 @@ public class TestModelComparator extends TestBase
                      change.getNewPrimaryKeyColumns()[1].getName());
     }
 
-    /**
+    /*
      * Tests the removal of a column from the primary key.
      */
     public void testRemovePrimaryKeyColumn()
@@ -872,7 +872,7 @@ public class TestModelComparator extends TestBase
                      change.getNewPrimaryKeyColumns()[0].getName());
     }
 
-    /**
+    /*
      * Tests the addition a column.
      */
     public void testAddColumn()
@@ -906,7 +906,7 @@ public class TestModelComparator extends TestBase
                      change.getNewColumn().getName());
     }
 
-    /**
+    /*
      * Tests the removal of a column.
      */
     public void testRemoveColumn()
@@ -940,7 +940,7 @@ public class TestModelComparator extends TestBase
                      change.getColumn().getName());
     }
 
-    /**
+    /*
      * Tests changing the data type of a column.
      */
     public void testChangeColumnDataType()
@@ -977,7 +977,7 @@ public class TestModelComparator extends TestBase
                      change.getNewTypeCode());
     }
 
-    /**
+    /*
      * Tests changing the size of a column.
      */
     public void testChangeColumnSize()
@@ -1018,7 +1018,7 @@ public class TestModelComparator extends TestBase
                      change.getNewScale());
     }
 
-    /**
+    /*
      * Tests changing the scale of a column.
      */
     public void testChangeColumnScale()
@@ -1057,7 +1057,7 @@ public class TestModelComparator extends TestBase
                      change.getNewScale());
     }
 
-    /**
+    /*
      * Tests removing the size of a column. This test shows how the comparator
      * reacts in the common case of comparing a model read from a live database
      * (which usually returns sizes for every column) and a model from XML.
@@ -1090,7 +1090,7 @@ public class TestModelComparator extends TestBase
         assertTrue(changes.isEmpty());
     }
 
-    /**
+    /*
      * Tests changing the default value of a column.
      */
     public void testChangeDefaultValue()
@@ -1127,7 +1127,7 @@ public class TestModelComparator extends TestBase
                      change.getNewDefaultValue());
     }
 
-    /**
+    /*
      * Tests that shows that the same default value expressed differently does not
      * result in a change.
      */
@@ -1157,7 +1157,7 @@ public class TestModelComparator extends TestBase
         assertTrue(changes.isEmpty());
     }
 
-    /**
+    /*
      * Tests adding a default value to a column.
      */
     public void testAddDefaultValue()
@@ -1194,7 +1194,7 @@ public class TestModelComparator extends TestBase
                      change.getNewDefaultValue());
     }
 
-    /**
+    /*
      * Tests chainging the required-constraint of a column.
      */
     public void testChangeColumnRequired()
@@ -1229,7 +1229,7 @@ public class TestModelComparator extends TestBase
                      change.getChangedColumn().getName());
     }
 
-    /**
+    /*
      * Tests chainging the auto-increment-constraint of a column.
      */
     public void testChangeColumnAutoIncrement()

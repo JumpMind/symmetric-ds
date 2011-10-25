@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * 
  */
 public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
@@ -102,12 +102,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean isEmptyStringNulled() {
         return false;
     }
-
-    @Override
-    public boolean storesUpperCaseNamesInCatalog() {
-        return true;
-    }
-
+    
     @Override
     public boolean supportsGetGeneratedKeys() {
         return false;

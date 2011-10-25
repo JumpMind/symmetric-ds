@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IRouterService;
 
 
-/**
+/*
  * This job calls {@link IRouterService#routeData()} 
  *
  * 

@@ -31,21 +31,21 @@ import org.jumpmind.symmetric.ddl.DatabaseOperationException;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
-/**
+/*
  * The platform implementation for PostgresSql.
  * 
  * @version $Revision: 231306 $
  */
 public class PostgreSqlPlatform extends PlatformImplBase
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME      = "PostgreSql";
-    /** The standard PostgreSQL jdbc driver. */
+    /* The standard PostgreSQL jdbc driver. */
     public static final String JDBC_DRIVER       = "org.postgresql.Driver";
-    /** The subprotocol used by the standard PostgreSQL driver. */
+    /* The subprotocol used by the standard PostgreSQL driver. */
     public static final String JDBC_SUBPROTOCOL  = "postgresql";
 
-    /**
+    /*
      * Creates a new platform instance.
      */
     public PostgreSqlPlatform()
@@ -91,7 +91,7 @@ public class PostgreSqlPlatform extends PlatformImplBase
         setModelReader(new PostgreSqlModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()
@@ -99,7 +99,7 @@ public class PostgreSqlPlatform extends PlatformImplBase
         return DATABASENAME;
     }
 
-    /**
+    /*
      * Creates or drops the database referenced by the given connection url.
      * 
      * @param jdbcDriverClassName The jdbc driver class name
@@ -190,7 +190,7 @@ public class PostgreSqlPlatform extends PlatformImplBase
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createDatabase(String jdbcDriverClassName, String connectionUrl, String username, String password, Map parameters) throws DatabaseOperationException, UnsupportedOperationException
@@ -200,7 +200,7 @@ public class PostgreSqlPlatform extends PlatformImplBase
         createOrDropDatabase(jdbcDriverClassName, connectionUrl, username, password, parameters, true);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropDatabase(String jdbcDriverClassName, String connectionUrl, String username, String password) throws DatabaseOperationException, UnsupportedOperationException

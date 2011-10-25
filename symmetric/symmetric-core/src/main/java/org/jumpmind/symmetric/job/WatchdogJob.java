@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 
-/**
+/*
  * Background job that is responsible for checking on node health. It will
  * disable nodes that have been offline for a configurable period of time.
  */

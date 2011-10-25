@@ -32,23 +32,23 @@ import org.jumpmind.symmetric.ddl.DdlUtilsException;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
-/**
+/*
  * The platform implementation for the Interbase database.
  * 
  * @version $Revision: 231306 $
  */
 public class InterbasePlatform extends PlatformImplBase
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME     = "Interbase";
-    /** The interbase jdbc driver. */
+    /* The interbase jdbc driver. */
     public static final String JDBC_DRIVER      = "interbase.interclient.Driver";
-    /** The subprotocol used by the interbase driver. */
+    /* The subprotocol used by the interbase driver. */
     public static final String JDBC_SUBPROTOCOL = "interbase";
     
     public static int SWITCH_TO_LONGVARCHAR_SIZE = 4096;
 
-    /**
+    /*
      * Creates a new platform instance.
      */
     public InterbasePlatform()
@@ -89,12 +89,14 @@ public class InterbasePlatform extends PlatformImplBase
         info.setDefaultSize(Types.VARCHAR, 254);
         info.setHasSize(Types.BINARY,    false);
         info.setHasSize(Types.VARBINARY, false);
+
+        info.setStoresUpperCaseInCatalog(true);
         
         setSqlBuilder(new InterbaseBuilder(this));
         setModelReader(new InterbaseModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()
@@ -102,7 +104,7 @@ public class InterbasePlatform extends PlatformImplBase
         return DATABASENAME;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void setStatementParameterValue(PreparedStatement statement, int sqlIndex, int typeCode, Object value) throws SQLException
@@ -128,7 +130,7 @@ public class InterbasePlatform extends PlatformImplBase
         super.setStatementParameterValue(statement, sqlIndex, typeCode, value);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected Object extractColumnValue(ResultSet resultSet, String columnName, int columnIdx, int jdbcType) throws SQLException

@@ -23,21 +23,21 @@ import org.jumpmind.symmetric.ddl.TestPlatformBase;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.platform.mysql.MySql50Platform;
 
-/**
+/*
  * Tests the MySQL platform.
  * 
  * @version $Revision: 231110 $
  */
 public class TestMySql50Platform extends TestPlatformBase
 {
-    /**
+    /*
      * {@inheritDoc}
      */
     protected String getDatabaseName()
     {
         return MySql50Platform.DATABASENAME;
     }
-    /**
+    /*
      * Tests the column types.
      */
     public void testColumnTypes() throws Exception
@@ -81,7 +81,7 @@ public class TestMySql50Platform extends TestPlatformBase
             createTestDatabase(COLUMN_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the column constraints.
      */
     public void testColumnConstraints() throws Exception
@@ -108,7 +108,7 @@ public class TestMySql50Platform extends TestPlatformBase
             getBuilderOutput());
     }
 
-    /**
+    /*
      * Tests the table constraints.
      */
     public void testTableConstraints() throws Exception
@@ -148,7 +148,7 @@ public class TestMySql50Platform extends TestPlatformBase
             createTestDatabase(TABLE_CONSTRAINT_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the usage of creation parameters.
      */
     public void testCreationParameters1() throws Exception
@@ -183,7 +183,7 @@ public class TestMySql50Platform extends TestPlatformBase
             getBuilderOutput());
     }
 
-    /**
+    /*
      * Tests the proper escaping of character sequences where MySQL requires it.
      */
     public void testCharacterEscaping() throws Exception

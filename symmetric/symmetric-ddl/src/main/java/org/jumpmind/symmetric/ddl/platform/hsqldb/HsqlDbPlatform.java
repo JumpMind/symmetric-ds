@@ -28,21 +28,21 @@ import org.jumpmind.symmetric.ddl.DdlUtilsException;
 import org.jumpmind.symmetric.ddl.PlatformInfo;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
-/**
+/*
  * The platform implementation for the HsqlDb database.
  * 
  * @version $Revision: 231306 $
  */
 public class HsqlDbPlatform extends PlatformImplBase
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME     = "HsqlDb";
-    /** The standard Hsqldb jdbc driver. */
+    /* The standard Hsqldb jdbc driver. */
     public static final String JDBC_DRIVER      = "org.hsqldb.jdbcDriver";
-    /** The subprotocol used by the standard Hsqldb driver. */
+    /* The subprotocol used by the standard Hsqldb driver. */
     public static final String JDBC_SUBPROTOCOL = "hsqldb";
 
-    /**
+    /*
      * Creates a new instance of the Hsqldb platform.
      */
     public HsqlDbPlatform()
@@ -73,11 +73,13 @@ public class HsqlDbPlatform extends PlatformImplBase
         info.setDefaultSize(Types.BINARY,    Integer.MAX_VALUE);
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
+        info.setStoresUpperCaseInCatalog(true);
+        
         setSqlBuilder(new HsqlDbBuilder(this));
         setModelReader(new HsqlDbModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()
@@ -85,7 +87,7 @@ public class HsqlDbPlatform extends PlatformImplBase
         return DATABASENAME;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void shutdownDatabase(Connection connection)

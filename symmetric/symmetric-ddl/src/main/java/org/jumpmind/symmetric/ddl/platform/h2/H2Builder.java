@@ -50,7 +50,7 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.CreationParameters;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
-/**
+/*
  * The SQL Builder for the H2 database. From patch <a
  * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
@@ -62,7 +62,7 @@ public class H2Builder extends SqlBuilder {
         addEscapedCharSequence("'", "''");
     }
 
-    @Override
+    /*
     public void dropTable(Table table) throws IOException {
         print("DROP TABLE ");
         printIdentifier(getTableName(table));
@@ -70,19 +70,19 @@ public class H2Builder extends SqlBuilder {
         printEndOfStatement();
     }
 
-    @Override
+    /*
     public String getSelectLastIdentityValues(Table table) {
         return "CALL IDENTITY()";
     }
 
-    @Override
+    /*
     public void writeExternalIndexDropStmt(Table table, Index index) throws IOException {
         print("DROP INDEX IF EXISTS ");
         printIdentifier(getIndexName(index));
         printEndOfStatement();
     }
 
-    @Override
+    /*
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             CreationParameters params, Collection<TableChange> changes) throws IOException {
 
@@ -160,7 +160,7 @@ public class H2Builder extends SqlBuilder {
 
     }
     
-    @Override
+    /*
     protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException {
         print("AUTO_INCREMENT");
     }
@@ -195,7 +195,7 @@ public class H2Builder extends SqlBuilder {
         }
     }
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel
@@ -220,7 +220,7 @@ public class H2Builder extends SqlBuilder {
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel

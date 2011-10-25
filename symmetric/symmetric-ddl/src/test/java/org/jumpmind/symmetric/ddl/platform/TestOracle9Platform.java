@@ -22,14 +22,14 @@ package org.jumpmind.symmetric.ddl.platform;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
 import org.jumpmind.symmetric.ddl.platform.oracle.Oracle9Platform;
 
-/**
+/*
  * Tests the Oracle 9 platform.
  * 
  * @version $Revision: 231110 $
  */
 public class TestOracle9Platform extends TestPlatformBase
 {
-    /**
+    /*
      * {@inheritDoc}
      */
     protected String getDatabaseName()
@@ -37,7 +37,7 @@ public class TestOracle9Platform extends TestPlatformBase
         return Oracle9Platform.DATABASENAME;
     }
 
-    /**
+    /*
      * Tests the column types.
      */
     public void testColumnTypes() throws Exception
@@ -81,7 +81,7 @@ public class TestOracle9Platform extends TestPlatformBase
             createTestDatabase(COLUMN_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the column constraints.
      */
     public void testColumnConstraints() throws Exception
@@ -111,7 +111,7 @@ public class TestOracle9Platform extends TestPlatformBase
             createTestDatabase(COLUMN_CONSTRAINT_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the table constraints.
      */
     public void testTableConstraints() throws Exception
@@ -149,7 +149,7 @@ public class TestOracle9Platform extends TestPlatformBase
             createTestDatabase(TABLE_CONSTRAINT_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the proper escaping of character sequences where Oracle requires it.
      */
     public void testCharacterEscaping() throws Exception

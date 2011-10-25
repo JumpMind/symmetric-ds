@@ -21,18 +21,18 @@ import java.sql.Types;
  * under the License.
  */
 
-/**
+/*
  * The platform for Oracle 10.
  *
  * @version $Revision: 231306 $
  */
 public class Oracle10Platform extends Oracle9Platform
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME10 = "Oracle10";
     public static final String DATABASENAME11 = "Oracle11";
 
-    /**
+    /*
      * Creates a new platform instance.
      */
     public Oracle10Platform()
@@ -42,7 +42,7 @@ public class Oracle10Platform extends Oracle9Platform
         setModelReader(new Oracle10ModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()

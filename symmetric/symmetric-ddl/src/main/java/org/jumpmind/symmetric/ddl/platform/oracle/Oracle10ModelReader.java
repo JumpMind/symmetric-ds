@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.ddl.platform.oracle;
  * under the License.
  */
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,14 +29,12 @@ import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 
-/**
+/*
  * Reads a database model from an Oracle 10 database.
- *
- * @version $Revision: $
  */
 public class Oracle10ModelReader extends Oracle8ModelReader
 {
-    /**
+    /*
      * Creates a new model reader for Oracle 10 databases.
      * 
      * @param platform The platform that this model reader belongs to
@@ -45,10 +44,8 @@ public class Oracle10ModelReader extends Oracle8ModelReader
         super(platform);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-	protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    @Override
+	protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
 	{
 		// Oracle 10 added the recycle bin which contains dropped database objects not yet purged
 		// Since we don't want entries from the recycle bin, we filter them out
@@ -57,7 +54,7 @@ public class Oracle10ModelReader extends Oracle8ModelReader
 
         try
         {
-        	stmt = getConnection().prepareStatement("SELECT * FROM RECYCLEBIN WHERE OBJECT_NAME=?");
+        	stmt = connection.prepareStatement("SELECT * FROM RECYCLEBIN WHERE OBJECT_NAME=?");
         	stmt.setString(1, (String)values.get("TABLE_NAME"));
         	
         	ResultSet rs = stmt.executeQuery();
@@ -77,7 +74,7 @@ public class Oracle10ModelReader extends Oracle8ModelReader
         	}
         }
 
-        return deletedObj ? null : super.readTable(metaData, values);
+        return deletedObj ? null : super.readTable(connection, metaData, values);
 	}
 
 }

@@ -37,7 +37,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * 
  */
 public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
@@ -83,16 +83,6 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
                     log.info("FunctionInstalled", funcName);
                 }
             }
-        }
-    }
-    
-    @Override
-    protected String getPlatformTableName(String catalogName, String schemaName, String tblName) {
-        List<String> tableNames = jdbcTemplate.queryForList("select distinct(table_name) from information_schema.tables where table_name like '%" + tblName + "%'", String.class);
-        if (tableNames.size() > 0 ) {
-            return tableNames.get(0);
-        } else {
-            return tblName;
         }
     }
 
@@ -181,7 +171,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    /**
+    /*
      * According to the documentation (and experience) the jdbc driver for mysql
      * requires the fetch size to be as follows.
      */
@@ -194,17 +184,6 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
-
-    @Override
-	protected Integer overrideJdbcTypeForColumn(Map<Object,Object> values) {
-    	String typeName = (String)values.get("TYPE_NAME");
-    	if("YEAR".equals(typeName)) {
-    		// it is safe to map a YEAR to INTEGER
-    		return Types.INTEGER;
-    	} else {
-    		return super.overrideJdbcTypeForColumn(values);
-    	}
-	}
 
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {

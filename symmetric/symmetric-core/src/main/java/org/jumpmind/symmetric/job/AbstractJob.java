@@ -201,7 +201,7 @@ abstract public class AbstractJob implements Runnable, BeanNameAware, IJob {
     }
     
     
-    /**
+    /*
      * This method is called from the job
      */
     public void run() {

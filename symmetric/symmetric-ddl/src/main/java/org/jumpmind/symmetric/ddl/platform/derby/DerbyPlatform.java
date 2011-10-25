@@ -29,23 +29,23 @@ import java.util.Map;
 import org.jumpmind.symmetric.ddl.DatabaseOperationException;
 import org.jumpmind.symmetric.ddl.platform.cloudscape.CloudscapePlatform;
 
-/**
+/*
  * The platform implementation for Derby.
  * 
  * @version $Revision: 231306 $
  */
 public class DerbyPlatform extends CloudscapePlatform
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME         = "Derby";
-    /** The derby jdbc driver for use as a client for a normal server. */
+    /* The derby jdbc driver for use as a client for a normal server. */
     public static final String JDBC_DRIVER          = "org.apache.derby.jdbc.ClientDriver";
-    /** The derby jdbc driver for use as an embedded database. */
+    /* The derby jdbc driver for use as an embedded database. */
     public static final String JDBC_DRIVER_EMBEDDED = "org.apache.derby.jdbc.EmbeddedDriver";
-    /** The subprotocol used by the derby drivers. */
+    /* The subprotocol used by the derby drivers. */
     public static final String JDBC_SUBPROTOCOL     = "derby";
 
-    /**
+    /*
      * Creates a new Derby platform instance.
      */
     public DerbyPlatform()
@@ -53,11 +53,12 @@ public class DerbyPlatform extends CloudscapePlatform
         super();
         getPlatformInfo().addNativeTypeMapping(Types.DOUBLE, "DOUBLE");
         getPlatformInfo().addNativeTypeMapping(Types.FLOAT,  "DOUBLE", Types.DOUBLE);
+        getPlatformInfo().setStoresUpperCaseInCatalog(true);
         setSqlBuilder(new DerbyBuilder(this));
         setModelReader(new DerbyModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()
@@ -65,7 +66,7 @@ public class DerbyPlatform extends CloudscapePlatform
         return DATABASENAME;
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createDatabase(String jdbcDriverClassName, String connectionUrl, String username, String password, Map parameters) throws DatabaseOperationException, UnsupportedOperationException

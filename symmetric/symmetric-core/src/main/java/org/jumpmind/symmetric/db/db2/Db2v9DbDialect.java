@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * 
  */
 public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {

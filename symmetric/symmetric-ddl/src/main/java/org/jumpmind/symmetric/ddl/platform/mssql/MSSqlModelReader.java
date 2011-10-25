@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.ddl.platform.mssql;
  * under the License.
  */
 
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,21 +43,21 @@ import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 
-/**
+/*
  * Reads a database model from a Microsoft Sql Server database.
  *
  * @version $Revision: $
  */
 public class MSSqlModelReader extends JdbcModelReader
 {
-    /** Known system tables that Sql Server creates (e.g. automatic maintenance). */
+    /* Known system tables that Sql Server creates (e.g. automatic maintenance). */
     private static final String[] KNOWN_SYSTEM_TABLES = { "dtproperties" };
-	/** The regular expression pattern for the ISO dates. */
+	/* The regular expression pattern for the ISO dates. */
 	private Pattern _isoDatePattern;
-	/** The regular expression pattern for the ISO times. */
+	/* The regular expression pattern for the ISO times. */
 	private Pattern _isoTimePattern;
 
-	/**
+	/*
      * Creates a new model reader for Microsoft Sql Server databases.
      * 
      * @param platform The platform that this model reader belongs to
@@ -82,10 +83,8 @@ public class MSSqlModelReader extends JdbcModelReader
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
-	protected Table readTable(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    @Override
+	protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
 	{
         String tableName = (String)values.get("TABLE_NAME");
 
@@ -97,12 +96,12 @@ public class MSSqlModelReader extends JdbcModelReader
             }
         }
 
-        Table table = super.readTable(metaData, values);
+        Table table = super.readTable(connection, metaData, values);
 
         if (table != null)
         {
             // Sql Server does not return the auto-increment status via the database metadata
-            determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
+            determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
 
             // TODO: Replace this manual filtering using named pks once they are available
             //       This is then probably of interest to every platform
@@ -123,10 +122,8 @@ public class MSSqlModelReader extends JdbcModelReader
         return table;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
-	protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index)
+    @Override
+	protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, Index index)
 	{
 		// Sql Server generates an index "PK__[table name]__[hex number]"
 		StringBuffer pkIndexName = new StringBuffer();
@@ -138,7 +135,7 @@ public class MSSqlModelReader extends JdbcModelReader
 		return index.getName().toUpperCase().startsWith(pkIndexName.toString().toUpperCase());
 	}
 
-    /**
+    /*
      * Determines whether there is a pk for the table with the given name.
      * 
      * @param metaData The database metadata
@@ -169,9 +166,16 @@ public class MSSqlModelReader extends JdbcModelReader
         }
     }
     
-    /**
-     * {@inheritDoc}
-     */
+    protected Integer overrideJdbcTypeForColumn(Map<String,Object> values) {
+        String typeName = (String) values.get("TYPE_NAME");
+        if (typeName != null && typeName.startsWith("TEXT")) {
+            return Types.CLOB;          
+        } else {
+            return super.overrideJdbcTypeForColumn(values);
+        }
+    }    
+    
+    @Override
 	protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
 	{
 		Column column       = super.readColumn(metaData, values);

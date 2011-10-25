@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.ddl;
  * under the License.
  */
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -29,7 +30,7 @@ import org.jumpmind.symmetric.ddl.platform.CreationParameters;
 import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
-/**
+/*
  * A platform encapsulates the database-related functionality such as performing queries
  * and manipulations. It also contains an sql builder that is specific to this platform.
  * 
@@ -37,77 +38,77 @@ import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
  */
 public interface Platform
 {
-    /**
+    /*
      * Returns the name of the database that this platform is for.
      * 
      * @return The name
      */
     public String getName();
 
-    /**
+    /*
      * Returns the info object for this platform.
      * 
      * @return The info object
      */
     public PlatformInfo getPlatformInfo();
     
-    /**
+    /*
      * Returns the sql builder for the this platform.
      * 
      * @return The sql builder
      */
     public SqlBuilder getSqlBuilder();
 
-    /**
+    /*
      * Returns the model reader (which reads a database model from a live database) for this platform.
      * 
      * @return The model reader
      */
     public JdbcModelReader getModelReader();
     
-    /**
+    /*
      * Returns the data source that this platform uses to access the database.
      * 
      * @return The data source
      */
     public DataSource getDataSource();
     
-    /**
+    /*
      * Sets the data source that this platform shall use to access the database.
      * 
      * @param dataSource The data source
      */
     public void setDataSource(DataSource dataSource);
 
-    /**
+    /*
      * Returns the username that this platform shall use to access the database.
      * 
      * @return The username
      */
     public String getUsername();
 
-    /**
+    /*
      * Sets the username that this platform shall use to access the database.
      * 
      * @param username The username
      */
     public void setUsername(String username);
 
-    /**
+    /*
      * Returns the password that this platform shall use to access the database.
      * 
      * @return The password
      */
     public String getPassword();
 
-    /**
+    /*
      * Sets the password that this platform shall use to access the database.
      * 
      * @param password The password
      */
     public void setPassword(String password);
 
-    /**
+    /*
      * Determines whether script mode is on. This means that the generated SQL is not
      * intended to be sent directly to the database but rather to be saved in a SQL
      * script file. Per default, script mode is off.
@@ -116,7 +117,7 @@ public interface Platform
      */
     public boolean isScriptModeOn();
 
-    /**
+    /*
      * Specifies whether script mode is on. This means that the generated SQL is not
      * intended to be sent directly to the database but rather to be saved in a SQL
      * script file.
@@ -125,7 +126,7 @@ public interface Platform
      */
     public void setScriptModeOn(boolean scriptModeOn);
 
-    /**
+    /*
      * Determines whether delimited identifiers are used or normal SQL92 identifiers
      * (which may only contain alphanumerical characters and the underscore, must start
      * with a letter and cannot be a reserved keyword).
@@ -135,28 +136,28 @@ public interface Platform
      */
     public boolean isDelimitedIdentifierModeOn();
 
-    /**
+    /*
      * Specifies whether delimited identifiers are used or normal SQL92 identifiers.
      *
      * @param delimitedIdentifierModeOn <code>true</code> if delimited identifiers shall be used
      */
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn);
 
-    /**
+    /*
      * Determines whether SQL comments are generated. 
      * 
      * @return <code>true</code> if SQL comments shall be generated
      */
     public boolean isSqlCommentsOn();
 
-    /**
+    /*
      * Specifies whether SQL comments shall be generated.
      * 
      * @param sqlCommentsOn <code>true</code> if SQL comments shall be generated
      */
     public void setSqlCommentsOn(boolean sqlCommentsOn);
 
-    /**
+    /*
      * Determines whether SQL insert statements can specify values for identity columns.
      * This setting is only relevant if the database supports it
      * ({@link PlatformInfo#isIdentityOverrideAllowed()}). If this is off, then the
@@ -166,7 +167,7 @@ public interface Platform
      */
     public boolean isIdentityOverrideOn();
 
-    /**
+    /*
      * Specifies whether SQL insert statements can specify values for identity columns.
      * This setting is only relevant if the database supports it
      * ({@link PlatformInfo#isIdentityOverrideAllowed()}). If this is off, then the
@@ -176,7 +177,7 @@ public interface Platform
      */
     public void setIdentityOverrideOn(boolean identityOverrideOn);
 
-    /**
+    /*
      * Determines whether foreign keys of a table read from a live database
      * are alphabetically sorted.
      *
@@ -184,7 +185,7 @@ public interface Platform
      */
     public boolean isForeignKeysSorted();
 
-    /**
+    /*
      * Specifies whether foreign keys read from a live database, shall be
      * alphabetically sorted.
      *
@@ -192,28 +193,28 @@ public interface Platform
      */
     public void setForeignKeysSorted(boolean foreignKeysSorted);
     
-    /**
+    /*
      * Returns a (new) JDBC connection from the data source.
      * 
      * @return The connection
      */
     public Connection borrowConnection() throws DatabaseOperationException;
 
-    /**
+    /*
      * Closes the given JDBC connection (returns it back to the pool if the datasource is poolable).
      * 
      * @param connection The connection
      */
     public void returnConnection(Connection connection);
 
-    /**
+    /*
      * Performs a shutdown at the database. This is necessary for some embedded databases which otherwise
      * would be locked and thus would refuse other connections. Note that this does not change the database
      * structure or data in it in any way.
      */
     public void shutdownDatabase() throws DatabaseOperationException;
 
-    /**
+    /*
      * Performs a shutdown at the database. This is necessary for some embedded databases which otherwise
      * would be locked and thus would refuse other connections. Note that this does not change the database
      * structure or data in it in any way.
@@ -222,7 +223,7 @@ public interface Platform
      */
     public void shutdownDatabase(Connection connection) throws DatabaseOperationException;
 
-    /**
+    /*
      * Creates the database specified by the given parameters. Please note that this method does not
      * use a data source set via {@link #setDataSource(DataSource)} because it is not possible to
      * retrieve the connection information from it without establishing a connection.<br/>
@@ -239,7 +240,7 @@ public interface Platform
      */
     public void createDatabase(String jdbcDriverClassName, String connectionUrl, String username, String password, Map parameters) throws DatabaseOperationException, UnsupportedOperationException;
 
-    /**
+    /*
      * Drops the database specified by the given parameters. Please note that this method does not
      * use a data source set via {@link #setDataSource(DataSource)} because it is not possible to
      * retrieve the connection information from it without establishing a connection.
@@ -251,7 +252,7 @@ public interface Platform
      */
     public void dropDatabase(String jdbcDriverClassName, String connectionUrl, String username, String password) throws DatabaseOperationException, UnsupportedOperationException;
 
-    /**
+    /*
      * Creates the tables defined in the database model.
      * 
      * @param model           The database model
@@ -260,7 +261,7 @@ public interface Platform
      */
     public void createTables(Database model, boolean dropTablesFirst, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Creates the tables defined in the database model.
      * 
      * @param connection      The connection to the database
@@ -270,7 +271,7 @@ public interface Platform
      */
     public void createTables(Connection connection, Database model, boolean dropTablesFirst, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for creating the tables defined in the database model.
      * 
      * @param model           The database model
@@ -280,7 +281,7 @@ public interface Platform
      */
     public String getCreateTablesSql(Database model, boolean dropTablesFirst, boolean continueOnError);
 
-    /**
+    /*
      * Creates the tables defined in the database model.
      * 
      * @param model           The database model
@@ -290,7 +291,7 @@ public interface Platform
      */
     public void createTables(Database model, CreationParameters params, boolean dropTablesFirst, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Creates the tables defined in the database model.
      * 
      * @param connection      The connection to the database
@@ -301,7 +302,7 @@ public interface Platform
      */
     public void createTables(Connection connection, Database model, CreationParameters params, boolean dropTablesFirst, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for creating the tables defined in the database model.
      * 
      * @param model           The database model
@@ -312,7 +313,7 @@ public interface Platform
      */
     public String getCreateTablesSql(Database model, CreationParameters params, boolean dropTablesFirst, boolean continueOnError);
 
-    /**
+    /*
      * Alters the database schema so that it match the given model.
      *
      * @param desiredDb       The desired database schema
@@ -320,7 +321,7 @@ public interface Platform
      */
     public void alterTables(Database desiredDb, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for altering the database schema so that it match the given model.
      *
      * @param desiredDb The desired database schema
@@ -328,7 +329,7 @@ public interface Platform
      */
     public String getAlterTablesSql(Database desiredDb) throws DatabaseOperationException;
 
-    /**
+    /*
      * Alters the database schema so that it match the given model.
      *
      * @param desiredDb       The desired database schema
@@ -337,7 +338,7 @@ public interface Platform
      */
     public void alterTables(Database desiredDb, CreationParameters params, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for altering the database schema so that it match the given model.
      *
      * @param desiredDb The desired database schema
@@ -346,7 +347,7 @@ public interface Platform
      */
     public String getAlterTablesSql(Database desiredDb, CreationParameters params) throws DatabaseOperationException;
 
-    /**
+    /*
      * Alters the database schema so that it match the given model.
      *
      * @param catalog         The catalog in the existing database to read (can be a pattern);
@@ -360,7 +361,7 @@ public interface Platform
      */
     public void alterTables(String catalog, String schema, String[] tableTypes, Database desiredDb, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for altering the database schema so that it match the given model.
      *
      * @param catalog    The catalog in the existing database to read (can be a pattern);
@@ -374,7 +375,7 @@ public interface Platform
      */
     public String getAlterTablesSql(String catalog, String schema, String[] tableTypes, Database desiredDb) throws DatabaseOperationException;
 
-    /**
+    /*
      * Alters the database schema so that it match the given model.
      *
      * @param catalog         The catalog in the existing database to read (can be a pattern);
@@ -389,7 +390,7 @@ public interface Platform
      */
     public void alterTables(String catalog, String schema, String[] tableTypes, Database desiredDb, CreationParameters params, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for altering the database schema so that it match the given model.
      *
      * @param catalog    The catalog in the existing database to read (can be a pattern);
@@ -404,7 +405,7 @@ public interface Platform
      */
     public String getAlterTablesSql(String catalog, String schema, String[] tableTypes, Database desiredDb, CreationParameters params) throws DatabaseOperationException;
 
-    /**
+    /*
      * Alters the database schema so that it match the given model.
      *
      * @param connection      A connection to the existing database that shall be modified
@@ -413,7 +414,7 @@ public interface Platform
      */
     public void alterTables(Connection connection, Database desiredDb, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for altering the database schema so that it match the given model.
      *
      * @param connection A connection to the existing database that shall be modified
@@ -422,7 +423,7 @@ public interface Platform
      */
     public String getAlterTablesSql(Connection connection, Database desiredDb) throws DatabaseOperationException;
 
-    /**
+    /*
      * Alters the database schema so that it match the given model.
      *
      * @param connection      A connection to the existing database that shall be modified
@@ -432,7 +433,7 @@ public interface Platform
      */
     public void alterTables(Connection connection, Database desiredDb, CreationParameters params, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for altering the database schema so that it match the given model.
      *
      * @param connection A connection to the existing database that shall be modified
@@ -442,7 +443,7 @@ public interface Platform
      */
     public String getAlterTablesSql(Connection connection, Database desiredDb, CreationParameters params) throws DatabaseOperationException;
 
-    /**
+    /*
      * Alters the database schema so that it match the given model.
      *
      * @param connection      A connection to the existing database that shall be modified
@@ -457,7 +458,7 @@ public interface Platform
      */
     public void alterTables(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredDb, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for altering the database schema so that it match the given model.
      *
      * @param connection A connection to the existing database that shall be modified
@@ -472,7 +473,7 @@ public interface Platform
      */
     public String getAlterTablesSql(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredDb) throws DatabaseOperationException;
 
-    /**
+    /*
      * Alters the database schema so that it match the given model.
      *
      * @param connection      A connection to the existing database that shall be modified
@@ -488,7 +489,7 @@ public interface Platform
      */
     public void alterTables(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredDb, CreationParameters params, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for altering the database schema so that it match the given model.
      *
      * @param connection A connection to the existing database that shall be modified
@@ -504,7 +505,7 @@ public interface Platform
      */
     public String getAlterTablesSql(Connection connection, String catalog, String schema, String[] tableTypes, Database desiredDb, CreationParameters params) throws DatabaseOperationException;
 
-    /**
+    /*
      * Drops the specified table and all foreign keys pointing to it.
      * 
      * @param model           The database model
@@ -513,7 +514,7 @@ public interface Platform
      */
     public void dropTable(Database model, Table table, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for dropping the given table and all foreign keys pointing to it.
      * 
      * @param model           The database model
@@ -523,7 +524,7 @@ public interface Platform
      */
     public String getDropTableSql(Database model, Table table, boolean continueOnError);
 
-    /**
+    /*
      * Drops the specified table and all foreign keys pointing to it.
      * 
      * @param connection      The connection to the database
@@ -533,7 +534,7 @@ public interface Platform
      */
     public void dropTable(Connection connection, Database model, Table table, boolean continueOnError) throws DatabaseOperationException; 
 
-    /**
+    /*
      * Drops the tables defined in the given database.
      * 
      * @param model           The database model
@@ -541,7 +542,7 @@ public interface Platform
      */
     public void dropTables(Database model, boolean continueOnError) throws DatabaseOperationException;
 
-    /**
+    /*
      * Returns the SQL for dropping the tables defined in the given database.
      * 
      * @param model           The database model
@@ -550,7 +551,7 @@ public interface Platform
      */
     public String getDropTablesSql(Database model, boolean continueOnError);
 
-    /**
+    /*
      * Drops the tables defined in the given database.
      * 
      * @param connection      The connection to the database
@@ -559,7 +560,7 @@ public interface Platform
      */
     public void dropTables(Connection connection, Database model, boolean continueOnError) throws DatabaseOperationException; 
 
-    /**
+    /*
      * Reads the database model from the live database as specified by the data source set for
      * this platform.
      * 
@@ -570,7 +571,7 @@ public interface Platform
      */
     public Database readModelFromDatabase(String name) throws DatabaseOperationException;
 
-    /**
+    /*
      * Reads the database model from the live database as specified by the data source set for
      * this platform.
      * 
@@ -584,7 +585,7 @@ public interface Platform
      */
     public Database readModelFromDatabase(String name, String catalog, String schema, String[] tableTypes) throws DatabaseOperationException;
 
-    /**
+    /*
      * Reads the database model from the live database to which the given connection is pointing.
      * 
      * @param connection The connection to the database
@@ -595,7 +596,7 @@ public interface Platform
      */
     public Database readModelFromDatabase(Connection connection, String name) throws DatabaseOperationException;
 
-    /**
+    /*
      * Reads the database model from the live database to which the given connection is pointing.
      * 
      * @param connection The connection to the database
@@ -608,4 +609,8 @@ public interface Platform
      * @throws DatabaseOperationException If an error occurred during reading the model
      */
     public Database readModelFromDatabase(Connection connection, String name, String catalog, String schema, String[] tableTypes) throws DatabaseOperationException;
+    
+    
+    public Table readTableFromDatabase(Connection connection, String catalogName, String schemaName, String tablename) throws SQLException;
+    
 }

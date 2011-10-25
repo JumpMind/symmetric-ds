@@ -35,26 +35,26 @@ import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.ddl.platform.PlatformImplBase;
 
-/**
+/*
  * The platform implementation for Sybase.
  * 
  * @version $Revision: 231306 $
  */
 public class SybasePlatform extends PlatformImplBase
 {
-    /** Database name of this platform. */
+    /* Database name of this platform. */
     public static final String DATABASENAME     = "Sybase";
-    /** The standard Sybase jdbc driver. */
+    /* The standard Sybase jdbc driver. */
     public static final String JDBC_DRIVER      = "com.sybase.jdbc2.jdbc.SybDriver";
-    /** The old Sybase jdbc driver. */
+    /* The old Sybase jdbc driver. */
     public static final String JDBC_DRIVER_OLD  = "com.sybase.jdbc.SybDriver";
-    /** The subprotocol used by the standard Sybase driver. */
+    /* The subprotocol used by the standard Sybase driver. */
     public static final String JDBC_SUBPROTOCOL = "sybase:Tds";
 
-    /** The maximum size that text and binary columns can have. */
+    /* The maximum size that text and binary columns can have. */
     public static final long MAX_TEXT_SIZE = 2147483647;
     
-    /**
+    /*
      * Creates a new platform instance.
      */
     public SybasePlatform()
@@ -102,7 +102,7 @@ public class SybasePlatform extends PlatformImplBase
         setModelReader(new SybaseModelReader(this));
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getName()
@@ -110,7 +110,7 @@ public class SybasePlatform extends PlatformImplBase
         return DATABASENAME;
     }
 
-    /**
+    /*
      * Sets the text size which is the maximum amount of bytes that Sybase returns in a SELECT statement
      * for binary/text columns (e.g. blob, longvarchar etc.).
      * 
@@ -138,7 +138,7 @@ public class SybasePlatform extends PlatformImplBase
     	}
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
 	protected Object extractColumnValue(ResultSet resultSet, String columnName, int columnIdx, int jdbcType) throws DatabaseOperationException, SQLException
@@ -190,7 +190,7 @@ public class SybasePlatform extends PlatformImplBase
 		}
 	}
 
-	/**
+	/*
      * {@inheritDoc}
      */
 	protected void setStatementParameterValue(PreparedStatement statement, int sqlIndex, int typeCode, Object value) throws SQLException
@@ -223,7 +223,7 @@ public class SybasePlatform extends PlatformImplBase
 		}
 	}
 
-    /**
+    /*
      * Determines whether we need to use identity override mode for the given table.
      * 
      * @param table The table
@@ -236,7 +236,7 @@ public class SybasePlatform extends PlatformImplBase
                (table.getAutoIncrementColumns().length > 0);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void beforeInsert(Connection connection, Table table) throws SQLException
@@ -257,7 +257,7 @@ public class SybasePlatform extends PlatformImplBase
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void afterInsert(Connection connection, Table table) throws SQLException
@@ -278,7 +278,7 @@ public class SybasePlatform extends PlatformImplBase
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void beforeUpdate(Connection connection, Table table) throws SQLException
@@ -286,7 +286,7 @@ public class SybasePlatform extends PlatformImplBase
         beforeInsert(connection, table);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void afterUpdate(Connection connection, Table table) throws SQLException

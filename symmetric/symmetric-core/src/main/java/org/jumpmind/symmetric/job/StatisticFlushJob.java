@@ -22,7 +22,7 @@
 package org.jumpmind.symmetric.job;
 
 
-/**
+/*
  * Background job that is responsible for writing statistics to database tables.
  */
 public class StatisticFlushJob extends AbstractJob {

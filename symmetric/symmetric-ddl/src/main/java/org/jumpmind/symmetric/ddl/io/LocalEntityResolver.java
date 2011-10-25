@@ -27,7 +27,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-/**
+/*
  * An entity resolver that matches the specific database dtds to the one that comes
  * with DdlUtils, and that can handle file url's.
  * 
@@ -35,10 +35,10 @@ import org.xml.sax.SAXException;
  */
 public class LocalEntityResolver implements EntityResolver
 {
-    /** The default DTD. */
+    /* The default DTD. */
     public static final String DTD_PREFIX = "http://db.apache.org/torque/dtd/database";
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException

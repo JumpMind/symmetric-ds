@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.db.sqlite;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -33,12 +32,10 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
+/*
  * 
  */
 public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
-
-//    private static final String TRANSACTION_ID = "transaction_id";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
 
@@ -64,18 +61,6 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
 
     private final String getTransactionFunctionName() {
         return null;
-    }
-    
-    /* Below here was originally copied from MySqlDbDialect.  May still need tweaking */
-   
-    @Override
-    protected String getPlatformTableName(String catalogName, String schemaName, String tblName) {
-        List<String> tableNames = jdbcTemplate.queryForList("select distinct(tbl_name) from sqlite_master where tbl_name like '%" + tblName + "%'", String.class);
-        if (tableNames.size() > 0 ) {
-            return tableNames.get(0);
-        } else {
-            return tblName;
-        }
     }
 
     @Override

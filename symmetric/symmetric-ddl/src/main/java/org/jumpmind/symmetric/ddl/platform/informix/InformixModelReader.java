@@ -25,25 +25,23 @@ public class InformixModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected Table readTable(DatabaseMetaDataWrapper metaData, Map<String,Object>  values) throws SQLException {
-        Table table = super.readTable(metaData, values);
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String,Object>  values) throws SQLException {
+        Table table = super.readTable(connection, metaData, values);
         if (table != null) {
-            determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
+            determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
         }
         return table;
     }
     
     @Override
-    protected void determineAutoIncrementFromResultSetMetaData(Table table, Column[] columnsToCheck)
+    protected void determineAutoIncrementFromResultSetMetaData(Connection connection, Table table, Column[] columnsToCheck)
             throws SQLException {
-        determineAutoIncrementFromResultSetMetaData(getConnection(), table, columnsToCheck, ":");
+        determineAutoIncrementFromResultSetMetaData(connection, table, columnsToCheck, ":");
     }
 
     @Override
-    public Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName)
+    public Collection readIndices(Connection connection, DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
-
-        Connection conn = getConnection();
         String sql = "select rtrim(dbinfo('dbname')) as TABLE_CAT, st.owner as TABLE_SCHEM, st.tabname as TABLE_NAME, "
                 + "case when idxtype = 'U' then 0 else 1 end NON_UNIQUE, si.owner as INDEX_QUALIFIER, si.idxname as INDEX_NAME,  "
                 + "3 as TYPE,  "
@@ -66,7 +64,7 @@ public class InformixModelReader extends JdbcModelReader {
                 + "and (sc.colno = si.part1 or sc.colno = si.part2 or sc.colno = si.part3 or  "
                 + "sc.colno = si.part4 or sc.colno = si.part5 or sc.colno = si.part6 or  "
                 + "sc.colno = si.part7 or sc.colno = si.part8)";
-        PreparedStatement ps = conn.prepareStatement(sql);
+        PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, tableName);
 
         ResultSet rs = ps.executeQuery();
@@ -82,19 +80,20 @@ public class InformixModelReader extends JdbcModelReader {
         return indices.values();
     }
 
-    public void removeSystemIndices(DatabaseMetaDataWrapper metaData, Table table)
+    @Override
+    public void removeSystemIndices(Connection connection, DatabaseMetaDataWrapper metaData, Table table)
             throws SQLException {
-        super.removeSystemIndices(metaData, table);
+        super.removeSystemIndices(connection, metaData, table);
     }
 
     @Override
-    protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table,
+    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table,
             Index index) throws SQLException {
         return index.getName().startsWith(" ");
     }
 
     @Override
-    protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table,
+    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table,
             ForeignKey fk, Index index1) throws SQLException {
         return fk.getName().startsWith(" ");
     }

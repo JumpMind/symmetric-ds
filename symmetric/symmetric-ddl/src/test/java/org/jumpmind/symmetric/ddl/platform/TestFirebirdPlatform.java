@@ -22,14 +22,14 @@ package org.jumpmind.symmetric.ddl.platform;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
 import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
 
-/**
+/*
  * Tests the Firebird platform.
  * 
  * @version $Revision: 231110 $
  */
 public class TestFirebirdPlatform extends TestPlatformBase
 {
-    /** The database schema for testing escaping of character sequences. */
+    /* The database schema for testing escaping of character sequences. */
     public static final String COLUMN_CHAR_SEQUENCES_TO_ESCAPE =
         "<?xml version='1.0' encoding='ISO-8859-1'?>\n" +
         "<database name='escapetest'>\n" +
@@ -39,7 +39,7 @@ public class TestFirebirdPlatform extends TestPlatformBase
         "  </table>\n" +
         "</database>";
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected String getDatabaseName()
@@ -47,7 +47,7 @@ public class TestFirebirdPlatform extends TestPlatformBase
         return FirebirdPlatform.DATABASENAME;
     }
 
-    /**
+    /*
      * Tests the column types.
      */
     public void testColumnTypes() throws Exception
@@ -91,7 +91,7 @@ public class TestFirebirdPlatform extends TestPlatformBase
             createTestDatabase(COLUMN_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the column constraints.
      */
     public void testColumnConstraints() throws Exception
@@ -123,7 +123,7 @@ public class TestFirebirdPlatform extends TestPlatformBase
             createTestDatabase(COLUMN_CONSTRAINT_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the table constraints.
      */
     public void testTableConstraints() throws Exception
@@ -163,7 +163,7 @@ public class TestFirebirdPlatform extends TestPlatformBase
             createTestDatabase(TABLE_CONSTRAINT_TEST_SCHEMA));
     }
 
-    /**
+    /*
      * Tests the proper escaping of character sequences where Firebird requires it.
      */
     public void testCharacterEscaping() throws Exception

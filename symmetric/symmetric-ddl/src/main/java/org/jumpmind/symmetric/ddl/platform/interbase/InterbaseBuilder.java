@@ -37,14 +37,14 @@ import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 import org.jumpmind.symmetric.ddl.util.Jdbc3Utils;
 
-/**
+/*
  * The SQL Builder for the Interbase database.
  * 
  * @version $Revision: 231306 $
  */
 public class InterbaseBuilder extends SqlBuilder
 {
-    /**
+    /*
      * Creates a new builder instance.
      * 
      * @param platform The plaftform this builder belongs to
@@ -55,7 +55,7 @@ public class InterbaseBuilder extends SqlBuilder
         addEscapedCharSequence("'", "''");
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void createTable(Database database, Table table, Map parameters) throws IOException
@@ -71,7 +71,7 @@ public class InterbaseBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected String getNativeDefaultValue(Column column)
@@ -87,7 +87,7 @@ public class InterbaseBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void dropTable(Table table) throws IOException
@@ -102,7 +102,7 @@ public class InterbaseBuilder extends SqlBuilder
         super.dropTable(table);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public void writeExternalIndexDropStmt(Table table, Index index) throws IOException
@@ -114,7 +114,7 @@ public class InterbaseBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Writes the creation statements to make the given column an auto-increment column.
      * 
      * @param database The database model
@@ -142,7 +142,7 @@ public class InterbaseBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Writes the statements to drop the auto-increment status for the given column.
      * 
      * @param table  The table
@@ -159,7 +159,7 @@ public class InterbaseBuilder extends SqlBuilder
         printEndOfStatement();
     }
 
-    /**
+    /*
      * Determines the name of the trigger for an auto-increment column.
      * 
      * @param table  The table
@@ -176,7 +176,7 @@ public class InterbaseBuilder extends SqlBuilder
         return getConstraintName("trg", table, secondPart, null);
     }
 
-    /**
+    /*
      * Determines the name of the generator for an auto-increment column.
      * 
      * @param table  The table
@@ -193,7 +193,7 @@ public class InterbaseBuilder extends SqlBuilder
         return getConstraintName("gen", table, secondPart, null);
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void writeColumnAutoIncrementStmt(Table table, Column column) throws IOException
@@ -201,7 +201,7 @@ public class InterbaseBuilder extends SqlBuilder
         // we're using a generator
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     public String getSelectLastIdentityValues(Table table)
@@ -253,7 +253,7 @@ public class InterbaseBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * {@inheritDoc}
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel, Table sourceTable, Table targetTable, Map parameters, List changes) throws IOException
@@ -313,7 +313,7 @@ public class InterbaseBuilder extends SqlBuilder
         }
     }
 
-    /**
+    /*
      * Processes the addition of a column to a table.
      * 
      * @param currentModel The current database schema
@@ -360,7 +360,7 @@ public class InterbaseBuilder extends SqlBuilder
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
-    /**
+    /*
      * Processes the removal of a column from a table.
      * 
      * @param currentModel The current database schema
