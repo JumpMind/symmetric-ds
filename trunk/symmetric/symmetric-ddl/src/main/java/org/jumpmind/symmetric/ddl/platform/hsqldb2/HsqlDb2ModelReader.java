@@ -59,6 +59,11 @@ public class HsqlDb2ModelReader extends JdbcModelReader
         {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
+        
+        String autoIncrement = (String)values.get("IS_AUTOINCREMENT");
+        if (autoIncrement != null) {
+            column.setAutoIncrement("YES".equalsIgnoreCase(autoIncrement.trim()));
+        }
         return column;
     }
 
