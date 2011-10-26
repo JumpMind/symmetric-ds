@@ -237,8 +237,6 @@ public interface IDbDialect {
 
     /*
      * Get the string prepended to the Symmetric configuration tables.
-     * 
-     * @return
      */
     public String getTablePrefix();
     

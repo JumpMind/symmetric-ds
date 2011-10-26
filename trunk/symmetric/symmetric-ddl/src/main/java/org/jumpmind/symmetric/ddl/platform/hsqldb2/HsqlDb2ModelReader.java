@@ -34,8 +34,6 @@ import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 
 /*
  * Reads a database model from a HsqlDb database.
- *
- * @version $Revision: $
  */
 public class HsqlDb2ModelReader extends JdbcModelReader
 {
@@ -52,25 +50,7 @@ public class HsqlDb2ModelReader extends JdbcModelReader
     }
 
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
-    {
-        Table table = super.readTable(connection, metaData, values);
-
-        if (table != null)
-        {
-            // For at least version 1.7.2 we have to determine the auto-increment columns
-            // from a result set meta data because the database does not put this info
-            // into the database metadata
-            // Since Hsqldb only allows IDENTITY for primary key columns, we restrict
-            // our search to those columns
-            determineAutoIncrementFromResultSetMetaData(connection, table, table.getPrimaryKeyColumns());
-        }
-        
-        return table;
-    }
-
-    @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException
     {
         Column column = super.readColumn(metaData, values);
 
@@ -97,4 +77,5 @@ public class HsqlDb2ModelReader extends JdbcModelReader
 
         return (name != null) && (name.startsWith("SYS_PK_") || name.startsWith("SYS_IDX_"));
     }
+    
 }
