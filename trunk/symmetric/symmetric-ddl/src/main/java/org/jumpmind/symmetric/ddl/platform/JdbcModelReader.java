@@ -832,7 +832,10 @@ public class JdbcModelReader
             column.setScale(scale);
         }
         column.setRequired("NO".equalsIgnoreCase(((String) values.get("IS_NULLABLE")).trim()));
-        column.setAutoIncrement("NO".equalsIgnoreCase(((String) values.get("IS_AUTOINCREMENT")).trim()));
+        String autoIncrement = (String)values.get("IS_AUTOINCREMENT");
+        if (autoIncrement != null) {
+            column.setAutoIncrement("NO".equalsIgnoreCase(autoIncrement.trim()));
+        }
         column.setDescription((String) values.get("REMARKS"));
         
         return column;
