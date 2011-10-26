@@ -182,6 +182,7 @@ public class JdbcModelReader
         result.add(new MetaDataColumnDescriptor("DECIMAL_DIGITS", Types.INTEGER, new Integer(0)));
         result.add(new MetaDataColumnDescriptor("COLUMN_SIZE",    Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("IS_NULLABLE",    Types.VARCHAR, "YES"));
+        result.add(new MetaDataColumnDescriptor("IS_AUTOINCREMENT",    Types.VARCHAR, "YES"));
         result.add(new MetaDataColumnDescriptor("REMARKS",        Types.VARCHAR));
 
         return result;
@@ -227,7 +228,6 @@ public class JdbcModelReader
         result.add(new MetaDataColumnDescriptor("FK_NAME",       Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("PKCOLUMN_NAME", Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("FKCOLUMN_NAME", Types.VARCHAR));
-
         return result;
     }
 
@@ -250,7 +250,6 @@ public class JdbcModelReader
         result.add(new MetaDataColumnDescriptor("ORDINAL_POSITION", Types.TINYINT, new Short((short)0)));
         result.add(new MetaDataColumnDescriptor("COLUMN_NAME",      Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("TYPE",             Types.TINYINT));
-
         return result;
     }
 
@@ -833,7 +832,9 @@ public class JdbcModelReader
             column.setScale(scale);
         }
         column.setRequired("NO".equalsIgnoreCase(((String) values.get("IS_NULLABLE")).trim()));
+        column.setAutoIncrement("NO".equalsIgnoreCase(((String) values.get("IS_AUTOINCREMENT")).trim()));
         column.setDescription((String) values.get("REMARKS"));
+        
         return column;
     }
 
@@ -1027,9 +1028,8 @@ public class JdbcModelReader
     protected Map<String,Object> readColumns(ResultSet resultSet, List<MetaDataColumnDescriptor> columnDescriptors) throws SQLException
     {
         HashMap<String,Object> values = new HashMap<String,Object>();
-
         for (Iterator<MetaDataColumnDescriptor> it = columnDescriptors.iterator(); it.hasNext();)
-        {
+        {           
             MetaDataColumnDescriptor descriptor = it.next();
 
             values.put(descriptor.getName(), descriptor.readColumn(resultSet));
