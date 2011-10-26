@@ -834,7 +834,7 @@ public class JdbcModelReader
         column.setRequired("NO".equalsIgnoreCase(((String) values.get("IS_NULLABLE")).trim()));
         String autoIncrement = (String)values.get("IS_AUTOINCREMENT");
         if (autoIncrement != null) {
-            column.setAutoIncrement("NO".equalsIgnoreCase(autoIncrement.trim()));
+            column.setAutoIncrement("YES".equalsIgnoreCase(autoIncrement.trim()));
         }
         column.setDescription((String) values.get("REMARKS"));
         
