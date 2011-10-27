@@ -209,4 +209,10 @@ public class TriggerRouter implements Serializable {
                 || (this.router != null && triggerRouter.router != null && this.router
                         .equals(triggerRouter.router));
     }
+    
+    @Override
+    public String toString() {
+        return (trigger != null ? trigger.toString() : "") + ":"
+                + (router != null ? router.toString() : "");
+    }
 }
