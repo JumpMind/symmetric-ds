@@ -184,4 +184,35 @@ public class Channel implements Serializable {
     public boolean isContainsBigLob() {
         return containsBigLob;
     }
+    
+    @Override
+    public int hashCode() {
+        if (channelId != null) {
+            return channelId.hashCode();
+        } else {
+            return super.hashCode();
+        }
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (channelId != null) {
+            if (obj instanceof Channel) {
+                return channelId.equals(((Channel) obj).channelId);
+            } else {
+                return false;
+            }
+        } else {
+            return super.equals(obj);
+        }
+    }
+
+    @Override
+    public String toString() {
+        if (channelId != null) {
+            return channelId;
+        } else {
+            return super.toString();
+        }        
+    }
 }

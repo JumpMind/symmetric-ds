@@ -468,5 +468,14 @@ public class Trigger implements Serializable {
     public int hashCode() {
         return triggerId != null ? triggerId.hashCode() : super.hashCode();
     }
+    
+    @Override
+    public String toString() {
+        if (triggerId != null) {
+            return triggerId;
+        } else {
+            return super.toString();
+        }
+    }
 
 }

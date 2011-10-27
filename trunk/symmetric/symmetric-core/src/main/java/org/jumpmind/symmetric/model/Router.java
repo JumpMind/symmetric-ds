@@ -214,7 +214,6 @@ public class Router implements Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof Router && routerId != null) {
             return routerId.equals(((Router) obj).routerId);
-
         } else {
             return false;
         }
@@ -223,6 +222,15 @@ public class Router implements Serializable {
     @Override
     public int hashCode() {
         return routerId != null ? routerId.hashCode() : super.hashCode();
+    }
+    
+    @Override
+    public String toString() {
+        if (routerId != null) {
+            return routerId;
+        } else {
+            return super.toString();
+        }
     }
 
 }

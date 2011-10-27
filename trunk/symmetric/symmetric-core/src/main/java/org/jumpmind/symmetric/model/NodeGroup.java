@@ -54,5 +54,36 @@ public class NodeGroup implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
+    
+    @Override
+    public int hashCode() {
+        if (nodeGroupId != null) {
+            return nodeGroupId.hashCode();
+        } else {
+            return super.hashCode();
+        }
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (nodeGroupId != null) {
+            if (obj instanceof NodeGroup) {
+                return nodeGroupId.equals(((NodeGroup) obj).nodeGroupId);
+            } else {
+                return false;
+            }
+        } else {
+            return super.equals(obj);
+        }
+    }
+
+    @Override
+    public String toString() {
+        if (nodeGroupId != null) {
+            return nodeGroupId;
+        } else {
+            return super.toString();
+        }        
+    }
 
 }

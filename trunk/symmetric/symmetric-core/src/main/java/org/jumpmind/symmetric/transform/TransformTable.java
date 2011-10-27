@@ -171,4 +171,35 @@ public class TransformTable {
     public NodeGroupLink getNodeGroupLink() {
         return nodeGroupLink;
     }
+    
+    @Override
+    public int hashCode() {
+        if (transformId != null) {
+            return transformId.hashCode();
+        } else {
+            return super.hashCode();
+        }
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (transformId != null) {
+            if (obj instanceof TransformTable) {
+                return transformId.equals(((TransformTable) obj).transformId);
+            } else {
+                return false;
+            }
+        } else {
+            return super.equals(obj);
+        }
+    }
+
+    @Override
+    public String toString() {
+        if (transformId != null) {
+            return transformId;
+        } else {
+            return super.toString();
+        }        
+    }
 }
