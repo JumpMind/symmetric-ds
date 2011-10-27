@@ -62,7 +62,7 @@
                                 create function dbo.$(functionName)() returns varchar(50)
                                 begin
                                   declare @node varchar(50);
-                                  set @node = coalesce(replace(substring(cast(context_info() as varchar), 2, 50), 0x0, ''), '');
+                                  set @node = coalesce(replace(substring(cast(context_info() as varchar) collate SQL_Latin1_General_CP1_CI_AS, 2, 50), 0x0, ''), '');
                                   return @node;
                                 end
                                 ]]>
