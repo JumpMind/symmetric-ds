@@ -36,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
+import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -342,6 +343,30 @@ public class NodeService extends AbstractService implements INodeService {
     
     public List<Node> findAllNodes() {
         return jdbcTemplate.query(getSql("selectNodePrefixSql"), new NodeRowMapper());        
+    }
+    
+    public Map<String, Node> findAllNodesAsMap() {
+        List<Node> nodes = findAllNodes();
+        Map<String, Node> nodeMap = new HashMap<String, Node>(nodes.size());
+        for (Node node : nodes) {
+            nodeMap.put(node.getNodeId(), node);
+        }
+        return nodeMap;
+    }
+    
+    public NetworkedNode getRootNetworkedNode() {
+        Map<String, Node> nodes = findAllNodesAsMap();
+        Map<String, NetworkedNode> leaves = new HashMap<String, NetworkedNode>(nodes.size());
+        NetworkedNode nodeLeaf = null;
+        for (Node node : nodes.values()) {
+            nodeLeaf = leaves.get(node.getNodeId());
+            if (nodeLeaf == null) {
+                nodeLeaf = new NetworkedNode(node);
+                nodeLeaf.addParents(nodes, leaves);
+                leaves.put(node.getNodeId(), nodeLeaf);
+            }
+        }
+        return nodeLeaf.getRoot();
     }
 
     public boolean updateNodeSecurity(NodeSecurity security) {
