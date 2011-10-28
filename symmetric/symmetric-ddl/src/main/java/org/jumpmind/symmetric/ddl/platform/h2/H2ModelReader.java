@@ -21,7 +21,6 @@ package org.jumpmind.symmetric.ddl.platform.h2;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -69,24 +68,20 @@ public class H2ModelReader extends JdbcModelReader {
         if (TypeMap.isTextType(column.getTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
+        
+        String autoIncrement = (String)values.get("IS_AUTOINCREMENT");
+        if (autoIncrement != null) {
+            column.setAutoIncrement("YES".equalsIgnoreCase(autoIncrement.trim()));
+        }
         return column;
     }
 
     @Override
     protected List<MetaDataColumnDescriptor> initColumnsForColumn() {
-        List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
-        result.add(new MetaDataColumnDescriptor("COLUMN_DEF", 12));
+        List<MetaDataColumnDescriptor> result = super.initColumnsForColumn();
         result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", 12));
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", 12));
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", 12));
-        result.add(new MetaDataColumnDescriptor("DATA_TYPE", 4, new Integer(1111)));
-        result.add(new MetaDataColumnDescriptor("NUM_PREC_RADIX", 4, new Integer(10)));
-        result.add(new MetaDataColumnDescriptor("DECIMAL_DIGITS", 4, new Integer(0)));
         result.add(new MetaDataColumnDescriptor("NUMERIC_SCALE", 4, new Integer(0)));
-        result.add(new MetaDataColumnDescriptor("COLUMN_SIZE", 12));
         result.add(new MetaDataColumnDescriptor("CHARACTER_MAXIMUM_LENGTH", 12));
-        result.add(new MetaDataColumnDescriptor("IS_NULLABLE", 12, "YES"));
-        result.add(new MetaDataColumnDescriptor("REMARKS", 12));
         return result;
     }
 
@@ -104,17 +99,4 @@ public class H2ModelReader extends JdbcModelReader {
         return name != null && name.startsWith("PRIMARY_KEY_");
     }
 
-    @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
-            Map<String, Object> values) throws SQLException {
-        Table table = super.readTable(connection, metaData, values);
-
-        if (table != null) {
-            // H2 does not return the auto increment status in the meta data
-            determineAutoIncrementFromResultSetMetaData(connection, table,
-                    table.getPrimaryKeyColumns());
-        }
-
-        return table;
-    }
 }

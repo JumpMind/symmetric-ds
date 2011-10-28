@@ -44,6 +44,7 @@
     <bean id="sendHeartbeat" class="org.jumpmind.symmetric.job.PushHeartbeatListener">
         <property name="dataService" ref="dataService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="dbDialect" ref="dbDialect"/>
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="enabled" value="$[sym.heartbeat.sync.on.push]"/>
         <property name="timeBetweenHeartbeats" value="$[sym.heartbeat.sync.on.push.period.sec]" />
