@@ -67,8 +67,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     private Map<String, List<String>> rootConfigChannelTableNames;
 
-    private Map<String, Map<String, String>> rootConfigChannelInitialLoadSelect;
-
     private IClusterService clusterService;
 
     private IConfigurationService configurationService;
@@ -255,9 +253,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             TriggerRouter trigger = buildRegistrationTriggerRouter(version, tableName, syncChanges,
                     nodeGroupLink);
             trigger.setInitialLoadOrder(initialLoadOrder++);
-            String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(majorVersion).get(
-                    tableName);
-            trigger.setInitialLoadSelect(initialLoadSelect);
             if (tableName.equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
                     TableConstants.SYM_TRIGGER))) {
                 trigger.getRouter().setRouterType("trigger");
@@ -269,13 +264,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected TriggerRouter buildRegistrationTriggerRouter(String version, String tableName,
             boolean syncChanges, NodeGroupLink nodeGroupLink) {
-        String majorVersion = getMajorVersion(version);
         boolean autoSyncConfig = parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
 
         TriggerRouter triggerRouter = new TriggerRouter();
-        triggerRouter.setInitialLoadSelect(rootConfigChannelInitialLoadSelect.get(majorVersion)
-                .get(tableName));
-
         Trigger trigger = triggerRouter.getTrigger();
         trigger.setTriggerId(Integer.toString(Math.abs(tableName.hashCode())));
         trigger.setSyncOnDelete(syncChanges && autoSyncConfig);
@@ -377,7 +368,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             } else if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.P)) {
 
                 triggers.add(buildRegistrationTriggerRouter(Version.version(), TableConstants
-                        .getTableName(tablePrefix, TableConstants.SYM_NODE), false, nodeGroupLink));
+                        .getTableName(tablePrefix, TableConstants.SYM_NODE), true, nodeGroupLink));
                 log.debug("TriggerHistCreating", TableConstants.getTableName(tablePrefix,
                         TableConstants.SYM_NODE));
 
@@ -1194,11 +1185,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void setRootConfigChannelTableNames(Map<String, List<String>> configChannelTableNames) {
         this.rootConfigChannelTableNames = configChannelTableNames;
-    }
-
-    public void setRootConfigChannelInitialLoadSelect(
-            Map<String, Map<String, String>> rootConfigChannelInitialLoadSelect) {
-        this.rootConfigChannelInitialLoadSelect = rootConfigChannelInitialLoadSelect;
     }
 
     public void setClusterService(IClusterService clusterService) {

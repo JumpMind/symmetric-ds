@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.model.Node;
@@ -37,15 +38,18 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
     private INodeService nodeService;
     private IOutgoingBatchService outgoingBatchService;
     private long timeBetweenHeartbeats;
+    private IDbDialect dbDialect;
 
     public void heartbeat(Node me, Set<Node> children) {
         if (enabled) {
             // don't send new heart beat events if we haven't sent
             // the last ones ...
             if (!nodeService.isRegistrationServer() && !isUnsentDataPresentOnConfigChannel()) {
-                dataService.insertHeartbeatEvent(me, false);
-                for (Node node : children) {
-                    dataService.insertHeartbeatEvent(node, false);
+                if (!dbDialect.getPlatform().getPlatformInfo().isTriggersSupported()) {
+                    dataService.insertHeartbeatEvent(me, false);
+                    for (Node node : children) {
+                        dataService.insertHeartbeatEvent(node, false);
+                    }
                 }
             }
         }
@@ -89,5 +93,9 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+    
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 }
