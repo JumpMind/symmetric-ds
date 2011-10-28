@@ -38,7 +38,9 @@
             <bean class="org.jumpmind.symmetric.route.TriggerDataRouter"/>
         </entry> 
         <entry key="symconfig">
-            <bean class="org.jumpmind.symmetric.route.ConfigurationRouter"/>
+            <bean class="org.jumpmind.symmetric.route.ConfigurationRouter">
+            	<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+           	</bean>
         </entry>                   
 	</util:map>
 
