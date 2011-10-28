@@ -250,7 +250,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<TriggerRouter> triggers = new ArrayList<TriggerRouter>(tables.size());
         for (int j = 0; j < tables.size(); j++) {
             String tableName = tables.get(j);
-            boolean syncChanges = !TableConstants.getNodeTablesAsSet(tablePrefix).contains(
+            boolean syncChanges = !TableConstants.getTablesThatDoNotSync(tablePrefix).contains(
                     tableName);
             TriggerRouter trigger = buildRegistrationTriggerRouter(version, tableName, syncChanges,
                     nodeGroupLink);
