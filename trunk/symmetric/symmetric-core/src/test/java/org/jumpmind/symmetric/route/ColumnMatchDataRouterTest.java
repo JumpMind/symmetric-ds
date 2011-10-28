@@ -7,7 +7,7 @@ import junit.framework.Assert;
 import org.jumpmind.symmetric.route.ColumnMatchDataRouter.Expression;
 import org.junit.Test;
 
-public class ColumnMatchDataRouterUnitTest {
+public class ColumnMatchDataRouterTest {
 
     @Test
     public void testExpressionUsingLineFeedsParsing() {

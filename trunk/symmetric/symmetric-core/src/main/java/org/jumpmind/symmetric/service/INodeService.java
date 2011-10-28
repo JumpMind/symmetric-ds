@@ -29,6 +29,7 @@ import java.util.Set;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
+import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -173,4 +174,6 @@ public interface INodeService {
     public void addOfflineServerListener(IOfflineServerListener listener);
 
     public boolean removeOfflineServerListener(IOfflineServerListener listener);
+    
+    public NetworkedNode getRootNetworkedNode();
 }

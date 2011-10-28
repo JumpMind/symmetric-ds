@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -37,8 +36,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * Represents a table in the database model.
- * 
- * @version $Revision: 494338 $
  */
 public class Table implements Serializable, Cloneable
 {
@@ -61,6 +58,14 @@ public class Table implements Serializable, Cloneable
     private ArrayList _foreignKeys = new ArrayList();
     /** The indices applied to this table. */
     private ArrayList _indices = new ArrayList();
+    
+    public Table() {
+     
+    }
+    
+    public Table(String tableName) {
+        this._name = tableName;
+    }    
 
     /**
      * Returns the catalog of this table as read from the database.
