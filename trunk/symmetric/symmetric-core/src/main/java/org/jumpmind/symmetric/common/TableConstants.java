@@ -47,10 +47,8 @@ public class TableConstants {
 
     public static String[] NODE_TABLES = { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY };
 
-    public static final Set<String> getNodeTablesAsSet(String tablePrefix) {
+    public static final Set<String> getTablesThatDoNotSync(String tablePrefix) {
         Set<String> tables = new HashSet<String>();
-        tables.add(getTableName(tablePrefix, SYM_NODE));
-        tables.add(getTableName(tablePrefix, SYM_NODE_SECURITY));
         tables.add(getTableName(tablePrefix, SYM_NODE_IDENTITY));
         tables.add(getTableName(tablePrefix, SYM_NODE_CHANNEL_CTL));
         return tables;
