@@ -31,11 +31,13 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 public class ConfigurationChangedRouter extends AbstractDataRouter implements IDataRouter {
+
+    private static final String CONTEXT_RESYNC_TRIGGERS_NEEDED = "CONTEXT_RESYNC_TRIGGERS_NEEDED";
 
     public final static String KEY = "symconfig";
 
@@ -44,6 +46,8 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
     private IConfigurationService configurationService;
 
     private INodeService nodeService;
+    
+    private ITriggerRouterService triggerRouterService;
 
     public Collection<String> routeToNodes(IRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> possibleTargetNodes, boolean initialLoad) {
@@ -74,6 +78,12 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
             }
         } else {
             nodeIds = toNodeIds(possibleTargetNodes, nodeIds);
+            
+            if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER)
+                    || tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)
+                    || tableMatches(dataMetaData, TableConstants.SYM_ROUTER)) {
+                routingContext.getContextCache().put(CONTEXT_RESYNC_TRIGGERS_NEEDED, Boolean.TRUE);
+            }
         }
 
         return nodeIds;
@@ -152,11 +162,13 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
             return true;
         }
     }
-
-    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
-        // TODO resync triggers if sym_trigger, sym_trigger_router or sym_router
-        // has changed we could do a synch triggers call here when we know these are
-        // changing
+    
+    @Override
+    public void contextCommitted(IRouterContext routingContext) {
+        if (Boolean.TRUE.equals(routingContext.getContextCache().get(CONTEXT_RESYNC_TRIGGERS_NEEDED))) {
+            // TODO - Add parameter to turn this on.
+            //triggerRouterService.syncTriggers();
+        }
     }
 
     public void setTablePrefix(String tablePrefix) {
@@ -170,6 +182,10 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
+    
+    public void setTriggerRouterService(ITriggerRouterService triggerRouterService) {
+        this.triggerRouterService = triggerRouterService;
+    }
 
     private boolean tableMatches(DataMetaData dataMetaData, String tableName) {
         boolean matches = false;
@@ -179,32 +195,5 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
         }
         return matches;
     }
-
-    // TODO: This guy is going to replace the initial load selects for sym_node
-    // and sym_node_security found in
-    // triggerrouter-service.xml. The nodes variable has all eligible nodes that
-    // can be sync'd to.
-    // Go through them all and figure out if the sym_node or sym_node_security
-    // rows should be synced. If so,
-    // return the nodeid in the returned collection. - same criteira as the
-    // initial load sql should be implemented in code here
-
-    // DONE - if the configuration table is something other than node or
-    // security, then return all node ids (configuration
-    // goes everywhere.
-    //
-    // STILL USED IN TRIGGER ROUTER SERVICE
-    // - this router is configured in symmetric-routers.xml. it will be used in
-    // TriggerRouterService.buildRegistrationTriggerRouter()
-    // we can get rid of rootConfigChannelInitialLoadSelect in
-    // triggerrouter-service.xml
-
-    // TODO: side note: if the external id of a node exists in
-    // registration_redirect, then we should sync that node only
-    // to the registration_node_id.
-
-    // TODO: another other side node: we should put some indicator into the
-    // context if sym_trigger, sym_trigger_router, or sym_router
-    // changes so we can run syncTriggers when the batch is completed.
 
 }
