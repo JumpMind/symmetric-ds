@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
+import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -50,6 +51,10 @@ public class MockNodeService implements INodeService {
     }
     
     public List<String> findAllExternalIds() {
+        return null;
+    }
+    
+    public NetworkedNode getRootNetworkedNode() {
         return null;
     }
     
