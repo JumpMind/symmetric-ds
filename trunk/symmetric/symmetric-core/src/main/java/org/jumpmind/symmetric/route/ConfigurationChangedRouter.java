@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -33,21 +34,34 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.transform.ITransformService;
 
 public class ConfigurationChangedRouter extends AbstractDataRouter implements IDataRouter {
 
-    private static final String CONTEXT_RESYNC_TRIGGERS_NEEDED = "CONTEXT_RESYNC_TRIGGERS_NEEDED";
+    final String CTX_KEY_RESYNC_NEEDED = "Resync."
+            + ConfigurationChangedRouter.class.getSimpleName() + hashCode();
+
+    final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels."
+            + ConfigurationChangedRouter.class.getSimpleName() + hashCode();
+
+    final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
+            + ConfigurationChangedRouter.class.getSimpleName() + hashCode();
 
     public final static String KEY = "symconfig";
 
     protected String tablePrefix;
 
-    private IConfigurationService configurationService;
+    protected IConfigurationService configurationService;
 
-    private INodeService nodeService;
+    protected INodeService nodeService;
+
+    protected ITriggerRouterService triggerRouterService;
+
+    protected IParameterService parameterService;
     
-    private ITriggerRouterService triggerRouterService;
+    protected ITransformService transformService;
 
     public Collection<String> routeToNodes(IRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> possibleTargetNodes, boolean initialLoad) {
@@ -78,17 +92,26 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
             }
         } else {
             nodeIds = toNodeIds(possibleTargetNodes, nodeIds);
-            
+
             if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER)
                     || tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)
                     || tableMatches(dataMetaData, TableConstants.SYM_ROUTER)) {
-                routingContext.getContextCache().put(CONTEXT_RESYNC_TRIGGERS_NEEDED, Boolean.TRUE);
+                routingContext.getContextCache().put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
+            }
+
+            if (tableMatches(dataMetaData, TableConstants.SYM_CHANNEL)) {
+                routingContext.getContextCache().put(CTX_KEY_FLUSH_CHANNELS_NEEDED, Boolean.TRUE);
+            }
+
+            if (tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_COLUMN)
+                    || tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_TABLE)) {
+                routingContext.getContextCache().put(CTX_KEY_FLUSH_TRANSFORMS_NEEDED, Boolean.TRUE);
             }
         }
 
         return nodeIds;
     }
-    
+
     protected Node findIdentity() {
         return nodeService.findIdentity();
     }
@@ -162,12 +185,22 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
             return true;
         }
     }
-    
+
     @Override
     public void contextCommitted(IRouterContext routingContext) {
-        if (Boolean.TRUE.equals(routingContext.getContextCache().get(CONTEXT_RESYNC_TRIGGERS_NEEDED))) {
-            // TODO - Add parameter to turn this on.
-            //triggerRouterService.syncTriggers();
+        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
+            log.info("ChannelFlushed");
+            configurationService.reloadChannels();
+        }
+        if (routingContext.getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
+                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            log.info("ConfigurationChanged");
+            triggerRouterService.syncTriggers();
+        }
+        if (routingContext.getContextCache().get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
+                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+            log.info("ConfigurationChanged");
+            transformService.resetCache();
         }
     }
 
@@ -182,9 +215,17 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
-    
+
     public void setTriggerRouterService(ITriggerRouterService triggerRouterService) {
         this.triggerRouterService = triggerRouterService;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
+    
+    public void setTransformService(ITransformService transformService) {
+        this.transformService = transformService;
     }
 
     private boolean tableMatches(DataMetaData dataMetaData, String tableName) {

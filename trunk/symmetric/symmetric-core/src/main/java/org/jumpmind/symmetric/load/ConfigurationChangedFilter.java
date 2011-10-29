@@ -139,7 +139,8 @@ public class ConfigurationChangedFilter
             configurationService.reloadChannels();
         }
         if (loader.getContext().getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION) 
+                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("ConfigurationChanged");
             triggerRouterService.syncTriggers();
         }
