@@ -41,7 +41,7 @@
             <bean class="org.jumpmind.symmetric.route.ConfigurationChangedRouter">
                 <property name="nodeService" ref="nodeService"/>
                 <property name="configurationService" ref="configurationService"/>
-                <property name="triggerRouterService" ref=""triggerRouterService""/>
+                <property name="triggerRouterService" ref="triggerRouterService"/>
             	<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
            	</bean>
         </entry>                   
