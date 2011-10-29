@@ -50,6 +50,17 @@ public interface IDataService {
 
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect);
 
+    /**
+     * Sends a SQL command to the remote node for execution by creating a SQL event that is synced like other data
+     * 
+     *  @param nodeId the remote node where the SQL statement will be executed
+     *  @param catalogName used to find the sym_trigger entry for table that will be associated with this event 
+     *  @param schemaName used to find the sym_trigger entry for table that will be associated with this event
+     *  @param tableName used to find the sym_trigger entry for table that will be associated with this event
+     *  @param sql the SQL statement to run on the remote node database
+     *  @param isLoad indicate whether or not this event is part of the initial load
+     *  @return message string indicating success or error
+     */
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql, boolean isLoad);
 
     public void insertReloadEvents(Node targetNode);
