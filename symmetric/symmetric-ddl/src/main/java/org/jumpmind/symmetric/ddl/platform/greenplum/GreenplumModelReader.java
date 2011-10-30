@@ -6,10 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ddl.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.symmetric.ddl.platform.postgresql.PostgreSqlModelReader;
 
 public class GreenplumModelReader extends PostgreSqlModelReader {
@@ -22,11 +24,11 @@ public class GreenplumModelReader extends PostgreSqlModelReader {
     protected Collection<Table> readTables(Connection connection, String catalog,
             String schemaPattern, String[] tableTypes) throws SQLException {
         Collection<Table> tables = super.readTables(connection, catalog, schemaPattern, tableTypes);
-        setDistributionKeys(connection, tables, schemaPattern);
+        //setDistributionKeys(connection, tables, schemaPattern);
         return tables;
     }
 
-    protected void setDistributionKeys(Connection connection, Collection<Table> tables,
+    protected void setDistributionKeys(Connection connection, Table table,
             String schema) throws SQLException {
 
         // get the distribution keys for segments
@@ -45,25 +47,23 @@ public class GreenplumModelReader extends PostgreSqlModelReader {
         query.append("   p.localoid = t.oid and ");
         query.append("   a.attrelid = t.oid and ");
         query.append("   a.attnum = any(p.attrnums) and ");
-        query.append("   n.nspname = ? ");
+        query.append("   n.nspname = ? and ");
+        query.append("   t.relname = ?");
 
         PreparedStatement prepStmt = connection.prepareStatement(query.toString());
 
         try {
             // set the schema parm in the query
             prepStmt.setString(1, schema);
+            prepStmt.setString(2, table.getName());
             ResultSet rs = prepStmt.executeQuery();
 
-            // for every row, find the table and set the distributionKey values
-            // for the corresponding columns
+            // for every row, set the distributionKey for the corresponding columns
             while (rs.next()) {
-                Table table = findTable(tables, rs.getString(1).trim());
-                if (table != null) {
-                    Column column = table.findColumn(rs.getString(2).trim(), getPlatform()
-                            .isDelimitedIdentifierModeOn());
-                    if (column != null) {
-                        column.setDistributionKey(true);
-                    }
+                Column column = table.findColumn(rs.getString(2).trim(), getPlatform()
+                        .isDelimitedIdentifierModeOn());
+                if (column != null) {
+                    column.setDistributionKey(true);
                 }
             }
             rs.close();
@@ -73,16 +73,12 @@ public class GreenplumModelReader extends PostgreSqlModelReader {
             }
         }
     }
-
-    // TODO: don't like this - talk to eric and chris for alternatives
-    private Table findTable(Collection<Table> tables, String tableName) {
-        for (Iterator<Table> iter = tables.iterator(); iter.hasNext();) {
-            Table table = (Table) iter.next();
-
-            if (table.getName().equalsIgnoreCase(tableName)) {
-                return table;
-            }
-        }
-        return null;
+    
+    @Override
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    {
+        Table table = super.readTable(connection, metaData, values);
+        setDistributionKeys(connection, table, metaData.getSchemaPattern());
+        return table;
     }
 }
