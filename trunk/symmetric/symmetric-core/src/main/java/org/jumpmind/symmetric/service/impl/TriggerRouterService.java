@@ -365,15 +365,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<TriggerRouter> triggers = new ArrayList<TriggerRouter>();
         List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(sourceNodeGroupId);
         for (NodeGroupLink nodeGroupLink : links) {
-            if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.W)) {
-                triggers.addAll(getTriggerRoutersForRegistration(Version.version(), nodeGroupLink));
-            } else if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.P)) {
-
-                triggers.add(buildRegistrationTriggerRouter(Version.version(), TableConstants
-                        .getTableName(tablePrefix, TableConstants.SYM_NODE), true, nodeGroupLink));
-                log.debug("TriggerHistCreating", TableConstants.getTableName(tablePrefix,
-                        TableConstants.SYM_NODE));
-
+            triggers.addAll(getTriggerRoutersForRegistration(Version.version(), nodeGroupLink));
+            if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.P)) {
                 triggers
                         .add(buildRegistrationTriggerRouter(Version.version(), TableConstants
                                 .getTableName(tablePrefix, TableConstants.SYM_NODE_HOST), true,
