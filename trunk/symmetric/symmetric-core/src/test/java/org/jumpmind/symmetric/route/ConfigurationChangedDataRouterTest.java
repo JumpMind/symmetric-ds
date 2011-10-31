@@ -144,6 +144,21 @@ public class ConfigurationChangedDataRouterTest {
         Assert.assertTrue(nodeIds.contains("dw"));
     }
     
+    @Test
+    public void testRouteS1toRegsvrFromS1() {
+        IDataRouter router = buildTestableRouter(
+                MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("s1").getNode(), MULTIPLE_GROUPS_PLUS_REG_SVR_LINKS,
+                MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT);
+        Set<Node> nodes = new HashSet<Node>();
+        nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("s1").getNode());
+        nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("dw").getNode());
+        nodes.add(MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.findNetworkedNode("regsvr").getNode());
+        Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "s1"), nodes, false);
+        Assert.assertNotNull(nodeIds);
+        Assert.assertEquals(1, nodeIds.size());
+        Assert.assertTrue(nodeIds.contains("regsvr"));
+    }
+    
     protected DataMetaData buildDataMetaData(String tableName, String nodeId) {
         Data data = new Data();
         data.setTableName(tableName);
@@ -156,7 +171,7 @@ public class ConfigurationChangedDataRouterTest {
 
     protected IDataRouter buildTestableRouter(final Node nodeThatIsRouting,
             final List<NodeGroupLink> links, final NetworkedNode root) {
-        ConfigurationChangedRouter router = new ConfigurationChangedRouter() {
+        ConfigurationChangedDataRouter router = new ConfigurationChangedDataRouter() {
             @Override
             protected Node findIdentity() {
                 return nodeThatIsRouting;

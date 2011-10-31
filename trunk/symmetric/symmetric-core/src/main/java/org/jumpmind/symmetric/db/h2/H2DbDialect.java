@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /*
- * 
+ * Synchronization support for the H2 database platform. 
  */
 public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
 

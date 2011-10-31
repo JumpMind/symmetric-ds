@@ -4,6 +4,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<bean id="pingUriHandler" class="org.jumpmind.symmetric.web.PingUriHandler">
+	    <property name="parameterService" ref="parameterService" />	
 		<property name="uriPattern" value="/ping/*" />
 	</bean>
 
@@ -36,6 +37,7 @@
 	</bean>
 
 	<bean id="pushUriHandler" class="org.jumpmind.symmetric.web.PushUriHandler">
+	    <property name="parameterService" ref="parameterService" />	
 		<property name="dataLoaderService" ref="dataLoaderService" />
 		<property name="statisticManager" ref="statisticManager" />
 		<property name="uriPattern" value="/push/*" />
@@ -49,10 +51,12 @@
 
 	<bean id="registrationUriHandler" class="org.jumpmind.symmetric.web.RegistrationUriHandler">
 		<property name="registrationService" ref="registrationService" />
+		<property name="parameterService" ref="parameterService" />
 		<property name="uriPattern" value="/registration/*" />
 	</bean>
 
 	<bean id="ackUriHandler" class="org.jumpmind.symmetric.web.AckUriHandler">
+	    <property name="parameterService" ref="parameterService" />
 		<property name="acknowledgeService" ref="acknowledgeService" />
 		<property name="uriPattern" value="/ack/*" />
 		<property name="interceptors">

@@ -52,6 +52,34 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
         return parent;
     }
 
+    public int getNumberOfLinksAwayFromRoot(String nodeId) {
+        int numberOfLinksAwayFromRoot = getRoot().getNumberOfLinksAwayFromMe(nodeId, 0);
+        if (numberOfLinksAwayFromRoot == 0 && !node.getNodeId().equals(nodeId)) {
+            return -1;
+        } else {
+            return numberOfLinksAwayFromRoot;
+        }
+    }
+
+    protected int getNumberOfLinksAwayFromMe(String nodeId, int numberOfLinksIAmFromRoot) {
+        if (!node.getNodeId().equals(nodeId)) {
+            if (children != null) {
+                for (NetworkedNode child : children) {
+                    if (child.getNode().getNodeId().equals(nodeId)) {
+                        return numberOfLinksIAmFromRoot + 1;
+                    } else {
+                        int numberOfLinksAwayFromMe = child.getNumberOfLinksAwayFromMe(nodeId,
+                                numberOfLinksIAmFromRoot + 1);
+                        if (numberOfLinksAwayFromMe > numberOfLinksIAmFromRoot) {
+                            return numberOfLinksAwayFromMe;
+                        }
+                    }
+                }
+            }
+        }
+        return numberOfLinksIAmFromRoot;
+    }
+
     public NetworkedNode findNetworkedNode(String nodeId) {
         if (this.node.getNodeId().equals(nodeId)) {
             return this;
@@ -116,20 +144,23 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
 
     public void addParents(Map<String, Node> nodes, Map<String, NetworkedNode> leaves) {
         String parentNodeId = node.getCreatedAtNodeId();
-        NetworkedNode parentNetworkedNode = leaves.get(parentNodeId);
-        if (parentNetworkedNode == null) {
-            Node parentNode = nodes.get(parentNodeId);
-            if (parentNode != null) {
-                parentNetworkedNode = new NetworkedNode(parentNode);
-                parentNetworkedNode.addParents(nodes, leaves);
-                leaves.put(parentNodeId, parentNetworkedNode);
+        if (parentNodeId != null && !parentNodeId.equals(node.getNodeId())) {
+            NetworkedNode parentNetworkedNode = leaves.get(parentNodeId);
+            if (parentNetworkedNode == null) {
+                Node parentNode = nodes.get(parentNodeId);
+                if (parentNode != null) {
+                    parentNetworkedNode = new NetworkedNode(parentNode);
+                    parentNetworkedNode.addParents(nodes, leaves);
+                    leaves.put(parentNodeId, parentNetworkedNode);
+                }
             }
+
+            if (parentNetworkedNode != null) {
+                parentNetworkedNode.addChild(this);
+            }
+            this.parent = parentNetworkedNode;
         }
 
-        if (parentNetworkedNode != null) {
-            parentNetworkedNode.addChild(this);
-        }
-        this.parent = parentNetworkedNode;
     }
 
     public NetworkedNode getRoot() {

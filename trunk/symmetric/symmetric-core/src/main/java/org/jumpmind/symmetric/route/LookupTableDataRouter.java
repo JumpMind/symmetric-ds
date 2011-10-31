@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.route;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -59,7 +58,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
 
     private JdbcTemplate jdbcTemplate;
 
-    public Collection<String> routeToNodes(IRouterContext routingContext,
+    public Set<String> routeToNodes(IRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
 
         Set<String> nodeIds = null;

@@ -101,7 +101,8 @@ public class ConfigurationChangedFilter
     private boolean isSyncTriggersNeeded(IDataLoaderContext context) {
         return matchesTable(context, TableConstants.SYM_TRIGGER) 
           || matchesTable(context, TableConstants.SYM_ROUTER) 
-          || matchesTable(context, TableConstants.SYM_TRIGGER_ROUTER);
+          || matchesTable(context, TableConstants.SYM_TRIGGER_ROUTER)
+          || matchesTable(context, TableConstants.SYM_NODE_GROUP_LINK);
     }
 
     private boolean isChannelFlushNeeded(IDataLoaderContext context) {

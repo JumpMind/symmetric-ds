@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.service.impl.NodeService;
  */
 public class DefaultOfflineClientListener implements IOfflineClientListener, IBuiltInExtensionPoint {
     
-    protected final ILog log = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
     protected IParameterService parameterService;
     protected INodeService nodeService;
 
@@ -63,7 +63,6 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     
     public void registrationRequired(Node remoteNode) {
         log.warn("RegistrationRequired");
-        nodeService.deleteIdentity();
     }
 
     public boolean isAutoRegister() {
@@ -76,5 +75,6 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+        this.log = LogFactory.getLog(parameterService);
     }
 }

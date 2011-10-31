@@ -47,7 +47,7 @@ public class BshDataRouter extends AbstractDataRouter {
     
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
-    public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
+    public Set<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
         try {
             long ts = System.currentTimeMillis();
@@ -76,11 +76,11 @@ public class BshDataRouter extends AbstractDataRouter {
         return interpreter;
     }
 
-    protected Collection<String> eval(Object value, Set<Node> nodes, Set<String> targetNodes) {
+    protected Set<String> eval(Object value, Set<Node> nodes, Set<String> targetNodes) {
         if (targetNodes.size() > 0) {
             return targetNodes;
-        } else if (value instanceof Collection<?>) {
-            Collection<?> values = (Collection<?>) value;
+        } else if (value instanceof Set<?>) {
+            Set<?> values = (Set<?>) value;
             Set<String> nodeIds = new HashSet<String>(values.size());
             for (Object v : values) {
                 if (v != null) {

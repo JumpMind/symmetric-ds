@@ -19,8 +19,6 @@
  * under the License.  */
 package org.jumpmind.symmetric.route;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.jumpmind.symmetric.Version;
@@ -32,24 +30,24 @@ import org.jumpmind.symmetric.util.AbstractVersion;
  * This is a router that is tied to the trigger table. It prevents triggers from
  * being routed to pre-2.0 versions of SymmetricDS.
  */
-public class TriggerDataRouter extends AbstractDataRouter {
+public class TriggerDataRouter extends ConfigurationChangedDataRouter {
 
-    public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData,
+    public Set<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad) {
-        Set<String> nodeIds = new HashSet<String>();
+        Set<String> nodeIds = super.routeToNodes(context, dataMetaData, nodes, initialLoad);
         if (!initialLoad) {
             for (Node node : nodes) {
                 String version = node.getSymmetricVersion();
                 if (version != null) {
                     int max = Version.parseVersion(version)[AbstractVersion.MAJOR_INDEX];
-                    if (max >= 2) {
-                        nodeIds.add(node.getNodeId());
+                    if (max < 2) {
+                        nodeIds.remove(node.getNodeId());
                     }
                 }
             }
             return nodeIds;
         } else {
-            return toNodeIds(nodes, nodeIds);
+            return nodeIds;
         }
     }
 

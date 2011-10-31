@@ -8,12 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.web.compression.CompressionServletResponseWrapper;
 
 abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
-
-    private IParameterService parameterService;
 
     final public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
@@ -72,9 +69,5 @@ abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
 
     abstract protected void handleWithCompression(HttpServletRequest req, HttpServletResponse res)
             throws IOException, ServletException;
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-    }
 
 }

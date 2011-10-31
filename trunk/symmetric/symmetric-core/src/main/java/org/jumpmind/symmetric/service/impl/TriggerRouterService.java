@@ -277,12 +277,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         trigger.setChannelId(Constants.CHANNEL_CONFIG);
 
         Router router = triggerRouter.getRouter();
+        router.setRouterType("configurationChanged");
         router.setNodeGroupLink(nodeGroupLink);
 
         // little trick to force the rebuild of SymmetricDS triggers every time
         // there is a new version of SymmetricDS
         trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
         router.setLastUpdateTime(trigger.getLastUpdateTime());
+        
         triggerRouter.setLastUpdateTime(trigger.getLastUpdateTime());
 
         return triggerRouter;

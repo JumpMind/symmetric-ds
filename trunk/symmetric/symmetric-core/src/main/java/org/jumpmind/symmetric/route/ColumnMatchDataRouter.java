@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,7 +79,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     final static String EXPRESSION_KEY = String.format("%s.Expression.", ColumnMatchDataRouter.class
             .getName());
 
-    public Collection<String> routeToNodes(IRouterContext routingContext,
+    public Set<String> routeToNodes(IRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Set<String> nodeIds = null;
         List<Expression> expressions = getExpressions(dataMetaData.getTriggerRouter().getRouter(), routingContext);
