@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
@@ -241,6 +242,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+        log = LogFactory.getLog(parameterService);
     }
 
     public void setTransformService(ITransformService transformService) {
