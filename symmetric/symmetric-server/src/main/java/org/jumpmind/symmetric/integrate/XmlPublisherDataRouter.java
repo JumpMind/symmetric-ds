@@ -19,7 +19,6 @@
  * under the License.  */
 package org.jumpmind.symmetric.integrate;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -58,7 +57,7 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
         }
     }            
 
-    public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
+    public Set<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(dataMetaData.getData().getTableName())) {

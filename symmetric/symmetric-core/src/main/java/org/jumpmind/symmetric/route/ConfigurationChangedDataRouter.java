@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.route;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,16 +37,16 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.transform.ITransformService;
 
-public class ConfigurationChangedRouter extends AbstractDataRouter implements IDataRouter {
+public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter {
 
     final String CTX_KEY_RESYNC_NEEDED = "Resync."
-            + ConfigurationChangedRouter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels."
-            + ConfigurationChangedRouter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
-            + ConfigurationChangedRouter.class.getSimpleName() + hashCode();
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     public final static String KEY = "symconfig";
 
@@ -60,10 +59,10 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
     protected ITriggerRouterService triggerRouterService;
 
     protected IParameterService parameterService;
-    
+
     protected ITransformService transformService;
 
-    public Collection<String> routeToNodes(IRouterContext routingContext,
+    public Set<String> routeToNodes(IRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> possibleTargetNodes, boolean initialLoad) {
 
         // the list of nodeIds that we will return
@@ -72,18 +71,21 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
         // the inbound data
         Map<String, String> columnValues = getDataMap(dataMetaData);
 
+        Node me = findIdentity();
+        NetworkedNode rootNetworkedNode = getRootNetworkNodeFromContext(routingContext);
+
         // if this is sym_node or sym_node_security determine which nodes it
         // goes to.
         if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
                 || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
 
             String nodeIdInQuestion = columnValues.get("NODE_ID");
-            Node me = findIdentity();
-            NetworkedNode rootNetworkedNode = getRootNetworkNodeFromContext(routingContext);
             List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                 if (isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
-                        nodeGroupLinks)) {
+                        nodeGroupLinks)
+                        && !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
+                                rootNetworkedNode, me)) {
                     if (nodeIds == null) {
                         nodeIds = new HashSet<String>();
                     }
@@ -91,11 +93,19 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
                 }
             }
         } else {
-            nodeIds = toNodeIds(possibleTargetNodes, nodeIds);
+            for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+                if (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode, me)) {
+                    if (nodeIds == null) {
+                        nodeIds = new HashSet<String>();
+                    }
+                    nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
+                }
+            }
 
             if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER)
                     || tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)
-                    || tableMatches(dataMetaData, TableConstants.SYM_ROUTER)) {
+                    || tableMatches(dataMetaData, TableConstants.SYM_ROUTER)
+                    || tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)) {
                 routingContext.getContextCache().put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
             }
 
@@ -137,6 +147,12 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
         return root;
     }
 
+    private boolean isSameNumberOfLinksAwayFromRoot(Node nodeThatCouldBeRoutedTo,
+            NetworkedNode root, Node me) {
+        return root.getNumberOfLinksAwayFromRoot(nodeThatCouldBeRoutedTo.getNodeId()) == root
+                .getNumberOfLinksAwayFromRoot(me.getNodeId());
+    }
+
     private boolean isLinked(String nodeIdInQuestion, Node nodeThatCouldBeRoutedTo,
             NetworkedNode root, Node me, List<NodeGroupLink> allLinks) {
         if (!nodeIdInQuestion.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
@@ -149,8 +165,11 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
                     // always route changes to parent nodes
                     return true;
                 }
+                
+                                
                 String createdAtNodeId = networkedNodeInQuestion.getNode().getCreatedAtNodeId();
-                if (createdAtNodeId != null && !createdAtNodeId.equals(me.getNodeId())) {
+                if (createdAtNodeId != null && !createdAtNodeId.equals(me.getNodeId()) &&
+                        !networkedNodeInQuestion.getNode().getNodeId().equals(me.getNodeId())) {
                     if (createdAtNodeId.equals(nodeThatCouldBeRoutedTo.getNodeId())) {
                         return true;
                     } else {
@@ -223,7 +242,7 @@ public class ConfigurationChangedRouter extends AbstractDataRouter implements ID
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
-    
+
     public void setTransformService(ITransformService transformService) {
         this.transformService = transformService;
     }

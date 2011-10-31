@@ -27,16 +27,19 @@ import java.util.List;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.ChannelMap;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 
 abstract public class AbstractUriHandler implements IUriHandler {
     
-    final protected ILog log = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
     
     private String uriPattern;
     
     private List<IInterceptor> interceptors;
+    
+    protected IParameterService parameterService;
     
     private boolean enabled = true;
 
@@ -72,4 +75,8 @@ abstract public class AbstractUriHandler implements IUriHandler {
         return enabled;
     }
 
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
+        this.log = LogFactory.getLog(parameterService);
+    }
 }

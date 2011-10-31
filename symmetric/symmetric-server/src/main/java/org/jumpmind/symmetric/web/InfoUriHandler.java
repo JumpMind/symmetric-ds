@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
 
 /**
  * Responsible for providing high level information about the node in property
@@ -47,8 +46,6 @@ public class InfoUriHandler extends AbstractUriHandler {
     private INodeService nodeService;
 
     private IConfigurationService configurationService;
-
-    private IParameterService parameterService;
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
@@ -89,7 +86,4 @@ public class InfoUriHandler extends AbstractUriHandler {
         this.configurationService = configurationService;
     }
 
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-    }
 }

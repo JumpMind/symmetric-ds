@@ -81,4 +81,5 @@ public class RegistrationUriHandler extends AbstractUriHandler {
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
     }
+    
 }

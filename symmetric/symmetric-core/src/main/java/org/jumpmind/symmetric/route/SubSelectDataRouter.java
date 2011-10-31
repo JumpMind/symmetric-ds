@@ -20,7 +20,8 @@
 
 package org.jumpmind.symmetric.route;
 
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,17 +63,20 @@ public class SubSelectDataRouter extends AbstractDataRouter {
 
     private IDbDialect dbDialect;
 
-    public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
+    public Set<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
         TriggerRouter trigger = dataMetaData.getTriggerRouter();
         String subSelect = trigger.getRouter().getRouterExpression();
-        Collection<String> nodeIds = null;
+        Set<String> nodeIds = null;
         if (!StringUtils.isBlank(subSelect)) {
             SimpleJdbcTemplate simpleTemplate = new SimpleJdbcTemplate(jdbcTemplate);
             Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, dbDialect);
             sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getNodeGroupLink().getTargetNodeGroupId());
-            nodeIds = simpleTemplate.query(String.format("%s%s", sql, subSelect),
+            List<String> ids = simpleTemplate.query(String.format("%s%s", sql, subSelect),
                     new SingleColumnRowMapper<String>(), sqlParams);
+            if (ids != null) {
+                nodeIds = new HashSet<String>(ids);
+            }
         } else {
             nodeIds = toNodeIds(nodes, null);
         }

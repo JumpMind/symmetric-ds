@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.service.IBandwidthService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 
 /**
@@ -40,8 +39,6 @@ import org.jumpmind.symmetric.util.AppUtils;
 public class BandwidthSamplerUriHandler extends AbstractUriHandler {
 
     private static final long serialVersionUID = 1L;
-
-    IParameterService parameterService;
 
     protected long defaultTestSlowBandwidthDelay = 0;
 
@@ -64,10 +61,6 @@ public class BandwidthSamplerUriHandler extends AbstractUriHandler {
                 AppUtils.sleep(testSlowBandwidthDelay);
             }
         }
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
     }
 
     public void setDefaultTestSlowBandwidthDelay(long defaultTestSlowBandwidthDelay) {
