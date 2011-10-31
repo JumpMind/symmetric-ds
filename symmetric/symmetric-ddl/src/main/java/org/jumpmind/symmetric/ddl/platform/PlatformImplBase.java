@@ -944,20 +944,19 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
     }
     
     protected Table postprocessTableFromDatabase(Table table) {
-        for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++)
-        {
-            Column column = table.getColumn(columnIdx);
+        if (table != null) {
+            for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++) {
+                Column column = table.getColumn(columnIdx);
 
-            if (TypeMap.isTextType(column.getTypeCode()) ||
-                TypeMap.isDateTimeType(column.getTypeCode()))
-            {
-                String defaultValue = column.getDefaultValue();
+                if (TypeMap.isTextType(column.getTypeCode())
+                        || TypeMap.isDateTimeType(column.getTypeCode())) {
+                    String defaultValue = column.getDefaultValue();
 
-                if ((defaultValue != null) && (defaultValue.length() >= 2) &&
-                    defaultValue.startsWith("'") && defaultValue.endsWith("'"))
-                {
-                    defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
-                    column.setDefaultValue(defaultValue);
+                    if ((defaultValue != null) && (defaultValue.length() >= 2)
+                            && defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+                        defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+                        column.setDefaultValue(defaultValue);
+                    }
                 }
             }
         }
