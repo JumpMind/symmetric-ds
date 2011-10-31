@@ -41,7 +41,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
     private static final String OLD_ = "OLD_";
 
-    protected final ILog log = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     private boolean autoRegister = true;
 

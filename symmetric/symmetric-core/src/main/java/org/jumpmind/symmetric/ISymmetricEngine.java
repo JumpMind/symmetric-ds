@@ -92,6 +92,8 @@ public interface ISymmetricEngine {
      * @return true if successfully started
      */
     public boolean start();
+    
+    public boolean start(boolean startJobs);
 
     /**
      * Queue up an initial load or a reload to a node.

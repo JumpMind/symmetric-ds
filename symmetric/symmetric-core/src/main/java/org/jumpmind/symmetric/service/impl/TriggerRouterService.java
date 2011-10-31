@@ -374,9 +374,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 log.debug("TriggerHistCreating", TableConstants.getTableName(tablePrefix,
                         TableConstants.SYM_NODE_HOST));
 
-            } else {
-                log.warn("TriggerConfigurationCreatingFailed", sourceNodeGroupId, nodeGroupLink
-                        .getDataEventAction());
             }
         }
         return triggers;

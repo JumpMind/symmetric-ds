@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License. 
  */
-package org.jumpmind.symmetric.web;
+package org.jumpmind.symmetric;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,8 +33,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IRegistrationService;
@@ -84,15 +82,21 @@ public class SymmetricEngineHolder {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 if (file.getName().endsWith(".properties")) {
-                    start(file.getAbsolutePath());
+                    start(file.getAbsolutePath(), false);
+                }
+            }
+            
+            if (engines != null) {
+                for (ISymmetricEngine engine : engines.values()) {
+                    engine.getJobManager().startJobs();
                 }
             }
         } else {
-            start(null);
+            start(null, true);
         }
     }
 
-    public ISymmetricEngine start(String propertiesFile) {
+    public ISymmetricEngine start(String propertiesFile, boolean startJobs) {
         ISymmetricEngine engine = null;
         try {
             final String filePrefix = "file:///";
@@ -100,7 +104,7 @@ public class SymmetricEngineHolder {
                 propertiesFile = filePrefix + propertiesFile;
             }
             engine = new StandaloneSymmetricEngine(null, propertiesFile);
-            engine.start();
+            engine.start(startJobs);
             return engine;
         } catch (Exception e) {
             log.error(e, e);
@@ -153,7 +157,7 @@ public class SymmetricEngineHolder {
             }
         }
 
-        return start(symmetricProperties.getAbsolutePath());
+        return start(symmetricProperties.getAbsolutePath(), true);
 
     }
 

@@ -24,6 +24,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.jumpmind.symmetric.SymmetricEngineHolder;
+
 public class SymmetricContextListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent sce) {

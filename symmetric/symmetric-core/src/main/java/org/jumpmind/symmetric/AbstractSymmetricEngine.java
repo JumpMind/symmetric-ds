@@ -128,6 +128,10 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized boolean start() {
+        return start(true);
+    }
+        
+    public synchronized boolean start(boolean startJobs) {        
         
         setup();
         
@@ -146,7 +150,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                     }
                     getTriggerRouterService().syncTriggers();
                     heartbeat(false);
-                    jobManager.startJobs();
+                    if (startJobs) {
+                        jobManager.startJobs();
+                    }
                     log.info("SymmetricDSStarted");
                     started = true;
                 } finally {

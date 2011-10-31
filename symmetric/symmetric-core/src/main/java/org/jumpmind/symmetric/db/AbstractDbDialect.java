@@ -684,6 +684,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * @return true if SQL was executed.
      */
     protected boolean createTablesIfNecessary() {
+        
         Database databaseTables = readSymmetricSchemaFromXml();
                 
         String extraTablesXml = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_EXTRA_TABLES);
@@ -698,10 +699,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         try {
             log.info("TablesAutoUpdatingStart");
             Database currentModel = new Database();
+            
             Table[] tables = databaseTables.getTables();
-            Database existingModel = readPlatformDatabase(true);
             for (Table table : tables) {
-                Table currentVersion = existingModel.findTable(table.getName());
+                Table currentVersion = getTable(getDefaultCatalog(), getDefaultSchema(), table.getName());
                 if (currentVersion != null) {
                     currentModel.addTable(currentVersion);
                 }

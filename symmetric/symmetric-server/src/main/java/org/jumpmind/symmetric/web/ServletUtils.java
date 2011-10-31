@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.StandaloneSymmetricEngine;
+import org.jumpmind.symmetric.SymmetricEngineHolder;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.context.ApplicationContext;
