@@ -393,23 +393,24 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * Returns a new {@link Table} object.
      */
     protected Table getTable(String catalogName, String schemaName, String tblName) {
-        Table table = getTableCaseSensitive(catalogName, schemaName, tblName);
+        Table table = getTableCaseSensitive(catalogName, schemaName, tblName, true);
 
         try {
             if (table == null && parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
                 table = getTableCaseSensitive(StringUtils.upperCase(catalogName),
-                        StringUtils.upperCase(schemaName), StringUtils.upperCase(tblName));
+                        StringUtils.upperCase(schemaName), StringUtils.upperCase(tblName), true);
                 if (table == null) {
                     table = getTableCaseSensitive(StringUtils.lowerCase(catalogName),
-                            StringUtils.lowerCase(schemaName), StringUtils.lowerCase(tblName));
+                            StringUtils.lowerCase(schemaName), StringUtils.lowerCase(tblName), true);
                     if (table == null) {
                         table = getTableCaseSensitive(catalogName, schemaName,
-                                StringUtils.upperCase(tblName));
+                                StringUtils.upperCase(tblName), true);
                         if (table == null) {
                             table = getTableCaseSensitive(catalogName, schemaName,
-                                    StringUtils.lowerCase(tblName));
+                                    StringUtils.lowerCase(tblName), true);
                             if (table == null) {
-                                table = getTableCaseSensitive(catalogName, schemaName, tblName);
+                                table = getTableCaseSensitive(catalogName, schemaName, tblName,
+                                        true);
                             }
                         }
                     }
@@ -428,7 +429,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     protected Table getTableCaseSensitive(String catalogName, String schemaName,
-            final String tablename) {
+            final String tablename, final boolean massageTableForChangeDataCapture) {
         Table table = null;
         try {
             // If we don't provide a default schema or catalog, then on some
@@ -440,7 +441,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             table = (Table) jdbcTemplate.execute(new ConnectionCallback<Table>() {
                 public Table doInConnection(Connection c) throws SQLException, DataAccessException {
                     Table table = platform.readTableFromDatabase(c, catalog, schema, tablename);
-                    if (table != null) {
+                    if (table != null && massageTableForChangeDataCapture) {
                         boolean treatDateTimeFieldsAsVarchar = parameterService.is(
                                 ParameterConstants.DB_TREAT_DATE_TIME_AS_VARCHAR, false);
                         Column[] columns = table.getColumns();
@@ -710,8 +711,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
             Table[] tablesFromXml = modelFromXml.getTables();
             for (Table tableFromXml : tablesFromXml) {
-                Table tableFromDatabase = getTable(getDefaultCatalog(), getDefaultSchema(),
-                        tableFromXml.getName());
+                Table tableFromDatabase = getTableCaseSensitive(getDefaultCatalog(),
+                        getDefaultSchema(), tableFromXml.getName(), false);
                 if (tableFromDatabase != null) {
                     modelFromDatabase.addTable(tableFromDatabase);
                 }

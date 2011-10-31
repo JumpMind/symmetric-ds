@@ -40,8 +40,6 @@ import org.jumpmind.symmetric.ddl.model.Table;
  * change in between.
  * 
  * TODO: Add support and tests for the change of the column order 
- * 
- * @version $Revision: $
  */
 public class ModelComparator
 {
