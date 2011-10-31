@@ -38,9 +38,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * ,
- */
 public class NodeServiceTest extends AbstractDatabaseTest {
 
     protected INodeService nodeService;
@@ -122,7 +119,7 @@ public class NodeServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testFindIdentity() throws Exception {
-        Node node = nodeService.findIdentity();
+        Node node = nodeService.findIdentity(false);
         assertEquals(node.getNodeId(), "00000", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_ROOT_NODE_GROUP, "Wrong node group id");
         assertEquals(node.getExternalId(), TestConstants.TEST_ROOT_EXTERNAL_ID, "Wrong external id");
