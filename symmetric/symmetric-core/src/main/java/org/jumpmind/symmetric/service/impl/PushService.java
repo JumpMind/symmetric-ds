@@ -65,7 +65,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     synchronized public RemoteNodeStatuses pushData() {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses();
 
-        Node identity = nodeService.findIdentity();
+        Node identity = nodeService.findIdentity(false);
         if (identity != null && identity.isSyncEnabled()) {
             if (clusterService.lock(ClusterConstants.PUSH)) {
                 try {
