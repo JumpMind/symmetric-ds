@@ -925,7 +925,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
     
     public Table readTableFromDatabase(Connection connection, String catalogName,
             String schemaName, String tablename) throws SQLException {
-        return _modelReader.readTable(connection, catalogName, schemaName, tablename);
+         return postprocessTableFromDatabase(_modelReader.readTable(connection, catalogName, schemaName, tablename));
     }
 
     /*
@@ -939,26 +939,29 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         // around them which we'll remove now
         for (int tableIdx = 0; tableIdx < model.getTableCount(); tableIdx++)
         {
-            Table table = model.getTable(tableIdx);
+            postprocessTableFromDatabase(model.getTable(tableIdx));
+        }
+    }
+    
+    protected Table postprocessTableFromDatabase(Table table) {
+        for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++)
+        {
+            Column column = table.getColumn(columnIdx);
 
-            for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++)
+            if (TypeMap.isTextType(column.getTypeCode()) ||
+                TypeMap.isDateTimeType(column.getTypeCode()))
             {
-                Column column = table.getColumn(columnIdx);
+                String defaultValue = column.getDefaultValue();
 
-                if (TypeMap.isTextType(column.getTypeCode()) ||
-                    TypeMap.isDateTimeType(column.getTypeCode()))
+                if ((defaultValue != null) && (defaultValue.length() >= 2) &&
+                    defaultValue.startsWith("'") && defaultValue.endsWith("'"))
                 {
-                    String defaultValue = column.getDefaultValue();
-
-                    if ((defaultValue != null) && (defaultValue.length() >= 2) &&
-                        defaultValue.startsWith("'") && defaultValue.endsWith("'"))
-                    {
-                        defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
-                        column.setDefaultValue(defaultValue);
-                    }
+                    defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+                    column.setDefaultValue(defaultValue);
                 }
             }
         }
+        return table;
     }
     
     /*
