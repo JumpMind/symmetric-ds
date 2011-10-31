@@ -100,6 +100,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
             dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
         } else if (pf instanceof MSSqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("msSqlDialect");
+        } else if (pf instanceof GreenplumPlatform) {
+            dialect = (AbstractDbDialect) beanFactory.getBean("greenplumDialect");              
         } else if (pf instanceof PostgreSqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("postgresqlDialect");
         } else if (pf instanceof DerbyPlatform) {
@@ -113,9 +115,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         } else if (pf instanceof HsqlDb2Platform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldb2Dialect");            
         } else if (pf instanceof InformixPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("informixDialect");
-        } else if (pf instanceof GreenplumPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("greenplumDialect");            
+            dialect = (AbstractDbDialect) beanFactory.getBean("informixDialect");          
         } else if (pf instanceof Db2Platform) {
             String currentDbProductVersion = PlatformUtils.getDatabaseProductVersion(jdbcTemplate
                     .getDataSource());
