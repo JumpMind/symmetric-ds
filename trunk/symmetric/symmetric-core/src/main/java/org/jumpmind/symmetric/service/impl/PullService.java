@@ -55,7 +55,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
     synchronized public RemoteNodeStatuses pullData() {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses();
-        Node identity = nodeService.findIdentity();
+        Node identity = nodeService.findIdentity(false);
         if (identity == null || identity.isSyncEnabled()) {
             if (clusterService.lock(ClusterConstants.PULL)) {
                 try {
