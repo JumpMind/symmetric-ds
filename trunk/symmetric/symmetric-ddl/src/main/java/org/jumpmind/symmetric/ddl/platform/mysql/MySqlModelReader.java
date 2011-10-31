@@ -34,8 +34,6 @@ import org.jumpmind.symmetric.ddl.platform.JdbcModelReader;
 
 /*
  * Reads a database model from a MySql database.
- *
- * @version $Revision: $
  */
 public class MySqlModelReader extends JdbcModelReader
 {
