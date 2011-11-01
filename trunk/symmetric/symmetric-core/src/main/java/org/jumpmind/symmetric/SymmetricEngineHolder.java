@@ -62,7 +62,7 @@ public class SymmetricEngineHolder {
     }
 
     public String getEnginesDir() {
-        String enginesDir = System.getProperty(Constants.SYS_PROP_ENGINES_DIR, "engines");
+        String enginesDir = System.getProperty(Constants.SYS_PROP_ENGINES_DIR, "../engines");
         new File(enginesDir).mkdirs();
         return enginesDir;
     }
