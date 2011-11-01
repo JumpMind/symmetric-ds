@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.jumpmind.symmetric.ddl.Platform;
@@ -20,19 +18,11 @@ public class GreenplumModelReader extends PostgreSqlModelReader {
         super(platform);
     }
 
-    @Override
-    protected Collection<Table> readTables(Connection connection, String catalog,
-            String schemaPattern, String[] tableTypes) throws SQLException {
-        Collection<Table> tables = super.readTables(connection, catalog, schemaPattern, tableTypes);
-        //setDistributionKeys(connection, tables, schemaPattern);
-        return tables;
-    }
-
-    protected void setDistributionKeys(Connection connection, Table table,
-            String schema) throws SQLException {
+    protected void setDistributionKeys(Connection connection, Table table, String schema)
+            throws SQLException {
 
         // get the distribution keys for segments
-        StringBuffer query = new StringBuffer();
+        StringBuilder query = new StringBuilder();
 
         query.append("select ");
         query.append("   t.relname, ");
@@ -58,7 +48,8 @@ public class GreenplumModelReader extends PostgreSqlModelReader {
             prepStmt.setString(2, table.getName());
             ResultSet rs = prepStmt.executeQuery();
 
-            // for every row, set the distributionKey for the corresponding columns
+            // for every row, set the distributionKey for the corresponding
+            // columns
             while (rs.next()) {
                 Column column = table.findColumn(rs.getString(2).trim(), getPlatform()
                         .isDelimitedIdentifierModeOn());
@@ -73,10 +64,10 @@ public class GreenplumModelReader extends PostgreSqlModelReader {
             }
         }
     }
-    
+
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
-    {
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
         setDistributionKeys(connection, table, metaData.getSchemaPattern());
         return table;
