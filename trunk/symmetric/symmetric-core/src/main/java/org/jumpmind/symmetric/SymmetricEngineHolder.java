@@ -82,23 +82,25 @@ public class SymmetricEngineHolder {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 if (file.getName().endsWith(".properties")) {
-                    start(file.getAbsolutePath(), false);
+                    create(file.getAbsolutePath());
                 }
             }
-            
+
             if (engines != null) {
                 for (ISymmetricEngine engine : engines.values()) {
-                    if (engine.isStarted()) {
-                        engine.getJobManager().startJobs();
+                    if (!engine.isStarted()) {
+                        new EngineStarter(engine).start();
                     }
                 }
             }
+
         } else {
-            start(null, true);
+            ISymmetricEngine engine = create(null);
+            engine.start();
         }
     }
 
-    public ISymmetricEngine start(String propertiesFile, boolean startJobs) {
+    protected ISymmetricEngine create(String propertiesFile) {
         ISymmetricEngine engine = null;
         try {
             final String filePrefix = "file:///";
@@ -106,15 +108,13 @@ public class SymmetricEngineHolder {
                 propertiesFile = filePrefix + propertiesFile;
             }
             engine = new StandaloneSymmetricEngine(null, propertiesFile);
-            engine.start(startJobs);
+            if (engine != null) {
+                engines.put(engine.getEngineName(), engine);
+            }
             return engine;
         } catch (Exception e) {
             log.error(e, e);
             return null;
-        } finally {
-            if (engine != null) {
-                engines.put(engine.getEngineName(), engine);
-            }
         }
     }
 
@@ -159,7 +159,9 @@ public class SymmetricEngineHolder {
             }
         }
 
-        return start(symmetricProperties.getAbsolutePath(), true);
+        ISymmetricEngine engine = create(symmetricProperties.getAbsolutePath());
+        engine.start();
+        return engine;
 
     }
 
@@ -219,6 +221,25 @@ public class SymmetricEngineHolder {
             properties.setProperty(ParameterConstants.REGISTRATION_URL, "");
         }
         return engineName;
+    }
+
+    class EngineStarter extends Thread {
+
+        ISymmetricEngine engine;
+
+        public EngineStarter(ISymmetricEngine engine) {
+            super("startup-thread-" + engine.getEngineName().toLowerCase());
+            this.engine = engine;
+        }
+
+        @Override
+        public void run() {
+            if (engine != null) {
+                if (!engine.isStarted()) {
+                    engine.start();
+                }
+            }
+        }
     }
 
 }
