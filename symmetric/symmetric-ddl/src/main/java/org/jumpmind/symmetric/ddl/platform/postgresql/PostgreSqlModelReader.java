@@ -55,7 +55,7 @@ public class PostgreSqlModelReader extends JdbcModelReader
     }
 
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values) throws SQLException
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException
     {
         Table table = super.readTable(connection, metaData, values);
 
