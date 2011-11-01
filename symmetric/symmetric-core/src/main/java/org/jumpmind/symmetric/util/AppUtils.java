@@ -51,6 +51,8 @@ import bsh.Interpreter;
  * General application utility methods
  */
 public class AppUtils {
+    
+    private static boolean alreadyCleaned = false;
 
     private static String UNKNOWN = "unknown";
 
@@ -196,25 +198,28 @@ public class AppUtils {
      * called while the engine is not synchronizing!
      */
     @SuppressWarnings("unchecked")
-    public static void cleanupTempFiles() {
-        try {
-            File tmp = File.createTempFile("temp.", "." + SYM_TEMP_SUFFIX);
-            Iterator<File> it = FileUtils.iterateFiles(tmp.getParentFile(),
-                    new String[] { SYM_TEMP_SUFFIX }, true);
-            int deletedCount = 0;
-            while (it.hasNext()) {
-                try {
-                    FileUtils.forceDelete(it.next());
-                    deletedCount++;
-                } catch (Exception ex) {
-                    log.error(ex.getMessage());
+    public synchronized static void cleanupTempFiles() {
+        if (!alreadyCleaned) {
+            alreadyCleaned = true;
+            try {
+                File tmp = File.createTempFile("temp.", "." + SYM_TEMP_SUFFIX);
+                Iterator<File> it = FileUtils.iterateFiles(tmp.getParentFile(),
+                        new String[] { SYM_TEMP_SUFFIX }, true);
+                int deletedCount = 0;
+                while (it.hasNext()) {
+                    try {
+                        FileUtils.forceDelete(it.next());
+                        deletedCount++;
+                    } catch (Exception ex) {
+                        log.error("Message", ex.getMessage());
+                    }
                 }
+                if (deletedCount > 1) {
+                    log.warn("CleanStrandedTempFiles", deletedCount);
+                }
+            } catch (Exception ex) {
+                log.error(ex);
             }
-            if (deletedCount > 1) {
-                log.warn("CleanStrandedTempFiles", deletedCount);
-            }
-        } catch (Exception ex) {
-            log.error(ex);
         }
     }
 
