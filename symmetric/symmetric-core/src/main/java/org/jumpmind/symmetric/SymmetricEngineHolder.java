@@ -88,7 +88,9 @@ public class SymmetricEngineHolder {
             
             if (engines != null) {
                 for (ISymmetricEngine engine : engines.values()) {
-                    engine.getJobManager().startJobs();
+                    if (engine.isStarted()) {
+                        engine.getJobManager().startJobs();
+                    }
                 }
             }
         } else {
