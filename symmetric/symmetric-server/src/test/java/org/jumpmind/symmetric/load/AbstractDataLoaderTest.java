@@ -201,7 +201,8 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
             for (int i = 0; i < expected.length; i++) {
                 Object resultObj = results.get(name[i]);
                 String resultValue = null;
-                if (resultObj instanceof BigDecimal && expected[i].indexOf(".") != -1) {
+                char decimal = ((DecimalFormat) DecimalFormat.getInstance()).getDecimalFormatSymbols().getDecimalSeparator();
+                if (resultObj instanceof BigDecimal && expected[i].indexOf(decimal) != -1) {
                     DecimalFormat df = new DecimalFormat("0.00####################################");
                     resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Date) {
