@@ -623,6 +623,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         xml = xml.replaceAll("unique name=\"PRIMARY\"", "unique name=\"PRIMARYINDEX\"");
         // on postgres, this is a "text" column
         xml = xml.replaceAll("type=\"VARCHAR\" size=\"2147483647\"", "type=\"LONGVARCHAR\"");
+        xml = xml.replaceAll("type=\"BINARY\" size=\"2147483647\"", "type=\"LONGVARBINARY\"");
         return xml;
     }
 
