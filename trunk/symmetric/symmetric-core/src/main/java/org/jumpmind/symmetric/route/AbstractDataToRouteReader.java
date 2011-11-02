@@ -88,11 +88,12 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
             log.warn(e);
         }
 
-        if (data instanceof EOD) {
-            return null;
-        } else {
-            return data;
-        }
+        if (data == null) {
+            log.warn("RouterDataReaderNotResponding");
+        } else if (data instanceof EOD) {
+            data = null;
+        } 
+        return data;
     }
 
     /**

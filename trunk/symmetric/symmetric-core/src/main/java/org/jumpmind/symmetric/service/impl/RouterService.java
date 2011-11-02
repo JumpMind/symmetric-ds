@@ -109,7 +109,7 @@ public class RouterService extends AbstractService implements IRouterService {
     
     protected synchronized ExecutorService getReadService() {
         if (readThread == null) {
-            readThread = Executors.newSingleThreadExecutor();
+            readThread = Executors.newCachedThreadPool();
         }
         return readThread;
     }
