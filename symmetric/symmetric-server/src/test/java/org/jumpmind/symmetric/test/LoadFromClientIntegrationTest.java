@@ -26,9 +26,7 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * 
- */
+
 public class LoadFromClientIntegrationTest extends AbstractIntegrationTest {
 
     static final Log logger = LogFactory.getLog(LoadFromClientIntegrationTest.class);
@@ -36,7 +34,7 @@ public class LoadFromClientIntegrationTest extends AbstractIntegrationTest {
     public LoadFromClientIntegrationTest() throws Exception {
     }
 
-    @Test (timeout = 30000)
+    @Test(timeout = 120000)
     public void registerClientWithRoot() {
         getRootEngine().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, TestConstants.TEST_CLIENT_EXTERNAL_ID);
         getClientEngine().start();
