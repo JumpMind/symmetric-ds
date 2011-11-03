@@ -31,15 +31,15 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IRegistrationService;
 
 public class SymmetricEngineHolder {
 
-    final Log log = LogFactory.getLog(getClass());
+    final ILog log = LogFactory.getLog(getClass());
 
     private Map<String, ISymmetricEngine> engines = new HashMap<String, ISymmetricEngine>();
 
@@ -109,11 +109,15 @@ public class SymmetricEngineHolder {
             }
             engine = new StandaloneSymmetricEngine(null, propertiesFile);
             if (engine != null) {
-                engines.put(engine.getEngineName(), engine);
+                if (!engines.containsKey(engine.getEngineName())) {
+                    engines.put(engine.getEngineName(), engine);
+                } else {
+                    log.error("SymmetricEngineDuplicateName", engine.getEngineName());
+                }
             }
             return engine;
         } catch (Exception e) {
-            log.error(e, e);
+            log.error(e);
             return null;
         }
     }
