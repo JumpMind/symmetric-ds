@@ -7,7 +7,10 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
     default-lazy-init="true">
 
-    <task:scheduler id="symmetricScheduler" pool-size="20" />
+    <bean id="symmetricScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
+        <property name="threadNamePrefix" value="$[sym.engine.name]-"/>
+        <property name="poolSize" value="20"/>
+    </bean>
 
     <bean id="randomTimeSlot" class="org.jumpmind.symmetric.util.RandomTimeSlot">
         <property name="parameterService" ref="parameterService" />

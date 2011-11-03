@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -43,6 +44,8 @@ public class SymmetricEngineHolder {
 
     private Map<String, ISymmetricEngine> engines = new HashMap<String, ISymmetricEngine>();
 
+    private Set<EngineStarter> enginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
+
     private boolean multiServerMode = false;
 
     public Map<String, ISymmetricEngine> getEngines() {
@@ -58,7 +61,7 @@ public class SymmetricEngineHolder {
     }
 
     public boolean areEnginesConfigured() {
-        return engines != null && engines.size() > 0;
+        return enginesStarting.size() > 0 || engines.size() > 0;
     }
 
     public String getEnginesDir() {
@@ -82,16 +85,12 @@ public class SymmetricEngineHolder {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 if (file.getName().endsWith(".properties")) {
-                    create(file.getAbsolutePath());
+                    enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
                 }
             }
 
-            if (engines != null) {
-                for (ISymmetricEngine engine : engines.values()) {
-                    if (!engine.isStarted()) {
-                        new EngineStarter(engine).start();
-                    }
-                }
+            for (EngineStarter starter : enginesStarting) {
+                starter.start();
             }
 
         } else {
@@ -168,6 +167,10 @@ public class SymmetricEngineHolder {
         return engine;
 
     }
+    
+    public boolean areEnginesStarting() {
+        return enginesStarting.size() > 0;
+    }
 
     public String getEngineName(Properties properties) {
         String engineName = properties.getProperty(ParameterConstants.ENGINE_NAME);
@@ -229,20 +232,22 @@ public class SymmetricEngineHolder {
 
     class EngineStarter extends Thread {
 
-        ISymmetricEngine engine;
+        String propertiesFile;
 
-        public EngineStarter(ISymmetricEngine engine) {
-            super("startup-thread-" + engine.getEngineName().toLowerCase());
-            this.engine = engine;
+        public EngineStarter(String propertiesFile) {
+            super("symmetric-startup (" + propertiesFile + ")");
+            this.propertiesFile = propertiesFile;
         }
 
         @Override
         public void run() {
-            if (engine != null) {
-                if (!engine.isStarted()) {
+            if (propertiesFile != null) {
+                ISymmetricEngine engine = create(propertiesFile);
+                if (engine != null) {
                     engine.start();
                 }
             }
+            enginesStarting.remove(this);
         }
     }
 
