@@ -38,9 +38,9 @@ public class DataToRouteReaderFactory extends AbstractService implements ISqlPro
     public IDataToRouteReader getDataToRouteReader(ChannelRouterContext context) {
         String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
         if (type == null || type.equals(GAP_DETECTOR_TYPE_REF)) {
-            return new DataRefRouteReader(this, context, dataService);
+            return new DataRefRouteReader(log, this, context, dataService);
         } else if (type == null || type.equals(GAP_DETECTOR_TYPE_GAP)) {
-            return new DataGapRouteReader(this, context, dataService);
+            return new DataGapRouteReader(log, this, context, dataService);
         } else {
             throw unsupportedType(type);
         }

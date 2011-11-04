@@ -23,6 +23,8 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.service.ISqlProvider;
 import org.junit.Assert;
@@ -35,6 +37,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(locations = { "classpath:/org/jumpmind/symmetric/service/impl/router-service-sql.xml" })
 public class DataRefRouteReaderUnitTest {
     
+    protected ILog log = LogFactory.getLog(getClass());
+    
     private static final String BLANK = "''";
     
     @Resource
@@ -42,7 +46,7 @@ public class DataRefRouteReaderUnitTest {
     
     @Test
     public void testOldDataReplacement() {
-        DataRefRouteReader reader = new DataRefRouteReader(getSqlProvider(), null, null);
+        DataRefRouteReader reader = new DataRefRouteReader(log, getSqlProvider(), null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL, channel).contains("old_data"));
         Assert.assertFalse(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains(BLANK));
@@ -53,7 +57,7 @@ public class DataRefRouteReaderUnitTest {
     
     @Test
     public void testRowDataReplacement() {
-        DataRefRouteReader reader = new DataRefRouteReader(getSqlProvider(), null, null);
+        DataRefRouteReader reader = new DataRefRouteReader(log, getSqlProvider(), null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains("row_data"));
         Assert.assertFalse(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains(BLANK));
@@ -64,7 +68,7 @@ public class DataRefRouteReaderUnitTest {
     
     @Test
     public void testOldAndRowDataReplacement() {
-        DataRefRouteReader reader = new DataRefRouteReader(getSqlProvider(), null, null);
+        DataRefRouteReader reader = new DataRefRouteReader(log, getSqlProvider(), null, null);
         Channel channel = new Channel();
         Assert.assertTrue(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains("row_data"));
         Assert.assertTrue(reader.getSql(DataRefRouteReader.SELECT_DATA_TO_BATCH_SQL,channel).contains("old_data"));

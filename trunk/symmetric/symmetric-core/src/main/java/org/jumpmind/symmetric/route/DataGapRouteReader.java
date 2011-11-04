@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
@@ -47,9 +48,9 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
 
     private static final String SELECT_DATA_USING_GAPS_SQL = "selectDataUsingGapsSql";
 
-    public DataGapRouteReader(ISqlProvider sqlProvider, ChannelRouterContext context,
+    public DataGapRouteReader(ILog log, ISqlProvider sqlProvider, ChannelRouterContext context,
             IDataService dataService) {
-        super(sqlProvider, context, dataService);
+        super(log, sqlProvider, context, dataService);
     }
 
     protected PreparedStatement prepareStatment(List<DataGap> dataGaps, int numberOfGapsToQualify,

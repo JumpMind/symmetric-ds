@@ -25,10 +25,10 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -46,12 +46,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * 
- */
 public class AbstractDatabaseTest extends AbstractTest {
 
-    protected Log logger = LogFactory.getLog(getClass());
+    protected ILog logger = LogFactory.getLog(getClass());
 
     private String database = TestSetupUtil.getRootDbTypes(DatabaseTestSuite.DEFAULT_TEST_PREFIX)[0];
 
@@ -74,7 +71,7 @@ public class AbstractDatabaseTest extends AbstractTest {
                 TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX,
                         TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null, database);
             } catch (Exception ex) {
-                logger.error(ex, ex);
+                logger.error(ex);
                 throw ex;
             }
         }

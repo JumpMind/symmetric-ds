@@ -8,7 +8,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     default-lazy-init="true">
 
     <bean id="symmetricScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
-        <property name="threadNamePrefix" value="$[sym.engine.name]-"/>
+        <property name="threadNamePrefix" value="$[sym.engine.name]-job-"/>
         <property name="poolSize" value="20"/>
     </bean>
 

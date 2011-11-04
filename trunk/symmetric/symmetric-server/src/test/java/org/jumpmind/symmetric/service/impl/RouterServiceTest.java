@@ -1161,7 +1161,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         ChannelRouterContext context = new ChannelRouterContext(
                 TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getDataSource());
-        DataRefRouteReader reader = new DataRefRouteReader(getRouterService(), context, getDataService());
+        DataRefRouteReader reader = new DataRefRouteReader(logger, getRouterService(), context, getDataService());
 
         reader.run();
 
