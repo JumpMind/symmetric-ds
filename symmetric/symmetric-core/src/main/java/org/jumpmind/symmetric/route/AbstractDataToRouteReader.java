@@ -34,7 +34,6 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
@@ -53,7 +52,7 @@ import org.springframework.jdbc.support.JdbcUtils;
  */
 abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
 
-    final protected ILog log = LogFactory.getLog(getClass());
+    protected ILog log;
 
     protected BlockingQueue<Data> dataQueue;
 
@@ -69,8 +68,9 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
 
     protected IDbDialect dbDialect;
 
-    public AbstractDataToRouteReader(ISqlProvider sqlProvider, ChannelRouterContext context,
+    public AbstractDataToRouteReader(ILog log, ISqlProvider sqlProvider, ChannelRouterContext context,
             IDataService dataService) {
+        this.log = log;
         this.jdbcTemplate = dataService != null ? dataService.getJdbcTemplate() : null;
         this.dbDialect = dataService != null ? dataService.getDbDialect() : null;
         this.dataQueue = new LinkedBlockingQueue<Data>(dbDialect != null ? dbDialect.getRouterDataPeekAheadCount() : 1000);

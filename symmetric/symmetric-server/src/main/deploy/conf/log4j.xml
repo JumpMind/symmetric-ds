@@ -18,6 +18,8 @@
             <param name="ConversionPattern" value="%c{1} - %m%n" />
         </layout>
     </appender>
+    
+    <appender name="BUFFERED" class="org.jumpmind.symmetric.util.BufferedLogAppender"/>
 
     <category name="org">
         <priority value="WARN" />
@@ -72,6 +74,7 @@
         <priority value="INFO" />
         <appender-ref ref="ROLLING" />
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="BUFFERED" />
     </root>
 
 </log4j:configuration>

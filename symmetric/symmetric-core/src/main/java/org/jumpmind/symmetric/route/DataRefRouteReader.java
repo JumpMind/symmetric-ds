@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ISqlProvider;
@@ -37,9 +38,9 @@ public class DataRefRouteReader extends AbstractDataToRouteReader {
 
     public static final String SELECT_DATA_TO_BATCH_SQL = "selectDataToBatchSql";
 
-    public DataRefRouteReader(ISqlProvider sqlProvider, ChannelRouterContext context,
+    public DataRefRouteReader(ILog log, ISqlProvider sqlProvider, ChannelRouterContext context,
             IDataService dataService) {
-        super(sqlProvider, context, dataService);
+        super(log, sqlProvider, context, dataService);
     }
 
     @Override
