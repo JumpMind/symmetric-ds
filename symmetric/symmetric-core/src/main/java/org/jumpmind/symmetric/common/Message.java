@@ -25,7 +25,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
- * 
+ * Helper class that wraps resource bundles.
  */
 public class Message {
 
