@@ -66,8 +66,10 @@ public class SqlScript {
     private boolean failOnError = true;
 
     private Map<String, String> replacementTokens;
+    
+    private final static String MEMORY = "SQL snippet";
 
-    private String fileName = "memory";
+    private String fileName = MEMORY;
 
     private String lineDeliminator;
 
@@ -224,7 +226,7 @@ public class SqlScript {
                     }
                 } catch (Exception e) {
                     log.info("ScriptError", lineCount, fileName);
-                    throw new RuntimeException(Message.get("ScriptError", lineCount), e);
+                    throw new RuntimeException(Message.get("ScriptError", lineCount, fileName), e);
                 } finally {
                     closeQuietly(rs);
                     closeQuietly(st);
