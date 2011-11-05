@@ -35,6 +35,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -82,7 +83,6 @@ public class SqlScript {
         this(url, ds, true, delimiter, null);
     }
 
-    @SuppressWarnings("unchecked")
     public SqlScript(URL url, DataSource ds, boolean failOnError, String delimiter,
             Map<String, String> replacementTokens) {
         try {
@@ -102,7 +102,6 @@ public class SqlScript {
         this(sqlScript, ds, failOnError, QUERY_ENDS, null);
     }
 
-    @SuppressWarnings("unchecked")
     public SqlScript(String sqlScript, DataSource ds, boolean failOnError, String delimiter,
             Map<String, String> replacementTokens) {
         try {
@@ -143,19 +142,19 @@ public class SqlScript {
         }
     }
 
-    public void execute() {
-        execute(false);
+    public long execute() {
+        return execute(false);
     }
 
-    public void execute(final boolean autoCommit) {
+    public long execute(final boolean autoCommit) {
         JdbcTemplate template = new JdbcTemplate(this.dataSource);
-        template.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection connection) throws SQLException,
+        return template.execute(new ConnectionCallback<Long>() {
+            public Long doInConnection(Connection connection) throws SQLException,
                     DataAccessException {
                 Statement st = null;
                 ResultSet rs = null;
-                int lineCount = 0;
-
+                long lineCount = 0;
+                long updateCount = 0;
                 try {
                     connection.setAutoCommit(autoCommit);
                     st = connection.createStatement();
@@ -180,13 +179,15 @@ public class SqlScript {
                                             replacementTokens, false);
                                     // Empty SQL only seems to come from
                                     // SybasePlatform
-                                    if (!toExecute.equals("")) {
+                                    if (StringUtils.isNotBlank(toExecute)) {
                                         if (log.isDebugEnabled()) {
                                             log.debug("Message", toExecute);
                                         }
                                         if (st.execute(toExecute)) {
                                             rs = st.getResultSet();
                                             while(rs.next());
+                                        } else {
+                                            updateCount += st.getUpdateCount();
                                         }
                                         count++;
                                         if (count % commitRate == 0) {
@@ -223,12 +224,12 @@ public class SqlScript {
                     }
                 } catch (Exception e) {
                     log.info("ScriptError", lineCount, fileName);
-                    throw new RuntimeException(e);
+                    throw new RuntimeException(Message.get("ScriptError", lineCount), e);
                 } finally {
                     closeQuietly(rs);
                     closeQuietly(st);
                 }
-                return null;
+                return updateCount;
             }
         });
     }
