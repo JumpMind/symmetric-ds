@@ -72,6 +72,8 @@ public class SqlScript {
     private String fileName = MEMORY;
 
     private String lineDeliminator;
+    
+    private ISqlScriptListener listener;
 
     public SqlScript(URL url, DataSource ds) {
         this(url, ds, true, QUERY_ENDS, null);
@@ -114,6 +116,14 @@ public class SqlScript {
             throw new RuntimeException(ex);
         }
     }
+    
+    public void setListener(ISqlScriptListener listener) {
+        this.listener = listener;
+    }
+    
+    public ISqlScriptListener getListener() {
+        return listener;
+    }
 
     private void init(List<String> sqlScript, DataSource ds, boolean failOnError, String delimiter,
             Map<String, String> replacementTokens) {
@@ -155,7 +165,7 @@ public class SqlScript {
                     DataAccessException {
                 Statement st = null;
                 ResultSet rs = null;
-                long lineCount = 0;
+                int lineCount = 0;
                 long updateCount = 0;
                 try {
                     connection.setAutoCommit(autoCommit);
@@ -185,18 +195,29 @@ public class SqlScript {
                                         if (log.isDebugEnabled()) {
                                             log.debug("Message", toExecute);
                                         }
+                                        long rowsRetreived = 0;
+                                        long rowsUpdated = 0;
                                         if (st.execute(toExecute)) {
                                             rs = st.getResultSet();
-                                            while(rs.next());
+                                            while(rs.next()) {rowsRetreived++;};
                                         } else {
-                                            updateCount += st.getUpdateCount();
+                                            rowsUpdated = st.getUpdateCount();
+                                            updateCount+=rowsUpdated;
                                         }
+                                        
+                                        if (listener != null) {
+                                            listener.sqlApplied(toExecute, rowsUpdated, rowsRetreived, lineCount);
+                                        }
+                                        
                                         count++;
                                         if (count % commitRate == 0) {
                                             connection.commit();
                                         }
                                     }
                                 } catch (SQLException e) {
+                                    if (listener != null) {
+                                        listener.sqlErrored(toExecute, e, lineCount);
+                                    }
                                     if (failOnError) {
                                         log.error("SqlError", e, sql.toString());
                                         throw e;
@@ -262,6 +283,11 @@ public class SqlScript {
 
     public void setLineDeliminator(String lineDeliminator) {
         this.lineDeliminator = lineDeliminator;
+    }
+    
+    public static interface ISqlScriptListener {
+        public void sqlApplied (String sql, long rowsUpdated, long rowsRetreived, int lineNumber);
+        public void sqlErrored(String sql, SQLException ex, int lineNumber);
     }
 
 }
