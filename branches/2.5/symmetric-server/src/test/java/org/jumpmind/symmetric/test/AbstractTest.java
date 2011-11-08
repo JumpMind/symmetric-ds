@@ -21,23 +21,12 @@ package org.jumpmind.symmetric.test;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.jumpmind.symmetric.load.csv.CsvLoader;
-import org.jumpmind.symmetric.service.impl.DataExtractorService;
-import org.jumpmind.symmetric.service.impl.DataLoaderService;
-import org.jumpmind.symmetric.service.impl.RouterService;
-import org.jumpmind.symmetric.util.CsvUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 abstract public class AbstractTest {
 
     protected Level setLoggingLevelForTest(Level level) {
         Level old = Logger.getLogger(getClass()).getLevel();
-        Logger.getLogger(DataLoaderService.class).setLevel(level);
-        Logger.getLogger(DataExtractorService.class).setLevel(level);
-        Logger.getLogger(RouterService.class).setLevel(level);
-        Logger.getLogger(CsvLoader.class).setLevel(level);
-        Logger.getLogger(CsvUtils.class).setLevel(level);
-        Logger.getLogger(JdbcTemplate.class).setLevel(level);
+        Logger.getLogger("org.jumpmind").setLevel(level);
         return old;
     }
     

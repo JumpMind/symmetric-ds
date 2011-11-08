@@ -453,7 +453,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             }
                             column.setTypeCode(typeCode);
                         }
-                        makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
                     }
                     return table;
                 }
@@ -465,21 +464,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
 
         return table;
-    }
-
-    /*
-     * Treat tables with no primary keys as a table with all primary keys.
-     */
-    protected void makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(Table table) {
-        if (table != null && table.getPrimaryKeyColumns() != null
-                && table.getPrimaryKeyColumns().length == 0) {
-            Column[] allCoumns = table.getColumns();
-            for (Column column : allCoumns) {
-                if (!column.isOfBinaryType()) {
-                    column.setPrimaryKey(true);
-                }
-            }
-        }
     }
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,

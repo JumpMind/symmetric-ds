@@ -40,13 +40,13 @@ class StreamDeleteDataCommand extends AbstractStreamDataCommand {
         String rowData = data.getPkData();
         if (!StringUtils.isBlank(rowData)) {
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.DELETE, DELIMITER, rowData));
-            CsvUtils.writeLineFeed(out);
-            context.incrementDataEventCount();
         } else {
-            log.error("DataExtractorMissingPkData", data.getDataId());
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.DELETE));
         }
+        CsvUtils.writeLineFeed(out);
+        context.incrementDataEventCount();
     }
-    
+
     public boolean isTriggerHistoryRequired() {
         return true;
     }
