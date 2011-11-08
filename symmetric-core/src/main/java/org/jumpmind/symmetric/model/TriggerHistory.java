@@ -110,12 +110,6 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
         this.triggerRowHash = trigger.toHashedValue();
-        // set primary key equal to all the columns to make data sync work for
-        // tables with no primary keys
-        if (pkColumnNames == null) {
-            pkColumnNames = columnNames;
-        }
-
         tableHash = calculateTableHashFor(table);
     }
     
@@ -157,7 +151,7 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
             columns.replace(columns.length() - 1, columns.length(), "");
             return columns.toString();
         } else {
-            return null;
+            return "";
         }
     }
 
