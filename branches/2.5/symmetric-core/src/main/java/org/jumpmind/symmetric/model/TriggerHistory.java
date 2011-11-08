@@ -151,7 +151,7 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
             columns.replace(columns.length() - 1, columns.length(), "");
             return columns.toString();
         } else {
-            return "";
+            return " ";
         }
     }
 
