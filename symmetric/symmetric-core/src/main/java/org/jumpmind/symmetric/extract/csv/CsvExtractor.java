@@ -74,7 +74,12 @@ public class CsvExtractor extends CsvExtractor16 {
         String triggerHistoryId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getHistoryRecordsWritten().contains(triggerHistoryId)) {
             writeTable(data, routerId, out, context);
-            context.incrementByteCount(CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames()));
+            String keyCsv = data.getTriggerHistory().getPkColumnNames();
+            if (StringUtils.isNotBlank(keyCsv)) {
+                context.incrementByteCount(CsvUtils.write(out, CsvConstants.KEYS, ", ", keyCsv));                
+            } else {
+                context.incrementByteCount(CsvUtils.write(out, CsvConstants.KEYS));
+            }
             CsvUtils.writeLineFeed(out);
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames()));
             CsvUtils.writeLineFeed(out);
@@ -83,8 +88,11 @@ public class CsvExtractor extends CsvExtractor16 {
             writeTable(data, routerId, out, context);
         }
 
-        if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null && parameterService.is(ParameterConstants.DATA_EXTRACTOR_OLD_DATA_ENABLED)) {
-            context.incrementByteCount(CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData()));
+        if ((data.getEventType() == DataEventType.UPDATE || data.getEventType() == DataEventType.DELETE)
+                && data.getOldData() != null
+                && parameterService.is(ParameterConstants.DATA_EXTRACTOR_OLD_DATA_ENABLED)) {
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.OLD, ", ",
+                    data.getOldData()));
             CsvUtils.writeLineFeed(out);
         }
         context.setLastRouterId(routerId);
@@ -92,14 +100,12 @@ public class CsvExtractor extends CsvExtractor16 {
     }
     
     protected void writeTable(Data data, String routerId, Writer out, DataExtractorContext context) throws IOException {
-        // TODO Add property and write the source schema and the source catalog if set
         Router router = triggerRouterService.getActiveRouterByIdForCurrentNode(routerId, false);
         String schemaName = router == null ? "" : getTargetName(router
                 .getTargetSchemaName());
         context.incrementByteCount(CsvUtils.write(out, CsvConstants.SCHEMA, ", ", schemaName));
         CsvUtils.writeLineFeed(out);
-        String catalogName = router == null ? "" : getTargetName(router
-                .getTargetCatalogName());
+        String catalogName = router == null ? "" : getTargetName(router.getTargetCatalogName());
         context.incrementByteCount(CsvUtils.write(out, CsvConstants.CATALOG, ", ", catalogName));
         CsvUtils.writeLineFeed(out);
         String tableName = (router == null || router.getTargetTableName() == null) ? data.getTableName() : 

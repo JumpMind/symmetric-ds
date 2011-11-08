@@ -45,7 +45,11 @@ public class PostgresSqlStatementBuilder extends StatementBuilder {
             sql.append(" where (select 1 from ");
             sql.append(tableName);
             sql.append(" where  ");
-            appendColumnEquals(sql, keyColumns, " and ");
+            if (keyColumns == null || keyColumns.length == 0) {
+                sql.append("1 != 1");
+            } else {
+                appendColumnEquals(sql, keyColumns, " and ");
+            }
             sql.append(") is null)");
             return sql.toString();
         } else {
