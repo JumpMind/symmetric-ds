@@ -148,6 +148,9 @@ public class TableTemplate {
                         .toArray(new String[changedColumnNameList.size()]));
                 columnValues = (String[]) changedColumnValueList
                         .toArray(new String[changedColumnValueList.size()]);
+                if (keyValues == null || keyValues.length == 0) {
+                    keyValues = oldData;
+                }
                 return execute(ctx, st, columnValues, keyValues);
             } else {
                 // There was no change to apply
@@ -192,6 +195,9 @@ public class TableTemplate {
 
     public int delete(IDataLoaderContext ctx, String[] keyValues) {
         StatementBuilder st = getStatementBuilder(ctx, DmlType.DELETE, columnNames);
+        if (keyValues == null || keyValues.length == 0) {
+            keyValues = oldData;
+        }
         return execute(ctx, st, null, keyValues);
     }
 
@@ -237,7 +243,12 @@ public class TableTemplate {
 
             String tableName = getFullyQualifiedTableName();
             
-            st = dbDialect.createStatementBuilder(type, tableName, getColumnMetaData(keyNames),
+            String[] lookupColumnNames = keyNames;
+            if (type == DmlType.UPDATE || type == DmlType.DELETE) {
+                lookupColumnNames = getLookupValues();
+            }
+            
+            st = dbDialect.createStatementBuilder(type, tableName, getColumnMetaData(lookupColumnNames),
                     getColumnMetaData(this.filteredColumnNames),
                     getColumnMetaData(preFilteredColumnNames));
 
@@ -247,7 +258,15 @@ public class TableTemplate {
         }
         return st;
     }
-
+    
+    protected String[] getLookupValues() {
+        if (keyNames == null || keyNames.length == 0) {
+            return columnNames;
+        } else {
+            return keyNames;
+        }
+    }
+    
     public Object[] getObjectValues(IDataLoaderContext ctx, String[] values) {
         return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, getColumnMetaData(columnNames));
     }
@@ -271,12 +290,14 @@ public class TableTemplate {
     }
     
     public String[] parseKeys(String[] tokens, int startIndex) {
-        if (getKeyNames() == null) {
-            throw new RuntimeException("Key names were not specified for table "
-                    + getTableName());
+        if (keyNames == null) {
+            return null;
+        } else if (keyNames.length == 0) {
+            return new String[0];
+        } else {
+            int keyLength = getKeyNames().length;
+            return parseValues("key", tokens, startIndex, startIndex + keyLength);
         }
-        int keyLength = getKeyNames().length;
-        return parseValues("key", tokens, startIndex, startIndex + keyLength);
     }
     
     public String[] parseValues(String name, String[] tokens, int startIndex, int endIndex) {
@@ -316,11 +337,15 @@ public class TableTemplate {
     }
 
     final private Column[] getColumnMetaData(String[] names) {
-        Column[] columns = new Column[names.length];
-        for (int i = 0; i < names.length; i++) {
-            columns[i] = allMetaData.get(names[i].trim().toUpperCase());
+        if (names != null) {
+            Column[] columns = new Column[names.length];
+            for (int i = 0; i < names.length; i++) {
+                columns[i] = allMetaData.get(names[i].trim().toUpperCase());
+            }
+            return columns;
+        } else {
+            return new Column[0];
         }
-        return columns;
     }
 
     public String[] getKeyNames() {

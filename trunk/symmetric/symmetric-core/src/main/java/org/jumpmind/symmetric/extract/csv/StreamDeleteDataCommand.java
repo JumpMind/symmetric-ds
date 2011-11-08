@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.extract.csv;
 
@@ -40,13 +40,13 @@ class StreamDeleteDataCommand extends AbstractStreamDataCommand {
         String rowData = data.getPkData();
         if (!StringUtils.isBlank(rowData)) {
             context.incrementByteCount(CsvUtils.write(out, CsvConstants.DELETE, DELIMITER, rowData));
-            CsvUtils.writeLineFeed(out);
-            context.incrementDataEventCount();
         } else {
-            log.error("DataExtractorMissingPkData", data.getDataId());
+            context.incrementByteCount(CsvUtils.write(out, CsvConstants.DELETE));
         }
+        CsvUtils.writeLineFeed(out);
+        context.incrementDataEventCount();
     }
-    
+
     public boolean isTriggerHistoryRequired() {
         return true;
     }
