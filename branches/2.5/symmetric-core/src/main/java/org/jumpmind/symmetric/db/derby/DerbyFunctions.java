@@ -85,7 +85,7 @@ public class DerbyFunctions {
             String dmlType, int triggerHistId, String transactionId, String externalData,
             String pkData, String rowData, String oldRowData) throws SQLException {
         if (((dmlType.equals("I") || dmlType.equals("U")) && rowData != null)
-                || (dmlType.equals("D") && pkData != null)) {
+                || dmlType.equals("D")) {
             Connection conn = DriverManager.getConnection(CURRENT_CONNECTION_URL);
             StringBuilder sql = new StringBuilder("insert into ");
             sql.append(schemaName);
