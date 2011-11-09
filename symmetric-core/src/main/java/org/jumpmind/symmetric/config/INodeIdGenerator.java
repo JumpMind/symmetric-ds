@@ -31,8 +31,6 @@ import org.jumpmind.symmetric.util.DefaultNodeIdGenerator;
  * during registration.  There may be only one node generator per SymmetricDS instance.
  * </p>
  * The default implementation of this is the {@link DefaultNodeIdGenerator}
- *
- * 
  */
 public interface INodeIdGenerator extends IExtensionPoint {
 

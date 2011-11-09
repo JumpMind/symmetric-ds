@@ -343,10 +343,19 @@ public class SqlTemplate {
                 ddl);
         ddl = AppUtils.replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"),
                 ddl);
-        ddl = AppUtils.replace("oldKeyNames", buildColumnNameString(oldTriggerValue, columns), ddl);
-        ddl = AppUtils.replace("newKeyNames", buildColumnNameString(newTriggerValue, columns), ddl);
-        ddl = AppUtils.replace("oldKeyVariables", buildKeyVariablesString(columns, "old"), ddl);
-        ddl = AppUtils.replace("newKeyVariables", buildKeyVariablesString(columns, "new"), ddl);
+        
+        String builtString = buildColumnNameString(oldTriggerValue, columns);
+        ddl = AppUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
+        
+        builtString = buildColumnNameString(newTriggerValue, columns);
+        ddl = AppUtils.replace("newKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
+        
+        builtString = buildKeyVariablesString(columns, "old");
+        ddl = AppUtils.replace("oldKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
+        
+        builtString = buildKeyVariablesString(columns, "new");
+        ddl = AppUtils.replace("newKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
+        
         ddl = AppUtils.replace("varNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoinVar(newTriggerValue, "new", columns), ddl);
         ddl = AppUtils.replace("varOldPrimaryKeyJoin",

@@ -277,6 +277,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         trigger.setChannelId(Constants.CHANNEL_CONFIG);
 
         Router router = triggerRouter.getRouter();
+        router.setRouterId("configurationChanged");
         router.setRouterType("configurationChanged");
         router.setNodeGroupLink(nodeGroupLink);
 
