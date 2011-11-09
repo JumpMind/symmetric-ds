@@ -52,9 +52,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * 
- */
 public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     public static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
@@ -361,7 +358,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             } catch (Exception e) {
             }
             getJdbcTemplate()
-                    .update("create table test_derby_binary_types (id integer, data VARCHAR (100) FOR BIT DATA, data2 CHAR(12) FOR BIT DATA)");
+                    .update("create table test_derby_binary_types (id integer, data VARCHAR (100) FOR BIT DATA, data2 CHAR(12) FOR BIT DATA, PRIMARY KEY (id))");
 
             TriggerRouter trouter = new TriggerRouter();
             Trigger trigger = trouter.getTrigger();
