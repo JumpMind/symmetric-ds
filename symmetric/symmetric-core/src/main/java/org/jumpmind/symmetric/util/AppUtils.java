@@ -197,7 +197,6 @@ public class AppUtils {
      * Clean up files created by {@link #createTempFile(String)}. This only be
      * called while the engine is not synchronizing!
      */
-    @SuppressWarnings("unchecked")
     public synchronized static void cleanupTempFiles() {
         if (!alreadyCleaned) {
             alreadyCleaned = true;
