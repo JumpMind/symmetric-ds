@@ -331,9 +331,9 @@ public class SqlTemplate {
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
                         dialect, dml, true, channel, trigger).toString(), ddl);
         ddl = AppUtils.replace("oldNewPrimaryKeyJoin",
-                aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
+                aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns.length == 0 ? table.getColumns() : columns), ddl);
         ddl = AppUtils.replace("tableNewPrimaryKeyJoin",
-                aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
+                aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns.length == 0 ? table.getColumns() : columns), ddl);
         ddl = AppUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue
