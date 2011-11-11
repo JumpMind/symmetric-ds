@@ -25,6 +25,14 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
         return NAME;
     }
     
+    public boolean isExtractColumnTransform() {
+        return false;
+    }
+    
+    public boolean isLoadColumnTransform() {
+        return true;
+    }
+    
     public String getFullyQualifiedTableName(String schema, String catalog, String tableName) {
         String quote = dbDialect.getPlatform().isDelimitedIdentifierModeOn() ? dbDialect.getPlatform()
             .getPlatformInfo().getDelimiterToken() : "";

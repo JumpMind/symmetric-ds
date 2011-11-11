@@ -52,6 +52,15 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
     public String getName() {
         return NAME;
     }
+    
+    
+    public boolean isExtractColumnTransform() {
+        return true;
+    }
+    
+    public boolean isLoadColumnTransform() {
+        return true;
+    }
 
     public String transform(ICacheContext context, TransformColumn column, TransformedData data,
         Map<String, String> sourceValues, String value, String oldValue) throws IgnoreColumnException,

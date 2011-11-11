@@ -20,6 +20,15 @@ public class IdentityColumnTransform implements ISingleValueColumnTransform, IBu
     public String getName() {
         return NAME;
     }
+    
+    
+    public boolean isExtractColumnTransform() {
+        return false;
+    }
+    
+    public boolean isLoadColumnTransform() {
+        return true;
+    }
 
     public String transform(ICacheContext context, TransformColumn column, TransformedData data,
             Map<String, String> sourceValues, String value, String oldValue)

@@ -104,9 +104,26 @@ public class TransformService extends AbstractService implements ITransformServi
         List<TransformColumn> columns = getTransformColumnsFromDB();
         for (TransformTable transformTable : transforms) {
             for (TransformColumn column : columns) {
-                if (column.getTransformId().equals(transformTable.getTransformId())) {
+                String transformType = column.getTransformType();
+                boolean addColumnTransform = true;
+                if (transformType != null) {
+                    IColumnTransform<?> columnTransform = columnTransforms.get(transformType); 
+                    if (columnTransform == null) {
+                        addColumnTransform = false;
+                        log.error("TransformTypeInvalid", transformType, column.getTransformId(), column.getSourceColumnName(), "Transform not found");
+                    } else if (transformTable.getTransformPoint() == TransformPoint.EXTRACT && !columnTransform.isExtractColumnTransform()) {
+                        addColumnTransform = false;
+                        log.error("TransformTypeInvalid", transformType, column.getTransformId(), column.getSourceColumnName(), "Transform type not valid for an extract transform");                        
+                    } else if (transformTable.getTransformPoint() == TransformPoint.LOAD && !columnTransform.isLoadColumnTransform()) {
+                        addColumnTransform = false;
+                        log.error("TransformTypeInvalid", transformType, column.getTransformId(), column.getSourceColumnName(), "Transform type not valid for an load transform");                        
+                    }
+                }
+                
+                if (addColumnTransform && column.getTransformId().equals(transformTable.getTransformId())) {
                     transformTable.addTransformColumn(column);
                 }
+                
             }
         }
         return transforms;
