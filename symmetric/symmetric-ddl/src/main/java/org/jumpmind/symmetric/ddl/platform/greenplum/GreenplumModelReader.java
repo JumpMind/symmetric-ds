@@ -24,21 +24,21 @@ public class GreenplumModelReader extends PostgreSqlModelReader {
         // get the distribution keys for segments
         StringBuilder query = new StringBuilder();
 
-        query.append("select ");
-        query.append("   t.relname, ");
-        query.append("   a.attname ");
-        query.append("from ");
-        query.append("   pg_class t, ");
-        query.append("   pg_namespace n, ");
-        query.append("   pg_attribute a, ");
-        query.append("   gp_distribution_policy p ");
-        query.append("where ");
-        query.append("   n.oid = t.relnamespace and ");
-        query.append("   p.localoid = t.oid and ");
-        query.append("   a.attrelid = t.oid and ");
-        query.append("   a.attnum = any(p.attrnums) and ");
-        query.append("   n.nspname = ? and ");
-        query.append("   t.relname = ?");
+        query.append("select                                        ");
+        query.append("   t.relname,                                 ");
+        query.append("   a.attname                                  ");
+        query.append("from                                          ");
+        query.append("   pg_class t,                                ");
+        query.append("   pg_namespace n,                            ");
+        query.append("   pg_attribute a,                            ");
+        query.append("   gp_distribution_policy p                   ");
+        query.append("where                                         ");
+        query.append("   n.oid = t.relnamespace and                 ");
+        query.append("   p.localoid = t.oid and                     ");
+        query.append("   a.attrelid = t.oid and                     ");
+        query.append("   a.attnum = any(p.attrnums) and             ");
+        query.append("   n.nspname = ? and                          ");
+        query.append("   t.relname = ?                              ");
 
         PreparedStatement prepStmt = connection.prepareStatement(query.toString());
 
