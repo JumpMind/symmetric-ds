@@ -421,45 +421,52 @@ public class CsvLoader implements IDataLoader {
     }
 
     protected int update(String[] tokens) {
-        stats.incrementStatementCount();
-        TableTemplate tableTemplate = context.getTableTemplate();
-        String columnValues[] = tableTemplate.parseColumns(tokens, 1);
-        String keyValues[] = tableTemplate.parseKeys(tokens, 1 + columnValues.length);
-        int rows = 0;
-        boolean continueToLoad = true;
-        if (filters != null) {
-            stats.startTimer();
-            for (IDataLoaderFilter filter : filters) {
-                continueToLoad &= filter.filterUpdate(context, columnValues, keyValues);
-            }
-            stats.incrementFilterMillis(stats.endTimer());
-        }
-
-        if (continueToLoad) {
-            boolean enableFallbackInsert = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_INSERT);
-            stats.startTimer();
-            rows = context.getTableTemplate().update(context, columnValues, keyValues);
-            if (rows == 0) {
-                if (enableFallbackInsert) {
-
-                    log.debug("LoaderUpdatingFailedInserting", context.getTableName(), ArrayUtils.toString(tokens));
-
-                    stats.incrementFallbackInsertCount();
-                    rows = context.getTableTemplate().insert(context, columnValues, keyValues);
-                } else {
-                    stats.incrementDatabaseMillis(stats.endTimer());
-                    throw new SymmetricException("LoaderUpdatingFailed", context.getTableName(), ArrayUtils
-                            .toString(tokens));
+        try {
+            stats.incrementStatementCount();
+            TableTemplate tableTemplate = context.getTableTemplate();
+            String columnValues[] = tableTemplate.parseColumns(tokens, 1);
+            String keyValues[] = tableTemplate.parseKeys(tokens, 1 + columnValues.length);
+            int rows = 0;
+            boolean continueToLoad = true;
+            if (filters != null) {
+                stats.startTimer();
+                for (IDataLoaderFilter filter : filters) {
+                    continueToLoad &= filter.filterUpdate(context, columnValues, keyValues);
                 }
-            } else if (rows > 1) {
-                log.warn("LoaderRowsUpdatingFailed", rows, context.getTableName(), ArrayUtils.toString(tokens));
-            } else if (rows < 0) {
-                rows = context.getTableTemplate().delete(context, keyValues);
-                rows = context.getTableTemplate().insert(context, columnValues, keyValues);
+                stats.incrementFilterMillis(stats.endTimer());
             }
-            stats.incrementDatabaseMillis(stats.endTimer());
+
+            if (continueToLoad) {
+                boolean enableFallbackInsert = parameterService
+                        .is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_INSERT);
+                stats.startTimer();
+                rows = context.getTableTemplate().update(context, columnValues, keyValues);
+                if (rows == 0) {
+                    if (enableFallbackInsert) {
+
+                        log.debug("LoaderUpdatingFailedInserting", context.getTableName(),
+                                ArrayUtils.toString(tokens));
+
+                        stats.incrementFallbackInsertCount();
+                        rows = context.getTableTemplate().insert(context, columnValues, keyValues);
+                    } else {
+                        stats.incrementDatabaseMillis(stats.endTimer());
+                        throw new SymmetricException("LoaderUpdatingFailed",
+                                context.getTableName(), ArrayUtils.toString(tokens));
+                    }
+                } else if (rows > 1) {
+                    log.warn("LoaderRowsUpdatingFailed", rows, context.getTableName(),
+                            ArrayUtils.toString(tokens));
+                } else if (rows < 0) {
+                    rows = context.getTableTemplate().delete(context, keyValues);
+                    rows = context.getTableTemplate().insert(context, columnValues, keyValues);
+                }
+                stats.incrementDatabaseMillis(stats.endTimer());
+            }
+            return rows;
+        } finally {
+            context.getTableTemplate().setOldData(null);
         }
-        return rows;
     }
 
     protected int delete(String[] tokens) {
