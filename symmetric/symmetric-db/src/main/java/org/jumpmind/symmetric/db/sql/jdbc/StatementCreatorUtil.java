@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.db.jdbc;
+package org.jumpmind.symmetric.db.sql.jdbc;
 
 /*
  * Copyright 2002-2009 the original author or authors.

@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.db;
+package org.jumpmind.symmetric.db.sql;
 
 import java.util.ArrayList;
 import java.util.List;

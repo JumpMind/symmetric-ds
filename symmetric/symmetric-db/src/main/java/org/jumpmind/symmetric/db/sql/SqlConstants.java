@@ -1,7 +1,7 @@
-package org.jumpmind.symmetric.db;
+package org.jumpmind.symmetric.db.sql;
 
 import org.apache.commons.lang.time.FastDateFormat;
-import org.jumpmind.symmetric.db.mapper.StringMapper;
+import org.jumpmind.symmetric.db.sql.mapper.StringMapper;
 
 abstract public class SqlConstants {
 
