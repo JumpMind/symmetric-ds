@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.db.jdbc;
+package org.jumpmind.symmetric.db.sql.jdbc;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

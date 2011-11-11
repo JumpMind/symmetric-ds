@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.db;
+package org.jumpmind.symmetric.db.sql;
 
 import java.text.ParseException;
 import java.util.Date;

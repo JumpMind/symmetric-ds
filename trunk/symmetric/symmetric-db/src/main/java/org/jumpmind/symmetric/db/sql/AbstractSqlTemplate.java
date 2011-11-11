@@ -1,11 +1,11 @@
-package org.jumpmind.symmetric.db;
+package org.jumpmind.symmetric.db.sql;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.db.DmlStatement.DmlType;
+import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ddl.model.Table;
 
 abstract public class AbstractSqlTemplate implements ISqlTemplate {

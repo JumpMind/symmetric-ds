@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.db.jdbc;
+package org.jumpmind.symmetric.db.sql.jdbc;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -11,12 +11,12 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.db.AbstractSqlTemplate;
-import org.jumpmind.symmetric.db.ISqlReadCursor;
-import org.jumpmind.symmetric.db.ISqlRowMapper;
-import org.jumpmind.symmetric.db.ISqlTemplate;
-import org.jumpmind.symmetric.db.ISqlTransaction;
-import org.jumpmind.symmetric.db.SqlException;
+import org.jumpmind.symmetric.db.sql.AbstractSqlTemplate;
+import org.jumpmind.symmetric.db.sql.ISqlReadCursor;
+import org.jumpmind.symmetric.db.sql.ISqlRowMapper;
+import org.jumpmind.symmetric.db.sql.ISqlTemplate;
+import org.jumpmind.symmetric.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.db.sql.SqlException;
 import org.jumpmind.symmetric.util.Log;
 import org.jumpmind.symmetric.util.LogFactory;
 import org.jumpmind.symmetric.util.LogLevel;

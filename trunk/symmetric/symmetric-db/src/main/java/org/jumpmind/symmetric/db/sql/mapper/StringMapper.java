@@ -1,7 +1,7 @@
-package org.jumpmind.symmetric.db.mapper;
+package org.jumpmind.symmetric.db.sql.mapper;
 
-import org.jumpmind.symmetric.db.ISqlRowMapper;
-import org.jumpmind.symmetric.db.Row;
+import org.jumpmind.symmetric.db.sql.ISqlRowMapper;
+import org.jumpmind.symmetric.db.sql.Row;
 
 public class StringMapper implements ISqlRowMapper<String> {
 
