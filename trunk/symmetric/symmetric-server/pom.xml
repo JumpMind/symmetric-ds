@@ -82,7 +82,7 @@
         </dependency>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
-            <artifactId>symmetric-ddl</artifactId>
+            <artifactId>symmetric-db</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
