@@ -123,41 +123,37 @@ public class TableTemplate {
     }
 
     public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues) {
-        try {
-            StatementBuilder st = null;
-            ArrayList<String> changedColumnNameList = new ArrayList<String>();
-            ArrayList<String> changedColumnValueList = new ArrayList<String>();
-            ArrayList<Column> changedColumnMetaList = new ArrayList<Column>();
-            for (int i = 0; i < columnValues.length; i++) {
-                Column column = allMetaData.get(columnNames[i].trim().toUpperCase());
-                if (column != null) {
-                    if (doesColumnNeedUpdated(ctx, i, column, keyValues, columnValues)) {
-                        // if one of the columns being updated is a partition key,
-                        // return -1 and fallback to a delete / insert
-                        if (column.isDistributionKey()) {
-                            return -1;
-                        }
-                        changedColumnNameList.add(columnNames[i]);
-                        changedColumnMetaList.add(column);
-                        changedColumnValueList.add(columnValues[i]);
+        StatementBuilder st = null;
+        ArrayList<String> changedColumnNameList = new ArrayList<String>();
+        ArrayList<String> changedColumnValueList = new ArrayList<String>();
+        ArrayList<Column> changedColumnMetaList = new ArrayList<Column>();
+        for (int i = 0; i < columnValues.length; i++) {
+            Column column = allMetaData.get(columnNames[i].trim().toUpperCase());
+            if (column != null) {
+                if (doesColumnNeedUpdated(ctx, i, column, keyValues, columnValues)) {
+                    // if one of the columns being updated is a partition key,
+                    // return -1 and fallback to a delete / insert
+                    if (column.isDistributionKey()) {
+                        return -1;
                     }
+                    changedColumnNameList.add(columnNames[i]);
+                    changedColumnMetaList.add(column);
+                    changedColumnValueList.add(columnValues[i]);
                 }
             }
-            if (changedColumnNameList.size() > 0) {
-                st = getStatementBuilder(ctx, DmlType.UPDATE, changedColumnNameList
-                        .toArray(new String[changedColumnNameList.size()]));
-                columnValues = (String[]) changedColumnValueList
-                        .toArray(new String[changedColumnValueList.size()]);
-                if (keyValues == null || keyValues.length == 0) {
-                    keyValues = oldData;
-                }
-                return execute(ctx, st, columnValues, keyValues);
-            } else {
-                // There was no change to apply
-                return 1;
+        }
+        if (changedColumnNameList.size() > 0) {
+            st = getStatementBuilder(ctx, DmlType.UPDATE,
+                    changedColumnNameList.toArray(new String[changedColumnNameList.size()]));
+            columnValues = (String[]) changedColumnValueList
+                    .toArray(new String[changedColumnValueList.size()]);
+            if (keyValues == null || keyValues.length == 0) {
+                keyValues = oldData;
             }
-        } finally {
-            oldData = null;
+            return execute(ctx, st, columnValues, keyValues);
+        } else {
+            // There was no change to apply
+            return 1;
         }
 
     }
