@@ -52,6 +52,7 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
         transformDataExtractor = find("transformDataExtractor");
         dataExtractorContext = (DataExtractorContext) find("extractorContext");
         getJdbcTemplate().update("update sym_transform_table set transform_point='EXTRACT'");
+        getJdbcTemplate().update("delete from sym_transform_column where transform_type='additive' or transform_type='identity'");
         getSymmetricEngine().getTransformService().resetCache();
     }
 
@@ -64,40 +65,10 @@ public class TransformDataExtractorTest extends AbstractDatabaseTest {
                 dataExtractorContext));
 
         Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory()
+        Assert.assertEquals("ID_A,S1_A,S2_A,LONGSTRING_A", data.getTriggerHistory()
                 .getColumnNames());
         Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
-        Assert.assertEquals("1,ONE,CONSTANT,1000,ONE-1", data.getRowData());
-    }
-
-    @Test
-    public void testSimpleTableAdditiveUpdateMapping() throws Exception {
-        TriggerHistory triggerHistory = new TriggerHistory(SIMPLE, "ID", "ID, S1, X, Y, Z, TOTAL");
-        Data data = new Data(SIMPLE, DataEventType.UPDATE, "1, ONE, X, Y, Z, 10", "1",
-                triggerHistory, TestConstants.TEST_CHANNEL_ID, null, null);
-        data.setOldData("1, ONE, X, Y, Z, 1");
-
-        data = toData(transformDataExtractor.transformData(data, TEST_ROUTER_ID,
-                dataExtractorContext));
-
-        Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory()
-                .getColumnNames());
-        Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
-        Assert.assertEquals("1,ONE,CONSTANT,9,ONE-1", data.getRowData());
-        // TODO: is it okay for old data to be null after transformation?
-
-        data = new Data(SIMPLE, DataEventType.UPDATE, "1, ONE, X, Y, Z, 8", "1", triggerHistory,
-                TestConstants.TEST_CHANNEL_ID, null, null);
-        data.setOldData("1, ONE, X, Y, Z, 9");
-        data = toData(transformDataExtractor.transformData(data, TEST_ROUTER_ID,
-                dataExtractorContext));
-
-        Assert.assertEquals("ID_A", data.getTriggerHistory().getPkColumnNames());
-        Assert.assertEquals("ID_A,S1_A,S2_A,DECIMAL_A,LONGSTRING_A", data.getTriggerHistory()
-                .getColumnNames());
-        Assert.assertEquals("TEST_TRANSFORM_A", data.getTriggerHistory().getSourceTableName());
-        Assert.assertEquals("1,ONE,CONSTANT,-1,ONE-1", data.getRowData());
+        Assert.assertEquals("1,ONE,CONSTANT,ONE-1", data.getRowData());
     }
 
     @Test
