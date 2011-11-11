@@ -19,22 +19,24 @@
  * under the License.  */
 
 
-package org.jumpmind.symmetric.load;
+package org.jumpmind.symmetric.db;
 
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.Table;
 
 /**
  * Builds a SQL DML statement
  */
-public class StatementBuilder {
+public class DmlStatement {
     
     public enum DmlType {
         INSERT, UPDATE, DELETE, COUNT
@@ -54,20 +56,20 @@ public class StatementBuilder {
 
     protected Column[] preFilteredColumns;
 
-    public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
+    public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys, Column[] columns,
             Column[] preFilteredColumns, boolean isDateOverrideToTimestamp, String identifierQuoteString) {
         this.keys = keys;
         this.columns = columns;
         this.preFilteredColumns = preFilteredColumns;
         quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
-            sql = buildInsertSql(tableName, keys, columns);
+            sql = buildInsertSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys, columns);
         } else if (type == DmlType.UPDATE) {
-            sql = buildUpdateSql(tableName, keys, columns);
+            sql = buildUpdateSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys, columns);
         } else if (type == DmlType.DELETE) {
-            sql = buildDeleteSql(tableName, keys);
+            sql = buildDeleteSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);
         } else if (type == DmlType.COUNT) {
-            sql = buildCountSql(tableName, keys);
+            sql = buildCountSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys);
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
@@ -280,4 +282,37 @@ public class StatementBuilder {
         }
         return null;
     }
+    
+    public Object[] buildArgsFrom(Map<String, Object> params) {
+        Object[] args = null;
+        if (params != null) {
+            int index = 0;
+            switch (dmlType) {
+            case INSERT:
+                args = new Object[columns.length];
+                for (Column column : columns) {
+                    args[index++] = params.get(column.getName());
+                }
+                break;
+            case UPDATE:
+                args = new Object[columns.length + keys.length];
+                for (Column column : columns) {
+                    args[index++] = params.get(column.getName());
+                }
+                for (Column column : keys) {
+                    args[index++] = params.get(column.getName());
+                }
+                break;
+            case DELETE:
+                args = new Object[keys.length];
+                for (Column column : keys) {
+                    args[index++] = params.get(column.getName());
+                }
+                break;
+            default:
+                throw new UnsupportedOperationException();
+            }
+        }
+        return args;
+    }    
 }

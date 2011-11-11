@@ -57,6 +57,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.db.interbase.InterbaseDbDialect;
 import org.jumpmind.symmetric.db.sybase.SybaseDbDialect;
 import org.jumpmind.symmetric.ddl.Platform;
@@ -69,8 +70,6 @@ import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
-import org.jumpmind.symmetric.load.StatementBuilder;
-import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
@@ -1372,9 +1371,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected void initLobHandler() {
     }
 
-    public StatementBuilder createStatementBuilder(DmlType type, String tableName, Column[] keys,
+    public DmlStatement createStatementBuilder(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys,
             Column[] columns, Column[] preFilteredColumns) {
-        return new StatementBuilder(type, tableName, keys, columns, preFilteredColumns,
+        return new DmlStatement(type, catalogName, schemaName, tableName, keys, columns, preFilteredColumns,
                 isDateOverrideToTimestamp(), getIdentifierQuoteString());
     }
 

@@ -286,6 +286,11 @@
         <dependencies>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
+                <artifactId>symmetric-util</artifactId>
+                <version>2.6.0-SNAPSHOT</version>
+            </dependency>                 
+            <dependency>
+                <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-ddl</artifactId>
                 <version>2.6.0-SNAPSHOT</version>
                 <exclusions>
@@ -295,6 +300,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.jumpmind.symmetric</groupId>
+                <artifactId>symmetric-io</artifactId>
+                <version>2.6.0-SNAPSHOT</version>
+            </dependency>               
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-csv</artifactId>

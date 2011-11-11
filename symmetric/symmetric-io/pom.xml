@@ -19,6 +19,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-ddl</artifactId>
+        </dependency>  
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-csv</artifactId>
+        </dependency>              
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>

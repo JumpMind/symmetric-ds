@@ -27,11 +27,11 @@ import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.symmetric.common.TokenConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.ITableColumnFilter;
-import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
 /**
  * A column filter that can add additional columns to a table that is being loaded

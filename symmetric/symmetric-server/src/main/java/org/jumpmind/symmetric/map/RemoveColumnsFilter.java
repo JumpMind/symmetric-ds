@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.symmetric.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.ITableColumnFilter;
-import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
 /**
  * This filter may be configured to prevent specific columns from being loaded
