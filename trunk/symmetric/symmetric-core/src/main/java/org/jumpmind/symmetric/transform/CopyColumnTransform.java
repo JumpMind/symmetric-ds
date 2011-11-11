@@ -16,6 +16,14 @@ public class CopyColumnTransform implements ISingleValueColumnTransform, IBuiltI
     public String getName() {
         return NAME;
     }
+        
+    public boolean isExtractColumnTransform() {
+        return true;
+    }
+    
+    public boolean isLoadColumnTransform() {
+        return true;
+    }
 
     public String transform(ICacheContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String value, String oldValue) {

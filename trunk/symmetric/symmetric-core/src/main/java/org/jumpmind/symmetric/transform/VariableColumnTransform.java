@@ -27,6 +27,14 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
     public String getName() {
         return NAME;
     }
+        
+    public boolean isExtractColumnTransform() {
+        return true;
+    }
+    
+    public boolean isLoadColumnTransform() {
+        return true;
+    }
     
     public static String[] getOptions() {
         return OPTIONS;

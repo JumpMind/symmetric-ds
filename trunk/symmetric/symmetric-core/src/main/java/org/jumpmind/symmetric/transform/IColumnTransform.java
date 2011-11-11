@@ -12,5 +12,9 @@ public interface IColumnTransform<T> extends IExtensionPoint {
     public T transform(ICacheContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String value, String oldValue)
             throws IgnoreColumnException, IgnoreRowException;
+    
+    public boolean isExtractColumnTransform();
+    
+    public boolean isLoadColumnTransform();
 
 }
