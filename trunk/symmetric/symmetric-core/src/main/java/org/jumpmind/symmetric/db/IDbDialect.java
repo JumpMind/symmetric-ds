@@ -23,14 +23,13 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.symmetric.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
-import org.jumpmind.symmetric.load.StatementBuilder;
-import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
@@ -325,7 +324,7 @@ public interface IDbDialect {
     
     public String getDriverVersion();
     
-    public StatementBuilder createStatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
+    public DmlStatement createStatementBuilder(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys, Column[] columns,
             Column[] preFilteredColumns);
     
     /*

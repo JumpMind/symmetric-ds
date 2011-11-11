@@ -149,10 +149,9 @@ public class CsvLoader implements IDataLoader {
     private void logTableIgnored() {
         TableTemplate tableTemplate = context.getTableTemplate();
         if (tableTemplate != null) {
-            String tableName = tableTemplate.getFullyQualifiedTableName();
-            if (!missingTables.contains(tableName)) {
-                log.warn("LoaderTableMissing", tableName);
-                missingTables.add(tableName);
+            if (!missingTables.contains(tableTemplate.getTableName())) {
+                log.warn("LoaderTableMissing", tableTemplate.getTableName());
+                missingTables.add(tableTemplate.getTableName());
             }
         }
     }

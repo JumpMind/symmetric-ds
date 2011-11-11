@@ -25,12 +25,12 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IMissingTableHandler;
-import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.load.TableTemplate;
 
 public class TransformDataLoader extends AbstractTransformer implements IBuiltInExtensionPoint,
@@ -249,7 +249,7 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
     public boolean isHandlingMissingTable(IDataLoaderContext context) {
         List<TransformTable> transformationsToPerform = findTablesToTransform(
                 context.getNodeGroupLink(),
-                context.getTableTemplate().getFullyQualifiedTableName(true));
+                Table.getFullyQualifiedTableName(context.getCatalogName(), context.getSchemaName(), context.getTableName(), ""));
         return transformationsToPerform != null && transformationsToPerform.size() > 0;
     }
 

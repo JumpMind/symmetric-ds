@@ -20,7 +20,7 @@
         </dependency>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
-            <artifactId>symmetric-ddl</artifactId>
+            <artifactId>symmetric-io</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-dbcp</groupId>

@@ -28,10 +28,11 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.db.DmlStatement;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Table;
-import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.util.ArgTypePreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -66,7 +67,7 @@ public class TableTemplate {
 
     private Map<String, Column> allMetaData;
 
-    private HashMap<DmlType, StatementBuilder> statementMap;
+    private HashMap<DmlType, DmlStatement> statementMap;
 
     private List<IColumnFilter> columnFilters = new ArrayList<IColumnFilter>();
 
@@ -88,7 +89,7 @@ public class TableTemplate {
     public void resetMetaData(boolean useCache) {
         table = dbDialect.getTable(catalog, schema, tableName, useCache);
         allMetaData = new HashMap<String, Column>();
-        statementMap = new HashMap<DmlType, StatementBuilder>();
+        statementMap = new HashMap<DmlType, DmlStatement>();
 
         if (table != null) {
             for (Column column : table.getColumns()) {
@@ -118,12 +119,12 @@ public class TableTemplate {
     }
 
     public int insert(IDataLoaderContext ctx, String[] columnValues, String[] keyValues) {
-        StatementBuilder st = getStatementBuilder(ctx, DmlType.INSERT, columnNames);
+        DmlStatement st = getStatementBuilder(ctx, DmlType.INSERT, columnNames);
         return execute(ctx, st, columnValues, keyValues);
     }
 
     public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues) {
-        StatementBuilder st = null;
+        DmlStatement st = null;
         ArrayList<String> changedColumnNameList = new ArrayList<String>();
         ArrayList<String> changedColumnValueList = new ArrayList<String>();
         ArrayList<Column> changedColumnMetaList = new ArrayList<Column>();
@@ -190,7 +191,7 @@ public class TableTemplate {
     }
 
     public int delete(IDataLoaderContext ctx, String[] keyValues) {
-        StatementBuilder st = getStatementBuilder(ctx, DmlType.DELETE, columnNames);
+        DmlStatement st = getStatementBuilder(ctx, DmlType.DELETE, columnNames);
         if (keyValues == null || keyValues.length == 0) {
             keyValues = oldData;
         }
@@ -198,7 +199,7 @@ public class TableTemplate {
     }
 
     public int count(IDataLoaderContext ctx, String[] keyValues) {
-        StatementBuilder st = getStatementBuilder(ctx, DmlType.COUNT, columnNames);
+        DmlStatement st = getStatementBuilder(ctx, DmlType.COUNT, columnNames);
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
                 keyValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(),
@@ -208,26 +209,11 @@ public class TableTemplate {
         Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), keyValues,
                 st.getKeys());
         return jdbcTemplate.queryForInt(st.getSql(), objectValues, st.getTypes());
-    }
-    public String getFullyQualifiedTableName() {
-        return getFullyQualifiedTableName(false);
-    }
-    
-    public String getFullyQualifiedTableName(boolean preventQuotes) {
-        String quote = !preventQuotes ? dbDialect.getIdentifierQuoteString() : "";
-        String tableName = quote + (table != null ? table.getName() : this.tableName) + quote;
-        if (!StringUtils.isBlank(schema)) {
-            tableName = schema + "." + tableName;
-        }
-        if (!StringUtils.isBlank(catalog)) {
-            tableName = catalog + "." + tableName;
-        }
-        return tableName;
-    }
+    }    
 
-    final private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type,
+    final private DmlStatement getStatementBuilder(IDataLoaderContext ctx, DmlType type,
             String[] preFilteredColumnNames) {
-        StatementBuilder st = statementMap.get(type);
+        DmlStatement st = statementMap.get(type);
         if (st == null) {            
             this.filteredColumnNames = preFilteredColumnNames;
             if (columnFilters != null) {
@@ -236,15 +222,14 @@ public class TableTemplate {
                             this.filteredColumnNames);
                 }
             }
-
-            String tableName = getFullyQualifiedTableName();
             
             String[] lookupColumnNames = keyNames;
             if (type == DmlType.UPDATE || type == DmlType.DELETE) {
                 lookupColumnNames = getLookupValues();
             }
             
-            st = dbDialect.createStatementBuilder(type, tableName, getColumnMetaData(lookupColumnNames),
+            String tableName = table != null ? table.getName() : this.tableName;
+            st = dbDialect.createStatementBuilder(type, catalog, schema, tableName, getColumnMetaData(lookupColumnNames),
                     getColumnMetaData(this.filteredColumnNames),
                     getColumnMetaData(preFilteredColumnNames));
 
@@ -271,7 +256,7 @@ public class TableTemplate {
         return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, getColumnMetaData(keyNames));
     }
 
-    final private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] columnValues, String[] keyValues) {
+    final private int execute(IDataLoaderContext ctx, DmlStatement st, String[] columnValues, String[] keyValues) {
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
                 columnValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(),

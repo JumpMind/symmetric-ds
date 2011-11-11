@@ -21,15 +21,15 @@
 package org.jumpmind.symmetric.db.postgresql;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.symmetric.db.DmlStatement;
 import org.jumpmind.symmetric.ddl.model.Column;
-import org.jumpmind.symmetric.load.StatementBuilder;
 
-public class PostgresSqlStatementBuilder extends StatementBuilder {
+public class PostgresDmlStatement extends DmlStatement {
 
-    public PostgresSqlStatementBuilder(DmlType type, String tableName, Column[] keys,
+    public PostgresDmlStatement(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys,
             Column[] columns, Column[] preFilteredColumns, boolean isDateOverrideToTimestamp,
             String identifierQuoteString) {
-        super(type, tableName, keys, columns, preFilteredColumns, isDateOverrideToTimestamp,
+        super(type, catalogName, schemaName, tableName, keys, columns, preFilteredColumns, isDateOverrideToTimestamp,
                 identifierQuoteString);
     }
 

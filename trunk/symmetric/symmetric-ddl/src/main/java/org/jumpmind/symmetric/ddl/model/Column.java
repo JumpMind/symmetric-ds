@@ -42,38 +42,56 @@ public class Column implements Cloneable, Serializable {
 
     /** The name of the column. */
     private String name;
+
     /**
      * The java name of the column (optional and unused by DdlUtils, for Torque
      * compatibility).
      */
     private String javaName;
+
     /** The column's description. */
     private String description;
+
     /** Whether the column is a primary key column. */
     private boolean primaryKey;
+
     /**
      * Whether the column is required, ie. it must not contain <code>NULL</code>
      * .
      */
     private boolean required;
+
     /** Whether the column's value is incremented automatically. */
     private boolean autoIncrement;
+
     /** The JDBC type code, one of the constants in {@link java.sql.Types}. */
     private int typeCode;
+
     /** The name of the JDBC type. */
     private String type;
+
     /** The size of the column for JDBC types that require/support this. */
     private String size;
+
     /** The size of the column for JDBC types that require/support this. */
     private Integer sizeAsInt;
+
     /** The scale of the column for JDBC types that require/support this. */
     private int scale;
+
     /** The default value. */
     private String defaultValue;
 
     private String jdbcTypeName;
 
     private boolean distributionKey;
+    
+    public Column() {     
+    }
+    
+    public Column(String name) {
+        this.name = name;
+    }
 
     /**
      * Returns the name of the column.

@@ -24,13 +24,13 @@ public class TransformTable {
     protected int transformOrder = 0;
 
     public String getFullyQualifiedSourceTableName() {
-        return Table.getFullyQualifiedTableName(sourceTableName, sourceSchemaName,
-                sourceCatalogName);
+        return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName,
+                sourceTableName);
     }
-    
+
     public String getFullyQualifiedTargetTableName() {
-        return Table.getFullyQualifiedTableName(targetTableName, targetSchemaName,
-                targetCatalogName);
+        return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName,
+                sourceTableName);
     }
 
     public String getTransformId() {
@@ -92,7 +92,7 @@ public class TransformTable {
     public void setTransformPoint(TransformPoint transformPoint) {
         this.transformPoint = transformPoint;
     }
-    
+
     public TransformPoint getTransformPoint() {
         return transformPoint;
     }
@@ -122,7 +122,7 @@ public class TransformTable {
         for (TransformColumn column : transformColumns) {
             if (column.getSourceColumnName().equals(columnName)) {
                 columns.add(column);
-            } 
+            }
         }
         return columns;
     }
@@ -163,15 +163,15 @@ public class TransformTable {
     public boolean isUpdateFirst() {
         return updateFirst;
     }
-    
+
     public void setNodeGroupLink(NodeGroupLink nodeGroupLink) {
         this.nodeGroupLink = nodeGroupLink;
     }
-    
+
     public NodeGroupLink getNodeGroupLink() {
         return nodeGroupLink;
     }
-    
+
     @Override
     public int hashCode() {
         if (transformId != null) {
@@ -180,7 +180,7 @@ public class TransformTable {
             return super.hashCode();
         }
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (transformId != null) {
@@ -200,6 +200,6 @@ public class TransformTable {
             return transformId;
         } else {
             return super.toString();
-        }        
+        }
     }
 }

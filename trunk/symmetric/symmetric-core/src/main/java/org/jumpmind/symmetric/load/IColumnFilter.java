@@ -20,9 +20,9 @@
 
 package org.jumpmind.symmetric.load;
 
+import org.jumpmind.symmetric.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
-import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
 /**
  * This filter will be deprecated in the future.  Please use the data transformation
