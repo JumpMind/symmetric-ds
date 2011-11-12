@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.transform;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.symmetric.db.DmlStatement.DmlType;
+import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;

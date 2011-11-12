@@ -19,8 +19,8 @@ package org.jumpmind.symmetric.ddl.platform;
  * under the License.
  */
 
+import org.jumpmind.symmetric.db.ddl.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
-import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
 
 /*
  * Tests the Derby platform.

@@ -54,9 +54,9 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
-import org.jumpmind.symmetric.ddl.Platform;
-import org.jumpmind.symmetric.ddl.io.DatabaseIO;
-import org.jumpmind.symmetric.ddl.model.Database;
+import org.jumpmind.symmetric.db.ddl.Platform;
+import org.jumpmind.symmetric.db.ddl.io.DatabaseIO;
+import org.jumpmind.symmetric.db.ddl.model.Database;
 import org.junit.Assert;
 import org.springframework.mock.web.MockHttpServletRequest;
 

@@ -25,11 +25,12 @@ import java.sql.DriverManager;
 import junit.framework.Assert;
 
 import org.h2.Driver;
-import org.jumpmind.symmetric.ddl.Platform;
-import org.jumpmind.symmetric.ddl.PlatformFactory;
-import org.jumpmind.symmetric.ddl.model.Column;
-import org.jumpmind.symmetric.ddl.model.Database;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.Platform;
+import org.jumpmind.symmetric.db.ddl.PlatformFactory;
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Database;
+import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.platform.h2.H2Platform;
 import org.junit.Test;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;

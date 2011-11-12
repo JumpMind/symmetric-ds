@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.config.PropertiesFactoryBean;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;

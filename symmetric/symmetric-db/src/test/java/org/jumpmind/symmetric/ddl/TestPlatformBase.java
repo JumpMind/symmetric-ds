@@ -23,8 +23,11 @@ import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.io.StringWriter;
 
-import org.jumpmind.symmetric.ddl.model.Database;
-import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
+import org.jumpmind.symmetric.db.ddl.Platform;
+import org.jumpmind.symmetric.db.ddl.PlatformFactory;
+import org.jumpmind.symmetric.db.ddl.PlatformInfo;
+import org.jumpmind.symmetric.db.ddl.model.Database;
+import org.jumpmind.symmetric.db.ddl.platform.SqlBuilder;
 import org.xml.sax.SAXException;
 
 /*

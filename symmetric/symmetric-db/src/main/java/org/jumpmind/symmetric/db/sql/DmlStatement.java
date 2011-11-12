@@ -30,8 +30,8 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
-import org.jumpmind.symmetric.ddl.model.Column;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Table;
 
 /**
  * Builds a SQL DML statement

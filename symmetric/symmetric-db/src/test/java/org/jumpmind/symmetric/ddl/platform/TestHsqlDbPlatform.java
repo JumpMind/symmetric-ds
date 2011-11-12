@@ -19,8 +19,8 @@ package org.jumpmind.symmetric.ddl.platform;
  * under the License.
  */
 
+import org.jumpmind.symmetric.db.ddl.platform.hsqldb.HsqlDbPlatform;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
-import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
 
 /*
  * Tests the Hsqldb platform.

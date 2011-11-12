@@ -22,9 +22,10 @@ package org.jumpmind.symmetric.ddl.platform;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.symmetric.db.ddl.model.Database;
+import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.platform.SqlBuilder;
 import org.jumpmind.symmetric.ddl.TestBase;
-import org.jumpmind.symmetric.ddl.model.Database;
-import org.jumpmind.symmetric.ddl.model.Table;
 
 /*
  * Test the base SqlBuilder class.

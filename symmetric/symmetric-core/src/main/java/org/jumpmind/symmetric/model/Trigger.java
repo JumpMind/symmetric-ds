@@ -31,8 +31,8 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.ddl.model.Column;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Table;
 
 /**
  * Defines the trigger via which a table will be synchronized.

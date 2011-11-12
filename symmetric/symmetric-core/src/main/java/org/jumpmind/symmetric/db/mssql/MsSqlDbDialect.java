@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.Table;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;

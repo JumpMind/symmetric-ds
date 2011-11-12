@@ -24,9 +24,9 @@ package org.jumpmind.symmetric.db;
 import java.util.ArrayList;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.jumpmind.symmetric.db.DmlStatement.DmlType;
-import org.jumpmind.symmetric.ddl.model.Column;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 

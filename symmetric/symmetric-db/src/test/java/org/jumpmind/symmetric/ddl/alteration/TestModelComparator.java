@@ -22,9 +22,26 @@ package org.jumpmind.symmetric.ddl.alteration;
 import java.sql.Types;
 import java.util.List;
 
-import org.jumpmind.symmetric.ddl.PlatformInfo;
+import org.jumpmind.symmetric.db.ddl.PlatformInfo;
+import org.jumpmind.symmetric.db.ddl.alteration.AddColumnChange;
+import org.jumpmind.symmetric.db.ddl.alteration.AddForeignKeyChange;
+import org.jumpmind.symmetric.db.ddl.alteration.AddIndexChange;
+import org.jumpmind.symmetric.db.ddl.alteration.AddPrimaryKeyChange;
+import org.jumpmind.symmetric.db.ddl.alteration.AddTableChange;
+import org.jumpmind.symmetric.db.ddl.alteration.ColumnAutoIncrementChange;
+import org.jumpmind.symmetric.db.ddl.alteration.ColumnDataTypeChange;
+import org.jumpmind.symmetric.db.ddl.alteration.ColumnDefaultValueChange;
+import org.jumpmind.symmetric.db.ddl.alteration.ColumnRequiredChange;
+import org.jumpmind.symmetric.db.ddl.alteration.ColumnSizeChange;
+import org.jumpmind.symmetric.db.ddl.alteration.ModelComparator;
+import org.jumpmind.symmetric.db.ddl.alteration.PrimaryKeyChange;
+import org.jumpmind.symmetric.db.ddl.alteration.RemoveColumnChange;
+import org.jumpmind.symmetric.db.ddl.alteration.RemoveForeignKeyChange;
+import org.jumpmind.symmetric.db.ddl.alteration.RemoveIndexChange;
+import org.jumpmind.symmetric.db.ddl.alteration.RemovePrimaryKeyChange;
+import org.jumpmind.symmetric.db.ddl.alteration.RemoveTableChange;
+import org.jumpmind.symmetric.db.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.TestBase;
-import org.jumpmind.symmetric.ddl.model.Database;
 
 /*
  * Tests the model comparison.

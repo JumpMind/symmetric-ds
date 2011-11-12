@@ -21,8 +21,8 @@ package org.jumpmind.symmetric.db;
 
 import junit.framework.Assert;
 
-import org.jumpmind.symmetric.ddl.model.Column;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Table;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 

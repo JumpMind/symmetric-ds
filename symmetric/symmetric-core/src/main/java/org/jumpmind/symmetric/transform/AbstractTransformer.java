@@ -9,7 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.DmlStatement.DmlType;
+import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IParameterService;

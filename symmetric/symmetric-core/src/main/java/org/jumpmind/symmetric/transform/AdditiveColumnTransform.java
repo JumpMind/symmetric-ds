@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.ddl.model.Column;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Table;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.jdbc.core.JdbcTemplate;
