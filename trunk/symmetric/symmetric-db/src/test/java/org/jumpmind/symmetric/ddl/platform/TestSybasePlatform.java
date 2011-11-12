@@ -19,8 +19,8 @@ package org.jumpmind.symmetric.ddl.platform;
  * under the License.
  */
 
+import org.jumpmind.symmetric.db.ddl.platform.sybase.SybasePlatform;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
-import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
 
 /*
  * Tests the Sybase platform.

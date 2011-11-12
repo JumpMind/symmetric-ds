@@ -19,8 +19,8 @@ package org.jumpmind.symmetric.ddl.platform;
  * under the License.
  */
 
+import org.jumpmind.symmetric.db.ddl.platform.db2.Db2Platform;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
-import org.jumpmind.symmetric.ddl.platform.db2.Db2Platform;
 
 /*
  * Tests the DB2 platform.

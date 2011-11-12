@@ -19,8 +19,8 @@ package org.jumpmind.symmetric.ddl.platform;
  * under the License.
  */
 
+import org.jumpmind.symmetric.db.ddl.platform.interbase.InterbasePlatform;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
-import org.jumpmind.symmetric.ddl.platform.interbase.InterbasePlatform;
 
 /*
  * Tests the Interbase platform.

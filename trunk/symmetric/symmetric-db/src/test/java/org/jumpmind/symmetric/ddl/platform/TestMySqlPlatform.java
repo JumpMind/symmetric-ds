@@ -19,9 +19,10 @@ package org.jumpmind.symmetric.ddl.platform;
  * under the License.
  */
 
+import org.jumpmind.symmetric.db.ddl.model.Database;
+import org.jumpmind.symmetric.db.ddl.platform.CreationParameters;
+import org.jumpmind.symmetric.db.ddl.platform.mysql.MySqlPlatform;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
-import org.jumpmind.symmetric.ddl.model.Database;
-import org.jumpmind.symmetric.ddl.platform.mysql.MySqlPlatform;
 
 /*
  * Tests the MySQL platform.

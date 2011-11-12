@@ -21,18 +21,18 @@ package org.jumpmind.symmetric.ddl.platform;
 
 import junit.framework.TestCase;
 
-import org.jumpmind.symmetric.ddl.PlatformUtils;
-import org.jumpmind.symmetric.ddl.platform.cloudscape.CloudscapePlatform;
-import org.jumpmind.symmetric.ddl.platform.db2.Db2Platform;
-import org.jumpmind.symmetric.ddl.platform.derby.DerbyPlatform;
-import org.jumpmind.symmetric.ddl.platform.firebird.FirebirdPlatform;
-import org.jumpmind.symmetric.ddl.platform.hsqldb.HsqlDbPlatform;
-import org.jumpmind.symmetric.ddl.platform.interbase.InterbasePlatform;
-import org.jumpmind.symmetric.ddl.platform.mssql.MSSqlPlatform;
-import org.jumpmind.symmetric.ddl.platform.mysql.MySqlPlatform;
-import org.jumpmind.symmetric.ddl.platform.oracle.Oracle8Platform;
-import org.jumpmind.symmetric.ddl.platform.postgresql.PostgreSqlPlatform;
-import org.jumpmind.symmetric.ddl.platform.sybase.SybasePlatform;
+import org.jumpmind.symmetric.db.ddl.PlatformUtils;
+import org.jumpmind.symmetric.db.ddl.platform.cloudscape.CloudscapePlatform;
+import org.jumpmind.symmetric.db.ddl.platform.db2.Db2Platform;
+import org.jumpmind.symmetric.db.ddl.platform.derby.DerbyPlatform;
+import org.jumpmind.symmetric.db.ddl.platform.firebird.FirebirdPlatform;
+import org.jumpmind.symmetric.db.ddl.platform.hsqldb.HsqlDbPlatform;
+import org.jumpmind.symmetric.db.ddl.platform.interbase.InterbasePlatform;
+import org.jumpmind.symmetric.db.ddl.platform.mssql.MSSqlPlatform;
+import org.jumpmind.symmetric.db.ddl.platform.mysql.MySqlPlatform;
+import org.jumpmind.symmetric.db.ddl.platform.oracle.Oracle8Platform;
+import org.jumpmind.symmetric.db.ddl.platform.postgresql.PostgreSqlPlatform;
+import org.jumpmind.symmetric.db.ddl.platform.sybase.SybasePlatform;
 
 /*
  * Tests the {@link org.jumpmind.symmetric.ddl.PlatformUtils} class.

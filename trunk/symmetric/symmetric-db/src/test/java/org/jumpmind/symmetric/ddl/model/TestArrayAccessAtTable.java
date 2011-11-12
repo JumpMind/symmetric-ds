@@ -19,6 +19,12 @@ package org.jumpmind.symmetric.ddl.model;
  * under the License.
  */
 
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Index;
+import org.jumpmind.symmetric.db.ddl.model.NonUniqueIndex;
+import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.UniqueIndex;
+
 import junit.framework.TestCase;
 
 /*

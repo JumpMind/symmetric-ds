@@ -29,14 +29,16 @@ import junit.framework.TestCase;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.ddl.model.Column;
-import org.jumpmind.symmetric.ddl.model.Database;
-import org.jumpmind.symmetric.ddl.model.ForeignKey;
-import org.jumpmind.symmetric.ddl.model.Index;
-import org.jumpmind.symmetric.ddl.model.IndexColumn;
-import org.jumpmind.symmetric.ddl.model.ModelException;
-import org.jumpmind.symmetric.ddl.model.Reference;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.io.DatabaseIO;
+import org.jumpmind.symmetric.db.ddl.io.LocalEntityResolver;
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Database;
+import org.jumpmind.symmetric.db.ddl.model.ForeignKey;
+import org.jumpmind.symmetric.db.ddl.model.Index;
+import org.jumpmind.symmetric.db.ddl.model.IndexColumn;
+import org.jumpmind.symmetric.db.ddl.model.ModelException;
+import org.jumpmind.symmetric.db.ddl.model.Reference;
+import org.jumpmind.symmetric.db.ddl.model.Table;
 
 /*
  * Tests the database reading/writing via the {@link org.jumpmind.symmetric.ddl.io.DatabaseIO} class.

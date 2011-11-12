@@ -25,8 +25,8 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.ddl.io.DatabaseIO;
-import org.jumpmind.symmetric.ddl.model.Database;
+import org.jumpmind.symmetric.db.ddl.io.DatabaseIO;
+import org.jumpmind.symmetric.db.ddl.model.Database;
 
 /*
  * Base class for DdlUtils tests.

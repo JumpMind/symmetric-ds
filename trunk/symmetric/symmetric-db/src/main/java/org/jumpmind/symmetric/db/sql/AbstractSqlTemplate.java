@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.symmetric.db.ddl.model.Table;
 import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
-import org.jumpmind.symmetric.ddl.model.Table;
 
 abstract public class AbstractSqlTemplate implements ISqlTemplate {
 

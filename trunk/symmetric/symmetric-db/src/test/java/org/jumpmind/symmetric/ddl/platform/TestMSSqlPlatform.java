@@ -25,8 +25,8 @@ import org.apache.oro.text.regex.PatternMatcher;
 import org.apache.oro.text.regex.PatternMatcherInput;
 import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
+import org.jumpmind.symmetric.db.ddl.platform.mssql.MSSqlPlatform;
 import org.jumpmind.symmetric.ddl.TestPlatformBase;
-import org.jumpmind.symmetric.ddl.platform.mssql.MSSqlPlatform;
 
 /*
  * Tests the Microsoft SQL Server platform.

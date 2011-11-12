@@ -28,11 +28,11 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.db.DmlStatement;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.DmlStatement.DmlType;
-import org.jumpmind.symmetric.ddl.model.Column;
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.sql.DmlStatement;
+import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.util.ArgTypePreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 

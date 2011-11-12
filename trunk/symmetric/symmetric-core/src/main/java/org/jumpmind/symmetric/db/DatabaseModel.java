@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.db;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.db.ddl.model.Table;
 
 /**
  * Adds Catalog & Schema aware finder for ddlutils Database class.
@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.ddl.model.Table;
  * Also caches the index of the table to speed up Table lookup.
  * 
  */
-public class DatabaseModel extends org.jumpmind.symmetric.ddl.model.Database {
+public class DatabaseModel extends org.jumpmind.symmetric.db.ddl.model.Database {
 
     private static final long serialVersionUID = 1L;
     private Map<String, Integer> tableIndexCache = new HashMap<String, Integer>();

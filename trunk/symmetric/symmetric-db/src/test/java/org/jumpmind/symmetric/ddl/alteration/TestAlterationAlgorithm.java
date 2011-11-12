@@ -22,9 +22,9 @@ package org.jumpmind.symmetric.ddl.alteration;
 import java.io.IOException;
 import java.io.StringWriter;
 
-import org.jumpmind.symmetric.ddl.Platform;
+import org.jumpmind.symmetric.db.ddl.Platform;
+import org.jumpmind.symmetric.db.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.TestBase;
-import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.platform.TestPlatform;
 
 /*

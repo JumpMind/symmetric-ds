@@ -21,8 +21,8 @@
 package org.jumpmind.symmetric.db.postgresql;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.jumpmind.symmetric.db.DmlStatement;
-import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.sql.DmlStatement;
 
 public class PostgresDmlStatement extends DmlStatement {
 
