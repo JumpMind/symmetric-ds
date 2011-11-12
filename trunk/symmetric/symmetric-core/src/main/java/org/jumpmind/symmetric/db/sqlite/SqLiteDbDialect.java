@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.sql.SqlConstants;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -43,7 +44,7 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
    
     public String toFormattedTimestamp(java.util.Date time) {
         StringBuilder ts = new StringBuilder("datetime('");
-        ts.append(JDBC_TIMESTAMP_FORMATTER.format(time));
+        ts.append(SqlConstants.JDBC_TIMESTAMP_FORMATTER.format(time));
         ts.append("')");
         return ts.toString();
     }

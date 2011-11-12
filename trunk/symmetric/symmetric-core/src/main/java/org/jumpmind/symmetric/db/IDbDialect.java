@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.db.ddl.Platform;
 import org.jumpmind.symmetric.db.ddl.model.Column;
-import org.jumpmind.symmetric.db.ddl.model.Database;
 import org.jumpmind.symmetric.db.ddl.model.Table;
 import org.jumpmind.symmetric.db.sql.DmlStatement;
 import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
@@ -75,8 +74,6 @@ public interface IDbDialect {
      */
     public void revertAllowIdentityInserts(JdbcTemplate jdbcTemplate, Table table);
 
-    public Database readPlatformDatabase(boolean includeSymmetricTables);
-    
     /*
      * For performance reasons, the as table metadata is read in, it is cached.
      * This method will clear that cache.
