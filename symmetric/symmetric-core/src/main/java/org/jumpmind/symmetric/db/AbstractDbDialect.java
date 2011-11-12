@@ -52,7 +52,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -65,9 +64,9 @@ import org.jumpmind.symmetric.db.ddl.model.ForeignKey;
 import org.jumpmind.symmetric.db.ddl.model.Index;
 import org.jumpmind.symmetric.db.ddl.model.Table;
 import org.jumpmind.symmetric.db.ddl.platform.SqlBuilder;
-import org.jumpmind.symmetric.db.interbase.InterbaseDbDialect;
 import org.jumpmind.symmetric.db.sql.DmlStatement;
 import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
+import org.jumpmind.symmetric.db.sql.SqlConstants;
 import org.jumpmind.symmetric.db.sybase.SybaseDbDialect;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
@@ -98,22 +97,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
-    public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S",
-            "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
-
-    public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
-            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
-
-    public static final FastDateFormat JDBC_TIMESTAMP_FORMATTER = FastDateFormat
-            .getInstance("yyyy-MM-dd hh:mm:ss.SSS");
-
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
     protected JdbcTemplate jdbcTemplate;
 
     protected Platform platform;
 
-    protected DatabaseModel cachedModel = new DatabaseModel();
+    protected Database cachedModel = new Database();
 
     protected long lastTimeCachedModelClearedInMs = System.currentTimeMillis();
 
@@ -177,7 +167,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String toFormattedTimestamp(java.util.Date time) {
         StringBuilder ts = new StringBuilder("{ts '");
-        ts.append(JDBC_TIMESTAMP_FORMATTER.format(time));
+        ts.append(SqlConstants.JDBC_TIMESTAMP_FORMATTER.format(time));
         ts.append("'}");
         return ts.toString();
     }
@@ -344,11 +334,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
         if (System.currentTimeMillis() - lastTimeCachedModelClearedInMs > parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TABLES_IN_MS)) {
             synchronized (this.getClass()) {
-                cachedModel = new DatabaseModel();
+                cachedModel = new Database();
                 lastTimeCachedModelClearedInMs = System.currentTimeMillis();
             }
         }
-        DatabaseModel model = cachedModel;
+        Database model = cachedModel;
         Table retTable = model != null ? model.findTable(catalogName, schemaName, tableName) : null;
         if (retTable == null || !useCache) {
             synchronized (this.getClass()) {
@@ -643,36 +633,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public Database readPlatformDatabase(boolean includeSymmetricTables) {
-        String schema = getDefaultSchema();
-        String catalog = getDefaultCatalog();
-        Database database = platform.readModelFromDatabase(!StringUtils.isBlank(schema) ? schema
-                : (!StringUtils.isBlank(catalog) ? catalog : "database"), catalog, schema, null);
-        if (!includeSymmetricTables) {
-            Database symmetricTables = readSymmetricSchemaFromXml();
-            Table[] tables = symmetricTables.getTables();
-            for (Table symTable : tables) {
-                for (Table table : database.getTables()) {
-                    if (table.getName().equalsIgnoreCase(symTable.getName())) {
-                        database.removeTable(table);
-                    }
-                }
-            }
-
-            Table[] allTables = database.getTables();
-            for (Table table : allTables) {
-                // Remove SYM_ON_ trigger tables for embedded databases
-                if (table.getName().startsWith(tablePrefix.toUpperCase() + "_ON_")
-                        || table.getName().equalsIgnoreCase(
-                                tablePrefix + "_" + InterbaseDbDialect.CONTEXT_TABLE_NAME)) {
-                    database.removeTable(table);
-                }
-            }
-        }
-
-        return database;
-    }
-
     /*
      * @return true if SQL was executed.
      */
@@ -740,23 +700,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    protected String getAlterSql(Database databaseTables) throws IOException {
-        Database currentModel = new Database();
-        Table[] tables = databaseTables.getTables();
-        Database existingModel = readPlatformDatabase(true);
-        for (Table table : tables) {
-            Table currentVersion = existingModel.findTable(table.getName());
-            if (currentVersion != null) {
-                currentModel.addTable(currentVersion);
-            }
-        }
-        SqlBuilder builder = platform.getSqlBuilder();
-        StringWriter writer = new StringWriter();
-        builder.setWriter(writer);
-        builder.alterDatabase(currentModel, databaseTables, null);
-        return writer.toString();
     }
 
     protected Database readSymmetricSchemaFromXml() {
@@ -932,10 +875,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     }
                     if (value != null) {
                         if (type == Types.DATE && !isDateOverrideToTimestamp()) {
-                            objectValue = getDate(value, TIMESTAMP_PATTERNS);
+                            objectValue = getDate(value, SqlConstants.TIMESTAMP_PATTERNS);
                         } else if (type == Types.TIMESTAMP
                                 || (type == Types.DATE && isDateOverrideToTimestamp())) {
-                            objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
+                            objectValue = new Timestamp(getTime(value, SqlConstants.TIMESTAMP_PATTERNS));
                         } else if (type == Types.CHAR) {
                             String charValue = value.toString();
                             if ((StringUtils.isBlank(charValue) && isBlankCharColumnSpacePadded())
@@ -966,7 +909,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                                 objectValue = Hex.decodeHex(value.toCharArray());
                             }
                         } else if (type == Types.TIME) {
-                            objectValue = new Time(getTime(value, TIME_PATTERNS));
+                            objectValue = new Time(getTime(value, SqlConstants.TIME_PATTERNS));
                         } else if (type == Types.ARRAY) {
                             objectValue = createArray(column, value);
                         }
