@@ -4,7 +4,7 @@
     <artifactId>symmetric-db</artifactId>
     <packaging>jar</packaging>
     <version>2.6.0-SNAPSHOT</version>
-    <name>ddl</name>
+    <name>db</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2010</inceptionYear>
 
