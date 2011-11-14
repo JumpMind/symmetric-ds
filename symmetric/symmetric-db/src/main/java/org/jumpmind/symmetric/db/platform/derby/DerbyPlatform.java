@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.db.platform.SqlBuilder;
 public class DerbyPlatform extends AbstractDatabasePlatform {
 
     /* Database name of this platform. */
-    public static final String DATABASENAME = "Derby";
+    public static final String DATABASENAME = "Apache Derby";
 
     /* The derby jdbc driver for use as a client for a normal server. */
     public static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver";

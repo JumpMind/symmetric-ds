@@ -67,7 +67,7 @@ public class DatabasePlatformFactory {
         }
         return platforms;
     }
-    
+
     /*
      * Creates a new platform for the given (case insensitive) database name or
      * returns null if the database is not recognized.
@@ -77,15 +77,19 @@ public class DatabasePlatformFactory {
      * @return The platform or <code>null</code> if the database is not
      * supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(String databaseName)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(String[] nameVersion)
             throws DdlUtilsException {
-        Class<? extends IDatabasePlatform> platformClass = getPlatforms().get(
-                databaseName.toLowerCase());
+        Map<String, Class<? extends IDatabasePlatform>> platforms = getPlatforms();
+        Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
+                nameVersion[0], nameVersion[1]).toLowerCase());
+        if (platformClass == null) {
+            platformClass = platforms.get(nameVersion[0].toLowerCase());
+        }
 
         try {
             return platformClass != null ? (IDatabasePlatform) platformClass.newInstance() : null;
         } catch (Exception ex) {
-            throw new DdlUtilsException("Could not create platform for database " + databaseName,
+            throw new DdlUtilsException("Could not create platform for database " + nameVersion[0],
                     ex);
         }
     }
@@ -107,36 +111,32 @@ public class DatabasePlatformFactory {
             throws DdlUtilsException {
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform
-        String nameVersion = determineDatabaseNameVersion(dataSource);
+        String[] nameVersion = determineDatabaseNameVersion(dataSource);
         return createNewPlatformInstance(nameVersion);
     }
 
-    public static String determineDatabaseNameVersion(DataSource dataSource)
+    public static String[] determineDatabaseNameVersion(DataSource dataSource)
             throws DatabaseOperationException {
         Connection connection = null;
-
+        String[] nameVersion = new String[2];
         try {
             connection = dataSource.getConnection();
             DatabaseMetaData metaData = connection.getMetaData();
-            String productName = metaData.getDatabaseProductName();
-            int majorVersion = metaData.getDatabaseMajorVersion();
+            nameVersion[0] = metaData.getDatabaseProductName();
+            nameVersion[1] = Integer.toString(metaData.getDatabaseMajorVersion());
             /*
              * if the productName is PostgreSQL, it could be either PostgreSQL
              * or Greenplum
              */
             /* query the metadata to determine which one it is */
-            if (productName.equalsIgnoreCase(PostgreSqlPlatform.DATABASENAME)) {
+            if (nameVersion[0].equalsIgnoreCase(PostgreSqlPlatform.DATABASENAME)) {
                 if (isGreenplumDatabase(connection)) {
-                    productName = GreenplumPlatform.DATABASE;
-                    majorVersion = getGreenplumVersion(connection);
+                    nameVersion[0] = GreenplumPlatform.DATABASE;
+                    nameVersion[1] = Integer.toString(getGreenplumVersion(connection));
                 }
             }
-            String productString = productName;
-            if (majorVersion > 0) {
-                productString += majorVersion;
-            }
 
-            return productString;
+            return nameVersion;
         } catch (SQLException ex) {
             throw new DatabaseOperationException("Error while reading the database metadata: "
                     + ex.getMessage(), ex);
