@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
-import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.util.FormatUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -261,7 +261,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
         String sql = "insert into sym_trigger_hist (trigger_hist_id, source_table_name, source_schema_name, trigger_id, column_names, pk_column_names,name_for_update_trigger,name_for_delete_trigger, name_for_insert_trigger,table_hash,trigger_row_hash,last_trigger_build_reason,create_time) " +
         		" values (null, '"
                 + tableName + "','symmetric','1','" + col + "' , '" + pk + "','a','b','c',1,1,'T',current_timestamp)";
-        sql = AppUtils.replaceTokens(sql, dbDialect.getSqlScriptReplacementTokens(), false);
+        sql = FormatUtils.replaceTokens(sql, dbDialect.getSqlScriptReplacementTokens(), false);
         long key = dbDialect.insertWithGeneratedKey(sql, SequenceIdentifier.TRIGGER_HIST);
         TriggerHistory history = new TriggerHistory(tableName, pk, col);
         history.setTriggerHistoryId((int) key);

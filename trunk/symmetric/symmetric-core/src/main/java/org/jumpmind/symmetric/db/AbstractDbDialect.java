@@ -56,15 +56,15 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.ddl.Platform;
-import org.jumpmind.symmetric.db.ddl.io.DatabaseIO;
-import org.jumpmind.symmetric.db.ddl.model.Column;
-import org.jumpmind.symmetric.db.ddl.model.Database;
-import org.jumpmind.symmetric.db.ddl.model.ForeignKey;
-import org.jumpmind.symmetric.db.ddl.model.Index;
-import org.jumpmind.symmetric.db.ddl.model.Table;
-import org.jumpmind.symmetric.db.ddl.platform.SqlBuilder;
+import org.jumpmind.symmetric.db.io.DatabaseIO;
+import org.jumpmind.symmetric.db.model.Column;
+import org.jumpmind.symmetric.db.model.Database;
+import org.jumpmind.symmetric.db.model.ForeignKey;
+import org.jumpmind.symmetric.db.model.Index;
+import org.jumpmind.symmetric.db.model.Table;
+import org.jumpmind.symmetric.db.platform.SqlBuilder;
 import org.jumpmind.symmetric.db.sql.DmlStatement;
+import org.jumpmind.symmetric.db.sql.SqlScript;
 import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.db.sql.SqlConstants;
 import org.jumpmind.symmetric.db.sybase.SybaseDbDialect;
@@ -78,6 +78,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.util.FormatUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
@@ -101,7 +102,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected JdbcTemplate jdbcTemplate;
 
-    protected Platform platform;
+    protected IDatabasePlatform platform;
 
     protected Database cachedModel = new Database();
 
@@ -212,7 +213,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
 
-    public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
+    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
         log.info("DbDialectInUse", this.getClass().getName());
         this.jdbcTemplate = jdbcTemplate;
         this.queryTimeoutInSeconds = queryTimeout;
@@ -552,22 +553,22 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getCreateSymmetricDDL() {
-        Database db = readSymmetricSchemaFromXml();
-        prefixConfigDatabase(db);
-        return platform.getCreateTablesSql(db, true, true);
+        Database database = readSymmetricSchemaFromXml();
+        prefixConfigDatabase(database);
+        StringWriter writer = new StringWriter();
+        SqlBuilder builder = platform.createSqlBuilder(writer);
+        builder.createTables(database, true);
+        return writer.getBuffer().toString();
     }
 
-    public String getCreateTableSQL(TriggerRouter trig) {
-        Table table = getTable(null, trig.getTrigger().getSourceSchemaName(), trig.getTrigger()
-                .getSourceTableName(), true);
+    public String getCreateTableSQL(TriggerRouter triggerRouter) {
+        Table table = getTable(null, triggerRouter.getTrigger().getSourceSchemaName(),
+                triggerRouter.getTrigger().getSourceTableName(), true);
         String sql = null;
-        try {
-            StringWriter buffer = new StringWriter();
-            platform.getSqlBuilder().setWriter(buffer);
-            platform.getSqlBuilder().createTable(cachedModel, table);
-            sql = buffer.toString();
-        } catch (IOException e) {
-        }
+        StringWriter writer = new StringWriter();
+        SqlBuilder builder = platform.createSqlBuilder(writer);
+        builder.createTable(cachedModel, table);
+        sql = writer.toString();
         return sql;
     }
 
@@ -604,7 +605,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public void createTables(String xml) {
         StringReader reader = new StringReader(xml);
         Database db = new DatabaseIO().read(reader);
-        platform.createTables(db, true, true);
+        platform.createDatabase(jdbcTemplate.getDataSource(), db, true, true);
     }
 
     public boolean doesDatabaseNeedConfigured() {
@@ -663,9 +664,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 }
             }
 
-            SqlBuilder builder = platform.getSqlBuilder();
+            StringWriter writer = new StringWriter();
+            SqlBuilder builder = platform.createSqlBuilder(writer);
 
-            if (builder.isAlterDatabase(modelFromDatabase, modelFromXml, null)) {
+            if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
                 log.info("TablesAutoUpdatingFoundTablesToAlter");
                 DataSource ds = jdbcTemplate.getDataSource();
                 String delimiter = platform.getPlatformInfo().getSqlCommandDelimiter();
@@ -676,9 +678,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     new SqlScript(sql, ds, true, delimiter, null).execute();
                 }
 
-                StringWriter writer = new StringWriter();
-                builder.setWriter(writer);
-                builder.alterDatabase(modelFromDatabase, modelFromXml, null);
+                builder.alterDatabase(modelFromDatabase, modelFromXml);
                 String alterSql = writer.toString();
                 if (log.isDebugEnabled()) {
                     log.debug("TablesAutoUpdatingAlterSql", alterSql);
@@ -762,7 +762,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public Platform getPlatform() {
+    public IDatabasePlatform getPlatform() {
         return this.platform;
     }
 
@@ -878,7 +878,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             objectValue = getDate(value, SqlConstants.TIMESTAMP_PATTERNS);
                         } else if (type == Types.TIMESTAMP
                                 || (type == Types.DATE && isDateOverrideToTimestamp())) {
-                            objectValue = new Timestamp(getTime(value, SqlConstants.TIMESTAMP_PATTERNS));
+                            objectValue = new Timestamp(getTime(value,
+                                    SqlConstants.TIMESTAMP_PATTERNS));
                         } else if (type == Types.CHAR) {
                             String charValue = value.toString();
                             if ((StringUtils.isBlank(charValue) && isBlankCharColumnSpacePadded())
@@ -1201,7 +1202,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public long getDatabaseTime() {
         try {
             String sql = "select current_timestamp from " + tablePrefix + "_node_identity";
-            sql = AppUtils.replaceTokens(sql, getSqlScriptReplacementTokens(), false);
+            sql = FormatUtils.replaceTokens(sql, getSqlScriptReplacementTokens(), false);
             return jdbcTemplate.queryForObject(sql, java.util.Date.class).getTime();
 
         } catch (Exception ex) {
@@ -1270,7 +1271,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public String scrubSql(String sql) {
         Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
         if (replacementTokens != null) {
-            return AppUtils.replaceTokens(sql, replacementTokens, false).trim();
+            return FormatUtils.replaceTokens(sql, replacementTokens, false).trim();
         } else {
             return sql;
         }
@@ -1315,10 +1316,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected void initLobHandler() {
     }
 
-    public DmlStatement createStatementBuilder(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys,
-            Column[] columns, Column[] preFilteredColumns) {
-        return new DmlStatement(type, catalogName, schemaName, tableName, keys, columns, preFilteredColumns,
-                isDateOverrideToTimestamp(), getIdentifierQuoteString());
+    public DmlStatement createStatementBuilder(DmlType type, String catalogName, String schemaName,
+            String tableName, Column[] keys, Column[] columns, Column[] preFilteredColumns) {
+        return new DmlStatement(type, catalogName, schemaName, tableName, keys, columns,
+                preFilteredColumns, isDateOverrideToTimestamp(), getIdentifierQuoteString());
     }
 
     public void setPrimaryKeyViolationCodes(int[] primaryKeyViolationCodes) {

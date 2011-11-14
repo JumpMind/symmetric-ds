@@ -28,8 +28,8 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.ddl.model.Column;
-import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.model.Column;
+import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.model.Channel;
@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.util.FormatUtils;
 
 /**
  * Responsible for generating dialect specific SQL such as trigger bodies and
@@ -104,27 +104,27 @@ public class SqlTemplate {
                 dialect.getInitialLoadTableAlias(), "", columns, dialect, DataEventType.INSERT,
                 false, channel, triggerRouter.getTrigger()).columnString;
 
-        sql = AppUtils.replace("columns", columnsText, sql);
-        sql = AppUtils
+        sql = FormatUtils.replace("columns", columnsText, sql);
+        sql = FormatUtils
                 .replace(
                         "whereClause",
                         StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                                 : triggerRouter.getInitialLoadSelect(), sql);       
-        sql = AppUtils.replace("tableName", quote(table.getName(), dialect), sql);
-        sql = AppUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger(), dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
-        sql = AppUtils.replace(
+        sql = FormatUtils.replace("tableName", quote(table.getName(), dialect), sql);
+        sql = FormatUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger(), dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
+        sql = FormatUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(),
                         table.getPrimaryKeyColumns()), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to
         // reference the node that is being loaded
-        sql = AppUtils.replace("groupId", node.getNodeGroupId(), sql);
-        sql = AppUtils.replace("externalId", node.getExternalId(), sql);
-        sql = AppUtils.replace("nodeId", node.getNodeId(), sql);
+        sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
+        sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
+        sql = FormatUtils.replace("nodeId", node.getNodeId(), sql);
         sql = replaceDefaultSchemaAndCatalog(dialect, triggerRouter.getTrigger(), sql);
-        sql = AppUtils.replace("prefixName", dialect.getTablePrefix(), sql);
-        sql = AppUtils.replace("oracleToClob",
+        sql = FormatUtils.replace("prefixName", dialect.getTablePrefix(), sql);
+        sql = FormatUtils.replace("oracleToClob",
                 triggerRouter.getTrigger().isUseCaptureLobs() ? "to_clob('')||" : "", sql);
 
         return sql;
@@ -165,10 +165,10 @@ public class SqlTemplate {
         boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
         || trigger.getSourceSchemaName() != null;
         
-        sql = AppUtils.replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
+        sql = FormatUtils.replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
                 && defaultSchema.length() > 0 ? defaultSchema + "." : "", sql);
 
-        return AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs
+        return FormatUtils.replace("defaultCatalog", resolveSchemaAndCatalogs
                 && defaultCatalog != null && defaultCatalog.length() > 0 ? defaultCatalog + "."
                 : "", sql);
     }
@@ -181,15 +181,15 @@ public class SqlTemplate {
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(),
                 dialect.getInitialLoadTableAlias(), "", columns, dialect, DataEventType.INSERT,
                 false, channel, trigger).columnString;
-        sql = AppUtils.replace("columns", columnsText, sql);
-        sql = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
+        sql = FormatUtils.replace("columns", columnsText, sql);
+        sql = FormatUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
                 sql);
 
-        sql = AppUtils.replace("tableName", quote(table.getName(), dialect), sql);
-        sql = AppUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
+        sql = FormatUtils.replace("tableName", quote(table.getName(), dialect), sql);
+        sql = FormatUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
 
-        sql = AppUtils.replace("whereClause", whereClause, sql);
-        sql = AppUtils.replace(
+        sql = FormatUtils.replace("whereClause", whereClause, sql);
+        sql = FormatUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(),
                         table.getPrimaryKeyColumns()), sql);
@@ -207,13 +207,13 @@ public class SqlTemplate {
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(),
                 dialect.getInitialLoadTableAlias(), "", columns, dialect, DataEventType.INSERT,
                 false, channel, trigger).toString();
-        sql = AppUtils.replace("columns", columnsText, sql);
-        sql = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
+        sql = FormatUtils.replace("columns", columnsText, sql);
+        sql = FormatUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
                 sql);
-        sql = AppUtils.replace("tableName", quote(table.getName(), dialect), sql);
-        sql = AppUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
-        sql = AppUtils.replace("whereClause", whereClause, sql);
-        sql = AppUtils.replace("primaryKeyWhereString",
+        sql = FormatUtils.replace("tableName", quote(table.getName(), dialect), sql);
+        sql = FormatUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
+        sql = FormatUtils.replace("whereClause", whereClause, sql);
+        sql = FormatUtils.replace("primaryKeyWhereString",
                 getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), columns), sql);
 
         return sql;
@@ -262,11 +262,11 @@ public class SqlTemplate {
             TriggerHistory history, Channel channel, String tablePrefix, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
 
-        ddl = AppUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
+        ddl = FormatUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
 
-        ddl = AppUtils.replace("triggerName", history.getTriggerNameForDmlType(dml), ddl);
-        ddl = AppUtils.replace("channelName", trigger.getChannelId(), ddl);
-        ddl = AppUtils.replace("triggerHistoryId",
+        ddl = FormatUtils.replace("triggerName", history.getTriggerNameForDmlType(dml), ddl);
+        ddl = FormatUtils.replace("channelName", trigger.getChannelId(), ddl);
+        ddl = FormatUtils.replace("triggerHistoryId",
                 Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
         String triggerExpression = dialect.getTransactionTriggerExpression(defaultCatalog,
                 defaultSchema, trigger);
@@ -274,114 +274,114 @@ public class SqlTemplate {
                 && !StringUtils.isBlank(trigger.getTxIdExpression())) {
             triggerExpression = trigger.getTxIdExpression();
         }
-        ddl = AppUtils.replace("txIdExpression",
+        ddl = FormatUtils.replace("txIdExpression",
                 dialect.preProcessTriggerSqlClause(triggerExpression), ddl);
 
-        ddl = AppUtils
+        ddl = FormatUtils
                 .replace("externalSelect", (trigger.getExternalSelect() == null ? "null" : "("
                         + dialect.preProcessTriggerSqlClause(trigger.getExternalSelect()) + ")"),
                         ddl);
 
-        ddl = AppUtils.replace("syncOnInsertCondition",
+        ddl = FormatUtils.replace("syncOnInsertCondition",
                 dialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()), ddl);
-        ddl = AppUtils.replace("syncOnUpdateCondition",
+        ddl = FormatUtils.replace("syncOnUpdateCondition",
                 dialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()), ddl);
-        ddl = AppUtils.replace("syncOnDeleteCondition",
+        ddl = FormatUtils.replace("syncOnDeleteCondition",
                 dialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()), ddl);
-        ddl = AppUtils.replace("dataHasChangedCondition",
+        ddl = FormatUtils.replace("dataHasChangedCondition",
                 dialect.preProcessTriggerSqlClause(dialect.getDataHasChangedCondition(trigger)),
                 ddl);
-        ddl = AppUtils.replace("sourceNodeExpression", dialect.getSourceNodeExpression(), ddl);
+        ddl = FormatUtils.replace("sourceNodeExpression", dialect.getSourceNodeExpression(), ddl);
 
-        ddl = AppUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? "clob" : "long", ddl);
+        ddl = FormatUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? "clob" : "long", ddl);
 
         String syncTriggersExpression = dialect.getSyncTriggersExpression();
-        ddl = AppUtils.replace("syncOnIncomingBatchCondition",
+        ddl = FormatUtils.replace("syncOnIncomingBatchCondition",
                 trigger.isSyncOnIncomingBatch() ? Constants.ALWAYS_TRUE_CONDITION
                         : syncTriggersExpression, ddl);
-        ddl = AppUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
+        ddl = FormatUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
         Column[] columns = trigger.orderColumnsForTable(table);
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue,
                 newColumnPrefix, columns, dialect, dml, false, channel, trigger);
-        ddl = AppUtils.replace("columns", columnString.toString(), ddl);
+        ddl = FormatUtils.replace("columns", columnString.toString(), ddl);
 
         ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
 
-        ddl = AppUtils
+        ddl = FormatUtils
                 .replace(
                         "virtualOldNewTable",
                         buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix,
                                 table.getColumns()), ddl);
-        ddl = AppUtils.replace(
+        ddl = FormatUtils.replace(
                 "oldColumns",
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
                         dialect, dml, true, channel, trigger).toString(), ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
         
         // some column templates need tableName and schemaName
-        ddl = AppUtils.replace("tableName", history == null ? quote(trigger.getSourceTableName(), dialect)
+        ddl = FormatUtils.replace("tableName", history == null ? quote(trigger.getSourceTableName(), dialect)
                 : quote(history.getSourceTableName(), dialect), ddl);
-        ddl = AppUtils.replace("schemaName",
+        ddl = FormatUtils.replace("schemaName",
                 history == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(history, dialect), ddl);
 
         columns = table.getPrimaryKeyColumns();
-        ddl = AppUtils.replace(
+        ddl = FormatUtils.replace(
                 "oldKeys",
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
                         dialect, dml, true, channel, trigger).toString(), ddl);
-        ddl = AppUtils.replace("oldNewPrimaryKeyJoin",
+        ddl = FormatUtils.replace("oldNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns.length == 0 ? table.getColumns() : columns), ddl);
-        ddl = AppUtils.replace("tableNewPrimaryKeyJoin",
+        ddl = FormatUtils.replace("tableNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns.length == 0 ? table.getColumns() : columns), ddl);
-        ddl = AppUtils.replace(
+        ddl = FormatUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue
                         : newTriggerValue, columns), ddl);
 
-        ddl = AppUtils.replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"),
+        ddl = FormatUtils.replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"),
                 ddl);
-        ddl = AppUtils.replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"),
+        ddl = FormatUtils.replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"),
                 ddl);
         
         String builtString = buildColumnNameString(oldTriggerValue, columns);
-        ddl = AppUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
+        ddl = FormatUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
         
         builtString = buildColumnNameString(newTriggerValue, columns);
-        ddl = AppUtils.replace("newKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
+        ddl = FormatUtils.replace("newKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
         
         builtString = buildKeyVariablesString(columns, "old");
-        ddl = AppUtils.replace("oldKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
+        ddl = FormatUtils.replace("oldKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
         
         builtString = buildKeyVariablesString(columns, "new");
-        ddl = AppUtils.replace("newKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
+        ddl = FormatUtils.replace("newKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
         
-        ddl = AppUtils.replace("varNewPrimaryKeyJoin",
+        ddl = FormatUtils.replace("varNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoinVar(newTriggerValue, "new", columns), ddl);
-        ddl = AppUtils.replace("varOldPrimaryKeyJoin",
+        ddl = FormatUtils.replace("varOldPrimaryKeyJoin",
                 aliasedPrimaryKeyJoinVar(oldTriggerValue, "old", columns), ddl);
 
         // replace $(newTriggerValue) and $(oldTriggerValue)
-        ddl = AppUtils.replace("newTriggerValue", newTriggerValue, ddl);
-        ddl = AppUtils.replace("oldTriggerValue", oldTriggerValue, ddl);
-        ddl = AppUtils.replace("newColumnPrefix", newColumnPrefix, ddl);
-        ddl = AppUtils.replace("oldColumnPrefix", oldColumnPrefix, ddl);
-        ddl = AppUtils.replace("prefixName", tablePrefix, ddl);
+        ddl = FormatUtils.replace("newTriggerValue", newTriggerValue, ddl);
+        ddl = FormatUtils.replace("oldTriggerValue", oldTriggerValue, ddl);
+        ddl = FormatUtils.replace("newColumnPrefix", newColumnPrefix, ddl);
+        ddl = FormatUtils.replace("oldColumnPrefix", oldColumnPrefix, ddl);
+        ddl = FormatUtils.replace("prefixName", tablePrefix, ddl);
         ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
         
-        ddl = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
+        ddl = FormatUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
                 ddl);
 
         switch (dml) {
         case DELETE:
-            ddl = AppUtils.replace("curTriggerValue", oldTriggerValue, ddl);
-            ddl = AppUtils.replace("curColumnPrefix", oldColumnPrefix, ddl);
+            ddl = FormatUtils.replace("curTriggerValue", oldTriggerValue, ddl);
+            ddl = FormatUtils.replace("curColumnPrefix", oldColumnPrefix, ddl);
             break;
         case INSERT:
         case UPDATE:
         default:
-            ddl = AppUtils.replace("curTriggerValue", newTriggerValue, ddl);
-            ddl = AppUtils.replace("curColumnPrefix", newColumnPrefix, ddl);
+            ddl = FormatUtils.replace("curTriggerValue", newTriggerValue, ddl);
+            ddl = FormatUtils.replace("curColumnPrefix", newColumnPrefix, ddl);
             break;
         }
         return ddl;
@@ -633,10 +633,10 @@ public class SqlTemplate {
                     throw new NotImplementedException();
                 }
 
-                String formattedColumnText = AppUtils.replace("columnName",
+                String formattedColumnText = FormatUtils.replace("columnName",
                         String.format("%s%s", columnPrefix, column.getName()), templateToUse);
 
-                formattedColumnText = AppUtils.replace("masterCollation",
+                formattedColumnText = FormatUtils.replace("masterCollation",
                         dbDialect.getMasterCollation(), formattedColumnText);
 
                 if (isLob) {
@@ -653,9 +653,9 @@ public class SqlTemplate {
                     .substring(0, columnsText.length() - lastCommandToken.length());
         }
 
-        columnsText = AppUtils.replace("origTableAlias", origTableAlias, columnsText);
-        columnsText = AppUtils.replace("tableAlias", tableAlias, columnsText);
-        columnsText = AppUtils.replace("prefixName", dbDialect.getTablePrefix(), columnsText);
+        columnsText = FormatUtils.replace("origTableAlias", origTableAlias, columnsText);
+        columnsText = FormatUtils.replace("tableAlias", tableAlias, columnsText);
+        columnsText = FormatUtils.replace("prefixName", dbDialect.getTablePrefix(), columnsText);
         return new ColumnString(columnsText, isLob);
     }
 
@@ -847,10 +847,10 @@ public class SqlTemplate {
 
     public String getFunctionSql(String functionKey, String functionName, String defaultSchema) {
         if (this.functionTemplatesToInstall != null) {
-            String ddl = AppUtils.replace("functionName", functionName,
+            String ddl = FormatUtils.replace("functionName", functionName,
                     this.functionTemplatesToInstall.get(functionKey));
-            ddl = AppUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = AppUtils.replace("defaultSchema", defaultSchema != null
+            ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
+            ddl = FormatUtils.replace("defaultSchema", defaultSchema != null
                     && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
             return ddl;
         } else {
@@ -860,9 +860,9 @@ public class SqlTemplate {
 
     public String getFunctionInstalledSql(String functionName, String defaultSchema) {
         if (functionInstalledSql != null) {
-            String ddl = AppUtils.replace("functionName", functionName, functionInstalledSql);
-            ddl = AppUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = AppUtils.replace("defaultSchema", defaultSchema != null
+            String ddl = FormatUtils.replace("functionName", functionName, functionInstalledSql);
+            ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
+            ddl = FormatUtils.replace("defaultSchema", defaultSchema != null
                     && defaultSchema.length() > 0 ? defaultSchema : "", ddl);
             return ddl;
         } else {

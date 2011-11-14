@@ -3,8 +3,8 @@ package org.jumpmind.symmetric.db.sql;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.symmetric.db.ddl.model.Column;
-import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.model.Column;
+import org.jumpmind.symmetric.db.model.Table;
 
 public class Query {
 

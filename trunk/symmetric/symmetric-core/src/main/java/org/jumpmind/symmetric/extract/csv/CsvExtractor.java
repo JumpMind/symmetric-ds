@@ -32,8 +32,8 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
+import org.jumpmind.symmetric.util.FormatUtils;
 
 /**
  * @see IDataExtractor 
@@ -117,7 +117,7 @@ public class CsvExtractor extends CsvExtractor16 {
     protected String getTargetName(String name) {
         String catalogName = name == null ? "" : name;
         if (StringUtils.isNotBlank(catalogName)) {
-            catalogName = AppUtils.replaceTokens(catalogName, parameterService.getReplacementValues(), true);
+            catalogName = FormatUtils.replaceTokens(catalogName, parameterService.getReplacementValues(), true);
         }
         return catalogName;
     }

@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -53,16 +54,14 @@ import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.SqlScript;
-import org.jumpmind.symmetric.db.ddl.Platform;
-import org.jumpmind.symmetric.db.ddl.io.DatabaseIO;
-import org.jumpmind.symmetric.db.ddl.model.Database;
+import org.jumpmind.symmetric.db.IDatabasePlatform;
+import org.jumpmind.symmetric.db.io.DatabaseIO;
+import org.jumpmind.symmetric.db.model.Database;
+import org.jumpmind.symmetric.db.platform.SqlBuilder;
+import org.jumpmind.symmetric.db.sql.SqlScript;
 import org.junit.Assert;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-/**
- * 
- */
 public class TestSetupUtil {
 
     private static final String CLIENT = ".client";
@@ -239,7 +238,7 @@ public class TestSetupUtil {
         DataSource ds = (DataSource) engine.getApplicationContext().getBean(Constants.DATA_SOURCE);
         try {
             IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
-            Platform platform = dialect.getPlatform();
+            IDatabasePlatform platform = dialect.getPlatform();
             
             dialect.cleanupTriggers();
 
@@ -250,7 +249,10 @@ public class TestSetupUtil {
             }            
                         
             Database testDb = getTestDatabase();
-            new SqlScript(platform.getDropTablesSql(testDb, true), ds, false).execute(true);            
+            StringWriter writer = new StringWriter();
+            SqlBuilder builder = platform.createSqlBuilder(writer);
+            builder.dropTables(testDb);
+            new SqlScript(writer.toString(), ds, false).execute(true);            
 
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(true);
 
@@ -262,8 +264,8 @@ public class TestSetupUtil {
 
             dialect.purge();
             
-            platform.createTables(testDb, false, true);
-            platform.createTables(getPreviousSymmetricVersionTables(), false, true);
+            platform.createDatabase(engine.getDataSource(), testDb, false, true);
+            platform.createDatabase(engine.getDataSource(), getPreviousSymmetricVersionTables(), false, true);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -33,10 +33,10 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.SqlScript;
-import org.jumpmind.symmetric.db.ddl.Platform;
-import org.jumpmind.symmetric.db.ddl.io.DatabaseIO;
-import org.jumpmind.symmetric.db.ddl.model.Database;
+import org.jumpmind.symmetric.db.IDatabasePlatform;
+import org.jumpmind.symmetric.db.io.DatabaseIO;
+import org.jumpmind.symmetric.db.model.Database;
+import org.jumpmind.symmetric.db.sql.SqlScript;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
@@ -382,8 +382,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     log.info("DatabaseSchemaBuilding", xml);
                     Database database = new DatabaseIO().read(new InputStreamReader(fileUrl
                             .openStream()));
-                    Platform platform = dbDialect.getPlatform();
-                    platform.createTables(database, false, true);
+                    IDatabasePlatform platform = dbDialect.getPlatform();
+                    platform.createDatabase(jdbcTemplate.getDataSource(), database, true, true);
                     loaded = true;
                 } catch (Exception e) {
                     log.error(e);

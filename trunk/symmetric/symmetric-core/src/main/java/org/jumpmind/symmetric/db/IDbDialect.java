@@ -23,9 +23,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.symmetric.db.ddl.Platform;
-import org.jumpmind.symmetric.db.ddl.model.Column;
-import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.model.Column;
+import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.db.sql.DmlStatement;
 import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
@@ -90,7 +89,7 @@ public interface IDbDialect {
 
     public void initTablesAndFunctions();
 
-    public Platform getPlatform();
+    public IDatabasePlatform getPlatform();
 
     public String getName();
 

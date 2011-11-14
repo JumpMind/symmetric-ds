@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.db.sql;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.model.Table;
 
 
 /**

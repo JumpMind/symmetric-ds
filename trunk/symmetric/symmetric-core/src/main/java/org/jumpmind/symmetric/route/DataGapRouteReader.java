@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ISqlProvider;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.util.FormatUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -89,7 +90,7 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
             gapClause.append("(d.data_id between ? and ?)");
         }
         gapClause.append(")");
-        return AppUtils.replace("dataRange", gapClause.toString(), sql);
+        return FormatUtils.replace("dataRange", gapClause.toString(), sql);
     }
 
     @Override
