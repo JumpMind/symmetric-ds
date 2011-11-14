@@ -271,9 +271,14 @@ public class AppUtils {
                 .equalsIgnoreCase(System.getProperty(propName, Boolean.toString(defaultValue)));
     }
 
-    public static void runBsh(String script) {
+    public static void runBsh(Map<String, Object> variables, String script) {
         try {
             Interpreter interpreter = new Interpreter();
+            if (variables != null) {
+            	for (String variableName : variables.keySet()) {
+					interpreter.set(variableName, variables.get(variableName));
+				}
+            }
             interpreter.eval(script);
         } catch (EvalError e) {
             throw new RuntimeException(e);
