@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.load.IMissingTableHandler;
 import org.jumpmind.symmetric.load.TableTemplate;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -218,7 +220,16 @@ public class CsvLoader implements IDataLoader {
                         }
                     } else if (tokens[0].equals(CsvConstants.BSH)) {
                         if (!context.isSkipping()) {
-                            AppUtils.runBsh(tokens[1]);
+                            Map<String, Object> variables = new HashMap<String, Object>();
+                            Node identity = nodeService.findIdentity();
+                            variables.put("SOURCE_NODE_ID", context.getNodeId());
+                            variables.put("SOURCE_NODE", context.getNode());
+                            if (identity != null) {
+                                variables.put("TARGET_NODE_ID", identity.getNodeId());
+                                variables.put("TARGET_EXTERNAL_ID", identity.getNodeId());
+                                variables.put("TARGET_NODE", identity);
+                            }
+                            AppUtils.runBsh(variables, tokens[1]);                            
                             rowsProcessed++;
                         }                        
                     } else if (tokens[0].equals(CsvConstants.CREATE)) {
