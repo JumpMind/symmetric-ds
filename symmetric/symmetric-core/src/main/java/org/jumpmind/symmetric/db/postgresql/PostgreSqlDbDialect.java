@@ -34,8 +34,8 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.ddl.Platform;
-import org.jumpmind.symmetric.db.ddl.model.Column;
+import org.jumpmind.symmetric.db.IDatabasePlatform;
+import org.jumpmind.symmetric.db.model.Column;
 import org.jumpmind.symmetric.db.sql.DmlStatement;
 import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.model.Trigger;
@@ -58,7 +58,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     private String transactionIdExpression = "null";
 
     @Override
-    public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {        
+    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {        
         super.init(pf, 0, jdbcTemplate);
     }
     

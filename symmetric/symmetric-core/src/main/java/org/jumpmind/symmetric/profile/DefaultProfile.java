@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.SymmetricPropertiesFiles;
-import org.jumpmind.symmetric.db.SqlScript;
+import org.jumpmind.symmetric.db.sql.SqlScript;
 import org.springframework.core.io.Resource;
 
 /**

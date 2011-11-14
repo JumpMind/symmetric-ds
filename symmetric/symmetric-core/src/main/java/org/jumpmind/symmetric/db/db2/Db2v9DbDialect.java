@@ -22,12 +22,9 @@ package org.jumpmind.symmetric.db.db2;
 import java.net.URL;
 
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.SqlScript;
+import org.jumpmind.symmetric.db.sql.SqlScript;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/*
- * 
- */
 public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
@@ -42,7 +39,7 @@ public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {
             try {
                 log.info("EnvironmentVariablesCreating", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
                         SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
-                new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), ";").execute();
+                new SqlScript(getSqlScriptUrl(), jdbcTemplate.getDataSource(), ";").execute();
             } catch (Exception ex) {
                 log.error("DB2DialectInitializingError", ex);
             }

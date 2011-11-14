@@ -26,26 +26,21 @@ import java.sql.SQLException;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.ddl.Platform;
-import org.jumpmind.symmetric.db.ddl.PlatformFactory;
-import org.jumpmind.symmetric.db.ddl.PlatformUtils;
-import org.jumpmind.symmetric.db.ddl.platform.db2.Db2Platform;
-import org.jumpmind.symmetric.db.ddl.platform.derby.DerbyPlatform;
-import org.jumpmind.symmetric.db.ddl.platform.firebird.FirebirdPlatform;
-import org.jumpmind.symmetric.db.ddl.platform.greenplum.GreenplumPlatform;
-import org.jumpmind.symmetric.db.ddl.platform.h2.H2Platform;
-import org.jumpmind.symmetric.db.ddl.platform.hsqldb.HsqlDbPlatform;
-import org.jumpmind.symmetric.db.ddl.platform.hsqldb2.HsqlDb2Platform;
-import org.jumpmind.symmetric.db.ddl.platform.informix.InformixPlatform;
-import org.jumpmind.symmetric.db.ddl.platform.interbase.InterbasePlatform;
-import org.jumpmind.symmetric.db.ddl.platform.mssql.MSSqlPlatform;
-import org.jumpmind.symmetric.db.ddl.platform.mysql.MySqlPlatform;
-import org.jumpmind.symmetric.db.ddl.platform.oracle.Oracle10Platform;
-import org.jumpmind.symmetric.db.ddl.platform.oracle.Oracle8Platform;
-import org.jumpmind.symmetric.db.ddl.platform.oracle.Oracle9Platform;
-import org.jumpmind.symmetric.db.ddl.platform.postgresql.PostgreSqlPlatform;
-import org.jumpmind.symmetric.db.ddl.platform.sqlite.SqLitePlatform;
-import org.jumpmind.symmetric.db.ddl.platform.sybase.SybasePlatform;
+import org.jumpmind.symmetric.db.platform.db2.Db2Platform;
+import org.jumpmind.symmetric.db.platform.derby.DerbyPlatform;
+import org.jumpmind.symmetric.db.platform.firebird.FirebirdPlatform;
+import org.jumpmind.symmetric.db.platform.greenplum.GreenplumPlatform;
+import org.jumpmind.symmetric.db.platform.h2.H2Platform;
+import org.jumpmind.symmetric.db.platform.hsqldb.HsqlDbPlatform;
+import org.jumpmind.symmetric.db.platform.hsqldb2.HsqlDb2Platform;
+import org.jumpmind.symmetric.db.platform.informix.InformixPlatform;
+import org.jumpmind.symmetric.db.platform.interbase.InterbasePlatform;
+import org.jumpmind.symmetric.db.platform.mssql.MSSqlPlatform;
+import org.jumpmind.symmetric.db.platform.mysql.MySqlPlatform;
+import org.jumpmind.symmetric.db.platform.oracle.OraclePlatform;
+import org.jumpmind.symmetric.db.platform.postgresql.PostgreSqlPlatform;
+import org.jumpmind.symmetric.db.platform.sqlite.SqLitePlatform;
+import org.jumpmind.symmetric.db.platform.sybase.SybasePlatform;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
@@ -78,7 +73,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
 
         waitForAvailableDatabase();
 
-        Platform pf = PlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
+        IDatabasePlatform pf = DatabasePlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
         
         if (forceDelimitedIdentifierModeOn) {
             pf.setDelimitedIdentifierModeOn(true);
@@ -92,11 +87,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
 
         if (pf instanceof MySqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("mysqlDialect");
-        } else if (pf instanceof Oracle8Platform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
-        } else if (pf instanceof Oracle9Platform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
-        } else if (pf instanceof Oracle10Platform) {
+        } else if (pf instanceof OraclePlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
         } else if (pf instanceof MSSqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("msSqlDialect");
@@ -117,13 +108,13 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         } else if (pf instanceof InformixPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("informixDialect");          
         } else if (pf instanceof Db2Platform) {
-            String currentDbProductVersion = PlatformUtils.getDatabaseProductVersion(jdbcTemplate
+            String currentDbProductVersion = DatabasePlatformUtils.getDatabaseProductVersion(jdbcTemplate
                     .getDataSource());
             if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
                 dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
             } else {
-                int dbMajorVersion = PlatformUtils.getDatabaseMajorVersion(jdbcTemplate.getDataSource());
-                int dbMinorVersion = PlatformUtils.getDatabaseMinorVersion(jdbcTemplate.getDataSource());
+                int dbMajorVersion = DatabasePlatformUtils.getDatabaseMajorVersion(jdbcTemplate.getDataSource());
+                int dbMinorVersion = DatabasePlatformUtils.getDatabaseMinorVersion(jdbcTemplate.getDataSource());
                 if (dbMajorVersion < 9 || (dbMajorVersion == 9 && dbMinorVersion < 5)) {
                     dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
                 } else {

@@ -25,7 +25,7 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;

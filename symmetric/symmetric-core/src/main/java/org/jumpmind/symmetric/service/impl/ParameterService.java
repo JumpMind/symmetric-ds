@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.util.FormatUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -282,10 +283,10 @@ public class ParameterService extends AbstractService implements IParameterServi
         String value = getString(paramKey);
         if (!StringUtils.isBlank(value)) {
             if (value.contains("hostName")) {
-                value = AppUtils.replace("hostName", AppUtils.getHostName(), value);
+                value = FormatUtils.replace("hostName", AppUtils.getHostName(), value);
             }
             if (value.contains("ipAddress")) {
-                value = AppUtils.replace("ipAddress", AppUtils.getIpAddress(), value);
+                value = FormatUtils.replace("ipAddress", AppUtils.getIpAddress(), value);
             }
         }
         return value;

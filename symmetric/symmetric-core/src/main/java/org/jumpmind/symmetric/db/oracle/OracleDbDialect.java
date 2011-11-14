@@ -30,9 +30,9 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.IDatabasePlatform;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
-import org.jumpmind.symmetric.db.ddl.Platform;
-import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;
@@ -55,7 +55,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     String selectTransactionsSql;
 
     @Override
-    public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
+    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
         super.init(pf, queryTimeout, jdbcTemplate);
         try {
             areDatabaseTransactionsPendingSince(System.currentTimeMillis());

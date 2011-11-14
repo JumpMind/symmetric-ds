@@ -1,0 +1,48 @@
+package org.jumpmind.symmetric.db.platform.informix;
+
+import java.io.Writer;
+import java.sql.Types;
+
+import org.jumpmind.symmetric.db.AbstractDatabasePlatform;
+import org.jumpmind.symmetric.db.IDatabasePlatform;
+import org.jumpmind.symmetric.db.platform.SqlBuilder;
+
+public class InformixPlatform extends AbstractDatabasePlatform implements IDatabasePlatform {
+
+    public static final String DATABASENAME = "Informix Dynamic Server11";
+
+    public static final String JDBC_DRIVER = "com.informix.jdbc.IfxDriver";
+
+    public static final String JDBC_SUBPROTOCOL = "informix-sqli";
+
+    public InformixPlatform() {
+
+        info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
+        info.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);
+        info.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
+        info.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
+        info.addNativeTypeMapping(Types.TIME, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
+        info.addNativeTypeMapping(Types.BINARY, "BYTE", Types.BINARY);
+        info.addNativeTypeMapping(Types.VARBINARY, "BYTE", Types.BINARY);
+
+        info.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BOOLEAN);
+        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
+        info.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.DOUBLE);
+
+        info.setDefaultSize(Types.VARCHAR, 255);
+        info.setDefaultSize(Types.CHAR, 255);
+
+        info.setAlterTableForDropUsed(true);
+        info.setSystemIndicesReturned(true);
+
+        modelReader = new InformixModelReader(this);
+    }
+
+    public SqlBuilder createSqlBuilder(Writer writer) {
+        return new InformixBuilder(log, this, writer);
+    }
+
+    public String getName() {
+        return DATABASENAME;
+    }
+}

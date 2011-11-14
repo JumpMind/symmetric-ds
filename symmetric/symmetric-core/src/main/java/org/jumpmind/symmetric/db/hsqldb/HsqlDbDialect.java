@@ -24,8 +24,8 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.ddl.Platform;
-import org.jumpmind.symmetric.db.ddl.model.Table;
+import org.jumpmind.symmetric.db.IDatabasePlatform;
+import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -40,7 +40,7 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
     private boolean enforceStrictSize = true;
    
     @Override
-    public void init(Platform pf, int queryTimeout, final JdbcTemplate jdbcTemplate) {
+    public void init(IDatabasePlatform pf, int queryTimeout, final JdbcTemplate jdbcTemplate) {
         super.init(pf, queryTimeout, jdbcTemplate);
         jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
         jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");

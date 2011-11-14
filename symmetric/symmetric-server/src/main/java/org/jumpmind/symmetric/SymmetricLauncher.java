@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -53,10 +54,10 @@ import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.SqlScript;
-import org.jumpmind.symmetric.db.ddl.Platform;
-import org.jumpmind.symmetric.db.ddl.io.DatabaseIO;
-import org.jumpmind.symmetric.db.ddl.model.Database;
+import org.jumpmind.symmetric.db.IDatabasePlatform;
+import org.jumpmind.symmetric.db.io.DatabaseIO;
+import org.jumpmind.symmetric.db.model.Database;
+import org.jumpmind.symmetric.db.sql.SqlScript;
 import org.jumpmind.symmetric.profile.IProfile;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -569,10 +570,17 @@ public class SymmetricLauncher {
         System.out.println(SecurityConstants.PREFIX_ENC + service.encrypt(plainText));
     }
     
-    private void exportSchema(ISymmetricEngine engine, String fileName) {        
-        Platform platform = engine.getDbDialect().getPlatform();
-        Database db = platform.readModelFromDatabase("model");
-        new DatabaseIO().write(db, fileName);
+    private void exportSchema(ISymmetricEngine engine, String fileName) {
+        IDatabasePlatform platform = engine.getDbDialect().getPlatform();
+        Connection c = null;
+        try {
+            c = engine.getDataSource().getConnection();
+            Database db = platform.readDatabase(c, "model", null, null, null);
+            c.close();
+            new DatabaseIO().write(db, fileName);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void openRegistration(ISymmetricEngine engine, String argument) {
@@ -644,9 +652,9 @@ public class SymmetricLauncher {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
-            Platform pf = dialect.getPlatform();
+            IDatabasePlatform pf = dialect.getPlatform();
             Database db = new DatabaseIO().read(new File(fileName));
-            pf.createTables(db, false, true);
+            pf.createDatabase(engine.getDataSource(), db, false, true);
         } else {
             throw new SymmetricException("FileNotFound", fileName);
         }
@@ -657,7 +665,7 @@ public class SymmetricLauncher {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
-            SqlScript script = new SqlScript(file.toURI().toURL(), dialect.getPlatform().getDataSource(),
+            SqlScript script = new SqlScript(file.toURI().toURL(), engine.getDataSource(),
 		    true, SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens());
             script.execute();
         } else {

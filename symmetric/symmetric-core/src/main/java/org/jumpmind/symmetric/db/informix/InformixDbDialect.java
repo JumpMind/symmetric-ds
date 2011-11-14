@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.ddl.Platform;
+import org.jumpmind.symmetric.db.IDatabasePlatform;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -42,7 +42,7 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     @Override
-    public void init(Platform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
+    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
         super.init(pf, queryTimeout, jdbcTemplate);
         Map<String, String> env = System.getenv();
         String clientIdentifierMode = env.get("DELIMIDENT");
