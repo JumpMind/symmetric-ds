@@ -232,6 +232,7 @@ public class AppUtils {
                     interpreter.set(variableName, variables.get(variableName));
                 }
             }
+            log.info("Message", "About to run: \n" + script);
             interpreter.eval(script);
         } catch (EvalError e) {
             throw new RuntimeException(e);
