@@ -80,6 +80,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, OraclePlatform.DATABASENAME, OraclePlatform.class);
         addPlatform(platforms, PostgreSqlPlatform.DATABASENAME, PostgreSqlPlatform.class);
         addPlatform(platforms, SybasePlatform.DATABASENAME, SybasePlatform.class);
+        addPlatform(platforms, Db2Platform.DATABASENAME, Db2Platform.class);
 
         // Note that currently Sapdb and MaxDB have equal subprotocols and
         // drivers so we have no means to distinguish them
