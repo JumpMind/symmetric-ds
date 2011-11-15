@@ -18,7 +18,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 <betwixt-config>
-  <class name="org.jumpmind.symmetric.db.model.Database">
+  <class name="org.jumpmind.db.model.Database">
     <element name="database">
       <attribute name="name"            property="name"/>
       <attribute name="defaultIdMethod" property="idMethod"/>
@@ -28,7 +28,7 @@ under the License.
     </element>
   </class>
 
-  <class name="org.jumpmind.symmetric.db.model.Table">
+  <class name="org.jumpmind.db.model.Table">
     <element name="table">
       <attribute name="name"        property="name"/>
       <attribute name="description" property="description"/>
@@ -39,7 +39,7 @@ under the License.
     </element>
   </class>
 
-  <class name="org.jumpmind.symmetric.db.model.Column">
+  <class name="org.jumpmind.db.model.Column">
     <element name="column">
       <attribute name="name"          property="name"/>
       <attribute name="primaryKey"    property="primaryKey"/>
@@ -53,7 +53,7 @@ under the License.
     </element>
   </class>
 
-  <class name="org.jumpmind.symmetric.db.model.ForeignKey">
+  <class name="org.jumpmind.db.model.ForeignKey">
     <element name="foreign-key">
       <attribute name="foreignTable" property="foreignTableName"/>
       <attribute name="name"         property="name"/>
@@ -62,14 +62,14 @@ under the License.
     </element>
   </class>
 
-  <class name="org.jumpmind.symmetric.db.model.Reference">
+  <class name="org.jumpmind.db.model.Reference">
     <element name="reference">
       <attribute name="local"   property="localColumnName"/>
       <attribute name="foreign" property="foreignColumnName"/>
     </element>
   </class>
 
-  <class name="org.jumpmind.symmetric.db.model.NonUniqueIndex">
+  <class name="org.jumpmind.db.model.NonUniqueIndex">
     <element name="index">
       <attribute name="name" property="name"/>
 
@@ -77,14 +77,14 @@ under the License.
     </element>
   </class>
 
-  <class name="org.jumpmind.symmetric.db.model.IndexColumn">
+  <class name="org.jumpmind.db.model.IndexColumn">
     <element name="index-column">
       <attribute name="name" property="name"/>
       <attribute name="size" property="size"/>
     </element>
   </class>
 
-  <class name="org.jumpmind.symmetric.db.model.UniqueIndex">
+  <class name="org.jumpmind.db.model.UniqueIndex">
     <element name="unique">
       <attribute name="name" property="name"/>
 

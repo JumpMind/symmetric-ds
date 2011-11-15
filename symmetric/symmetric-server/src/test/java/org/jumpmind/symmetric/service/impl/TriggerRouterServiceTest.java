@@ -31,12 +31,12 @@ import java.util.List;
 
 import javax.sql.rowset.serial.SerialBlob;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
-import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.model.Node;

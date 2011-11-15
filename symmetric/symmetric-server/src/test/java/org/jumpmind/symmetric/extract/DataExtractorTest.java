@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
-import org.jumpmind.symmetric.util.FormatUtils;
+import org.jumpmind.util.FormatUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
