@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.db.h2;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
@@ -33,6 +34,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
 
+    @Override
+    public String getDefaultSchema() {
+        String defaultSchema = super.getDefaultSchema();
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) jdbcTemplate.queryForObject("select SCHEMA()", String.class);
+        }
+        return defaultSchema;
+    }
+    
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
             String triggerName) {
