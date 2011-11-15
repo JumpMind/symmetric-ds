@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.jumpmind.symmetric.util.FormatUtils;
+import org.jumpmind.util.FormatUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;

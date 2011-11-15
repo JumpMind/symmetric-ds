@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.transform.TransformColumn.IncludeOnType;
 
 public class TransformedData implements Cloneable {

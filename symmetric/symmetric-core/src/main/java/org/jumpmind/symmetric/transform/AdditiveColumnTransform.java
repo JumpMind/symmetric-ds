@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.model.Column;
-import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.jdbc.core.JdbcTemplate;

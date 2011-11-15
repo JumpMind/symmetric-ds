@@ -27,8 +27,8 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.db.model.Column;
-import org.jumpmind.symmetric.db.model.Table;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 
 /**
  * Defines the trigger via which a table will be synchronized.

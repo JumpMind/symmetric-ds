@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
-import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.ext.IExtraConfigTables;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Router;

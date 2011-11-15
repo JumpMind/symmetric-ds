@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.CsvUtils;
-import org.jumpmind.symmetric.util.FormatUtils;
+import org.jumpmind.util.FormatUtils;
 
 /**
  * @see IDataExtractor 

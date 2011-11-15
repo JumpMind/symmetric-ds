@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ISqlProvider;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.jumpmind.symmetric.util.FormatUtils;
+import org.jumpmind.util.FormatUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;

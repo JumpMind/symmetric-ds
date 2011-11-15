@@ -20,7 +20,7 @@
 
 package org.jumpmind.symmetric.model;
 
-import org.jumpmind.symmetric.db.model.Table;
+import org.jumpmind.db.model.Table;
 
 /**
  * 

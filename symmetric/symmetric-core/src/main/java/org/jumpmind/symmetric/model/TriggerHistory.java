@@ -24,8 +24,8 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.jumpmind.symmetric.db.model.Column;
-import org.jumpmind.symmetric.db.model.Table;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 
 /**
  * Maps to the table sync audit table which tracks the history of sync trigger
