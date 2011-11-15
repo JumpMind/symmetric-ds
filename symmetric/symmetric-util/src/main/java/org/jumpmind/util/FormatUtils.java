@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric.util;
+package org.jumpmind.util;
 
 import java.util.Map;
 import java.util.regex.Matcher;
