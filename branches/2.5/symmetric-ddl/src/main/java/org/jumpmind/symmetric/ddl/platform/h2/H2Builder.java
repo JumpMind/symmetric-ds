@@ -26,28 +26,17 @@ package org.jumpmind.symmetric.ddl.platform.h2;
 
 import java.io.IOException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.ListIterator;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ddl.Platform;
 import org.jumpmind.symmetric.ddl.alteration.AddColumnChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnAutoIncrementChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnDataTypeChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnRequiredChange;
-import org.jumpmind.symmetric.ddl.alteration.ColumnSizeChange;
 import org.jumpmind.symmetric.ddl.alteration.RemoveColumnChange;
-import org.jumpmind.symmetric.ddl.alteration.TableChange;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.Index;
 import org.jumpmind.symmetric.ddl.model.ModelException;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.model.TypeMap;
-import org.jumpmind.symmetric.ddl.platform.CreationParameters;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 
 /*
@@ -285,4 +274,12 @@ public class H2Builder extends SqlBuilder {
             }
         }
     }
+    
+	@Override
+	public void writeExternalIndexDropStmt(Table table, Index index)
+			throws IOException {
+		print("DROP INDEX IF EXISTS ");
+		printIdentifier(getIndexName(index));
+		printEndOfStatement();
+	}
 }
