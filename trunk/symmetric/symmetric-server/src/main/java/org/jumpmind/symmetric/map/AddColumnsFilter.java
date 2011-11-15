@@ -24,11 +24,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.common.TokenConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.model.Table;
-import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.ITableColumnFilter;

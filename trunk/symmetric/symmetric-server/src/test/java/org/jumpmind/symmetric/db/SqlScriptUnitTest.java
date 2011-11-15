@@ -24,7 +24,7 @@ import java.sql.DriverManager;
 
 import junit.framework.Assert;
 
-import org.jumpmind.symmetric.db.sql.SqlScript;
+import org.jumpmind.db.sql.SqlScript;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
