@@ -281,6 +281,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
 
         final boolean newExtractorCreated = ctx == null || ctx.getDataExtractor() == null;
+        
         final IDataExtractor dataExtractor = !newExtractorCreated ? ctx.getDataExtractor()
                 : getDataExtractor(node.getSymmetricVersion());
 
@@ -290,6 +291,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 triggerRouter.getTrigger().getSourceSchemaName(),
                 dataExtractor.getLegacyTableName(triggerRouter.getTrigger().getSourceTableName()),
                 true);
+        
+        if (tableForSql == null) {
+            throw new RuntimeException(
+                    String.format("Could not find the table, %s, to extract", Table
+                            .getFullyQualifiedTableName(triggerRouter.getTrigger()
+                                    .getSourceCatalogName(), triggerRouter.getTrigger()
+                                    .getSourceSchemaName(), triggerRouter.getTrigger()
+                                    .getSourceTableName())));
+        }
 
         final String sql = dbDialect.createInitialLoadSqlFor(node, triggerRouter, tableForSql,
                 triggerHistory,

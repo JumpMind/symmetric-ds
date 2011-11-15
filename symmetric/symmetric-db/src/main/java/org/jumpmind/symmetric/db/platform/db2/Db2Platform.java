@@ -36,27 +36,9 @@ public class Db2Platform extends AbstractDatabasePlatform {
     /* The standard DB2 jdbc driver. */
     public static final String JDBC_DRIVER = "com.ibm.db2.jcc.DB2Driver";
     
-    /* Older name for the jdbc driver. */
-    public static final String JDBC_DRIVER_OLD1 = "COM.ibm.db2.jdbc.app.DB2Driver";
-    
-    /* Older name for the jdbc driver. */
-    public static final String JDBC_DRIVER_OLD2 = "COM.ibm.db2os390.sqlj.jdbc.DB2SQLJDriver";
-    
-    /* The JTOpen JDBC Driver. */
-    public static final String JDBC_DRIVER_JTOPEN = "com.ibm.as400.access.AS400JDBCDriver";
-    
     /* The subprotocol used by the standard DB2 driver. */
     public static final String JDBC_SUBPROTOCOL = "db2";
     
-    /* An alternative subprotocol used by the standard DB2 driver on OS/390. */
-    public static final String JDBC_SUBPROTOCOL_OS390_1 = "db2os390";
-    
-    /* An alternative subprotocol used by the standard DB2 driver on OS/390. */
-    public static final String JDBC_SUBPROTOCOL_OS390_2 = "db2os390sqlj";
-    
-    /* An alternative subprotocol used by the JTOpen driver on OS/400. */
-    public static final String JDBC_SUBPROTOCOL_JTOPEN = "as400";
-
     /*
      * Creates a new platform instance.
      */
