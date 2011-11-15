@@ -73,7 +73,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
 
         waitForAvailableDatabase();
 
-        IDatabasePlatform pf = DatabasePlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
+        IDatabasePlatform pf = JdbcDatabasePlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
         
         if (forceDelimitedIdentifierModeOn) {
             pf.setDelimitedIdentifierModeOn(true);
@@ -108,13 +108,13 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         } else if (pf instanceof InformixPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("informixDialect");          
         } else if (pf instanceof Db2Platform) {
-            String currentDbProductVersion = DatabasePlatformUtils.getDatabaseProductVersion(jdbcTemplate
+            String currentDbProductVersion = JdbcDatabasePlatformFactory.getDatabaseProductVersion(jdbcTemplate
                     .getDataSource());
             if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
                 dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
             } else {
-                int dbMajorVersion = DatabasePlatformUtils.getDatabaseMajorVersion(jdbcTemplate.getDataSource());
-                int dbMinorVersion = DatabasePlatformUtils.getDatabaseMinorVersion(jdbcTemplate.getDataSource());
+                int dbMajorVersion = JdbcDatabasePlatformFactory.getDatabaseMajorVersion(jdbcTemplate.getDataSource());
+                int dbMinorVersion = JdbcDatabasePlatformFactory.getDatabaseMinorVersion(jdbcTemplate.getDataSource());
                 if (dbMajorVersion < 9 || (dbMajorVersion == 9 && dbMinorVersion < 5)) {
                     dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
                 } else {

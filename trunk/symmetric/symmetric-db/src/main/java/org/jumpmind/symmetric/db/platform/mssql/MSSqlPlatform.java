@@ -33,22 +33,10 @@ public class MSSqlPlatform extends AbstractDatabasePlatform {
     public static final String DATABASENAME = "MsSql";
 
     /* The standard SQLServer jdbc driver. */
-    public static final String JDBC_DRIVER = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
-
-    /*
-     * The new SQLServer 2005 jdbc driver which can also be used for SQL Server
-     * 2000.
-     */
-    public static final String JDBC_DRIVER_NEW = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    public static final String JDBC_DRIVER = "net.sourceforge.jtds.jdbc.Driver";
 
     /* The subprotocol used by the standard SQL Server driver. */
-    public static final String JDBC_SUBPROTOCOL = "microsoft:sqlserver";
-
-    /* The subprotocol recommended for the newer SQL Server 2005 driver. */
-    public static final String JDBC_SUBPROTOCOL_NEW = "sqlserver";
-
-    /* The subprotocol internally returned by the newer SQL Server 2005 driver. */
-    public static final String JDBC_SUBPROTOCOL_INTERNAL = "sqljdbc";
+    public static final String JDBC_SUBPROTOCOL = "jtds";
 
     /*
      * Creates a new platform instance.

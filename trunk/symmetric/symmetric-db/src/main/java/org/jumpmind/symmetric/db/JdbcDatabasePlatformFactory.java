@@ -29,6 +29,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.db.platform.db2.Db2Platform;
 import org.jumpmind.symmetric.db.platform.derby.DerbyPlatform;
 import org.jumpmind.symmetric.db.platform.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.db.platform.greenplum.GreenplumPlatform;
@@ -49,23 +51,58 @@ import org.jumpmind.symmetric.db.platform.sybase.SybasePlatform;
  * insensitive database name. Note that this is a convenience class as the platforms
  * can also simply be created via their constructors.
  */
-public class DatabasePlatformFactory {
+public class JdbcDatabasePlatformFactory {
 
     /* The database name -> platform map. */
-    private static Map<String, Class<? extends IDatabasePlatform>> platforms = null;
+    private static Map<String, Class<? extends IDatabasePlatform>> platforms = new HashMap<String, Class<? extends IDatabasePlatform>>();
 
     /*
-     * Returns the platform map.
-     * 
-     * @return The platform list
+     * Maps the sub-protocl part of a jdbc connection url to a OJB platform
+     * name.
      */
-    private static synchronized Map<String, Class<? extends IDatabasePlatform>> getPlatforms() {
-        if (platforms == null) {
-            // lazy initialization
-            platforms = new HashMap<String, Class<? extends IDatabasePlatform>>();
-            registerPlatforms();
+    private static HashMap<String, String> jdbcSubProtocolToPlatform = new HashMap<String, String>();
+
+    static {
+
+        for (String name : H2Platform.DATABASENAMES) {
+            addPlatform(platforms, name, H2Platform.class);
         }
-        return platforms;
+        addPlatform(platforms, SqLitePlatform.DATABASENAME, SqLitePlatform.class);
+        addPlatform(platforms, InformixPlatform.DATABASENAME, InformixPlatform.class);
+        addPlatform(platforms, DerbyPlatform.DATABASENAME, DerbyPlatform.class);
+        addPlatform(platforms, FirebirdPlatform.DATABASENAME, FirebirdPlatform.class);
+        addPlatform(platforms, GreenplumPlatform.DATABASENAME, GreenplumPlatform.class);
+        addPlatform(platforms, HsqlDbPlatform.DATABASENAME, HsqlDbPlatform.class);
+        addPlatform(platforms, HsqlDb2Platform.DATABASENAME, HsqlDb2Platform.class);
+        addPlatform(platforms, InterbasePlatform.DATABASENAME, InterbasePlatform.class);
+        addPlatform(platforms, MSSqlPlatform.DATABASENAME, MSSqlPlatform.class);
+        addPlatform(platforms, MySqlPlatform.DATABASENAME, MySqlPlatform.class);
+        addPlatform(platforms, OraclePlatform.DATABASENAME, OraclePlatform.class);
+        addPlatform(platforms, PostgreSqlPlatform.DATABASENAME, PostgreSqlPlatform.class);
+        addPlatform(platforms, SybasePlatform.DATABASENAME, SybasePlatform.class);
+
+        // Note that currently Sapdb and MaxDB have equal subprotocols and
+        // drivers so we have no means to distinguish them
+        jdbcSubProtocolToPlatform.put(Db2Platform.JDBC_SUBPROTOCOL, Db2Platform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(DerbyPlatform.JDBC_SUBPROTOCOL, DerbyPlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(FirebirdPlatform.JDBC_SUBPROTOCOL,
+                FirebirdPlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(HsqlDbPlatform.JDBC_SUBPROTOCOL, HsqlDbPlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(InterbasePlatform.JDBC_SUBPROTOCOL,
+                InterbasePlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(MSSqlPlatform.JDBC_SUBPROTOCOL, MSSqlPlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(MySqlPlatform.JDBC_SUBPROTOCOL, MySqlPlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(OraclePlatform.JDBC_SUBPROTOCOL_THIN,
+                OraclePlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(OraclePlatform.JDBC_SUBPROTOCOL_OCI8,
+                OraclePlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(OraclePlatform.JDBC_SUBPROTOCOL_THIN_OLD,
+                OraclePlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(PostgreSqlPlatform.JDBC_SUBPROTOCOL,
+                PostgreSqlPlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(SybasePlatform.JDBC_SUBPROTOCOL, SybasePlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(FirebirdPlatform.JDBC_SUBPROTOCOL,
+                FirebirdPlatform.DATABASENAME);
     }
 
     /*
@@ -79,11 +116,17 @@ public class DatabasePlatformFactory {
      */
     public static synchronized IDatabasePlatform createNewPlatformInstance(String[] nameVersion)
             throws DdlUtilsException {
-        Map<String, Class<? extends IDatabasePlatform>> platforms = getPlatforms();
         Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
                 nameVersion[0], nameVersion[1]).toLowerCase());
         if (platformClass == null) {
             platformClass = platforms.get(nameVersion[0].toLowerCase());
+        }
+
+        if (platformClass == null) {
+            String databaseName = jdbcSubProtocolToPlatform.get(nameVersion[2]);
+            if (databaseName != null) {
+                platformClass = platforms.get(databaseName.toLowerCase());
+            }
         }
 
         try {
@@ -111,19 +154,30 @@ public class DatabasePlatformFactory {
             throws DdlUtilsException {
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform
-        String[] nameVersion = determineDatabaseNameVersion(dataSource);
+        String[] nameVersion = determineDatabaseNameVersionSubprotocol(dataSource);
+
         return createNewPlatformInstance(nameVersion);
     }
 
-    public static String[] determineDatabaseNameVersion(DataSource dataSource)
+    public static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource)
             throws DatabaseOperationException {
         Connection connection = null;
-        String[] nameVersion = new String[2];
+        String[] nameVersion = new String[3];
         try {
             connection = dataSource.getConnection();
             DatabaseMetaData metaData = connection.getMetaData();
             nameVersion[0] = metaData.getDatabaseProductName();
             nameVersion[1] = Integer.toString(metaData.getDatabaseMajorVersion());
+            final String PREFIX = "jdbc:";
+            String url = metaData.getURL();
+            if (StringUtils.isNotBlank(url) && url.length() > PREFIX.length()) {
+                url = url.substring(PREFIX.length());
+                if (url.indexOf(":") > 0) {
+                    url = url.substring(0, url.indexOf(":"));
+                }
+            }
+            nameVersion[2] = url;
+
             /*
              * if the productName is PostgreSQL, it could be either PostgreSQL
              * or Greenplum
@@ -217,39 +271,65 @@ public class DatabasePlatformFactory {
         return productVersion;
     }
 
-    /*
-     * Registers a new platform.
-     * 
-     * @param platformName The platform name
-     * 
-     * @param platformClass The platform class which must implement the {@link
-     * Platform} interface
-     */
-    public static synchronized void registerPlatform(String platformName,
-            Class<? extends IDatabasePlatform> platformClass) {
-        addPlatform(getPlatforms(), platformName, platformClass);
+    public static String getDatabaseProductVersion(DataSource dataSource) {
+        Connection connection = null;
+
+        try {
+            connection = dataSource.getConnection();
+            DatabaseMetaData metaData = connection.getMetaData();
+            return metaData.getDatabaseProductVersion();
+        } catch (SQLException ex) {
+            throw new DatabaseOperationException("Error while reading the database metadata: "
+                    + ex.getMessage(), ex);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    // we ignore this one
+                }
+            }
+        }
     }
 
-    /*
-     * Registers the known platforms.
-     */
-    private static void registerPlatforms() {
-        for (String name : H2Platform.DATABASENAMES) {
-            addPlatform(platforms, name, H2Platform.class);
+    public static int getDatabaseMajorVersion(DataSource dataSource) {
+        Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
+            DatabaseMetaData metaData = connection.getMetaData();
+            return metaData.getDatabaseMajorVersion();
+        } catch (SQLException ex) {
+            throw new DatabaseOperationException("Error while reading the database metadata: "
+                    + ex.getMessage(), ex);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    // we ignore this one
+                }
+            }
         }
-        addPlatform(platforms, SqLitePlatform.DATABASENAME, SqLitePlatform.class);
-        addPlatform(platforms, InformixPlatform.DATABASENAME, InformixPlatform.class);
-        addPlatform(platforms, DerbyPlatform.DATABASENAME, DerbyPlatform.class);
-        addPlatform(platforms, FirebirdPlatform.DATABASENAME, FirebirdPlatform.class);
-        addPlatform(platforms, GreenplumPlatform.DATABASENAME, GreenplumPlatform.class);
-        addPlatform(platforms, HsqlDbPlatform.DATABASENAME, HsqlDbPlatform.class);
-        addPlatform(platforms, HsqlDb2Platform.DATABASENAME, HsqlDb2Platform.class);
-        addPlatform(platforms, InterbasePlatform.DATABASENAME, InterbasePlatform.class);
-        addPlatform(platforms, MSSqlPlatform.DATABASENAME, MSSqlPlatform.class);
-        addPlatform(platforms, MySqlPlatform.DATABASENAME, MySqlPlatform.class);
-        addPlatform(platforms, OraclePlatform.DATABASENAME, OraclePlatform.class);
-        addPlatform(platforms, PostgreSqlPlatform.DATABASENAME, PostgreSqlPlatform.class);
-        addPlatform(platforms, SybasePlatform.DATABASENAME, SybasePlatform.class);
+    }
+
+    public static int getDatabaseMinorVersion(DataSource dataSource) {
+        Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
+            DatabaseMetaData metaData = connection.getMetaData();
+            return metaData.getDatabaseMinorVersion();
+        } catch (SQLException ex) {
+            throw new DatabaseOperationException("Error while reading the database metadata: "
+                    + ex.getMessage(), ex);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    // we ignore this one
+                }
+            }
+        }
     }
 
     private static synchronized void addPlatform(
