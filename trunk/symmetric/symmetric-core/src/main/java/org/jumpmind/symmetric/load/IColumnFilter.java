@@ -20,8 +20,8 @@
 
 package org.jumpmind.symmetric.load;
 
-import org.jumpmind.symmetric.db.model.Table;
-import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 
 /**

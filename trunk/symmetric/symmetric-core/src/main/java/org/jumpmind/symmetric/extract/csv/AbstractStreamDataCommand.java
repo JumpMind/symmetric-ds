@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.model.Column;
-import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.Trigger;

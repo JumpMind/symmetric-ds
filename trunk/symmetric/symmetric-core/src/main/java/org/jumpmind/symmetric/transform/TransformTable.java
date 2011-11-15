@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.transform;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.symmetric.db.model.Table;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 
 public class TransformTable {

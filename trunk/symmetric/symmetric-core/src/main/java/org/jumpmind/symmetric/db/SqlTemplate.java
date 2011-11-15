@@ -26,10 +26,10 @@ import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.model.Column;
-import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.model.Channel;
@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.util.FormatUtils;
+import org.jumpmind.util.FormatUtils;
 
 /**
  * Responsible for generating dialect specific SQL such as trigger bodies and

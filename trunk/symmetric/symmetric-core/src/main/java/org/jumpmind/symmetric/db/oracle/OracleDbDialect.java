@@ -26,13 +26,13 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.IDatabasePlatform;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
-import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;

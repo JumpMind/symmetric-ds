@@ -21,8 +21,8 @@ package org.jumpmind.symmetric.db.db2;
 
 import java.net.URL;
 
+import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.sql.SqlScript;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {

@@ -20,7 +20,7 @@
 
 package org.jumpmind.symmetric.db;
 
-import org.jumpmind.symmetric.db.model.Table;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;

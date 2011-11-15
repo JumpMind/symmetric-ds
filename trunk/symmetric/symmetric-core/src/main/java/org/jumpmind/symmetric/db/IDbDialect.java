@@ -23,10 +23,11 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.symmetric.db.model.Column;
-import org.jumpmind.symmetric.db.model.Table;
-import org.jumpmind.symmetric.db.sql.DmlStatement;
-import org.jumpmind.symmetric.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Channel;

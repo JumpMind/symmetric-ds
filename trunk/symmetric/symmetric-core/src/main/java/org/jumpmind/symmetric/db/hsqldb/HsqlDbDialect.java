@@ -20,12 +20,12 @@
 
 package org.jumpmind.symmetric.db.hsqldb;
 
+import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.IDatabasePlatform;
-import org.jumpmind.symmetric.db.model.Table;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
