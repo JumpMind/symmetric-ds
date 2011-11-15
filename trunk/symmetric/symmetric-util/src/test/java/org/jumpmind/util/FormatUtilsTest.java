@@ -1,8 +1,9 @@
-package org.jumpmind.symmetric.util;
+package org.jumpmind.util;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.util.FormatUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
