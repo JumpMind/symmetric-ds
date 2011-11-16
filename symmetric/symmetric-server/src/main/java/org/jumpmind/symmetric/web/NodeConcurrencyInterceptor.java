@@ -49,7 +49,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
     public boolean before(HttpServletRequest req, HttpServletResponse resp) throws IOException,
             ServletException {
         String poolId = req.getRequestURI();
-        String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
+        String nodeId = getNodeId(req);
         String method = req.getMethod();
 
         if (method.equals(WebConstants.METHOD_HEAD) && 
@@ -78,10 +78,19 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         }
     }
     
+    protected String getNodeId(HttpServletRequest req) {
+        String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
+        if (StringUtils.isBlank(nodeId)) {
+        	// if this is a registration request, we won't have a node id to use. 
+        	nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.EXTERNAL_ID));
+        }
+        return nodeId;
+    }
+    
     public void after(HttpServletRequest req, HttpServletResponse resp) throws IOException,
             ServletException {
         String poolId = req.getRequestURI();
-        String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
+        String nodeId = getNodeId(req);
         concurrentConnectionManager.releaseConnection(nodeId, poolId);
     }
 
