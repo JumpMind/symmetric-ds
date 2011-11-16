@@ -31,7 +31,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.JdbcModelReader;
 import org.jumpmind.db.platform.SqlBuilder;
-import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.util.Log;
 import org.jumpmind.util.LogFactory;
@@ -131,41 +130,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public void createDatabase(DataSource dataSource, Database targetDatabase,
             boolean dropTablesFirst, boolean continueOnError) {
-        Database sourceDatabase = new Database();
-        Table[] targetTables = targetDatabase.getTables();
-        Connection connection = null;
-        try {
-            connection = dataSource.getConnection();
-            for (Table targetTable : targetTables) {
-                Table sourceTable = readTableFromDatabase(connection, targetTable.getCatalog(),
-                        targetTable.getSchema(), targetTable.getName());
-                if (sourceTable != null) {
-                    sourceDatabase.addTable(sourceTable);
-                }
-            }
-        } catch (SQLException ex) {
-            throw new SqlException(ex);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
-
         StringWriter writer = new StringWriter();
         SqlBuilder builder = createSqlBuilder(writer);
-
-        if (builder.isAlterDatabase(sourceDatabase, targetDatabase)) {
-            String delimiter = info.getSqlCommandDelimiter();
-            builder.alterDatabase(sourceDatabase, targetDatabase);
-            String alterSql = writer.toString();
-            if (log.isDebugEnabled()) {
-                log.debug("TablesAutoUpdatingAlterSql", alterSql);
-            }
-            new SqlScript(alterSql, dataSource, !continueOnError, delimiter, null).execute();
-        }
+        builder.createTables(targetDatabase, dropTablesFirst);
+        String createSql = writer.toString();
+        String delimiter = info.getSqlCommandDelimiter();
+        new SqlScript(createSql, dataSource, !continueOnError, delimiter, null).execute();
     }
 
     public Database readDatabase(Connection connection, String name, String catalog, String schema,
