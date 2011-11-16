@@ -1102,7 +1102,7 @@ public class JdbcModelReader
                     msg.append(col.toString());
                 }
             }
-            log.warn(msg);
+            log.warn(msg, ex);
         }
     }
 
