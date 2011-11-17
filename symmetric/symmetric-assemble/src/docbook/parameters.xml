@@ -389,32 +389,6 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>embedded.webserver.basic.auth.username</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            If specified, the username for basic authentication for an embedded server
-                            or standalone server node.  Specifying the username and password is all
-                            that's needed to enable basic authentication for an embedded server or
-                            standalone server node.
-                            [&#xA0;Default:&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>embedded.webserver.basic.auth.password</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            If specified, the password for basic authentication for an embedded server
-                            or standalone server node.
-                            [&#xA0;Default:&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
                         <command>https.verified.server.names</command>
                     </term>
                     <listitem>
