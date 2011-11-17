@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric;
 
@@ -74,8 +75,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * Run SymmetricDS utilities and/or launch an embedded version of SymmetricDS. If you run this program without any
- * arguments 'help' will print out.
+ * Run SymmetricDS utilities and/or launch an embedded version of SymmetricDS.
+ * If you run this program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
 
@@ -104,11 +105,11 @@ public class SymmetricLauncher {
     private static final String OPTION_RUN_DDL_XML = "run-ddl";
 
     private static final String OPTION_RUN_SQL = "run-sql";
-    
+
     private static final String OPTION_RUN_PROFILE = "run-profile";
 
     private static final String OPTION_PROPERTIES_GEN = "generate-default-properties";
-    
+
     private static final String OPTION_EXPORT_SCHEMA = "export-schema";
 
     private static final String OPTION_PROPERTIES_FILE = "properties";
@@ -120,9 +121,9 @@ public class SymmetricLauncher {
     private static final String OPTION_START_SECURE_SERVER = "secure-server";
 
     private static final String OPTION_START_MIXED_SERVER = "mixed-server";
-    
+
     private static final String OPTION_NO_NIO = "no-nio";
-    
+
     private static final String OPTION_NO_DIRECT_BUFFER = "no-directbuffer";
 
     private static final String OPTION_LOAD_BATCH = "load-batch";
@@ -132,22 +133,22 @@ public class SymmetricLauncher {
     private static final String OPTION_ENCRYPT_TEXT = "encrypt";
 
     private static final String OPTION_VERBOSE_CONSOLE = "verbose";
-    
+
     private static final String OPTION_DEBUG = "debug";
-    
+
     private static final String OPTION_PROFILE = "profile";
-    
+
     private static final String OPTION_NOCONSOLE = "noconsole";
-    
+
     private static final String OPTION_NOLOGFILE = "nologfile";
-    
+
     private static final String OPTION_CREATE_WAR = "create-war";
 
     private static final String MESSAGE_BUNDLE = "Launcher.Option.";
-    
-    private static final String OPTION_KEYSTORE_PASSWORD ="keystore-password";
-    
-    private static final String OPTION_KEYSTORE_TYPE ="keystore-type";
+
+    private static final String OPTION_KEYSTORE_PASSWORD = "keystore-password";
+
+    private static final String OPTION_KEYSTORE_TYPE = "keystore-type";
 
     protected SymmetricWebServer webServer;
 
@@ -156,10 +157,10 @@ public class SymmetricLauncher {
     protected boolean join = true;
 
     public static void main(String... args) throws Exception {
-       new SymmetricLauncher().execute(args);    
+        new SymmetricLauncher().execute(args);
     }
-    
-    public void execute(String... args) throws Exception {      
+
+    public void execute(String... args) throws Exception {
         PosixParser parser = new PosixParser();
         Options options = new Options();
         buildOptions(options);
@@ -175,8 +176,7 @@ public class SymmetricLauncher {
                 }
             }
 
-
-            if (!executeOptions(line)) {            
+            if (!executeOptions(line)) {
                 printHelp(options);
             }
 
@@ -199,35 +199,37 @@ public class SymmetricLauncher {
             System.exit(-1);
         }
     }
-    
+
     private void generateWar(String warFileName, String propertiesFileName) throws Exception {
         final File workingDirectory = new File("../.war");
         FileUtils.deleteDirectory(workingDirectory);
         FileUtils.copyDirectory(new File("../web"), workingDirectory);
-        FileUtils.copyDirectory(new File("../conf"), new File(workingDirectory,"WEB-INF/classes"));
+        FileUtils.copyDirectory(new File("../conf"), new File(workingDirectory, "WEB-INF/classes"));
         if (propertiesFileName != null) {
             File propsFile = new File(propertiesFileName);
             if (propsFile.exists()) {
-                FileUtils.copyFile(propsFile, new File(workingDirectory, "WEB-INF/classes/symmetric.properties"));
+                FileUtils.copyFile(propsFile, new File(workingDirectory,
+                        "WEB-INF/classes/symmetric.properties"));
             }
         }
-        JarBuilder builder = new JarBuilder(workingDirectory, new File(warFileName), new File[] {workingDirectory});
+        JarBuilder builder = new JarBuilder(workingDirectory, new File(warFileName),
+                new File[] { workingDirectory });
         builder.build();
         FileUtils.deleteDirectory(workingDirectory);
     }
-    
+
     private boolean isStartApplicationOption(CommandLine line) {
         return line.hasOption(OPTION_START_CLIENT) || line.hasOption(OPTION_START_SERVER)
                 || line.hasOption(OPTION_START_SECURE_SERVER)
                 || line.hasOption(OPTION_START_MIXED_SERVER);
     }
-    
+
     private File getLog4JFile() throws MalformedURLException {
         URL url = new URL(System.getProperty("log4j.configuration", "file:../conf/log4j-blank.xml"));
         return new File(new File(url.getFile()).getParent(), "log4j.xml");
     }
-    
-    private File getLog4JFileDebugEnabled()  throws MalformedURLException {
+
+    private File getLog4JFileDebugEnabled() throws MalformedURLException {
         File original = getLog4JFile();
         return new File(original.getParent(), "log4j-debug.xml");
     }
@@ -246,31 +248,31 @@ public class SymmetricLauncher {
             ds.close();
         }
     }
-    
-    private void configureLogging(CommandLine line) throws MalformedURLException { 
+
+    private void configureLogging(CommandLine line) throws MalformedURLException {
         File log4jFile = getLog4JFile();
         if (line.hasOption(OPTION_DEBUG)) {
             log4jFile = getLog4JFileDebugEnabled();
-        } 
-        
+        }
+
         if (log4jFile.exists()) {
-            DOMConfigurator.configure(log4jFile.getAbsolutePath()); 
-         }
-        
+            DOMConfigurator.configure(log4jFile.getAbsolutePath());
+        }
+
         if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
             Appender consoleAppender = Logger.getRootLogger().getAppender("CONSOLE");
             if (consoleAppender != null) {
                 Layout layout = consoleAppender.getLayout();
                 if (layout instanceof PatternLayout) {
-                    ((PatternLayout)layout).setConversionPattern("%d %-5p [%c{2}] [%t] %m%n");
+                    ((PatternLayout) layout).setConversionPattern("%d %-5p [%c{2}] [%t] %m%n");
                 }
-            }                
+            }
         }
-        
+
         if (line.hasOption(OPTION_NOCONSOLE)) {
             Logger.getRootLogger().removeAppender("CONSOLE");
         }
-        
+
         if (line.hasOption(OPTION_NOLOGFILE)) {
             Logger.getRootLogger().removeAppender("ROLLING");
         } else {
@@ -289,13 +291,13 @@ public class SymmetricLauncher {
                             name + ".log"));
                     fileAppender.activateOptions();
                 }
-                
+
                 System.out.println(Message.get("LauncherLogLocation", fileAppender.getFile()));
 
             }
         }
     }
-    
+
     protected void addPropertiesOption(Options options) {
         addOption(options, "p", OPTION_PROPERTIES_FILE, true);
     }
@@ -312,7 +314,7 @@ public class SymmetricLauncher {
         addOption(options, "ndb", OPTION_NO_DIRECT_BUFFER, false);
 
         addOption(options, "c", OPTION_DDL_GEN, true);
-        
+
         addPropertiesOption(options);
         addOption(options, "X", OPTION_PURGE, false);
         addOption(options, "g", OPTION_PROPERTIES_GEN, true);
@@ -333,17 +335,17 @@ public class SymmetricLauncher {
         addOption(options, OPTION_NOCONSOLE, OPTION_NOCONSOLE, false);
         addOption(options, OPTION_NOLOGFILE, OPTION_NOLOGFILE, false);
         addOption(options, "w", OPTION_CREATE_WAR, true);
-        
+
         addOption(options, "x", OPTION_EXPORT_SCHEMA, true);
 
         addOption(options, "y", OPTION_ENCRYPT_TEXT, true);
 
         addOption(options, "ksp", OPTION_KEYSTORE_PASSWORD, true);
-        
+
         addOption(options, "kst", OPTION_KEYSTORE_TYPE, true);
 
     }
-    
+
     protected boolean executeOptions(CommandLine line) throws Exception {
 
         int port = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT);
@@ -357,31 +359,33 @@ public class SymmetricLauncher {
         if (line.hasOption(OPTION_PORT_SERVER)) {
             port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
         }
-        
+
         if (line.hasOption(OPTION_SECURE_PORT_SERVER)) {
             securePort = new Integer(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
         }
-        
+
         if (line.hasOption(OPTION_KEYSTORE_PASSWORD)) {
-            System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD, line.getOptionValue(OPTION_KEYSTORE_PASSWORD));
-         }
-         
-        if (line.hasOption(OPTION_KEYSTORE_TYPE)) {
-            System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, line.getOptionValue(OPTION_KEYSTORE_TYPE));
+            System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD,
+                    line.getOptionValue(OPTION_KEYSTORE_PASSWORD));
         }
-         
+
+        if (line.hasOption(OPTION_KEYSTORE_TYPE)) {
+            System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
+                    line.getOptionValue(OPTION_KEYSTORE_TYPE));
+        }
+
         if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
             maxIdleTime = new Integer(line.getOptionValue(OPTION_MAX_IDLE_TIME));
         }
-        
+
         if (line.hasOption(OPTION_NO_NIO)) {
             noNio = true;
         }
 
         if (line.hasOption(OPTION_NO_DIRECT_BUFFER)) {
-            noDirectBuffer = true;    
+            noDirectBuffer = true;
         }
-        
+
         if (line.hasOption(OPTION_PROPERTIES_GEN)) {
             generateDefaultProperties(line.getOptionValue(OPTION_PROPERTIES_GEN));
             System.exit(0);
@@ -393,12 +397,13 @@ public class SymmetricLauncher {
             propertiesFile = "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE);
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);
             if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
-                throw new SymmetricException("FilePropertiesNotFound", line.getOptionValue(OPTION_PROPERTIES_FILE));
+                throw new SymmetricException("FilePropertiesNotFound",
+                        line.getOptionValue(OPTION_PROPERTIES_FILE));
             }
         } else {
             propertiesFile = choosePropertiesFile(line, propertiesFile);
         }
-        
+
         if (line.hasOption(OPTION_CREATE_WAR)) {
             generateWar(line.getOptionValue(OPTION_CREATE_WAR), propertiesFile);
             System.exit(0);
@@ -414,8 +419,8 @@ public class SymmetricLauncher {
 
         if (line.hasOption(OPTION_PURGE)) {
             testConnection(line);
-            ((IPurgeService) createEngine(propertiesFile).getApplicationContext().getBean(Constants.PURGE_SERVICE))
-                    .purgeOutgoing();
+            ((IPurgeService) createEngine(propertiesFile).getApplicationContext().getBean(
+                    Constants.PURGE_SERVICE)).purgeOutgoing();
             System.exit(0);
             return true;
         }
@@ -432,7 +437,7 @@ public class SymmetricLauncher {
         if (line.hasOption(OPTION_RELOAD_NODE)) {
             testConnection(line);
             String arg = line.getOptionValue(OPTION_RELOAD_NODE);
-            String message = reloadNode(createEngine(propertiesFile), arg);                
+            String message = reloadNode(createEngine(propertiesFile), arg);
             System.out.println(message);
             System.exit(0);
             return true;
@@ -461,7 +466,7 @@ public class SymmetricLauncher {
             System.exit(0);
             return true;
         }
-        
+
         if (line.hasOption(OPTION_EXPORT_SCHEMA)) {
             testConnection(line);
             exportSchema(createEngine(propertiesFile), line.getOptionValue(OPTION_EXPORT_SCHEMA));
@@ -482,13 +487,13 @@ public class SymmetricLauncher {
             System.exit(0);
             return true;
         }
-        
+
         if (line.hasOption(OPTION_RUN_PROFILE)) {
             testConnection(line);
             runProfile(createEngine(propertiesFile), line.getOptionValue(OPTION_RUN_PROFILE));
             System.exit(0);
             return true;
-        }            
+        }
 
         if (line.hasOption(OPTION_LOAD_BATCH)) {
             testConnection(line);
@@ -507,10 +512,11 @@ public class SymmetricLauncher {
             createEngine(propertiesFile).start();
             return true;
         }
-        
+
         if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER)
                 || line.hasOption(OPTION_START_MIXED_SERVER)) {
-            webServer = new SymmetricWebServer(chooseWebDir(line, webDir), maxIdleTime, propertiesFile, join, noNio, noDirectBuffer);
+            webServer = new SymmetricWebServer(chooseWebDir(line, webDir), maxIdleTime,
+                    propertiesFile, join, noNio, noDirectBuffer);
             if (line.hasOption(OPTION_START_SERVER)) {
                 webServer.start(port);
             } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
@@ -520,19 +526,19 @@ public class SymmetricLauncher {
             }
             return true;
         }
-        
+
         return false;
 
     }
-    
+
     protected String choosePropertiesFile(CommandLine line, String propertiesFile) {
         return propertiesFile;
     }
-    
+
     protected String chooseWebDir(CommandLine line, String webDir) {
         return webDir;
     }
-    
+
     protected ISymmetricEngine createEngine(String propertiesFile) {
         return new StandaloneSymmetricEngine(propertiesFile);
     }
@@ -542,8 +548,8 @@ public class SymmetricLauncher {
     }
 
     private void dumpBatch(ISymmetricEngine engine, String batchId) throws Exception {
-        IDataExtractorService dataExtractorService = (IDataExtractorService) engine.getApplicationContext().getBean(
-                Constants.DATAEXTRACTOR_SERVICE);
+        IDataExtractorService dataExtractorService = (IDataExtractorService) engine
+                .getApplicationContext().getBean(Constants.DATAEXTRACTOR_SERVICE);
         IOutgoingTransport transport = new InternalOutgoingTransport(System.out);
         dataExtractorService.extractBatchRange(transport, batchId, batchId);
         transport.close();
@@ -565,17 +571,18 @@ public class SymmetricLauncher {
     }
 
     private void encryptText(ISymmetricEngine engine, String plainText) {
-        ISecurityService service = (ISecurityService) engine.getApplicationContext()
-                .getBean(Constants.SECURITY_SERVICE);
+        ISecurityService service = (ISecurityService) engine.getApplicationContext().getBean(
+                Constants.SECURITY_SERVICE);
         System.out.println(SecurityConstants.PREFIX_ENC + service.encrypt(plainText));
     }
-    
+
     private void exportSchema(ISymmetricEngine engine, String fileName) {
         IDatabasePlatform platform = engine.getDbDialect().getPlatform();
         Connection c = null;
         try {
             c = engine.getDataSource().getConnection();
-            Database db = platform.readDatabase(c, "model", null, null, null);
+            Database db = platform.readDatabase(c, engine.getDbDialect().getDefaultCatalog(),
+                    engine.getDbDialect().getDefaultSchema(), null);
             c.close();
             new DatabaseIO().write(db, fileName);
         } catch (SQLException ex) {
@@ -587,27 +594,31 @@ public class SymmetricLauncher {
         argument = argument.replace('\"', ' ');
         int index = argument.trim().indexOf(",");
         if (index < 0) {
-            throw new SymmetricException("LauncherMissingFilenameTriggerSQL", OPTION_OPEN_REGISTRATION);
+            throw new SymmetricException("LauncherMissingFilenameTriggerSQL",
+                    OPTION_OPEN_REGISTRATION);
         }
         String nodeGroupId = argument.substring(0, index).trim();
         String externalId = argument.substring(index + 1).trim();
-        IRegistrationService registrationService = (IRegistrationService) engine.getApplicationContext().getBean(
-                Constants.REGISTRATION_SERVICE);
+        IRegistrationService registrationService = (IRegistrationService) engine
+                .getApplicationContext().getBean(Constants.REGISTRATION_SERVICE);
         registrationService.openRegistration(nodeGroupId, externalId);
     }
 
     private String reloadNode(ISymmetricEngine engine, String argument) {
-        IDataService dataService = (IDataService) engine.getApplicationContext().getBean(Constants.DATA_SERVICE);
+        IDataService dataService = (IDataService) engine.getApplicationContext().getBean(
+                Constants.DATA_SERVICE);
         return dataService.reloadNode(argument);
     }
 
-    private void syncTrigger(ISymmetricEngine engine, String fileName, boolean gen_always) throws IOException {
+    private void syncTrigger(ISymmetricEngine engine, String fileName, boolean gen_always)
+            throws IOException {
         if (fileName != null) {
             File file = new File(fileName);
             if (file.getParentFile() != null) {
                 file.getParentFile().mkdirs();
             }
-            ITriggerRouterService triggerService = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, engine);
+            ITriggerRouterService triggerService = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE,
+                    engine);
             StringBuilder sqlBuffer = new StringBuilder();
             triggerService.syncTriggers(sqlBuffer, gen_always);
             FileUtils.writeStringToFile(file, sqlBuffer.toString(), null);
@@ -622,7 +633,8 @@ public class SymmetricLauncher {
             file.getParentFile().mkdirs();
         }
         FileWriter os = new FileWriter(file, false);
-        os.write(((IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT)).getCreateSymmetricDDL());
+        os.write(((IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT))
+                .getCreateSymmetricDDL());
         os.close();
     }
 
@@ -631,8 +643,9 @@ public class SymmetricLauncher {
         if (file.getParentFile() != null) {
             file.getParentFile().mkdirs();
         }
-        BufferedReader is = new BufferedReader(new InputStreamReader(SymmetricLauncher.class
-                .getResourceAsStream("/symmetric-default.properties"), Charset.defaultCharset()));
+        BufferedReader is = new BufferedReader(new InputStreamReader(
+                SymmetricLauncher.class.getResourceAsStream("/symmetric-default.properties"),
+                Charset.defaultCharset()));
         FileWriter os = new FileWriter(file, false);
         String line = is.readLine();
         while (line != null) {
@@ -649,7 +662,8 @@ public class SymmetricLauncher {
     }
 
     private void runDdlXml(ISymmetricEngine engine, String fileName) throws FileNotFoundException {
-        IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+        IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(
+                Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
             IDatabasePlatform pf = dialect.getPlatform();
@@ -662,17 +676,18 @@ public class SymmetricLauncher {
 
     private void runSql(ISymmetricEngine engine, String fileName) throws FileNotFoundException,
             MalformedURLException {
-        IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+        IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(
+                Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
-            SqlScript script = new SqlScript(file.toURI().toURL(), engine.getDataSource(),
-		    true, SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens());
+            SqlScript script = new SqlScript(file.toURI().toURL(), engine.getDataSource(), true,
+                    SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens());
             script.execute();
         } else {
             throw new SymmetricException("FileNotFound", fileName);
         }
     }
-    
+
     private static void runProfile(ISymmetricEngine engine, String profileName)
             throws FileNotFoundException, MalformedURLException {
         IProfile profile = (IProfile) engine.getApplicationContext().getBean(profileName);
