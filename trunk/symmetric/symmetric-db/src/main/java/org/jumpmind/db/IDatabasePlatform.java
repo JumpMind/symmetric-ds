@@ -154,10 +154,6 @@ public interface IDatabasePlatform {
      * 
      * @param connection The connection to the database
      * 
-     * @param name The name of the resulting database; <code>null</code> when
-     * the default name (the catalog) is desired which might be
-     * <code>null</code> itself though
-     * 
      * @param catalog The catalog to access in the database; use
      * <code>null</code> for the default value
      * 
@@ -172,7 +168,7 @@ public interface IDatabasePlatform {
      * @throws DatabaseOperationException If an error occurred during reading
      * the model
      */
-    public Database readDatabase(Connection connection, String name, String catalog,
+    public Database readDatabase(Connection connection, String catalog,
             String schema, String[] tableTypes) throws DatabaseOperationException;
 
     public Table readTableFromDatabase(Connection connection, String catalogName,
