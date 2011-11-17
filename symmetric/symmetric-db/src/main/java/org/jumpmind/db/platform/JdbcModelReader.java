@@ -795,6 +795,7 @@ public class JdbcModelReader
             column.setTypeCode((Integer) values.get("DATA_TYPE"));
         }
         
+        column.setJdbcTypeName((String)values.get("TYPE_NAME"));
         column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
 
         String size = (String) values.get("COLUMN_SIZE");
