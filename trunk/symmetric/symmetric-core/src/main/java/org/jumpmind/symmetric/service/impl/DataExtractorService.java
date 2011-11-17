@@ -274,6 +274,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      *            If null, then assume this 'initial load' is part of another
      *            batch.
      */
+    /**
+     * @param node
+     * @param triggerRouter
+     * @param triggerHistory
+     * @param writer
+     * @param ctx
+     */
     protected void writeInitialLoad(final Node node, final TriggerRouter triggerRouter,
             TriggerHistory triggerHistory, final Writer writer, final DataExtractorContext ctx) {
 
@@ -285,11 +292,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         final IDataExtractor dataExtractor = !newExtractorCreated ? ctx.getDataExtractor()
                 : getDataExtractor(node.getSymmetricVersion());
 
+        String tableNameToSend = dataExtractor.getLegacyTableName(triggerRouter.getTrigger().getSourceTableName());
+        
         // The table to use for the SQL may be different than the configured
         // table if there is a legacy table that is swapped out by the dataExtractor.
         Table tableForSql = dbDialect.getTable(triggerRouter.getTrigger().getSourceCatalogName(),
-                triggerRouter.getTrigger().getSourceSchemaName(),
-                dataExtractor.getLegacyTableName(triggerRouter.getTrigger().getSourceTableName()),
+                triggerRouter.getTrigger().getSourceSchemaName(), tableNameToSend,
                 true);
         
         if (tableForSql == null) {
@@ -297,8 +305,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     String.format("Could not find the table, %s, to extract", Table
                             .getFullyQualifiedTableName(triggerRouter.getTrigger()
                                     .getSourceCatalogName(), triggerRouter.getTrigger()
-                                    .getSourceSchemaName(), triggerRouter.getTrigger()
-                                    .getSourceTableName())));
+                                    .getSourceSchemaName(), tableNameToSend)));
         }
 
         final String sql = dbDialect.createInitialLoadSqlFor(node, triggerRouter, tableForSql,
