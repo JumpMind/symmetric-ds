@@ -138,11 +138,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         new SqlScript(createSql, dataSource, !continueOnError, delimiter, null).execute();
     }
 
-    public Database readDatabase(Connection connection, String name, String catalog, String schema,
+    public Database readDatabase(Connection connection, String catalog, String schema,
             String[] tableTypes) throws DatabaseOperationException {
         try {
             JdbcModelReader reader = getModelReader();
-            Database model = reader.getDatabase(connection, name, catalog, schema, tableTypes);
+            Database model = reader.getDatabase(connection, catalog, schema, tableTypes);
 
             postprocessModelFromDatabase(model);
             if ((model.getName() == null) || (model.getName().length() == 0)) {

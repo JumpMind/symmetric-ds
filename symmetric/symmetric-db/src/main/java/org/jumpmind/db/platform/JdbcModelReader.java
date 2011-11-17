@@ -413,9 +413,9 @@ public class JdbcModelReader
      *                   is desired which might be <code>null</code> itself though
      * @return The database model
      */
-    public Database getDatabase(Connection connection, String name) throws SQLException
+    public Database getDatabase(Connection connection) throws SQLException
     {
-        return getDatabase(connection, name, null, null, null);
+        return getDatabase(connection, null, null, null);
     }
 
     /*
@@ -429,29 +429,10 @@ public class JdbcModelReader
      * @param tableTypes The table types to process; use <code>null</code> or an empty list for the default ones
      * @return The database model
      */
-    public Database getDatabase(Connection connection, String name, String catalog, String schema, String[] tableTypes) throws SQLException
+    public Database getDatabase(Connection connection, String catalog, String schema, String[] tableTypes) throws SQLException
     {
-        Database db = new Database();
-
-        if (name == null)
-        {
-            try 
-            {
-                db.setName(connection.getCatalog());
-                if (catalog == null)
-                {
-                    catalog = db.getName();
-                }
-            } 
-            catch (Exception ex) 
-            {
-                log.info("Cannot determine the catalog name from connection.", ex);
-            }
-        }
-        else
-        {
-            db.setName(name);
-        }
+        Database db = new Database();        
+        db.setName(Table.getQualifiedTablePrefix(catalog, schema));
         db.addTables(readTables(connection, catalog, schema, tableTypes));
         // Note that we do this here instead of in readTable since platforms may redefine the
         // readTable method whereas it is highly unlikely that this method gets redefined
