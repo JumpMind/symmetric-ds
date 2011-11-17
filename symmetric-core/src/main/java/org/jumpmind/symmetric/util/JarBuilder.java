@@ -75,7 +75,7 @@ public class JarBuilder {
         try {
             if (source.isDirectory()) {
                 String name = massageJarEntryName(source);
-                if (!name.isEmpty()) {
+                if (name.trim().length() != 0) {
                     if (!name.endsWith("/")) {
                         name += "/";
                     }

@@ -150,7 +150,7 @@ public abstract class TypeMap
         _typeNameToTypeCode.put("BOOLEANINT",  new Integer(Types.TINYINT));
         _typeNameToTypeCode.put("BOOLEANCHAR", new Integer(Types.CHAR));
         
-        registerJdbcType(Types.SQLXML, SQLXML, JdbcTypeCategoryEnum.TEXTUAL);
+        registerJdbcType(2009, SQLXML, JdbcTypeCategoryEnum.TEXTUAL);
 
         registerJdbcType(Types.NCHAR, NCHAR, JdbcTypeCategoryEnum.TEXTUAL);
         registerJdbcType(Types.NCLOB, NCLOB, JdbcTypeCategoryEnum.TEXTUAL);
