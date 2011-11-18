@@ -217,7 +217,7 @@ public class SymmetricEngineHolder {
         if (StringUtils.isBlank(properties.getProperty(ParameterConstants.DBPOOL_URL))) {
             throw new IllegalStateException("Missing property " + ParameterConstants.DBPOOL_URL);
         }
-        if (StringUtils.isBlank(properties.getProperty(ParameterConstants.DBPOOL_USER))) {
+        if (!properties.containsKey(ParameterConstants.DBPOOL_USER)) {
             throw new IllegalStateException("Missing property " + ParameterConstants.DBPOOL_USER);
         }
         if (!properties.containsKey(ParameterConstants.DBPOOL_PASSWORD)) {
