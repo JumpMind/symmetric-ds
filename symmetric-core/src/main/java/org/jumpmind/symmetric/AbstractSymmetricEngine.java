@@ -104,7 +104,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
      */
     public static ISymmetricEngine findEngineByName(String name) {
         if (registeredEnginesByName != null && name != null) {
-            return registeredEnginesByName.get(name.toLowerCase());
+            return registeredEnginesByName.get(name);
         } else {
             return null;
         }
