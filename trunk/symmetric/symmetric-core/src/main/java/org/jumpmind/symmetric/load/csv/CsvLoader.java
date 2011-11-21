@@ -223,7 +223,7 @@ public class CsvLoader implements IDataLoader {
                             Map<String, Object> variables = new HashMap<String, Object>();
                             Node identity = nodeService.findIdentity();
                             variables.put("SOURCE_NODE_ID", context.getNodeId());
-                            variables.put("DATASOURCE", context.getJdbcTemplate().getDataSource());
+                            variables.put("DATASOURCE", dbDialect.getJdbcTemplate().getDataSource());
                             if (identity != null) {
                                 variables.put("TARGET_NODE_ID", identity.getNodeId());
                                 variables.put("TARGET_EXTERNAL_ID", identity.getExternalId());

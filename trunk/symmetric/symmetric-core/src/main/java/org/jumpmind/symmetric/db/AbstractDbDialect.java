@@ -557,7 +557,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         Database database = readSymmetricSchemaFromXml();
         prefixConfigDatabase(database);
         StringWriter writer = new StringWriter();
-        SqlBuilder builder = platform.createSqlBuilder(writer);
+        SqlBuilder builder = platform.getDdlBuilder();
         builder.createTables(database, true);
         return writer.getBuffer().toString();
     }
@@ -567,7 +567,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 triggerRouter.getTrigger().getSourceTableName(), true);
         String sql = null;
         StringWriter writer = new StringWriter();
-        SqlBuilder builder = platform.createSqlBuilder(writer);
+        SqlBuilder builder = platform.getDdlBuilder();
         builder.createTable(cachedModel, table);
         sql = writer.toString();
         return sql;
@@ -666,7 +666,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
 
             StringWriter writer = new StringWriter();
-            SqlBuilder builder = platform.createSqlBuilder(writer);
+            SqlBuilder builder = platform.getDdlBuilder();
 
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
                 log.info("TablesAutoUpdatingFoundTablesToAlter");
@@ -1375,4 +1375,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
         return null;
     }
+    
+    public JdbcTemplate getJdbcTemplate() {
+		return jdbcTemplate;
+	}
 }
