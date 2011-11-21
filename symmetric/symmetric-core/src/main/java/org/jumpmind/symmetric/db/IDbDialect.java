@@ -332,4 +332,6 @@ public interface IDbDialect {
      */
     public boolean isPrimaryKeyViolation(Exception ex);
     
+    public JdbcTemplate getJdbcTemplate();
+    
 }
