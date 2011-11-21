@@ -25,9 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
@@ -79,6 +81,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         // goes to.
         if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
                 || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
+        	
+        	if (didNodeSecurityChangeForNodeInitialization(dataMetaData)) {        		
+        			return null;
+        	}
 
             String nodeIdInQuestion = columnValues.get("NODE_ID");
             List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
@@ -103,12 +109,16 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
             }
 
-            if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER)
-                    || tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)
-                    || tableMatches(dataMetaData, TableConstants.SYM_ROUTER)
-                    || tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)) {
-                routingContext.getContextCache().put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
-            }
+			if (StringUtils.isBlank(dataMetaData.getData().getSourceNodeId())
+					&& (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER)
+							|| tableMatches(dataMetaData,
+									TableConstants.SYM_TRIGGER_ROUTER)
+							|| tableMatches(dataMetaData,
+									TableConstants.SYM_ROUTER) || tableMatches(
+							dataMetaData, TableConstants.SYM_NODE_GROUP_LINK))) {
+				routingContext.getContextCache().put(CTX_KEY_RESYNC_NEEDED,
+						Boolean.TRUE);
+			}
 
             if (tableMatches(dataMetaData, TableConstants.SYM_CHANNEL)) {
                 routingContext.getContextCache().put(CTX_KEY_FLUSH_CHANNELS_NEEDED, Boolean.TRUE);
@@ -121,6 +131,25 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         }
 
         return nodeIds;
+    }
+    
+    /**
+     * Check to see if the change was due to registration or initial load is being enabled or disabled.  If 
+     * so, then don't propagate the change.
+     */
+    protected boolean didNodeSecurityChangeForNodeInitialization(DataMetaData dataMetaData) {
+    	if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY) && dataMetaData.getData().getEventType() == DataEventType.UPDATE) {
+    		Map<String,String> oldData = getOldDataAsString("", dataMetaData);
+    		Map<String,String> newData = getNewDataAsString("", dataMetaData);
+    		if (newData.get("REGISTRATION_ENABLED") != null && 
+    				!newData.get("REGISTRATION_ENABLED").equals(oldData.get("REGISTRATION_ENABLED"))) {
+    			return true;
+    		} else if (newData.get("INITIAL_LOAD_ENABLED") != null && 
+    				!newData.get("INITIAL_LOAD_ENABLED").equals(oldData.get("INITIAL_LOAD_ENABLED"))) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
 
     protected Node findIdentity() {
