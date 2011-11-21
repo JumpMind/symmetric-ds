@@ -1430,4 +1430,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
         return null;
     }
+    
+    public JdbcTemplate getJdbcTemplate() {
+		return jdbcTemplate;
+	}
 }
