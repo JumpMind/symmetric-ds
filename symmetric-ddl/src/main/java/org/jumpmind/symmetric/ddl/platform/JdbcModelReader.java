@@ -834,6 +834,9 @@ public class JdbcModelReader
         column.setRequired("NO".equalsIgnoreCase(((String) values.get("IS_NULLABLE")).trim()));
         column.setDescription((String) values.get("REMARKS"));
         
+        //type name added to identify specific types such as geometry types
+        column.setJdbcTypeName((String)values.get("TYPE_NAME"));
+        
         return column;
     }
 
