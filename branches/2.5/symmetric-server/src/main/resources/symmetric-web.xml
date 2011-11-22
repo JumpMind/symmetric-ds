@@ -30,8 +30,8 @@
 		<property name="uriPattern" value="/pull/*" />
 		<property name="interceptors">
 			<list>
+				<ref bean="nodeConcurrencyInterceptor" />			
 				<ref bean="authenticationInterceptor" />
-				<ref bean="nodeConcurrencyInterceptor" />
 			</list>
 		</property>
 	</bean>
@@ -43,8 +43,8 @@
 		<property name="uriPattern" value="/push/*" />
 		<property name="interceptors">
 			<list>
-				<ref bean="authenticationInterceptor" />
-				<ref bean="nodeConcurrencyInterceptor" />
+			    <ref bean="nodeConcurrencyInterceptor" />
+				<ref bean="authenticationInterceptor" />				
 			</list>
 		</property>
 	</bean>
