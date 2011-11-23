@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.mssql;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -58,60 +57,64 @@ import org.jumpmind.util.Log;
  * The SQL Builder for the Microsoft SQL Server.
  */
 public class MSSqlBuilder extends SqlBuilder {
+
     /* We use a generic date format. */
     private DateFormat _genericDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
     /* We use a generic date format. */
     private DateFormat _genericTimeFormat = new SimpleDateFormat("HH:mm:ss");
 
-    public MSSqlBuilder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
+    public MSSqlBuilder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         addEscapedCharSequence("'", "''");
     }
 
     @Override
-    public void createTable(Database database, Table table)  {
-        writeQuotationOnStatement();
-        super.createTable(database, table);
+    public void createTable(Database database, Table table, StringBuilder ddl) {
+        writeQuotationOnStatement(ddl);
+        super.createTable(database, table, ddl);
     }
 
     @Override
-    public void dropTable(Table table)  {
+    public void dropTable(Table table, StringBuilder ddl) {
         String tableName = getTableName(table);
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
 
-        writeQuotationOnStatement();
-        print("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
-        printAlwaysSingleQuotedIdentifier(tableName);
-        println(")");
-        println("BEGIN");
+        writeQuotationOnStatement(ddl);
+        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
+        printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        println(")", ddl);
+        println("BEGIN", ddl);
         println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
-                + " nvarchar(256)");
-        println("  DECLARE refcursor CURSOR FOR");
-        println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname");
-        println("    FROM sysobjects objs JOIN sysconstraints cons ON objs.id = cons.constid");
-        print("    WHERE objs.xtype != 'PK' AND object_name(objs.parent_obj) = ");
-        printAlwaysSingleQuotedIdentifier(tableName);
-        println("  OPEN refcursor");
-        println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar);
-        println("  WHILE @@FETCH_STATUS = 0");
-        println("    BEGIN");
+                + " nvarchar(256)", ddl);
+        println("  DECLARE refcursor CURSOR FOR", ddl);
+        println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname", ddl);
+        println("    FROM sysobjects objs JOIN sysconstraints cons ON objs.id = cons.constid", ddl);
+        ddl.append("    WHERE objs.xtype != 'PK' AND object_name(objs.parent_obj) = ");
+        printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        println("  OPEN refcursor", ddl);
+        println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
+                ddl);
+        println("  WHILE @@FETCH_STATUS = 0", ddl);
+        println("    BEGIN", ddl);
         println("      EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
-                + constraintNameVar + ")");
-        println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar);
-        println("    END");
-        println("  CLOSE refcursor");
-        println("  DEALLOCATE refcursor");
-        print("  DROP TABLE ");
-        printlnIdentifier(tableName);
-        print("END");
-        printEndOfStatement();
+                + constraintNameVar + ")", ddl);
+        println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
+                ddl);
+        println("    END", ddl);
+        println("  CLOSE refcursor", ddl);
+        println("  DEALLOCATE refcursor", ddl);
+        ddl.append("  DROP TABLE ");
+        printlnIdentifier(tableName, ddl);
+        ddl.append("END");
+        printEndOfStatement(ddl);
     }
 
     @Override
-    public void dropExternalForeignKeys(Table table)  {
-        writeQuotationOnStatement();
-        super.dropExternalForeignKeys(table);
+    public void dropExternalForeignKeys(Table table, StringBuilder ddl) {
+        writeQuotationOnStatement(ddl);
+        super.dropExternalForeignKeys(table, ddl);
     }
 
     @Override
@@ -172,9 +175,7 @@ public class MSSqlBuilder extends SqlBuilder {
         return super.getValueAsString(column, value);
     }
 
-    /*
-     * {@inheritDoc}
-     */
+    @Override
     protected String getNativeDefaultValue(Column column) {
         // Sql Server wants BIT default values as 0 or 1
         if ((column.getTypeCode() == Types.BIT)
@@ -188,33 +189,33 @@ public class MSSqlBuilder extends SqlBuilder {
     }
 
     @Override
-    protected void writeColumnAutoIncrementStmt(Table table, Column column)  {
-        print("IDENTITY (1,1) ");
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
+        ddl.append("IDENTITY (1,1) ");
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index)  {
-        print("DROP INDEX ");
-        printIdentifier(getTableName(table));
-        print(".");
-        printIdentifier(getIndexName(index));
-        printEndOfStatement();
+    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl) {
+        ddl.append("DROP INDEX ");
+        printIdentifier(getTableName(table), ddl);
+        ddl.append(".");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
-    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey)
-             {
+    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
+            StringBuilder ddl) {
         String constraintName = getForeignKeyName(table, foreignKey);
 
-        print("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'F' AND name = ");
-        printAlwaysSingleQuotedIdentifier(constraintName);
-        println(")");
-        printIndent();
-        print("ALTER TABLE ");
-        printIdentifier(getTableName(table));
-        print(" DROP CONSTRAINT ");
-        printIdentifier(constraintName);
-        printEndOfStatement();
+        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'F' AND name = ");
+        printAlwaysSingleQuotedIdentifier(constraintName, ddl);
+        println(")", ddl);
+        printIndent(ddl);
+        ddl.append("ALTER TABLE ");
+        printIdentifier(getTableName(table), ddl);
+        ddl.append(" DROP CONSTRAINT ");
+        printIdentifier(constraintName, ddl);
+        printEndOfStatement(ddl);
     }
 
     /*
@@ -236,8 +237,8 @@ public class MSSqlBuilder extends SqlBuilder {
      * Writes the statement that turns on the ability to write delimited
      * identifiers.
      */
-    private void writeQuotationOnStatement()  {
-        print(getQuotationOnStatement());
+    private void writeQuotationOnStatement(StringBuilder ddl) {
+        ddl.append(getQuotationOnStatement());
     }
 
     @Override
@@ -284,17 +285,19 @@ public class MSSqlBuilder extends SqlBuilder {
     }
 
     @Override
-    public String getDeleteSql(Table table, Map pkValues, boolean genPlaceholders) {
+    public String getDeleteSql(Table table, Map<String, Object> pkValues, boolean genPlaceholders) {
         return getQuotationOnStatement() + super.getDeleteSql(table, pkValues, genPlaceholders);
     }
 
     @Override
-    public String getInsertSql(Table table, Map columnValues, boolean genPlaceholders) {
+    public String getInsertSql(Table table, Map<String, Object> columnValues,
+            boolean genPlaceholders) {
         return getQuotationOnStatement() + super.getInsertSql(table, columnValues, genPlaceholders);
     }
 
     @Override
-    public String getUpdateSql(Table table, Map columnValues, boolean genPlaceholders) {
+    public String getUpdateSql(Table table, Map<String, Object> columnValues,
+            boolean genPlaceholders) {
         return getQuotationOnStatement() + super.getUpdateSql(table, columnValues, genPlaceholders);
     }
 
@@ -304,41 +307,41 @@ public class MSSqlBuilder extends SqlBuilder {
      * 
      * @param identifier The identifier
      */
-    private void printAlwaysSingleQuotedIdentifier(String identifier)  {
-        print("'");
-        print(identifier);
-        print("'");
+    private void printAlwaysSingleQuotedIdentifier(String identifier, StringBuilder ddl) {
+        ddl.append("'");
+        ddl.append(identifier);
+        ddl.append("'");
     }
 
     @Override
-    public void writeCopyDataStatement(Table sourceTable, Table targetTable)  {
+    public void writeCopyDataStatement(Table sourceTable, Table targetTable, StringBuilder ddl) {
         // Sql Server per default does not allow us to insert values explicitly
         // into
         // identity columns. However, we can change this behavior
         boolean hasIdentityColumns = targetTable.getAutoIncrementColumns().length > 0;
 
         if (hasIdentityColumns) {
-            print("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable));
-            print(" ON");
-            printEndOfStatement();
+            ddl.append("SET IDENTITY_INSERT ");
+            printIdentifier(getTableName(targetTable), ddl);
+            ddl.append(" ON");
+            printEndOfStatement(ddl);
         }
-        super.writeCopyDataStatement(sourceTable, targetTable);
+        super.writeCopyDataStatement(sourceTable, targetTable, ddl);
         // We have to turn it off ASAP because it can be on only for one table
         // per session
         if (hasIdentityColumns) {
-            print("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable));
-            print(" OFF");
-            printEndOfStatement();
+            ddl.append("SET IDENTITY_INSERT ");
+            printIdentifier(getTableName(targetTable), ddl);
+            ddl.append(" OFF");
+            printEndOfStatement(ddl);
         }
     }
 
     @Override
     protected void processChanges(Database currentModel, Database desiredModel,
-            List<IModelChange> changes)  {
+            List<IModelChange> changes, StringBuilder ddl) {
         if (!changes.isEmpty()) {
-            writeQuotationOnStatement();
+            writeQuotationOnStatement(ddl);
         }
         // For column data type and size changes, we need to drop and then
         // re-create indexes
@@ -406,25 +409,25 @@ public class MSSqlBuilder extends SqlBuilder {
             }
         }
         changes.addAll(additionalChanges);
-        super.processChanges(currentModel, desiredModel, changes);
+        super.processChanges(currentModel, desiredModel, changes, ddl);
     }
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes)  {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         // First we drop primary keys as necessary
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
             if (change instanceof RemovePrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof PrimaryKeyChange) {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 RemovePrimaryKeyChange removePkChange = new RemovePrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getOldPrimaryKeyColumns());
 
-                processChange(currentModel, desiredModel, removePkChange);
+                processChange(currentModel, desiredModel, removePkChange, ddl);
             }
         }
 
@@ -439,11 +442,11 @@ public class MSSqlBuilder extends SqlBuilder {
 
                 // Sql Server can only add not insert columns
                 if (addColumnChange.isAtEnd()) {
-                    processChange(currentModel, desiredModel, addColumnChange);
+                    processChange(currentModel, desiredModel, addColumnChange, ddl);
                     changeIt.remove();
                 }
             } else if (change instanceof RemoveColumnChange) {
-                processChange(currentModel, desiredModel, (RemoveColumnChange) change);
+                processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnAutoIncrementChange) {
                 // Sql Server has no way of adding or removing an IDENTITY
@@ -471,7 +474,7 @@ public class MSSqlBuilder extends SqlBuilder {
                 if (!processedColumns.contains(targetColumn)) {
                     processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn,
                             (change instanceof ColumnDataTypeChange)
-                                    || (change instanceof ColumnSizeChange));
+                                    || (change instanceof ColumnSizeChange), ddl);
                     processedColumns.add(targetColumn);
                 }
                 changes.remove(change);
@@ -483,14 +486,14 @@ public class MSSqlBuilder extends SqlBuilder {
             TableChange change = (TableChange) changeIt.next();
 
             if (change instanceof AddPrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof PrimaryKeyChange) {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 AddPrimaryKeyChange addPkChange = new AddPrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getNewPrimaryKeyColumns());
 
-                processChange(currentModel, desiredModel, addPkChange);
+                processChange(currentModel, desiredModel, addPkChange, ddl);
                 changeIt.remove();
             }
         }
@@ -498,99 +501,73 @@ public class MSSqlBuilder extends SqlBuilder {
 
     /*
      * Processes the addition of a column to a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("ADD ");
-        writeColumn(change.getChangedTable(), change.getNewColumn());
-        printEndOfStatement();
+            AddColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ADD ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a column from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP COLUMN ");
-        printIdentifier(getColumnName(change.getColumn()));
-        printEndOfStatement();
+            RemoveColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP COLUMN ");
+        printIdentifier(getColumnName(change.getColumn()), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a primary key from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemovePrimaryKeyChange change)  {
+            RemovePrimaryKeyChange change, StringBuilder ddl) {
         // TODO: this would be easier when named primary keys are supported
         // because then we can use ALTER TABLE DROP
         String tableName = getTableName(change.getChangedTable());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
 
-        println("BEGIN");
+        println("BEGIN", ddl);
         println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
-                + " nvarchar(256)");
-        println("  DECLARE refcursor CURSOR FOR");
-        println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname");
-        println("    FROM sysobjects objs JOIN sysconstraints cons ON objs.id = cons.constid");
-        print("    WHERE objs.xtype = 'PK' AND object_name(objs.parent_obj) = ");
-        printAlwaysSingleQuotedIdentifier(tableName);
-        println("  OPEN refcursor");
-        println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar);
-        println("  WHILE @@FETCH_STATUS = 0");
-        println("    BEGIN");
+                + " nvarchar(256)", ddl);
+        println("  DECLARE refcursor CURSOR FOR", ddl);
+        println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname", ddl);
+        println("    FROM sysobjects objs JOIN sysconstraints cons ON objs.id = cons.constid", ddl);
+        ddl.append("    WHERE objs.xtype = 'PK' AND object_name(objs.parent_obj) = ");
+        printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        println("  OPEN refcursor", ddl);
+        println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
+                ddl);
+        println("  WHILE @@FETCH_STATUS = 0", ddl);
+        println("    BEGIN", ddl);
         println("      EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
-                + constraintNameVar + ")");
-        println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar);
-        println("    END");
-        println("  CLOSE refcursor");
-        println("  DEALLOCATE refcursor");
-        print("END");
-        printEndOfStatement();
+                + constraintNameVar + ")", ddl);
+        println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
+                ddl);
+        println("    END", ddl);
+        println("  CLOSE refcursor", ddl);
+        println("  DEALLOCATE refcursor", ddl);
+        ddl.append("END");
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes a change to a column.
-     * 
-     * @param sourceTable The current table
-     * 
-     * @param targetTable The desired table
-     * 
-     * @param sourceColumn The current column
-     * 
-     * @param targetColumn The desired column
-     * 
-     * @param typeChange Whether this is a type change
      */
     protected void processColumnChange(Table sourceTable, Table targetTable, Column sourceColumn,
-            Column targetColumn, boolean typeChange)  {
+            Column targetColumn, boolean typeChange, StringBuilder ddl) {
         boolean hasDefault = sourceColumn.getParsedDefaultValue() != null;
         boolean shallHaveDefault = targetColumn.getParsedDefaultValue() != null;
         String newDefault = targetColumn.getDefaultValue();
@@ -608,56 +585,59 @@ public class MSSqlBuilder extends SqlBuilder {
             String tableNameVar = "tn" + createUniqueIdentifier();
             String constraintNameVar = "cn" + createUniqueIdentifier();
 
-            println("BEGIN");
+            println("BEGIN", ddl);
             println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
-                    + " nvarchar(256)");
-            println("  DECLARE refcursor CURSOR FOR");
-            println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname");
-            println("    FROM sysobjects objs JOIN sysconstraints cons ON objs.id = cons.constid");
-            println("    WHERE objs.xtype = 'D' AND");
-            print("          cons.colid = (SELECT colid FROM syscolumns WHERE id = object_id(");
-            printAlwaysSingleQuotedIdentifier(tableName);
-            print(") AND name = ");
-            printAlwaysSingleQuotedIdentifier(columnName);
-            println(") AND");
-            print("          object_name(objs.parent_obj) = ");
-            printAlwaysSingleQuotedIdentifier(tableName);
-            println("  OPEN refcursor");
-            println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar);
-            println("  WHILE @@FETCH_STATUS = 0");
-            println("    BEGIN");
+                    + " nvarchar(256)", ddl);
+            println("  DECLARE refcursor CURSOR FOR", ddl);
+            println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname",
+                    ddl);
+            println("    FROM sysobjects objs JOIN sysconstraints cons ON objs.id = cons.constid",
+                    ddl);
+            println("    WHERE objs.xtype = 'D' AND", ddl);
+            ddl.append("          cons.colid = (SELECT colid FROM syscolumns WHERE id = object_id(");
+            printAlwaysSingleQuotedIdentifier(tableName, ddl);
+            ddl.append(") AND name = ");
+            printAlwaysSingleQuotedIdentifier(columnName, ddl);
+            println(") AND", ddl);
+            ddl.append("          object_name(objs.parent_obj) = ");
+            printAlwaysSingleQuotedIdentifier(tableName, ddl);
+            println("  OPEN refcursor", ddl);
+            println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
+                    ddl);
+            println("  WHILE @@FETCH_STATUS = 0", ddl);
+            println("    BEGIN", ddl);
             println("      EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
-                    + constraintNameVar + ")");
+                    + constraintNameVar + ")", ddl);
             println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @"
-                    + constraintNameVar);
-            println("    END");
-            println("  CLOSE refcursor");
-            println("  DEALLOCATE refcursor");
-            print("END");
-            printEndOfStatement();
+                    + constraintNameVar, ddl);
+            println("    END", ddl);
+            println("  CLOSE refcursor", ddl);
+            println("  DEALLOCATE refcursor", ddl);
+            ddl.append("END");
+            printEndOfStatement(ddl);
         }
 
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(sourceTable));
-        printIndent();
-        print("ALTER COLUMN ");
-        writeColumn(sourceTable, targetColumn);
-        printEndOfStatement();
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(sourceTable), ddl);
+        printIndent(ddl);
+        ddl.append("ALTER COLUMN ");
+        writeColumn(sourceTable, targetColumn, ddl);
+        printEndOfStatement(ddl);
 
         if (shallHaveDefault) {
             targetColumn.setDefaultValue(newDefault);
 
             // if the column shall have a default, then we have to add it as a
             // constraint
-            print("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable));
-            printIndent();
-            print("ADD CONSTRAINT ");
-            printIdentifier(getConstraintName("DF", sourceTable, sourceColumn.getName(), null));
-            writeColumnDefaultValueStmt(sourceTable, targetColumn);
-            print(" FOR ");
-            printIdentifier(getColumnName(sourceColumn));
-            printEndOfStatement();
+            ddl.append("ALTER TABLE ");
+            printlnIdentifier(getTableName(sourceTable), ddl);
+            printIndent(ddl);
+            ddl.append("ADD CONSTRAINT ");
+            printIdentifier(getConstraintName("DF", sourceTable, sourceColumn.getName(), null), ddl);
+            writeColumnDefaultValueStmt(sourceTable, targetColumn, ddl);
+            ddl.append(" FOR ");
+            printIdentifier(getColumnName(sourceColumn), ddl);
+            printEndOfStatement(ddl);
         }
     }
 }

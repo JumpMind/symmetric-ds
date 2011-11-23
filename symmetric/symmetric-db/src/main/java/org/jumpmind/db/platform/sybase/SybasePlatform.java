@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.sybase;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
@@ -86,14 +85,11 @@ public class SybasePlatform extends AbstractDatabasePlatform {
         info.setDefaultSize(Types.VARCHAR, 254);
 
         modelReader = new SybaseModelReader(this);
+        ddlBuilder = new SybaseBuilder(log, this);
     }
 
     public String getName() {
         return DATABASENAME;
-    }
-
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new SybaseBuilder(log, this, writer);
     }
 
 }

@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.sybase;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,34 +51,34 @@ import org.jumpmind.util.Log;
  */
 public class SybaseBuilder extends SqlBuilder {
 
-    public SybaseBuilder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
+    public SybaseBuilder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         addEscapedCharSequence("'", "''");
     }
 
     @Override
-    public void createTable(Database database, Table table)  {
-        writeQuotationOnStatement();
-        super.createTable(database, table);
+    public void createTable(Database database, Table table, StringBuilder ddl) {
+        writeQuotationOnStatement(ddl);
+        super.createTable(database, table, ddl);
     }
 
     @Override
-    protected void writeColumn(Table table, Column column)  {
-        printIdentifier(getColumnName(column));
-        print(" ");
-        print(getSqlType(column));
-        writeColumnDefaultValueStmt(table, column);
+    protected void writeColumn(Table table, Column column, StringBuilder ddl) {
+        printIdentifier(getColumnName(column), ddl);
+        ddl.append(" ");
+        ddl.append(getSqlType(column));
+        writeColumnDefaultValueStmt(table, column, ddl);
         // Sybase does not like NULL/NOT NULL and IDENTITY together
         if (column.isAutoIncrement()) {
-            print(" ");
-            writeColumnAutoIncrementStmt(table, column);
+            ddl.append(" ");
+            writeColumnAutoIncrementStmt(table, column, ddl);
         } else {
-            print(" ");
+            ddl.append(" ");
             if (column.isRequired()) {
-                writeColumnNotNullableStmt();
+                writeColumnNotNullableStmt(ddl);
             } else {
                 // we'll write a NULL for all columns that are not required
-                writeColumnNullableStmt();
+                writeColumnNullableStmt(ddl);
             }
         }
     }
@@ -97,48 +96,48 @@ public class SybaseBuilder extends SqlBuilder {
     }
 
     @Override
-    public void dropTable(Table table)  {
-        writeQuotationOnStatement();
-        print("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
-        printAlwaysSingleQuotedIdentifier(getTableName(table));
-        println(")");
-        println("BEGIN");
-        printIndent();
-        print("DROP TABLE ");
-        printlnIdentifier(getTableName(table));
-        print("END");
-        printEndOfStatement();
+    public void dropTable(Table table, StringBuilder ddl) {
+        writeQuotationOnStatement(ddl);
+        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
+        printAlwaysSingleQuotedIdentifier(getTableName(table), ddl);
+        println(")", ddl);
+        println("BEGIN", ddl);
+        printIndent(ddl);
+        ddl.append("DROP TABLE ");
+        printlnIdentifier(getTableName(table), ddl);
+        ddl.append("END");
+        printEndOfStatement(ddl);
     }
 
     @Override
-    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey)
-             {
+    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
+            StringBuilder ddl) {
         String constraintName = getForeignKeyName(table, foreignKey);
 
-        print("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'RI' AND name = ");
-        printAlwaysSingleQuotedIdentifier(constraintName);
-        println(")");
-        printIndent();
-        print("ALTER TABLE ");
-        printIdentifier(getTableName(table));
-        print(" DROP CONSTRAINT ");
-        printIdentifier(constraintName);
-        printEndOfStatement();
+        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'RI' AND name = ");
+        printAlwaysSingleQuotedIdentifier(constraintName, ddl);
+        println(")", ddl);
+        printIndent(ddl);
+        ddl.append("ALTER TABLE ");
+        printIdentifier(getTableName(table), ddl);
+        ddl.append(" DROP CONSTRAINT ");
+        printIdentifier(constraintName, ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index)  {
-        print("DROP INDEX ");
-        printIdentifier(getTableName(table));
-        print(".");
-        printIdentifier(getIndexName(index));
-        printEndOfStatement();
+    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl) {
+        ddl.append("DROP INDEX ");
+        printIdentifier(getTableName(table), ddl);
+        ddl.append(".");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
-    public void dropExternalForeignKeys(Table table)  {
-        writeQuotationOnStatement();
-        super.dropExternalForeignKeys(table);
+    public void dropExternalForeignKeys(Table table, StringBuilder ddl) {
+        writeQuotationOnStatement(ddl);
+        super.dropExternalForeignKeys(table, ddl);
     }
 
     @Override
@@ -198,9 +197,9 @@ public class SybaseBuilder extends SqlBuilder {
      * Writes the statement that turns on the ability to write delimited
      * identifiers.
      */
-    private void writeQuotationOnStatement()  {
-        print(getQuotationOnStatement());
-        printEndOfStatement();
+    private void writeQuotationOnStatement(StringBuilder ddl) {
+        ddl.append(getQuotationOnStatement());
+        printEndOfStatement(ddl);
     }
 
     /*
@@ -209,76 +208,72 @@ public class SybaseBuilder extends SqlBuilder {
      * 
      * @param identifier The identifier
      */
-    private void printAlwaysSingleQuotedIdentifier(String identifier)  {
-        print("'");
-        print(identifier);
-        print("'");
+    private void printAlwaysSingleQuotedIdentifier(String identifier, StringBuilder ddl) {
+        ddl.append("'");
+        ddl.append(identifier);
+        ddl.append("'");
     }
 
-    /*
-     * {@inheritDoc}
-     */
-    public void writeCopyDataStatement(Table sourceTable, Table targetTable)  {
+    @Override
+    public void writeCopyDataStatement(Table sourceTable, Table targetTable, StringBuilder ddl) {
         boolean hasIdentity = targetTable.getAutoIncrementColumns().length > 0;
 
         if (hasIdentity) {
-            print("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable));
-            print(" ON");
-            printEndOfStatement();
+            ddl.append("SET IDENTITY_INSERT ");
+            printIdentifier(getTableName(targetTable), ddl);
+            ddl.append(" ON");
+            printEndOfStatement(ddl);
         }
-        super.writeCopyDataStatement(sourceTable, targetTable);
+        super.writeCopyDataStatement(sourceTable, targetTable, ddl);
         if (hasIdentity) {
-            print("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable));
-            print(" OFF");
-            printEndOfStatement();
+            ddl.append("SET IDENTITY_INSERT ");
+            printIdentifier(getTableName(targetTable), ddl);
+            ddl.append(" OFF");
+            printEndOfStatement(ddl);
         }
     }
 
-    /*
-     * {@inheritDoc}
-     */
-    protected void writeCastExpression(Column sourceColumn, Column targetColumn)  {
+    @Override
+    protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
         String sourceNativeType = getBareNativeType(sourceColumn);
         String targetNativeType = getBareNativeType(targetColumn);
 
         if (sourceNativeType.equals(targetNativeType)) {
-            printIdentifier(getColumnName(sourceColumn));
+            printIdentifier(getColumnName(sourceColumn), ddl);
         } else {
-            print("CONVERT(");
-            print(getNativeType(targetColumn));
-            print(",");
-            printIdentifier(getColumnName(sourceColumn));
-            print(")");
+            ddl.append("CONVERT(");
+            ddl.append(getNativeType(targetColumn));
+            ddl.append(",");
+            printIdentifier(getColumnName(sourceColumn), ddl);
+            ddl.append(")");
         }
     }
 
     @Override
     protected void processChanges(Database currentModel, Database desiredModel,
-            List<IModelChange> changes)  {
+            List<IModelChange> changes, StringBuilder ddl) {
         if (!changes.isEmpty()) {
-            writeQuotationOnStatement();
+            writeQuotationOnStatement(ddl);
         }
-        super.processChanges(currentModel, desiredModel, changes);
+        super.processChanges(currentModel, desiredModel, changes, ddl);
     }
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes)  {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         // First we drop primary keys as necessary
         for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = (TableChange) changeIt.next();
 
             if (change instanceof RemovePrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof PrimaryKeyChange) {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 RemovePrimaryKeyChange removePkChange = new RemovePrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getOldPrimaryKeyColumns());
 
-                processChange(currentModel, desiredModel, removePkChange);
+                processChange(currentModel, desiredModel, removePkChange, ddl);
             }
         }
 
@@ -293,11 +288,11 @@ public class SybaseBuilder extends SqlBuilder {
 
                 // Sybase can only add not insert columns
                 if (addColumnChange.isAtEnd()) {
-                    processChange(currentModel, desiredModel, addColumnChange);
+                    processChange(currentModel, desiredModel, addColumnChange, ddl);
                     changeIt.remove();
                 }
             } else if (change instanceof RemoveColumnChange) {
-                processChange(currentModel, desiredModel, (RemoveColumnChange) change);
+                processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnAutoIncrementChange) {
                 // Sybase has no way of adding or removing an IDENTITY
@@ -337,12 +332,12 @@ public class SybaseBuilder extends SqlBuilder {
                 if ((changesPerColumn.size() == 1)
                         && (changesPerColumn.get(0) instanceof ColumnDefaultValueChange)) {
                     processChange(currentModel, desiredModel,
-                            (ColumnDefaultValueChange) changesPerColumn.get(0));
+                            (ColumnDefaultValueChange) changesPerColumn.get(0), ddl);
                 } else {
                     Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
                             platform.isDelimitedIdentifierModeOn());
 
-                    processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn);
+                    processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
                 }
                 for (Iterator changeIt = changesPerColumn.iterator(); changeIt.hasNext();) {
                     ((ColumnChange) changeIt.next()).apply(currentModel,
@@ -355,14 +350,14 @@ public class SybaseBuilder extends SqlBuilder {
             TableChange change = (TableChange) changeIt.next();
 
             if (change instanceof AddPrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof PrimaryKeyChange) {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 AddPrimaryKeyChange addPkChange = new AddPrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getNewPrimaryKeyColumns());
 
-                processChange(currentModel, desiredModel, addPkChange);
+                processChange(currentModel, desiredModel, addPkChange, ddl);
                 changeIt.remove();
             }
         }
@@ -370,41 +365,29 @@ public class SybaseBuilder extends SqlBuilder {
 
     /*
      * Processes the addition of a column to a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("ADD ");
-        writeColumn(change.getChangedTable(), change.getNewColumn());
-        printEndOfStatement();
+            AddColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ADD ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a column from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP ");
-        printIdentifier(getColumnName(change.getColumn()));
-        printEndOfStatement();
+            RemoveColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP ");
+        printIdentifier(getColumnName(change.getColumn()), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -418,82 +401,68 @@ public class SybaseBuilder extends SqlBuilder {
      * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemovePrimaryKeyChange change)  {
+            RemovePrimaryKeyChange change, StringBuilder ddl) {
         // TODO: this would be easier when named primary keys are supported
         // because then we can use ALTER TABLE DROP
         String tableName = getTableName(change.getChangedTable());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
 
-        println("BEGIN");
+        println("BEGIN", ddl);
         println("  DECLARE @" + tableNameVar + " nvarchar(60), @" + constraintNameVar
-                + " nvarchar(60)");
-        println("  WHILE EXISTS(SELECT sysindexes.name");
-        println("                 FROM sysindexes, sysobjects");
-        print("                 WHERE sysobjects.name = ");
-        printAlwaysSingleQuotedIdentifier(tableName);
-        println(" AND sysobjects.id = sysindexes.id AND (sysindexes.status & 2048) > 0)");
-        println("  BEGIN");
+                + " nvarchar(60)", ddl);
+        println("  WHILE EXISTS(SELECT sysindexes.name", ddl);
+        println("                 FROM sysindexes, sysobjects", ddl);
+        ddl.append("                 WHERE sysobjects.name = ");
+        printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        println(" AND sysobjects.id = sysindexes.id AND (sysindexes.status & 2048) > 0)", ddl);
+        println("  BEGIN", ddl);
         println("    SELECT @" + tableNameVar + " = sysobjects.name, @" + constraintNameVar
-                + " = sysindexes.name");
-        println("      FROM sysindexes, sysobjects");
-        print("      WHERE sysobjects.name = ");
-        printAlwaysSingleQuotedIdentifier(tableName);
-        print(" AND sysobjects.id = sysindexes.id AND (sysindexes.status & 2048) > 0");
+                + " = sysindexes.name", ddl);
+        println("      FROM sysindexes, sysobjects", ddl);
+        ddl.append("      WHERE sysobjects.name = ");
+        printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        ddl.append(" AND sysobjects.id = sysindexes.id AND (sysindexes.status & 2048) > 0");
         println("    EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
-                + constraintNameVar + ")");
-        println("  END");
-        print("END");
-        printEndOfStatement();
+                + constraintNameVar + ")", ddl);
+        println("  END", ddl);
+        ddl.append("END");
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the change of the default value of a column. Note that this
      * method is only used if it is the only change to that column.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            ColumnDefaultValueChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("REPLACE ");
-        printIdentifier(getColumnName(change.getChangedColumn()));
+            ColumnDefaultValueChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("REPLACE ");
+        printIdentifier(getColumnName(change.getChangedColumn()), ddl);
 
         Table curTable = currentModel.findTable(change.getChangedTable().getName(),
                 platform.isDelimitedIdentifierModeOn());
         Column curColumn = curTable.findColumn(change.getChangedColumn().getName(),
                 platform.isDelimitedIdentifierModeOn());
 
-        print(" DEFAULT ");
+        ddl.append(" DEFAULT ");
         if (isValidDefaultValue(change.getNewDefaultValue(), curColumn.getTypeCode())) {
-            printDefaultValue(change.getNewDefaultValue(), curColumn.getTypeCode());
+            printDefaultValue(change.getNewDefaultValue(), curColumn.getTypeCode(), ddl);
         } else {
-            print("NULL");
+            ddl.append("NULL");
         }
-        printEndOfStatement();
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes a change to a column.
-     * 
-     * @param sourceTable The current table
-     * 
-     * @param targetTable The desired table
-     * 
-     * @param sourceColumn The current column
-     * 
-     * @param targetColumn The desired column
      */
     protected void processColumnChange(Table sourceTable, Table targetTable, Column sourceColumn,
-            Column targetColumn)  {
+            Column targetColumn, StringBuilder ddl) {
         Object oldParsedDefault = sourceColumn.getParsedDefaultValue();
         Object newParsedDefault = targetColumn.getParsedDefaultValue();
         String newDefault = targetColumn.getDefaultValue();
@@ -510,32 +479,32 @@ public class SybaseBuilder extends SqlBuilder {
             // we're first removing the default as it might make problems when
             // the
             // datatype changes
-            print("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable));
-            printIndent();
-            print("REPLACE ");
-            printIdentifier(getColumnName(sourceColumn));
-            print(" DEFAULT NULL");
-            printEndOfStatement();
+            ddl.append("ALTER TABLE ");
+            printlnIdentifier(getTableName(sourceTable), ddl);
+            printIndent(ddl);
+            ddl.append("REPLACE ");
+            printIdentifier(getColumnName(sourceColumn), ddl);
+            ddl.append(" DEFAULT NULL");
+            printEndOfStatement(ddl);
         }
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(sourceTable));
-        printIndent();
-        print("MODIFY ");
-        writeColumn(sourceTable, targetColumn);
-        printEndOfStatement();
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(sourceTable), ddl);
+        printIndent(ddl);
+        ddl.append("MODIFY ");
+        writeColumn(sourceTable, targetColumn, ddl);
+        printEndOfStatement(ddl);
         if (defaultChanges) {
-            print("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable));
-            printIndent();
-            print("REPLACE ");
-            printIdentifier(getColumnName(sourceColumn));
+            ddl.append("ALTER TABLE ");
+            printlnIdentifier(getTableName(sourceTable), ddl);
+            printIndent(ddl);
+            ddl.append("REPLACE ");
+            printIdentifier(getColumnName(sourceColumn), ddl);
             if (newDefault != null) {
-                writeColumnDefaultValueStmt(sourceTable, targetColumn);
+                writeColumnDefaultValueStmt(sourceTable, targetColumn, ddl);
             } else {
-                print(" DEFAULT NULL");
+                ddl.append(" DEFAULT NULL");
             }
-            printEndOfStatement();
+            printEndOfStatement(ddl);
         }
     }
 }

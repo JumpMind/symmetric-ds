@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.postgresql;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
@@ -79,10 +78,7 @@ public class PostgreSqlPlatform extends AbstractDatabasePlatform {
         setDelimitedIdentifierModeOn(true);
 
         modelReader = new PostgreSqlModelReader(this);
-    }
-
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new PostgreSqlBuilder(log, this, writer);
+        ddlBuilder = new PostgreSqlBuilder(log, this);
     }
 
     public String getName() {

@@ -18,7 +18,6 @@ package org.jumpmind.db;
  * specific language governing permissions and limitations
  * under the License.
  */
-import java.io.Writer;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -27,7 +26,6 @@ import javax.sql.DataSource;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.JdbcModelReader;
-import org.jumpmind.db.platform.SqlBuilder;
 
 /*
  * A platform encapsulates the database-related functionality such as performing queries
@@ -45,11 +43,9 @@ public interface IDatabasePlatform {
     public DatabasePlatformInfo getPlatformInfo();
 
     /*
-     * Returns a new sql builder for the this platform.
-     * 
-     * @return The sql builder
+     * Returns a new ddl builder for the this platform.
      */
-    public SqlBuilder createSqlBuilder(Writer writer);
+    public IDdlBuilder getDdlBuilder();
 
     /*
      * Returns the model reader (which reads a database model from a live

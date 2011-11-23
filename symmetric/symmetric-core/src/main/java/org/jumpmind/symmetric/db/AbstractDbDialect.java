@@ -53,17 +53,17 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.IDdlBuilder;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.SqlBuilder;
 import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.db.sql.SqlScript;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -556,21 +556,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public String getCreateSymmetricDDL() {
         Database database = readSymmetricSchemaFromXml();
         prefixConfigDatabase(database);
-        StringWriter writer = new StringWriter();
-        SqlBuilder builder = platform.getDdlBuilder();
-        builder.createTables(database, true);
-        return writer.getBuffer().toString();
+        IDdlBuilder builder = platform.getDdlBuilder();
+        return builder.createTables(database, true);
     }
 
     public String getCreateTableSQL(TriggerRouter triggerRouter) {
         Table table = getTable(null, triggerRouter.getTrigger().getSourceSchemaName(),
                 triggerRouter.getTrigger().getSourceTableName(), true);
-        String sql = null;
-        StringWriter writer = new StringWriter();
-        SqlBuilder builder = platform.getDdlBuilder();
-        builder.createTable(cachedModel, table);
-        sql = writer.toString();
-        return sql;
+        return platform.getDdlBuilder().createTable(cachedModel, table);
     }
 
     private void setDatabaseName(TriggerRouter triggerRouter, Database db) {
@@ -665,8 +658,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 }
             }
 
-            StringWriter writer = new StringWriter();
-            SqlBuilder builder = platform.getDdlBuilder();
+            IDdlBuilder builder = platform.getDdlBuilder();
 
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
                 log.info("TablesAutoUpdatingFoundTablesToAlter");
@@ -679,8 +671,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     new SqlScript(sql, ds, true, delimiter, null).execute();
                 }
 
-                builder.alterDatabase(modelFromDatabase, modelFromXml);
-                String alterSql = writer.toString();
+                String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
+                
                 if (log.isDebugEnabled()) {
                     log.debug("TablesAutoUpdatingAlterSql", alterSql);
                 }

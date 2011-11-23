@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.mssql;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
@@ -75,12 +74,9 @@ public class MSSqlPlatform extends AbstractDatabasePlatform {
         info.setStoresUpperCaseInCatalog(true);
 
         modelReader = new MSSqlModelReader(this);
+        ddlBuilder = new MSSqlBuilder(log, this);
 
         setDelimitedIdentifierModeOn(true);
-    }
-
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new MSSqlBuilder(log, this, writer);
     }
 
     public String getName() {

@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.IDdlBuilder;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
@@ -140,7 +141,7 @@ public class FirebirdModelReader extends JdbcModelReader {
         String name;
 
         for (int idx = 0; idx < columns.length; idx++) {
-            name = ((FirebirdBuilder) getPlatform().createSqlBuilder(null)).getGeneratorName(table,
+            name = ((FirebirdBuilder) getPlatform().getDdlBuilder()).getGeneratorName(table,
                     columns[idx]);
             if (!getPlatform().isDelimitedIdentifierModeOn()) {
                 name = name.toUpperCase();
@@ -287,7 +288,7 @@ public class FirebirdModelReader extends JdbcModelReader {
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException {
-        SqlBuilder builder = getPlatform().createSqlBuilder(null);
+        IDdlBuilder builder = getPlatform().getDdlBuilder();
         String tableName = builder.getTableName(table);
         String indexName = builder.getIndexName(index);
         StringBuilder query = new StringBuilder();
@@ -318,7 +319,7 @@ public class FirebirdModelReader extends JdbcModelReader {
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
             throws SQLException {
-        SqlBuilder builder = getPlatform().createSqlBuilder(null);
+        IDdlBuilder builder = getPlatform().getDdlBuilder();
         String tableName = builder.getTableName(table);
         String indexName = builder.getIndexName(index);
         String fkName = builder.getForeignKeyName(table, fk);

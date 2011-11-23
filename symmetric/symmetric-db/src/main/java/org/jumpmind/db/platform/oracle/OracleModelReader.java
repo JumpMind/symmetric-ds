@@ -41,6 +41,7 @@ import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.jumpmind.db.DdlUtilsException;
 import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.IDdlBuilder;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
@@ -273,7 +274,7 @@ public class OracleModelReader extends JdbcModelReader {
         // user_triggers) in order to
         // determine whether it fits our auto-increment definition
         PreparedStatement prepStmt = null;
-        SqlBuilder builder = getPlatform().createSqlBuilder(null);
+        IDdlBuilder builder = getPlatform().getDdlBuilder();
         String triggerName = builder.getConstraintName("trg", table, column.getName(), null);
         String seqName = builder.getConstraintName("seq", table, column.getName(), null);
 

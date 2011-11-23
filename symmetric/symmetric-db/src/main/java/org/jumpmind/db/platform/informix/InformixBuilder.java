@@ -1,7 +1,5 @@
 package org.jumpmind.db.platform.informix;
 
-import java.io.Writer;
-
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
@@ -14,17 +12,17 @@ import org.jumpmind.util.Log;
 
 public class InformixBuilder extends SqlBuilder {
 
-    public InformixBuilder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
+    public InformixBuilder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
     }
 
     @Override
-    protected void writeColumn(Table table, Column column)  {
+    protected void writeColumn(Table table, Column column, StringBuilder ddl) {
         if (column.isAutoIncrement()) {
-            printIdentifier(getColumnName(column));
-            print(" SERIAL");
+            printIdentifier(getColumnName(column), ddl);
+            ddl.append(" SERIAL");
         } else {
-            super.writeColumn(table, column);
+            super.writeColumn(table, column, ddl);
         }
     }
 
@@ -34,59 +32,59 @@ public class InformixBuilder extends SqlBuilder {
     }
 
     @Override
-    protected void writeExternalPrimaryKeysCreateStmt(Table table, Column primaryKeyColumns[])
-             {
+    protected void writeExternalPrimaryKeysCreateStmt(Table table, Column primaryKeyColumns[],
+            StringBuilder ddl) {
         if (primaryKeyColumns.length > 0 && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
-            print("ALTER TABLE ");
-            printlnIdentifier(getTableName(table));
-            printIndent();
-            print("ADD CONSTRAINT ");
-            writePrimaryKeyStmt(table, primaryKeyColumns);
-            print(" CONSTRAINT ");
-            printIdentifier(getConstraintName(null, table, "PK", null));
-            printEndOfStatement();
+            ddl.append("ALTER TABLE ");
+            printlnIdentifier(getTableName(table), ddl);
+            printIndent(ddl);
+            ddl.append("ADD CONSTRAINT ");
+            writePrimaryKeyStmt(table, primaryKeyColumns, ddl);
+            ddl.append(" CONSTRAINT ");
+            printIdentifier(getConstraintName(null, table, "PK", null), ddl);
+            printEndOfStatement(ddl);
         }
     }
 
-    protected void writeExternalForeignKeyCreateStmt(Database database, Table table, ForeignKey key)
-             {
+    protected void writeExternalForeignKeyCreateStmt(Database database, Table table,
+            ForeignKey key, StringBuilder ddl) {
         if (key.getForeignTableName() == null) {
             log.warn("Foreign key table is null for key " + key);
         } else {
-            writeTableAlterStmt(table);
-            print("ADD CONSTRAINT FOREIGN KEY (");
-            writeLocalReferences(key);
-            print(") REFERENCES ");
-            printIdentifier(getTableName(database.findTable(key.getForeignTableName())));
-            print(" (");
-            writeForeignReferences(key);
-            print(") CONSTRAINT ");
-            printIdentifier(getForeignKeyName(table, key));
-            printEndOfStatement();
+            writeTableAlterStmt(table, ddl);
+            ddl.append("ADD CONSTRAINT FOREIGN KEY (");
+            writeLocalReferences(key, ddl);
+            ddl.append(") REFERENCES ");
+            printIdentifier(getTableName(database.findTable(key.getForeignTableName())), ddl);
+            ddl.append(" (");
+            writeForeignReferences(key, ddl);
+            ddl.append(") CONSTRAINT ");
+            printIdentifier(getForeignKeyName(table, key), ddl);
+            printEndOfStatement(ddl);
         }
     }
 
     protected void processChange(Database currentModel, Database desiredModel,
-            RemovePrimaryKeyChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP CONSTRAINT ");
-        printIdentifier(getConstraintName(null, change.getChangedTable(), "PK", null));
-        printEndOfStatement();
+            RemovePrimaryKeyChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP CONSTRAINT ");
+        printIdentifier(getConstraintName(null, change.getChangedTable(), "PK", null), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     protected void processChange(Database currentModel, Database desiredModel,
-            PrimaryKeyChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP CONSTRAINT ");
-        printIdentifier(getConstraintName(null, change.getChangedTable(), "PK", null));
-        printEndOfStatement();
+            PrimaryKeyChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP CONSTRAINT ");
+        printIdentifier(getConstraintName(null, change.getChangedTable(), "PK", null), ddl);
+        printEndOfStatement(ddl);
         writeExternalPrimaryKeysCreateStmt(change.getChangedTable(),
-                change.getNewPrimaryKeyColumns());
+                change.getNewPrimaryKeyColumns(), ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 }

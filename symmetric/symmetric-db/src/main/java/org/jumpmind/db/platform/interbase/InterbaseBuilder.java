@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.interbase;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
@@ -42,20 +41,20 @@ import org.jumpmind.util.Log;
  */
 public class InterbaseBuilder extends SqlBuilder {
 
-    public InterbaseBuilder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
+    public InterbaseBuilder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         addEscapedCharSequence("'", "''");
     }
 
     @Override
-    public void createTable(Database database, Table table)  {
-        super.createTable(database, table);
+    public void createTable(Database database, Table table, StringBuilder ddl) {
+        super.createTable(database, table, ddl);
 
         // creating generator and trigger for auto-increment
         Column[] columns = table.getAutoIncrementColumns();
 
         for (int idx = 0; idx < columns.length; idx++) {
-            writeAutoIncrementCreateStmts(database, table, columns[idx]);
+            writeAutoIncrementCreateStmts(database, table, columns[idx], ddl);
         }
     }
 
@@ -72,72 +71,62 @@ public class InterbaseBuilder extends SqlBuilder {
     }
 
     @Override
-    public void dropTable(Table table)  {
+    public void dropTable(Table table, StringBuilder ddl) {
         // dropping generators for auto-increment
         Column[] columns = table.getAutoIncrementColumns();
 
         for (int idx = 0; idx < columns.length; idx++) {
-            writeAutoIncrementDropStmts(table, columns[idx]);
+            writeAutoIncrementDropStmts(table, columns[idx], ddl);
         }
-        super.dropTable(table);
+        super.dropTable(table, ddl);
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index)  {
+    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl) {
         // Index names in Interbase are unique to a schema and hence we do not
         // need the ON <tablename> clause
-        print("DROP INDEX ");
-        printIdentifier(getIndexName(index));
-        printEndOfStatement();
+        ddl.append("DROP INDEX ");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
     }
 
     /*
      * Writes the creation statements to make the given column an auto-increment
      * column.
-     * 
-     * @param database The database model
-     * 
-     * @param table The table
-     * 
-     * @param column The column to make auto-increment
      */
-    private void writeAutoIncrementCreateStmts(Database database, Table table, Column column)
-             {
-        print("CREATE GENERATOR ");
-        printIdentifier(getGeneratorName(table, column));
-        printEndOfStatement();
+    private void writeAutoIncrementCreateStmts(Database database, Table table, Column column,
+            StringBuilder ddl) {
+        ddl.append("CREATE GENERATOR ");
+        printIdentifier(getGeneratorName(table, column), ddl);
+        printEndOfStatement(ddl);
 
-        print("CREATE TRIGGER ");
-        printIdentifier(getTriggerName(table, column));
-        print(" FOR ");
-        printlnIdentifier(getTableName(table));
-        println("ACTIVE BEFORE INSERT POSITION 0 AS");
-        print("BEGIN IF (NEW.");
-        printIdentifier(getColumnName(column));
-        print(" IS NULL) THEN NEW.");
-        printIdentifier(getColumnName(column));
-        print(" = GEN_ID(");
-        printIdentifier(getGeneratorName(table, column));
-        print(", 1); END");
-        printEndOfStatement();
+        ddl.append("CREATE TRIGGER ");
+        printIdentifier(getTriggerName(table, column), ddl);
+        ddl.append(" FOR ");
+        printlnIdentifier(getTableName(table), ddl);
+        println("ACTIVE BEFORE INSERT POSITION 0 AS", ddl);
+        ddl.append("BEGIN IF (NEW.");
+        printIdentifier(getColumnName(column), ddl);
+        ddl.append(" IS NULL) THEN NEW.");
+        printIdentifier(getColumnName(column), ddl);
+        ddl.append(" = GEN_ID(");
+        printIdentifier(getGeneratorName(table, column), ddl);
+        ddl.append(", 1); END");
+        printEndOfStatement(ddl);
     }
 
     /*
      * Writes the statements to drop the auto-increment status for the given
      * column.
-     * 
-     * @param table The table
-     * 
-     * @param column The column to remove the auto-increment status for
      */
-    private void writeAutoIncrementDropStmts(Table table, Column column)  {
-        print("DROP TRIGGER ");
-        printIdentifier(getTriggerName(table, column));
-        printEndOfStatement();
+    private void writeAutoIncrementDropStmts(Table table, Column column, StringBuilder ddl) {
+        ddl.append("DROP TRIGGER ");
+        printIdentifier(getTriggerName(table, column), ddl);
+        printEndOfStatement(ddl);
 
-        print("DROP GENERATOR ");
-        printIdentifier(getGeneratorName(table, column));
-        printEndOfStatement();
+        ddl.append("DROP GENERATOR ");
+        printIdentifier(getGeneratorName(table, column), ddl);
+        printEndOfStatement(ddl);
     }
 
     /*
@@ -177,7 +166,7 @@ public class InterbaseBuilder extends SqlBuilder {
     }
 
     @Override
-    protected void writeColumnAutoIncrementStmt(Table table, Column column)  {
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
         // we're using a generator
     }
 
@@ -223,7 +212,7 @@ public class InterbaseBuilder extends SqlBuilder {
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes)  {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         // TODO: Dropping of primary keys is currently not supported because we
         // cannot
         // determine the pk constraint names and drop them in one go
@@ -244,7 +233,7 @@ public class InterbaseBuilder extends SqlBuilder {
                 if (addColumnChange.getNewColumn().isPrimaryKey()) {
                     pkColumnAdded = true;
                 } else {
-                    processChange(currentModel, desiredModel, addColumnChange);
+                    processChange(currentModel, desiredModel, addColumnChange, ddl);
                     changeIt.remove();
                 }
             } else if (change instanceof RemoveColumnChange) {
@@ -254,7 +243,7 @@ public class InterbaseBuilder extends SqlBuilder {
                 // because we would have to drop the pk first and then
                 // add a new one afterwards which is not supported yet
                 if (!removeColumnChange.getColumn().isPrimaryKey()) {
-                    processChange(currentModel, desiredModel, removeColumnChange);
+                    processChange(currentModel, desiredModel, removeColumnChange, ddl);
                     changeIt.remove();
                 }
             }
@@ -267,7 +256,7 @@ public class InterbaseBuilder extends SqlBuilder {
             // table
             // i.e. none was added during this alteration
             if ((change instanceof AddPrimaryKeyChange) && !pkColumnAdded) {
-                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();
             }
         }
@@ -275,21 +264,15 @@ public class InterbaseBuilder extends SqlBuilder {
 
     /*
      * Processes the addition of a column to a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("ADD ");
-        writeColumn(change.getChangedTable(), change.getNewColumn());
-        printEndOfStatement();
+            AddColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ADD ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
+        printEndOfStatement(ddl);
 
         Table curTable = currentModel.findTable(change.getChangedTable().getName(),
                 platform.isDelimitedIdentifierModeOn());
@@ -305,43 +288,37 @@ public class InterbaseBuilder extends SqlBuilder {
             }
             // Even though Interbase can only add columns, we can move them
             // later on
-            print("ALTER TABLE ");
-            printlnIdentifier(getTableName(change.getChangedTable()));
-            printIndent();
-            print("ALTER ");
-            printIdentifier(getColumnName(change.getNewColumn()));
-            print(" POSITION ");
+            ddl.append("ALTER TABLE ");
+            printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+            printIndent(ddl);
+            ddl.append("ALTER ");
+            printIdentifier(getColumnName(change.getNewColumn()), ddl);
+            ddl.append(" POSITION ");
             // column positions start at 1 in Interbase
-            print(prevColumn == null ? "1" : String
-                    .valueOf(curTable.getColumnIndex(prevColumn) + 1));
-            printEndOfStatement();
+            ddl.append(prevColumn == null ? "1" : String.valueOf(curTable
+                    .getColumnIndex(prevColumn) + 1));
+            printEndOfStatement(ddl);
         }
         if (change.getNewColumn().isAutoIncrement()) {
-            writeAutoIncrementCreateStmts(currentModel, curTable, change.getNewColumn());
+            writeAutoIncrementCreateStmts(currentModel, curTable, change.getNewColumn(), ddl);
         }
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a column from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change)  {
+            RemoveColumnChange change, StringBuilder ddl) {
         if (change.getColumn().isAutoIncrement()) {
-            writeAutoIncrementDropStmts(change.getChangedTable(), change.getColumn());
+            writeAutoIncrementDropStmts(change.getChangedTable(), change.getColumn(), ddl);
         }
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP ");
-        printIdentifier(getColumnName(change.getColumn()));
-        printEndOfStatement();
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP ");
+        printIdentifier(getColumnName(change.getColumn()), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 }

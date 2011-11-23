@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.mysql;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
@@ -98,10 +97,7 @@ public class MySqlPlatform extends AbstractDatabasePlatform {
         info.setSyntheticDefaultValueForRequiredReturned(false);
 
         modelReader = new MySqlModelReader(this);
-    }
-
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new MySqlBuilder(log, this, writer);
+        ddlBuilder = new MySqlBuilder(log, this);
     }
 
     public String getName() {
