@@ -96,7 +96,7 @@ public class SqlTemplate {
 
     private String newColumnPrefix = "";
 
-    private String geometryColumnTemplate;
+    private String otherColumnTemplate;
     
     public String createInitalLoadSql(Node node, IDbDialect dialect, TriggerRouter triggerRouter,
             Table table, TriggerHistory triggerHistory, Channel channel) {
@@ -608,10 +608,8 @@ public class SqlTemplate {
                     break;
                 case Types.NULL:
                 case Types.OTHER:
-                	if(this.isGeometryColumn(column)) {
-                		templateToUse = this.geometryColumnTemplate;
-                		break;
-                	}
+                	templateToUse = this.otherColumnTemplate;
+                	break;
                 case Types.JAVA_OBJECT:
                 case Types.DISTINCT:
                 case Types.STRUCT:
@@ -665,7 +663,15 @@ public class SqlTemplate {
         return new ColumnString(columnsText, isLob);
     }
 
-    private boolean noTimeColumnTemplate() {
+    public String getOtherColumnTemplate() {
+		return otherColumnTemplate;
+	}
+
+	public void setOtherColumnTemplate(String otherColumnTemplate) {
+		this.otherColumnTemplate = otherColumnTemplate;
+	}
+
+	private boolean noTimeColumnTemplate() {
         return timeColumnTemplate == null || timeColumnTemplate.equals("null")
                 || timeColumnTemplate.trim().equals("");
     }
@@ -735,10 +741,8 @@ public class SqlTemplate {
                 text += "varbinary(max)\n";
                 break;
             case Types.OTHER:
-            	if( this.isGeometryColumn(columns[i])) {
-            		text +="varbinary(max)\n";
-            		break;
-            	}            	                
+        		text +="varbinary(max)\n";
+        		break;
             default:
                 if (columns[i].getJdbcTypeName() != null
                         && columns[i].getJdbcTypeName().equalsIgnoreCase("interval")) {
@@ -897,10 +901,6 @@ public class SqlTemplate {
         this.dateColumnTemplate = dateColumnTemplate;
     }
 
-    public void setGeometryColumnTemplate(String template) {
-    	this.geometryColumnTemplate = template;
-    }        
-    
     private class ColumnString {
 
         String columnString;
@@ -916,20 +916,4 @@ public class SqlTemplate {
         }
 
     }
-
-    private boolean isGeometryColumn(Column col) {
-    	if (col.getJdbcTypeName() != null) {
-			return 
-    			col.getJdbcTypeName().equalsIgnoreCase("point") ||
-    			col.getJdbcTypeName().equalsIgnoreCase("line") ||
-    			col.getJdbcTypeName().equalsIgnoreCase("lseg") ||
-    			col.getJdbcTypeName().equalsIgnoreCase("box") ||
-    			col.getJdbcTypeName().equalsIgnoreCase("path") ||
-    			col.getJdbcTypeName().equalsIgnoreCase("polygon") ||
-    			col.getJdbcTypeName().equalsIgnoreCase("circle");
-    	}
-    	else {
-    		return false;
-    	}
-    }        
 }
