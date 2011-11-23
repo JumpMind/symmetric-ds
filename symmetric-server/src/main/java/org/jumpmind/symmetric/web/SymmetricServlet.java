@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -184,7 +183,7 @@ public class SymmetricServlet extends HttpServlet {
         return uri;
     }
 
-    protected void logException(ServletRequest req, Exception ex, boolean isError) {
+    protected void logException(HttpServletRequest req, Exception ex, boolean isError) {
         String nodeId = req.getParameter(WebConstants.NODE_ID);
         String externalId = req.getParameter(WebConstants.EXTERNAL_ID);
         String address = req.getRemoteAddr();
@@ -193,7 +192,7 @@ public class SymmetricServlet extends HttpServlet {
                 : "";
         if (log.isErrorEnabled() && isError) {
             log.error("ServletProcessingFailedError", ex, method, externalId, nodeId, address,
-                    hostName);
+                    hostName, ServletUtils.normalizeRequestUri(req));
         } else if (log.isWarnEnabled()) {
             log.warn("ServletProcessingFailedWarning", method, externalId, nodeId, address,
                     hostName, ex.getMessage());
