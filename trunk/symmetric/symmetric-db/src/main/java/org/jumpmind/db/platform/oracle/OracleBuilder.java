@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.oracle;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
@@ -50,7 +49,7 @@ import org.jumpmind.util.Log;
  * The SQL Builder for Oracle.
  */
 public class OracleBuilder extends SqlBuilder {
-    
+
     /* The regular expression pattern for ISO dates, i.e. 'YYYY-MM-DD'. */
     private Pattern isoDatePattern;
 
@@ -63,8 +62,8 @@ public class OracleBuilder extends SqlBuilder {
      */
     private Pattern isoTimestampPattern;
 
-    public OracleBuilder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
+    public OracleBuilder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
 
         addEscapedCharSequence("'", "''");
 
@@ -81,167 +80,151 @@ public class OracleBuilder extends SqlBuilder {
     }
 
     @Override
-    public void createTable(Database database, Table table)  {
+    public void createTable(Database database, Table table, StringBuilder ddl) {
         // lets create any sequences
         Column[] columns = table.getAutoIncrementColumns();
 
         for (int idx = 0; idx < columns.length; idx++) {
-            createAutoIncrementSequence(table, columns[idx]);
+            createAutoIncrementSequence(table, columns[idx], ddl);
         }
 
-        super.createTable(database, table);
+        super.createTable(database, table, ddl);
 
         for (int idx = 0; idx < columns.length; idx++) {
-            createAutoIncrementTrigger(table, columns[idx]);
+            createAutoIncrementTrigger(table, columns[idx], ddl);
         }
     }
 
     @Override
-    public void dropTable(Table table)  {
+    public void dropTable(Table table, StringBuilder ddl) {
         // The only difference to the Oracle 8/9 variant is the purge which
         // prevents the
         // table from being moved to the recycle bin (which is new in Oracle 10)
         Column[] columns = table.getAutoIncrementColumns();
 
         for (int idx = 0; idx < columns.length; idx++) {
-            dropAutoIncrementTrigger(table, columns[idx]);
-            dropAutoIncrementSequence(table, columns[idx]);
+            dropAutoIncrementTrigger(table, columns[idx], ddl);
+            dropAutoIncrementSequence(table, columns[idx], ddl);
         }
 
-        print("DROP TABLE ");
-        printIdentifier(getTableName(table));
-        print(" CASCADE CONSTRAINTS PURGE");
-        printEndOfStatement();
+        ddl.append("DROP TABLE ");
+        printIdentifier(getTableName(table), ddl);
+        ddl.append(" CASCADE CONSTRAINTS PURGE");
+        printEndOfStatement(ddl);
     }
 
     /*
      * Creates the sequence necessary for the auto-increment of the given
      * column.
-     * 
-     * @param table The table
-     * 
-     * @param column The column
      */
-    protected void createAutoIncrementSequence(Table table, Column column)  {
-        print("CREATE SEQUENCE ");
-        printIdentifier(getConstraintName("seq", table, column.getName(), null));
-        printEndOfStatement();
+    protected void createAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
+        ddl.append("CREATE SEQUENCE ");
+        printIdentifier(getConstraintName("seq", table, column.getName(), null), ddl);
+        printEndOfStatement(ddl);
     }
 
     /*
      * Creates the trigger necessary for the auto-increment of the given column.
-     * 
-     * @param table The table
-     * 
-     * @param column The column
      */
-    protected void createAutoIncrementTrigger(Table table, Column column)  {
+    protected void createAutoIncrementTrigger(Table table, Column column, StringBuilder ddl) {
         String columnName = getColumnName(column);
         String triggerName = getConstraintName("trg", table, column.getName(), null);
 
         if (platform.isScriptModeOn()) {
             // For the script, we output a more nicely formatted version
-            print("CREATE OR REPLACE TRIGGER ");
-            printlnIdentifier(triggerName);
-            print("BEFORE INSERT ON ");
-            printlnIdentifier(getTableName(table));
-            print("FOR EACH ROW WHEN (new.");
-            printIdentifier(columnName);
-            println(" IS NULL)");
-            println("BEGIN");
-            print("  SELECT ");
-            printIdentifier(getConstraintName("seq", table, column.getName(), null));
-            print(".nextval INTO :new.");
-            printIdentifier(columnName);
-            print(" FROM dual");
-            println(platform.getPlatformInfo().getSqlCommandDelimiter());
-            print("END");
-            println(platform.getPlatformInfo().getSqlCommandDelimiter());
-            println("/");
-            println();
+            ddl.append("CREATE OR REPLACE TRIGGER ");
+            printlnIdentifier(triggerName, ddl);
+            ddl.append("BEFORE INSERT ON ");
+            printlnIdentifier(getTableName(table), ddl);
+            ddl.append("FOR EACH ROW WHEN (new.");
+            printIdentifier(columnName, ddl);
+            println(" IS NULL)", ddl);
+            println("BEGIN", ddl);
+            ddl.append("  SELECT ");
+            printIdentifier(getConstraintName("seq", table, column.getName(), null), ddl);
+            ddl.append(".nextval INTO :new.");
+            printIdentifier(columnName, ddl);
+            ddl.append(" FROM dual");
+            println(platform.getPlatformInfo().getSqlCommandDelimiter(), ddl);
+            ddl.append("END");
+            println(platform.getPlatformInfo().getSqlCommandDelimiter(), ddl);
+            println("/", ddl);
+            println(ddl);
         } else {
             // note that the BEGIN ... SELECT ... END; is all in one line and
             // does
             // not contain a semicolon except for the END-one
             // this way, the tokenizer will not split the statement before the
             // END
-            print("CREATE OR REPLACE TRIGGER ");
-            printIdentifier(triggerName);
-            print(" BEFORE INSERT ON ");
-            printIdentifier(getTableName(table));
-            print(" FOR EACH ROW WHEN (new.");
-            printIdentifier(columnName);
-            println(" IS NULL)");
-            print("BEGIN SELECT ");
-            printIdentifier(getConstraintName("seq", table, column.getName(), null));
-            print(".nextval INTO :new.");
-            printIdentifier(columnName);
-            print(" FROM dual");
-            print(platform.getPlatformInfo().getSqlCommandDelimiter());
-            print(" END");
+            ddl.append("CREATE OR REPLACE TRIGGER ");
+            printIdentifier(triggerName, ddl);
+            ddl.append(" BEFORE INSERT ON ");
+            printIdentifier(getTableName(table), ddl);
+            ddl.append(" FOR EACH ROW WHEN (new.");
+            printIdentifier(columnName, ddl);
+            println(" IS NULL)", ddl);
+            ddl.append("BEGIN SELECT ");
+            printIdentifier(getConstraintName("seq", table, column.getName(), null), ddl);
+            ddl.append(".nextval INTO :new.");
+            printIdentifier(columnName, ddl);
+            ddl.append(" FROM dual");
+            ddl.append(platform.getPlatformInfo().getSqlCommandDelimiter());
+            ddl.append(" END");
             // It is important that there is a semicolon at the end of the
             // statement (or more
             // precisely, at the end of the PL/SQL block), and thus we put two
             // semicolons here
             // because the tokenizer will remove the one at the end
-            print(platform.getPlatformInfo().getSqlCommandDelimiter());
-            printEndOfStatement();
+            ddl.append(platform.getPlatformInfo().getSqlCommandDelimiter());
+            printEndOfStatement(ddl);
         }
     }
 
     /*
      * Drops the sequence used for the auto-increment of the given column.
-     * 
-     * @param table The table
-     * 
-     * @param column The column
      */
-    protected void dropAutoIncrementSequence(Table table, Column column)  {
-        print("DROP SEQUENCE ");
-        printIdentifier(getConstraintName("seq", table, column.getName(), null));
-        printEndOfStatement();
+    protected void dropAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
+        ddl.append("DROP SEQUENCE ");
+        printIdentifier(getConstraintName("seq", table, column.getName(), null), ddl);
+        printEndOfStatement(ddl);
     }
 
     /*
      * Drops the trigger used for the auto-increment of the given column.
-     * 
-     * @param table The table
-     * 
-     * @param column The column
      */
-    protected void dropAutoIncrementTrigger(Table table, Column column)  {
-        print("DROP TRIGGER ");
-        printIdentifier(getConstraintName("trg", table, column.getName(), null));
-        printEndOfStatement();
+    protected void dropAutoIncrementTrigger(Table table, Column column, StringBuilder ddl) {
+        ddl.append("DROP TRIGGER ");
+        printIdentifier(getConstraintName("trg", table, column.getName(), null), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
-    protected void createTemporaryTable(Database database, Table table)  {
-        createTable(database, table);
+    protected void createTemporaryTable(Database database, Table table, StringBuilder ddl) {
+        createTable(database, table, ddl);
     }
 
     @Override
-    protected void dropTemporaryTable(Database database, Table table)  {
-        dropTable(table);
+    protected void dropTemporaryTable(Database database, Table table, StringBuilder ddl) {
+        dropTable(table, ddl);
     }
 
     @Override
-    public void dropExternalForeignKeys(Table table)  {
+    public void dropExternalForeignKeys(Table table, StringBuilder ddl) {
         // no need to as we drop the table with CASCASE CONSTRAINTS
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index)  {
+    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl) {
         // Index names in Oracle are unique to a schema and hence Oracle does
         // not
         // use the ON <tablename> clause
-        print("DROP INDEX ");
-        printIdentifier(getIndexName(index));
-        printEndOfStatement();
+        ddl.append("DROP INDEX ");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
-    protected void printDefaultValue(Object defaultValue, int typeCode)  {
+    protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
         if (defaultValue != null) {
             String defaultValueStr = defaultValue.toString();
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
@@ -249,11 +232,11 @@ public class OracleBuilder extends SqlBuilder {
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                print(platform.getPlatformInfo().getValueQuoteToken());
-                print(escapeStringValue(defaultValueStr));
-                print(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(escapeStringValue(defaultValueStr));
+                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
             } else {
-                print(defaultValueStr);
+                ddl.append(defaultValueStr);
             }
         }
     }
@@ -288,7 +271,7 @@ public class OracleBuilder extends SqlBuilder {
     }
 
     @Override
-    protected void writeColumnAutoIncrementStmt(Table table, Column column)  {
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
         // we're using sequences instead
     }
 
@@ -317,7 +300,7 @@ public class OracleBuilder extends SqlBuilder {
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes)  {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         // While Oracle has an ALTER TABLE MODIFY statement, it is somewhat
         // limited
         // esp. if there is data in the table, so we don't use it
@@ -344,14 +327,14 @@ public class OracleBuilder extends SqlBuilder {
             TableChange change = changeIt.next();
 
             if (change instanceof RemovePrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof PrimaryKeyChange) {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 RemovePrimaryKeyChange removePkChange = new RemovePrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getOldPrimaryKeyColumns());
 
-                processChange(currentModel, desiredModel, removePkChange);
+                processChange(currentModel, desiredModel, removePkChange, ddl);
             }
         }
 
@@ -363,10 +346,10 @@ public class OracleBuilder extends SqlBuilder {
             TableChange change = changeIt.next();
 
             if (change instanceof AddColumnChange) {
-                processChange(currentModel, desiredModel, (AddColumnChange) change);
+                processChange(currentModel, desiredModel, (AddColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof RemoveColumnChange) {
-                processChange(currentModel, desiredModel, (RemoveColumnChange) change);
+                processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             }
         }
@@ -375,14 +358,14 @@ public class OracleBuilder extends SqlBuilder {
             TableChange change = changeIt.next();
 
             if (change instanceof AddPrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof PrimaryKeyChange) {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 AddPrimaryKeyChange addPkChange = new AddPrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getNewPrimaryKeyColumns());
 
-                processChange(currentModel, desiredModel, addPkChange);
+                processChange(currentModel, desiredModel, addPkChange, ddl);
                 changeIt.remove();
             }
         }
@@ -390,68 +373,50 @@ public class OracleBuilder extends SqlBuilder {
 
     /*
      * Processes the addition of a column to a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("ADD ");
-        writeColumn(change.getChangedTable(), change.getNewColumn());
-        printEndOfStatement();
+            AddColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ADD ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
+        printEndOfStatement(ddl);
         if (change.getNewColumn().isAutoIncrement()) {
-            createAutoIncrementSequence(change.getChangedTable(), change.getNewColumn());
-            createAutoIncrementTrigger(change.getChangedTable(), change.getNewColumn());
+            createAutoIncrementSequence(change.getChangedTable(), change.getNewColumn(), ddl);
+            createAutoIncrementTrigger(change.getChangedTable(), change.getNewColumn(), ddl);
         }
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a column from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change)  {
+            RemoveColumnChange change, StringBuilder ddl) {
         if (change.getColumn().isAutoIncrement()) {
-            dropAutoIncrementTrigger(change.getChangedTable(), change.getColumn());
-            dropAutoIncrementSequence(change.getChangedTable(), change.getColumn());
+            dropAutoIncrementTrigger(change.getChangedTable(), change.getColumn(), ddl);
+            dropAutoIncrementSequence(change.getChangedTable(), change.getColumn(), ddl);
         }
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP COLUMN ");
-        printIdentifier(getColumnName(change.getColumn()));
-        printEndOfStatement();
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP COLUMN ");
+        printIdentifier(getColumnName(change.getColumn()), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a primary key from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemovePrimaryKeyChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP PRIMARY KEY");
-        printEndOfStatement();
+            RemovePrimaryKeyChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP PRIMARY KEY");
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 

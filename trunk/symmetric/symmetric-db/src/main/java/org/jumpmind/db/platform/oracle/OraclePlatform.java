@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.oracle;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
@@ -93,10 +92,7 @@ public class OraclePlatform extends AbstractDatabasePlatform {
         info.setStoresUpperCaseInCatalog(true);
 
         modelReader = new OracleModelReader(this);
-    }
-
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new OracleBuilder(log, this, writer);
+        ddlBuilder = new OracleBuilder(log, this);
     }
 
     public String getName() {

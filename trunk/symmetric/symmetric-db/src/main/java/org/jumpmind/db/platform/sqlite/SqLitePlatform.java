@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.sqlite;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
@@ -68,10 +67,7 @@ public class SqLitePlatform extends AbstractDatabasePlatform implements IDatabas
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
         modelReader = new SqLiteModelReader(this);
-    }
-
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new SqLiteBuilder(log, this, writer);
+        ddlBuilder = new SqLiteBuilder(log, this); 
     }
 
     public String getName() {

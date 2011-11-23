@@ -53,24 +53,23 @@ import org.jumpmind.util.Log;
  * The SQL Builder for the SqlLite database. 
  */
 public class SqLiteBuilder extends SqlBuilder {
-        
-    public SqLiteBuilder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
-        
+
+    public SqLiteBuilder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
+
         addEscapedCharSequence("'", "''");
     }
-    
+
     @Override
-    public void dropTable(Table table)  {
-        print("DROP TABLE IF EXISTS ");
-        printIdentifier(getTableName(table));
-        printEndOfStatement();
+    public void dropTable(Table table, StringBuilder ddl) {
+        ddl.append("DROP TABLE IF EXISTS ");
+        printIdentifier(getTableName(table), ddl);
+        printEndOfStatement(ddl);
     }
 
-    protected void writeColumnAutoIncrementStmt(Table table, Column column) 
-    {
-        if (!column.isPrimaryKey()){
-            print("PRIMARY KEY AUTOINCREMENT");
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
+        if (!column.isPrimaryKey()) {
+            ddl.append("PRIMARY KEY AUTOINCREMENT");
         }
     }
 
@@ -80,21 +79,22 @@ public class SqLiteBuilder extends SqlBuilder {
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index)  {
-        print("DROP INDEX IF EXISTS ");
-        printIdentifier(getIndexName(index));
-        printEndOfStatement();
+    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl) {
+        ddl.append("DROP INDEX IF EXISTS ");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Collection<TableChange> changes)  {
+            Collection<TableChange> changes, StringBuilder ddl) {
         // Only drop columns that are not part of a primary key
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = (TableChange) changeIt.next();
 
-            if ((change instanceof RemoveColumnChange) && ((RemoveColumnChange) change).getColumn().isPrimaryKey()) {
+            if ((change instanceof RemoveColumnChange)
+                    && ((RemoveColumnChange) change).getColumn().isPrimaryKey()) {
                 return;
             }
         }
@@ -114,9 +114,10 @@ public class SqLiteBuilder extends SqlBuilder {
             }
         }
 
-        for (ListIterator changeIt = addColumnChanges.listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
+        for (ListIterator changeIt = addColumnChanges.listIterator(addColumnChanges.size()); changeIt
+                .hasPrevious();) {
             AddColumnChange addColumnChange = (AddColumnChange) changeIt.previous();
-            processChange(currentModel, desiredModel, addColumnChange);
+            processChange(currentModel, desiredModel, addColumnChange, ddl);
             changeIt.remove();
         }
 
@@ -124,7 +125,7 @@ public class SqLiteBuilder extends SqlBuilder {
             TableChange change = (TableChange) changeIt.next();
             if (change instanceof RemoveColumnChange) {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
-                processChange(currentModel, desiredModel, removeColumnChange);
+                processChange(currentModel, desiredModel, removeColumnChange, ddl);
                 changeIt.remove();
             }
         }
@@ -152,13 +153,14 @@ public class SqLiteBuilder extends SqlBuilder {
                     ColumnSizeChange sizeChange = (ColumnSizeChange) change;
                     if (sizeChange.getNewScale() == 0 && sizeChange.getNewSize() == 0) {
                         needsAlter = false;
-                    } else if (sizeChange.getNewSize() == sizeChange.getChangedColumn().getSizeAsInt()
+                    } else if (sizeChange.getNewSize() == sizeChange.getChangedColumn()
+                            .getSizeAsInt()
                             && sizeChange.getNewScale() == sizeChange.getChangedColumn().getScale()) {
                         needsAlter = false;
                     }
                 }
                 if (needsAlter) {
-                    processAlterColumn(currentModel, (ColumnChange) change);
+                    processAlterColumn(currentModel, (ColumnChange) change, ddl);
                 }
                 changeIt.remove();
             }
@@ -166,75 +168,62 @@ public class SqLiteBuilder extends SqlBuilder {
 
     }
 
-    protected void processAlterColumn(Database currentModel, ColumnChange columnChange)  {
+    protected void processAlterColumn(Database currentModel, ColumnChange columnChange,
+            StringBuilder ddl) {
         columnChange.apply(currentModel, platform.isDelimitedIdentifierModeOn());
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(columnChange.getChangedTable()));
-        printIndent();
-        print("ALTER COLUMN ");
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(columnChange.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ALTER COLUMN ");
         if (columnChange instanceof ColumnRequiredChange) {
-            ColumnRequiredChange columnRequiredChange = (ColumnRequiredChange)columnChange;
-            printlnIdentifier(getColumnName(columnChange.getChangedColumn())); 
-            printIndent();
+            ColumnRequiredChange columnRequiredChange = (ColumnRequiredChange) columnChange;
+            printlnIdentifier(getColumnName(columnChange.getChangedColumn()), ddl);
+            printIndent(ddl);
             if (columnRequiredChange.getChangedColumn().isRequired()) {
-                print(" SET NOT NULL ");
+                ddl.append(" SET NOT NULL ");
             } else {
-                print(" SET NULL ");
+                ddl.append(" SET NULL ");
             }
         } else {
-          writeColumn(columnChange.getChangedTable(), columnChange.getChangedColumn());
+            writeColumn(columnChange.getChangedTable(), columnChange.getChangedColumn(), ddl);
         }
-        printEndOfStatement();
+        printEndOfStatement(ddl);
     }
 
     /*
      * Processes the addition of a column to a table.
-     * 
-     * @param currentModel
-     *            The current database schema
-     * @param desiredModel
-     *            The desired database schema
-     * @param change
-     *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, AddColumnChange change)
-             {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("ADD COLUMN ");
-        writeColumn(change.getChangedTable(), change.getNewColumn());
+    protected void processChange(Database currentModel, Database desiredModel,
+            AddColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ADD COLUMN ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         if (change.getNextColumn() != null) {
-            print(" BEFORE ");
-            printIdentifier(getColumnName(change.getNextColumn()));
+            ddl.append(" BEFORE ");
+            printIdentifier(getColumnName(change.getNextColumn()), ddl);
         }
-        printEndOfStatement();
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a column from a table.
-     * 
-     * @param currentModel
-     *            The current database schema
-     * @param desiredModel
-     *            The desired database schema
-     * @param change
-     *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, RemoveColumnChange change)
-             {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP COLUMN ");
-        printIdentifier(getColumnName(change.getColumn()));
-        printEndOfStatement();
+    protected void processChange(Database currentModel, Database desiredModel,
+            RemoveColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP COLUMN ");
+        printIdentifier(getColumnName(change.getColumn()), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     @Override
-    protected void writeColumnDefaultValueStmt(Table table, Column column)  {
+    protected void writeColumnDefaultValueStmt(Table table, Column column, StringBuilder ddl) {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
@@ -246,34 +235,36 @@ public class SqLiteBuilder extends SqlBuilder {
             // we write empty default value strings only if the type is not a
             // numeric or date/time type
             if (isValidDefaultValue(column.getDefaultValue(), column.getTypeCode())) {
-                print(" DEFAULT ");
-                writeColumnDefaultValue(table, column);
+                ddl.append(" DEFAULT ");
+                writeColumnDefaultValue(table, column, ddl);
             }
-        } else if (platform.getPlatformInfo().isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement()) {
-            print(" DEFAULT ");
-            writeColumnDefaultValue(table, column);
+        } else if (platform.getPlatformInfo().isDefaultValueUsedForIdentitySpec()
+                && column.isAutoIncrement()) {
+            ddl.append(" DEFAULT ");
+            writeColumnDefaultValue(table, column, ddl);
         } else if (!StringUtils.isBlank(column.getDefaultValue())) {
-            print(" DEFAULT ");
-            writeColumnDefaultValue(table, column);
+            ddl.append(" DEFAULT ");
+            writeColumnDefaultValue(table, column, ddl);
         }
     }
 
     @Override
-    protected void printDefaultValue(Object defaultValue, int typeCode)  {
+    protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
         if (defaultValue != null) {
             String defaultValueStr = defaultValue.toString();
-            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode) && !defaultValueStr.startsWith("TO_DATE(")
-                    && !defaultValue.equals("CURRENT_TIMESTAMP") && !defaultValue.equals("CURRENT_TIME")
-                    && !defaultValue.equals("CURRENT_DATE");
+            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
+                    && !defaultValueStr.startsWith("TO_DATE(")
+                    && !defaultValue.equals("CURRENT_TIMESTAMP")
+                    && !defaultValue.equals("CURRENT_TIME") && !defaultValue.equals("CURRENT_DATE");
             ;
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                print(platform.getPlatformInfo().getValueQuoteToken());
-                print(escapeStringValue(defaultValueStr));
-                print(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(escapeStringValue(defaultValueStr));
+                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
             } else {
-                print(defaultValueStr);
+                ddl.append(defaultValueStr);
             }
         }
     }

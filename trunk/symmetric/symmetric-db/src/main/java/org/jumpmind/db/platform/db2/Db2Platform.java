@@ -19,11 +19,9 @@ package org.jumpmind.db.platform.db2;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
 
 /*
  * The DB2 platform implementation.
@@ -32,13 +30,13 @@ public class Db2Platform extends AbstractDatabasePlatform {
 
     /* Database name of this platform. */
     public static final String DATABASENAME = "DB2";
-    
+
     /* The standard DB2 jdbc driver. */
     public static final String JDBC_DRIVER = "com.ibm.db2.jcc.DB2Driver";
-    
+
     /* The subprotocol used by the standard DB2 driver. */
     public static final String JDBC_SUBPROTOCOL = "db2";
-    
+
     /*
      * Creates a new platform instance.
      */
@@ -72,12 +70,9 @@ public class Db2Platform extends AbstractDatabasePlatform {
         info.setMaxForeignKeyNameLength(128);
 
         modelReader = new Db2ModelReader(this);
+        ddlBuilder = new Db2Builder(log, this);
     }
 
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new Db2Builder(log, this, writer);
-    }
-    
     public String getName() {
         return DATABASENAME;
     }

@@ -24,7 +24,6 @@ package org.jumpmind.db.platform.h2;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.apache.commons.lang.StringUtils;
@@ -45,48 +44,42 @@ import org.jumpmind.util.Log;
  */
 public class H2Builder extends SqlBuilder {
 
-    public H2Builder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
+    public H2Builder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         addEscapedCharSequence("'", "''");
     }
 
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("ADD COLUMN ");
-        writeColumn(change.getChangedTable(), change.getNewColumn());
+            AddColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ADD COLUMN ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         if (change.getNextColumn() != null) {
-            print(" BEFORE ");
-            printIdentifier(getColumnName(change.getNextColumn()));
+            ddl.append(" BEFORE ");
+            printIdentifier(getColumnName(change.getNextColumn()), ddl);
         }
-        printEndOfStatement();
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a column from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP COLUMN ");
-        printIdentifier(getColumnName(change.getColumn()));
-        printEndOfStatement();
+            RemoveColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP COLUMN ");
+        printIdentifier(getColumnName(change.getColumn()), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     @Override
-    protected void writeColumnDefaultValueStmt(Table table, Column column)  {
+    protected void writeColumnDefaultValueStmt(Table table, Column column, StringBuilder ddl) {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
@@ -98,21 +91,21 @@ public class H2Builder extends SqlBuilder {
             // we write empty default value strings only if the type is not a
             // numeric or date/time type
             if (isValidDefaultValue(column.getDefaultValue(), column.getTypeCode())) {
-                print(" DEFAULT ");
-                writeColumnDefaultValue(table, column);
+                ddl.append(" DEFAULT ");
+                writeColumnDefaultValue(table, column, ddl);
             }
         } else if (platform.getPlatformInfo().isDefaultValueUsedForIdentitySpec()
                 && column.isAutoIncrement()) {
-            print(" DEFAULT ");
-            writeColumnDefaultValue(table, column);
+            ddl.append(" DEFAULT ");
+            writeColumnDefaultValue(table, column, ddl);
         } else if (!StringUtils.isBlank(column.getDefaultValue())) {
-            print(" DEFAULT ");
-            writeColumnDefaultValue(table, column);
+            ddl.append(" DEFAULT ");
+            writeColumnDefaultValue(table, column, ddl);
         }
     }
 
     @Override
-    protected void printDefaultValue(Object defaultValue, int typeCode)  {
+    protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
         if (defaultValue != null) {
             String defaultValueStr = defaultValue.toString();
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode)
@@ -123,19 +116,19 @@ public class H2Builder extends SqlBuilder {
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                print(platform.getPlatformInfo().getValueQuoteToken());
-                print(escapeStringValue(defaultValueStr));
-                print(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(escapeStringValue(defaultValueStr));
+                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
             } else {
-                print(defaultValueStr);
+                ddl.append(defaultValueStr);
             }
         }
     }
-    
+
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index) {
-        print("DROP INDEX IF EXISTS ");
-        printIdentifier(getIndexName(index));
-        printEndOfStatement();
+    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl) {
+        ddl.append("DROP INDEX IF EXISTS ");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
     }
 }

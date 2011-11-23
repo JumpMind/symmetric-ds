@@ -19,11 +19,9 @@ package org.jumpmind.db.platform.hsqldb;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
 
 /*
  * The platform implementation for the HsqlDb database.
@@ -74,11 +72,8 @@ public class HsqlDbPlatform extends AbstractDatabasePlatform {
         info.setStoresUpperCaseInCatalog(true);
 
         modelReader = new HsqlDbModelReader(this);
+        ddlBuilder = new HsqlDbBuilder(log, this);
 
-    }
-    
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new HsqlDbBuilder(log, this, writer);
     }
 
     public String getName() {

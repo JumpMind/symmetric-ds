@@ -26,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -49,9 +48,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.derby.jdbc.EmbeddedDriver;
 import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.IDdlBuilder;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.platform.SqlBuilder;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.StandaloneSymmetricEngine;
@@ -249,10 +248,9 @@ public class TestSetupUtil {
             }            
                         
             Database testDb = getTestDatabase();
-            StringWriter writer = new StringWriter();
-            SqlBuilder builder = platform.createSqlBuilder(writer);
-            builder.dropTables(testDb);
-            new SqlScript(writer.toString(), ds, false).execute(true);            
+            IDdlBuilder builder = platform.getDdlBuilder();
+            String sql = builder.dropTables(testDb);
+            new SqlScript(sql, ds, false).execute(true);            
 
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(true);
 

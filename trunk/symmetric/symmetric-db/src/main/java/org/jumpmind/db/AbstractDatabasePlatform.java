@@ -19,7 +19,6 @@ package org.jumpmind.db;
  * under the License.
  */
 
-import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -30,7 +29,6 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.JdbcModelReader;
-import org.jumpmind.db.platform.SqlBuilder;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.util.Log;
 import org.jumpmind.util.LogFactory;
@@ -51,6 +49,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     /* The model reader for this platform. */
     protected JdbcModelReader modelReader;
+    
+    protected IDdlBuilder ddlBuilder;
 
     /* Whether script mode is on. */
     protected boolean scriptModeOn;
@@ -76,6 +76,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public JdbcModelReader getModelReader() {
         return modelReader;
+    }
+        
+    public IDdlBuilder getDdlBuilder() {
+        return ddlBuilder;
     }
 
     public DatabasePlatformInfo getPlatformInfo() {
@@ -130,10 +134,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public void createDatabase(DataSource dataSource, Database targetDatabase,
             boolean dropTablesFirst, boolean continueOnError) {
-        StringWriter writer = new StringWriter();
-        SqlBuilder builder = createSqlBuilder(writer);
-        builder.createTables(targetDatabase, dropTablesFirst);
-        String createSql = writer.toString();
+        String createSql = ddlBuilder.createTables(targetDatabase, dropTablesFirst);
         String delimiter = info.getSqlCommandDelimiter();
         new SqlScript(createSql, dataSource, !continueOnError, delimiter, null).execute();
     }

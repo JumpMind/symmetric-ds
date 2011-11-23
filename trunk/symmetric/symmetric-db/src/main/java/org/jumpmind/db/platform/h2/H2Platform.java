@@ -19,12 +19,10 @@ package org.jumpmind.db.platform.h2;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
 import org.jumpmind.db.IDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
 
 /*
  * The platform implementation for the H2 database.
@@ -72,10 +70,7 @@ public class H2Platform extends AbstractDatabasePlatform implements IDatabasePla
         info.setStoresUpperCaseInCatalog(true);
 
         modelReader = new H2ModelReader(this);
-    }
-
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new H2Builder(log, this, writer);
+        ddlBuilder = new H2Builder(log, this);
     }
 
     public String getName() {

@@ -108,6 +108,6 @@ public class MySqlModelReader extends JdbcModelReader {
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index) {
         // MySql defines a non-unique index of the same name as the fk
-        return getPlatform().createSqlBuilder(null).getForeignKeyName(table, fk).equals(index.getName());
+        return getPlatform().getDdlBuilder().getForeignKeyName(table, fk).equals(index.getName());
     }
 }

@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.interbase;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
@@ -87,10 +86,7 @@ public class InterbasePlatform extends AbstractDatabasePlatform {
         info.setStoresUpperCaseInCatalog(true);
 
         modelReader = new InterbaseModelReader(this);
-    }
-
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new InterbaseBuilder(log, this, writer);
+        ddlBuilder = new InterbaseBuilder(log, this);
     }
 
     public String getName() {

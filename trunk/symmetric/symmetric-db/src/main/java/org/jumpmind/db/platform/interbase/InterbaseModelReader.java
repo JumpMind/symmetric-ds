@@ -198,7 +198,7 @@ public class InterbaseModelReader extends JdbcModelReader {
         // shortened
         // we have to determine for each column whether there is a generator for
         // it
-        InterbaseBuilder builder = (InterbaseBuilder) getPlatform().createSqlBuilder(null);
+        InterbaseBuilder builder = (InterbaseBuilder) getPlatform().getDdlBuilder();
         Column[] columns = table.getColumns();
         HashMap<String, Column> names = new HashMap<String, Column>();
         String name;
@@ -325,7 +325,7 @@ public class InterbaseModelReader extends JdbcModelReader {
 
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException {
-        InterbaseBuilder builder = (InterbaseBuilder)getPlatform().createSqlBuilder(null);
+        InterbaseBuilder builder = (InterbaseBuilder)getPlatform().getDdlBuilder();
         String tableName = builder.getTableName(table);
         String indexName = builder.getIndexName(index);
         StringBuffer query = new StringBuffer();
@@ -355,7 +355,7 @@ public class InterbaseModelReader extends JdbcModelReader {
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
             throws SQLException {
-        InterbaseBuilder builder = (InterbaseBuilder)getPlatform().createSqlBuilder(null);
+        InterbaseBuilder builder = (InterbaseBuilder)getPlatform().getDdlBuilder();
         String tableName = builder.getTableName(table);
         String indexName = builder.getIndexName(index);
         String fkName = builder.getForeignKeyName(table, fk);

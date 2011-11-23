@@ -19,25 +19,22 @@ package org.jumpmind.db.platform.firebird;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
 import org.jumpmind.db.DatabasePlatformInfo;
-import org.jumpmind.db.platform.SqlBuilder;
 
 /*
  * The platform implementation for the Firebird database.
  * It is assumed that the database is configured with sql dialect 3!
  */
-public class FirebirdPlatform extends AbstractDatabasePlatform
-{
+public class FirebirdPlatform extends AbstractDatabasePlatform {
     /* Database name of this platform. */
-    public static final String DATABASENAME     = "Firebird";
-    
+    public static final String DATABASENAME = "Firebird";
+
     /* The standard Firebird jdbc driver. */
-    public static final String JDBC_DRIVER      = "org.firebirdsql.jdbc.FBDriver";
-    
+    public static final String JDBC_DRIVER = "org.firebirdsql.jdbc.FBDriver";
+
     /* The subprotocol used by the standard Firebird driver. */
     public static final String JDBC_SUBPROTOCOL = "firebirdsql";
 
@@ -53,43 +50,39 @@ public class FirebirdPlatform extends AbstractDatabasePlatform
         info.setCommentPrefix("/*");
         info.setCommentSuffix("*/");
 
-        info.addNativeTypeMapping(Types.ARRAY,         "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BINARY,        "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BIT,           "SMALLINT",           Types.SMALLINT);
-        info.addNativeTypeMapping(Types.CLOB,          "BLOB SUB_TYPE TEXT", Types.LONGVARCHAR);
-        info.addNativeTypeMapping(Types.DISTINCT,      "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.BLOB,          "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.DOUBLE,        "DOUBLE PRECISION");
-        info.addNativeTypeMapping(Types.FLOAT,         "DOUBLE PRECISION",   Types.DOUBLE);
-        info.addNativeTypeMapping(Types.JAVA_OBJECT,   "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.LONGVARCHAR,   "BLOB SUB_TYPE TEXT");
-        info.addNativeTypeMapping(Types.NULL,          "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.OTHER,         "BLOB",               Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.BINARY, "BLOB", Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
+        info.addNativeTypeMapping(Types.CLOB, "BLOB SUB_TYPE TEXT", Types.LONGVARCHAR);
+        info.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.BLOB, "BLOB", Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
+        info.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
+        info.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.LONGVARCHAR, "BLOB SUB_TYPE TEXT");
+        info.addNativeTypeMapping(Types.NULL, "BLOB", Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.OTHER, "BLOB", Types.LONGVARBINARY);
         // This is back-mapped to REAL in the model reader
-        info.addNativeTypeMapping(Types.REAL,          "FLOAT");
-        info.addNativeTypeMapping(Types.REF,           "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.STRUCT,        "BLOB",               Types.LONGVARBINARY);
-        info.addNativeTypeMapping(Types.TINYINT,       "SMALLINT",           Types.SMALLINT);
-        info.addNativeTypeMapping(Types.VARBINARY,     "BLOB",               Types.LONGVARBINARY);
-        
-        info.addNativeTypeMapping("BOOLEAN",  "SMALLINT", "SMALLINT");
-        info.addNativeTypeMapping("DATALINK", "BLOB",     "LONGVARBINARY");
+        info.addNativeTypeMapping(Types.REAL, "FLOAT");
+        info.addNativeTypeMapping(Types.REF, "BLOB", Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.LONGVARBINARY);
+        info.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
+        info.addNativeTypeMapping(Types.VARBINARY, "BLOB", Types.LONGVARBINARY);
+
+        info.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
+        info.addNativeTypeMapping("DATALINK", "BLOB", "LONGVARBINARY");
 
         info.setDefaultSize(Types.VARCHAR, 254);
-        info.setDefaultSize(Types.CHAR,    254);
-        
+        info.setDefaultSize(Types.CHAR, 254);
+
         info.setStoresUpperCaseInCatalog(true);
 
         modelReader = new FirebirdModelReader(this);
-    }
-    
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new FirebirdBuilder(log, this, writer);
+        ddlBuilder = new FirebirdBuilder(log, this);
     }
 
-    public String getName()
-    {
+    public String getName() {
         return DATABASENAME;
     }
 }

@@ -19,8 +19,6 @@ package org.jumpmind.db.platform;
  * under the License.
  */
 
-import java.io.IOException;
-import java.io.Writer;
 import java.rmi.server.UID;
 import java.sql.Types;
 import java.text.DateFormat;
@@ -40,6 +38,7 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.DdlUtilsException;
 import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.IDdlBuilder;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddForeignKeyChange;
 import org.jumpmind.db.alter.AddIndexChange;
@@ -85,7 +84,7 @@ import org.jumpmind.util.Log;
  * complex when attempting to reuse code across many databases. Hopefully only a
  * small amount code needs to be changed on a per database basis.
  */
-public abstract class SqlBuilder {
+public abstract class SqlBuilder implements IDdlBuilder {
 
     /** The line separator for in between sql commands. */
     private static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
@@ -120,18 +119,15 @@ public abstract class SqlBuilder {
     /** The character sequences that need escaping. */
     private Map<String, String> charSequencesToEscape = new LinkedHashMap<String, String>();
 
-    protected Writer writer;
-
     /**
      * Creates a new sql builder.
      * 
      * @param platform
      *            The platform this builder belongs to
      */
-    public SqlBuilder(Log log, IDatabasePlatform platform, Writer writer) {
+    public SqlBuilder(Log log, IDatabasePlatform platform) {
         this.log = log;
         this.platform = platform;
-        this.writer = writer;
     }
 
     /**
@@ -294,30 +290,37 @@ public abstract class SqlBuilder {
         charSequencesToEscape.put(charSequence, escapedVersion);
     }
 
+    public String createTables(Database database, boolean dropTables) {
+        StringBuilder ddl = new StringBuilder();
+        createTables(database, dropTables, ddl);
+        return ddl.toString();
+    }
+
     /**
      * Outputs the DDL required to drop (if requested) and (re)create all tables
      * in the database model.
-     * 
-     * @param database
-     *            The database
-     * @param dropTables
-     *            Whether to drop tables before creating them
      */
-    public void createTables(Database database, boolean dropTables) {
+    public void createTables(Database database, boolean dropTables, StringBuilder ddl) {
         if (dropTables) {
-            dropTables(database);
+            dropTables(database, ddl);
         }
 
         for (int idx = 0; idx < database.getTableCount(); idx++) {
             Table table = database.getTable(idx);
 
-            writeTableComment(table);
-            createTable(database, table);
+            writeTableComment(table, ddl);
+            createTable(database, table, ddl);
         }
 
         // we're writing the external foreignkeys last to ensure that all
         // referenced tables are already defined
-        createExternalForeignKeys(database);
+        createExternalForeignKeys(database, ddl);
+    }
+    
+    public String alterDatabase(Database currentModel, Database desiredModel) {
+        StringBuilder ddl = new StringBuilder();
+        alterDatabase(currentModel, desiredModel, ddl);
+        return ddl.toString();
     }
 
     /**
@@ -325,20 +328,12 @@ public abstract class SqlBuilder {
      * the specified database schema by using drops, modifications and
      * additions. Database-specific implementations can change aspect of this
      * algorithm by redefining the individual methods that compromise it.
-     * 
-     * @param currentModel
-     *            The current database schema
-     * @param desiredModel
-     *            The desired database schema
-     * @param params
-     *            The parameters used in the creation of new tables. Note that
-     *            for existing tables, the parameters won't be applied
      */
-    public void alterDatabase(Database currentModel, Database desiredModel) {
+    public void alterDatabase(Database currentModel, Database desiredModel, StringBuilder ddl) {
         ModelComparator comparator = new ModelComparator(platform.getPlatformInfo(),
                 platform.isDelimitedIdentifierModeOn());
         List<IModelChange> changes = comparator.compare(currentModel, desiredModel);
-        processChanges(currentModel, desiredModel, changes);
+        processChanges(currentModel, desiredModel, changes, ddl);
     }
 
     public boolean isAlterDatabase(Database currentModel, Database desiredModel) {
@@ -383,10 +378,10 @@ public abstract class SqlBuilder {
      * <ol>
      * <li>
      * {@link org.jumpmind.db.alter.RemoveForeignKeyChange} and
-     * {@link org.jumpmind.db.alter.RemoveIndexChange} come first to
-     * allow for e.g. subsequent primary key changes or column removal.</li>
-     * <li>{@link org.jumpmind.db.alter.RemoveTableChange} comes after
-     * the removal of foreign keys and indices.</li>
+     * {@link org.jumpmind.db.alter.RemoveIndexChange} come first to allow for
+     * e.g. subsequent primary key changes or column removal.</li>
+     * <li>{@link org.jumpmind.db.alter.RemoveTableChange} comes after the
+     * removal of foreign keys and indices.</li>
      * <li>These are all handled together:<br/>
      * {@link org.jumpmind.db.alter.RemovePrimaryKeyChange}<br/>
      * {@link org.jumpmind.db.alter.AddPrimaryKeyChange}<br/>
@@ -407,20 +402,13 @@ public abstract class SqlBuilder {
      * {@link org.jumpmind.db.alter.AddIndexChange} come last after
      * table/column/primary key additions or changes.</li>
      * </ol>
-     * 
-     * @param currentModel
-     *            The current database schema
-     * @param desiredModel
-     *            The desired database schema
-     * @param changes
-     *            The changes
      */
     @SuppressWarnings("unchecked")
     protected void processChanges(Database currentModel, Database desiredModel,
-            List<IModelChange> changes) {
+            List<IModelChange> changes, StringBuilder ddl) {
         CallbackClosure callbackClosure = new CallbackClosure(this, "processChange", new Class[] {
-                Database.class, Database.class, null }, new Object[] { currentModel, desiredModel,
-                null });
+                Database.class, Database.class, null, StringBuilder.class }, new Object[] {
+                currentModel, desiredModel, null, ddl });
 
         // 1st pass: removing external constraints and indices
         applyForSelectedChanges(changes, new Class[] { RemoveForeignKeyChange.class,
@@ -437,7 +425,7 @@ public abstract class SqlBuilder {
                 ColumnDataTypeChange.class, ColumnSizeChange.class });
 
         processTableStructureChanges(currentModel, desiredModel,
-                CollectionUtils.select(changes, predicate));
+                CollectionUtils.select(changes, predicate), ddl);
 
         // 4th pass: adding tables
         applyForSelectedChanges(changes, new Class[] { AddTableChange.class }, callbackClosure);
@@ -449,31 +437,18 @@ public abstract class SqlBuilder {
     /**
      * This is a fall-through callback which generates a warning because a
      * specific change type wasn't handled.
-     * 
-     * @param currentModel
-     *            The current database schema
-     * @param desiredModel
-     *            The desired database schema
-     * @param change
-     *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, IModelChange change) {
+    protected void processChange(Database currentModel, Database desiredModel, IModelChange change,
+            StringBuilder ddl) {
         log.warn("Change of type " + change.getClass() + " was not handled");
     }
 
     /**
      * Processes the change representing the removal of a foreign key.
-     * 
-     * @param currentModel
-     *            The current database schema
-     * @param desiredModel
-     *            The desired database schema
-     * @param change
-     *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveForeignKeyChange change) {
-        writeExternalForeignKeyDropStmt(change.getChangedTable(), change.getForeignKey());
+            RemoveForeignKeyChange change, StringBuilder ddl) {
+        writeExternalForeignKeyDropStmt(change.getChangedTable(), change.getForeignKey(), ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -488,8 +463,8 @@ public abstract class SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveIndexChange change) {
-        writeExternalIndexDropStmt(change.getChangedTable(), change.getIndex());
+            RemoveIndexChange change, StringBuilder ddl) {
+        writeExternalIndexDropStmt(change.getChangedTable(), change.getIndex(), ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -504,8 +479,8 @@ public abstract class SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveTableChange change) {
-        dropTable(change.getChangedTable());
+            RemoveTableChange change, StringBuilder ddl) {
+        dropTable(change.getChangedTable(), ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -519,8 +494,9 @@ public abstract class SqlBuilder {
      * @param change
      *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, AddTableChange change) {
-        createTable(desiredModel, change.getNewTable());
+    protected void processChange(Database currentModel, Database desiredModel,
+            AddTableChange change, StringBuilder ddl) {
+        createTable(desiredModel, change.getNewTable(), ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -535,9 +511,9 @@ public abstract class SqlBuilder {
      *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddForeignKeyChange change) {
+            AddForeignKeyChange change, StringBuilder ddl) {
         writeExternalForeignKeyCreateStmt(desiredModel, change.getChangedTable(),
-                change.getNewForeignKey());
+                change.getNewForeignKey(), ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -551,8 +527,9 @@ public abstract class SqlBuilder {
      * @param change
      *            The change object
      */
-    protected void processChange(Database currentModel, Database desiredModel, AddIndexChange change) {
-        writeExternalIndexCreateStmt(change.getChangedTable(), change.getNewIndex());
+    protected void processChange(Database currentModel, Database desiredModel,
+            AddIndexChange change, StringBuilder ddl) {
+        writeExternalIndexCreateStmt(change.getChangedTable(), change.getNewIndex(), ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -567,7 +544,7 @@ public abstract class SqlBuilder {
      *            The change objects
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Collection<TableChange> changes) {
+            Collection<TableChange> changes, StringBuilder ddl) {
         LinkedHashMap<String, List<TableChange>> changesPerTable = new LinkedHashMap<String, List<TableChange>>();
         LinkedHashMap<String, List<ForeignKey>> unchangedFKs = new LinkedHashMap<String, List<ForeignKey>>();
         boolean caseSensitive = platform.isDelimitedIdentifierModeOn();
@@ -604,7 +581,7 @@ public abstract class SqlBuilder {
             Table targetTable = desiredModel.findTable((String) entry.getKey(), caseSensitive);
 
             for (Iterator<ForeignKey> fkIt = entry.getValue().iterator(); fkIt.hasNext();) {
-                writeExternalForeignKeyDropStmt(targetTable, fkIt.next());
+                writeExternalForeignKeyDropStmt(targetTable, fkIt.next(), ddl);
             }
         }
 
@@ -622,7 +599,7 @@ public abstract class SqlBuilder {
                 .entrySet().iterator(); tableChangeIt.hasNext();) {
             Map.Entry<String, List<TableChange>> entry = tableChangeIt.next();
             processTableStructureChanges(copyOfCurrentModel, desiredModel, entry.getKey(),
-                    entry.getValue());
+                    entry.getValue(), ddl);
         }
         // and finally we're re-creating the unchanged foreign keys
         for (Iterator<Map.Entry<String, List<ForeignKey>>> tableFKIt = unchangedFKs.entrySet()
@@ -631,7 +608,7 @@ public abstract class SqlBuilder {
             Table targetTable = desiredModel.findTable((String) entry.getKey(), caseSensitive);
 
             for (Iterator<ForeignKey> fkIt = entry.getValue().iterator(); fkIt.hasNext();) {
-                writeExternalForeignKeyCreateStmt(desiredModel, targetTable, fkIt.next());
+                writeExternalForeignKeyCreateStmt(desiredModel, targetTable, fkIt.next(), ddl);
             }
         }
     }
@@ -680,14 +657,14 @@ public abstract class SqlBuilder {
      *            will be added to
      */
     private void addRelevantFKsFromUnchangedTables(Database currentModel, Database desiredModel,
-            Set namesOfKnownChangedTables, Map fksPerTable) {
+            Set<String> namesOfKnownChangedTables, Map<String, List<ForeignKey>> fksPerTable) {
         boolean caseSensitive = platform.isDelimitedIdentifierModeOn();
 
         for (int tableIdx = 0; tableIdx < desiredModel.getTableCount(); tableIdx++) {
             Table targetTable = desiredModel.getTable(tableIdx);
             String name = targetTable.getName();
             Table sourceTable = currentModel.findTable(name, caseSensitive);
-            List relevantFks = null;
+            List<ForeignKey> relevantFks = null;
 
             if (!caseSensitive) {
                 name = name.toUpperCase();
@@ -703,7 +680,7 @@ public abstract class SqlBuilder {
                     }
                     if ((sourceFk != null) && namesOfKnownChangedTables.contains(refName)) {
                         if (relevantFks == null) {
-                            relevantFks = new ArrayList();
+                            relevantFks = new ArrayList<ForeignKey>();
                             fksPerTable.put(name, relevantFks);
                         }
                         relevantFks.add(targetFk);
@@ -719,18 +696,9 @@ public abstract class SqlBuilder {
      * usually sufficient to redefine the
      * {@link #processTableStructureChanges(Database, Database, Table, Table, Map, List)}
      * method instead.
-     * 
-     * @param currentModel
-     *            The current database schema
-     * @param desiredModel
-     *            The desired database schema
-     * @param tableName
-     *            The name of the changed table
-     * @param changes
-     *            The change objects for this table
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            String tableName, List<TableChange> changes) {
+            String tableName, List<TableChange> changes, StringBuilder ddl) {
         Table sourceTable = currentModel.findTable(tableName,
                 platform.isDelimitedIdentifierModeOn());
         Table targetTable = desiredModel.findTable(tableName,
@@ -756,7 +724,7 @@ public abstract class SqlBuilder {
         }
         if (!requiresFullRebuild) {
             processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
-                    changes);
+                    changes, ddl);
         }
 
         if (!changes.isEmpty()) {
@@ -765,8 +733,8 @@ public abstract class SqlBuilder {
             // non-autoincrement have been added
             boolean canMigrateData = true;
 
-            for (Iterator it = changes.iterator(); canMigrateData && it.hasNext();) {
-                TableChange change = (TableChange) it.next();
+            for (Iterator<TableChange> it = changes.iterator(); canMigrateData && it.hasNext();) {
+                TableChange change = it.next();
 
                 if (change instanceof AddColumnChange) {
                     AddColumnChange addColumnChange = (AddColumnChange) change;
@@ -788,19 +756,19 @@ public abstract class SqlBuilder {
             if (canMigrateData) {
                 Table tempTable = getTemporaryTableFor(desiredModel, targetTable);
 
-                createTemporaryTable(desiredModel, tempTable);
-                writeCopyDataStatement(sourceTable, tempTable);
+                createTemporaryTable(desiredModel, tempTable, ddl);
+                writeCopyDataStatement(sourceTable, tempTable, ddl);
                 // Note that we don't drop the indices here because the DROP
                 // TABLE will take care of that
                 // Likewise, foreign keys have already been dropped as necessary
-                dropTable(sourceTable);
-                createTable(desiredModel, realTargetTable);
-                writeCopyDataStatement(tempTable, targetTable);
-                dropTemporaryTable(desiredModel, tempTable);
-                writeFixLastIdentityValues(targetTable);
+                dropTable(sourceTable, ddl);
+                createTable(desiredModel, realTargetTable, ddl);
+                writeCopyDataStatement(tempTable, targetTable, ddl);
+                dropTemporaryTable(desiredModel, tempTable, ddl);
+                writeFixLastIdentityValues(targetTable, ddl);
             } else {
-                dropTable(sourceTable);
-                createTable(desiredModel, realTargetTable);
+                dropTable(sourceTable, ddl);
+                createTable(desiredModel, realTargetTable, ddl);
             }
         }
     }
@@ -825,12 +793,12 @@ public abstract class SqlBuilder {
      *            The change objects for the target table
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes) {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         if (changes.size() == 1) {
             TableChange change = changes.get(0);
 
             if (change instanceof AddPrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changes.clear();
             }
         }
@@ -857,19 +825,20 @@ public abstract class SqlBuilder {
         return getTemporaryTableFor(model, sourceTable, "x");
     }
 
-    public Table createBackupTableFor(Database model, Table sourceTable) {
+    public Table createBackupTableFor(Database model, Table sourceTable, StringBuilder ddl) {
         Table backupTable = getBackupTableFor(model, sourceTable);
-        writeTableCreationStmt(model, backupTable);
-        printEndOfStatement();
-        writeCopyDataStatement(sourceTable, backupTable);
+        writeTableCreationStmt(model, backupTable, ddl);
+        printEndOfStatement(ddl);
+        writeCopyDataStatement(sourceTable, backupTable, ddl);
         return backupTable;
     }
 
-    public void restoreTableFromBackup(Table backupTable, Table targetTable, LinkedHashMap columnMap) {
-        print("DELETE FROM ");
-        printIdentifier(getTableName(targetTable));
-        printEndOfStatement();
-        writeCopyDataStatement(backupTable, targetTable, columnMap);
+    public void restoreTableFromBackup(Table backupTable, Table targetTable,
+            LinkedHashMap columnMap, StringBuilder ddl) {
+        ddl.append("DELETE FROM ");
+        printIdentifier(getTableName(targetTable), ddl);
+        printEndOfStatement(ddl);
+        writeCopyDataStatement(backupTable, targetTable, columnMap, ddl);
     }
 
     protected Table getTemporaryTableFor(Database targetModel, Table targetTable, String suffix) {
@@ -899,8 +868,8 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void createTemporaryTable(Database database, Table table) {
-        createTable(database, table);
+    protected void createTemporaryTable(Database database, Table table, StringBuilder ddl) {
+        createTable(database, table, ddl);
     }
 
     /**
@@ -912,8 +881,8 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void dropTemporaryTable(Database database, Table table) {
-        dropTable(table);
+    protected void dropTemporaryTable(Database database, Table table, StringBuilder ddl) {
+        dropTable(table, ddl);
     }
 
     /**
@@ -973,33 +942,34 @@ public abstract class SqlBuilder {
      * @param targetTable
      *            The target table
      */
-    public void writeCopyDataStatement(Table sourceTable, Table targetTable) {
+    public void writeCopyDataStatement(Table sourceTable, Table targetTable, StringBuilder ddl) {
         LinkedHashMap columnMap = getCopyDataColumnMapping(sourceTable, targetTable);
-        writeCopyDataStatement(sourceTable, targetTable, columnMap);
+        writeCopyDataStatement(sourceTable, targetTable, columnMap, ddl);
     }
 
-    public void writeCopyDataStatement(Table sourceTable, Table targetTable, LinkedHashMap columnMap) {
-        print("INSERT INTO ");
-        printIdentifier(getTableName(targetTable));
-        print(" (");
+    public void writeCopyDataStatement(Table sourceTable, Table targetTable,
+            LinkedHashMap columnMap, StringBuilder ddl) {
+        ddl.append("INSERT INTO ");
+        printIdentifier(getTableName(targetTable), ddl);
+        ddl.append(" (");
         for (Iterator columnIt = columnMap.values().iterator(); columnIt.hasNext();) {
-            printIdentifier(getColumnName((Column) columnIt.next()));
+            printIdentifier(getColumnName((Column) columnIt.next()), ddl);
             if (columnIt.hasNext()) {
-                print(",");
+                ddl.append(",");
             }
         }
-        print(") SELECT ");
+        ddl.append(") SELECT ");
         for (Iterator columnsIt = columnMap.entrySet().iterator(); columnsIt.hasNext();) {
             Map.Entry entry = (Map.Entry) columnsIt.next();
 
-            writeCastExpression((Column) entry.getKey(), (Column) entry.getValue());
+            writeCastExpression((Column) entry.getKey(), (Column) entry.getValue(), ddl);
             if (columnsIt.hasNext()) {
-                print(",");
+                ddl.append(",");
             }
         }
-        print(" FROM ");
-        printIdentifier(getTableName(sourceTable));
-        printEndOfStatement();
+        ddl.append(" FROM ");
+        printIdentifier(getTableName(sourceTable), ddl);
+        printEndOfStatement(ddl);
     }
 
     public LinkedHashMap getCopyDataColumnMapping(Table sourceTable, Table targetTable) {
@@ -1019,7 +989,6 @@ public abstract class SqlBuilder {
 
     public LinkedHashMap getCopyDataColumnOrderedMapping(Table sourceTable, Table targetTable) {
         LinkedHashMap columns = new LinkedHashMap();
-
         for (int idx = 0; idx < sourceTable.getColumnCount(); idx++) {
             columns.put(sourceTable.getColumn(idx), targetTable.getColumn(idx));
         }
@@ -1031,29 +1000,18 @@ public abstract class SqlBuilder {
      * the data type of the target column. Per default, simply the name of the
      * source column is written thereby assuming that any casts happen
      * implicitly.
-     * 
-     * @param sourceColumn
-     *            The source column
-     * @param targetColumn
-     *            The target column
      */
-    protected void writeCastExpression(Column sourceColumn, Column targetColumn) {
-        printIdentifier(getColumnName(sourceColumn));
+    protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
+        printIdentifier(getColumnName(sourceColumn), ddl);
     }
 
     /**
      * Processes the addition of a primary key to a table.
-     * 
-     * @param currentModel
-     *            The current database schema
-     * @param desiredModel
-     *            The desired database schema
-     * @param change
-     *            The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddPrimaryKeyChange change) {
-        writeExternalPrimaryKeysCreateStmt(change.getChangedTable(), change.getPrimaryKeyColumns());
+            AddPrimaryKeyChange change, StringBuilder ddl) {
+        writeExternalPrimaryKeysCreateStmt(change.getChangedTable(), change.getPrimaryKeyColumns(),
+                ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -1074,7 +1032,7 @@ public abstract class SqlBuilder {
         boolean caseMatters = platform.isDelimitedIdentifierModeOn();
         boolean checkFkName = (fk.getName() != null) && (fk.getName().length() > 0);
         Reference[] refs = fk.getReferences();
-        ArrayList curRefs = new ArrayList();
+        ArrayList<Reference> curRefs = new ArrayList<Reference>();
 
         for (int fkIdx = 0; fkIdx < table.getForeignKeyCount(); fkIdx++) {
             ForeignKey curFk = table.getForeignKey(fkIdx);
@@ -1092,7 +1050,7 @@ public abstract class SqlBuilder {
                         boolean found = false;
 
                         for (int curRefIdx = 0; !found && (curRefIdx < curRefs.size()); curRefIdx++) {
-                            Reference curRef = (Reference) curRefs.get(curRefIdx);
+                            Reference curRef = curRefs.get(curRefIdx);
 
                             if ((caseMatters && refs[refIdx].equals(curRef))
                                     || (!caseMatters && refs[refIdx].equalsIgnoreCase(curRef))) {
@@ -1125,26 +1083,32 @@ public abstract class SqlBuilder {
         return (caseMatters && string1.equals(string2))
                 || (!caseMatters && string1.equalsIgnoreCase(string2));
     }
+    
+    /**
+     * Outputs the DDL to create the table along with any non-external
+     * constraints as well as with external primary keys and indices (but not
+     * foreign keys).
+     */
+    public String createTable(Database database, Table table) {
+        StringBuilder ddl = new StringBuilder();
+        createTable(database, table, ddl);
+        return ddl.toString();
+    }
 
     /**
      * Outputs the DDL to create the table along with any non-external
      * constraints as well as with external primary keys and indices (but not
      * foreign keys).
-     * 
-     * @param database
-     *            The database model
-     * @param table
-     *            The table
      */
-    public void createTable(Database database, Table table) {
-        writeTableCreationStmt(database, table);
-        writeTableCreationStmtEnding(table);
+    public void createTable(Database database, Table table, StringBuilder ddl) {
+        writeTableCreationStmt(database, table, ddl);
+        writeTableCreationStmtEnding(table, ddl);
 
         if (!platform.getPlatformInfo().isPrimaryKeyEmbedded()) {
-            writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumns());
+            writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumns(), ddl);
         }
         if (!platform.getPlatformInfo().isIndicesEmbedded()) {
-            writeExternalIndicesCreateStmt(table);
+            writeExternalIndicesCreateStmt(table, ddl);
         }
     }
 
@@ -1155,41 +1119,39 @@ public abstract class SqlBuilder {
      * @param database
      *            The database
      */
-    public void createExternalForeignKeys(Database database) {
+    public void createExternalForeignKeys(Database database, StringBuilder ddl) {
         for (int idx = 0; idx < database.getTableCount(); idx++) {
-            createExternalForeignKeys(database, database.getTable(idx));
+            createExternalForeignKeys(database, database.getTable(idx), ddl);
         }
     }
 
     /**
-     * Creates external foreignkey creation statements if necessary.
-     * 
-     * @param database
-     *            The database model
-     * @param table
-     *            The table
+     * Creates external foreign key creation statements if necessary.
      */
-    public void createExternalForeignKeys(Database database, Table table) {
+    public void createExternalForeignKeys(Database database, Table table, StringBuilder ddl) {
         if (!platform.getPlatformInfo().isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
-                writeExternalForeignKeyCreateStmt(database, table, table.getForeignKey(idx));
+                writeExternalForeignKeyCreateStmt(database, table, table.getForeignKey(idx), ddl);
             }
         }
+    }
+    
+    public String dropTables(Database database) {
+        StringBuilder ddl = new StringBuilder();
+        dropTables(database, ddl);
+        return ddl.toString();        
     }
 
     /**
      * Outputs the DDL required to drop the database.
-     * 
-     * @param database
-     *            The database
      */
-    public void dropTables(Database database) {
+    public void dropTables(Database database, StringBuilder ddl) {
         // we're dropping the external foreignkeys first
         for (int idx = database.getTableCount() - 1; idx >= 0; idx--) {
             Table table = database.getTable(idx);
 
             if ((table.getName() != null) && (table.getName().length() > 0)) {
-                dropExternalForeignKeys(table);
+                dropExternalForeignKeys(table, ddl);
             }
         }
 
@@ -1203,8 +1165,8 @@ public abstract class SqlBuilder {
             Table table = database.getTable(idx);
 
             if ((table.getName() != null) && (table.getName().length() > 0)) {
-                writeTableComment(table);
-                dropTable(table);
+                writeTableComment(table, ddl);
+                dropTable(table, ddl);
             }
         }
     }
@@ -1212,13 +1174,8 @@ public abstract class SqlBuilder {
     /**
      * Outputs the DDL required to drop the given table. This method also drops
      * foreign keys to the table.
-     * 
-     * @param database
-     *            The database
-     * @param table
-     *            The table
      */
-    public void dropTable(Database database, Table table) {
+    public void dropTable(Database database, Table table, StringBuilder ddl) {
         // we're dropping the foreignkeys to the table first
         for (int idx = database.getTableCount() - 1; idx >= 0; idx--) {
             Table otherTable = database.getTable(idx);
@@ -1226,29 +1183,26 @@ public abstract class SqlBuilder {
 
             for (int fkIdx = 0; (fks != null) && (fkIdx < fks.length); fkIdx++) {
                 if (fks[fkIdx].getForeignTable().equals(table)) {
-                    writeExternalForeignKeyDropStmt(otherTable, fks[fkIdx]);
+                    writeExternalForeignKeyDropStmt(otherTable, fks[fkIdx], ddl);
                 }
             }
         }
         // and the foreign keys from the table
-        dropExternalForeignKeys(table);
+        dropExternalForeignKeys(table, ddl);
 
-        writeTableComment(table);
-        dropTable(table);
+        writeTableComment(table, ddl);
+        dropTable(table, ddl);
     }
 
     /**
      * Outputs the DDL to drop the table. Note that this method does not drop
      * foreign keys to this table. Use {@link #dropTable(Database, Table)} if
      * you want that.
-     * 
-     * @param table
-     *            The table to drop
      */
-    public void dropTable(Table table) {
-        print("DROP TABLE ");
-        printIdentifier(getTableName(table));
-        printEndOfStatement();
+    public void dropTable(Table table, StringBuilder ddl) {
+        ddl.append("DROP TABLE ");
+        printIdentifier(getTableName(table), ddl);
+        printEndOfStatement(ddl);
     }
 
     /**
@@ -1257,10 +1211,10 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    public void dropExternalForeignKeys(Table table) {
+    public void dropExternalForeignKeys(Table table, StringBuilder ddl) {
         if (!platform.getPlatformInfo().isForeignKeysEmbedded()) {
             for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
-                writeExternalForeignKeyDropStmt(table, table.getForeignKey(idx));
+                writeExternalForeignKeyDropStmt(table, table.getForeignKey(idx), ddl);
             }
         }
     }
@@ -1279,7 +1233,8 @@ public abstract class SqlBuilder {
      *            statement
      * @return The insertion sql
      */
-    public String getInsertSql(Table table, Map columnValues, boolean genPlaceholders) {
+    public String getInsertSql(Table table, Map<String, Object> columnValues,
+            boolean genPlaceholders) {
         StringBuffer buffer = new StringBuffer("INSERT INTO ");
         boolean addComma = false;
 
@@ -1342,7 +1297,8 @@ public abstract class SqlBuilder {
      *            statement (both for the pk values and the object values)
      * @return The update sql
      */
-    public String getUpdateSql(Table table, Map columnValues, boolean genPlaceholders) {
+    public String getUpdateSql(Table table, Map<String, Object> columnValues,
+            boolean genPlaceholders) {
         StringBuffer buffer = new StringBuffer("UPDATE ");
         boolean addSep = false;
 
@@ -1403,15 +1359,16 @@ public abstract class SqlBuilder {
      *            statement
      * @return The delete sql
      */
-    public String getDeleteSql(Table table, Map pkValues, boolean genPlaceholders) {
+    public String getDeleteSql(Table table, Map<String, Object> pkValues, boolean genPlaceholders) {
         StringBuffer buffer = new StringBuffer("DELETE FROM ");
         boolean addSep = false;
 
         buffer.append(getDelimitedIdentifier(getTableName(table)));
         if ((pkValues != null) && !pkValues.isEmpty()) {
             buffer.append(" WHERE ");
-            for (Iterator it = pkValues.entrySet().iterator(); it.hasNext();) {
-                Map.Entry entry = (Map.Entry) it.next();
+            for (Iterator<Map.Entry<String, Object>> it = pkValues.entrySet().iterator(); it
+                    .hasNext();) {
+                Map.Entry<String, Object> entry = it.next();
                 Column column = table.findColumn((String) entry.getKey());
 
                 if (addSep) {
@@ -1526,18 +1483,13 @@ public abstract class SqlBuilder {
         return null;
     }
 
-    public void writeFixLastIdentityValues(Table table) {
+    public void writeFixLastIdentityValues(Table table, StringBuilder ddl) {
         String sql = fixLastIdentityValues(table);
         if (sql != null) {
-            print(sql);
-            printEndOfStatement();
+            ddl.append(sql);
+            printEndOfStatement(ddl);
         }
     }
-
-    //
-    // implementation methods that may be overridden by specific database
-    // builders
-    //
 
     /**
      * Generates a version of the name that has at most the specified length.
@@ -1592,11 +1544,11 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeTableComment(Table table) {
-        printComment("-----------------------------------------------------------------------");
-        printComment(getTableName(table));
-        printComment("-----------------------------------------------------------------------");
-        println();
+    protected void writeTableComment(Table table, StringBuilder ddl) {
+        printComment("-----------------------------------------------------------------------", ddl);
+        printComment(getTableName(table), ddl);
+        printComment("-----------------------------------------------------------------------", ddl);
+        println(ddl);
     }
 
     /**
@@ -1606,40 +1558,33 @@ public abstract class SqlBuilder {
      * @param table
      *            The table being altered
      */
-    protected void writeTableAlterStmt(Table table) {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(table));
-        printIndent();
+    protected void writeTableAlterStmt(Table table, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(table), ddl);
+        printIndent(ddl);
     }
 
     /**
      * Writes the table creation statement without the statement end.
-     * 
-     * @param database
-     *            The model
-     * @param table
-     *            The table
-     * @param parameters
-     *            Additional platform-specific parameters for the table creation
      */
-    protected void writeTableCreationStmt(Database database, Table table) {
-        print("CREATE TABLE ");
-        printlnIdentifier(getTableName(table));
-        println("(");
+    protected void writeTableCreationStmt(Database database, Table table, StringBuilder ddl) {
+        ddl.append("CREATE TABLE ");
+        printlnIdentifier(getTableName(table), ddl);
+        println("(", ddl);
 
-        writeColumns(table);
+        writeColumns(table, ddl);
 
         if (platform.getPlatformInfo().isPrimaryKeyEmbedded()) {
-            writeEmbeddedPrimaryKeysStmt(table);
+            writeEmbeddedPrimaryKeysStmt(table, ddl);
         }
         if (platform.getPlatformInfo().isForeignKeysEmbedded()) {
-            writeEmbeddedForeignKeysStmt(database, table);
+            writeEmbeddedForeignKeysStmt(database, table, ddl);
         }
         if (platform.getPlatformInfo().isIndicesEmbedded()) {
-            writeEmbeddedIndicesStmt(table);
+            writeEmbeddedIndicesStmt(table, ddl);
         }
-        println();
-        print(")");
+        println(ddl);
+        ddl.append(")");
     }
 
     /**
@@ -1649,22 +1594,19 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeTableCreationStmtEnding(Table table) {
-        printEndOfStatement();
+    protected void writeTableCreationStmtEnding(Table table, StringBuilder ddl) {
+        printEndOfStatement(ddl);
     }
 
     /**
      * Writes the columns of the given table.
-     * 
-     * @param table
-     *            The table
      */
-    protected void writeColumns(Table table) {
+    protected void writeColumns(Table table, StringBuilder ddl) {
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
-            printIndent();
-            writeColumn(table, table.getColumn(idx));
+            printIndent(ddl);
+            writeColumn(table, table.getColumn(idx), ddl);
             if (idx < table.getColumnCount() - 1) {
-                println(",");
+                println(",", ddl);
             }
         }
     }
@@ -1683,25 +1625,20 @@ public abstract class SqlBuilder {
 
     /**
      * Outputs the DDL for the specified column.
-     * 
-     * @param table
-     *            The table containing the column
-     * @param column
-     *            The column
      */
-    protected void writeColumn(Table table, Column column) {
+    protected void writeColumn(Table table, Column column, StringBuilder ddl) {
         // see comments in columnsDiffer about null/"" defaults
-        printIdentifier(getColumnName(column));
-        print(" ");
-        print(getSqlType(column));
-        writeColumnDefaultValueStmt(table, column);
+        printIdentifier(getColumnName(column), ddl);
+        ddl.append(" ");
+        ddl.append(getSqlType(column));
+        writeColumnDefaultValueStmt(table, column, ddl);
         if (column.isRequired()) {
-            print(" ");
-            writeColumnNotNullableStmt();
+            ddl.append(" ");
+            writeColumnNotNullableStmt(ddl);
         } else if (platform.getPlatformInfo().isNullAsDefaultValueRequired()
                 && platform.getPlatformInfo().hasNullDefault(column.getTypeCode())) {
-            print(" ");
-            writeColumnNullableStmt();
+            ddl.append(" ");
+            writeColumnNullableStmt(ddl);
         }
         if (column.isAutoIncrement()
                 && !platform.getPlatformInfo().isDefaultValueUsedForIdentitySpec()) {
@@ -1714,8 +1651,8 @@ public abstract class SqlBuilder {
                                 + table.getName()
                                 + " is auto-incrementing but not a primary key column, which is not supported by the platform");
             }
-            print(" ");
-            writeColumnAutoIncrementStmt(table, column);
+            ddl.append(" ");
+            writeColumnAutoIncrementStmt(table, column, ddl);
         }
     }
 
@@ -1808,11 +1745,11 @@ public abstract class SqlBuilder {
     protected String escapeStringValue(String value) {
         String result = value;
 
-        for (Iterator it = charSequencesToEscape.entrySet().iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry) it.next();
+        for (Iterator<Map.Entry<String, String>> it = charSequencesToEscape.entrySet().iterator(); it
+                .hasNext();) {
+            Map.Entry<String, String> entry = (Map.Entry<String, String>) it.next();
 
-            result = StringUtils
-                    .replace(result, (String) entry.getKey(), (String) entry.getValue());
+            result = StringUtils.replace(result, entry.getKey(), entry.getValue());
         }
         return result;
     }
@@ -1837,13 +1774,8 @@ public abstract class SqlBuilder {
 
     /**
      * Prints the default value stmt part for the column.
-     * 
-     * @param table
-     *            The table
-     * @param column
-     *            The column
      */
-    protected void writeColumnDefaultValueStmt(Table table, Column column) {
+    protected void writeColumnDefaultValueStmt(Table table, Column column, StringBuilder ddl) {
         Object parsedDefault = column.getParsedDefaultValue();
 
         if (parsedDefault != null) {
@@ -1855,75 +1787,60 @@ public abstract class SqlBuilder {
             // we write empty default value strings only if the type is not a
             // numeric or date/time type
             if (isValidDefaultValue(column.getDefaultValue(), column.getTypeCode())) {
-                print(" DEFAULT ");
-                writeColumnDefaultValue(table, column);
+                ddl.append(" DEFAULT ");
+                writeColumnDefaultValue(table, column, ddl);
             }
         } else if (platform.getPlatformInfo().isDefaultValueUsedForIdentitySpec()
                 && column.isAutoIncrement()) {
-            print(" DEFAULT ");
-            writeColumnDefaultValue(table, column);
+            ddl.append(" DEFAULT ");
+            writeColumnDefaultValue(table, column, ddl);
         }
     }
 
     /**
      * Prints the default value of the column.
-     * 
-     * @param table
-     *            The table
-     * @param column
-     *            The column
      */
-    protected void writeColumnDefaultValue(Table table, Column column) {
-        printDefaultValue(getNativeDefaultValue(column), column.getTypeCode());
+    protected void writeColumnDefaultValue(Table table, Column column, StringBuilder ddl) {
+        printDefaultValue(getNativeDefaultValue(column), column.getTypeCode(), ddl);
     }
 
     /**
      * Prints the default value of the column.
-     * 
-     * @param defaultValue
-     *            The default value
-     * @param typeCode
-     *            The type code to write the default value for
      */
-    protected void printDefaultValue(Object defaultValue, int typeCode) {
+    protected void printDefaultValue(Object defaultValue, int typeCode, StringBuilder ddl) {
         if (defaultValue != null) {
             boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode);
 
             if (shouldUseQuotes) {
                 // characters are only escaped when within a string literal
-                print(platform.getPlatformInfo().getValueQuoteToken());
-                print(escapeStringValue(defaultValue.toString()));
-                print(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
+                ddl.append(escapeStringValue(defaultValue.toString()));
+                ddl.append(platform.getPlatformInfo().getValueQuoteToken());
             } else {
-                print(defaultValue.toString());
+                ddl.append(defaultValue.toString());
             }
         }
     }
 
     /**
      * Prints that the column is an auto increment column.
-     * 
-     * @param table
-     *            The table
-     * @param column
-     *            The column
      */
-    protected void writeColumnAutoIncrementStmt(Table table, Column column) {
-        print("IDENTITY");
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
+        ddl.append("IDENTITY");
     }
 
     /**
      * Prints that a column is nullable.
      */
-    protected void writeColumnNullableStmt() {
-        print("NULL");
+    protected void writeColumnNullableStmt(StringBuilder ddl) {
+        ddl.append("NULL");
     }
 
     /**
      * Prints that a column is not nullable.
      */
-    protected void writeColumnNotNullableStmt() {
-        print("NOT NULL");
+    protected void writeColumnNotNullableStmt(StringBuilder ddl) {
+        ddl.append("NOT NULL");
     }
 
     /**
@@ -2057,12 +1974,12 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeEmbeddedPrimaryKeysStmt(Table table) {
+    protected void writeEmbeddedPrimaryKeysStmt(Table table, StringBuilder ddl) {
         Column[] primaryKeyColumns = table.getPrimaryKeyColumns();
 
         if ((primaryKeyColumns.length > 0) && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
-            printStartOfEmbeddedStatement();
-            writePrimaryKeyStmt(table, primaryKeyColumns);
+            printStartOfEmbeddedStatement(ddl);
+            writePrimaryKeyStmt(table, primaryKeyColumns, ddl);
         }
     }
 
@@ -2075,16 +1992,17 @@ public abstract class SqlBuilder {
      * @param primaryKeyColumns
      *            The primary key columns
      */
-    protected void writeExternalPrimaryKeysCreateStmt(Table table, Column[] primaryKeyColumns) {
+    protected void writeExternalPrimaryKeysCreateStmt(Table table, Column[] primaryKeyColumns,
+            StringBuilder ddl) {
         if ((primaryKeyColumns.length > 0) && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
-            print("ALTER TABLE ");
-            printlnIdentifier(getTableName(table));
-            printIndent();
-            print("ADD CONSTRAINT ");
-            printIdentifier(getConstraintName(null, table, "PK", null));
-            print(" ");
-            writePrimaryKeyStmt(table, primaryKeyColumns);
-            printEndOfStatement();
+            ddl.append("ALTER TABLE ");
+            printlnIdentifier(getTableName(table), ddl);
+            printIndent(ddl);
+            ddl.append("ADD CONSTRAINT ");
+            printIdentifier(getConstraintName(null, table, "PK", null), ddl);
+            ddl.append(" ");
+            writePrimaryKeyStmt(table, primaryKeyColumns, ddl);
+            printEndOfStatement(ddl);
         }
     }
 
@@ -2109,15 +2027,15 @@ public abstract class SqlBuilder {
      * @param primaryKeyColumns
      *            The primary columns
      */
-    protected void writePrimaryKeyStmt(Table table, Column[] primaryKeyColumns) {
-        print("PRIMARY KEY (");
+    protected void writePrimaryKeyStmt(Table table, Column[] primaryKeyColumns, StringBuilder ddl) {
+        ddl.append("PRIMARY KEY (");
         for (int idx = 0; idx < primaryKeyColumns.length; idx++) {
-            printIdentifier(getColumnName(primaryKeyColumns[idx]));
+            printIdentifier(getColumnName(primaryKeyColumns[idx]), ddl);
             if (idx < primaryKeyColumns.length - 1) {
-                print(", ");
+                ddl.append(", ");
             }
         }
-        print(")");
+        ddl.append(")");
     }
 
     /**
@@ -2138,54 +2056,46 @@ public abstract class SqlBuilder {
      * @param table
      *            The table
      */
-    protected void writeExternalIndicesCreateStmt(Table table) {
+    protected void writeExternalIndicesCreateStmt(Table table, StringBuilder ddl) {
         for (int idx = 0; idx < table.getIndexCount(); idx++) {
             Index index = table.getIndex(idx);
 
             if (!index.isUnique() && !platform.getPlatformInfo().isIndicesSupported()) {
                 throw new ModelException("Platform does not support non-unique indices");
             }
-            writeExternalIndexCreateStmt(table, index);
+            writeExternalIndexCreateStmt(table, index, ddl);
         }
     }
 
     /**
      * Writes the indexes embedded within the create table statement.
-     * 
-     * @param table
-     *            The table
      */
-    protected void writeEmbeddedIndicesStmt(Table table) {
+    protected void writeEmbeddedIndicesStmt(Table table, StringBuilder ddl) {
         if (platform.getPlatformInfo().isIndicesSupported()) {
             for (int idx = 0; idx < table.getIndexCount(); idx++) {
-                printStartOfEmbeddedStatement();
-                writeEmbeddedIndexCreateStmt(table, table.getIndex(idx));
+                printStartOfEmbeddedStatement(ddl);
+                writeEmbeddedIndexCreateStmt(table, table.getIndex(idx), ddl);
             }
         }
     }
 
     /**
      * Writes the given index of the table.
-     * 
-     * @param table
-     *            The table
-     * @param index
-     *            The index
      */
-    protected void writeExternalIndexCreateStmt(Table table, Index index) {
+    protected void writeExternalIndexCreateStmt(Table table, Index index, StringBuilder ddl) {
         if (platform.getPlatformInfo().isIndicesSupported()) {
             if (index.getName() == null) {
                 log.warn("Cannot write unnamed index " + index);
             } else {
-                print("CREATE");
+                ddl.append("CREATE");
                 if (index.isUnique()) {
-                    print(" UNIQUE");
+                    ddl.append(" UNIQUE");
                 }
-                print(" INDEX ");
-                printIdentifier(getIndexName(index));
-                print(" ON ");
-                printIdentifier(getTableName(table));
-                print(" (");
+                ddl.append(" INDEX ");
+                printIdentifier(getIndexName(index), ddl);
+                ddl.append(" ON ");
+                printIdentifier(getTableName(table), ddl);
+                ddl.append(" (");
 
                 for (int idx = 0; idx < index.getColumnCount(); idx++) {
                     IndexColumn idxColumn = index.getColumn(idx);
@@ -2198,36 +2108,31 @@ public abstract class SqlBuilder {
                                 + "' on index " + index.getName() + " for table " + table.getName());
                     }
                     if (idx > 0) {
-                        print(", ");
+                        ddl.append(", ");
                     }
-                    printIdentifier(getColumnName(col));
+                    printIdentifier(getColumnName(col), ddl);
                 }
 
-                print(")");
-                printEndOfStatement();
+                ddl.append(")");
+                printEndOfStatement(ddl);
             }
         }
     }
 
     /**
      * Writes the given embedded index of the table.
-     * 
-     * @param table
-     *            The table
-     * @param index
-     *            The index
      */
-    protected void writeEmbeddedIndexCreateStmt(Table table, Index index) {
+    protected void writeEmbeddedIndexCreateStmt(Table table, Index index, StringBuilder ddl) {
         if ((index.getName() != null) && (index.getName().length() > 0)) {
-            print(" CONSTRAINT ");
-            printIdentifier(getIndexName(index));
+            ddl.append(" CONSTRAINT ");
+            printIdentifier(getIndexName(index), ddl);
         }
         if (index.isUnique()) {
-            print(" UNIQUE");
+            ddl.append(" UNIQUE");
         } else {
-            print(" INDEX ");
+            ddl.append(" INDEX ");
         }
-        print(" (");
+        ddl.append(" (");
 
         for (int idx = 0; idx < index.getColumnCount(); idx++) {
             IndexColumn idxColumn = index.getColumn(idx);
@@ -2240,63 +2145,53 @@ public abstract class SqlBuilder {
                         + index.getName() + " for table " + table.getName());
             }
             if (idx > 0) {
-                print(", ");
+                ddl.append(", ");
             }
-            printIdentifier(getColumnName(col));
+            printIdentifier(getColumnName(col), ddl);
         }
 
-        print(")");
+        ddl.append(")");
     }
 
     /**
      * Generates the statement to drop a non-embedded index from the database.
-     * 
-     * @param table
-     *            The table the index is on
-     * @param index
-     *            The index to drop
      */
-    public void writeExternalIndexDropStmt(Table table, Index index) {
+    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl) {
         if (platform.getPlatformInfo().isAlterTableForDropUsed()) {
-            writeTableAlterStmt(table);
+            writeTableAlterStmt(table, ddl);
         }
-        print("DROP INDEX ");
-        printIdentifier(getIndexName(index));
+        ddl.append("DROP INDEX ");
+        printIdentifier(getIndexName(index), ddl);
         if (!platform.getPlatformInfo().isAlterTableForDropUsed()) {
-            print(" ON ");
-            printIdentifier(getTableName(table));
+            ddl.append(" ON ");
+            printIdentifier(getTableName(table), ddl);
         }
-        printEndOfStatement();
+        printEndOfStatement(ddl);
     }
 
     /**
      * Writes the foreign key constraints inside a create table () clause.
-     * 
-     * @param database
-     *            The database model
-     * @param table
-     *            The table
      */
-    protected void writeEmbeddedForeignKeysStmt(Database database, Table table) {
+    protected void writeEmbeddedForeignKeysStmt(Database database, Table table, StringBuilder ddl) {
         for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
             ForeignKey key = table.getForeignKey(idx);
 
             if (key.getForeignTableName() == null) {
                 log.warn("Foreign key table is null for key " + key);
             } else {
-                printStartOfEmbeddedStatement();
+                printStartOfEmbeddedStatement(ddl);
                 if (platform.getPlatformInfo().isEmbeddedForeignKeysNamed()) {
-                    print("CONSTRAINT ");
-                    printIdentifier(getForeignKeyName(table, key));
-                    print(" ");
+                    ddl.append("CONSTRAINT ");
+                    printIdentifier(getForeignKeyName(table, key), ddl);
+                    ddl.append(" ");
                 }
-                print("FOREIGN KEY (");
-                writeLocalReferences(key);
-                print(") REFERENCES ");
-                printIdentifier(getTableName(database.findTable(key.getForeignTableName())));
-                print(" (");
-                writeForeignReferences(key);
-                print(")");
+                ddl.append("FOREIGN KEY (");
+                writeLocalReferences(key, ddl);
+                ddl.append(") REFERENCES ");
+                printIdentifier(getTableName(database.findTable(key.getForeignTableName())), ddl);
+                ddl.append(" (");
+                writeForeignReferences(key, ddl);
+                ddl.append(")");
             }
         }
     }
@@ -2311,22 +2206,22 @@ public abstract class SqlBuilder {
      * @param key
      *            The foreign key
      */
-    protected void writeExternalForeignKeyCreateStmt(Database database, Table table, ForeignKey key) {
+    protected void writeExternalForeignKeyCreateStmt(Database database, Table table,
+            ForeignKey key, StringBuilder ddl) {
         if (key.getForeignTableName() == null) {
             log.warn("Foreign key table is null for key " + key);
         } else {
-            writeTableAlterStmt(table);
-
-            print("ADD CONSTRAINT ");
-            printIdentifier(getForeignKeyName(table, key));
-            print(" FOREIGN KEY (");
-            writeLocalReferences(key);
-            print(") REFERENCES ");
-            printIdentifier(getTableName(database.findTable(key.getForeignTableName())));
-            print(" (");
-            writeForeignReferences(key);
-            print(")");
-            printEndOfStatement();
+            writeTableAlterStmt(table, ddl);
+            ddl.append("ADD CONSTRAINT ");
+            printIdentifier(getForeignKeyName(table, key), ddl);
+            ddl.append(" FOREIGN KEY (");
+            writeLocalReferences(key, ddl);
+            ddl.append(") REFERENCES ");
+            printIdentifier(getTableName(database.findTable(key.getForeignTableName())), ddl);
+            ddl.append(" (");
+            writeForeignReferences(key, ddl);
+            ddl.append(")");
+            printEndOfStatement(ddl);
         }
     }
 
@@ -2336,12 +2231,12 @@ public abstract class SqlBuilder {
      * @param key
      *            The foreign key
      */
-    protected void writeLocalReferences(ForeignKey key) {
+    protected void writeLocalReferences(ForeignKey key, StringBuilder ddl) {
         for (int idx = 0; idx < key.getReferenceCount(); idx++) {
             if (idx > 0) {
-                print(", ");
+                ddl.append(", ");
             }
-            printIdentifier(key.getReference(idx).getLocalColumnName());
+            printIdentifier(key.getReference(idx).getLocalColumnName(), ddl);
         }
     }
 
@@ -2351,12 +2246,12 @@ public abstract class SqlBuilder {
      * @param key
      *            The foreign key
      */
-    protected void writeForeignReferences(ForeignKey key) {
+    protected void writeForeignReferences(ForeignKey key, StringBuilder ddl) {
         for (int idx = 0; idx < key.getReferenceCount(); idx++) {
             if (idx > 0) {
-                print(", ");
+                ddl.append(", ");
             }
-            printIdentifier(key.getReference(idx).getForeignColumnName());
+            printIdentifier(key.getReference(idx).getForeignColumnName(), ddl);
         }
     }
 
@@ -2369,11 +2264,12 @@ public abstract class SqlBuilder {
      * @param foreignKey
      *            The foreign key
      */
-    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey) {
-        writeTableAlterStmt(table);
-        print("DROP CONSTRAINT ");
-        printIdentifier(getForeignKeyName(table, foreignKey));
-        printEndOfStatement();
+    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
+            StringBuilder ddl) {
+        writeTableAlterStmt(table, ddl);
+        ddl.append("DROP CONSTRAINT ");
+        printIdentifier(getForeignKeyName(table, foreignKey), ddl);
+        printEndOfStatement(ddl);
     }
 
     //
@@ -2386,58 +2282,39 @@ public abstract class SqlBuilder {
      * @param text
      *            The comment text
      */
-    protected void printComment(String text) {
+    protected void printComment(String text, StringBuilder ddl) {
         if (platform.isSqlCommentsOn()) {
-            print(platform.getPlatformInfo().getCommentPrefix());
+            ddl.append(platform.getPlatformInfo().getCommentPrefix());
             // Some databases insist on a space after the prefix
-            print(" ");
-            print(text);
-            print(" ");
-            print(platform.getPlatformInfo().getCommentSuffix());
-            println();
+            ddl.append(" ");
+            ddl.append(text);
+            ddl.append(" ");
+            ddl.append(platform.getPlatformInfo().getCommentSuffix());
+            println(ddl);
         }
     }
 
     /**
      * Prints the start of an embedded statement.
      */
-    protected void printStartOfEmbeddedStatement() {
-        println(",");
-        printIndent();
+    protected void printStartOfEmbeddedStatement(StringBuilder ddl) {
+        println(",", ddl);
+        printIndent(ddl);
     }
 
     /**
      * Prints the end of statement text, which is typically a semi colon
      * followed by a carriage return.
      */
-    protected void printEndOfStatement() {
-        // TODO: It might make sense to use a special writer which stores the
-        // individual
-        // statements separately (the end of a statement is identified by this
-        // method)
-        println(platform.getPlatformInfo().getSqlCommandDelimiter());
-        println();
+    protected void printEndOfStatement(StringBuilder ddl) {
+        println(platform.getPlatformInfo().getSqlCommandDelimiter(), ddl);
     }
 
     /**
      * Prints a newline.
      */
-    protected void println() {
-        print(LINE_SEPARATOR);
-    }
-
-    /**
-     * Prints some text.
-     * 
-     * @param text
-     *            The text to print
-     */
-    protected void print(String text) {
-        try {
-            writer.write(text);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+    protected void println(StringBuilder ddl) {
+        ddl.append(LINE_SEPARATOR);
     }
 
     /**
@@ -2465,8 +2342,8 @@ public abstract class SqlBuilder {
      * @param identifier
      *            The identifier
      */
-    protected void printIdentifier(String identifier) {
-        print(getDelimitedIdentifier(identifier));
+    protected void printIdentifier(String identifier, StringBuilder ddl) {
+        ddl.append(getDelimitedIdentifier(identifier));
     }
 
     /**
@@ -2476,8 +2353,8 @@ public abstract class SqlBuilder {
      * @param identifier
      *            The identifier
      */
-    protected void printlnIdentifier(String identifier) {
-        println(getDelimitedIdentifier(identifier));
+    protected void printlnIdentifier(String identifier, StringBuilder ddl) {
+        println(getDelimitedIdentifier(identifier), ddl);
     }
 
     /**
@@ -2486,16 +2363,16 @@ public abstract class SqlBuilder {
      * @param text
      *            The text to print
      */
-    protected void println(String text) {
-        print(text);
-        println();
+    protected void println(String text, StringBuilder ddl) {
+        ddl.append(text);
+        println(ddl);
     }
 
     /**
      * Prints the characters used to indent SQL.
      */
-    protected void printIndent() {
-        print(getIndent());
+    protected void printIndent(StringBuilder ddl) {
+        ddl.append(getIndent());
     }
 
     /**

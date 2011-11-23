@@ -19,11 +19,9 @@ package org.jumpmind.db.platform.derby;
  * under the License.
  */
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
 
 /*
  * The platform implementation for Derby.
@@ -74,11 +72,9 @@ public class DerbyPlatform extends AbstractDatabasePlatform {
         info.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
         info.setStoresUpperCaseInCatalog(true);
         modelReader = new DerbyModelReader(this);
+        ddlBuilder = new DerbyBuilder(log, this);
     }
-    
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new DerbyBuilder(log, this, writer);
-    }
+
 
     public String getName() {
         return DATABASENAME;

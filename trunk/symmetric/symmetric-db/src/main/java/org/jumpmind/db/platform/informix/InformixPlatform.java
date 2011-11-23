@@ -1,11 +1,9 @@
 package org.jumpmind.db.platform.informix;
 
-import java.io.Writer;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
 import org.jumpmind.db.IDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
 
 public class InformixPlatform extends AbstractDatabasePlatform implements IDatabasePlatform {
 
@@ -36,10 +34,7 @@ public class InformixPlatform extends AbstractDatabasePlatform implements IDatab
         info.setSystemIndicesReturned(true);
 
         modelReader = new InformixModelReader(this);
-    }
-
-    public SqlBuilder createSqlBuilder(Writer writer) {
-        return new InformixBuilder(log, this, writer);
+        ddlBuilder = new InformixBuilder(log, this);
     }
 
     public String getName() {

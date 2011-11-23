@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.mysql;
  * under the License.
  */
 
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -45,8 +44,8 @@ import org.jumpmind.util.Log;
  */
 public class MySqlBuilder extends SqlBuilder {
 
-    public MySqlBuilder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
+    public MySqlBuilder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
 
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
@@ -64,15 +63,15 @@ public class MySqlBuilder extends SqlBuilder {
     }
 
     @Override
-    public void dropTable(Table table)  {
-        print("DROP TABLE IF EXISTS ");
-        printIdentifier(getTableName(table));
-        printEndOfStatement();
+    public void dropTable(Table table, StringBuilder ddl) {
+        ddl.append("DROP TABLE IF EXISTS ");
+        printIdentifier(getTableName(table), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
-    protected void writeColumnAutoIncrementStmt(Table table, Column column)  {
-        print("AUTO_INCREMENT");
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
+        ddl.append("AUTO_INCREMENT");
     }
 
     @Override
@@ -98,24 +97,24 @@ public class MySqlBuilder extends SqlBuilder {
     }
 
     @Override
-    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey)
-             {
-        writeTableAlterStmt(table);
-        print("DROP FOREIGN KEY ");
-        printIdentifier(getForeignKeyName(table, foreignKey));
-        printEndOfStatement();
+    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
+            StringBuilder ddl) {
+        writeTableAlterStmt(table, ddl);
+        ddl.append("DROP FOREIGN KEY ");
+        printIdentifier(getForeignKeyName(table, foreignKey), ddl);
+        printEndOfStatement(ddl);
 
         if (foreignKey.isAutoIndexPresent()) {
-            writeTableAlterStmt(table);
-            print("DROP INDEX ");
-            printIdentifier(getForeignKeyName(table, foreignKey));
-            printEndOfStatement();
+            writeTableAlterStmt(table, ddl);
+            ddl.append("DROP INDEX ");
+            printIdentifier(getForeignKeyName(table, foreignKey), ddl);
+            printEndOfStatement(ddl);
         }
     }
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes)  {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         // in order to utilize the ALTER TABLE ADD COLUMN AFTER statement
         // we have to apply the add column changes in the correct order
         // thus we first gather all add column changes and then execute them
@@ -132,7 +131,7 @@ public class MySqlBuilder extends SqlBuilder {
         for (Iterator<AddColumnChange> changeIt = addColumnChanges.iterator(); changeIt.hasNext();) {
             AddColumnChange addColumnChange = changeIt.next();
 
-            processChange(currentModel, desiredModel, addColumnChange);
+            processChange(currentModel, desiredModel, addColumnChange, ddl);
             changeIt.remove();
         }
 
@@ -145,16 +144,16 @@ public class MySqlBuilder extends SqlBuilder {
             TableChange change = changeIt.next();
 
             if (change instanceof RemoveColumnChange) {
-                processChange(currentModel, desiredModel, (RemoveColumnChange) change);
+                processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof AddPrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof PrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (PrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (PrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof RemovePrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change);
+                processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnChange) {
                 // we gather all changed columns because we can use the ALTER
@@ -169,114 +168,82 @@ public class MySqlBuilder extends SqlBuilder {
             Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
                     platform.isDelimitedIdentifierModeOn());
 
-            processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn);
+            processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
         }
     }
 
     /*
      * Processes the addition of a column to a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("ADD COLUMN ");
-        writeColumn(change.getChangedTable(), change.getNewColumn());
+            AddColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ADD COLUMN ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         if (change.getPreviousColumn() != null) {
-            print(" AFTER ");
-            printIdentifier(getColumnName(change.getPreviousColumn()));
+            ddl.append(" AFTER ");
+            printIdentifier(getColumnName(change.getPreviousColumn()), ddl);
         } else {
-            print(" FIRST");
+            ddl.append(" FIRST");
         }
-        printEndOfStatement();
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a column from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP COLUMN ");
-        printIdentifier(getColumnName(change.getColumn()));
-        printEndOfStatement();
+            RemoveColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP COLUMN ");
+        printIdentifier(getColumnName(change.getColumn()), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a primary key from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemovePrimaryKeyChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP PRIMARY KEY");
-        printEndOfStatement();
+            RemovePrimaryKeyChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP PRIMARY KEY");
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the change of the primary key of a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            PrimaryKeyChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP PRIMARY KEY");
-        printEndOfStatement();
+            PrimaryKeyChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP PRIMARY KEY");
+        printEndOfStatement(ddl);
         writeExternalPrimaryKeysCreateStmt(change.getChangedTable(),
-                change.getNewPrimaryKeyColumns());
+                change.getNewPrimaryKeyColumns(), ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes a change to a column.
-     * 
-     * @param sourceTable The current table
-     * 
-     * @param targetTable The desired table
-     * 
-     * @param sourceColumn The current column
-     * 
-     * @param targetColumn The desired column
      */
     protected void processColumnChange(Table sourceTable, Table targetTable, Column sourceColumn,
-            Column targetColumn)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(sourceTable));
-        printIndent();
-        print("MODIFY COLUMN ");
-        writeColumn(targetTable, targetColumn);
-        printEndOfStatement();
+            Column targetColumn, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(sourceTable), ddl);
+        printIndent(ddl);
+        ddl.append("MODIFY COLUMN ");
+        writeColumn(targetTable, targetColumn, ddl);
+        printEndOfStatement(ddl);
     }
 }

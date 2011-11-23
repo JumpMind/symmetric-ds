@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.postgresql;
  * under the License.
  */
 
-import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
 
@@ -39,8 +38,8 @@ import org.jumpmind.util.Log;
  */
 public class PostgreSqlBuilder extends SqlBuilder {
     
-    public PostgreSqlBuilder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
+    public PostgreSqlBuilder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
 
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
@@ -54,36 +53,36 @@ public class PostgreSqlBuilder extends SqlBuilder {
     }
 
     @Override
-    public void dropTable(Table table)  {
-        print("DROP TABLE ");
-        printIdentifier(getTableName(table));
-        print(" CASCADE");
-        printEndOfStatement();
+    public void dropTable(Table table, StringBuilder ddl)  {
+        ddl.append("DROP TABLE ");
+        printIdentifier(getTableName(table), ddl);
+        ddl.append(" CASCADE");
+        printEndOfStatement(ddl);
 
         Column[] columns = table.getAutoIncrementColumns();
 
         for (int idx = 0; idx < columns.length; idx++) {
-            dropAutoIncrementSequence(table, columns[idx]);
+            dropAutoIncrementSequence(table, columns[idx], ddl);
         }
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index)  {
-        print("DROP INDEX ");
-        printIdentifier(getIndexName(index));
-        printEndOfStatement();
+    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl)  {
+        ddl.append("DROP INDEX ");
+        printIdentifier(getIndexName(index), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
-    public void createTable(Database database, Table table)  {
+    public void createTable(Database database, Table table, StringBuilder ddl)  {
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
             Column column = table.getColumn(idx);
 
             if (column.isAutoIncrement()) {
-                createAutoIncrementSequence(table, column);
+                createAutoIncrementSequence(table, column, ddl);
             }
         }
-        super.createTable(database, table);
+        super.createTable(database, table, ddl);
     }
 
     /*
@@ -93,10 +92,10 @@ public class PostgreSqlBuilder extends SqlBuilder {
      * 
      * @param column The column
      */
-    private void createAutoIncrementSequence(Table table, Column column)  {
-        print("CREATE SEQUENCE ");
-        printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
-        printEndOfStatement();
+    private void createAutoIncrementSequence(Table table, Column column, StringBuilder ddl)  {
+        ddl.append("CREATE SEQUENCE ");
+        printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
+        printEndOfStatement(ddl);
     }
 
     /*
@@ -106,17 +105,17 @@ public class PostgreSqlBuilder extends SqlBuilder {
      * 
      * @param column The column
      */
-    private void dropAutoIncrementSequence(Table table, Column column)  {
-        print("DROP SEQUENCE ");
-        printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
-        printEndOfStatement();
+    private void dropAutoIncrementSequence(Table table, Column column, StringBuilder ddl)  {
+        ddl.append("DROP SEQUENCE ");
+        printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
-    protected void writeColumnAutoIncrementStmt(Table table, Column column)  {
-        print(" DEFAULT nextval('");
-        printIdentifier(getConstraintName(null, table, column.getName(), "seq"));
-        print("')");
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl)  {
+        ddl.append(" DEFAULT nextval('");
+        printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
+        ddl.append("')");
     }
 
     @Override
@@ -145,7 +144,7 @@ public class PostgreSqlBuilder extends SqlBuilder {
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes)  {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl)  {
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
@@ -167,16 +166,16 @@ public class PostgreSqlBuilder extends SqlBuilder {
                 if (!addColumnChange.getNewColumn().isRequired()
                         && (addColumnChange.getNewColumn().getDefaultValue() == null)
                         && (addColumnChange.getNextColumn() == null)) {
-                    processChange(currentModel, desiredModel, addColumnChange);
+                    processChange(currentModel, desiredModel, addColumnChange, ddl);
                     changeIt.remove();
                 }
             } else if (change instanceof RemoveColumnChange) {
-                processChange(currentModel, desiredModel, (RemoveColumnChange) change);
+                processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             }
         }
         super.processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
-                changes);
+                changes, ddl);
     }
 
     /*
@@ -189,13 +188,13 @@ public class PostgreSqlBuilder extends SqlBuilder {
      * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("ADD COLUMN ");
-        writeColumn(change.getChangedTable(), change.getNewColumn());
-        printEndOfStatement();
+            AddColumnChange change, StringBuilder ddl)  {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ADD COLUMN ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -209,15 +208,15 @@ public class PostgreSqlBuilder extends SqlBuilder {
      * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP COLUMN ");
-        printIdentifier(getColumnName(change.getColumn()));
-        printEndOfStatement();
+            RemoveColumnChange change, StringBuilder ddl)  {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP COLUMN ");
+        printIdentifier(getColumnName(change.getColumn()), ddl);
+        printEndOfStatement(ddl);
         if (change.getColumn().isAutoIncrement()) {
-            dropAutoIncrementSequence(change.getChangedTable(), change.getColumn());
+            dropAutoIncrementSequence(change.getChangedTable(), change.getColumn(), ddl);
         }
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }

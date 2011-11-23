@@ -19,7 +19,6 @@ package org.jumpmind.db.platform.hsqldb;
  * under the License.
  */
 
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -39,17 +38,17 @@ import org.jumpmind.util.Log;
  */
 public class HsqlDbBuilder extends SqlBuilder {
 
-    public HsqlDbBuilder(Log log, IDatabasePlatform platform, Writer writer) {
-        super(log, platform, writer);
+    public HsqlDbBuilder(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         addEscapedCharSequence("'", "''");
     }
 
     @Override
-    public void dropTable(Table table)  {
-        print("DROP TABLE ");
-        printIdentifier(getTableName(table));
-        print(" IF EXISTS");
-        printEndOfStatement();
+    public void dropTable(Table table, StringBuilder ddl) {
+        ddl.append("DROP TABLE ");
+        printIdentifier(getTableName(table), ddl);
+        ddl.append(" IF EXISTS");
+        printEndOfStatement(ddl);
     }
 
     @Override
@@ -59,7 +58,7 @@ public class HsqlDbBuilder extends SqlBuilder {
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Table sourceTable, Table targetTable, List<TableChange> changes)  {
+            Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         // HsqlDb can only drop columns that are not part of a primary key
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
@@ -90,7 +89,7 @@ public class HsqlDbBuilder extends SqlBuilder {
                 .listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
             AddColumnChange addColumnChange = (AddColumnChange) changeIt.previous();
 
-            processChange(currentModel, desiredModel, addColumnChange);
+            processChange(currentModel, desiredModel, addColumnChange, ddl);
             changeIt.remove();
         }
 
@@ -100,7 +99,7 @@ public class HsqlDbBuilder extends SqlBuilder {
             if (change instanceof RemoveColumnChange) {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
 
-                processChange(currentModel, desiredModel, removeColumnChange);
+                processChange(currentModel, desiredModel, removeColumnChange, ddl);
                 changeIt.remove();
             }
         }
@@ -108,46 +107,34 @@ public class HsqlDbBuilder extends SqlBuilder {
 
     /*
      * Processes the addition of a column to a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            AddColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("ADD COLUMN ");
-        writeColumn(change.getChangedTable(), change.getNewColumn());
+            AddColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("ADD COLUMN ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         if (change.getNextColumn() != null) {
-            print(" BEFORE ");
-            printIdentifier(getColumnName(change.getNextColumn()));
+            ddl.append(" BEFORE ");
+            printIdentifier(getColumnName(change.getNextColumn()), ddl);
         }
-        printEndOfStatement();
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
     /*
      * Processes the removal of a column from a table.
-     * 
-     * @param currentModel The current database schema
-     * 
-     * @param desiredModel The desired database schema
-     * 
-     * @param change The change object
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            RemoveColumnChange change)  {
-        print("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()));
-        printIndent();
-        print("DROP COLUMN ");
-        printIdentifier(getColumnName(change.getColumn()));
-        printEndOfStatement();
+            RemoveColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printIndent(ddl);
+        ddl.append("DROP COLUMN ");
+        printIdentifier(getColumnName(change.getColumn()), ddl);
+        printEndOfStatement(ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
-    
+
 }
