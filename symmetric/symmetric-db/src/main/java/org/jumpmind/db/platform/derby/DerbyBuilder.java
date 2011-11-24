@@ -31,14 +31,14 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
 import org.jumpmind.util.Log;
 
 /*
  * The SQL Builder for Derby.
  */
-public class DerbyBuilder extends SqlBuilder {
+public class DerbyBuilder extends AbstractDdlBuilder {
 
     public DerbyBuilder(Log log, IDatabasePlatform platform) {
         super(log, platform);

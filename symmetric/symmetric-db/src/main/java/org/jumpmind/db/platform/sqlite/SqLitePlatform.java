@@ -23,7 +23,7 @@ import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
 import org.jumpmind.db.IDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
  * The platform implementation for the SQLite database.
@@ -66,7 +66,7 @@ public class SqLitePlatform extends AbstractDatabasePlatform implements IDatabas
         info.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
-        modelReader = new SqLiteModelReader(this);
+        ddlReader = new SqLiteDdlReader(log, this);
         ddlBuilder = new SqLiteBuilder(log, this); 
     }
 

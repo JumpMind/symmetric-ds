@@ -22,7 +22,7 @@ package org.jumpmind.db.platform.interbase;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
  * The platform implementation for the Interbase database.
@@ -85,7 +85,7 @@ public class InterbasePlatform extends AbstractDatabasePlatform {
 
         info.setStoresUpperCaseInCatalog(true);
 
-        modelReader = new InterbaseModelReader(this);
+        ddlReader = new InterbaseDdlReader(log, this);
         ddlBuilder = new InterbaseBuilder(log, this);
     }
 

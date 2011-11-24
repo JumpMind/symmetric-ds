@@ -22,7 +22,7 @@ package org.jumpmind.db.platform.mysql;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
  * The platform implementation for MySQL.
@@ -96,7 +96,7 @@ public class MySqlPlatform extends AbstractDatabasePlatform {
         // which is different from the MySql 4 behaviour
         info.setSyntheticDefaultValueForRequiredReturned(false);
 
-        modelReader = new MySqlModelReader(this);
+        ddlReader = new MySqlDdlReader(log, this);
         ddlBuilder = new MySqlBuilder(log, this);
     }
 

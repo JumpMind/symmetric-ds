@@ -72,4 +72,8 @@ public class DataGap implements Serializable {
         return startId <= gap.startId && endId >= gap.endId;
     }
     
+    public long gapSize() {
+    	return endId-startId;
+    }
+    
 }

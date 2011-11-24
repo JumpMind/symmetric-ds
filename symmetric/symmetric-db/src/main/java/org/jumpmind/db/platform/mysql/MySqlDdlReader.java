@@ -29,21 +29,17 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
+import org.jumpmind.util.Log;
 
 /*
  * Reads a database model from a MySql database.
  */
-public class MySqlModelReader extends JdbcModelReader {
-    
-    /*
-     * Creates a new model reader for MySql databases.
-     * 
-     * @param platform The platform that this model reader belongs to
-     */
-    public MySqlModelReader(IDatabasePlatform platform) {
-        super(platform);
+public class MySqlDdlReader extends AbstractJdbcDdlReader {
+
+    public MySqlDdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);

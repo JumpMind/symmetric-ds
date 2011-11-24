@@ -35,13 +35,13 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.util.Log;
 
 /*
  * The SQL Builder for the HsqlDb database.
  */
-public class HsqlDb2Builder extends SqlBuilder {
+public class HsqlDb2Builder extends AbstractDdlBuilder {
 
     public HsqlDb2Builder(Log log, IDatabasePlatform platform) {
         super(log, platform);

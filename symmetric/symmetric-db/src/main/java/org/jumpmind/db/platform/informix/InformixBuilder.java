@@ -7,10 +7,10 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.util.Log;
 
-public class InformixBuilder extends SqlBuilder {
+public class InformixBuilder extends AbstractDdlBuilder {
 
     public InformixBuilder(Log log, IDatabasePlatform platform) {
         super(log, platform);

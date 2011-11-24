@@ -28,7 +28,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.platform.JdbcModelReader;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.util.Log;
 import org.jumpmind.util.LogFactory;
@@ -48,7 +47,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected DatabasePlatformInfo info = new DatabasePlatformInfo();
 
     /* The model reader for this platform. */
-    protected JdbcModelReader modelReader;
+    protected IDdlReader ddlReader;
     
     protected IDdlBuilder ddlBuilder;
 
@@ -74,8 +73,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         this.log = log;
     }
 
-    public JdbcModelReader getModelReader() {
-        return modelReader;
+    public IDdlReader getDdlReader() {
+        return ddlReader;
     }
         
     public IDdlBuilder getDdlBuilder() {
@@ -142,8 +141,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public Database readDatabase(Connection connection, String catalog, String schema,
             String[] tableTypes) throws DatabaseOperationException {
         try {
-            JdbcModelReader reader = getModelReader();
-            Database model = reader.getDatabase(connection, catalog, schema, tableTypes);
+            Database model = ddlReader.getDatabase(connection, catalog, schema, tableTypes);
 
             postprocessModelFromDatabase(model);
             if ((model.getName() == null) || (model.getName().length() == 0)) {
@@ -157,7 +155,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public Table readTableFromDatabase(Connection connection, String catalogName,
             String schemaName, String tablename) throws SQLException {
-        return postprocessTableFromDatabase(modelReader.readTable(connection, catalogName,
+        return postprocessTableFromDatabase(ddlReader.readTable(connection, catalogName,
                 schemaName, tablename));
     }
 

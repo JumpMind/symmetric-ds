@@ -33,7 +33,7 @@ public class InformixPlatform extends AbstractDatabasePlatform implements IDatab
         info.setAlterTableForDropUsed(true);
         info.setSystemIndicesReturned(true);
 
-        modelReader = new InformixModelReader(this);
+        ddlReader = new InformixDdlReader(log, this);
         ddlBuilder = new InformixBuilder(log, this);
     }
 

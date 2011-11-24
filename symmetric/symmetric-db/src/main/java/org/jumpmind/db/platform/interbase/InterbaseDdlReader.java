@@ -38,20 +38,17 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
+import org.jumpmind.util.Log;
 
 /*
  * The Jdbc Model Reader for Interbase.
  */
-public class InterbaseModelReader extends JdbcModelReader {
-    /*
-     * Creates a new model reader for Interbase databases.
-     * 
-     * @param platform The platform that this model reader belongs to
-     */
-    public InterbaseModelReader(IDatabasePlatform platform) {
-        super(platform);
+public class InterbaseDdlReader extends AbstractJdbcDdlReader {
+
+    public InterbaseDdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
@@ -254,8 +251,8 @@ public class InterbaseModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData, String tableName)
-            throws SQLException {
+    protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData,
+            String tableName) throws SQLException {
         List<String> pks = new ArrayList<String>();
         ResultSet pkData = null;
 
@@ -266,7 +263,7 @@ public class InterbaseModelReader extends JdbcModelReader {
                 // So we have to filter manually below
                 pkData = metaData.getPrimaryKeys(getDefaultTablePattern());
                 while (pkData.next()) {
-                    Map<String,Object> values = readColumns(pkData, getColumnsForPK());
+                    Map<String, Object> values = readColumns(pkData, getColumnsForPK());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         pks.add(readPrimaryKeyName(metaData, values));
@@ -289,7 +286,7 @@ public class InterbaseModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected Collection readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
+    protected Collection<ForeignKey> readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
         Map fks = new ListOrderedMap();
         ResultSet fkData = null;
@@ -301,7 +298,7 @@ public class InterbaseModelReader extends JdbcModelReader {
                 // So we have to filter manually below
                 fkData = metaData.getForeignKeys(getDefaultTablePattern());
                 while (fkData.next()) {
-                    Map values = readColumns(fkData, getColumnsForFK());
+                    Map<String,Object> values = readColumns(fkData, getColumnsForFK());
 
                     if (tableName.equals(values.get("FKTABLE_NAME"))) {
                         readForeignKey(metaData, values, fks);
@@ -325,7 +322,7 @@ public class InterbaseModelReader extends JdbcModelReader {
 
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException {
-        InterbaseBuilder builder = (InterbaseBuilder)getPlatform().getDdlBuilder();
+        InterbaseBuilder builder = (InterbaseBuilder) getPlatform().getDdlBuilder();
         String tableName = builder.getTableName(table);
         String indexName = builder.getIndexName(index);
         StringBuffer query = new StringBuffer();
@@ -355,7 +352,7 @@ public class InterbaseModelReader extends JdbcModelReader {
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
             throws SQLException {
-        InterbaseBuilder builder = (InterbaseBuilder)getPlatform().getDdlBuilder();
+        InterbaseBuilder builder = (InterbaseBuilder) getPlatform().getDdlBuilder();
         String tableName = builder.getTableName(table);
         String indexName = builder.getIndexName(index);
         String fkName = builder.getForeignKeyName(table, fk);

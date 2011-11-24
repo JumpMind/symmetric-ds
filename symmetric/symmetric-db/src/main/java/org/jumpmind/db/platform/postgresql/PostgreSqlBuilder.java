@@ -30,13 +30,13 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.util.Log;
 
 /*
  * The SQL Builder for PostgresSql.
  */
-public class PostgreSqlBuilder extends SqlBuilder {
+public class PostgreSqlBuilder extends AbstractDdlBuilder {
     
     public PostgreSqlBuilder(Log log, IDatabasePlatform platform) {
         super(log, platform);

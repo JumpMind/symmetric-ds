@@ -22,7 +22,7 @@ package org.jumpmind.db.platform.sybase;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
  * The platform implementation for Sybase.
@@ -84,7 +84,7 @@ public class SybasePlatform extends AbstractDatabasePlatform {
         info.setDefaultSize(Types.CHAR, 254);
         info.setDefaultSize(Types.VARCHAR, 254);
 
-        modelReader = new SybaseModelReader(this);
+        ddlReader = new SybaseDdlReader(log, this);
         ddlBuilder = new SybaseBuilder(log, this);
     }
 

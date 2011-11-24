@@ -39,28 +39,24 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.util.Log;
 
 /*
  * The Jdbc Model Reader for Firebird.
  */
-public class FirebirdModelReader extends JdbcModelReader {
-    /*
-     * Creates a new model reader for Firebird databases.
-     * 
-     * @param platform The platform that this model reader belongs to
-     */
-    public FirebirdModelReader(IDatabasePlatform platform) {
-        super(platform);
+public class FirebirdDdlReader extends AbstractJdbcDdlReader {
+
+    public FirebirdDdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
     }
 
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map values)
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String,Object> values)
             throws SQLException {
         Table table = super.readTable(connection, metaData, values);
 
@@ -72,11 +68,11 @@ public class FirebirdModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected Collection readColumns(DatabaseMetaDataWrapper metaData, String tableName)
+    protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
         ResultSet columnData = null;
         try {
-            List columns = new ArrayList();
+            List<Column> columns = new ArrayList<Column>();
 
             if (getPlatform().isDelimitedIdentifierModeOn()) {
                 // Jaybird has a problem when delimited identifiers are used as
@@ -86,7 +82,7 @@ public class FirebirdModelReader extends JdbcModelReader {
                         getDefaultColumnPattern());
 
                 while (columnData.next()) {
-                    Map values = readColumns(columnData, getColumnsForColumn());
+                    Map<String,Object> values = readColumns(columnData, getColumnsForColumn());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         columns.add(readColumn(metaData, values));
@@ -96,7 +92,7 @@ public class FirebirdModelReader extends JdbcModelReader {
                 columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
 
                 while (columnData.next()) {
-                    Map values = readColumns(columnData, getColumnsForColumn());
+                    Map<String,Object> values = readColumns(columnData, getColumnsForColumn());
 
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         columns.add(readColumn(metaData, values));
@@ -113,7 +109,7 @@ public class FirebirdModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
 
         if (column.getTypeCode() == Types.FLOAT) {

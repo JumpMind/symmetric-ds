@@ -22,7 +22,7 @@ package org.jumpmind.db.platform.oracle;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
  * The platform for Oracle 8.
@@ -91,7 +91,7 @@ public class OraclePlatform extends AbstractDatabasePlatform {
 
         info.setStoresUpperCaseInCatalog(true);
 
-        modelReader = new OracleModelReader(this);
+        ddlReader = new OracleDdlReader(log, this);
         ddlBuilder = new OracleBuilder(log, this);
     }
 
