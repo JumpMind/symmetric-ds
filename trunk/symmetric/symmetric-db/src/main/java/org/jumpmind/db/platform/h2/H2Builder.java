@@ -36,13 +36,13 @@ import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.util.Log;
 
 /*
  * The SQL Builder for the H2 database. 
  */
-public class H2Builder extends SqlBuilder {
+public class H2Builder extends AbstractDdlBuilder {
 
     public H2Builder(Log log, IDatabasePlatform platform) {
         super(log, platform);

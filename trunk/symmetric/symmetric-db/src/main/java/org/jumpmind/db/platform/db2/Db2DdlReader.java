@@ -38,13 +38,14 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
+import org.jumpmind.util.Log;
 
 /*
  * Reads a database model from a Db2 UDB database.
  */
-public class Db2ModelReader extends JdbcModelReader {
+public class Db2DdlReader extends AbstractJdbcDdlReader {
     /* Known system tables that Db2 creates (e.g. automatic maintenance). */
     private static final String[] KNOWN_SYSTEM_TABLES = { "STMG_DBSIZE_INFO", "HMON_ATM_INFO",
             "HMON_COLLECTION", "POLICY" };
@@ -55,13 +56,8 @@ public class Db2ModelReader extends JdbcModelReader {
     /* The regular expression pattern for the timestamp values that Db2 returns. */
     private Pattern _db2TimestampPattern;
 
-    /*
-     * Creates a new model reader for Db2 databases.
-     * 
-     * @param platform The platform that this model reader belongs to
-     */
-    public Db2ModelReader(IDatabasePlatform platform) {
-        super(platform);
+    public Db2DdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
 
@@ -78,7 +74,7 @@ public class Db2ModelReader extends JdbcModelReader {
 
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
-            Map<String, Object> values) throws SQLException {        
+            Map<String, Object> values) throws SQLException {
         String tableName = (String) values.get("TABLE_NAME");
 
         for (int idx = 0; idx < KNOWN_SYSTEM_TABLES.length; idx++) {

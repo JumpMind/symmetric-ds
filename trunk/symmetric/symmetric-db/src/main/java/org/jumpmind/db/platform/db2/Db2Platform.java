@@ -69,7 +69,7 @@ public class Db2Platform extends AbstractDatabasePlatform {
         info.setMaxConstraintNameLength(128);
         info.setMaxForeignKeyNameLength(128);
 
-        modelReader = new Db2ModelReader(this);
+        ddlReader = new Db2DdlReader(log, this);
         ddlBuilder = new Db2Builder(log, this);
     }
 

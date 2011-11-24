@@ -14,7 +14,7 @@ public class GreenplumPlatform extends PostgreSqlPlatform {
     
     public GreenplumPlatform() {
         info.setTriggersSupported(false);
-        this.modelReader = new GreenplumModelReader(this);
+        this.ddlReader = new GreenplumDdlReader(log, this);
     }
     
 }

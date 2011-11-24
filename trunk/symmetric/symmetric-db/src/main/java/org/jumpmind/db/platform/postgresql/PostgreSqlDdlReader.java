@@ -31,59 +31,47 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
+import org.jumpmind.util.Log;
 
 /*
  * Reads a database model from a PostgreSql database.
- *
- * @version $Revision: $
  */
-public class PostgreSqlModelReader extends JdbcModelReader
-{
-    /*
-     * Creates a new model reader for PostgreSql databases.
-     * 
-     * @param platform The platform that this model reader belongs to
-     */
-    public PostgreSqlModelReader(IDatabasePlatform platform)
-    {
-        super(platform);
+public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
+
+    public PostgreSqlDdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);
     }
 
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException
-    {
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
 
-        if (table != null)
-        {
-            // PostgreSQL also returns unique indics for non-pk auto-increment columns
+        if (table != null) {
+            // PostgreSQL also returns unique indics for non-pk auto-increment
+            // columns
             // which are of the form "[table]_[column]_key"
             HashMap uniquesByName = new HashMap();
-    
-            for (int indexIdx = 0; indexIdx < table.getIndexCount(); indexIdx++)
-            {
+
+            for (int indexIdx = 0; indexIdx < table.getIndexCount(); indexIdx++) {
                 Index index = table.getIndex(indexIdx);
-    
-                if (index.isUnique() && (index.getName() != null))
-                {
+
+                if (index.isUnique() && (index.getName() != null)) {
                     uniquesByName.put(index.getName(), index);
                 }
             }
-            for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++)
-            {
+            for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++) {
                 Column column = table.getColumn(columnIdx);
-                if (column.isAutoIncrement() && !column.isPrimaryKey())
-                {
+                if (column.isAutoIncrement() && !column.isPrimaryKey()) {
                     String indexName = table.getName() + "_" + column.getName() + "_key";
-    
-                    if (uniquesByName.containsKey(indexName))
-                    {
-                        table.removeIndex((Index)uniquesByName.get(indexName));
+
+                    if (uniquesByName.containsKey(indexName)) {
+                        table.removeIndex((Index) uniquesByName.get(indexName));
                         uniquesByName.remove(indexName);
                     }
                 }
@@ -91,9 +79,9 @@ public class PostgreSqlModelReader extends JdbcModelReader
         }
         return table;
     }
-    
+
     @Override
-    protected Integer overrideJdbcTypeForColumn(Map<String,Object> values) {
+    protected Integer overrideJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
             return Types.TIMESTAMP;
@@ -105,38 +93,31 @@ public class PostgreSqlModelReader extends JdbcModelReader
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
-    {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
         Column column = super.readColumn(metaData, values);
 
-        if (column.getSize() != null)
-        {
-            if (column.getSizeAsInt() <= 0)
-            {
+        if (column.getSize() != null) {
+            if (column.getSizeAsInt() <= 0) {
                 column.setSize(null);
-                // PostgreSQL reports BYTEA and TEXT as BINARY(-1) and VARCHAR(-1) respectively
-                // Since we cannot currently use the Blob/Clob interface with BYTEA, we instead
+                // PostgreSQL reports BYTEA and TEXT as BINARY(-1) and
+                // VARCHAR(-1) respectively
+                // Since we cannot currently use the Blob/Clob interface with
+                // BYTEA, we instead
                 // map them to LONGVARBINARY/LONGVARCHAR
-                if (column.getTypeCode() == Types.BINARY)
-                {
+                if (column.getTypeCode() == Types.BINARY) {
                     column.setTypeCode(Types.LONGVARBINARY);
-                }
-                else if (column.getTypeCode() == Types.VARCHAR)
-                {
+                } else if (column.getTypeCode() == Types.VARCHAR) {
                     column.setTypeCode(Types.LONGVARCHAR);
                 }
             }
-            // fix issue DDLUTILS-165 as postgresql-8.2-504-jdbc3.jar seems to return Integer.MAX_VALUE
+            // fix issue DDLUTILS-165 as postgresql-8.2-504-jdbc3.jar seems to
+            // return Integer.MAX_VALUE
             // on columns defined as TEXT.
-            else if (column.getSizeAsInt() == Integer.MAX_VALUE)
-            {
+            else if (column.getSizeAsInt() == Integer.MAX_VALUE) {
                 column.setSize(null);
-                if (column.getTypeCode() == Types.VARCHAR)
-                {
+                if (column.getTypeCode() == Types.VARCHAR) {
                     column.setTypeCode(Types.LONGVARCHAR);
-                }
-                else if (column.getTypeCode() == Types.BINARY)
-                {
+                } else if (column.getTypeCode() == Types.BINARY) {
                     column.setTypeCode(Types.LONGVARBINARY);
                 }
             }
@@ -144,39 +125,36 @@ public class PostgreSqlModelReader extends JdbcModelReader
 
         String defaultValue = column.getDefaultValue();
 
-        if ((defaultValue != null) && (defaultValue.length() > 0))
-        {
-            // If the default value looks like "nextval('ROUNDTRIP_VALUE_seq'::text)"
+        if ((defaultValue != null) && (defaultValue.length() > 0)) {
+            // If the default value looks like
+            // "nextval('ROUNDTRIP_VALUE_seq'::text)"
             // then it is an auto-increment column
-            if (defaultValue.startsWith("nextval("))
-            {
+            if (defaultValue.startsWith("nextval(")) {
                 column.setAutoIncrement(true);
                 defaultValue = null;
-            }
-            else
-            {
-                // PostgreSQL returns default values in the forms "-9000000000000000000::bigint" or
+            } else {
+                // PostgreSQL returns default values in the forms
+                // "-9000000000000000000::bigint" or
                 // "'some value'::character varying" or "'2000-01-01'::date"
-                switch (column.getTypeCode())
-                {
-                    case Types.INTEGER:
-                    case Types.BIGINT:
-                    case Types.DECIMAL:
-                    case Types.NUMERIC:
-                        defaultValue = extractUndelimitedDefaultValue(defaultValue);
-                        break;
-                    case Types.CHAR:
-                    case Types.VARCHAR:
-                    case Types.LONGVARCHAR:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        defaultValue = extractDelimitedDefaultValue(defaultValue);
-                        break;
+                switch (column.getTypeCode()) {
+                case Types.INTEGER:
+                case Types.BIGINT:
+                case Types.DECIMAL:
+                case Types.NUMERIC:
+                    defaultValue = extractUndelimitedDefaultValue(defaultValue);
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                case Types.DATE:
+                case Types.TIME:
+                case Types.TIMESTAMP:
+                    defaultValue = extractDelimitedDefaultValue(defaultValue);
+                    break;
                 }
-                if (TypeMap.isTextType(column.getTypeCode()))
-                {
-                    // We assume escaping via double quote (see also the backslash_quote setting:
+                if (TypeMap.isTextType(column.getTypeCode())) {
+                    // We assume escaping via double quote (see also the
+                    // backslash_quote setting:
                     // http://www.postgresql.org/docs/7.4/interactive/runtime-config.html#RUNTIME-CONFIG-COMPATIBLE)
                     defaultValue = unescape(defaultValue, "'", "''");
                 }
@@ -191,56 +169,51 @@ public class PostgreSqlModelReader extends JdbcModelReader
      * "'some value'::character varying" or "'2000-01-01'::date".
      * 
      * @param defaultValue The default value spec
+     * 
      * @return The default value
      */
-    private String extractDelimitedDefaultValue(String defaultValue)
-    {
-        if (defaultValue.startsWith("'"))
-        {
+    private String extractDelimitedDefaultValue(String defaultValue) {
+        if (defaultValue.startsWith("'")) {
             int valueEnd = defaultValue.indexOf("'::");
 
-            if (valueEnd > 0)
-            {
+            if (valueEnd > 0) {
                 return defaultValue.substring("'".length(), valueEnd);
             }
         }
         return defaultValue;
     }
-    
+
     /*
      * Extractes the default value from a default value spec of the form
      * "-9000000000000000000::bigint".
      * 
      * @param defaultValue The default value spec
+     * 
      * @return The default value
      */
-    private String extractUndelimitedDefaultValue(String defaultValue)
-    {
+    private String extractUndelimitedDefaultValue(String defaultValue) {
         int valueEnd = defaultValue.indexOf("::");
 
-        if (valueEnd > 0)
-        {
+        if (valueEnd > 0) {
             defaultValue = defaultValue.substring(0, valueEnd);
-        }
-        else
-        {
+        } else {
             if (defaultValue.startsWith("(") && defaultValue.endsWith(")")) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
-            }           
+            }
         }
         return defaultValue;
     }
-    
+
     @Override
-    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
-    {
+    protected boolean isInternalForeignKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index) {
         // PostgreSQL does not return an index for a foreign key
         return false;
     }
 
     @Override
-    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, Index index)
-    {
+    protected boolean isInternalPrimaryKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, Index index) {
         return table.doesIndexContainOnlyPrimaryKeyColumns(index);
     }
 

@@ -13,35 +13,37 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
+import org.jumpmind.util.Log;
 
-public class InformixModelReader extends JdbcModelReader {
+public class InformixDdlReader extends AbstractJdbcDdlReader {
 
-    public InformixModelReader(IDatabasePlatform platform) {
-        super(platform);
+    public InformixDdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }
 
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String,Object>  values) throws SQLException {
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
         if (table != null) {
             determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
         }
         return table;
     }
-    
+
     @Override
-    protected void determineAutoIncrementFromResultSetMetaData(Connection connection, Table table, Column[] columnsToCheck)
-            throws SQLException {
+    protected void determineAutoIncrementFromResultSetMetaData(Connection connection, Table table,
+            Column[] columnsToCheck) throws SQLException {
         determineAutoIncrementFromResultSetMetaData(connection, table, columnsToCheck, ":");
     }
 
     @Override
-    public Collection<Index> readIndices(Connection connection, DatabaseMetaDataWrapper metaData, String tableName)
-            throws SQLException {
+    public Collection<Index> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
+            String tableName) throws SQLException {
         String sql = "select rtrim(dbinfo('dbname')) as TABLE_CAT, st.owner as TABLE_SCHEM, st.tabname as TABLE_NAME, "
                 + "case when idxtype = 'U' then 0 else 1 end NON_UNIQUE, si.owner as INDEX_QUALIFIER, si.idxname as INDEX_NAME,  "
                 + "3 as TYPE,  "
@@ -81,20 +83,21 @@ public class InformixModelReader extends JdbcModelReader {
     }
 
     @Override
-    public void removeSystemIndices(Connection connection, DatabaseMetaDataWrapper metaData, Table table)
-            throws SQLException {
+    public void removeSystemIndices(Connection connection, DatabaseMetaDataWrapper metaData,
+            Table table) throws SQLException {
         super.removeSystemIndices(connection, metaData, table);
     }
 
     @Override
-    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table,
-            Index index) throws SQLException {
+    protected boolean isInternalPrimaryKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException {
         return index.getName().startsWith(" ");
     }
 
     @Override
-    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table,
-            ForeignKey fk, Index index1) throws SQLException {
+    protected boolean isInternalForeignKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index1)
+            throws SQLException {
         return fk.getName().startsWith(" ");
     }
 }

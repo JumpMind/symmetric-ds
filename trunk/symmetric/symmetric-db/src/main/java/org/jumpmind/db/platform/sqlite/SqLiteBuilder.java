@@ -46,13 +46,13 @@ import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.util.Log;
 
 /*
  * The SQL Builder for the SqlLite database. 
  */
-public class SqLiteBuilder extends SqlBuilder {
+public class SqLiteBuilder extends AbstractDdlBuilder {
 
     public SqLiteBuilder(Log log, IDatabasePlatform platform) {
         super(log, platform);

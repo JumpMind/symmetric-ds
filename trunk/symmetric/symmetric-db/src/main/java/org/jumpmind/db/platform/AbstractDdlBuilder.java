@@ -84,7 +84,7 @@ import org.jumpmind.util.Log;
  * complex when attempting to reuse code across many databases. Hopefully only a
  * small amount code needs to be changed on a per database basis.
  */
-public abstract class SqlBuilder implements IDdlBuilder {
+public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /** The line separator for in between sql commands. */
     private static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
@@ -125,7 +125,7 @@ public abstract class SqlBuilder implements IDdlBuilder {
      * @param platform
      *            The platform this builder belongs to
      */
-    public SqlBuilder(Log log, IDatabasePlatform platform) {
+    public AbstractDdlBuilder(Log log, IDatabasePlatform platform) {
         this.log = log;
         this.platform = platform;
     }

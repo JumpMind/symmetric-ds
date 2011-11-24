@@ -154,7 +154,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
         }
 
         if (lastDataId != -1) {
-            dataService.insertDataGap(new DataGap(lastDataId + 1, lastDataId + maxDataToSelect));
+            dataService.insertDataGap(new DataGap(lastDataId + 1, lastDataId + maxDataToSelect));            
         }
 
         long updateTimeInMs = System.currentTimeMillis() - ts;

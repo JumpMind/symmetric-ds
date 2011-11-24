@@ -71,7 +71,7 @@ public class DerbyPlatform extends AbstractDatabasePlatform {
         info.addNativeTypeMapping(Types.DOUBLE, "DOUBLE");
         info.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
         info.setStoresUpperCaseInCatalog(true);
-        modelReader = new DerbyModelReader(this);
+        ddlReader = new DerbyDdlReader(this, log);
         ddlBuilder = new DerbyBuilder(log, this);
     }
 

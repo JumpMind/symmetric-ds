@@ -25,7 +25,6 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.JdbcModelReader;
 
 /*
  * A platform encapsulates the database-related functionality such as performing queries
@@ -53,7 +52,7 @@ public interface IDatabasePlatform {
      * 
      * @return The model reader
      */
-    public JdbcModelReader getModelReader();
+    public IDdlReader getDdlReader();
 
     /*
      * Determines whether script mode is on. This means that the generated SQL

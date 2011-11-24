@@ -22,7 +22,7 @@ package org.jumpmind.db.platform.mssql;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
  * The platform implementation for the Microsoft SQL Server database.
@@ -73,7 +73,7 @@ public class MSSqlPlatform extends AbstractDatabasePlatform {
 
         info.setStoresUpperCaseInCatalog(true);
 
-        modelReader = new MSSqlModelReader(this);
+        ddlReader = new MSSqlDdlReader(log, this);
         ddlBuilder = new MSSqlBuilder(log, this);
 
         setDelimitedIdentifierModeOn(true);

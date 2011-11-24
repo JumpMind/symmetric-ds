@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.hsqldb;
+package org.jumpmind.db.platform.hsqldb2;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -29,40 +29,19 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
+import org.jumpmind.util.Log;
 
 /*
  * Reads a database model from a HsqlDb database.
  */
-public class HsqlDbModelReader extends JdbcModelReader {
-    /*
-     * Creates a new model reader for HsqlDb databases.
-     * 
-     * @param platform The platform that this model reader belongs to
-     */
-    public HsqlDbModelReader(IDatabasePlatform platform) {
-        super(platform);
+public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
+
+    public HsqlDb2DdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
-    }
-
-    @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
-            Map<String, Object> values) throws SQLException {
-        Table table = super.readTable(connection, metaData, values);
-
-        if (table != null) {
-            // For at least version 1.7.2 we have to determine the
-            // auto-increment columns from a result set meta data because the
-            // database does not put this info into the database metadata
-            // Since Hsqldb only allows IDENTITY for primary key columns, we
-            // restrict our search to those columns
-            determineAutoIncrementFromResultSetMetaData(connection, table,
-                    table.getPrimaryKeyColumns());
-        }
-
-        return table;
     }
 
     @Override
@@ -72,6 +51,11 @@ public class HsqlDbModelReader extends JdbcModelReader {
 
         if (TypeMap.isTextType(column.getTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
+        }
+
+        String autoIncrement = (String) values.get("IS_AUTOINCREMENT");
+        if (autoIncrement != null) {
+            column.setAutoIncrement("YES".equalsIgnoreCase(autoIncrement.trim()));
         }
         return column;
     }

@@ -30,13 +30,13 @@ import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.util.Log;
 
 /*
  * The SQL Builder for the HsqlDb database.
  */
-public class HsqlDbBuilder extends SqlBuilder {
+public class HsqlDbBuilder extends AbstractDdlBuilder {
 
     public HsqlDbBuilder(Log log, IDatabasePlatform platform) {
         super(log, platform);

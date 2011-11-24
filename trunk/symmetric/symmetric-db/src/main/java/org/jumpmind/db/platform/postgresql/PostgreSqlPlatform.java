@@ -22,7 +22,7 @@ package org.jumpmind.db.platform.postgresql;
 import java.sql.Types;
 
 import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 
 /*
  * The platform implementation for PostgresSql.
@@ -77,7 +77,7 @@ public class PostgreSqlPlatform extends AbstractDatabasePlatform {
 
         setDelimitedIdentifierModeOn(true);
 
-        modelReader = new PostgreSqlModelReader(this);
+        ddlReader = new PostgreSqlDdlReader(log, this);
         ddlBuilder = new PostgreSqlBuilder(log, this);
     }
 

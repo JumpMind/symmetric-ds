@@ -30,24 +30,20 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
 import org.jumpmind.db.platform.MetaDataColumnDescriptor;
+import org.jumpmind.util.Log;
 
 /*
  * Reads a database model from a H2 database. From patch <a
  * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  */
-public class H2ModelReader extends JdbcModelReader {
+public class H2DdlReader extends AbstractJdbcDdlReader {
 
-    /*
-     * Creates a new model reader for H2 databases.
-     * 
-     * @param platform The platform that this model reader belongs to
-     */
-    public H2ModelReader(IDatabasePlatform platform) {
-        super(platform);
+    public H2DdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }
@@ -68,8 +64,8 @@ public class H2ModelReader extends JdbcModelReader {
         if (TypeMap.isTextType(column.getTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
-        
-        String autoIncrement = (String)values.get("IS_AUTOINCREMENT");
+
+        String autoIncrement = (String) values.get("IS_AUTOINCREMENT");
         if (autoIncrement != null) {
             column.setAutoIncrement("YES".equalsIgnoreCase(autoIncrement.trim()));
         }
@@ -86,15 +82,15 @@ public class H2ModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table,
-            ForeignKey fk, Index index) {
+    protected boolean isInternalForeignKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index) {
         String name = index.getName();
         return name != null && name.startsWith("CONSTRAINT_INDEX_");
     }
 
     @Override
-    protected boolean isInternalPrimaryKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table,
-            Index index) {
+    protected boolean isInternalPrimaryKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, Index index) {
         String name = index.getName();
         return name != null && name.startsWith("PRIMARY_KEY_");
     }

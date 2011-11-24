@@ -69,7 +69,7 @@ public class H2Platform extends AbstractDatabasePlatform implements IDatabasePla
 
         info.setStoresUpperCaseInCatalog(true);
 
-        modelReader = new H2ModelReader(this);
+        ddlReader = new H2DdlReader(log, this);
         ddlBuilder = new H2Builder(log, this);
     }
 

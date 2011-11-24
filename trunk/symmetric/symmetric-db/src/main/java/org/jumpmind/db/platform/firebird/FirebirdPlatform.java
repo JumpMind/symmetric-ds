@@ -78,7 +78,7 @@ public class FirebirdPlatform extends AbstractDatabasePlatform {
 
         info.setStoresUpperCaseInCatalog(true);
 
-        modelReader = new FirebirdModelReader(this);
+        ddlReader = new FirebirdDdlReader(log, this);
         ddlBuilder = new FirebirdBuilder(log, this);
     }
 

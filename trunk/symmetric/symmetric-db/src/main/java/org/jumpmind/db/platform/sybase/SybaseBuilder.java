@@ -42,14 +42,14 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
 import org.jumpmind.util.Log;
 
 /*
  * The SQL Builder for Sybase.
  */
-public class SybaseBuilder extends SqlBuilder {
+public class SybaseBuilder extends AbstractDdlBuilder {
 
     public SybaseBuilder(Log log, IDatabasePlatform platform) {
         super(log, platform);

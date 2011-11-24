@@ -38,10 +38,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.DatabasePlatformInfo;
 import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.IDdlReader;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
@@ -51,50 +50,57 @@ import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.UniqueIndex;
+import org.jumpmind.util.Log;
+import org.jumpmind.util.LogFactory;
 
 /*
  * An utility class to create a Database model from a live database.
  */
-public class JdbcModelReader {
+public abstract class AbstractJdbcDdlReader implements IDdlReader {
+    
     /* The Log to which logging calls will be made. */
-    protected final Log log = LogFactory.getLog(JdbcModelReader.class);
+    protected Log log = LogFactory.getLog(getClass());
 
     /* The descriptors for the relevant columns in the table meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForTable;
+    
     /* The descriptors for the relevant columns in the table column meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForColumn;
+    
     /* The descriptors for the relevant columns in the primary key meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForPK;
+    
     /* The descriptors for the relevant columns in the foreign key meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForFK;
+    
     /* The descriptors for the relevant columns in the index meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForIndex;
 
     /* The platform that this model reader belongs to. */
-    private IDatabasePlatform _platform;
+    private IDatabasePlatform platform;
     /*
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
      * must support).
      */
     private HashMap<Integer, String> _defaultSizes = new HashMap<Integer, String>();
+    
     /* The default database catalog to read. */
     private String _defaultCatalogPattern = "%";
+    
     /* The default database schema(s) to read. */
     private String _defaultSchemaPattern = "%";
+    
     /* The default pattern for reading all tables. */
     private String _defaultTablePattern = "%";
+    
     /* The default pattern for reading all columns. */
     private String _defaultColumnPattern;
+    
     /* The table types to recognize per default. */
     private String[] _defaultTableTypes = { "TABLE" };
 
-    /*
-     * Creates a new model reader instance.
-     * 
-     * @param platform The plaftform this builder belongs to
-     */
-    public JdbcModelReader(IDatabasePlatform platform) {
-        _platform = platform;
+    public AbstractJdbcDdlReader(Log log, IDatabasePlatform platform) {
+        this.platform = platform;
 
         _defaultSizes.put(new Integer(Types.CHAR), "254");
         _defaultSizes.put(new Integer(Types.VARCHAR), "254");
@@ -123,7 +129,7 @@ public class JdbcModelReader {
      * @return The platform
      */
     public IDatabasePlatform getPlatform() {
-        return _platform;
+        return platform;
     }
 
     /*
@@ -132,7 +138,7 @@ public class JdbcModelReader {
      * @return The platform settings
      */
     public DatabasePlatformInfo getPlatformInfo() {
-        return _platform.getPlatformInfo();
+        return platform.getPlatformInfo();
     }
 
     /*
@@ -1100,7 +1106,7 @@ public class JdbcModelReader {
                     msg.append(col.toString());
                 }
             }
-            log.warn(msg, ex);
+            log.warn(ex, msg.toString());
         }
     }
 

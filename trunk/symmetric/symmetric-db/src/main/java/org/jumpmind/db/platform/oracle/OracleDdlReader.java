@@ -46,34 +46,29 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.util.Log;
 
 /*
  * Reads a database model from an Oracle 8 database.
  */
-public class OracleModelReader extends JdbcModelReader {
+public class OracleDdlReader extends AbstractJdbcDdlReader {
 
     /* The regular expression pattern for the Oracle conversion of ISO dates. */
     private Pattern oracleIsoDatePattern;
 
     /* The regular expression pattern for the Oracle conversion of ISO times. */
     private Pattern oracleIsoTimePattern;
-    
+
     /*
      * The regular expression pattern for the Oracle conversion of ISO
      * timestamps.
      */
     private Pattern oracleIsoTimestampPattern;
 
-    /*
-     * Creates a new model reader for Oracle 8 databases.
-     * 
-     * @param platform The platform that this model reader belongs to
-     */
-    public OracleModelReader(IDatabasePlatform platform) {
-        super(platform);
+    public OracleDdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
@@ -91,8 +86,8 @@ public class OracleModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String,Object> values)
-            throws SQLException {
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
         // Oracle 10 added the recycle bin which contains dropped database
         // objects not yet purged
         // Since we don't want entries from the recycle bin, we filter them out
@@ -117,7 +112,8 @@ public class OracleModelReader extends JdbcModelReader {
         }
     }
 
-    protected boolean isTableInRecycleBin(Connection connection, Map<String,Object> values) throws SQLException {
+    protected boolean isTableInRecycleBin(Connection connection, Map<String, Object> values)
+            throws SQLException {
         ResultSet rs = null;
         PreparedStatement stmt = null;
         try {
@@ -159,7 +155,8 @@ public class OracleModelReader extends JdbcModelReader {
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
         Column column = super.readColumn(metaData, values);
         if (column.getTypeCode() == Types.DECIMAL) {
             // We're back-mapping the NUMBER columns returned by Oracle

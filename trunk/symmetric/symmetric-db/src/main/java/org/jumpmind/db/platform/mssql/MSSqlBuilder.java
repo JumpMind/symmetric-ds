@@ -49,14 +49,14 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
 import org.jumpmind.util.Log;
 
 /*
  * The SQL Builder for the Microsoft SQL Server.
  */
-public class MSSqlBuilder extends SqlBuilder {
+public class MSSqlBuilder extends AbstractDdlBuilder {
 
     /* We use a generic date format. */
     private DateFormat _genericDateFormat = new SimpleDateFormat("yyyy-MM-dd");

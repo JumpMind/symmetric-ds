@@ -13,23 +13,18 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
 import org.jumpmind.db.platform.MetaDataColumnDescriptor;
+import org.jumpmind.util.Log;
 
 /*
  * Reads a database model from a SQLite database.
  */
-public class SqLiteModelReader extends JdbcModelReader {
+public class SqLiteDdlReader extends AbstractJdbcDdlReader {
 
-    /*
-     * Creates a new model reader for H2 databases.
-     * 
-     * @param platform
-     *            The platform that this model reader belongs to
-     */
-    public SqLiteModelReader(IDatabasePlatform platform) {
-        super(platform);
+    public SqLiteDdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }

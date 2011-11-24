@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.hsqldb2;
+package org.jumpmind.db.platform.hsqldb;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -29,58 +29,64 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.db.platform.JdbcModelReader;
+import org.jumpmind.util.Log;
 
 /*
  * Reads a database model from a HsqlDb database.
  */
-public class HsqlDb2ModelReader extends JdbcModelReader
-{
-    /*
-     * Creates a new model reader for HsqlDb databases.
-     * 
-     * @param platform The platform that this model reader belongs to
-     */
-    public HsqlDb2ModelReader(IDatabasePlatform platform)
-    {
-        super(platform);
+public class HsqlDbDdlReader extends AbstractJdbcDdlReader {
+
+    public HsqlDbDdlReader(Log log, IDatabasePlatform platform) {
+        super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException
-    {
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
+        Table table = super.readTable(connection, metaData, values);
+
+        if (table != null) {
+            // For at least version 1.7.2 we have to determine the
+            // auto-increment columns from a result set meta data because the
+            // database does not put this info into the database metadata
+            // Since Hsqldb only allows IDENTITY for primary key columns, we
+            // restrict our search to those columns
+            determineAutoIncrementFromResultSetMetaData(connection, table,
+                    table.getPrimaryKeyColumns());
+        }
+
+        return table;
+    }
+
+    @Override
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
         Column column = super.readColumn(metaData, values);
 
-        if (TypeMap.isTextType(column.getTypeCode()) &&
-            (column.getDefaultValue() != null))
-        {
+        if (TypeMap.isTextType(column.getTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
-        }
-        
-        String autoIncrement = (String)values.get("IS_AUTOINCREMENT");
-        if (autoIncrement != null) {
-            column.setAutoIncrement("YES".equalsIgnoreCase(autoIncrement.trim()));
         }
         return column;
     }
 
     @Override
-    protected boolean isInternalForeignKeyIndex(Connection connection, DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
-    {
+    protected boolean isInternalForeignKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index) {
         String name = index.getName();
 
         return (name != null) && name.startsWith("SYS_IDX_");
     }
 
     @Override
-    protected boolean isInternalPrimaryKeyIndex(Connection connection,DatabaseMetaDataWrapper metaData, Table table, Index index)
-    {
+    protected boolean isInternalPrimaryKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, Index index) {
         String name = index.getName();
 
         return (name != null) && (name.startsWith("SYS_PK_") || name.startsWith("SYS_IDX_"));
     }
-    
+
 }

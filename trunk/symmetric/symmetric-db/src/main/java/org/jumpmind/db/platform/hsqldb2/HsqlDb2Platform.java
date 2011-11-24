@@ -68,7 +68,7 @@ public class HsqlDb2Platform extends AbstractDatabasePlatform {
 
         info.setStoresUpperCaseInCatalog(true);
 
-        modelReader = new HsqlDb2ModelReader(this);
+        ddlReader = new HsqlDb2DdlReader(log, this);
         ddlBuilder = new HsqlDb2Builder(log, this);
     }
 

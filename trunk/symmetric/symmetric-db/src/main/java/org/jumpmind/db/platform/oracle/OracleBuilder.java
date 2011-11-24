@@ -41,14 +41,14 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Index;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.platform.SqlBuilder;
+import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
 import org.jumpmind.util.Log;
 
 /*
  * The SQL Builder for Oracle.
  */
-public class OracleBuilder extends SqlBuilder {
+public class OracleBuilder extends AbstractDdlBuilder {
 
     /* The regular expression pattern for ISO dates, i.e. 'YYYY-MM-DD'. */
     private Pattern isoDatePattern;
