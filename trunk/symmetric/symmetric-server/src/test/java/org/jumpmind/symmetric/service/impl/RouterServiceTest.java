@@ -29,6 +29,7 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.model.Channel;
@@ -1037,7 +1038,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
             getJdbcTemplate().update("update sym_data_gap set status='OK'");
             getDataService().insertDataGap(new DataGap(startId, startId + 10));
-            getDataService().insertDataGap(new DataGap(startId + 11, 5000000));
+            getDataService().insertDataGap(new DataGap(startId + 11, startId + 11 + getParameterService().getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE)));
 
             insertGaps(8, 0, 1);
 
