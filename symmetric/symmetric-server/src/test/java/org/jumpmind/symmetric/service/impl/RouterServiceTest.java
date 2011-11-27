@@ -131,6 +131,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testLookupTableRouting() {
 
+        resetBatches();
+
         getDbDialect().truncateTable("test_lookup_table");
 
         getJdbcTemplate().update("insert into test_lookup_table values ('A',?)",
@@ -402,22 +404,22 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         if (deleteChannel) {
             getConfigurationService().saveChannel(unrecognizedChannel, true);
         }
-        
+
         NodeChannel otherChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID_OTHER, false);
         otherChannel.setBatchAlgorithm("nontransactional");
         otherChannel.setMaxBatchSize(100);
-        getConfigurationService().saveChannel(otherChannel, true);       
-        
+        getConfigurationService().saveChannel(otherChannel, true);
+
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.getRouter().setRouterType("default");
         trigger1.getTrigger().setChannelId(unrecognizedChannel.getChannelId());
         getTriggerRouterService().saveTriggerRouter(trigger1);
-        
+
         TriggerRouter trigger2 = getTestRoutingTableTrigger(TEST_TABLE_2);
         trigger2.getRouter().setRouterType("default");
         getTriggerRouterService().saveTriggerRouter(trigger2);
-        
+
         getTriggerRouterService().syncTriggers();
 
         if (deleteChannel) {
@@ -434,7 +436,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
             insert(TEST_TABLE_2, 10, true, null);
             getRouterService().routeData();
-            
+
             insert(TEST_TABLE_2, 10, true, null);
             getRouterService().routeData();
             getRouterService().routeData();
@@ -1038,7 +1040,11 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
             getJdbcTemplate().update("update sym_data_gap set status='OK'");
             getDataService().insertDataGap(new DataGap(startId, startId + 10));
-            getDataService().insertDataGap(new DataGap(startId + 11, startId + 11 + getParameterService().getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE)));
+            getDataService().insertDataGap(
+                    new DataGap(startId + 11, startId
+                            + 11
+                            + getParameterService().getLong(
+                                    ParameterConstants.ROUTING_LARGEST_GAP_SIZE)));
 
             insertGaps(8, 0, 1);
 
@@ -1162,7 +1168,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         ChannelRouterContext context = new ChannelRouterContext(
                 TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getDataSource());
-        DataRefRouteReader reader = new DataRefRouteReader(logger, getRouterService(), context, getDataService());
+        DataRefRouteReader reader = new DataRefRouteReader(logger, getRouterService(), context,
+                getDataService());
 
         reader.run();
 
@@ -1185,8 +1192,115 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void testMaxNumberOfDataToRoute() {
-        // TODO
+    public void testDataWithTransactionIdsSpreadOut() throws Exception {
+
+        if (getDbDialect().supportsTransactionId()) {
+        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        getTriggerRouterService().saveTriggerRouter(trigger1);
+
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(
+                TestConstants.TEST_CHANNEL_ID, false);
+        testChannel.setMaxBatchSize(10);
+        testChannel.setBatchAlgorithm("default");
+        getConfigurationService().saveChannel(testChannel, true);
+
+        getTriggerRouterService().syncTriggers();
+
+        resetBatches();
+
+        insert(TEST_TABLE_1, 50, true);
+
+        String transactionId = getLatestTransactionId();
+
+        long dataId1ShouldBeInBatch1 = getLatestDataId();
+
+        insert(TEST_TABLE_1, 10, true);
+
+        long dataId2ShouldNotBeInBatch1 = getLatestDataId();
+
+        insert(TEST_TABLE_1, 10, true);
+
+        long dataId3ShouldNotBeInBatch1 = getLatestDataId();
+        
+        insert(TEST_TABLE_1, 10, true);
+
+        Assert.assertEquals(
+                10,
+                getJdbcTemplate().update(
+                        "update sym_data set transaction_id=? where transaction_id=?",
+                        transactionId, getLatestTransactionId()));
+
+        long dataId4ShouldBeInBatch1 = getLatestDataId();
+
+        insert(TEST_TABLE_1, 10, true);
+
+        long dataId5ShouldNotBeInBatch1 = getLatestDataId();
+
+        insert(TEST_TABLE_1, 50, true);
+
+        Assert.assertEquals(
+                50,
+                getJdbcTemplate().update(
+                        "update sym_data set transaction_id=? where transaction_id=?",
+                        transactionId, getLatestTransactionId()));
+
+        long dataId6ShouldBeInBatch1 = getLatestDataId();
+
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+
+        Assert.assertEquals(0, countBatchesForChannel(batches, testChannel));
+
+        routeAndCreateGaps();
+
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+
+        Assert.assertEquals(4, countBatchesForChannel(batches, testChannel));    
+        
+        OutgoingBatch batch = batches.getBatches().get(0);
+        Assert.assertEquals(110, batch.getDataEventCount());
+        Assert.assertTrue(isDataIdInBatch(batch.getBatchId(), dataId1ShouldBeInBatch1));
+        Assert.assertFalse(isDataIdInBatch(batch.getBatchId(), dataId2ShouldNotBeInBatch1));
+        Assert.assertFalse(isDataIdInBatch(batch.getBatchId(), dataId3ShouldNotBeInBatch1));
+        Assert.assertTrue(isDataIdInBatch(batch.getBatchId(), dataId4ShouldBeInBatch1));
+        Assert.assertFalse(isDataIdInBatch(batch.getBatchId(), dataId5ShouldNotBeInBatch1));
+        Assert.assertTrue(isDataIdInBatch(batch.getBatchId(), dataId6ShouldBeInBatch1));
+        }
+        
+
+    }
+    
+    @Test
+    public void testRoutingWithTransactionBiggerThanMaxDataToRoute() throws Exception {
+        if (getDbDialect().supportsTransactionId()) {
+            TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+            getTriggerRouterService().saveTriggerRouter(trigger1);
+
+            NodeChannel testChannel = getConfigurationService().getNodeChannel(
+                    TestConstants.TEST_CHANNEL_ID, false);
+            testChannel.setMaxDataToRoute(10);
+            testChannel.setMaxBatchSize(10);
+            testChannel.setBatchAlgorithm("default");
+            getConfigurationService().saveChannel(testChannel, true);
+            getTriggerRouterService().syncTriggers();
+
+            resetBatches();
+
+            insert(TEST_TABLE_1, 113, true);
+
+            OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(
+                    NODE_GROUP_NODE_1);
+
+            Assert.assertEquals(0, countBatchesForChannel(batches, testChannel));
+
+            routeAndCreateGaps();
+
+            batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+
+            Assert.assertEquals(1, countBatchesForChannel(batches, testChannel));
+            Assert.assertEquals(113, batches.getBatches().get(0).getDataEventCount());
+
+        }
+
     }
 
     protected void setUpDefaultTriggerRouterForTable1() {
@@ -1209,6 +1323,10 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         return getJdbcTemplate().queryForInt(
                 "select count(*) from sym_outgoing_batch where node_id=?",
                 Constants.UNROUTED_NODE_ID);
+    }
+    
+    protected boolean isDataIdInBatch(long batchId, long dataId) {
+        return 1 == getJdbcTemplate().queryForInt("select count(*) from sym_data_event where batch_id=? and data_id=?",batchId, dataId);
     }
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
@@ -1324,6 +1442,17 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         } else {
             callback.doInTransaction(null);
         }
+    }
+
+    protected String getLatestTransactionId() {
+        return getJdbcTemplate()
+                .queryForObject(
+                        "select transaction_id from sym_data where data_id in (select max(data_id) from sym_data)",
+                        String.class);
+    }
+
+    protected long getLatestDataId() {
+        return getJdbcTemplate().queryForObject("select max(data_id) from sym_data", Long.class);
     }
 
     protected void update(String tableName, String value) {

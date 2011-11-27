@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -68,12 +69,13 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
 
     protected IDbDialect dbDialect;
 
-    public AbstractDataToRouteReader(ILog log, ISqlProvider sqlProvider, ChannelRouterContext context,
-            IDataService dataService) {
+    public AbstractDataToRouteReader(ILog log, ISqlProvider sqlProvider,
+            ChannelRouterContext context, IDataService dataService) {
         this.log = log;
         this.jdbcTemplate = dataService != null ? dataService.getJdbcTemplate() : null;
         this.dbDialect = dataService != null ? dataService.getDbDialect() : null;
-        this.dataQueue = new LinkedBlockingQueue<Data>(dbDialect != null ? dbDialect.getRouterDataPeekAheadCount() : 1000);
+        this.dataQueue = new LinkedBlockingQueue<Data>(
+                dbDialect != null ? dbDialect.getRouterDataPeekAheadCount() : 1000);
         this.sqlProvider = sqlProvider;
         this.context = context;
         this.dataService = dataService;
@@ -92,7 +94,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
             log.warn("RouterDataReaderNotResponding");
         } else if (data instanceof EOD) {
             data = null;
-        } 
+        }
         return data;
     }
 
@@ -136,58 +138,44 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
                         c.setAutoCommit(false);
                     }
-                    String channelId = context.getChannel().getChannelId();
+
+                    long maxDataToRoute = context.getChannel().getMaxDataToRoute();
+                    int peekAheadCount = dbDialect.getRouterDataPeekAheadCount();
+                    String lastTransactionId = null;
+                    List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
+
                     ps = prepareStatment(c);
-                    long ts = System.currentTimeMillis();
-                    rs = ps.executeQuery();
-                    long executeTimeInMs = System.currentTimeMillis() - ts;
-                    context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
-                    if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-                        log.warn("RoutedDataSelectedInTime", executeTimeInMs, channelId);
-                    } else if (log.isDebugEnabled()) {
-                        log.debug("RoutedDataSelectedInTime", executeTimeInMs, channelId);
-                    }
+                    rs = executeQuery(ps);
 
-                    int maxQueueSize = dbDialect.getRouterDataPeekAheadCount();
-                    int toRead = maxQueueSize - dataQueue.size();
-                    List<Data> memQueue = new ArrayList<Data>(toRead);
-                    ts = System.currentTimeMillis();
-                    while (rs.next() && reading) {
-
-                        if (StringUtils.isBlank(rs.getString(13))) {
-                            Data data = dataService.readData(rs);
-                            context.setLastDataIdForTransactionId(data);
-                            memQueue.add(data);
+                    while (dataCount <= maxDataToRoute || lastTransactionId != null) {
+                        fillPeekAheadQueue(peekAheadQueue, peekAheadCount, rs);
+                        if (lastTransactionId == null && peekAheadQueue.size() > 0) {
+                            Data data = peekAheadQueue.remove(0);
+                            copyToQueue(data);
                             dataCount++;
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    ChannelRouterContext.STAT_READ_DATA_MS);
-                        } else {
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    ChannelRouterContext.STAT_REREAD_DATA_MS);
+                            lastTransactionId = data.getTransactionId();
+                        } else if (lastTransactionId != null && peekAheadQueue.size() > 0) {
+                            Iterator<Data> datas = peekAheadQueue.iterator();
+                            int dataWithSameTransactionIdCount = 0;
+                            while (datas.hasNext()) {
+                                Data data = datas.next();
+                                if (lastTransactionId.equals(data.getTransactionId())) {
+                                    dataWithSameTransactionIdCount++;
+                                    datas.remove();
+                                    copyToQueue(data);
+                                    dataCount++;
+                                }
+                            }
+
+                            if (dataWithSameTransactionIdCount == 0) {
+                                lastTransactionId = null;
+                            }
+
+                        } else if (peekAheadQueue.size() == 0) {
+                            // we've reached the end of the result set
+                            break;
                         }
-
-                        ts = System.currentTimeMillis();
-
-                        if (toRead == 0) {
-                            copyToQueue(memQueue);
-                            toRead = maxQueueSize - dataQueue.size();
-                            memQueue = new ArrayList<Data>(toRead);
-                        } else {
-                            toRead--;
-                        }
-
-                        context.incrementStat(System.currentTimeMillis() - ts,
-                                ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
-
-                        ts = System.currentTimeMillis();
                     }
-
-                    ts = System.currentTimeMillis();
-
-                    copyToQueue(memQueue);
-
-                    context.incrementStat(System.currentTimeMillis() - ts,
-                            ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
 
                     return dataCount;
 
@@ -202,14 +190,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                         c.setAutoCommit(autoCommit);
                     }
 
-                    boolean done = false;
-                    do {
-                        done = dataQueue.offer(new EOD());
-                        if (!done) {
-                            AppUtils.sleep(50);
-                        }
-                    } while (!done && reading);
-
+                    copyToQueue(new EOD());
                     reading = false;
 
                 }
@@ -217,15 +198,52 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         });
     }
 
-    protected void copyToQueue(List<Data> memQueue) {
-        while (memQueue.size() > 0 && reading) {
-            Data d = memQueue.get(0);
-            if (dataQueue.offer(d)) {
-                memQueue.remove(0);
+    protected int fillPeekAheadQueue(List<Data> peekAheadQueue, int peekAheadCount, ResultSet rs)
+            throws SQLException {
+        int toRead = peekAheadCount - peekAheadQueue.size();
+        int dataCount = 0;
+        long ts = System.currentTimeMillis();
+        while (rs.next() && reading && dataCount < toRead) {
+            if (process(rs)) {
+                Data data = dataService.readData(rs);
+                context.setLastDataIdForTransactionId(data);
+                peekAheadQueue.add(data);
+                dataCount++;
+                context.incrementStat(System.currentTimeMillis() - ts,
+                        ChannelRouterContext.STAT_READ_DATA_MS);
             } else {
-                AppUtils.sleep(50);
+                context.incrementStat(System.currentTimeMillis() - ts,
+                        ChannelRouterContext.STAT_REREAD_DATA_MS);
             }
+
+            ts = System.currentTimeMillis();
+
         }
+        return dataCount;
+    }
+
+    protected ResultSet executeQuery(PreparedStatement ps) throws SQLException {
+        long ts = System.currentTimeMillis();
+        ResultSet rs = ps.executeQuery();
+        long executeTimeInMs = System.currentTimeMillis() - ts;
+        context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
+        if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+            log.warn("RoutedDataSelectedInTime", executeTimeInMs, context.getChannel()
+                    .getChannelId());
+        } else if (log.isDebugEnabled()) {
+            log.debug("RoutedDataSelectedInTime", executeTimeInMs, context.getChannel()
+                    .getChannelId());
+        }
+        return rs;
+    }
+
+    protected void copyToQueue(Data data) {
+        long ts = System.currentTimeMillis();
+        while (!dataQueue.offer(data) && reading) {
+            AppUtils.sleep(50);
+        }
+        context.incrementStat(System.currentTimeMillis() - ts,
+                ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
     }
 
     public boolean isReading() {
@@ -240,7 +258,12 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         return dataQueue;
     }
 
+    protected boolean process(ResultSet rs) throws SQLException {
+        return StringUtils.isBlank(rs.getString(13));
+    }
+
     class EOD extends Data {
         private static final long serialVersionUID = 1L;
     }
+
 }

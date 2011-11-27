@@ -361,12 +361,6 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                         if (context.isNeedsCommitted()) {
                             completeBatchesAndCommit(context);
-                            long maxDataToRoute = context.getChannel().getMaxDataToRoute();
-                            if (maxDataToRoute > 0 && totalDataCount > maxDataToRoute) {
-                                log.info("RoutedMaxNumberData", totalDataCount, context
-                                        .getChannel().getChannelId());
-                                break;
-                            }
                         }
                     } finally {
                         context.incrementStat(System.currentTimeMillis() - insertTs,
