@@ -24,21 +24,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ISqlProvider;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.support.JdbcUtils;
 
 /**
  * This class is responsible for reading data for the purpose of routing. It
@@ -48,14 +41,23 @@ import org.springframework.jdbc.support.JdbcUtils;
 public class DataGapRouteReader extends AbstractDataToRouteReader {
 
     private static final String SELECT_DATA_USING_GAPS_SQL = "selectDataUsingGapsSql";
+    
+    protected List<DataGap> dataGaps;
+    
+    protected DataGap currentGap;
 
     public DataGapRouteReader(ILog log, ISqlProvider sqlProvider, ChannelRouterContext context,
             IDataService dataService) {
         super(log, sqlProvider, context, dataService);
     }
+    
+    @Override
+    protected PreparedStatement prepareStatment(Connection c) throws SQLException {
+        int numberOfGapsToQualify = dataService.getParameterService().getInt(
+                ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
+        
+        this.dataGaps = dataService.findDataGaps();
 
-    protected PreparedStatement prepareStatment(List<DataGap> dataGaps, int numberOfGapsToQualify,
-            Connection c) throws SQLException {
         String channelId = context.getChannel().getChannelId();
         String sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify,
                 getSql(SELECT_DATA_USING_GAPS_SQL, context.getChannel().getChannel()));
@@ -75,6 +77,8 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
                 ps.setLong(i*2 + 3, gap.getEndId());
             }
         }
+        
+        this.currentGap = dataGaps.remove(0);
         return ps;
     }
 
@@ -92,126 +96,27 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
         gapClause.append(")");
         return FormatUtils.replace("dataRange", gapClause.toString(), sql);
     }
-
+    
     @Override
-    protected void execute() {
-        jdbcTemplate.execute(new ConnectionCallback<Integer>() {
-            public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
-                int dataCount = 0;
-                PreparedStatement ps = null;
-                ResultSet rs = null;
-                boolean autoCommit = c.getAutoCommit();
-                try {
-                    int numberOfGapsToQualify = dataService.getParameterService().getInt(
-                            ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
-                    List<DataGap> dataGaps = dataService.findDataGaps();
-
-                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
-                        c.setAutoCommit(false);
-                    }
-                    String channelId = context.getChannel().getChannelId();
-
-                    ps = prepareStatment(dataGaps, numberOfGapsToQualify, c);
-                    long ts = System.currentTimeMillis();
-                    rs = ps.executeQuery();
-                    long executeTimeInMs = System.currentTimeMillis() - ts;
-                    context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
-                    if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-                        log.warn("RoutedDataSelectedInTime", executeTimeInMs, channelId);
-                    } else if (log.isDebugEnabled()) {
-                        log.debug("RoutedDataSelectedInTime", executeTimeInMs, channelId);
-                    }
-
-                    int maxQueueSize = dbDialect.getRouterDataPeekAheadCount();
-                    int toRead = maxQueueSize - dataQueue.size();
-                    List<Data> memQueue = new ArrayList<Data>(toRead);
-                    ts = System.currentTimeMillis();
-
-                    DataGap currentGap = dataGaps.remove(0);
-                    while (rs.next() && reading && currentGap != null) {
-                        boolean process = false;
-                        while (!process) {
-                            long dataId = rs.getLong(1);
-                            if (dataId >= currentGap.getStartId()) {
-                                if (dataId <= currentGap.getEndId()) {
-                                    // in current gap
-                                    process = true;
-                                    break;
-                                } else {
-                                    // past current gap. move to next gap
-                                    if (dataGaps.size() > 0) {
-                                        currentGap = dataGaps.remove(0);
-                                    } else {
-                                        currentGap = null;
-                                        break;
-                                    }
-                                }
-                            } else {
-                                break;
-                            }
-                        }
-
-                        if (process) {
-                            Data data = dataService.readData(rs);
-                            context.setLastDataIdForTransactionId(data);
-                            memQueue.add(data);
-                            dataCount++;
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    ChannelRouterContext.STAT_READ_DATA_MS);
-                        } else {
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    ChannelRouterContext.STAT_REREAD_DATA_MS);
-                        }
-
-                        ts = System.currentTimeMillis();
-
-                        if (toRead == 0) {
-                            copyToQueue(memQueue);
-                            toRead = maxQueueSize - dataQueue.size();
-                            memQueue = new ArrayList<Data>(toRead);
-                        } else {
-                            toRead--;
-                        }
-
-                        context.incrementStat(System.currentTimeMillis() - ts,
-                                ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
-
-                        ts = System.currentTimeMillis();
-                    }
-
-                    ts = System.currentTimeMillis();
-
-                    copyToQueue(memQueue);
-
-                    context.incrementStat(System.currentTimeMillis() - ts,
-                            ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
-
-                    return dataCount;
-
-                } finally {
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(ps);
-                    rs = null;
-                    ps = null;
-
-                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
-                        c.commit();
-                        c.setAutoCommit(autoCommit);
-                    }
-
-                    boolean done = false;
-                    do {
-                        done = dataQueue.offer(new EOD());
-                        if (!done) {
-                            AppUtils.sleep(50);
-                        }
-                    } while (!done && reading);
-
-                    reading = false;
-
+    protected boolean process(ResultSet rs) throws SQLException {
+        long dataId = rs.getLong(1);
+        if (currentGap != null && dataId >= currentGap.getStartId()) {
+            if (dataId <= currentGap.getEndId()) {
+                return true;
+            } else {
+                // past current gap. move to next gap
+                if (dataGaps.size() > 0) {
+                    currentGap = dataGaps.remove(0);
+                    return process(rs);
+                } else {
+                    currentGap = null;
+                    return false;
                 }
             }
-        });
+        } else {
+            return false;
+        }
     }
+
 
 }
