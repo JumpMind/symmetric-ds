@@ -143,16 +143,18 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     int peekAheadCount = dbDialect.getRouterDataPeekAheadCount();
                     String lastTransactionId = null;
                     List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
-
+                    boolean nontransactional = context.getChannel().getBatchAlgorithm().equals("nontransactional");
+                    
                     ps = prepareStatment(c);
                     rs = executeQuery(ps);
+                                        
 
                     boolean moreData = true;
                     while (dataCount <= maxDataToRoute || lastTransactionId != null) {
                         if (moreData) {
                             moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, rs);
                         }
-                        if (lastTransactionId == null && peekAheadQueue.size() > 0) {
+                        if ((lastTransactionId == null || nontransactional) && peekAheadQueue.size() > 0) {
                             Data data = peekAheadQueue.remove(0);
                             copyToQueue(data);
                             dataCount++;
