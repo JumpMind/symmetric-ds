@@ -147,8 +147,11 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     ps = prepareStatment(c);
                     rs = executeQuery(ps);
 
+                    boolean moreData = true;
                     while (dataCount <= maxDataToRoute || lastTransactionId != null) {
-                        fillPeekAheadQueue(peekAheadQueue, peekAheadCount, rs);
+                        if (moreData) {
+                            moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, rs);
+                        }
                         if (lastTransactionId == null && peekAheadQueue.size() > 0) {
                             Data data = peekAheadQueue.remove(0);
                             copyToQueue(data);
@@ -198,28 +201,34 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         });
     }
 
-    protected int fillPeekAheadQueue(List<Data> peekAheadQueue, int peekAheadCount, ResultSet rs)
+    protected boolean fillPeekAheadQueue(List<Data> peekAheadQueue, int peekAheadCount, ResultSet rs)
             throws SQLException {
+        boolean moreData = true;
         int toRead = peekAheadCount - peekAheadQueue.size();
         int dataCount = 0;
         long ts = System.currentTimeMillis();
-        while (rs.next() && reading && dataCount < toRead) {
-            if (process(rs)) {
-                Data data = dataService.readData(rs);
-                context.setLastDataIdForTransactionId(data);
-                peekAheadQueue.add(data);
-                dataCount++;
-                context.incrementStat(System.currentTimeMillis() - ts,
-                        ChannelRouterContext.STAT_READ_DATA_MS);
+        while (reading && dataCount < toRead) {
+            if (rs.next()) {
+                if (process(rs)) {
+                    Data data = dataService.readData(rs);
+                    context.setLastDataIdForTransactionId(data);
+                    peekAheadQueue.add(data);
+                    dataCount++;
+                    context.incrementStat(System.currentTimeMillis() - ts,
+                            ChannelRouterContext.STAT_READ_DATA_MS);
+                } else {
+                    context.incrementStat(System.currentTimeMillis() - ts,
+                            ChannelRouterContext.STAT_REREAD_DATA_MS);
+                }
+
+                ts = System.currentTimeMillis();
             } else {
-                context.incrementStat(System.currentTimeMillis() - ts,
-                        ChannelRouterContext.STAT_REREAD_DATA_MS);
+                moreData = false;
+                break;
             }
 
-            ts = System.currentTimeMillis();
-
         }
-        return dataCount;
+        return moreData;
     }
 
     protected ResultSet executeQuery(PreparedStatement ps) throws SQLException {
