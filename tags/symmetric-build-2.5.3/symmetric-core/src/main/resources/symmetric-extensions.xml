@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <import resource="classpath*:META-INF/services/symmetric-*-ext.xml" />
+    <import resource="classpath*:/conf/*-extensions.xml" />
+    <import resource="file:../conf/*-extensions.xml" />
+    <import resource="classpath*:/symmetric-console.xml" />    
+
+    <bean id="extensionManager" class="org.jumpmind.symmetric.ext.ExtensionPointManager">
+        <property name="dataLoaderService" ref="dataLoaderService" />
+        <property name="dataService" ref="dataService" />
+        <property name="dataExtractorService" ref="dataExtractorService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
+        <property name="acknowledgeService" ref="acknowledgeService" />
+        <property name="registrationService" ref="registrationService" />
+        <property name="transportManager" ref="transportManager" />
+        <property name="routingService" ref="routingService" />
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="transformService" ref="transformService" />
+        <property name="offlineDetectorServices">
+          <list>
+            <ref bean="pullService"/>
+            <ref bean="pushService"/>
+          </list>
+        </property>
+    </bean>
+ 
+    <bean id="configChangedDataFilter" class="org.jumpmind.symmetric.load.ConfigurationChangedFilter">
+        <property name="parameterService" ref="parameterService" />
+        <property name="configurationService" ref="configurationService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
+        <property name="transformService" ref="transformService" />
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+    </bean>
+
+    <bean id="httpBandwidthUrlSelector" class="org.jumpmind.symmetric.transport.http.HttpBandwidthUrlSelector">
+        <property name="nodeService" ref="nodeService" />
+        <property name="bandwidthService" ref="bandwidthService" />
+    </bean>
+
+    <bean id="sendHeartbeat" class="org.jumpmind.symmetric.job.PushHeartbeatListener">
+        <property name="dataService" ref="dataService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dbDialect" ref="dbDialect"/>
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="enabled" value="$[sym.heartbeat.sync.on.push]"/>
+        <property name="timeBetweenHeartbeats" value="$[sym.heartbeat.sync.on.push.period.sec]" />
+    </bean>
+    
+    <bean id="offlineServerListener" class="org.jumpmind.symmetric.job.DefaultOfflineServerListener">
+        <property name="nodeService" ref="nodeService" />
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="statisticManager" ref="statisticManager" />
+    </bean>
+    
+    <bean id="offlineClientListener" class="org.jumpmind.symmetric.io.DefaultOfflineClientListener">
+        <property name="nodeService" ref="nodeService" />
+        <property name="parameterService" ref="parameterService" />
+    </bean>
+
+</beans>
