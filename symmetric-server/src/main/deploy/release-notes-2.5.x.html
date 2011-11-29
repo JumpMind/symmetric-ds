@@ -1,7 +1,29 @@
 <html>
 <body>
 
- <h1>
+<h1>
+Version 2.5.2
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-555'>SYMMETRICDS-555</a>] -         Connection pool can exhaust at high activity because of out of order interceptors in 2.5
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-556'>SYMMETRICDS-556</a>] -         Slow extracts - During the extract process routers are being queried from the database for each data event read.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-557'>SYMMETRICDS-557</a>] -         sym_data_gap can be left stranded without a required last gap entry record
+</li>
+</ul>
+            
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-559'>SYMMETRICDS-559</a>] -         Add support for geometry types in postgres.  The fix should work for other unknown types that can be cast and dealt with as varchar fields
+</li>
+</ul>
+
+<h1>
 Version 2.5.2
 </h1>
 
