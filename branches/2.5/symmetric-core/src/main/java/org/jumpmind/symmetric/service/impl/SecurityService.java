@@ -69,9 +69,13 @@ public class SecurityService extends AbstractService implements ISecurityService
             secretKey = getSecretKey();
         }
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
-        AlgorithmParameterSpec paramSpec = new PBEParameterSpec(SecurityConstants.SALT,
-                SecurityConstants.ITERATION_COUNT);
-        cipher.init(mode, secretKey, paramSpec);
+        if (secretKey.getAlgorithm().indexOf("PBE") != -1) {
+	        AlgorithmParameterSpec paramSpec = new PBEParameterSpec(SecurityConstants.SALT,
+	                SecurityConstants.ITERATION_COUNT);
+	        cipher.init(mode, secretKey, paramSpec);
+        } else {
+        	cipher.init(mode, secretKey);
+        }
         return cipher;
     }
 
