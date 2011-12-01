@@ -75,7 +75,8 @@
         <property name="db2zSeriesProductVersion" value="$[sym.db2.zseries.version]" />
         <property name="queryTimeout" value="$[sym.db.sql.query.timeout.seconds]"/>   
         <property name="forceDelimitedIdentifierModeOn" value="$[sym.db.force.delimited.identifier.mode.on]"/>
-        <property name="forceDelimitedIdentifierModeOff" value="$[sym.db.force.delimited.identifier.mode.off]"/>             
+        <property name="forceDelimitedIdentifierModeOff" value="$[sym.db.force.delimited.identifier.mode.off]"/>
+        <property name="parameterService" ref="parameterService" />             
     </bean>
 
 </beans>

@@ -21,14 +21,17 @@ package org.jumpmind.db.platform.firebird;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
+import javax.sql.DataSource;
+
 import org.jumpmind.db.DatabasePlatformInfo;
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform implementation for the Firebird database.
  * It is assumed that the database is configured with sql dialect 3!
  */
-public class FirebirdPlatform extends AbstractDatabasePlatform {
+public class FirebirdPlatform extends AbstractJdbcDatabasePlatform {
     /* Database name of this platform. */
     public static final String DATABASENAME = "Firebird";
 
@@ -41,7 +44,8 @@ public class FirebirdPlatform extends AbstractDatabasePlatform {
     /*
      * Creates a new Firebird platform instance.
      */
-    public FirebirdPlatform() {
+    public FirebirdPlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         DatabasePlatformInfo info = getPlatformInfo();
 

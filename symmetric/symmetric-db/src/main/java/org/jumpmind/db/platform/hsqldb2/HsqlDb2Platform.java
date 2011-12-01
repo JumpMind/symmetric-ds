@@ -21,12 +21,15 @@ package org.jumpmind.db.platform.hsqldb2;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
+import javax.sql.DataSource;
+
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform implementation for the HsqlDb database.
  */
-public class HsqlDb2Platform extends AbstractDatabasePlatform {
+public class HsqlDb2Platform extends AbstractJdbcDatabasePlatform {
     /* Database name of this platform. */
     public static final String DATABASENAME = "HSQL Database Engine2";
 
@@ -39,7 +42,8 @@ public class HsqlDb2Platform extends AbstractDatabasePlatform {
     /*
      * Creates a new instance of the Hsqldb platform.
      */
-    public HsqlDb2Platform() {
+    public HsqlDb2Platform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         info.setNonPKIdentityColumnsSupported(false);
         info.setIdentityOverrideAllowed(false);

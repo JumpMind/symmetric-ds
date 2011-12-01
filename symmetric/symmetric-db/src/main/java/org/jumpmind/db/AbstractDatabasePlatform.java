@@ -28,6 +28,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.util.Log;
 import org.jumpmind.util.LogFactory;
@@ -66,8 +67,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     /* Whether read foreign keys shall be sorted alphabetically. */
     protected boolean foreignKeysSorted;
 
-    public AbstractDatabasePlatform() {
+    public AbstractDatabasePlatform(Log log) {
+        this.log = log;
     }
+    
+    abstract public ISqlTemplate getSqlTemplate();
 
     public void setLog(Log log) {
         this.log = log;

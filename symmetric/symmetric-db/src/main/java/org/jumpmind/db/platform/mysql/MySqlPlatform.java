@@ -21,13 +21,15 @@ package org.jumpmind.db.platform.mysql;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.AbstractDdlBuilder;
+import javax.sql.DataSource;
+
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform implementation for MySQL.
  */
-public class MySqlPlatform extends AbstractDatabasePlatform {
+public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
 
     /* Database name of this platform. */
     public static final String DATABASENAME = "MySQL";
@@ -44,7 +46,8 @@ public class MySqlPlatform extends AbstractDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MySqlPlatform() {
+    public MySqlPlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         info.setMaxIdentifierLength(64);
         info.setNullAsDefaultValueRequired(true);

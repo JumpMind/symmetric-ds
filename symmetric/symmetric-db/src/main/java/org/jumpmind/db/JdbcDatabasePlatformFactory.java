@@ -19,6 +19,7 @@ package org.jumpmind.db;
  * under the License.
  */
 
+import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -45,6 +46,7 @@ import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.db.platform.sqlite.SqLitePlatform;
 import org.jumpmind.db.platform.sybase.SybasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * A factory of {@link IDatabasePlatform} instances based on a case
@@ -105,18 +107,37 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(FirebirdPlatform.JDBC_SUBPROTOCOL,
                 FirebirdPlatform.DATABASENAME);
     }
-
+    
     /*
-     * Creates a new platform for the given (case insensitive) database name or
-     * returns null if the database is not recognized.
+     * Creates a new platform for the specified database.  Note that this method installs 
+     * the data source in the returned platform instance.
      * 
-     * @param databaseName The name of the database (case is not important)
+     * @param dataSource The data source for the database
+     * @param log The logger that the platform should use
      * 
      * @return The platform or <code>null</code> if the database is not
      * supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(String[] nameVersion)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, Log log)
             throws DdlUtilsException {
+        
+        // connects to the database and uses actual metadata info to get db name
+        // and version to determine platform
+        String[] nameVersion = determineDatabaseNameVersionSubprotocol(dataSource);
+
+        Class<? extends IDatabasePlatform> clazz =  findPlatformClass(nameVersion);
+        
+        try {
+            Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, Log.class);
+            return construtor.newInstance(dataSource, log);
+        } catch (Exception e) {
+            throw new DdlUtilsException("Could not create a platform of type " + nameVersion[0], e);
+        }
+    }
+
+
+    protected static synchronized Class<? extends IDatabasePlatform> findPlatformClass(
+            String[] nameVersion) throws DdlUtilsException {
         Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
                 nameVersion[0], nameVersion[1]).toLowerCase());
         if (platformClass == null) {
@@ -130,37 +151,15 @@ public class JdbcDatabasePlatformFactory {
             }
         }
 
-        try {
-            return platformClass != null ? (IDatabasePlatform) platformClass.newInstance() : null;
-        } catch (Exception ex) {
-            throw new DdlUtilsException("Could not create platform for database " + nameVersion[0],
-                    ex);
+        if (platformClass == null) {
+            throw new DdlUtilsException("Could not find platform for database " + nameVersion[0]);
+        } else {
+            return platformClass;
         }
+
     }
 
-    /*
-     * Creates a new platform for the specified database. This is a shortcut
-     * method that uses {@link PlatformUtils#determineDatabaseType(DataSource)}
-     * to determine the parameter for {@link
-     * #createNewPlatformInstance(String)}. Note that this method sets the data
-     * source at the returned platform instance (method {@link
-     * Platform#setDataSource(DataSource)}).
-     * 
-     * @param dataSource The data source for the database
-     * 
-     * @return The platform or <code>null</code> if the database is not
-     * supported
-     */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource)
-            throws DdlUtilsException {
-        // connects to the database and uses actual metadata info to get db name
-        // and version to determine platform
-        String[] nameVersion = determineDatabaseNameVersionSubprotocol(dataSource);
-
-        return createNewPlatformInstance(nameVersion);
-    }
-
-    public static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource)
+    protected static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource)
             throws DatabaseOperationException {
         Connection connection = null;
         String[] nameVersion = new String[3];

@@ -7,7 +7,7 @@ public class LogFactory {
     
     private static Class<?> logClass;
 
-    private static Map<Class<?>, Log> logs = new HashMap<Class<?>, Log>();
+    private static Map<String, Log> logs = new HashMap<String, Log>();
     
     public static void setLogClass(Class<?> logClass) {
         LogFactory.logClass = logClass;
@@ -30,8 +30,12 @@ public class LogFactory {
             } 
         }
     }
-
+    
     public static Log getLog(Class<?> clazz) {
+        return getLog(clazz.getName());
+    }
+
+    public static Log getLog(String clazz) {
         Log log = logs.get(clazz);
         if (log == null) {
             synchronized (logs) {

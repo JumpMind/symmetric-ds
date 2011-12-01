@@ -21,36 +21,40 @@ package org.jumpmind.db.platform.oracle;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.AbstractDdlBuilder;
+import javax.sql.DataSource;
+
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform for Oracle 8.
- * 
- * TODO: We might support the {@link org.jumpmind.symmetric.ddl.Platform#createDatabase(String, String, String, String, Map)}
- *       functionality via "CREATE SCHEMA"/"CREATE USER" or "CREATE TABLESPACE" ?
- *
- * @version $Revision: 231306 $
  */
-public class OraclePlatform extends AbstractDatabasePlatform {
+public class OraclePlatform extends AbstractJdbcDatabasePlatform {
+    
     /* Database name of this platform. */
     public static final String DATABASENAME = "Oracle";
+    
     /* The standard Oracle jdbc driver. */
     public static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
+    
     /* The old Oracle jdbc driver. */
     public static final String JDBC_DRIVER_OLD = "oracle.jdbc.dnlddriver.OracleDriver";
+    
     /* The thin subprotocol used by the standard Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_THIN = "oracle:thin";
+    
     /* The thin subprotocol used by the standard Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_OCI8 = "oracle:oci8";
+    
     /* The old thin subprotocol used by the standard Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_THIN_OLD = "oracle:dnldthin";
 
     /*
      * Creates a new platform instance.
      */
-    public OraclePlatform() {
-
+    public OraclePlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
+        
         info.setMaxIdentifierLength(30);
         info.setIdentityStatusReadingSupported(false);
 

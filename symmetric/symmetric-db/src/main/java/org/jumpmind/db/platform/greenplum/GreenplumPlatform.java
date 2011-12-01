@@ -1,6 +1,9 @@
 package org.jumpmind.db.platform.greenplum;
 
+import javax.sql.DataSource;
+
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
+import org.jumpmind.util.Log;
 
 public class GreenplumPlatform extends PostgreSqlPlatform {
 
@@ -12,7 +15,8 @@ public class GreenplumPlatform extends PostgreSqlPlatform {
     public static final String SQL_GET_GREENPLUM_NAME = "select gpname from gp_id";
     public static final String SQL_GET_GREENPLUM_VERSION = "select productversion from gp_version_at_initdb";    
     
-    public GreenplumPlatform() {
+    public GreenplumPlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
         info.setTriggersSupported(false);
         this.ddlReader = new GreenplumDdlReader(log, this);
     }

@@ -8,9 +8,9 @@ public class Log4jLog extends Log {
     Logger logger;
 
     @Override
-    protected void initialize(Class<?> clazz) {
+    protected void initialize(String clazz) {
         super.initialize(clazz);
-        logger = Logger.getLogger(clazz.getName());
+        logger = Logger.getLogger(clazz);
     }
 
     public void log(LogLevel level, String msg, Object... params) {
