@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -48,8 +49,8 @@ import org.springframework.jdbc.support.JdbcUtils;
 
 /**
  * This class is responsible for reading data for the purpose of routing. It
- * reads ahead and tries to keep a blocking queue populated for other threads to
- * process.
+ * reads ahead and tries to keep a blocking queue populated for the main job thread 
+ * to process.
  */
 abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
 
@@ -91,7 +92,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         }
 
         if (data == null) {
-            log.warn("RouterDataReaderNotResponding");
+            throw new SymmetricException("RouterDataReaderNotResponding");
         } else if (data instanceof EOD) {
             data = null;
         }
@@ -148,12 +149,12 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     ps = prepareStatment(c);
                     rs = executeQuery(ps);
                                         
-
                     boolean moreData = true;
                     while (dataCount <= maxDataToRoute || lastTransactionId != null) {
                         if (moreData) {
                             moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, rs);
                         }
+                        
                         if ((lastTransactionId == null || nontransactional) && peekAheadQueue.size() > 0) {
                             Data data = peekAheadQueue.remove(0);
                             copyToQueue(data);
