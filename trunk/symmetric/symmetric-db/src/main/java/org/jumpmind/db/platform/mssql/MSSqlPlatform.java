@@ -21,13 +21,15 @@ package org.jumpmind.db.platform.mssql;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.AbstractDdlBuilder;
+import javax.sql.DataSource;
+
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform implementation for the Microsoft SQL Server database.
  */
-public class MSSqlPlatform extends AbstractDatabasePlatform {
+public class MSSqlPlatform extends AbstractJdbcDatabasePlatform {
     /* Database name of this platform. */
     public static final String DATABASENAME = "MsSql";
 
@@ -40,7 +42,8 @@ public class MSSqlPlatform extends AbstractDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MSSqlPlatform() {
+    public MSSqlPlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         info.setMaxIdentifierLength(128);
 

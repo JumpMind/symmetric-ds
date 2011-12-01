@@ -41,8 +41,10 @@ import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.db.platform.sqlite.SqLitePlatform;
 import org.jumpmind.db.platform.sybase.SybasePlatform;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
@@ -59,6 +61,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
 
     private static final ILog log = LogFactory.getLog(DbDialectFactory.class);
 
+    private IParameterService parameterService;
+    
     private String db2zSeriesProductVersion;
 
     private JdbcTemplate jdbcTemplate;
@@ -74,8 +78,9 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     public IDbDialect getObject() throws Exception {
 
         waitForAvailableDatabase();
-
-        IDatabasePlatform pf = JdbcDatabasePlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
+        
+        IDatabasePlatform pf = JdbcDatabasePlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource(), 
+                org.jumpmind.util.LogFactory.getLog("org.jumpmind." + parameterService.getString(ParameterConstants.ENGINE_NAME)));
         
         if (forceDelimitedIdentifierModeOn) {
             pf.setDelimitedIdentifierModeOn(true);
@@ -192,4 +197,9 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     public void setForceDelimitedIdentifierModeOff(boolean forceDelimitedIdentifierModeOff) {
         this.forceDelimitedIdentifierModeOff = forceDelimitedIdentifierModeOff;
     }
+    
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
+    
 }

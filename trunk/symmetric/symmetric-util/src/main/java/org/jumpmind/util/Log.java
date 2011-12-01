@@ -2,7 +2,7 @@ package org.jumpmind.util;
 
 abstract public class Log {
 
-    protected Class<?> clazz;
+    protected String clazz;
 
     public abstract void log(LogLevel level, Throwable error, String msg, Object... params);
 
@@ -44,7 +44,7 @@ abstract public class Log {
 
     public abstract boolean isDebugEnabled();
 
-    protected void initialize(Class<?> clazz) {
+    protected void initialize(String clazz) {
         this.clazz = clazz;
     }
 

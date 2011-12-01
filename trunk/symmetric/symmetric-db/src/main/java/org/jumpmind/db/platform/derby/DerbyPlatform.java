@@ -21,12 +21,15 @@ package org.jumpmind.db.platform.derby;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
+import javax.sql.DataSource;
+
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform implementation for Derby.
  */
-public class DerbyPlatform extends AbstractDatabasePlatform {
+public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
 
     /* Database name of this platform. */
     public static final String DATABASENAME = "Apache Derby";
@@ -43,7 +46,8 @@ public class DerbyPlatform extends AbstractDatabasePlatform {
     /*
      * Creates a new Derby platform instance.
      */
-    public DerbyPlatform() {
+    public DerbyPlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         info.setMaxIdentifierLength(128);
         info.setSystemForeignKeyIndicesAlwaysNonUnique(true);

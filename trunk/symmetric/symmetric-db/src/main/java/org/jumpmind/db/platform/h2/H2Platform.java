@@ -21,13 +21,16 @@ package org.jumpmind.db.platform.h2;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
+import javax.sql.DataSource;
+
 import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform implementation for the H2 database.
  */
-public class H2Platform extends AbstractDatabasePlatform implements IDatabasePlatform {
+public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
     /* Database name of this platform. */
     public static final String[] DATABASENAMES = { "H2", "H21" };
@@ -41,7 +44,8 @@ public class H2Platform extends AbstractDatabasePlatform implements IDatabasePla
     /*
      * Creates a new instance of the H2 platform.
      */
-    public H2Platform() {
+    public H2Platform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         info.setNonPKIdentityColumnsSupported(false);
         info.setIdentityOverrideAllowed(false);

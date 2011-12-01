@@ -21,14 +21,16 @@ package org.jumpmind.db.platform.sqlite;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
+import javax.sql.DataSource;
+
 import org.jumpmind.db.IDatabasePlatform;
-import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform implementation for the SQLite database.
  */
-public class SqLitePlatform extends AbstractDatabasePlatform implements IDatabasePlatform {
+public class SqLitePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
     /* Database name of this platform. */
     public static final String DATABASENAME = "SQLite3";
@@ -39,7 +41,8 @@ public class SqLitePlatform extends AbstractDatabasePlatform implements IDatabas
     /*
      * Creates a new instance of the H2 platform.
      */
-    public SqLitePlatform() {
+    public SqLitePlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         info.setNonPKIdentityColumnsSupported(false);
         info.setIdentityOverrideAllowed(false);

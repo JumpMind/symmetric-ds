@@ -21,13 +21,15 @@ package org.jumpmind.db.platform.postgresql;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.AbstractDdlBuilder;
+import javax.sql.DataSource;
+
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform implementation for PostgresSql.
  */
-public class PostgreSqlPlatform extends AbstractDatabasePlatform {
+public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
     /* Database name of this platform. */
     public static final String DATABASENAME = "PostgreSql";
     /* The standard PostgreSQL jdbc driver. */
@@ -38,7 +40,8 @@ public class PostgreSqlPlatform extends AbstractDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public PostgreSqlPlatform() {
+    public PostgreSqlPlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         // this is the default length though it might be changed when building
         // PostgreSQL

@@ -21,13 +21,15 @@ package org.jumpmind.db.platform.sybase;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.platform.AbstractDdlBuilder;
+import javax.sql.DataSource;
+
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The platform implementation for Sybase.
  */
-public class SybasePlatform extends AbstractDatabasePlatform {
+public class SybasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* Database name of this platform. */
     public static final String DATABASENAME = "Sybase";
@@ -44,7 +46,8 @@ public class SybasePlatform extends AbstractDatabasePlatform {
     /* The maximum size that text and binary columns can have. */
     public static final long MAX_TEXT_SIZE = 2147483647;
 
-    public SybasePlatform() {
+    public SybasePlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         info.setMaxIdentifierLength(128);
         info.setNullAsDefaultValueRequired(true);

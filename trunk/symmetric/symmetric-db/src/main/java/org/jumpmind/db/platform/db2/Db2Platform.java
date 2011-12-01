@@ -21,12 +21,15 @@ package org.jumpmind.db.platform.db2;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
+import javax.sql.DataSource;
+
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
 
 /*
  * The DB2 platform implementation.
  */
-public class Db2Platform extends AbstractDatabasePlatform {
+public class Db2Platform extends AbstractJdbcDatabasePlatform {
 
     /* Database name of this platform. */
     public static final String DATABASENAME = "DB2";
@@ -40,7 +43,8 @@ public class Db2Platform extends AbstractDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public Db2Platform() {
+    public Db2Platform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         // the BINARY types are also handled by Db2Builder.getSqlType(Column)
         info.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);

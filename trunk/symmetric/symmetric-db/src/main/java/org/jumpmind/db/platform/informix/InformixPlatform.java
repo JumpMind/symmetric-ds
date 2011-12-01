@@ -2,10 +2,13 @@ package org.jumpmind.db.platform.informix;
 
 import java.sql.Types;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
-import org.jumpmind.db.IDatabasePlatform;
+import javax.sql.DataSource;
 
-public class InformixPlatform extends AbstractDatabasePlatform implements IDatabasePlatform {
+import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.util.Log;
+
+public class InformixPlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
     public static final String DATABASENAME = "Informix Dynamic Server11";
 
@@ -13,7 +16,8 @@ public class InformixPlatform extends AbstractDatabasePlatform implements IDatab
 
     public static final String JDBC_SUBPROTOCOL = "informix-sqli";
 
-    public InformixPlatform() {
+    public InformixPlatform(DataSource dataSource, Log log) {
+        super(dataSource, log);
 
         info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
         info.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);
