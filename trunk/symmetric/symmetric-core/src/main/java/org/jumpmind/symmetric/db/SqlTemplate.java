@@ -96,6 +96,8 @@ public class SqlTemplate {
 
     private String newColumnPrefix = "";
 
+    private String otherColumnTemplate;
+    
     public String createInitalLoadSql(Node node, IDbDialect dialect, TriggerRouter triggerRouter,
             Table table, TriggerHistory triggerHistory, Channel channel) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
@@ -606,6 +608,8 @@ public class SqlTemplate {
                     break;
                 case Types.NULL:
                 case Types.OTHER:
+                	templateToUse = this.otherColumnTemplate;
+                	break;
                 case Types.JAVA_OBJECT:
                 case Types.DISTINCT:
                 case Types.STRUCT:
@@ -659,7 +663,15 @@ public class SqlTemplate {
         return new ColumnString(columnsText, isLob);
     }
 
-    private boolean noTimeColumnTemplate() {
+    public String getOtherColumnTemplate() {
+		return otherColumnTemplate;
+	}
+
+	public void setOtherColumnTemplate(String otherColumnTemplate) {
+		this.otherColumnTemplate = otherColumnTemplate;
+	}
+
+	private boolean noTimeColumnTemplate() {
         return timeColumnTemplate == null || timeColumnTemplate.equals("null")
                 || timeColumnTemplate.trim().equals("");
     }
@@ -728,6 +740,9 @@ public class SqlTemplate {
             case -10: // SQL-Server ntext binary type
                 text += "varbinary(max)\n";
                 break;
+            case Types.OTHER:
+        		text +="varbinary(max)\n";
+        		break;
             default:
                 if (columns[i].getJdbcTypeName() != null
                         && columns[i].getJdbcTypeName().equalsIgnoreCase("interval")) {
@@ -901,5 +916,4 @@ public class SqlTemplate {
         }
 
     }
-
 }
