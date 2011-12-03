@@ -81,7 +81,7 @@
                 </property>
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",$$\$$,$$\\$$),'"',$$\"$$) || '"' end ]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace(cast($(tableAlias)."$(columnName)" as varchar),$$\$$,$$\\$$),'"',$$\"$$) || '"' end ]]>
                     </value>
                 </property>
                 <property name="arrayColumnTemplate" >
@@ -121,7 +121,7 @@
                 </property>
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.MS') || '"' end ]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.US') || '"' end ]]>
                     </value>
                 </property>
                 <property name="otherColumnTemplate" >
