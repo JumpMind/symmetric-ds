@@ -73,7 +73,7 @@ public class DataRefGapDetector implements IDataToRouteGapDetector {
         long ts = System.currentTimeMillis();
         final int dataIdIncrementBy = parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
         long lastDataId = (Long) jdbcTemplate.query(sqlProvider.getSql("selectDistinctDataIdFromDataEventSql"),
-                new Object[] { ref.getRefDataId() }, new int[] { Types.INTEGER },
+                new Object[] { ref.getRefDataId() }, new int[] { Types.NUMERIC },
                 new ResultSetExtractor<Long>() {
                     public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
                         long lastDataId = ref.getRefDataId();
