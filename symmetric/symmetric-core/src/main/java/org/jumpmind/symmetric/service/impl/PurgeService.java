@@ -211,8 +211,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.registerSqlType(PARAM_CUTOFF_TIME, Types.TIMESTAMP);
-        parameterSource.registerSqlType(PARAM_MIN, Types.INTEGER);
-        parameterSource.registerSqlType(PARAM_MAX, Types.INTEGER);
+        parameterSource.registerSqlType(PARAM_MIN, Types.NUMERIC);
+        parameterSource.registerSqlType(PARAM_MAX, Types.NUMERIC);
         parameterSource.addValue(PARAM_CUTOFF_TIME, new Timestamp(retentionTime.getTime()));
 
         while (minId <= purgeUpToId) {
