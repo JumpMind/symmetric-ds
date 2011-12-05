@@ -180,7 +180,7 @@ public abstract class AbstractTransformer {
                 for (TransformedData data : datas) {
                     try {
                         Object columnValue = transformColumn(context, data, transformColumn,
-                                sourceKeyValues, oldSourceValues);
+                        		sourceValues, oldSourceValues);
                         if (columnValue instanceof String) {
                             data.put(transformColumn, (String) columnValue, true);
                         } else if (columnValue instanceof List) {
