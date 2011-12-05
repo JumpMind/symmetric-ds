@@ -251,7 +251,7 @@ public class DataService extends AbstractService implements IDataService {
         try {
             template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId,
                     StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId },
-                    new int[] { Types.INTEGER, Types.INTEGER, Types.VARCHAR });
+                    new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR });
         } catch (RuntimeException ex) {
             log.error("DataEventInsertFailed", ex, dataId, batchId, routerId);
             throw ex;
@@ -618,30 +618,30 @@ public class DataService extends AbstractService implements IDataService {
     public void insertDataGap(DataGap gap) {
         jdbcTemplate.update(getSql("insertDataGapSql"), new Object[] { DataGap.Status.GP.name(),
                 AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
-                Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER });
+                Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
     }
 
     public void updateDataGap(DataGap gap, DataGap.Status status) {
         jdbcTemplate.update(
                 getSql("updateDataGapSql"),
                 new Object[] { status.name(), AppUtils.getHostName(), gap.getStartId(),
-                        gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
-                        Types.INTEGER });
+                        gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
+                        Types.NUMERIC });
     }
 
     public void saveDataRef(DataRef dataRef) {
         if (0 >= jdbcTemplate.update(getSql("updateDataRefSql"), new Object[] {
-                dataRef.getRefDataId(), dataRef.getRefTime() }, new int[] { Types.INTEGER,
+                dataRef.getRefDataId(), dataRef.getRefTime() }, new int[] { Types.NUMERIC,
                 Types.TIMESTAMP })) {
             jdbcTemplate.update(getSql("insertDataRefSql"), new Object[] { dataRef.getRefDataId(),
-                    dataRef.getRefTime() }, new int[] { Types.INTEGER, Types.TIMESTAMP });
+                    dataRef.getRefTime() }, new int[] { Types.NUMERIC, Types.TIMESTAMP });
         }
     }
 
     public Date findCreateTimeOfEvent(long dataId) {
         try {
             return (Date) jdbcTemplate.queryForObject(getSql("findDataEventCreateTimeSql"),
-                    new Object[] { dataId }, new int[] { Types.INTEGER }, Date.class);
+                    new Object[] { dataId }, new int[] { Types.NUMERIC }, Date.class);
         } catch (EmptyResultDataAccessException ex) {
             return null;
         }
@@ -650,7 +650,7 @@ public class DataService extends AbstractService implements IDataService {
     public Date findCreateTimeOfData(long dataId) {
         try {
             return (Date) jdbcTemplate.queryForObject(getSql("findDataCreateTimeSql"),
-                    new Object[] { dataId }, new int[] { Types.INTEGER }, Date.class);
+                    new Object[] { dataId }, new int[] { Types.NUMERIC }, Date.class);
         } catch (EmptyResultDataAccessException ex) {
             return null;
         }
