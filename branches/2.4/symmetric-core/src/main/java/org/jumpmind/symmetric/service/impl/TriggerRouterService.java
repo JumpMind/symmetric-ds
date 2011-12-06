@@ -489,13 +489,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     public Router getRouterById(String routerId, boolean refreshCache) {
-        long routerCacheTimeoutInMs = parameterService
+        final long routerCacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
         Map<String, Router> cache = this.routersCache;
         if (cache == null || refreshCache
                 || System.currentTimeMillis() - this.routersCacheTime > routerCacheTimeoutInMs) {
             synchronized (this) {
-                this.triggerRouterCacheTime = System.currentTimeMillis();
+                this.routersCacheTime = System.currentTimeMillis();
                 List<Router> routers = getRouters();
                 cache = new HashMap<String, Router>(routers.size());
                 for (Router router : routers) {
