@@ -18,13 +18,11 @@ package org.jumpmind.db;
  * specific language governing permissions and limitations
  * under the License.
  */
-import java.sql.Connection;
-import java.sql.SQLException;
 
-import javax.sql.DataSource;
 
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlTemplate;
 
 /*
  * A platform encapsulates the database-related functionality such as performing queries
@@ -53,6 +51,8 @@ public interface IDatabasePlatform {
      * @return The model reader
      */
     public IDdlReader getDdlReader();
+    
+    public ISqlTemplate getSqlTemplate();
 
     /*
      * Determines whether script mode is on. This means that the generated SQL
@@ -146,30 +146,14 @@ public interface IDatabasePlatform {
     /*
      * Reads the database model from the live database to which the given
      * connection is pointing.
-     * 
-     * @param connection The connection to the database
-     * 
-     * @param catalog The catalog to access in the database; use
-     * <code>null</code> for the default value
-     * 
-     * @param schema The schema to access in the database; use <code>null</code>
-     * for the default value
-     * 
-     * @param tableTypes The table types to process; use <code>null</code> or an
-     * empty list for the default ones
-     * 
-     * @return The database model
-     * 
-     * @throws DatabaseOperationException If an error occurred during reading
-     * the model
      */
-    public Database readDatabase(Connection connection, String catalog,
-            String schema, String[] tableTypes) throws DatabaseOperationException;
+    public Database readDatabase(String catalog, String schema,
+            String[] tableTypes);
 
-    public Table readTableFromDatabase(Connection connection, String catalogName,
-            String schemaName, String tablename) throws SQLException;
+    public Table readTableFromDatabase(String catalogName, String schemaName,
+            String tablename);
     
-    public void createDatabase(DataSource dataSource, Database targetDatabase,
-            boolean dropTablesFirst, boolean continueOnError);
+    public void createDatabase(Database targetDatabase, boolean dropTablesFirst,
+            boolean continueOnError);
 
 }

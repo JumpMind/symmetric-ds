@@ -59,7 +59,6 @@ import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.profile.IProfile;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -106,8 +105,6 @@ public class SymmetricLauncher {
 
     private static final String OPTION_RUN_SQL = "run-sql";
 
-    private static final String OPTION_RUN_PROFILE = "run-profile";
-
     private static final String OPTION_PROPERTIES_GEN = "generate-default-properties";
 
     private static final String OPTION_EXPORT_SCHEMA = "export-schema";
@@ -135,8 +132,6 @@ public class SymmetricLauncher {
     private static final String OPTION_VERBOSE_CONSOLE = "verbose";
 
     private static final String OPTION_DEBUG = "debug";
-
-    private static final String OPTION_PROFILE = "profile";
 
     private static final String OPTION_NOCONSOLE = "noconsole";
 
@@ -320,7 +315,6 @@ public class SymmetricLauncher {
         addOption(options, "g", OPTION_PROPERTIES_GEN, true);
         addOption(options, "r", OPTION_RUN_DDL_XML, true);
         addOption(options, "s", OPTION_RUN_SQL, true);
-        addOption(options, OPTION_PROFILE, OPTION_RUN_PROFILE, true);
 
         addOption(options, "a", OPTION_AUTO_CREATE, false);
         addOption(options, "R", OPTION_OPEN_REGISTRATION, true);
@@ -488,13 +482,6 @@ public class SymmetricLauncher {
             return true;
         }
 
-        if (line.hasOption(OPTION_RUN_PROFILE)) {
-            testConnection(line);
-            runProfile(createEngine(propertiesFile), line.getOptionValue(OPTION_RUN_PROFILE));
-            System.exit(0);
-            return true;
-        }
-
         if (line.hasOption(OPTION_LOAD_BATCH)) {
             testConnection(line);
             loadBatch(createEngine(propertiesFile), line.getOptionValue(OPTION_LOAD_BATCH));
@@ -581,8 +568,8 @@ public class SymmetricLauncher {
         Connection c = null;
         try {
             c = engine.getDataSource().getConnection();
-            Database db = platform.readDatabase(c, engine.getDbDialect().getDefaultCatalog(),
-                    engine.getDbDialect().getDefaultSchema(), null);
+            Database db = platform.readDatabase(engine.getDbDialect().getDefaultCatalog(), engine.getDbDialect().getDefaultSchema(),
+                    null);
             c.close();
             new DatabaseIO().write(db, fileName);
         } catch (SQLException ex) {
@@ -668,7 +655,7 @@ public class SymmetricLauncher {
         if (file.exists() && file.isFile()) {
             IDatabasePlatform pf = dialect.getPlatform();
             Database db = new DatabaseIO().read(new File(fileName));
-            pf.createDatabase(engine.getDataSource(), db, false, true);
+            pf.createDatabase(db, false, true);
         } else {
             throw new SymmetricException("FileNotFound", fileName);
         }
@@ -680,29 +667,11 @@ public class SymmetricLauncher {
                 Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
-            SqlScript script = new SqlScript(file.toURI().toURL(), engine.getDataSource(), true,
+            SqlScript script = new SqlScript(file.toURI().toURL(), dialect.getPlatform().getSqlTemplate(), true,
                     SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens());
             script.execute();
         } else {
             throw new SymmetricException("FileNotFound", fileName);
-        }
-    }
-
-    private static void runProfile(ISymmetricEngine engine, String profileName)
-            throws FileNotFoundException, MalformedURLException {
-        IProfile profile = (IProfile) engine.getApplicationContext().getBean(profileName);
-        if (profile != null) {
-            if (profile.isCompatible(engine)) {
-                try {
-                    profile.configure(engine);
-                } catch (Exception ex) {
-                    throw new SymmetricException("ProfileError", ex, profileName);
-                }
-            } else {
-                throw new SymmetricException("ProfileNotCompatible", profileName);
-            }
-        } else {
-            throw new SymmetricException("ProfileNotFound", profileName);
         }
     }
 

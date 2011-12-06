@@ -39,7 +39,7 @@ public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {
             try {
                 log.info("EnvironmentVariablesCreating", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
                         SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
-                new SqlScript(getSqlScriptUrl(), jdbcTemplate.getDataSource(), ";").execute();
+                new SqlScript(getSqlScriptUrl(), getPlatform().getSqlTemplate(), ";").execute();
             } catch (Exception ex) {
                 log.error("DB2DialectInitializingError", ex);
             }

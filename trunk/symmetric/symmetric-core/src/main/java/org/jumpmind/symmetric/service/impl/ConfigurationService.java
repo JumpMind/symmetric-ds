@@ -383,7 +383,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     Database database = new DatabaseIO().read(new InputStreamReader(fileUrl
                             .openStream()));
                     IDatabasePlatform platform = dbDialect.getPlatform();
-                    platform.createDatabase(jdbcTemplate.getDataSource(), database, true, true);
+                    platform.createDatabase(database, true, true);
                     loaded = true;
                 } catch (Exception e) {
                     log.error(e);
@@ -422,7 +422,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
 
             if (fileUrl != null) {
-                new SqlScript(fileUrl, dataSource, true).execute();
+                new SqlScript(fileUrl, dbDialect.getPlatform().getSqlTemplate(), true).execute();
                 loaded = true;
             }
         }

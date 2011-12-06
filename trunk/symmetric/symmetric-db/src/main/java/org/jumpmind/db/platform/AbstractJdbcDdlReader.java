@@ -50,6 +50,8 @@ import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.UniqueIndex;
+import org.jumpmind.db.sql.jdbc.IConnectionCallback;
+import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
 import org.jumpmind.util.Log;
 import org.jumpmind.util.LogFactory;
 
@@ -57,22 +59,22 @@ import org.jumpmind.util.LogFactory;
  * An utility class to create a Database model from a live database.
  */
 public abstract class AbstractJdbcDdlReader implements IDdlReader {
-    
+
     /* The Log to which logging calls will be made. */
     protected Log log = LogFactory.getLog(getClass());
 
     /* The descriptors for the relevant columns in the table meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForTable;
-    
+
     /* The descriptors for the relevant columns in the table column meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForColumn;
-    
+
     /* The descriptors for the relevant columns in the primary key meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForPK;
-    
+
     /* The descriptors for the relevant columns in the foreign key meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForFK;
-    
+
     /* The descriptors for the relevant columns in the index meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForIndex;
 
@@ -83,19 +85,19 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * must support).
      */
     private HashMap<Integer, String> _defaultSizes = new HashMap<Integer, String>();
-    
+
     /* The default database catalog to read. */
     private String _defaultCatalogPattern = "%";
-    
+
     /* The default database schema(s) to read. */
     private String _defaultSchemaPattern = "%";
-    
+
     /* The default pattern for reading all tables. */
     private String _defaultTablePattern = "%";
-    
+
     /* The default pattern for reading all columns. */
     private String _defaultColumnPattern;
-    
+
     /* The table types to recognize per default. */
     private String[] _defaultTableTypes = { "TABLE" };
 
@@ -418,17 +420,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * @return The database model
      */
     public Database getDatabase(Connection connection) throws SQLException {
-        return getDatabase(connection, null, null, null);
+        return readTables(null, null, null);
     }
 
     /*
      * Reads the database model from the given connection.
-     * 
-     * @param connection The connection
-     * 
-     * @param name The name of the resulting database; <code>null</code> when
-     * the default name (the catalog) is desired which might be
-     * <code>null</code> itself though
      * 
      * @param catalog The catalog to access in the database; use
      * <code>null</code> for the default value
@@ -441,20 +437,25 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @return The database model
      */
-    public Database getDatabase(Connection connection, String catalog, String schema,
-            String[] tableTypes) throws SQLException {
-        Database db = new Database();
-        db.setName(Table.getQualifiedTablePrefix(catalog, schema));
-        db.addTables(readTables(connection, catalog, schema, tableTypes));
-        // Note that we do this here instead of in readTable since platforms may
-        // redefine the
-        // readTable method whereas it is highly unlikely that this method gets
-        // redefined
-        if (getPlatform().isForeignKeysSorted()) {
-            sortForeignKeys(db);
-        }
-        db.initialize();
-        return db;
+    public Database readTables(final String catalog, final String schema, final String[] tableTypes) {
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        return sqlTemplate.execute(new IConnectionCallback<Database>() {
+            public Database execute(Connection connection) throws SQLException {
+                Database db = new Database();
+                db.setName(Table.getQualifiedTablePrefix(catalog, schema));
+                db.addTables(readTables(connection, catalog, schema, tableTypes));
+                // Note that we do this here instead of in readTable since
+                // platforms may
+                // redefine the readTable method whereas it is highly unlikely
+                // that this method gets
+                // redefined
+                if (getPlatform().isForeignKeysSorted()) {
+                    sortForeignKeys(db);
+                }
+                db.initialize();
+                return db;
+            }
+        });
     }
 
     /*
@@ -474,7 +475,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Collection<Table> readTables(Connection connection, String catalog,
             String schemaPattern, String[] tableTypes) throws SQLException {
         ResultSet tableData = null;
-
         try {
             DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
 
@@ -515,30 +515,34 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
     }
 
-    public Table readTable(Connection connection, String catalog, String schema, String tableName)
-            throws SQLException {
-        Table table = null;
-        DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
-        metaData.setMetaData(connection.getMetaData());
-        metaData.setCatalog(catalog);
-        metaData.setSchemaPattern(schema);
-        metaData.setTableTypes(null);
-        if (getPlatformInfo().isStoresUpperCaseInCatalog()) {
-            tableName = tableName.toUpperCase();
-        }
+    public Table readTable(final String catalog, final String schema, final String table) {
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        return sqlTemplate.execute(new IConnectionCallback<Table>() {
+            public Table execute(Connection connection) throws SQLException {
+                DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
+                metaData.setMetaData(connection.getMetaData());
+                metaData.setCatalog(catalog);
+                metaData.setSchemaPattern(schema);
+                metaData.setTableTypes(null);
+                String tableName = table;
+                if (getPlatformInfo().isStoresUpperCaseInCatalog()) {
+                    tableName = tableName.toUpperCase();
+                }
 
-        ResultSet tableData = null;
-        try {
-            tableData = metaData.getTables(getTableNamePattern(tableName));
-            while (tableData != null && tableData.next()) {
-                Map<String, Object> values = readColumns(tableData, initColumnsForTable());
-                table = readTable(connection, metaData, values);
+                ResultSet tableData = null;
+                try {
+                    tableData = metaData.getTables(getTableNamePattern(tableName));
+                    if (tableData != null && tableData.next()) {
+                        Map<String, Object> values = readColumns(tableData, initColumnsForTable());
+                        return readTable(connection, metaData, values);
+                    } else {
+                        return null;
+                    }
+                } finally {
+                    close(tableData);
+                }
             }
-        } finally {
-            close(tableData);
-        }
-
-        return table;
+        });
 
     }
 
@@ -1048,6 +1052,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * Fix problems following problems: 1) identifiers that use keywords 2)
      * different catalog and schema 3) different catalog separator character *
+     * 
      * @param table The table
      * 
      * @param columnsToCheck The columns to check (e.g. the primary key columns)

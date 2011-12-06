@@ -45,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.NotImplementedException;
@@ -432,7 +430,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     : catalogName;
             table = (Table) jdbcTemplate.execute(new ConnectionCallback<Table>() {
                 public Table doInConnection(Connection c) throws SQLException, DataAccessException {
-                    Table table = platform.readTableFromDatabase(c, catalog, schema, tablename);
+                    Table table = platform.readTableFromDatabase(catalog, schema, tablename);
                     if (table != null && massageTableForChangeDataCapture) {
                         boolean treatDateTimeFieldsAsVarchar = parameterService.is(
                                 ParameterConstants.DB_TREAT_DATE_TIME_AS_VARCHAR, false);
@@ -599,7 +597,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public void createTables(String xml) {
         StringReader reader = new StringReader(xml);
         Database db = new DatabaseIO().read(reader);
-        platform.createDatabase(jdbcTemplate.getDataSource(), db, true, true);
+        platform.createDatabase(db, true, true);
     }
 
     public boolean doesDatabaseNeedConfigured() {
@@ -662,13 +660,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
                 log.info("TablesAutoUpdatingFoundTablesToAlter");
-                DataSource ds = jdbcTemplate.getDataSource();
                 String delimiter = platform.getPlatformInfo().getSqlCommandDelimiter();
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener.beforeUpgrade(this, tablePrefix, modelFromDatabase,
                             modelFromXml);
-                    new SqlScript(sql, ds, true, delimiter, null).execute();
+                    new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null).execute();
                 }
 
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
@@ -676,11 +673,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 if (log.isDebugEnabled()) {
                     log.debug("TablesAutoUpdatingAlterSql", alterSql);
                 }
-                new SqlScript(alterSql, ds, true, delimiter, null).execute();
+                new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, delimiter, null).execute();
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener.afterUpgrade(this, tablePrefix, modelFromXml);
-                    new SqlScript(sql, ds, true, delimiter, null).execute();
+                    new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null).execute();
                 }
 
                 log.info("TablesAutoUpdatingDone");

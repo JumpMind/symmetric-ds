@@ -19,11 +19,6 @@ package org.jumpmind.db;
  * under the License.
  */
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -49,7 +44,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     /* The model reader for this platform. */
     protected IDdlReader ddlReader;
-    
+
     protected IDdlBuilder ddlBuilder;
 
     /* Whether script mode is on. */
@@ -70,7 +65,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public AbstractDatabasePlatform(Log log) {
         this.log = log;
     }
-    
+
     abstract public ISqlTemplate getSqlTemplate();
 
     public void setLog(Log log) {
@@ -80,7 +75,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public IDdlReader getDdlReader() {
         return ddlReader;
     }
-        
+
     public IDdlBuilder getDdlBuilder() {
         return ddlBuilder;
     }
@@ -135,32 +130,25 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         this.foreignKeysSorted = foreignKeysSorted;
     }
 
-    public void createDatabase(DataSource dataSource, Database targetDatabase,
-            boolean dropTablesFirst, boolean continueOnError) {
+    public void createDatabase(Database targetDatabase, boolean dropTablesFirst,
+            boolean continueOnError) {
         String createSql = ddlBuilder.createTables(targetDatabase, dropTablesFirst);
         String delimiter = info.getSqlCommandDelimiter();
-        new SqlScript(createSql, dataSource, !continueOnError, delimiter, null).execute();
+        new SqlScript(createSql, getSqlTemplate(), !continueOnError, delimiter, null).execute();
     }
 
-    public Database readDatabase(Connection connection, String catalog, String schema,
-            String[] tableTypes) throws DatabaseOperationException {
-        try {
-            Database model = ddlReader.getDatabase(connection, catalog, schema, tableTypes);
+    public Database readDatabase(String catalog, String schema, String[] tableTypes) {
+        Database model = ddlReader.readTables(catalog, schema, tableTypes);
 
-            postprocessModelFromDatabase(model);
-            if ((model.getName() == null) || (model.getName().length() == 0)) {
-                model.setName(MODEL_DEFAULT_NAME);
-            }
-            return model;
-        } catch (SQLException ex) {
-            throw new DatabaseOperationException(ex);
+        postprocessModelFromDatabase(model);
+        if ((model.getName() == null) || (model.getName().length() == 0)) {
+            model.setName(MODEL_DEFAULT_NAME);
         }
+        return model;
     }
 
-    public Table readTableFromDatabase(Connection connection, String catalogName,
-            String schemaName, String tablename) throws SQLException {
-        return postprocessTableFromDatabase(ddlReader.readTable(connection, catalogName,
-                schemaName, tablename));
+    public Table readTableFromDatabase(String catalogName, String schemaName, String tablename) {
+        return postprocessTableFromDatabase(ddlReader.readTable(catalogName, schemaName, tablename));
     }
 
     /*
@@ -170,8 +158,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
      */
     protected void postprocessModelFromDatabase(Database model) {
         // Default values for CHAR/VARCHAR/LONGVARCHAR columns have quotation
-        // marks
-        // around them which we'll remove now
+        // marks around them which we'll remove now
         for (int tableIdx = 0; tableIdx < model.getTableCount(); tableIdx++) {
             postprocessTableFromDatabase(model.getTable(tableIdx));
         }
