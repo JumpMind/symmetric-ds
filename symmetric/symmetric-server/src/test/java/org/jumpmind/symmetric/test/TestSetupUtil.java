@@ -39,7 +39,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
-import javax.sql.DataSource;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -143,9 +142,8 @@ public class TestSetupUtil {
             dropAndCreateDatabaseTables(rootDb, setupEngine);
             setupEngine.setup();
             
-            DataSource ds = (DataSource) setupEngine.getApplicationContext().getBean(Constants.DATA_SOURCE);
             IDbDialect dialect = (IDbDialect) setupEngine.getApplicationContext().getBean(Constants.DB_DIALECT);
-            new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), ds, true, SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens()).execute();
+            new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), dialect.getPlatform().getSqlTemplate(), true, SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens()).execute();
             setupEngine.destroy();
             
             rootServer = new SymmetricWebServer("file:"
@@ -234,7 +232,6 @@ public class TestSetupUtil {
     }
 
     protected static void dropAndCreateDatabaseTables(String databaseType, ISymmetricEngine engine) {
-        DataSource ds = (DataSource) engine.getApplicationContext().getBean(Constants.DATA_SOURCE);
         try {
             IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
             IDatabasePlatform platform = dialect.getPlatform();
@@ -244,26 +241,26 @@ public class TestSetupUtil {
             String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + "-pre.sql";
             URL url = getResource(fileName);
             if (url != null) {
-                new SqlScript(url, ds, false).execute(true);
+                new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
             }            
                         
             Database testDb = getTestDatabase();
             IDdlBuilder builder = platform.getDdlBuilder();
             String sql = builder.dropTables(testDb);
-            new SqlScript(sql, ds, false).execute(true);            
+            new SqlScript(sql, dialect.getPlatform().getSqlTemplate(), false).execute(true);            
 
-            new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(true);
+            new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), dialect.getPlatform().getSqlTemplate(), false).execute(true);
 
             fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
             url = getResource(fileName);
             if (url != null) {
-                new SqlScript(url, ds, false).execute(true);
+                new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
             }
 
             dialect.purge();
             
-            platform.createDatabase(engine.getDataSource(), testDb, false, true);
-            platform.createDatabase(engine.getDataSource(), getPreviousSymmetricVersionTables(), false, true);
+            platform.createDatabase(testDb, false, true);
+            platform.createDatabase(getPreviousSymmetricVersionTables(), false, true);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

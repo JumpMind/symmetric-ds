@@ -47,6 +47,7 @@ import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.db.platform.sqlite.SqLitePlatform;
 import org.jumpmind.db.platform.sybase.SybasePlatform;
 import org.jumpmind.util.Log;
+import org.jumpmind.util.LogFactory;
 
 /*
  * A factory of {@link IDatabasePlatform} instances based on a case
@@ -108,6 +109,11 @@ public class JdbcDatabasePlatformFactory {
                 FirebirdPlatform.DATABASENAME);
     }
     
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource)
+    throws DdlUtilsException {
+        return createNewPlatformInstance(dataSource, null);
+    }
+    
     /*
      * Creates a new platform for the specified database.  Note that this method installs 
      * the data source in the returned platform instance.
@@ -120,6 +126,10 @@ public class JdbcDatabasePlatformFactory {
      */
     public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, Log log)
             throws DdlUtilsException {
+        
+        if (log == null) {
+            log = LogFactory.getLog("org.jumpmind");
+        }
         
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform

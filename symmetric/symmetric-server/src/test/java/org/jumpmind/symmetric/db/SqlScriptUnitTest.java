@@ -24,6 +24,8 @@ import java.sql.DriverManager;
 
 import junit.framework.Assert;
 
+import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.SqlScript;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -34,7 +36,8 @@ public class SqlScriptUnitTest {
     @Test
     public void testSimpleSqlScript() throws Exception {
         SingleConnectionDataSource ds = getDataSource();
-        SqlScript script = new SqlScript(getClass().getResource("sqlscript-simple.sql"), ds);
+        IDatabasePlatform platform = JdbcDatabasePlatformFactory.createNewPlatformInstance(ds);
+        SqlScript script = new SqlScript(getClass().getResource("sqlscript-simple.sql"), platform.getSqlTemplate());
         script.execute();
         JdbcTemplate template = new JdbcTemplate(ds);
         Assert.assertEquals(2, template.queryForInt("select count(*) from test"));
