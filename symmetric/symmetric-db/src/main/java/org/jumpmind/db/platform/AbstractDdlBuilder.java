@@ -36,7 +36,7 @@ import org.apache.commons.collections.Closure;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.DdlUtilsException;
+import org.jumpmind.db.DdlException;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.IDdlBuilder;
 import org.jumpmind.db.alter.AddColumnChange;
@@ -61,7 +61,7 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Reference;
@@ -592,7 +592,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         try {
             copyOfCurrentModel = (Database) currentModel.clone();
         } catch (CloneNotSupportedException ex) {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
 
         for (Iterator<Map.Entry<String, List<TableChange>>> tableChangeIt = changesPerTable
@@ -852,7 +852,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             try {
                 table.addColumn((Column) targetTable.getColumn(idx).clone());
             } catch (CloneNotSupportedException ex) {
-                throw new DdlUtilsException(ex);
+                throw new DdlException(ex);
             }
         }
 
@@ -909,15 +909,15 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             try {
                 table.addColumn((Column) targetTable.getColumn(idx).clone());
             } catch (CloneNotSupportedException ex) {
-                throw new DdlUtilsException(ex);
+                throw new DdlException(ex);
             }
         }
 
         boolean caseSensitive = platform.isDelimitedIdentifierModeOn();
 
         for (int idx = 0; idx < targetTable.getIndexCount(); idx++) {
-            Index targetIndex = targetTable.getIndex(idx);
-            Index sourceIndex = sourceTable.findIndex(targetIndex.getName(), caseSensitive);
+            IIndex targetIndex = targetTable.getIndex(idx);
+            IIndex sourceIndex = sourceTable.findIndex(targetIndex.getName(), caseSensitive);
 
             if (sourceIndex != null) {
                 if ((caseSensitive && sourceIndex.equals(targetIndex))
@@ -2046,7 +2046,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The index
      * @return The index name
      */
-    public String getIndexName(Index index) {
+    public String getIndexName(IIndex index) {
         return shortenName(index.getName(), platform.getPlatformInfo().getMaxConstraintNameLength());
     }
 
@@ -2058,7 +2058,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void writeExternalIndicesCreateStmt(Table table, StringBuilder ddl) {
         for (int idx = 0; idx < table.getIndexCount(); idx++) {
-            Index index = table.getIndex(idx);
+            IIndex index = table.getIndex(idx);
 
             if (!index.isUnique() && !platform.getPlatformInfo().isIndicesSupported()) {
                 throw new ModelException("Platform does not support non-unique indices");
@@ -2082,7 +2082,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Writes the given index of the table.
      */
-    protected void writeExternalIndexCreateStmt(Table table, Index index, StringBuilder ddl) {
+    protected void writeExternalIndexCreateStmt(Table table, IIndex index, StringBuilder ddl) {
         if (platform.getPlatformInfo().isIndicesSupported()) {
             if (index.getName() == null) {
                 log.warn("Cannot write unnamed index " + index);
@@ -2122,7 +2122,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Writes the given embedded index of the table.
      */
-    protected void writeEmbeddedIndexCreateStmt(Table table, Index index, StringBuilder ddl) {
+    protected void writeEmbeddedIndexCreateStmt(Table table, IIndex index, StringBuilder ddl) {
         if ((index.getName() != null) && (index.getName().length() > 0)) {
             ddl.append(" CONSTRAINT ");
             printIdentifier(getIndexName(index), ddl);
@@ -2156,7 +2156,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Generates the statement to drop a non-embedded index from the database.
      */
-    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl) {
+    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         if (platform.getPlatformInfo().isAlterTableForDropUsed()) {
             writeTableAlterStmt(table, ddl);
         }

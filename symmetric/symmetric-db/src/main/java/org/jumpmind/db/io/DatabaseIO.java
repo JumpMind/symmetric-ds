@@ -32,7 +32,7 @@ import java.io.Writer;
 import org.apache.commons.betwixt.io.BeanReader;
 import org.apache.commons.betwixt.io.BeanWriter;
 import org.apache.commons.betwixt.strategy.HyphenatedNameMapper;
-import org.jumpmind.db.DdlUtilsException;
+import org.jumpmind.db.DdlException;
 import org.jumpmind.db.model.Database;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -132,7 +132,7 @@ public class DatabaseIO
      * @param output The target output writer
      * @return The writer
      */
-    protected BeanWriter getWriter(Writer output) throws DdlUtilsException
+    protected BeanWriter getWriter(Writer output) throws DdlException
     {
         try
         {
@@ -149,7 +149,7 @@ public class DatabaseIO
         }
         catch (Exception ex)
         {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
     }
 
@@ -159,7 +159,7 @@ public class DatabaseIO
      * @param filename The model file name
      * @return The database model
      */
-    public Database read(String filename) throws DdlUtilsException
+    public Database read(String filename) throws DdlException
     {
         Database model = null;
 
@@ -169,7 +169,7 @@ public class DatabaseIO
         }
         catch (Exception ex)
         {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
         model.initialize();
         return model;
@@ -181,7 +181,7 @@ public class DatabaseIO
      * @param file The model file
      * @return The database model
      */
-    public Database read(File file) throws DdlUtilsException
+    public Database read(File file) throws DdlException
     {
         Database model = null;
 
@@ -191,7 +191,7 @@ public class DatabaseIO
         }
         catch (Exception ex)
         {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
         model.initialize();
         return model;
@@ -203,7 +203,7 @@ public class DatabaseIO
      * @param reader The reader that returns the model XML
      * @return The database model
      */
-    public Database read(Reader reader) throws DdlUtilsException
+    public Database read(Reader reader) throws DdlException
     {
         Database model = null;
 
@@ -213,7 +213,7 @@ public class DatabaseIO
         }
         catch (Exception ex)
         {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
         model.initialize();
         return model;
@@ -225,7 +225,7 @@ public class DatabaseIO
      * @param source The input source
      * @return The database model
      */
-    public Database read(InputSource source) throws DdlUtilsException
+    public Database read(InputSource source) throws DdlException
     {
         Database model = null;
 
@@ -235,7 +235,7 @@ public class DatabaseIO
         }
         catch (Exception ex)
         {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
         model.initialize();
         return model;
@@ -247,7 +247,7 @@ public class DatabaseIO
      * @param model    The database model
      * @param filename The model file name
      */
-    public void write(Database model, String filename) throws DdlUtilsException
+    public void write(Database model, String filename) throws DdlException
     {
         try
         {
@@ -270,7 +270,7 @@ public class DatabaseIO
         }
         catch (Exception ex)
         {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
     }
 
@@ -281,7 +281,7 @@ public class DatabaseIO
      * @param model  The database model
      * @param output The output stream
      */
-    public void write(Database model, OutputStream output) throws DdlUtilsException
+    public void write(Database model, OutputStream output) throws DdlException
     {
         write(model, getWriter(new OutputStreamWriter(output)));
     }
@@ -293,7 +293,7 @@ public class DatabaseIO
      * @param model  The database model
      * @param output The output writer
      */
-    public void write(Database model, Writer output) throws DdlUtilsException
+    public void write(Database model, Writer output) throws DdlException
     {
         write(model, getWriter(output));
     }
@@ -304,7 +304,7 @@ public class DatabaseIO
      * @param model  The database model
      * @param writer The bean writer
      */
-    private void write(Database model, BeanWriter writer) throws DdlUtilsException
+    private void write(Database model, BeanWriter writer) throws DdlException
     {
         try
         {
@@ -314,7 +314,7 @@ public class DatabaseIO
         }
         catch (Exception ex)
         {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
     }
 }

@@ -27,7 +27,7 @@ import java.util.Map;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
@@ -95,14 +95,14 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
 
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, Index index) {
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         // MySql defines a unique index "PRIMARY" for primary keys
         return "PRIMARY".equals(index.getName());
     }
 
     @Override
     protected boolean isInternalForeignKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index) {
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
         // MySql defines a non-unique index of the same name as the fk
         return getPlatform().getDdlBuilder().getForeignKeyName(table, fk).equals(index.getName());
     }

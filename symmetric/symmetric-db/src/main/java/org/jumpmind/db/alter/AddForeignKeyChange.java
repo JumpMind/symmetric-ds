@@ -19,7 +19,7 @@ package org.jumpmind.db.alter;
  * under the License.
  */
 
-import org.jumpmind.db.DdlUtilsException;
+import org.jumpmind.db.DdlException;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
@@ -72,7 +72,7 @@ public class AddForeignKeyChange extends TableChangeImplBase
         }
         catch (CloneNotSupportedException ex)
         {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
         database.findTable(getChangedTable().getName()).addForeignKey(newFK);
     }

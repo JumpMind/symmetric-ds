@@ -39,11 +39,11 @@ import org.apache.oro.text.regex.PatternCompiler;
 import org.apache.oro.text.regex.PatternMatcher;
 import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
-import org.jumpmind.db.DdlUtilsException;
+import org.jumpmind.db.DdlException;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.IDdlBuilder;
 import org.jumpmind.db.model.Column;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
@@ -81,7 +81,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             oracleIsoTimestampPattern = compiler
                     .compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD HH24:MI:SS'\\)");
         } catch (MalformedPatternException ex) {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
     }
 
@@ -306,7 +306,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Collection<Index> readIndices(Connection connection,
+    protected Collection<IIndex> readIndices(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
         // Oracle bug 4999817 causes a table analyze to execute in response to a
         // call to
@@ -332,7 +332,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             query.append(")");
         }
 
-        Map<String, Index> indices = new LinkedHashMap<String, Index>();
+        Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
         PreparedStatement stmt = null;
 
         try {

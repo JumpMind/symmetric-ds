@@ -27,7 +27,7 @@ import java.util.Map;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
@@ -83,14 +83,14 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
 
     @Override
     protected boolean isInternalForeignKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index) {
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
         String name = index.getName();
         return name != null && name.startsWith("CONSTRAINT_INDEX_");
     }
 
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, Index index) {
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         String name = index.getName();
         return name != null && name.startsWith("PRIMARY_KEY_");
     }

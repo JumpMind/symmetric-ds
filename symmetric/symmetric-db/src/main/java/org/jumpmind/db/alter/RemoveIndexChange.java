@@ -20,7 +20,7 @@ package org.jumpmind.db.alter;
  */
 
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 
 /**
@@ -31,7 +31,7 @@ import org.jumpmind.db.model.Table;
 public class RemoveIndexChange extends TableChangeImplBase
 {
     /** The index to be removed. */
-    private Index _index;
+    private IIndex _index;
 
     /**
      * Creates a new change object.
@@ -39,7 +39,7 @@ public class RemoveIndexChange extends TableChangeImplBase
      * @param table The table to remove the index from
      * @param index The index
      */
-    public RemoveIndexChange(Table table, Index index)
+    public RemoveIndexChange(Table table, IIndex index)
     {
         super(table);
         _index = index;
@@ -50,7 +50,7 @@ public class RemoveIndexChange extends TableChangeImplBase
      *
      * @return The index
      */
-    public Index getIndex()
+    public IIndex getIndex()
     {
         return _index;
     }
@@ -61,7 +61,7 @@ public class RemoveIndexChange extends TableChangeImplBase
     public void apply(Database database, boolean caseSensitive)
     {
         Table table = database.findTable(getChangedTable().getName(), caseSensitive);
-        Index index = table.findIndex(_index.getName(), caseSensitive);
+        IIndex index = table.findIndex(_index.getName(), caseSensitive);
 
         table.removeIndex(index);
     }

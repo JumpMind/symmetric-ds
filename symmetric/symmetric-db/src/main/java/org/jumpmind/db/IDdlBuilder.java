@@ -2,7 +2,7 @@ package org.jumpmind.db;
 
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 
 public interface IDdlBuilder {
@@ -11,7 +11,7 @@ public interface IDdlBuilder {
     
     public String getTableName(Table table);
     
-    public String getIndexName(Index index);
+    public String getIndexName(IIndex index);
     
     public String getForeignKeyName(Table table, ForeignKey fk);
 

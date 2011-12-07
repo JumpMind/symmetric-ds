@@ -348,7 +348,7 @@ public class Database implements Serializable, Cloneable {
             }
 
             for (int idx = 0; idx < curTable.getIndexCount(); idx++) {
-                Index index = curTable.getIndex(idx);
+                IIndex index = curTable.getIndex(idx);
                 String indexName = (index.getName() == null ? "" : index.getName());
 
                 if (indexName.length() > 0) {

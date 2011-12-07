@@ -19,14 +19,14 @@ package org.jumpmind.db.model;
  * under the License.
  */
 
-import org.jumpmind.db.DdlUtilsException;
+import org.jumpmind.db.DdlException;
 
 /**
  * Indicates a model error.
  * 
  * @version $Revision: 289996 $
  */
-public class ModelException extends DdlUtilsException 
+public class ModelException extends DdlException 
 {
     /** Constant for serializing instances of this class. */
     private static final long serialVersionUID = -694578915559780711L;

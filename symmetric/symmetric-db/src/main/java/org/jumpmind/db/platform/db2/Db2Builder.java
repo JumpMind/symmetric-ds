@@ -32,7 +32,7 @@ import org.jumpmind.db.alter.RemovePrimaryKeyChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
@@ -72,7 +72,7 @@ public class Db2Builder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl)  {
+    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl)  {
         // Index names in DB2 are unique to a schema and hence Derby does not
         // use the ON <tablename> clause
         ddl.append("DROP INDEX ");

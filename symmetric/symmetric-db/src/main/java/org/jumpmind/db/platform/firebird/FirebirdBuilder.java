@@ -30,7 +30,7 @@ import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
@@ -192,7 +192,7 @@ public class FirebirdBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl)  {
+    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl)  {
         // Index names in Firebird are unique to a schema and hence Firebird
         // does not
         // use the ON <tablename> clause

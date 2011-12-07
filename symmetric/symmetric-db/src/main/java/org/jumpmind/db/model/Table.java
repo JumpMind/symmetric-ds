@@ -62,7 +62,7 @@ public class Table implements Serializable, Cloneable {
     private ArrayList<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
 
     /** The indices applied to this table. */
-    private ArrayList<Index> indices = new ArrayList<Index>();
+    private ArrayList<IIndex> indices = new ArrayList<IIndex>();
 
     public Table() {
 
@@ -380,8 +380,8 @@ public class Table implements Serializable, Cloneable {
      *            The position
      * @return The index
      */
-    public Index getIndex(int idx) {
-        return (Index) indices.get(idx);
+    public IIndex getIndex(int idx) {
+        return (IIndex) indices.get(idx);
     }
 
     /**
@@ -390,7 +390,7 @@ public class Table implements Serializable, Cloneable {
      * @param index
      *            The index
      */
-    public void addIndex(Index index) {
+    public void addIndex(IIndex index) {
         if (index != null) {
             indices.add(index);
         }
@@ -404,7 +404,7 @@ public class Table implements Serializable, Cloneable {
      * @param index
      *            The index
      */
-    public void addIndex(int idx, Index index) {
+    public void addIndex(int idx, IIndex index) {
         if (index != null) {
             indices.add(idx, index);
         }
@@ -416,9 +416,9 @@ public class Table implements Serializable, Cloneable {
      * @param indices
      *            The indices
      */
-    public void addIndices(Collection<Index> indices) {
-        for (Iterator<Index> it = indices.iterator(); it.hasNext();) {
-            addIndex((Index) it.next());
+    public void addIndices(Collection<IIndex> indices) {
+        for (Iterator<IIndex> it = indices.iterator(); it.hasNext();) {
+            addIndex((IIndex) it.next());
         }
     }
 
@@ -427,8 +427,8 @@ public class Table implements Serializable, Cloneable {
      * 
      * @return The indices
      */
-    public Index[] getIndices() {
-        return (Index[]) indices.toArray(new Index[indices.size()]);
+    public IIndex[] getIndices() {
+        return (IIndex[]) indices.toArray(new IIndex[indices.size()]);
     }
 
     /**
@@ -436,17 +436,17 @@ public class Table implements Serializable, Cloneable {
      * 
      * @return The unique indices
      */
-    public Index[] getNonUniqueIndices() {
+    public IIndex[] getNonUniqueIndices() {
         if (indices != null) {
-            List<Index> nonunique = new ArrayList<Index>();
-            for (Index index : indices) {
+            List<IIndex> nonunique = new ArrayList<IIndex>();
+            for (IIndex index : indices) {
                 if (!index.isUnique()) {
                     nonunique.add(index);
                 }
             }
-            return nonunique.toArray(new Index[nonunique.size()]);
+            return nonunique.toArray(new IIndex[nonunique.size()]);
         } else {
-            return new Index[0];
+            return new IIndex[0];
         }
     }
 
@@ -455,17 +455,17 @@ public class Table implements Serializable, Cloneable {
      * 
      * @return The unique indices
      */
-    public Index[] getUniqueIndices() {
+    public IIndex[] getUniqueIndices() {
         if (indices != null) {
-            List<Index> unique = new ArrayList<Index>();
-            for (Index index : indices) {
+            List<IIndex> unique = new ArrayList<IIndex>();
+            for (IIndex index : indices) {
                 if (index.isUnique()) {
                     unique.add(index);
                 }
             }
-            return unique.toArray(new Index[unique.size()]);
+            return unique.toArray(new IIndex[unique.size()]);
         } else {
-            return new Index[0];
+            return new IIndex[0];
         }
     }
 
@@ -475,7 +475,7 @@ public class Table implements Serializable, Cloneable {
      * @param index
      *            The index to remove
      */
-    public void removeIndex(Index index) {
+    public void removeIndex(IIndex index) {
         if (index != null) {
             indices.remove(index);
         }
@@ -576,7 +576,7 @@ public class Table implements Serializable, Cloneable {
      *            The name of the index
      * @return The index or <code>null</code> if there is no such index
      */
-    public Index findIndex(String name) {
+    public IIndex findIndex(String name) {
         return findIndex(name, false);
     }
 
@@ -591,9 +591,9 @@ public class Table implements Serializable, Cloneable {
      *            Whether case matters for the names
      * @return The index or <code>null</code> if there is no such index
      */
-    public Index findIndex(String name, boolean caseSensitive) {
+    public IIndex findIndex(String name, boolean caseSensitive) {
         for (int idx = 0; idx < getIndexCount(); idx++) {
-            Index index = getIndex(idx);
+            IIndex index = getIndex(idx);
 
             if (caseSensitive) {
                 if (index.getName().equals(name)) {
@@ -738,7 +738,7 @@ public class Table implements Serializable, Cloneable {
         result.type = type;
         result.columns = (ArrayList<Column>) columns.clone();
         result.foreignKeys = (ArrayList<ForeignKey>) foreignKeys.clone();
-        result.indices = (ArrayList<Index>) indices.clone();
+        result.indices = (ArrayList<IIndex>) indices.clone();
         return result;
     }
 
@@ -755,7 +755,7 @@ public class Table implements Serializable, Cloneable {
                     .append(columns, other.columns)
                     .append(new HashSet<ForeignKey>(foreignKeys),
                             new HashSet<ForeignKey>(other.foreignKeys))
-                    .append(new HashSet<Index>(indices), new HashSet<Index>(other.indices))
+                    .append(new HashSet<IIndex>(indices), new HashSet<IIndex>(other.indices))
                     .isEquals();
         } else {
             return false;
@@ -767,7 +767,7 @@ public class Table implements Serializable, Cloneable {
         // TODO: For now we ignore catalog and schema (type should be irrelevant
         // anyways)
         return new HashCodeBuilder(17, 37).append(name).append(columns)
-                .append(new HashSet<ForeignKey>(foreignKeys)).append(new HashSet<Index>(indices))
+                .append(new HashSet<ForeignKey>(foreignKeys)).append(new HashSet<IIndex>(indices))
                 .toHashCode();
     }
 
@@ -877,7 +877,7 @@ public class Table implements Serializable, Cloneable {
         return null;
     }
 
-    public boolean doesIndexContainOnlyPrimaryKeyColumns(Index index) {
+    public boolean doesIndexContainOnlyPrimaryKeyColumns(IIndex index) {
         IndexColumn[] columns = index.getColumns();
         if (columns != null) {
             for (IndexColumn indexColumn : columns) {

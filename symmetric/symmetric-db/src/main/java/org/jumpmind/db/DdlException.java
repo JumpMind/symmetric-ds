@@ -23,7 +23,7 @@ package org.jumpmind.db;
 /**
  * Base class for DdlUtils exceptions.
  */
-public class DdlUtilsException extends RuntimeException 
+public class DdlException extends RuntimeException 
 {
     /** Constant for serializing instances of this class. */
     private static final long serialVersionUID = 5624776387174310551L;
@@ -31,7 +31,7 @@ public class DdlUtilsException extends RuntimeException
     /**
      * Creates a new empty exception object.
      */
-    public DdlUtilsException()
+    public DdlException()
     {
         super();
     }
@@ -41,7 +41,7 @@ public class DdlUtilsException extends RuntimeException
      * 
      * @param msg The exception message
      */
-    public DdlUtilsException(String msg)
+    public DdlException(String msg)
     {
         super(msg);
     }
@@ -51,7 +51,7 @@ public class DdlUtilsException extends RuntimeException
      * 
      * @param baseEx The base exception
      */
-    public DdlUtilsException(Throwable baseEx)
+    public DdlException(Throwable baseEx)
     {
         super(baseEx);
     }
@@ -62,7 +62,7 @@ public class DdlUtilsException extends RuntimeException
      * @param msg    The exception message
      * @param baseEx The base exception
      */
-    public DdlUtilsException(String msg, Throwable baseEx)
+    public DdlException(String msg, Throwable baseEx)
     {
         super(msg, baseEx);
     }

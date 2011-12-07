@@ -19,9 +19,9 @@ package org.jumpmind.db.alter;
  * under the License.
  */
 
-import org.jumpmind.db.DdlUtilsException;
+import org.jumpmind.db.DdlException;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 
 /**
@@ -32,7 +32,7 @@ import org.jumpmind.db.model.Table;
 public class AddIndexChange extends TableChangeImplBase
 {
     /** The new index. */
-    private Index _newIndex;
+    private IIndex _newIndex;
 
     /**
      * Creates a new change object.
@@ -40,7 +40,7 @@ public class AddIndexChange extends TableChangeImplBase
      * @param table    The table to add the index to
      * @param newIndex The new index
      */
-    public AddIndexChange(Table table, Index newIndex)
+    public AddIndexChange(Table table, IIndex newIndex)
     {
         super(table);
         _newIndex = newIndex;
@@ -51,7 +51,7 @@ public class AddIndexChange extends TableChangeImplBase
      *
      * @return The new index
      */
-    public Index getNewIndex()
+    public IIndex getNewIndex()
     {
         return _newIndex;
     }
@@ -61,15 +61,15 @@ public class AddIndexChange extends TableChangeImplBase
      */
     public void apply(Database database, boolean caseSensitive)
     {
-        Index newIndex = null;
+        IIndex newIndex = null;
 
         try
         {
-            newIndex = (Index)_newIndex.clone();
+            newIndex = (IIndex)_newIndex.clone();
         }
         catch (CloneNotSupportedException ex)
         {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
         database.findTable(getChangedTable().getName(), caseSensitive).addIndex(newIndex);
     }

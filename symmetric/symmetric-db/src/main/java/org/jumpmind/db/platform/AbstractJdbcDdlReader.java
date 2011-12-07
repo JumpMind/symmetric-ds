@@ -44,7 +44,7 @@ import org.jumpmind.db.IDdlReader;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.Reference;
@@ -646,7 +646,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
 
         for (int indexIdx = 0; indexIdx < table.getIndexCount();) {
-            Index index = table.getIndex(indexIdx);
+            IIndex index = table.getIndex(indexIdx);
 
             if (index.isUnique() && matches(index, columnNames)
                     && isInternalPrimaryKeyIndex(connection, metaData, table, index)) {
@@ -683,7 +683,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
 
         for (int indexIdx = 0; indexIdx < table.getIndexCount();) {
-            Index index = table.getIndex(indexIdx);
+            IIndex index = table.getIndex(indexIdx);
 
             if ((mustBeUnique == index.isUnique()) && matches(index, columnNames)
                     && isInternalForeignKeyIndex(connection, metaData, table, fk, index)) {
@@ -705,7 +705,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @return <code>true</code> if the index matches the columns
      */
-    protected boolean matches(Index index, List<String> columnsToSearchFor) {
+    protected boolean matches(IIndex index, List<String> columnsToSearchFor) {
         if (index.getColumnCount() != columnsToSearchFor.size()) {
             return false;
         }
@@ -734,7 +734,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * key one
      */
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException {
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
         return false;
     }
 
@@ -757,7 +757,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * key one
      */
     protected boolean isInternalForeignKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index)
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index)
             throws SQLException {
         return false;
     }
@@ -957,9 +957,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @return The list of indices
      */
-    protected Collection<Index> readIndices(Connection connection,
+    protected Collection<IIndex> readIndices(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
-        Map<String, Index> indices = new LinkedHashMap<String, Index>();
+        Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
         ResultSet indexData = null;
 
         try {
@@ -987,7 +987,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * @param knownIndices The already read indices for the current table
      */
     protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String, Object> values,
-            Map<String, Index> knownIndices) throws SQLException {
+            Map<String, IIndex> knownIndices) throws SQLException {
         Short indexType = (Short) values.get("TYPE");
 
         // we're ignoring statistic indices
@@ -998,7 +998,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         String indexName = (String) values.get("INDEX_NAME");
 
         if (indexName != null) {
-            Index index = (Index) knownIndices.get(indexName);
+            IIndex index = (IIndex) knownIndices.get(indexName);
 
             if (index == null) {
                 if (((Boolean) values.get("NON_UNIQUE")).booleanValue()) {
