@@ -53,8 +53,6 @@ public class SqlScript {
 
     private boolean failOnError = true;
 
-    private Map<String, String> replacementTokens;
-
     private String lineDeliminator;
 
     public SqlScript(URL url, ISqlTemplate sqlTemplate) {
@@ -97,14 +95,13 @@ public class SqlScript {
 
     private void init(List<String> sqlScript, ISqlTemplate sqlTemplate, boolean failOnError,
             String delimiter, Map<String, String> replacementTokens) {
-        this.statements = parseLines(sqlScript);
+        this.statements = parseLines(sqlScript, replacementTokens);
         this.sqlTemplate = sqlTemplate;
         this.failOnError = failOnError;
         this.delimiter = delimiter;
-        this.replacementTokens = replacementTokens;
     }
 
-    protected List<String> parseLines(List<String> script) {
+    protected List<String> parseLines(List<String> script, Map<String, String> replacementTokens) {
         List<String> statements = new ArrayList<String>();
         StringBuilder sql = new StringBuilder();
         for (String line : script) {
