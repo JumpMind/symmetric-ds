@@ -34,10 +34,10 @@ import org.apache.oro.text.regex.PatternCompiler;
 import org.apache.oro.text.regex.PatternMatcher;
 import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
-import org.jumpmind.db.DdlUtilsException;
+import org.jumpmind.db.DdlException;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
@@ -70,7 +70,7 @@ public class MSSqlDdlReader extends AbstractJdbcDdlReader {
             _isoDatePattern = compiler.compile("'(\\d{4}\\-\\d{2}\\-\\d{2})'");
             _isoTimePattern = compiler.compile("'(\\d{2}:\\d{2}:\\d{2})'");
         } catch (MalformedPatternException ex) {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
     }
 
@@ -96,7 +96,7 @@ public class MSSqlDdlReader extends AbstractJdbcDdlReader {
             // available
             // This is then probably of interest to every platform
             for (int idx = 0; idx < table.getIndexCount();) {
-                Index index = table.getIndex(idx);
+                IIndex index = table.getIndex(idx);
 
                 if (index.isUnique() && existsPKWithName(metaData, table, index.getName())) {
                     table.removeIndex(idx);
@@ -110,7 +110,7 @@ public class MSSqlDdlReader extends AbstractJdbcDdlReader {
 
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, Index index) {
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         // Sql Server generates an index "PK__[table name]__[hex number]"
         StringBuffer pkIndexName = new StringBuffer();
 
@@ -145,7 +145,7 @@ public class MSSqlDdlReader extends AbstractJdbcDdlReader {
             pks.close();
             return found;
         } catch (SQLException ex) {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
     }
 

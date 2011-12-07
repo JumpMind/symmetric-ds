@@ -47,7 +47,7 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
@@ -194,7 +194,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void writeExternalIndexDropStmt(Table table, Index index, StringBuilder ddl) {
+    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
         printIdentifier(getTableName(table), ddl);
         ddl.append(".");
@@ -384,7 +384,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
                     removedPKs.add(table);
                 }
                 for (int idx = 0; idx < table.getIndexCount(); idx++) {
-                    Index index = table.getIndex(idx);
+                    IIndex index = table.getIndex(idx);
 
                     if (index.hasColumn(column) && !removedIndexes.contains(index)) {
                         additionalChanges.add(new RemoveIndexChange(table, index));

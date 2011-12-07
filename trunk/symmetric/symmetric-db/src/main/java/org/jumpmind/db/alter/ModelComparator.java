@@ -30,7 +30,7 @@ import org.jumpmind.db.DatabasePlatformInfo;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 
 /**
@@ -170,8 +170,8 @@ public class ModelComparator {
         }
 
         for (int indexIdx = 0; indexIdx < sourceTable.getIndexCount(); indexIdx++) {
-            Index sourceIndex = sourceTable.getIndex(indexIdx);
-            Index targetIndex = findCorrespondingIndex(targetTable, sourceIndex);
+            IIndex sourceIndex = sourceTable.getIndex(indexIdx);
+            IIndex targetIndex = findCorrespondingIndex(targetTable, sourceIndex);
 
             if (targetIndex == null) {
                 if (_log.isDebugEnabled()) {
@@ -182,8 +182,8 @@ public class ModelComparator {
             }
         }
         for (int indexIdx = 0; indexIdx < targetTable.getIndexCount(); indexIdx++) {
-            Index targetIndex = targetTable.getIndex(indexIdx);
-            Index sourceIndex = findCorrespondingIndex(sourceTable, targetIndex);
+            IIndex targetIndex = targetTable.getIndex(indexIdx);
+            IIndex sourceIndex = findCorrespondingIndex(sourceTable, targetIndex);
 
             if (sourceIndex == null) {
                 if (_log.isDebugEnabled()) {
@@ -431,9 +431,9 @@ public class ModelComparator {
      *            The original index
      * @return The corresponding index if found
      */
-    private Index findCorrespondingIndex(Table table, Index index) {
+    private IIndex findCorrespondingIndex(Table table, IIndex index) {
         for (int indexIdx = 0; indexIdx < table.getIndexCount(); indexIdx++) {
-            Index curIndex = table.getIndex(indexIdx);
+            IIndex curIndex = table.getIndex(indexIdx);
 
             if ((_caseSensitive && index.equals(curIndex))
                     || (!_caseSensitive && index.equalsIgnoreCase(curIndex))) {

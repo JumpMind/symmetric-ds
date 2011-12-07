@@ -28,7 +28,7 @@ import java.util.Map;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
@@ -59,7 +59,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             HashMap uniquesByName = new HashMap();
 
             for (int indexIdx = 0; indexIdx < table.getIndexCount(); indexIdx++) {
-                Index index = table.getIndex(indexIdx);
+                IIndex index = table.getIndex(indexIdx);
 
                 if (index.isUnique() && (index.getName() != null)) {
                     uniquesByName.put(index.getName(), index);
@@ -71,7 +71,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                     String indexName = table.getName() + "_" + column.getName() + "_key";
 
                     if (uniquesByName.containsKey(indexName)) {
-                        table.removeIndex((Index) uniquesByName.get(indexName));
+                        table.removeIndex((IIndex) uniquesByName.get(indexName));
                         uniquesByName.remove(indexName);
                     }
                 }
@@ -206,14 +206,14 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
 
     @Override
     protected boolean isInternalForeignKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index) {
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
         // PostgreSQL does not return an index for a foreign key
         return false;
     }
 
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, Index index) {
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         return table.doesIndexContainOnlyPrimaryKeyColumns(index);
     }
 

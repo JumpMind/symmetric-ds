@@ -11,7 +11,7 @@ import org.apache.commons.collections.map.ListOrderedMap;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
@@ -42,7 +42,7 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    public Collection<Index> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
+    public Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
         String sql = "select rtrim(dbinfo('dbname')) as TABLE_CAT, st.owner as TABLE_SCHEM, st.tabname as TABLE_NAME, "
                 + "case when idxtype = 'U' then 0 else 1 end NON_UNIQUE, si.owner as INDEX_QUALIFIER, si.idxname as INDEX_NAME,  "
@@ -90,13 +90,13 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
 
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException {
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
         return index.getName().startsWith(" ");
     }
 
     @Override
     protected boolean isInternalForeignKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, Index index1)
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index1)
             throws SQLException {
         return fk.getName().startsWith(" ");
     }

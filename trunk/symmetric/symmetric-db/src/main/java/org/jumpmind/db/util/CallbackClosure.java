@@ -26,7 +26,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.apache.commons.collections.Closure;
-import org.jumpmind.db.DdlUtilsException;
+import org.jumpmind.db.DdlException;
 
 /**
  * A closure that determines a callback for the type of the object and calls it.
@@ -154,7 +154,7 @@ public class CallbackClosure implements Closure
     /**
      * {@inheritDoc}
      */
-    public void execute(Object obj) throws DdlUtilsException
+    public void execute(Object obj) throws DdlException
     {
         LinkedList queue = new LinkedList();
 
@@ -174,11 +174,11 @@ public class CallbackClosure implements Closure
                 }
                 catch (InvocationTargetException ex)
                 {
-                    throw new DdlUtilsException(ex.getTargetException());
+                    throw new DdlException(ex.getTargetException());
                 }
                 catch (IllegalAccessException ex)
                 {
-                    throw new DdlUtilsException(ex);
+                    throw new DdlException(ex);
                 }
             }
             if ((type.getSuperclass() != null) && !type.getSuperclass().equals(Object.class))

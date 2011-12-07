@@ -98,7 +98,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public void setSqlCommentsOn(boolean sqlCommentsOn) {
         if (!getPlatformInfo().isSqlCommentsSupported() && sqlCommentsOn) {
-            throw new DdlUtilsException("Platform does not support SQL comments");
+            throw new DdlException("Platform does not support SQL comments");
         }
         this.sqlCommentsOn = sqlCommentsOn;
     }
@@ -109,7 +109,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn) {
         if (!getPlatformInfo().isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
-            throw new DdlUtilsException("Platform does not support delimited identifier");
+            throw new DdlException("Platform does not support delimited identifier");
         }
         this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;
     }

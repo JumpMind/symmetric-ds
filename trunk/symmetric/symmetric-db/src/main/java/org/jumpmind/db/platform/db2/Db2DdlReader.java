@@ -32,10 +32,10 @@ import org.apache.oro.text.regex.PatternCompiler;
 import org.apache.oro.text.regex.PatternMatcher;
 import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
-import org.jumpmind.db.DdlUtilsException;
+import org.jumpmind.db.DdlException;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
@@ -68,7 +68,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             _db2TimestampPattern = compiler
                     .compile("'(\\d{4}\\-\\d{2}\\-\\d{2})\\-(\\d{2}).(\\d{2}).(\\d{2})(\\.\\d{1,8})?'");
         } catch (MalformedPatternException ex) {
-            throw new DdlUtilsException(ex);
+            throw new DdlException(ex);
         }
     }
 
@@ -155,7 +155,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
 
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
-            DatabaseMetaDataWrapper metaData, Table table, Index index) throws SQLException {
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
         // Db2 uses the form "SQL060205225246220" if the primary key was defined
         // during table creation
         // When the ALTER TABLE way was used however, the index has the name of

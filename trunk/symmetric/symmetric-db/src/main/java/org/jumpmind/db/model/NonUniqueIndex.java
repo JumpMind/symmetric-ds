@@ -77,7 +77,7 @@ public class NonUniqueIndex extends IndexImpBase
     /**
      * {@inheritDoc}
      */
-    public boolean equalsIgnoreCase(Index other)
+    public boolean equalsIgnoreCase(IIndex other)
     {
         if (other instanceof NonUniqueIndex)
         {

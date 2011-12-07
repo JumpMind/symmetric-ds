@@ -46,6 +46,7 @@ import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.db.platform.sqlite.SqLitePlatform;
 import org.jumpmind.db.platform.sybase.SybasePlatform;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.util.Log;
 import org.jumpmind.util.LogFactory;
 
@@ -110,7 +111,7 @@ public class JdbcDatabasePlatformFactory {
     }
     
     public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource)
-    throws DdlUtilsException {
+    throws DdlException {
         return createNewPlatformInstance(dataSource, null);
     }
     
@@ -125,7 +126,7 @@ public class JdbcDatabasePlatformFactory {
      * supported
      */
     public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, Log log)
-            throws DdlUtilsException {
+            throws DdlException {
         
         if (log == null) {
             log = LogFactory.getLog("org.jumpmind");
@@ -141,13 +142,13 @@ public class JdbcDatabasePlatformFactory {
             Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, Log.class);
             return construtor.newInstance(dataSource, log);
         } catch (Exception e) {
-            throw new DdlUtilsException("Could not create a platform of type " + nameVersion[0], e);
+            throw new DdlException("Could not create a platform of type " + nameVersion[0], e);
         }
     }
 
 
     protected static synchronized Class<? extends IDatabasePlatform> findPlatformClass(
-            String[] nameVersion) throws DdlUtilsException {
+            String[] nameVersion) throws DdlException {
         Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
                 nameVersion[0], nameVersion[1]).toLowerCase());
         if (platformClass == null) {
@@ -162,7 +163,7 @@ public class JdbcDatabasePlatformFactory {
         }
 
         if (platformClass == null) {
-            throw new DdlUtilsException("Could not find platform for database " + nameVersion[0]);
+            throw new DdlException("Could not find platform for database " + nameVersion[0]);
         } else {
             return platformClass;
         }
@@ -170,7 +171,7 @@ public class JdbcDatabasePlatformFactory {
     }
 
     protected static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource)
-            throws DatabaseOperationException {
+             {
         Connection connection = null;
         String[] nameVersion = new String[3];
         try {
@@ -202,7 +203,7 @@ public class JdbcDatabasePlatformFactory {
 
             return nameVersion;
         } catch (SQLException ex) {
-            throw new DatabaseOperationException("Error while reading the database metadata: "
+            throw new SqlException("Error while reading the database metadata: "
                     + ex.getMessage(), ex);
         } finally {
             if (connection != null) {
@@ -289,7 +290,7 @@ public class JdbcDatabasePlatformFactory {
             DatabaseMetaData metaData = connection.getMetaData();
             return metaData.getDatabaseProductVersion();
         } catch (SQLException ex) {
-            throw new DatabaseOperationException("Error while reading the database metadata: "
+            throw new SqlException("Error while reading the database metadata: "
                     + ex.getMessage(), ex);
         } finally {
             if (connection != null) {
@@ -309,7 +310,7 @@ public class JdbcDatabasePlatformFactory {
             DatabaseMetaData metaData = connection.getMetaData();
             return metaData.getDatabaseMajorVersion();
         } catch (SQLException ex) {
-            throw new DatabaseOperationException("Error while reading the database metadata: "
+            throw new SqlException("Error while reading the database metadata: "
                     + ex.getMessage(), ex);
         } finally {
             if (connection != null) {
@@ -329,7 +330,7 @@ public class JdbcDatabasePlatformFactory {
             DatabaseMetaData metaData = connection.getMetaData();
             return metaData.getDatabaseMinorVersion();
         } catch (SQLException ex) {
-            throw new DatabaseOperationException("Error while reading the database metadata: "
+            throw new SqlException("Error while reading the database metadata: "
                     + ex.getMessage(), ex);
         } finally {
             if (connection != null) {

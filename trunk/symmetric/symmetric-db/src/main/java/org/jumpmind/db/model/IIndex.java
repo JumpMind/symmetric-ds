@@ -23,10 +23,8 @@ import java.io.Serializable;
 
 /**
  * Represents an index definition for a table which may be either unique or non-unique.
- * 
- * @version $Revision: 504014 $
  */
-public interface Index extends Cloneable, Serializable
+public interface IIndex extends Cloneable, Serializable
 {
     /**
      * Determines whether this index is unique or not.
@@ -114,7 +112,7 @@ public interface Index extends Cloneable, Serializable
      * @param otherIndex The other index
      * @return <code>true</code> if this index is equal (ignoring case) to the given one
      */
-    public boolean equalsIgnoreCase(Index otherIndex);
+    public boolean equalsIgnoreCase(IIndex otherIndex);
 
     /**
      * Returns a verbose string representation of this index.

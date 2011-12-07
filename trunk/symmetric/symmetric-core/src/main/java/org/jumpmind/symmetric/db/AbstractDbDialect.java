@@ -56,7 +56,7 @@ import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Index;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -743,9 +743,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     protected void fixIndexes(Table table, String tablePrefix) throws CloneNotSupportedException {
-        Index[] indexes = table.getIndices();
+        IIndex[] indexes = table.getIndices();
         if (indexes != null) {
-            for (Index index : indexes) {
+            for (IIndex index : indexes) {
                 String prefixedName = tablePrefix + index.getName();
                 index.setName(prefixedName);
             }
