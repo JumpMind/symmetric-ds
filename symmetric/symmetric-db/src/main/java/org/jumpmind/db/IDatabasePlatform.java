@@ -154,6 +154,8 @@ public interface IDatabasePlatform {
             String tablename);
     
     public void createDatabase(Database targetDatabase, boolean dropTablesFirst,
-            boolean continueOnError);
+            boolean continueOnError);   
+    
+    public void dropDatabase(Database database, boolean continueOnError);
 
 }

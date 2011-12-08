@@ -316,7 +316,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         // referenced tables are already defined
         createExternalForeignKeys(database, ddl);
     }
-    
+
     public String alterDatabase(Database currentModel, Database desiredModel) {
         StringBuilder ddl = new StringBuilder();
         alterDatabase(currentModel, desiredModel, ddl);
@@ -1083,7 +1083,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         return (caseMatters && string1.equals(string2))
                 || (!caseMatters && string1.equalsIgnoreCase(string2));
     }
-    
+
     /**
      * Outputs the DDL to create the table along with any non-external
      * constraints as well as with external primary keys and indices (but not
@@ -1135,11 +1135,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             }
         }
     }
-    
+
     public String dropTables(Database database) {
         StringBuilder ddl = new StringBuilder();
         dropTables(database, ddl);
-        return ddl.toString();        
+        return ddl.toString();
     }
 
     /**
