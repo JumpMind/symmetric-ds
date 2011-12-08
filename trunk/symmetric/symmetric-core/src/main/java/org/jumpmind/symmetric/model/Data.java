@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.jumpmind.symmetric.io.data.DataEventType;
+
 /**
  * This is the data that changed due to a data sync trigger firing.
  */

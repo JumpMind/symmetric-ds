@@ -33,8 +33,8 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;

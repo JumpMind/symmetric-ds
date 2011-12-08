@@ -31,17 +31,42 @@ import org.jumpmind.util.IoException;
 /**
  * Holder for references to both parsed and unparsed CSV data.
  */
-abstract class CsvData {
+public class CsvData {
 
-    public final String OLD_DATA = "oldData";
-    public final String ROW_DATA = "rowData";
-    public final String PK_DATA = "pkData";
+    public static final String OLD_DATA = "oldData";
+    public static final String ROW_DATA = "rowData";
+    public static final String PK_DATA = "pkData";    
+    
+    public static final String ATTRIBUTE_CHANNEL_IDENTIFIER = "channelId";
 
     private Map<String, String[]> parsedCsvData = null;
 
     private Map<String, String> csvData = null;
+    
+    private Map<String, String> attributes;
+    
+    protected DataEventType dataEventType;
+    
+    public void setDataEventType(DataEventType dataEventType) {
+        this.dataEventType = dataEventType;
+    }
+    
+    public DataEventType getDataEventType() {
+        return dataEventType;
+    }
+    
+    public void putAttribute(String attributeName, String attributeValue) {
+        if (attributes == null) {
+            attributes = new HashMap<String, String>();
+        }
+        attributes.put(attributeName, attributeValue);
+    }
+    
+    public String getAttribute(String attributeName) {
+        return attributes == null ? null : attributes.get(attributeName);
+    }
 
-    protected void removeData(String key) {
+    public void removeData(String key) {
         if (parsedCsvData != null) {
             parsedCsvData.remove(key);
         }
@@ -51,14 +76,14 @@ abstract class CsvData {
         }
     }
 
-    protected void putCsvData(String key, String data) {
+    public void putCsvData(String key, String data) {
         if (csvData == null) {
             csvData = new HashMap<String, String>(2);
         }
         csvData.put(key, data);
     }
 
-    protected String getCsvData(String key) {
+    public String getCsvData(String key) {
         String data = null;
         if (csvData != null) {
             data = csvData.get(key);
@@ -73,14 +98,14 @@ abstract class CsvData {
         return data;
     }
 
-    protected void putParsedData(String key, String[] data) {
+    public void putParsedData(String key, String[] data) {
         if (parsedCsvData == null) {
             parsedCsvData = new HashMap<String, String[]>(2);
         }
         parsedCsvData.put(key, data);
     }
 
-    protected String[] getParsedData(String key) {
+    public String[] getParsedData(String key) {
         String[] values = null;
         if (parsedCsvData != null && parsedCsvData.containsKey(key)) {
             values = parsedCsvData.get(key);

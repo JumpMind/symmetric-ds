@@ -25,11 +25,11 @@ import java.util.Set;
 
 import org.jdom.Element;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
-import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.IncomingBatch;
 
 /**

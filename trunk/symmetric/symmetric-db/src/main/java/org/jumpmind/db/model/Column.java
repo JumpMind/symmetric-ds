@@ -33,8 +33,6 @@ import org.jumpmind.db.util.Jdbc3Utils;
 
 /**
  * Represents a column in the database model.
- * 
- * @version $Revision: 463305 $
  */
 public class Column implements Cloneable, Serializable {
     /** Unique ID for serialization purposes. */
@@ -56,8 +54,7 @@ public class Column implements Cloneable, Serializable {
     private boolean primaryKey;
 
     /**
-     * Whether the column is required, ie. it must not contain <code>NULL</code>
-     * .
+     * Whether the column is required, ie. it must not contain <code>NULL</code>.
      */
     private boolean required;
 
@@ -90,7 +87,12 @@ public class Column implements Cloneable, Serializable {
     }
     
     public Column(String name) {
-        this.name = name;
+        this(name, false);
+    }
+    
+    public Column(String name, boolean primaryKey) {
+        setName(name);
+        setPrimaryKey(primaryKey);
     }
 
     /**

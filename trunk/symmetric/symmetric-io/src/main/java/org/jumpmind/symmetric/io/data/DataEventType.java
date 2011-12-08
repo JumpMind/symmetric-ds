@@ -19,14 +19,12 @@
  * under the License.  */
 
 
-package org.jumpmind.symmetric.model;
-
-import org.jumpmind.symmetric.util.ICoded;
+package org.jumpmind.symmetric.io.data;
 
 /**
  * 
  */
-public enum DataEventType implements ICoded {
+public enum DataEventType {
 
     /**
      * Insert DML type.

@@ -26,8 +26,8 @@ import java.util.StringTokenizer;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;

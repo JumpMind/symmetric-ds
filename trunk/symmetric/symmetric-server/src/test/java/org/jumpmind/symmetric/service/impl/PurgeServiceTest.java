@@ -23,8 +23,8 @@ import java.util.Calendar;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IPurgeService;

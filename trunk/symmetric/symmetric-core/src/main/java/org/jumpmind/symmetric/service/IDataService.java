@@ -27,10 +27,10 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
-import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;

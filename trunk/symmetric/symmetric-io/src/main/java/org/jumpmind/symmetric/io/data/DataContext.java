@@ -14,6 +14,8 @@ public class DataContext {
     protected Parameters parameters;
     
     protected BinaryEncoding binaryEncoding;
+    
+    protected String sourceNodeId;
 
     public DataContext(Parameters parameters) {
         this.parameters = parameters == null ? new Parameters() : parameters;
@@ -49,5 +51,12 @@ public class DataContext {
     public BinaryEncoding getBinaryEncoding() {
         return binaryEncoding;
     }
+
+    public void setSourceNodeId(String sourceNodeId) {
+        this.sourceNodeId = sourceNodeId;
+    }
     
+    public String getSourceNodeId() {
+        return sourceNodeId;
+    }
 }
