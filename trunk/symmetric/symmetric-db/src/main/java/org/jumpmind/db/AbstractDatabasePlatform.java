@@ -130,9 +130,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         this.foreignKeysSorted = foreignKeysSorted;
     }
 
+    public void dropDatabase(Database database, boolean continueOnError) {
+        String sql = ddlBuilder.dropTables(database);
+        new SqlScript(sql, getSqlTemplate(), !continueOnError).execute(true);
+    }
+
     public void createDatabase(Database targetDatabase, boolean dropTablesFirst,
             boolean continueOnError) {
-        String createSql = ddlBuilder.createTables(targetDatabase, dropTablesFirst);
+        if (dropTablesFirst) {
+            dropDatabase(targetDatabase, true);
+        }
+        String createSql = ddlBuilder.createTables(targetDatabase, false);
         String delimiter = info.getSqlCommandDelimiter();
         new SqlScript(createSql, getSqlTemplate(), !continueOnError, delimiter, null).execute();
     }
