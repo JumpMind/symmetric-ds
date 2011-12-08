@@ -21,7 +21,7 @@ package org.jumpmind.symmetric.ext;
 
 import java.util.Map;
 
-import org.jumpmind.symmetric.db.BinaryEncoding;
+import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public interface ICacheContext {

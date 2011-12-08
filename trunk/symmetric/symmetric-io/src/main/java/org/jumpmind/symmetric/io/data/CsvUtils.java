@@ -16,8 +16,9 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-package org.jumpmind.symmetric.util;
+ * under the License. 
+ */
+package org.jumpmind.symmetric.io.data;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,16 +28,15 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
-import org.jumpmind.symmetric.common.csv.CsvConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.csv.CsvWriter;
+import org.jumpmind.util.Log;
+import org.jumpmind.util.LogFactory;
 
 
 public class CsvUtils {
 
-    static final ILog log = LogFactory.getLog(CsvUtils.class);
+    static final Log log = LogFactory.getLog(CsvUtils.class);
 
     public static final String DELIMITER = ", ";
     

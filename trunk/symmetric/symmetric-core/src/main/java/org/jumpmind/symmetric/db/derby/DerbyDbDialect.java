@@ -23,8 +23,8 @@ package org.jumpmind.symmetric.db.derby;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
 

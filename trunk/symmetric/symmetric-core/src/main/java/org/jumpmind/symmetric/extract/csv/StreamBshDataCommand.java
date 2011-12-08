@@ -21,16 +21,13 @@
 
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.Writer;
 import java.io.IOException;
+import java.io.Writer;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.util.CsvUtils;
 
-/**
- * 
- */
 class StreamBshDataCommand extends AbstractStreamDataCommand {
 
     public void execute(Writer writer, Data data, String routerId, DataExtractorContext context) throws IOException {

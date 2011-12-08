@@ -20,8 +20,8 @@
 package org.jumpmind.symmetric.load;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.ext.ICacheContext;
+import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
