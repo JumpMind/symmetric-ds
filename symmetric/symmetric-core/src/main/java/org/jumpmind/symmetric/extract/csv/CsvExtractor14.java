@@ -27,16 +27,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
+import org.jumpmind.symmetric.io.data.CsvConstants;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.util.CsvUtils;
 
 /**
  * @see IDataExtractor 

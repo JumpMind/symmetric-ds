@@ -28,9 +28,9 @@ import java.sql.Statement;
 import java.util.Date;
 
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;

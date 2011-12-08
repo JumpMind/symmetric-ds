@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.csv.CsvReader;
-import org.jumpmind.symmetric.util.CsvUtils;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 
 
 /**

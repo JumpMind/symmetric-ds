@@ -68,6 +68,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.sybase.SybaseDbDialect;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
+import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;

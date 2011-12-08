@@ -27,8 +27,8 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.jumpmind.symmetric.common.TokenConstants;
-import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
+import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.test.TestConstants;

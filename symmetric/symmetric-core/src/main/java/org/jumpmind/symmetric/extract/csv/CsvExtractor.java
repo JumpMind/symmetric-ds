@@ -24,15 +24,15 @@ import java.io.Writer;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
+import org.jumpmind.symmetric.io.data.CsvConstants;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.util.CsvUtils;
 import org.jumpmind.util.FormatUtils;
 
 /**

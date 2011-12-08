@@ -29,6 +29,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
+import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;

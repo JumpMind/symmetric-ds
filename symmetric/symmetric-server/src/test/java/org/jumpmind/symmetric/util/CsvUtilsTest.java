@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.util;
 
 import junit.framework.Assert;
 
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.junit.Test;
 
 public class CsvUtilsTest {

@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.ext.ICacheContext;
+import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.jdbc.core.JdbcTemplate;

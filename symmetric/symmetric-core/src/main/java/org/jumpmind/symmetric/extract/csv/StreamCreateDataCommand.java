@@ -19,13 +19,13 @@
  * under the License.  */
 package org.jumpmind.symmetric.extract.csv;
 
-import java.io.Writer;
 import java.io.IOException;
+import java.io.Writer;
 
-import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.io.data.CsvConstants;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.util.CsvUtils;
 
 public class StreamCreateDataCommand extends AbstractStreamDataCommand {
 

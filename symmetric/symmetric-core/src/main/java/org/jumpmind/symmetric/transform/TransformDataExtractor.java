@@ -26,12 +26,12 @@ import java.util.List;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.util.CsvUtils;
 
 public class TransformDataExtractor extends AbstractTransformer {
 
