@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
 /**
  * Defines the trigger via which a table will be synchronized.

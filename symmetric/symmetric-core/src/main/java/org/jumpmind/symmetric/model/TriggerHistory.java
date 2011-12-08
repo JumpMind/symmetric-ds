@@ -26,6 +26,7 @@ import java.util.Date;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
 /**
  * Maps to the table sync audit table which tracks the history of sync trigger

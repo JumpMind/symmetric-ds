@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
-import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
 /**
  * An abstract class that accumulates data to publish.

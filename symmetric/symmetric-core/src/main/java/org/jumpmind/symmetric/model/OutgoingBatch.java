@@ -24,6 +24,8 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.jumpmind.symmetric.io.data.DataEventType;
+
 /**
  * Used for tracking the sending a collection of data to a node in the system. A
  * new outgoing_batch is created and given a status of 'NE'. After sending the

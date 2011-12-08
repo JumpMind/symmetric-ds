@@ -65,10 +65,15 @@ public class Table implements Serializable, Cloneable {
     private ArrayList<IIndex> indices = new ArrayList<IIndex>();
 
     public Table() {
-
     }
 
     public Table(String tableName) {
+        this(null,null,tableName);
+    }
+    
+    public Table(String catalog, String schema, String tableName) {
+        this.catalog = catalog;
+        this.schema = schema;
         this.name = tableName;
     }
 

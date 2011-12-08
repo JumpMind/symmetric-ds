@@ -21,12 +21,10 @@
 
 package org.jumpmind.symmetric.model;
 
-import org.jumpmind.symmetric.util.ICoded;
-
 /**
  * {@link TriggerHistory}
  */
-public enum TriggerReBuildReason implements ICoded {
+public enum TriggerReBuildReason {
 
     NEW_TRIGGERS("N"), TABLE_SCHEMA_CHANGED("S"), TABLE_SYNC_CONFIGURATION_CHANGED("C"), FORCED("F"), TRIGGERS_MISSING(
             "T");
