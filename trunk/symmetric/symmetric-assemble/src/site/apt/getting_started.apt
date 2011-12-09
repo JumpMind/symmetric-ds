@@ -5,6 +5,21 @@
  Date
  ------
  
+User Guide - SymmetricDS 3.0
+ 
+ This guide has been fully updated to reflect new features in SymmetricDS 3.0.
+  
+ To get a demo of SymmetricDS 3 running, try the
+ {{{./guide/3.0/html-single/user-guide.html#tutorial}Hands-On}} tutorial.
+
+ {{{./guide/3.0/html-single/user-guide.html}User Guide (Single Page HTML)}}
+
+ {{{./guide/3.0/html/user-guide.html}User Guide (Multi Page HTML)}}
+ 
+ {{{./guide/3.0/pdf/user-guide.pdf}User Guide (PDF)}}
+ 
+ {{{./apidocs-3.0/index.html}JavaDoc for 3.0}} 
+ 
 User Guide - SymmetricDS 2.5
  
  This guide has been fully updated to reflect new features in SymmetricDS 2.5.
