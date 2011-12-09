@@ -48,7 +48,9 @@
 	</bean>
 
 	<bean id="variableColumnTransform"
-		class="org.jumpmind.symmetric.transform.VariableColumnTransform" />
+		class="org.jumpmind.symmetric.transform.VariableColumnTransform">
+		<property name="nodeService" ref="nodeService"/>
+    </bean>
 
 	<bean id="multiplierColumnTransform"
 		class="org.jumpmind.symmetric.transform.MultiplierColumnTransform">
