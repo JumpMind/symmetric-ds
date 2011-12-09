@@ -7,7 +7,8 @@
 
 Overview
 
- SymmetricDS is an asynchronous data replication software package that supports multiple subscribers and bi-directional
+ SymmetricDS is an asynchronous data replication and data transformation 
+ software package that supports multiple subscribers and bi-directional
  synchronization. It uses web and database technologies to replicate tables between relational
  databases, in near real time if desired. The software was designed to scale for a large number of databases, work across
  low-bandwidth connections, and withstand periods of network outage.  
