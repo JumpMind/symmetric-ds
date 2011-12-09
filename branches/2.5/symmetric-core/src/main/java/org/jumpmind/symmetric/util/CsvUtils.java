@@ -27,6 +27,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -86,6 +87,21 @@ public class CsvUtils {
                 writer.write(s);
             } catch (IOException e) {
             }
+        }
+        writer.close();
+        return out.toString();
+    }
+
+    public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
+        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);        
+        writer.setRecordDelimiter(recordDelimiter);
+        writer.setTextQualifier(textQualifier);
+        try {
+        	writer.writeRecord(data);
+        } catch (IOException e) {
+        	throw new SymmetricException();
         }
         writer.close();
         return out.toString();
