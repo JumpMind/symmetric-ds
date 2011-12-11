@@ -26,6 +26,7 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
     private boolean autoRegister = true;
     private static final String COPY_IN_KEY = "COPYIN";
     private static final String COPY_MGR_KEY = "COPYMGR";
+    private static final String COPY_TABLE_KEY = "COPYTABLE";
     private static final String NBR_PENDING_BULK_LOAD_ROWS_KEY = "PENDING_BULK_LOAD_ROWS";
     private static final int BULK_LOAD_FLUSH_INTERVAL = 10000;
 
@@ -58,6 +59,14 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 	public boolean filterInsert(IDataLoaderContext context,
 			String[] columnValues) {
 
+		//if the table we are now doing an insert for insn't the same as 
+		//a copy command we already have running, then commit and cleanup 
+		//the old one first
+		String copyTable = (String) context.getContextCache().get(COPY_TABLE_KEY); 
+		if (copyTable != null && !copyTable.equalsIgnoreCase(context.getTableName())) {
+			commitAndCleanup(context);
+		}
+		
 		//see if we should do a bulk load for the given table
 		if (tablesToApplyTo.contains(context.getTableName())) {
 		
@@ -77,11 +86,17 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 
 	public boolean filterUpdate(IDataLoaderContext context,
 			String[] columnValues, String[] keyValues) {
+		//with any other connection action, we must first commit
+		//and cleanup a copy if one is in motion
+		commitAndCleanup(context);
 		//handle updates with standard mechanism
 		return true;
 	}
 
 	public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
+		//with any other connection action, we must first commit
+		//and cleanup a copy if one is in motion
+		commitAndCleanup(context);
 		//handle deletes with standard mechanism
 		return true;
 	}
@@ -93,16 +108,8 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 	public void batchComplete(IDataLoader loader, IncomingBatch batch) {
 
 		if (tablesToApplyTo.contains(loader.getContext().getTableName())) {
-		
-			CopyIn copyIn = (CopyIn) loader.getContext().getContextCache().get(COPY_IN_KEY);		
-			if (copyIn != null)
-			try {
-				copyIn.endCopy();			
-			} catch (SQLException ex) {
-				throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.batchComplete. " + ex.getMessage());
-			}
-			cleanupBulkCopy(loader.getContext());
-		}
+			commitAndCleanup(loader.getContext());
+		}		
 	}
 
 	public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
@@ -127,6 +134,7 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 				CopyManager copyManager = new CopyManager((BaseConnection) conn);
 				contextCache.put(COPY_MGR_KEY, copyManager);				
 				CopyIn copyIn = copyManager.copyIn(createCopyMgrSql(context));
+				contextCache.put(COPY_TABLE_KEY, context.getTableName());
 				contextCache.put(COPY_IN_KEY, copyIn);
 			} 
 		} catch (Exception ex) {
@@ -186,10 +194,24 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 		context.getContextCache().put(NBR_PENDING_BULK_LOAD_ROWS_KEY, nbrPendingBulkLoadRows);		
 	}
 	
-	private void cleanupBulkCopy(IDataLoaderContext context) {
-		context.getContextCache().remove(COPY_MGR_KEY);
-		context.getContextCache().remove(COPY_IN_KEY);		
-		context.getContextCache().remove(NBR_PENDING_BULK_LOAD_ROWS_KEY);		
+	private void commitAndCleanup(IDataLoaderContext context) {
+
+		if (context.getContextCache().get(COPY_MGR_KEY) != null) {
+	
+			//commit
+			CopyIn copyIn = (CopyIn) context.getContextCache().get(COPY_IN_KEY);		
+			if (copyIn != null)
+			try {
+				copyIn.endCopy();			
+			} catch (SQLException ex) {
+				throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.batchComplete. " + ex.getMessage());
+			}
+			//cleanup
+			context.getContextCache().remove(COPY_MGR_KEY);
+			context.getContextCache().remove(COPY_IN_KEY);		
+			context.getContextCache().remove(NBR_PENDING_BULK_LOAD_ROWS_KEY);
+			context.getContextCache().remove(COPY_TABLE_KEY);
+		}
 	}
 
     public void setParameterService(IParameterService parameterService) {
