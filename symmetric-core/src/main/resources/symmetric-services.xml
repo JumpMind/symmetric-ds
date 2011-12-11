@@ -207,6 +207,7 @@
     <bean id="extractorContext" class="org.jumpmind.symmetric.extract.DataExtractorContext" scope="prototype">
         <property name="dbDialect" ref="dbDialect"/>
         <property name="jdbcTemplate" ref="jdbcTemplate"/>
+        <property name="nodeService" ref="nodeService"/>
     </bean>
 
 	<bean id="abstractDataCommand"
