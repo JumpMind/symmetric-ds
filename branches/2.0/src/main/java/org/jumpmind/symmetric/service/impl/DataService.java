@@ -187,8 +187,8 @@ public class DataService extends AbstractService implements IDataService {
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
         try {
             template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId,
-                StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId }, new int[] { Types.INTEGER,
-                Types.INTEGER, Types.VARCHAR });
+                StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId }, new int[] { Types.NUMERIC,
+                Types.NUMERIC, Types.VARCHAR });
         } catch (RuntimeException ex) {
             log.error("DataEventInsertFailed", ex, dataId, batchId, routerId);
             throw ex;
@@ -470,21 +470,21 @@ public class DataService extends AbstractService implements IDataService {
 
     public void saveDataRef(DataRef dataRef) {
         if (0 >= jdbcTemplate.update(getSql("updateDataRefSql"), new Object[] { dataRef.getRefDataId(),
-                dataRef.getRefTime() }, new int[] { Types.INTEGER, Types.TIMESTAMP })) {
+                dataRef.getRefTime() }, new int[] { Types.NUMERIC, Types.TIMESTAMP })) {
             jdbcTemplate.update(getSql("insertDataRefSql"),
-                    new Object[] { dataRef.getRefDataId(), dataRef.getRefTime() }, new int[] { Types.INTEGER,
+                    new Object[] { dataRef.getRefDataId(), dataRef.getRefTime() }, new int[] { Types.NUMERIC,
                             Types.TIMESTAMP });
         }
     }
 
     public Date findCreateTimeOfEvent(long dataId) {
         return (Date) jdbcTemplate.queryForObject(getSql("findDataEventCreateTimeSql"), new Object[] { dataId },
-                new int[] { Types.INTEGER }, Date.class);
+                new int[] { Types.NUMERIC }, Date.class);
     }
     
     public Date findCreateTimeOfData(long dataId) {        
         return (Date) jdbcTemplate.queryForObject(getSql("findDataCreateTimeSql"), new Object[] { dataId },
-                new int[] { Types.INTEGER }, Date.class);
+                new int[] { Types.NUMERIC }, Date.class);
     }
 
     public Map<String, String> getRowDataAsMap(Data data) {
