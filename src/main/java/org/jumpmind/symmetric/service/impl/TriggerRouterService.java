@@ -444,14 +444,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         triggerRouter.getLastUpdateTime(),
                         triggerRouter.getTrigger().getTriggerId(),
                         triggerRouter.getRouter().getRouterId() },
-                new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+                new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
                         Types.VARCHAR, Types.VARCHAR })) {
             triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
             jdbcTemplate.update(getSql("insertTriggerRouterSql"), new Object[] {
                     triggerRouter.getInitialLoadOrder(), triggerRouter.getInitialLoadSelect(),
                     triggerRouter.getCreateTime(), triggerRouter.getLastUpdateBy(),
                     triggerRouter.getLastUpdateTime(), triggerRouter.getTrigger().getTriggerId(),
-                    triggerRouter.getRouter().getRouterId() }, new int[] { Types.INTEGER,
+                    triggerRouter.getRouter().getRouterId() }, new int[] { Types.NUMERIC,
                     Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
                     Types.VARCHAR });
         }

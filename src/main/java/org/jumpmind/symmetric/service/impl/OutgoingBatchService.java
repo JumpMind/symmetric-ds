@@ -93,9 +93,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 outgoingBatch.getSqlCode(), StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000),
                 outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
                 outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() }, new int[] { Types.CHAR,
-                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.INTEGER,
-                Types.VARCHAR, Types.TIMESTAMP, Types.INTEGER });
+                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC,
+                Types.VARCHAR, Types.TIMESTAMP, Types.NUMERIC });
     }
 
     public void insertOutgoingBatch(OutgoingBatch outgoingBatch) {
@@ -121,7 +121,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public OutgoingBatch findOutgoingBatch(long batchId) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("findOutgoingBatchSql"),
-                new Object[] { batchId }, new int[] { Types.INTEGER }, new OutgoingBatchMapper());
+                new Object[] { batchId }, new int[] { Types.NUMERIC }, new OutgoingBatchMapper());
         if (list != null && list.size() > 0) {
             return list.get(0);
         } else {

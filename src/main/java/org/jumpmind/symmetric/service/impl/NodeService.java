@@ -233,7 +233,7 @@ public class NodeService extends AbstractService implements INodeService {
                 node.getSymmetricVersion(), node.getSyncUrl(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0,
                 node.getTimezoneOffset(), node.getBatchToSendCount(), node.getBatchInErrorCount(), node.getCreatedAtNodeId(), node.getNodeId() }, new int[] { Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.TIMESTAMP, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR }) == 1;
+                Types.TIMESTAMP, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR }) == 1;
         return updated;
     }
 
@@ -317,7 +317,7 @@ public class NodeService extends AbstractService implements INodeService {
         return jdbcTemplate.update(getSql("updateNodeSecuritySql"), new Object[] { security.getNodePassword(),
                 security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
                 security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getCreatedAtNodeId(),
-                security.getNodeId() }, new int[] { Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
+                security.getNodeId() }, new int[] { Types.VARCHAR, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC,
                 Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR }) == 1;
     }
 
