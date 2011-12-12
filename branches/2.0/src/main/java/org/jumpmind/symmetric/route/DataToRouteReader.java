@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Channel;
@@ -32,199 +34,242 @@ import org.springframework.jdbc.support.JdbcUtils;
  */
 public class DataToRouteReader implements Runnable {
 
-    final static ILog log = LogFactory.getLog(DataToRouteReader.class);
+	final static ILog log = LogFactory.getLog(DataToRouteReader.class);
 
-    private int fetchSize;
+	private int fetchSize;
 
-    protected BlockingQueue<Data> dataQueue;
+	protected BlockingQueue<Data> dataQueue;
 
-    private DataSource dataSource;
+	private DataSource dataSource;
 
-    private RouterContext context;
+	private RouterContext context;
 
-    private DataRef dataRef;
+	private DataRef dataRef;
 
-    private IDataService dataService;
-    
-    private IService sql;
+	private IDataService dataService;
 
-    private boolean reading = true;
+	private IService sql;
 
-    private int maxQueueSize;
+	private boolean reading = true;
 
-    private static final int DEFAULT_QUERY_TIMEOUT = 300;
+	private int peekAheadCount;
 
-    private int queryTimeout = DEFAULT_QUERY_TIMEOUT;
+	private static final int DEFAULT_QUERY_TIMEOUT = 300;
 
-    public DataToRouteReader(DataSource dataSource, int maxQueueSize, IService sql,
-            int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService) {
-        this(dataSource, maxQueueSize, sql, fetchSize, context, dataRef, dataService,
-                DEFAULT_QUERY_TIMEOUT);
-    }
+	private int queryTimeout = DEFAULT_QUERY_TIMEOUT;
 
-    public DataToRouteReader(DataSource dataSource, int maxQueueSize, IService sql,
-            int fetchSize, RouterContext context, DataRef dataRef, IDataService dataService,
-            int queryTimeout) {
-        this.maxQueueSize = maxQueueSize;
-        this.dataSource = dataSource;
-        this.dataQueue = new LinkedBlockingQueue<Data>(maxQueueSize);
-        this.sql = sql;
-        this.context = context;
-        this.fetchSize = fetchSize;
-        this.dataRef = dataRef;
-        this.dataService = dataService;
-        this.queryTimeout = queryTimeout;
-    }
+	public DataToRouteReader(DataSource dataSource, int maxQueueSize,
+			IService sql, int fetchSize, RouterContext context,
+			DataRef dataRef, IDataService dataService) {
+		this(dataSource, maxQueueSize, sql, fetchSize, context, dataRef,
+				dataService, DEFAULT_QUERY_TIMEOUT);
+	}
 
-    public Data take() {
-        Data data = null;
-        try {
-            data = dataQueue.poll(queryTimeout == 0 ? 600 : queryTimeout, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            log.warn(e);
-        }
+	public DataToRouteReader(DataSource dataSource, int peekAheadCount,
+			IService sql, int fetchSize, RouterContext context,
+			DataRef dataRef, IDataService dataService, int queryTimeout) {
+		this.peekAheadCount = peekAheadCount;
+		this.dataSource = dataSource;
+		this.dataQueue = new LinkedBlockingQueue<Data>(peekAheadCount);
+		this.sql = sql;
+		this.context = context;
+		this.fetchSize = fetchSize;
+		this.dataRef = dataRef;
+		this.dataService = dataService;
+		this.queryTimeout = queryTimeout;
+	}
 
-        if (data instanceof EOD) {
-            return null;
-        } else {
-            return data;
-        }
-    }
+	public Data take() {
+		Data data = null;
+		try {
+			data = dataQueue.poll(queryTimeout == 0 ? 600 : queryTimeout,
+					TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			log.warn(e);
+		}
 
-    protected String getSql(Channel channel) {
-        String select = sql.getSql("selectDataToBatchSql");
-        if (!channel.isUseOldDataToRoute()) {
-            select = select.replace("d.old_data", "''");
-        }
-        if (!channel.isUseRowDataToRoute()) {
-            select = select.replace("d.row_data", "''");
-        }
-        if (!channel.isUsePkDataToRoute()) {
-            select = select.replace("d.pk_data", "''");
-        }        
-        return select;
-    }
+		if (data instanceof EOD) {
+			return null;
+		} else {
+			return data;
+		}
+	}
 
-    public void run() {
-        try {
-            JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);
-            jdbcTemplate.execute(new ConnectionCallback<Integer>() {
-                public Integer doInConnection(Connection c) throws SQLException,
-                        DataAccessException {
-                    int dataCount = 0;
-                    PreparedStatement ps = null;
-                    ResultSet rs = null;
-                    try {
-                        String channelId = context.getChannel().getChannelId();
-                        ps = c.prepareStatement(getSql(context.getChannel().getChannel()),
-                                ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                        ps.setQueryTimeout(queryTimeout);
-                        ps.setFetchSize(fetchSize);
-                        ps.setString(1, channelId);
-                        ps.setLong(2, dataRef.getRefDataId());
-                        long executeTimeInMs = System.currentTimeMillis();
-                        rs = ps.executeQuery();
-                        executeTimeInMs = System.currentTimeMillis() - executeTimeInMs;
-                        if (executeTimeInMs > 30000) {
-                            log.warn("RoutedDataSelectedInTime", executeTimeInMs, channelId);
-                        }
+	protected String getSql(Channel channel) {
+		String select = sql.getSql("selectDataToBatchSql");
+		if (!channel.isUseOldDataToRoute()) {
+			select = select.replace("d.old_data", "''");
+		}
+		if (!channel.isUseRowDataToRoute()) {
+			select = select.replace("d.row_data", "''");
+		}
+		if (!channel.isUsePkDataToRoute()) {
+			select = select.replace("d.pk_data", "''");
+		}
+		return select;
+	}
 
-                        int toRead = maxQueueSize - dataQueue.size();
-                        List<Data> memQueue = new ArrayList<Data>(toRead);
-                        long ts = System.currentTimeMillis();
-                        while (rs.next() && reading) {
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    RouterContext.STAT_READ_RESULT_WAIT_TIME_MS);
-                            
-                            if (rs.getString(13) == null) {
-                                Data data = dataService.readData(rs);
-                                context.setLastDataIdForTransactionId(data);
-                                memQueue.add(data);
-                                dataCount++;
-                                context.incrementStat(System.currentTimeMillis() - ts,
-                                        RouterContext.STAT_READ_DATA_MS);
-                            } else {
-                                context.incrementStat(System.currentTimeMillis() - ts,
-                                        RouterContext.STAT_REREAD_DATA_MS);                                
-                            }
+	public void run() {
+		try {
+			JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);
+			jdbcTemplate.execute(new ConnectionCallback<Integer>() {
+				public Integer doInConnection(Connection c)
+						throws SQLException, DataAccessException {
+					int dataCount = 0;
+					PreparedStatement ps = null;
+					ResultSet rs = null;
+					try {
+						String channelId = context.getChannel().getChannelId();
+						ps = c.prepareStatement(getSql(context.getChannel()
+								.getChannel()), ResultSet.TYPE_FORWARD_ONLY,
+								ResultSet.CONCUR_READ_ONLY);
+						ps.setQueryTimeout(queryTimeout);
+						ps.setFetchSize(fetchSize);
+						ps.setString(1, channelId);
+						ps.setLong(2, dataRef.getRefDataId());
+						long executeTimeInMs = System.currentTimeMillis();
+						rs = ps.executeQuery();
+						executeTimeInMs = System.currentTimeMillis()
+								- executeTimeInMs;
+						if (executeTimeInMs > 30000) {
+							log.warn("RoutedDataSelectedInTime",
+									executeTimeInMs, channelId);
+						}
 
-                            ts = System.currentTimeMillis();
+						long maxDataToRoute = context.getChannel()
+								.getMaxDataToRoute();
+						String lastTransactionId = null;
+						List<Data> peekAheadQueue = new ArrayList<Data>(
+								peekAheadCount);
+						boolean nontransactional = context.getChannel()
+								.getBatchAlgorithm().equals("nontransactional");
 
-                            if (toRead == 0) {
-                                copyToQueue(memQueue);
-                                toRead = maxQueueSize - dataQueue.size();
-                                memQueue = new ArrayList<Data>(toRead);
-                            } else {
-                                toRead--;
-                            }
+						boolean moreData = true;
+						while (dataCount <= maxDataToRoute
+								|| lastTransactionId != null) {
+							if (moreData) {
+								moreData = fillPeekAheadQueue(peekAheadQueue,
+										peekAheadCount, rs);
+							}
 
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    RouterContext.STAT_ENQUEUE_DATA_MS);
+							if ((lastTransactionId == null || nontransactional)
+									&& peekAheadQueue.size() > 0) {
+								Data data = peekAheadQueue.remove(0);
+								copyToQueue(data);
+								dataCount++;
+								lastTransactionId = data.getTransactionId();
+							} else if (lastTransactionId != null
+									&& peekAheadQueue.size() > 0) {
+								Iterator<Data> datas = peekAheadQueue
+										.iterator();
+								int dataWithSameTransactionIdCount = 0;
+								while (datas.hasNext()) {
+									Data data = datas.next();
+									if (lastTransactionId.equals(data
+											.getTransactionId())) {
+										dataWithSameTransactionIdCount++;
+										datas.remove();
+										copyToQueue(data);
+										dataCount++;
+									}
+								}
 
-                            ts = System.currentTimeMillis();
-                        }
+								if (dataWithSameTransactionIdCount == 0) {
+									lastTransactionId = null;
+								}
 
-                        ts = System.currentTimeMillis();
+							} else if (peekAheadQueue.size() == 0) {
+								// we've reached the end of the result set
+								break;
+							}
+						}
 
-                        copyToQueue(memQueue);
+						return dataCount;
 
-                        context.incrementStat(System.currentTimeMillis() - ts,
-                                RouterContext.STAT_ENQUEUE_DATA_MS);
+					} finally {
 
-                        return dataCount;
+						JdbcUtils.closeResultSet(rs);
+						JdbcUtils.closeStatement(ps);
+						rs = null;
+						ps = null;
 
-                    } finally {
+						long ts = System.currentTimeMillis();
 
-                        JdbcUtils.closeResultSet(rs);
-                        JdbcUtils.closeStatement(ps);
-                        rs = null;
-                        ps = null;
+						boolean done = false;
+						do {
+							done = dataQueue.offer(new EOD());
+							AppUtils.sleep(50);
+						} while (!done && reading);
 
-                        long ts = System.currentTimeMillis();
+						context.incrementStat(System.currentTimeMillis() - ts,
+								RouterContext.STAT_ENQUEUE_EOD_MS);
 
-                        boolean done = false;
-                        do {
-                            done = dataQueue.offer(new EOD());
-                            AppUtils.sleep(50);
-                        } while (!done && reading);
+						reading = false;
 
-                        context.incrementStat(System.currentTimeMillis() - ts,
-                                RouterContext.STAT_ENQUEUE_EOD_MS);
+					}
+				}
+			});
+		} catch (Throwable ex) {
+			log.error(ex);
+		}
+	}
 
-                        reading = false;
+	protected boolean fillPeekAheadQueue(List<Data> peekAheadQueue,
+			int peekAheadCount, ResultSet rs) throws SQLException {
+		boolean moreData = true;
+		int toRead = peekAheadCount - peekAheadQueue.size();
+		int dataCount = 0;
+		long ts = System.currentTimeMillis();
+		while (reading && dataCount < toRead) {
+			if (rs.next()) {
+				if (process(rs)) {
+					Data data = dataService.readData(rs);
+					context.setLastDataIdForTransactionId(data);
+					peekAheadQueue.add(data);
+					dataCount++;
+					context.incrementStat(System.currentTimeMillis() - ts,
+							RouterContext.STAT_READ_DATA_MS);
+				} else {
+					context.incrementStat(System.currentTimeMillis() - ts,
+							RouterContext.STAT_REREAD_DATA_MS);
+				}
 
-                    }
-                }
-            });
-        } catch (Throwable ex) {
-            log.error(ex);
-        }
-    }
+				ts = System.currentTimeMillis();
+			} else {
+				moreData = false;
+				break;
+			}
 
-    protected void copyToQueue(List<Data> memQueue) {
-        while (memQueue.size() > 0 && reading) {
-            Data d = memQueue.get(0);
-            if (dataQueue.offer(d)) {
-                memQueue.remove(0);
-            } else {
-                AppUtils.sleep(50);
-            }
-        }
-    }
+		}
+		return moreData;
+	}
 
-    public boolean isReading() {
-        return reading;
-    }
+	protected boolean process(ResultSet rs) throws SQLException {
+		return StringUtils.isBlank(rs.getString(13));
+	}
 
-    public void setReading(boolean reading) {
-        this.reading = reading;
-    }
+	protected void copyToQueue(Data data) {
+		long ts = System.currentTimeMillis();
+		while (!dataQueue.offer(data) && reading) {
+			AppUtils.sleep(50);
+		}
+		context.incrementStat(System.currentTimeMillis() - ts,
+				RouterContext.STAT_ENQUEUE_DATA_MS);
+	}
 
-    public BlockingQueue<Data> getDataQueue() {
-        return dataQueue;
-    }
+	public boolean isReading() {
+		return reading;
+	}
 
-    class EOD extends Data {
+	public void setReading(boolean reading) {
+		this.reading = reading;
+	}
 
-    }
+	public BlockingQueue<Data> getDataQueue() {
+		return dataQueue;
+	}
+
+	class EOD extends Data {
+
+	}
 }
