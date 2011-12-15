@@ -117,6 +117,18 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 
 	public void batchRolledback(IDataLoader loader, IncomingBatch batch,
 			Exception ex) {
+
+		if (loader.getContext().getContextCache().get(COPY_MGR_KEY) != null) {
+				
+			CopyIn copyIn = (CopyIn) loader.getContext().getContextCache().get(COPY_IN_KEY);
+			try {
+				copyIn.cancelCopy();
+			} catch (SQLException sqlex) {
+				throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.cancelCopy. " + sqlex.getMessage());
+			}
+			//cleanup
+			cleanup(loader.getContext());
+		}
 	}
 
 	private void initCopyManager(IDataLoaderContext context) {
@@ -194,6 +206,16 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 		context.getContextCache().put(NBR_PENDING_BULK_LOAD_ROWS_KEY, nbrPendingBulkLoadRows);		
 	}
 	
+	private void cleanup(IDataLoaderContext context) {
+
+		//cleanup
+		context.getContextCache().remove(COPY_MGR_KEY);
+		context.getContextCache().remove(COPY_IN_KEY);		
+		context.getContextCache().remove(NBR_PENDING_BULK_LOAD_ROWS_KEY);
+		context.getContextCache().remove(COPY_TABLE_KEY);
+
+	}
+	
 	private void commitAndCleanup(IDataLoaderContext context) {
 
 		if (context.getContextCache().get(COPY_MGR_KEY) != null) {
@@ -207,10 +229,7 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 				throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.batchComplete. " + ex.getMessage());
 			}
 			//cleanup
-			context.getContextCache().remove(COPY_MGR_KEY);
-			context.getContextCache().remove(COPY_IN_KEY);		
-			context.getContextCache().remove(NBR_PENDING_BULK_LOAD_ROWS_KEY);
-			context.getContextCache().remove(COPY_TABLE_KEY);
+			cleanup(context);
 		}
 	}
 
