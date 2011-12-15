@@ -106,7 +106,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private List<IBatchListener> batchListeners;
     
     public DataLoaderService() {
-         addBatchListener(new LoadBatchResultsListener());
     }    
 
     /**
@@ -207,7 +206,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public IDataLoader openDataLoader(BufferedReader reader) throws IOException {
         IDataLoader dataLoader = (IDataLoader) beanFactory.getBean(Constants.DATALOADER);
-        dataLoader.open(reader, dataSource, batchListeners, filters, columnFilters);
+        List<IBatchListener> listeners = new ArrayList<IBatchListener>(batchListeners);
+        listeners.add(new LoadBatchResultsListener());
+        dataLoader.open(reader, dataSource, listeners, filters, columnFilters);
         return dataLoader;
     }
 
