@@ -125,9 +125,9 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 				copyIn.cancelCopy();
 			} catch (SQLException sqlex) {
 				throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.cancelCopy. " + sqlex.getMessage());
+			} finally {
+				cleanup(loader.getContext());
 			}
-			//cleanup
-			cleanup(loader.getContext());
 		}
 	}
 
