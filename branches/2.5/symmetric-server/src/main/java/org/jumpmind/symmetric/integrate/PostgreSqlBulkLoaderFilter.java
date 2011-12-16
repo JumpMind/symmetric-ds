@@ -227,9 +227,9 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 				copyIn.endCopy();			
 			} catch (SQLException ex) {
 				throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.batchComplete. " + ex.getMessage());
-			}
+			} 
 			//cleanup
-			cleanup(context);
+			cleanup(context);				
 		}
 	}
 
