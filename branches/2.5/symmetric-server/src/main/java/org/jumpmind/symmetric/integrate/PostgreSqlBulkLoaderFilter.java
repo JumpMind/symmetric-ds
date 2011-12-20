@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
@@ -23,6 +25,10 @@ import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFilter,
 	INodeGroupExtensionPoint {
 
+	final Log log = LogFactory.getLog(getClass());
+	
+	private IParameterService parameterService;
+
     private boolean autoRegister = true;
     private static final String COPY_IN_KEY = "COPYIN";
     private static final String COPY_MGR_KEY = "COPYMGR";
@@ -32,12 +38,11 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 
     private String[] nodeGroupIdsToApplyTo;
     private Set<String> tablesToApplyTo;
+    
     public void setTablesToApplyTo(Set<String> tablesToApplyTo) {
 		this.tablesToApplyTo = tablesToApplyTo;
 	}
-
-	private IParameterService parameterService;
-    
+        
     public String[] getNodeGroupIdsToApplyTo() {
 		return nodeGroupIdsToApplyTo;
 	}
@@ -46,7 +51,6 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 		this.nodeGroupIdsToApplyTo = nodeGroupIdsToApplyTo;
 	}
 
-	//from IExtensionPoint
 	public boolean isAutoRegister() {
 		return autoRegister;
 	}
@@ -55,10 +59,8 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
         this.autoRegister = autoRegister;
     }
 
-    //from IDataLoaderFilter
 	public boolean filterInsert(IDataLoaderContext context,
 			String[] columnValues) {
-
 		//if the table we are now doing an insert for insn't the same as 
 		//a copy command we already have running, then commit and cleanup 
 		//the old one first
@@ -67,9 +69,13 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 			commitAndCleanup(context);
 		}
 		
-		//see if we should do a bulk load for the given table
-		if (tablesToApplyTo.contains(context.getTableName())) {
+		Integer nbrPendingBulkLoadRows = (Integer) context.getContextCache().get(NBR_PENDING_BULK_LOAD_ROWS_KEY);
+		if (nbrPendingBulkLoadRows != null && nbrPendingBulkLoadRows > 0 && nbrPendingBulkLoadRows % 5000==0) {
+			log.debug(String.format("Bulk loaded %d rows into %s so far ...", nbrPendingBulkLoadRows, context.getTableName()));
+		}
 		
+		//see if we should do a bulk load for the given table
+		if (tablesToApplyTo == null || tablesToApplyTo.contains(context.getTableName())) {		
 			//init the copyManager if it hasn't already been set up
 			initCopyManager(context);
 			//write the data string to the copy manager
@@ -101,30 +107,30 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 		return true;
 	}
 
-	//from IBatchListener	
 	public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
+		log.debug("early commit: " + batch.getBatchId());
+		commitAndCleanup(loader.getContext());
 	}
 
 	public void batchComplete(IDataLoader loader, IncomingBatch batch) {
-
-		if (tablesToApplyTo.contains(loader.getContext().getTableName())) {
-			commitAndCleanup(loader.getContext());
-		}		
+		log.debug("batch complete: " + batch.getBatchId());
+        commitAndCleanup(loader.getContext());
 	}
 
 	public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
+		log.debug("batch committed: " + batch.getBatchId());
 	}
 
 	public void batchRolledback(IDataLoader loader, IncomingBatch batch,
 			Exception ex) {
-
+		log.debug("batch rolledback: " + batch.getBatchId());
 		if (loader.getContext().getContextCache().get(COPY_MGR_KEY) != null) {
 				
 			CopyIn copyIn = (CopyIn) loader.getContext().getContextCache().get(COPY_IN_KEY);
 			try {
 				copyIn.cancelCopy();
 			} catch (SQLException sqlex) {
-				throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.cancelCopy. " + sqlex.getMessage());
+				throw new RuntimeException("Error in PostgreSqlBulkLoaderFilter.cancelCopy. ", sqlex);
 			} finally {
 				cleanup(loader.getContext());
 			}
@@ -144,18 +150,21 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 								
 				//create the copy manager
 				CopyManager copyManager = new CopyManager((BaseConnection) conn);
-				contextCache.put(COPY_MGR_KEY, copyManager);				
-				CopyIn copyIn = copyManager.copyIn(createCopyMgrSql(context));
+				contextCache.put(COPY_MGR_KEY, copyManager);
+				String sql = createCopyMgrSql(context);
+				log.debug("starting bulk copy using: " + sql);
+				CopyIn copyIn = copyManager.copyIn(sql);
 				contextCache.put(COPY_TABLE_KEY, context.getTableName());
 				contextCache.put(COPY_IN_KEY, copyIn);
 			} 
+		} catch (RuntimeException ex) {
+			throw ex;
 		} catch (Exception ex) {
-			throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.initCopyManager. " + ex.getMessage());
+			throw new RuntimeException("Error in PostgreSqlBulkLoaderFilter.initCopyManager. ", ex);
 		}
 	}
 	
-	private String createCopyMgrSql(IDataLoaderContext context) {		
-		
+	private String createCopyMgrSql(IDataLoaderContext context) {				
 		String sql = "COPY ";
 		sql += context.getSchemaName() + "." + context.getTableName() + " ";
 		String columns = "";
@@ -180,7 +189,7 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 	   try {
 		   copyIn.writeToCopy(dataToLoad, 0, dataToLoad.length);
 	   } catch (SQLException ex) {
-			throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.writeDataString. " + ex.getMessage());
+			throw new RuntimeException("Error in PostgreSqlBulkLoaderFilter.writeDataString. ", ex);
 	   }
 
 	}
@@ -192,6 +201,7 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 			if (nbrPendingBulkLoadRows >= BULK_LOAD_FLUSH_INTERVAL) {
 				CopyIn copyIn = (CopyIn) context.getContextCache().get(COPY_IN_KEY);
 				try {
+					log.debug("flushing bulk copy...");
 					copyIn.flushCopy();
 				} catch (SQLException ex) {
 					throw new SymmetricException("Error in initCopyManager. " + ex.getMessage());
@@ -207,28 +217,23 @@ public class PostgreSqlBulkLoaderFilter implements IBatchListener, IDataLoaderFi
 	}
 	
 	private void cleanup(IDataLoaderContext context) {
-
-		//cleanup
 		context.getContextCache().remove(COPY_MGR_KEY);
 		context.getContextCache().remove(COPY_IN_KEY);		
 		context.getContextCache().remove(NBR_PENDING_BULK_LOAD_ROWS_KEY);
 		context.getContextCache().remove(COPY_TABLE_KEY);
-
 	}
 	
 	private void commitAndCleanup(IDataLoaderContext context) {
 
 		if (context.getContextCache().get(COPY_MGR_KEY) != null) {
-	
-			//commit
 			CopyIn copyIn = (CopyIn) context.getContextCache().get(COPY_IN_KEY);		
 			if (copyIn != null)
 			try {
+				log.info("ending copy");
 				copyIn.endCopy();			
 			} catch (SQLException ex) {
-				throw new SymmetricException("Error in PostgreSqlBulkLoaderFilter.batchComplete. " + ex.getMessage());
+				throw new RuntimeException("Error in PostgreSqlBulkLoaderFilter.batchComplete.", ex);
 			} 
-			//cleanup
 			cleanup(context);				
 		}
 	}
