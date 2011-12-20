@@ -70,6 +70,8 @@ public class SymmetricWebServer {
 
     public static final String DEFAULT_HTTPS_PORT = System.getProperty(
             Constants.SYS_PROP_DEFAULT_HTTPS_PORT, "31417");
+    
+    public static final int DEFAULT_MAX_IDLE_TIME = 7200000;
 
     /**
      * The type of HTTP connection to create for this SymmetricDS web server
@@ -89,7 +91,7 @@ public class SymmetricWebServer {
 
     protected String webHome = "/";
 
-    protected int maxIdleTime = 7200000;
+    protected int maxIdleTime = DEFAULT_MAX_IDLE_TIME;
 
     protected int httpPort = -1;
 
