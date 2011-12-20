@@ -935,7 +935,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             objectValue = getDate(value, TIMESTAMP_PATTERNS);
                         } else if (type == Types.TIMESTAMP
                                 || (type == Types.DATE && isDateOverrideToTimestamp())) {
-                            objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
+                            objectValue = getTime(value, TIMESTAMP_PATTERNS);
                         } else if (type == Types.CHAR) {
                             String charValue = value.toString();
                             if ((StringUtils.isBlank(charValue) && isBlankCharColumnSpacePadded())
@@ -1006,8 +1006,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    final private long getTime(String value, String[] pattern) {
-        return getDate(value, pattern).getTime();
+    final private Timestamp getTime(String value, String[] pattern) {
+    	try {
+    		return Timestamp.valueOf(value);
+    	} catch (Exception ex) {
+    		return new Timestamp(getDate(value, pattern).getTime());	
+    	}        
     }
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
