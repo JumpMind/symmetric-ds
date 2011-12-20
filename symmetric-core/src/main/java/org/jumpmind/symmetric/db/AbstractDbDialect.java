@@ -966,7 +966,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                                 objectValue = Hex.decodeHex(value.toCharArray());
                             }
                         } else if (type == Types.TIME) {
-                            objectValue = new Time(getTime(value, TIME_PATTERNS));
+                            objectValue = new Time(getDate(value, TIME_PATTERNS).getTime());
                         } else if (type == Types.ARRAY) {
                             objectValue = createArray(column, value);
                         }
