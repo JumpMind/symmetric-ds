@@ -1,62 +1,41 @@
 package org.jumpmind.symmetric.io.data;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jumpmind.util.Context;
 
-import org.jumpmind.util.Parameters;
+public class DataContext<R extends IDataReader, W extends IDataWriter> extends Context {
 
-public class DataContext {
+    protected W writer;
 
-    public static final String KEY_SQL_TRANSACTION = "sql.transaction";
+    protected R reader;
 
-    protected Map<String, Object> context = new HashMap<String, Object>();
+    protected Batch batch;
 
-    protected Parameters parameters;
-    
-    protected BinaryEncoding binaryEncoding;
-    
-    protected String sourceNodeId;
-
-    public DataContext(Parameters parameters) {
-        this.parameters = parameters == null ? new Parameters() : parameters;
+    public DataContext(Batch batch) {
+        this.batch = batch;
     }
 
     public DataContext() {
     }
 
-    public Parameters getParameters() {
-        return parameters;
+    public DataContext(R reader, W writer) {
+        this.writer = writer;
+        this.reader = reader;
     }
 
-    public void setParameters(Parameters parameters) {
-        this.parameters = parameters;
+    public R getReader() {
+        return reader;
     }
 
-    public Map<String, Object> getContext() {
-        return context;
+    public W getWriter() {
+        return writer;
     }
 
-    public void put(String key, Object value) {
-        context.put(key, value);
+    public void setBatch(Batch batch) {
+        this.batch = batch;
     }
 
-    public Object get(String key) {
-        return context.get(key);
+    public Batch getBatch() {
+        return batch;
     }
 
-    public void setBinaryEncoding(BinaryEncoding binaryEncoding) {
-        this.binaryEncoding = binaryEncoding;
-    }
-    
-    public BinaryEncoding getBinaryEncoding() {
-        return binaryEncoding;
-    }
-
-    public void setSourceNodeId(String sourceNodeId) {
-        this.sourceNodeId = sourceNodeId;
-    }
-    
-    public String getSourceNodeId() {
-        return sourceNodeId;
-    }
 }

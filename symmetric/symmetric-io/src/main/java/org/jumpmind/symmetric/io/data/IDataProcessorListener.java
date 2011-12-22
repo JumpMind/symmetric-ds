@@ -1,22 +1,19 @@
 package org.jumpmind.symmetric.io.data;
 
-import org.jumpmind.db.model.Table;
 
-public interface IDataProcessorListener {
+public interface IDataProcessorListener<R extends IDataReader, W extends IDataWriter> {
 
-    public boolean processTable(DataContext context, Batch batch, Table table);
-    
     /**
      * @return true if this batch should be processed
      */
-    public boolean batchBegin(DataContext context, Batch batch);
+    public boolean beforeBatchStarted(DataContext<R, W> context);
+    
+    public void afterBatchStarted(DataContext<R, W> context);
 
-    public void batchBeforeCommit(DataContext context, Batch batch);
+    public void beforeBatchEnd(DataContext<R, W> context);
 
-    public void batchEarlyCommit(DataContext context, Batch batch, int rowNumber);
+    public void batchSuccessful(DataContext<R, W> context);
 
-    public void batchCommit(DataContext context, Batch batch);
-
-    public void batchRollback(DataContext context, Batch batch, Exception ex);
+    public void batchInError(DataContext<R, W> context, Exception ex);
 
 }

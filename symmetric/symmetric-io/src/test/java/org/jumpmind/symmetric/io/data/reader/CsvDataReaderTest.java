@@ -2,13 +2,14 @@ package org.jumpmind.symmetric.io.data.reader;
 
 import junit.framework.Assert;
 
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.Batch;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.junit.Test;
 
 public class CsvDataReaderTest {
@@ -25,7 +26,7 @@ public class CsvDataReaderTest {
         endCsv(builder);
         
         CsvDataReader reader = new CsvDataReader(builder);
-        DataContext ctx = new DataContext();
+        DataContext<CsvDataReader, IDataWriter> ctx = new DataContext<CsvDataReader, IDataWriter>(reader, null);
         reader.open(ctx);
         
         Batch batch = reader.nextBatch();

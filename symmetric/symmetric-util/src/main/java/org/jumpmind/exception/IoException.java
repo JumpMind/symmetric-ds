@@ -1,4 +1,4 @@
-package org.jumpmind.util;
+package org.jumpmind.exception;
 
 import java.io.IOException;
 
