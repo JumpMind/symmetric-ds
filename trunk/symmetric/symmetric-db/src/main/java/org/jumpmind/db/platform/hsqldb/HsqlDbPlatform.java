@@ -24,7 +24,7 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the HsqlDb database.
@@ -72,6 +72,12 @@ public class HsqlDbPlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
         info.setStoresUpperCaseInCatalog(true);
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+
+        primaryKeyViolationSqlStates = new String[] {"23505"};
 
         ddlReader = new HsqlDbDdlReader(log, this);
         ddlBuilder = new HsqlDbBuilder(log, this);
@@ -81,5 +87,13 @@ public class HsqlDbPlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DATABASENAME;
     }
+    
+    public String getDefaultCatalog() {
+        return null;
+    }
 
+    public String getDefaultSchema() {
+        return null;
+    }
+    
 }

@@ -43,7 +43,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for Oracle.
@@ -80,7 +80,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void createTable(Database database, Table table, StringBuilder ddl) {
+    public void createTable(Table table, StringBuilder ddl) {
         // lets create any sequences
         Column[] columns = table.getAutoIncrementColumns();
 
@@ -88,7 +88,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
             createAutoIncrementSequence(table, columns[idx], ddl);
         }
 
-        super.createTable(database, table, ddl);
+        super.createTable(table, ddl);
 
         for (int idx = 0; idx < columns.length; idx++) {
             createAutoIncrementTrigger(table, columns[idx], ddl);
@@ -108,7 +108,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
         }
 
         ddl.append("DROP TABLE ");
-        printIdentifier(getTableName(table), ddl);
+        printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(" CASCADE CONSTRAINTS PURGE");
         printEndOfStatement(ddl);
     }
@@ -135,7 +135,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
             ddl.append("CREATE OR REPLACE TRIGGER ");
             printlnIdentifier(triggerName, ddl);
             ddl.append("BEFORE INSERT ON ");
-            printlnIdentifier(getTableName(table), ddl);
+            printlnIdentifier(getTableName(table.getName()), ddl);
             ddl.append("FOR EACH ROW WHEN (new.");
             printIdentifier(columnName, ddl);
             println(" IS NULL)", ddl);
@@ -159,7 +159,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
             ddl.append("CREATE OR REPLACE TRIGGER ");
             printIdentifier(triggerName, ddl);
             ddl.append(" BEFORE INSERT ON ");
-            printIdentifier(getTableName(table), ddl);
+            printIdentifier(getTableName(table.getName()), ddl);
             ddl.append(" FOR EACH ROW WHEN (new.");
             printIdentifier(columnName, ddl);
             println(" IS NULL)", ddl);
@@ -200,7 +200,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void createTemporaryTable(Database database, Table table, StringBuilder ddl) {
-        createTable(database, table, ddl);
+        createTable(table, ddl);
     }
 
     @Override
@@ -377,7 +377,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -399,7 +399,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
             dropAutoIncrementSequence(change.getChangedTable(), change.getColumn(), ddl);
         }
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -413,7 +413,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);

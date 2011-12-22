@@ -42,12 +42,12 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from a Microsoft Sql Server database.
  */
-public class MSSqlDdlReader extends AbstractJdbcDdlReader {
+public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     
     /* Known system tables that Sql Server creates (e.g. automatic maintenance). */
     private static final String[] KNOWN_SYSTEM_TABLES = { "dtproperties" };
@@ -58,7 +58,7 @@ public class MSSqlDdlReader extends AbstractJdbcDdlReader {
     /* The regular expression pattern for the ISO times. */
     private Pattern _isoTimePattern;
 
-    public MSSqlDdlReader(Log log, IDatabasePlatform platform) {
+    public MsSqlDdlReader(Log log, IDatabasePlatform platform) {
         super(log, platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);

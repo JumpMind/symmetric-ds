@@ -31,7 +31,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for PostgresSql.
@@ -55,7 +55,7 @@ public class PostgreSqlBuilder extends AbstractDdlBuilder {
     @Override
     public void dropTable(Table table, StringBuilder ddl)  {
         ddl.append("DROP TABLE ");
-        printIdentifier(getTableName(table), ddl);
+        printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(" CASCADE");
         printEndOfStatement(ddl);
 
@@ -74,7 +74,7 @@ public class PostgreSqlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void createTable(Database database, Table table, StringBuilder ddl)  {
+    public void createTable(Table table, StringBuilder ddl)  {
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
             Column column = table.getColumn(idx);
 
@@ -82,7 +82,7 @@ public class PostgreSqlBuilder extends AbstractDdlBuilder {
                 createAutoIncrementSequence(table, column, ddl);
             }
         }
-        super.createTable(database, table, ddl);
+        super.createTable(table, ddl);
     }
 
     /*
@@ -190,7 +190,7 @@ public class PostgreSqlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl)  {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -210,7 +210,7 @@ public class PostgreSqlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl)  {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);

@@ -44,7 +44,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for Sybase.
@@ -57,9 +57,9 @@ public class SybaseBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void createTable(Database database, Table table, StringBuilder ddl) {
+    public void createTable(Table table, StringBuilder ddl) {
         writeQuotationOnStatement(ddl);
-        super.createTable(database, table, ddl);
+        super.createTable(table, ddl);
     }
 
     @Override
@@ -99,12 +99,12 @@ public class SybaseBuilder extends AbstractDdlBuilder {
     public void dropTable(Table table, StringBuilder ddl) {
         writeQuotationOnStatement(ddl);
         ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
-        printAlwaysSingleQuotedIdentifier(getTableName(table), ddl);
+        printAlwaysSingleQuotedIdentifier(getTableName(table.getName()), ddl);
         println(")", ddl);
         println("BEGIN", ddl);
         printIndent(ddl);
         ddl.append("DROP TABLE ");
-        printlnIdentifier(getTableName(table), ddl);
+        printlnIdentifier(getTableName(table.getName()), ddl);
         ddl.append("END");
         printEndOfStatement(ddl);
     }
@@ -119,7 +119,7 @@ public class SybaseBuilder extends AbstractDdlBuilder {
         println(")", ddl);
         printIndent(ddl);
         ddl.append("ALTER TABLE ");
-        printIdentifier(getTableName(table), ddl);
+        printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(" DROP CONSTRAINT ");
         printIdentifier(constraintName, ddl);
         printEndOfStatement(ddl);
@@ -128,7 +128,7 @@ public class SybaseBuilder extends AbstractDdlBuilder {
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
-        printIdentifier(getTableName(table), ddl);
+        printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
@@ -156,7 +156,7 @@ public class SybaseBuilder extends AbstractDdlBuilder {
         StringBuffer result = new StringBuffer();
 
         result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table)));
+        result.append(getDelimitedIdentifier(getTableName(table.getName())));
         result.append(" ON");
 
         return result.toString();
@@ -173,7 +173,7 @@ public class SybaseBuilder extends AbstractDdlBuilder {
         StringBuffer result = new StringBuffer();
 
         result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table)));
+        result.append(getDelimitedIdentifier(getTableName(table.getName())));
         result.append(" OFF");
 
         return result.toString();
@@ -220,14 +220,14 @@ public class SybaseBuilder extends AbstractDdlBuilder {
 
         if (hasIdentity) {
             ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable), ddl);
+            printIdentifier(getTableName(targetTable.getName()), ddl);
             ddl.append(" ON");
             printEndOfStatement(ddl);
         }
         super.writeCopyDataStatement(sourceTable, targetTable, ddl);
         if (hasIdentity) {
             ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable), ddl);
+            printIdentifier(getTableName(targetTable.getName()), ddl);
             ddl.append(" OFF");
             printEndOfStatement(ddl);
         }
@@ -369,7 +369,7 @@ public class SybaseBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -383,7 +383,7 @@ public class SybaseBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -404,7 +404,7 @@ public class SybaseBuilder extends AbstractDdlBuilder {
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         // TODO: this would be easier when named primary keys are supported
         // because then we can use ALTER TABLE DROP
-        String tableName = getTableName(change.getChangedTable());
+        String tableName = getTableName(change.getChangedTable().getName());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
 
@@ -438,7 +438,7 @@ public class SybaseBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             ColumnDefaultValueChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("REPLACE ");
         printIdentifier(getColumnName(change.getChangedColumn()), ddl);
@@ -480,7 +480,7 @@ public class SybaseBuilder extends AbstractDdlBuilder {
             // the
             // datatype changes
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable), ddl);
+            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
             printIndent(ddl);
             ddl.append("REPLACE ");
             printIdentifier(getColumnName(sourceColumn), ddl);
@@ -488,14 +488,14 @@ public class SybaseBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(sourceTable), ddl);
+        printlnIdentifier(getTableName(sourceTable.getName()), ddl);
         printIndent(ddl);
         ddl.append("MODIFY ");
         writeColumn(sourceTable, targetColumn, ddl);
         printEndOfStatement(ddl);
         if (defaultChanges) {
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable), ddl);
+            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
             printIndent(ddl);
             ddl.append("REPLACE ");
             printIdentifier(getColumnName(sourceColumn), ddl);

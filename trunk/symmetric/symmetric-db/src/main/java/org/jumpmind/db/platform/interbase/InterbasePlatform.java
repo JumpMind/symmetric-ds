@@ -24,12 +24,13 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the Interbase database.
  */
 public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
+    
     /* Database name of this platform. */
     public static final String DATABASENAME = "Interbase";
 
@@ -87,6 +88,12 @@ public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
         info.setHasSize(Types.VARBINARY, false);
 
         info.setStoresUpperCaseInCatalog(true);
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+        
+        primaryKeyViolationCodes = new int [] {335544665};
 
         ddlReader = new InterbaseDdlReader(log, this);
         ddlBuilder = new InterbaseBuilder(log, this);
@@ -96,4 +103,12 @@ public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
         return DATABASENAME;
     }
 
+    public String getDefaultCatalog() {     
+        return null;
+    }
+    
+    public String getDefaultSchema() {
+        return null;
+    }
+    
 }

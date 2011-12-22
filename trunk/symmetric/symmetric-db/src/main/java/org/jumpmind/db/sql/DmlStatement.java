@@ -54,13 +54,10 @@ public class DmlStatement {
 
     protected Column[] columns;
 
-    protected Column[] preFilteredColumns;
-
-    public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys, Column[] columns,
-            Column[] preFilteredColumns, boolean isDateOverrideToTimestamp, String identifierQuoteString) {
+    public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys, Column[] columns, 
+            boolean isDateOverrideToTimestamp, String identifierQuoteString) {
         this.keys = keys;
         this.columns = columns;
-        this.preFilteredColumns = preFilteredColumns;
         quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, identifierQuoteString), keys, columns);
@@ -243,18 +240,14 @@ public class DmlStatement {
         return columns;
     }
 
-    public Column[] getColumnKeyMetaData(boolean prefiltered) {
-        if (prefiltered) {
-            return (Column[]) ArrayUtils.addAll(preFilteredColumns, keys);
-        } else {
+    public Column[] getColumnKeyMetaData() {
             return (Column[]) ArrayUtils.addAll(columns, keys);
-        }
     }
 
-    public Column[] getMetaData(boolean prefiltered) {
+    public Column[] getMetaData() {
         switch (dmlType) {
         case UPDATE:
-            return getColumnKeyMetaData(prefiltered);
+            return getColumnKeyMetaData();
         case INSERT:
             return getColumns();
         case DELETE:
@@ -267,10 +260,6 @@ public class DmlStatement {
         return keys;
     }
 
-    public Column[] getPreFilteredColumns() {
-        return preFilteredColumns;
-    }
-    
     public String[] getValueArray(String[] columnValues, String[] keyValues) {
         switch (dmlType) {
         case UPDATE:

@@ -69,7 +69,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.util.CallbackClosure;
 import org.jumpmind.db.util.MultiInstanceofPredicate;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /**
  * This class is a collection of Strategy methods for creating the DDL required
@@ -309,7 +309,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             Table table = database.getTable(idx);
 
             writeTableComment(table, ddl);
-            createTable(database, table, ddl);
+            createTable(table, ddl);
         }
 
         // we're writing the external foreignkeys last to ensure that all
@@ -496,7 +496,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void processChange(Database currentModel, Database desiredModel,
             AddTableChange change, StringBuilder ddl) {
-        createTable(desiredModel, change.getNewTable(), ddl);
+        createTable(change.getNewTable(), ddl);
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
 
@@ -762,13 +762,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 // TABLE will take care of that
                 // Likewise, foreign keys have already been dropped as necessary
                 dropTable(sourceTable, ddl);
-                createTable(desiredModel, realTargetTable, ddl);
+                createTable(realTargetTable, ddl);
                 writeCopyDataStatement(tempTable, targetTable, ddl);
                 dropTemporaryTable(desiredModel, tempTable, ddl);
                 writeFixLastIdentityValues(targetTable, ddl);
             } else {
                 dropTable(sourceTable, ddl);
-                createTable(desiredModel, realTargetTable, ddl);
+                createTable(realTargetTable, ddl);
             }
         }
     }
@@ -827,7 +827,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     public Table createBackupTableFor(Database model, Table sourceTable, StringBuilder ddl) {
         Table backupTable = getBackupTableFor(model, sourceTable);
-        writeTableCreationStmt(model, backupTable, ddl);
+        writeTableCreationStmt(backupTable, ddl);
         printEndOfStatement(ddl);
         writeCopyDataStatement(sourceTable, backupTable, ddl);
         return backupTable;
@@ -836,7 +836,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     public void restoreTableFromBackup(Table backupTable, Table targetTable,
             LinkedHashMap columnMap, StringBuilder ddl) {
         ddl.append("DELETE FROM ");
-        printIdentifier(getTableName(targetTable), ddl);
+        printIdentifier(getTableName(targetTable.getName()), ddl);
         printEndOfStatement(ddl);
         writeCopyDataStatement(backupTable, targetTable, columnMap, ddl);
     }
@@ -861,7 +861,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     /**
      * Outputs the DDL to create the given temporary table. Per default this is
-     * simply a call to {@link #createTable(Database, Table, Map)}.
+     * simply a call to {@link #createTable(Table, Map)}.
      * 
      * @param database
      *            The database model
@@ -869,7 +869,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The table
      */
     protected void createTemporaryTable(Database database, Table table, StringBuilder ddl) {
-        createTable(database, table, ddl);
+        createTable(table, ddl);
     }
 
     /**
@@ -950,7 +950,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     public void writeCopyDataStatement(Table sourceTable, Table targetTable,
             LinkedHashMap columnMap, StringBuilder ddl) {
         ddl.append("INSERT INTO ");
-        printIdentifier(getTableName(targetTable), ddl);
+        printIdentifier(getTableName(targetTable.getName()), ddl);
         ddl.append(" (");
         for (Iterator columnIt = columnMap.values().iterator(); columnIt.hasNext();) {
             printIdentifier(getColumnName((Column) columnIt.next()), ddl);
@@ -968,7 +968,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             }
         }
         ddl.append(" FROM ");
-        printIdentifier(getTableName(sourceTable), ddl);
+        printIdentifier(getTableName(sourceTable.getName()), ddl);
         printEndOfStatement(ddl);
     }
 
@@ -1089,9 +1089,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * constraints as well as with external primary keys and indices (but not
      * foreign keys).
      */
-    public String createTable(Database database, Table table) {
+    public String createTable(Table table) {
         StringBuilder ddl = new StringBuilder();
-        createTable(database, table, ddl);
+        createTable(table, ddl);
         return ddl.toString();
     }
 
@@ -1100,8 +1100,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * constraints as well as with external primary keys and indices (but not
      * foreign keys).
      */
-    public void createTable(Database database, Table table, StringBuilder ddl) {
-        writeTableCreationStmt(database, table, ddl);
+    public void createTable(Table table, StringBuilder ddl) {
+        writeTableCreationStmt(table, ddl);
         writeTableCreationStmtEnding(table, ddl);
 
         if (!platform.getPlatformInfo().isPrimaryKeyEmbedded()) {
@@ -1201,7 +1201,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     public void dropTable(Table table, StringBuilder ddl) {
         ddl.append("DROP TABLE ");
-        printIdentifier(getTableName(table), ddl);
+        printIdentifier(getTableName(table.getName()), ddl);
         printEndOfStatement(ddl);
     }
 
@@ -1238,7 +1238,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         StringBuffer buffer = new StringBuffer("INSERT INTO ");
         boolean addComma = false;
 
-        buffer.append(getDelimitedIdentifier(getTableName(table)));
+        buffer.append(getDelimitedIdentifier(getTableName(table.getName())));
         buffer.append(" (");
 
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
@@ -1302,7 +1302,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         StringBuffer buffer = new StringBuffer("UPDATE ");
         boolean addSep = false;
 
-        buffer.append(getDelimitedIdentifier(getTableName(table)));
+        buffer.append(getDelimitedIdentifier(getTableName(table.getName())));
         buffer.append(" SET ");
 
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
@@ -1363,7 +1363,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         StringBuffer buffer = new StringBuffer("DELETE FROM ");
         boolean addSep = false;
 
-        buffer.append(getDelimitedIdentifier(getTableName(table)));
+        buffer.append(getDelimitedIdentifier(getTableName(table.getName())));
         if ((pkValues != null) && !pkValues.isEmpty()) {
             buffer.append(" WHERE ");
             for (Iterator<Map.Entry<String, Object>> it = pkValues.entrySet().iterator(); it
@@ -1534,8 +1534,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The table
      * @return The table name
      */
-    public String getTableName(Table table) {
-        return shortenName(table.getName(), platform.getPlatformInfo().getMaxTableNameLength());
+    public String getTableName(String tableName) {
+        return shortenName(tableName, platform.getPlatformInfo().getMaxTableNameLength());
     }
 
     /**
@@ -1546,7 +1546,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void writeTableComment(Table table, StringBuilder ddl) {
         printComment("-----------------------------------------------------------------------", ddl);
-        printComment(getTableName(table), ddl);
+        printComment(getTableName(table.getName()), ddl);
         printComment("-----------------------------------------------------------------------", ddl);
         println(ddl);
     }
@@ -1560,16 +1560,16 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void writeTableAlterStmt(Table table, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(table), ddl);
+        printlnIdentifier(getTableName(table.getName()), ddl);
         printIndent(ddl);
     }
 
     /**
      * Writes the table creation statement without the statement end.
      */
-    protected void writeTableCreationStmt(Database database, Table table, StringBuilder ddl) {
+    protected void writeTableCreationStmt(Table table, StringBuilder ddl) {
         ddl.append("CREATE TABLE ");
-        printlnIdentifier(getTableName(table), ddl);
+        printlnIdentifier(getTableName(table.getName()), ddl);
         println("(", ddl);
 
         writeColumns(table, ddl);
@@ -1578,7 +1578,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             writeEmbeddedPrimaryKeysStmt(table, ddl);
         }
         if (platform.getPlatformInfo().isForeignKeysEmbedded()) {
-            writeEmbeddedForeignKeysStmt(database, table, ddl);
+            writeEmbeddedForeignKeysStmt(table, ddl);
         }
         if (platform.getPlatformInfo().isIndicesEmbedded()) {
             writeEmbeddedIndicesStmt(table, ddl);
@@ -1996,7 +1996,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             StringBuilder ddl) {
         if ((primaryKeyColumns.length > 0) && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(table), ddl);
+            printlnIdentifier(getTableName(table.getName()), ddl);
             printIndent(ddl);
             ddl.append("ADD CONSTRAINT ");
             printIdentifier(getConstraintName(null, table, "PK", null), ddl);
@@ -2094,7 +2094,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 ddl.append(" INDEX ");
                 printIdentifier(getIndexName(index), ddl);
                 ddl.append(" ON ");
-                printIdentifier(getTableName(table), ddl);
+                printIdentifier(getTableName(table.getName()), ddl);
                 ddl.append(" (");
 
                 for (int idx = 0; idx < index.getColumnCount(); idx++) {
@@ -2164,7 +2164,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         printIdentifier(getIndexName(index), ddl);
         if (!platform.getPlatformInfo().isAlterTableForDropUsed()) {
             ddl.append(" ON ");
-            printIdentifier(getTableName(table), ddl);
+            printIdentifier(getTableName(table.getName()), ddl);
         }
         printEndOfStatement(ddl);
     }
@@ -2172,7 +2172,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Writes the foreign key constraints inside a create table () clause.
      */
-    protected void writeEmbeddedForeignKeysStmt(Database database, Table table, StringBuilder ddl) {
+    protected void writeEmbeddedForeignKeysStmt(Table table, StringBuilder ddl) {
         for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
             ForeignKey key = table.getForeignKey(idx);
 
@@ -2188,7 +2188,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 ddl.append("FOREIGN KEY (");
                 writeLocalReferences(key, ddl);
                 ddl.append(") REFERENCES ");
-                printIdentifier(getTableName(database.findTable(key.getForeignTableName())), ddl);
+                printIdentifier(getTableName(key.getForeignTableName()), ddl);
                 ddl.append(" (");
                 writeForeignReferences(key, ddl);
                 ddl.append(")");
@@ -2217,7 +2217,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(" FOREIGN KEY (");
             writeLocalReferences(key, ddl);
             ddl.append(") REFERENCES ");
-            printIdentifier(getTableName(database.findTable(key.getForeignTableName())), ddl);
+            printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
             writeForeignReferences(key, ddl);
             ddl.append(")");

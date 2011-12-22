@@ -49,11 +49,12 @@ import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.sql.jdbc.IConnectionCallback;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
-import org.jumpmind.util.Log;
-import org.jumpmind.util.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 
 /*
  * An utility class to create a Database model from a live database.
@@ -439,7 +440,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     public Database readTables(final String catalog, final String schema, final String[] tableTypes) {
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        return sqlTemplate.execute(new IConnectionCallback<Database>() {
+        return postprocessModelFromDatabase(sqlTemplate.execute(new IConnectionCallback<Database>() {
             public Database execute(Connection connection) throws SQLException {
                 Database db = new Database();
                 db.setName(Table.getQualifiedTablePrefix(catalog, schema));
@@ -455,7 +456,21 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 db.initialize();
                 return db;
             }
-        });
+        }));
+    }
+    
+    /*
+     * Allows the platform to postprocess the model just read from the database.
+     * 
+     * @param model The model
+     */
+    protected Database postprocessModelFromDatabase(Database model) {
+        // Default values for CHAR/VARCHAR/LONGVARCHAR columns have quotation
+        // marks around them which we'll remove now
+        for (int tableIdx = 0; tableIdx < model.getTableCount(); tableIdx++) {
+            postprocessTableFromDatabase(model.getTable(tableIdx));
+        }
+        return model;
     }
 
     /*
@@ -517,7 +532,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
     public Table readTable(final String catalog, final String schema, final String table) {
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        return sqlTemplate.execute(new IConnectionCallback<Table>() {
+        return postprocessTableFromDatabase(sqlTemplate.execute(new IConnectionCallback<Table>() {
             public Table execute(Connection connection) throws SQLException {
                 DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
                 metaData.setMetaData(connection.getMetaData());
@@ -542,9 +557,30 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     close(tableData);
                 }
             }
-        });
+        }));
 
     }
+    
+    protected Table postprocessTableFromDatabase(Table table) {
+        if (table != null) {
+            for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++) {
+                Column column = table.getColumn(columnIdx);
+
+                if (TypeMap.isTextType(column.getTypeCode())
+                        || TypeMap.isDateTimeType(column.getTypeCode())) {
+                    String defaultValue = column.getDefaultValue();
+
+                    if ((defaultValue != null) && (defaultValue.length() >= 2)
+                            && defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+                        defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+                        column.setDefaultValue(defaultValue);
+                    }
+                }
+            }
+        }
+        return table;
+    }
+
 
     protected void close(ResultSet rs) {
         if (rs != null) {

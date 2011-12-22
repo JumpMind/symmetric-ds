@@ -23,8 +23,9 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for Sybase.
@@ -33,13 +34,13 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* Database name of this platform. */
     public static final String DATABASENAME = "Sybase";
-    
+
     /* The standard Sybase jdbc driver. */
     public static final String JDBC_DRIVER = "com.sybase.jdbc2.jdbc.SybDriver";
-    
+
     /* The old Sybase jdbc driver. */
     public static final String JDBC_DRIVER_OLD = "com.sybase.jdbc.SybDriver";
-    
+
     /* The subprotocol used by the standard Sybase driver. */
     public static final String JDBC_SUBPROTOCOL = "sybase:Tds";
 
@@ -87,6 +88,14 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.CHAR, 254);
         info.setDefaultSize(Types.VARCHAR, 254);
 
+        info.setDateOverridesToTimestamp(true);
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+        info.setAutoIncrementUpdateAllowed(false);
+        
+        primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
         ddlReader = new SybaseDdlReader(log, this);
         ddlBuilder = new SybaseBuilder(log, this);
     }
@@ -95,4 +104,18 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
         return DATABASENAME;
     }
 
+    public String getDefaultCatalog() {
+        if (StringUtils.isBlank(defaultCatalog)) {
+            defaultCatalog = getSqlTemplate().queryForObject("select DB_NAME()", String.class);
+        }
+        return defaultCatalog;
+    }
+
+    public String getDefaultSchema() {
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) getSqlTemplate().queryForObject("select USER_NAME()",
+                    String.class);
+        }
+        return defaultSchema;
+    }
 }

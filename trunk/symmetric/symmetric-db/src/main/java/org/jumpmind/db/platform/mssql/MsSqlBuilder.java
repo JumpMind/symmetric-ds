@@ -51,12 +51,12 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for the Microsoft SQL Server.
  */
-public class MSSqlBuilder extends AbstractDdlBuilder {
+public class MsSqlBuilder extends AbstractDdlBuilder {
 
     /* We use a generic date format. */
     private DateFormat _genericDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -64,20 +64,20 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
     /* We use a generic date format. */
     private DateFormat _genericTimeFormat = new SimpleDateFormat("HH:mm:ss");
 
-    public MSSqlBuilder(Log log, IDatabasePlatform platform) {
+    public MsSqlBuilder(Log log, IDatabasePlatform platform) {
         super(log, platform);
         addEscapedCharSequence("'", "''");
     }
 
     @Override
-    public void createTable(Database database, Table table, StringBuilder ddl) {
+    public void createTable(Table table, StringBuilder ddl) {
         writeQuotationOnStatement(ddl);
-        super.createTable(database, table, ddl);
+        super.createTable(table, ddl);
     }
 
     @Override
     public void dropTable(Table table, StringBuilder ddl) {
-        String tableName = getTableName(table);
+        String tableName = getTableName(table.getName());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
 
@@ -196,7 +196,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
-        printIdentifier(getTableName(table), ddl);
+        printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
@@ -212,7 +212,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
         println(")", ddl);
         printIndent(ddl);
         ddl.append("ALTER TABLE ");
-        printIdentifier(getTableName(table), ddl);
+        printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(" DROP CONSTRAINT ");
         printIdentifier(constraintName, ddl);
         printEndOfStatement(ddl);
@@ -258,7 +258,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
 
         result.append(getQuotationOnStatement());
         result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table)));
+        result.append(getDelimitedIdentifier(getTableName(table.getName())));
         result.append(" ON");
         result.append(platform.getPlatformInfo().getSqlCommandDelimiter());
 
@@ -277,7 +277,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
 
         result.append(getQuotationOnStatement());
         result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table)));
+        result.append(getDelimitedIdentifier(getTableName(table.getName())));
         result.append(" OFF");
         result.append(platform.getPlatformInfo().getSqlCommandDelimiter());
 
@@ -322,7 +322,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
 
         if (hasIdentityColumns) {
             ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable), ddl);
+            printIdentifier(getTableName(targetTable.getName()), ddl);
             ddl.append(" ON");
             printEndOfStatement(ddl);
         }
@@ -331,7 +331,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
         // per session
         if (hasIdentityColumns) {
             ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable), ddl);
+            printIdentifier(getTableName(targetTable.getName()), ddl);
             ddl.append(" OFF");
             printEndOfStatement(ddl);
         }
@@ -505,7 +505,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -519,7 +519,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -534,7 +534,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         // TODO: this would be easier when named primary keys are supported
         // because then we can use ALTER TABLE DROP
-        String tableName = getTableName(change.getChangedTable());
+        String tableName = getTableName(change.getChangedTable().getName());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
 
@@ -580,7 +580,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
         }
         if (hasDefault) {
             // we're dropping the old default
-            String tableName = getTableName(sourceTable);
+            String tableName = getTableName(sourceTable.getName());
             String columnName = getColumnName(sourceColumn);
             String tableNameVar = "tn" + createUniqueIdentifier();
             String constraintNameVar = "cn" + createUniqueIdentifier();
@@ -618,7 +618,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
         }
 
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(sourceTable), ddl);
+        printlnIdentifier(getTableName(sourceTable.getName()), ddl);
         printIndent(ddl);
         ddl.append("ALTER COLUMN ");
         writeColumn(sourceTable, targetColumn, ddl);
@@ -630,7 +630,7 @@ public class MSSqlBuilder extends AbstractDdlBuilder {
             // if the column shall have a default, then we have to add it as a
             // constraint
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable), ddl);
+            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
             printIndent(ddl);
             ddl.append("ADD CONSTRAINT ");
             printIdentifier(getConstraintName("DF", sourceTable, sourceColumn.getName(), null), ddl);

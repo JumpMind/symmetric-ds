@@ -56,7 +56,7 @@
 		<dependency>
 			<groupId>org.jumpmind.symmetric</groupId>
 			<artifactId>symmetric-util</artifactId>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -91,6 +91,10 @@
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>     		
 		<dependency>
 			<groupId>oro</groupId>
 			<artifactId>oro</artifactId>

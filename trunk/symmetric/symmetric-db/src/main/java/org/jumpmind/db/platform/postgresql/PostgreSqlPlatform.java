@@ -19,12 +19,22 @@ package org.jumpmind.db.platform.postgresql;
  * under the License.
  */
 
+import java.sql.Array;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Map;
 
 import javax.sql.DataSource;
+import javax.sql.rowset.serial.SerialBlob;
 
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for PostgresSql.
@@ -79,6 +89,12 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setHasSize(Types.VARBINARY, false);
 
         setDelimitedIdentifierModeOn(true);
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+
+        primaryKeyViolationSqlStates = new String[] {"23505"};
 
         ddlReader = new PostgreSqlDdlReader(log, this);
         ddlBuilder = new PostgreSqlBuilder(log, this);
@@ -87,5 +103,117 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DATABASENAME;
     }
+    
+    public String getDefaultSchema() {
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) getSqlTemplate().queryForObject("select current_schema()", String.class);
+        }
+        return defaultSchema;
+    }
+    
+    public String getDefaultCatalog() {
+        return null;
+    }
+    
 
+    @Override
+    protected Array createArray(Column column, final String value) {
+        if (StringUtils.isNotBlank(value)) {
+
+            String jdbcTypeName = column.getJdbcTypeName();
+            if (jdbcTypeName.startsWith("_")) {
+                jdbcTypeName = jdbcTypeName.substring(1);
+            }
+            int jdbcBaseType = Types.VARCHAR;
+            if (jdbcTypeName.toLowerCase().contains("int")) {
+                jdbcBaseType = Types.INTEGER;
+            }
+                        
+            final String baseTypeName = jdbcTypeName;
+            final int baseType = jdbcBaseType;
+            return new Array() {
+                public String getBaseTypeName() {
+                    return baseTypeName;
+                }
+
+                public void free() throws SQLException {
+                }
+
+                public int getBaseType() {
+                    return baseType;
+                }
+
+                public Object getArray() {
+                    return null;
+                }
+
+                public Object getArray(Map<String, Class<?>> map) {
+                    return null;
+                }
+
+                public Object getArray(long index, int count) {
+                    return null;
+                }
+
+                public Object getArray(long index, int count, Map<String, Class<?>> map) {
+                    return null;
+                }
+
+                public ResultSet getResultSet() {
+                    return null;
+                }
+
+                public ResultSet getResultSet(Map<String, Class<?>> map) {
+                    return null;
+                }
+
+                public ResultSet getResultSet(long index, int count) {
+                    return null;
+                }
+
+                public ResultSet getResultSet(long index, int count, Map<String, Class<?>> map) {
+                    return null;
+                }
+
+                public String toString() {
+                    return value;
+                }
+            };
+        } else {
+            return null;
+        }
+    }
+    
+    @Override
+    protected String cleanTextForTextBasedColumns(String text) {
+        return text.replace("\0", "");
+    }
+    
+    
+    @Override
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
+        Column[] orderedMetaData) {
+
+        Object[] objectValues = super.getObjectValues(encoding, values, orderedMetaData);
+        for (int i = 0; i < orderedMetaData.length; i++) {
+            if (orderedMetaData[i] != null && orderedMetaData[i].getTypeCode() == Types.BLOB
+                    && objectValues[i] != null) {
+                try {
+                    objectValues[i] = new SerialBlob((byte[]) objectValues[i]);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }                
+            }
+        }
+        return objectValues;
+    }
+    
+    @Override
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
+            String tableName, Column[] keys, Column[] columns) {
+        return new PostgresDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
+                getPlatformInfo().isDateOverridesToTimestamp(),
+                getPlatformInfo().getIdentifierQuoteString());
+    }
+    
 }

@@ -23,13 +23,15 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the Microsoft SQL Server database.
  */
-public class MSSqlPlatform extends AbstractJdbcDatabasePlatform {
+public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
+
     /* Database name of this platform. */
     public static final String DATABASENAME = "MsSql";
 
@@ -42,7 +44,7 @@ public class MSSqlPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MSSqlPlatform(DataSource dataSource, Log log) {
+    public MsSqlPlatform(DataSource dataSource, Log log) {
         super(dataSource, log);
 
         info.setMaxIdentifierLength(128);
@@ -75,15 +77,44 @@ public class MSSqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.VARBINARY, 254);
 
         info.setStoresUpperCaseInCatalog(true);
+        info.setDateOverridesToTimestamp(true);
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+        info.setAutoIncrementUpdateAllowed(false);
+        
+        primaryKeyViolationSqlStates = new String[] {"2627"};
 
-        ddlReader = new MSSqlDdlReader(log, this);
-        ddlBuilder = new MSSqlBuilder(log, this);
+        ddlReader = new MsSqlDdlReader(log, this);
+        ddlBuilder = new MsSqlBuilder(log, this);
 
         setDelimitedIdentifierModeOn(true);
     }
 
+    @Override
+    protected void createSqlTemplate(DataSource dataSource) {
+        this.sqlTemplate = new MsSqlJdbcSqlTemplate(dataSource);
+    }
+
     public String getName() {
         return DATABASENAME;
+    }
+
+    public String getDefaultCatalog() {
+        if (StringUtils.isBlank(defaultCatalog)) {
+            defaultCatalog = (String) getSqlTemplate().queryForObject("select DB_NAME()",
+                    String.class);
+        }
+        return defaultCatalog;
+    }
+
+    public String getDefaultSchema() {
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) getSqlTemplate().queryForObject("select SCHEMA_NAME()",
+                    String.class);
+        }
+        return defaultSchema;
     }
 
 }

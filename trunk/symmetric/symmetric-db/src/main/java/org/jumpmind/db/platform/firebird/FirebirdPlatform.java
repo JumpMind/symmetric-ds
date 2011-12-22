@@ -25,7 +25,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.DatabasePlatformInfo;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the Firebird database.
@@ -81,6 +81,12 @@ public class FirebirdPlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.CHAR, 254);
 
         info.setStoresUpperCaseInCatalog(true);
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+
+        primaryKeyViolationCodes = new int [] {335544665};
 
         ddlReader = new FirebirdDdlReader(log, this);
         ddlBuilder = new FirebirdBuilder(log, this);
@@ -89,4 +95,13 @@ public class FirebirdPlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DATABASENAME;
     }
+    
+    public String getDefaultCatalog() {
+        return null;
+    }
+    
+    public String getDefaultSchema() {
+        return null;
+    }
+    
 }

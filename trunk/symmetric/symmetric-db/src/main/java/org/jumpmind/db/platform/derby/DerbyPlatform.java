@@ -23,8 +23,9 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for Derby.
@@ -75,6 +76,13 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
         info.addNativeTypeMapping(Types.DOUBLE, "DOUBLE");
         info.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
         info.setStoresUpperCaseInCatalog(true);
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+        
+        primaryKeyViolationSqlStates = new String[] {"23505"};
+        
         ddlReader = new DerbyDdlReader(this, log);
         ddlBuilder = new DerbyBuilder(log, this);
     }
@@ -82,6 +90,17 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
 
     public String getName() {
         return DATABASENAME;
+    }
+    
+    public String getDefaultSchema() {
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) getSqlTemplate().queryForObject("values CURRENT SCHEMA", String.class);
+        }
+        return defaultSchema;
+    }
+    
+    public String getDefaultCatalog() {
+        return null;
     }
 
 }

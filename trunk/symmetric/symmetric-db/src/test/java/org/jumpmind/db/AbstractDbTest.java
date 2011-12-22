@@ -1,7 +1,7 @@
 package org.jumpmind.db;
 
-import org.jumpmind.util.Log4jLog;
-import org.jumpmind.util.LogFactory;
+import org.jumpmind.log.Log4jLog;
+import org.jumpmind.log.LogFactory;
 import org.junit.BeforeClass;
 
 

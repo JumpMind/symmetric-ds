@@ -35,7 +35,6 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     }
 
     public <T> List<T> query(Query query, ISqlRowMapper<T> mapper) {
-
         return query(query.getSql(), mapper, query.getArgs(), query.getArgTypes());
     }
 
@@ -80,6 +79,10 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
             }
         }
     }
+    
+    public int update(String sql, Object[] values) {
+        return update(sql, values, null);
+    }
 
     public int update(String sql) {
         return update(sql, null, null);
@@ -109,7 +112,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
 
     protected int update(DmlType type, Table table, Map<String, Object> params) {
         DmlStatement updateStmt = new DmlStatement(type, table.getCatalog(), table.getSchema(),
-                table.getName(), table.getPrimaryKeyColumns(), table.getColumns(), null,
+                table.getName(), table.getPrimaryKeyColumns(), table.getColumns(),
                 dateOverrideToTimestamp, identifierQuoteString);
         String sql = updateStmt.getSql();
         int[] types = updateStmt.getTypes();

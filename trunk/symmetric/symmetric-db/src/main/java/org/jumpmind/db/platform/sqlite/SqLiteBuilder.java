@@ -47,7 +47,7 @@ import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for the SqlLite database. 
@@ -63,7 +63,7 @@ public class SqLiteBuilder extends AbstractDdlBuilder {
     @Override
     public void dropTable(Table table, StringBuilder ddl) {
         ddl.append("DROP TABLE IF EXISTS ");
-        printIdentifier(getTableName(table), ddl);
+        printIdentifier(getTableName(table.getName()), ddl);
         printEndOfStatement(ddl);
     }
 
@@ -172,7 +172,7 @@ public class SqLiteBuilder extends AbstractDdlBuilder {
             StringBuilder ddl) {
         columnChange.apply(currentModel, platform.isDelimitedIdentifierModeOn());
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(columnChange.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(columnChange.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ALTER COLUMN ");
         if (columnChange instanceof ColumnRequiredChange) {
@@ -196,7 +196,7 @@ public class SqLiteBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -214,7 +214,7 @@ public class SqLiteBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);

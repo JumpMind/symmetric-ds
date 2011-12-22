@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -17,9 +18,10 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.util.Log;
-import org.jumpmind.util.LogFactory;
-import org.jumpmind.util.LogLevel;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
+import org.jumpmind.log.LogLevel;
+import org.jumpmind.util.LinkedCaseInsensitiveMap;
 
 // TODO make sure connection timeouts are set properly
 public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
@@ -34,19 +36,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     protected int fetchSize = 1000;
 
-    public JdbcSqlTemplate() {
-    }
-
     public JdbcSqlTemplate(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     public DataSource getDataSource() {
         return dataSource;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
     }
 
     public boolean isRequiresAutoCommitFalseToSetFetchSize() {
@@ -107,6 +102,36 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         });
     }
 
+    public Map<String, Object> queryForMap(final String sql, final Object... args) {
+        return execute(new IConnectionCallback<Map<String, Object>>() {
+            public Map<String, Object> execute(Connection con) throws SQLException {
+                Map<String, Object> result = null;
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                try {
+                    ps = con.prepareStatement(sql);
+                    ps.setQueryTimeout(queryTimeout);
+                    StatementCreatorUtil.setValues(ps, args);
+                    rs = ps.executeQuery();
+                    if (rs.next()) {
+                        ResultSetMetaData meta = rs.getMetaData();
+                        int colCount = meta.getColumnCount();
+                        result = new LinkedCaseInsensitiveMap<Object>(colCount);
+                        for (int i = 1; i <= colCount; i++) {
+                            String key = meta.getColumnName(i);
+                            Object value = rs.getObject(i);
+                            result.put(key, value);
+                        }
+                    }
+                } finally {
+                    close(rs);
+                    close(ps);
+                }
+                return result;
+            }
+        });
+    }
+
     public ISqlTransaction startSqlTransaction() {
         return new JdbcSqlTransaction(this);
     }
@@ -127,7 +152,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     try {
                         ps = con.prepareStatement(sql);
                         ps.setQueryTimeout(queryTimeout);
-                        StatementCreatorUtil.setValues(ps, values, types, getLobHandler());
+                        if (types != null) {
+                            StatementCreatorUtil.setValues(ps, values, types, getLobHandler());
+                        } else {
+                            StatementCreatorUtil.setValues(ps, values);
+                        }
                         return ps.executeUpdate();
                     } finally {
                         close(ps);
@@ -161,8 +190,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                 if (statement.toLowerCase().startsWith("drop")) {
                                     level = LogLevel.DEBUG;
                                 }
-                                log.log(level, "%s.  Failed to execute: %s.",
-                                        ex.getMessage(), statement);
+                                log.log(level, "%s.  Failed to execute: %s.", ex.getMessage(),
+                                        statement);
                             } else {
                                 throw translate(statement, ex);
                             }

@@ -16,7 +16,7 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.MetaDataColumnDescriptor;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from a SQLite database.
