@@ -92,7 +92,7 @@ public class AbstractDatabaseTest extends AbstractTest {
     protected IParameterService getParameterService() {
         return AppUtils.find(Constants.PARAMETER_SERVICE, getSymmetricEngine());
     }
-
+    
     protected IDbDialect getDbDialect() {
         return AppUtils.find(Constants.DB_DIALECT, getSymmetricEngine());
     }
@@ -100,7 +100,7 @@ public class AbstractDatabaseTest extends AbstractTest {
     protected IConfigurationService getConfigurationService() {
         return AppUtils.find(Constants.CONFIG_SERVICE, getSymmetricEngine());
     }
-
+    
     protected IRegistrationService getRegistrationService() {
         return AppUtils.find(Constants.REGISTRATION_SERVICE, getSymmetricEngine());
     }

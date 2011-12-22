@@ -345,7 +345,7 @@ public class SymmetricLauncher {
         int port = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT);
         int securePort = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTPS_PORT);
         String webDir = SymmetricWebServer.DEFAULT_WEBAPP_DIR;
-        int maxIdleTime = 900000;
+        int maxIdleTime = SymmetricWebServer.DEFAULT_MAX_IDLE_TIME;
         String propertiesFile = null;
         boolean noNio = false;
         boolean noDirectBuffer = false;
@@ -548,7 +548,7 @@ public class SymmetricLauncher {
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
             FileInputStream in = new FileInputStream(file);
-            service.loadData(in, System.out);
+            service.loadDataFromPush("", in, System.out);
             System.out.flush();
             in.close();
 
@@ -568,7 +568,8 @@ public class SymmetricLauncher {
         Connection c = null;
         try {
             c = engine.getDataSource().getConnection();
-            Database db = platform.readDatabase(engine.getDbDialect().getDefaultCatalog(), engine.getDbDialect().getDefaultSchema(),
+            Database db = platform.readDatabase(engine.getDbDialect().getPlatform()
+                    .getDefaultCatalog(), engine.getDbDialect().getPlatform().getDefaultSchema(),
                     null);
             c.close();
             new DatabaseIO().write(db, fileName);
@@ -667,8 +668,9 @@ public class SymmetricLauncher {
                 Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
-            SqlScript script = new SqlScript(file.toURI().toURL(), dialect.getPlatform().getSqlTemplate(), true,
-                    SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens());
+            SqlScript script = new SqlScript(file.toURI().toURL(), dialect.getPlatform()
+                    .getSqlTemplate(), true, SqlScript.QUERY_ENDS,
+                    dialect.getSqlScriptReplacementTokens());
             script.execute();
         } else {
             throw new SymmetricException("FileNotFound", fileName);

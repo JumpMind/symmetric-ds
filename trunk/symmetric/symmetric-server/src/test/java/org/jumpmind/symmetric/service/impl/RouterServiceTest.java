@@ -28,8 +28,11 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.model.Channel;
@@ -48,7 +51,6 @@ import org.junit.Test;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 public class RouterServiceTest extends AbstractDatabaseTest {
 
@@ -293,7 +295,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
                 countBatchesForChannel(
                         getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1),
                         testChannel));
-        execute("delete from " + TEST_TABLE_1, true, null);
+        execute("delete from " + TEST_TABLE_1, null);
         Assert.assertEquals(
                 0,
                 countBatchesForChannel(
@@ -663,7 +665,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
                         getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1),
                         testChannel));
 
-        execute("delete from " + TEST_SUBTABLE, true, null);
+        execute("delete from " + TEST_SUBTABLE, null);
 
         Assert.assertEquals(
                 0,
@@ -1195,80 +1197,80 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     public void testDataWithTransactionIdsSpreadOut() throws Exception {
 
         if (getDbDialect().supportsTransactionId()) {
-        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        getTriggerRouterService().saveTriggerRouter(trigger1);
+            TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+            getTriggerRouterService().saveTriggerRouter(trigger1);
 
-        NodeChannel testChannel = getConfigurationService().getNodeChannel(
-                TestConstants.TEST_CHANNEL_ID, false);
-        testChannel.setMaxBatchSize(10);
-        testChannel.setBatchAlgorithm("default");
-        getConfigurationService().saveChannel(testChannel, true);
+            NodeChannel testChannel = getConfigurationService().getNodeChannel(
+                    TestConstants.TEST_CHANNEL_ID, false);
+            testChannel.setMaxBatchSize(10);
+            testChannel.setBatchAlgorithm("default");
+            getConfigurationService().saveChannel(testChannel, true);
 
-        getTriggerRouterService().syncTriggers();
+            getTriggerRouterService().syncTriggers();
 
-        resetBatches();
+            resetBatches();
 
-        insert(TEST_TABLE_1, 50, true);
+            insert(TEST_TABLE_1, 50, true);
 
-        String transactionId = getLatestTransactionId();
+            String transactionId = getLatestTransactionId();
 
-        long dataId1ShouldBeInBatch1 = getLatestDataId();
+            long dataId1ShouldBeInBatch1 = getLatestDataId();
 
-        insert(TEST_TABLE_1, 10, true);
+            insert(TEST_TABLE_1, 10, true);
 
-        long dataId2ShouldNotBeInBatch1 = getLatestDataId();
+            long dataId2ShouldNotBeInBatch1 = getLatestDataId();
 
-        insert(TEST_TABLE_1, 10, true);
+            insert(TEST_TABLE_1, 10, true);
 
-        long dataId3ShouldNotBeInBatch1 = getLatestDataId();
-        
-        insert(TEST_TABLE_1, 10, true);
+            long dataId3ShouldNotBeInBatch1 = getLatestDataId();
 
-        Assert.assertEquals(
-                10,
-                getJdbcTemplate().update(
-                        "update sym_data set transaction_id=? where transaction_id=?",
-                        transactionId, getLatestTransactionId()));
+            insert(TEST_TABLE_1, 10, true);
 
-        long dataId4ShouldBeInBatch1 = getLatestDataId();
+            Assert.assertEquals(
+                    10,
+                    getJdbcTemplate().update(
+                            "update sym_data set transaction_id=? where transaction_id=?",
+                            transactionId, getLatestTransactionId()));
 
-        insert(TEST_TABLE_1, 10, true);
+            long dataId4ShouldBeInBatch1 = getLatestDataId();
 
-        long dataId5ShouldNotBeInBatch1 = getLatestDataId();
+            insert(TEST_TABLE_1, 10, true);
 
-        insert(TEST_TABLE_1, 50, true);
+            long dataId5ShouldNotBeInBatch1 = getLatestDataId();
 
-        Assert.assertEquals(
-                50,
-                getJdbcTemplate().update(
-                        "update sym_data set transaction_id=? where transaction_id=?",
-                        transactionId, getLatestTransactionId()));
+            insert(TEST_TABLE_1, 50, true);
 
-        long dataId6ShouldBeInBatch1 = getLatestDataId();
+            Assert.assertEquals(
+                    50,
+                    getJdbcTemplate().update(
+                            "update sym_data set transaction_id=? where transaction_id=?",
+                            transactionId, getLatestTransactionId()));
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+            long dataId6ShouldBeInBatch1 = getLatestDataId();
 
-        Assert.assertEquals(0, countBatchesForChannel(batches, testChannel));
+            OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(
+                    NODE_GROUP_NODE_1);
 
-        routeAndCreateGaps();
+            Assert.assertEquals(0, countBatchesForChannel(batches, testChannel));
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+            routeAndCreateGaps();
 
-        Assert.assertEquals(4, countBatchesForChannel(batches, testChannel));    
-        
-        OutgoingBatch batch = batches.getBatches().get(0);
-        Assert.assertEquals(110, batch.getDataEventCount());
-        Assert.assertTrue(isDataIdInBatch(batch.getBatchId(), dataId1ShouldBeInBatch1));
-        Assert.assertFalse(isDataIdInBatch(batch.getBatchId(), dataId2ShouldNotBeInBatch1));
-        Assert.assertFalse(isDataIdInBatch(batch.getBatchId(), dataId3ShouldNotBeInBatch1));
-        Assert.assertTrue(isDataIdInBatch(batch.getBatchId(), dataId4ShouldBeInBatch1));
-        Assert.assertFalse(isDataIdInBatch(batch.getBatchId(), dataId5ShouldNotBeInBatch1));
-        Assert.assertTrue(isDataIdInBatch(batch.getBatchId(), dataId6ShouldBeInBatch1));
+            batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+
+            Assert.assertEquals(4, countBatchesForChannel(batches, testChannel));
+
+            OutgoingBatch batch = batches.getBatches().get(0);
+            Assert.assertEquals(110, batch.getDataEventCount());
+            Assert.assertTrue(isDataIdInBatch(batch.getBatchId(), dataId1ShouldBeInBatch1));
+            Assert.assertFalse(isDataIdInBatch(batch.getBatchId(), dataId2ShouldNotBeInBatch1));
+            Assert.assertFalse(isDataIdInBatch(batch.getBatchId(), dataId3ShouldNotBeInBatch1));
+            Assert.assertTrue(isDataIdInBatch(batch.getBatchId(), dataId4ShouldBeInBatch1));
+            Assert.assertFalse(isDataIdInBatch(batch.getBatchId(), dataId5ShouldNotBeInBatch1));
+            Assert.assertTrue(isDataIdInBatch(batch.getBatchId(), dataId6ShouldBeInBatch1));
         }
-        
 
     }
-    
+
     @Test
     public void testRoutingWithTransactionBiggerThanMaxDataToRoute() throws Exception {
         if (getDbDialect().supportsTransactionId()) {
@@ -1324,9 +1326,11 @@ public class RouterServiceTest extends AbstractDatabaseTest {
                 "select count(*) from sym_outgoing_batch where node_id=?",
                 Constants.UNROUTED_NODE_ID);
     }
-    
+
     protected boolean isDataIdInBatch(long batchId, long dataId) {
-        return 1 == getJdbcTemplate().queryForInt("select count(*) from sym_data_event where batch_id=? and data_id=?",batchId, dataId);
+        return 1 == getJdbcTemplate().queryForInt(
+                "select count(*) from sym_data_event where batch_id=? and data_id=?", batchId,
+                dataId);
     }
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
@@ -1415,33 +1419,31 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
     protected void insert(final String tableName, final int count, boolean transactional,
             final String node2disable, final String routingVarcharFieldValue, final boolean rollback) {
-        TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                try {
-                    if (node2disable != null) {
-                        getDbDialect().disableSyncTriggers(getJdbcTemplate(), node2disable);
-                    }
-                    for (int i = 0; i < count; i++) {
-                        update(tableName, routingVarcharFieldValue);
-                    }
-
-                    if (status != null && rollback) {
-                        status.setRollbackOnly();
-                    }
-                } finally {
-                    if (node2disable != null) {
-                        getDbDialect().enableSyncTriggers(getJdbcTemplate());
-                    }
-                }
-
-            }
-        };
-
-        if (transactional) {
-            getTransactionTemplate().execute(callback);
-        } else {
-            callback.doInTransaction(null);
+        IDbDialect dialect = getDbDialect();
+        IDatabasePlatform platform = dialect.getPlatform();
+        ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
+        if (node2disable != null) {
+            dialect.disableSyncTriggers(transaction, node2disable);
         }
+        for (int i = 0; i < count; i++) {
+            update(tableName, routingVarcharFieldValue);
+            transaction.execute(
+                    String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName),
+                    routingVarcharFieldValue);
+            if (!transactional) {
+                transaction.commit();
+            }
+        }
+        if (node2disable != null) {
+            dialect.enableSyncTriggers(transaction);
+        }
+
+        if (rollback) {
+            transaction.rollback();
+        } else {
+            transaction.commit();
+        }
+        transaction.close();
     }
 
     protected String getLatestTransactionId() {
@@ -1460,29 +1462,18 @@ public class RouterServiceTest extends AbstractDatabaseTest {
                 String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName), value);
     }
 
-    protected void execute(final String sql, boolean transactional, final String node2disable) {
-        TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
-                try {
-                    if (node2disable != null) {
-                        getDbDialect().disableSyncTriggers(getJdbcTemplate(), node2disable);
-                    }
-                    t.update(sql);
-                } finally {
-                    if (node2disable != null) {
-                        getDbDialect().enableSyncTriggers(getJdbcTemplate());
-                    }
-                }
-
-            }
-        };
-
-        if (transactional) {
-            getTransactionTemplate().execute(callback);
-        } else {
-            callback.doInTransaction(null);
+    protected void execute(final String sql, final String node2disable) {
+        IDbDialect dialect = getDbDialect();
+        IDatabasePlatform platform = dialect.getPlatform();
+        ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
+        if (node2disable != null) {
+            dialect.disableSyncTriggers(transaction, node2disable);
         }
+        transaction.execute(sql);
+        if (node2disable != null) {
+            dialect.enableSyncTriggers(transaction);
+        }
+        transaction.commit();
     }
 
 }

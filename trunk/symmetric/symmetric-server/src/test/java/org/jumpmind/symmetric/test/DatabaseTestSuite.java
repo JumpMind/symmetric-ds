@@ -25,9 +25,6 @@ import java.util.Collection;
 import org.jumpmind.symmetric.config.ParameterFilterTest;
 import org.jumpmind.symmetric.extract.DataExtractorTest;
 import org.jumpmind.symmetric.integrate.XmlPublisherFilterTest;
-import org.jumpmind.symmetric.load.AdditiveDataLoaderFilterTest;
-import org.jumpmind.symmetric.load.DataLoaderTest;
-import org.jumpmind.symmetric.map.DataLoaderMappingTest;
 import org.jumpmind.symmetric.service.impl.AcknowledgeServiceTest;
 import org.jumpmind.symmetric.service.impl.ClusterServiceTest;
 import org.jumpmind.symmetric.service.impl.DataExtractorServiceTest;
@@ -41,8 +38,6 @@ import org.jumpmind.symmetric.service.impl.RegistrationServiceTest;
 import org.jumpmind.symmetric.service.impl.RouterServiceTest;
 import org.jumpmind.symmetric.service.impl.StatisticServiceTest;
 import org.jumpmind.symmetric.service.impl.TriggerRouterServiceTest;
-import org.jumpmind.symmetric.transform.TransformDataExtractorTest;
-import org.jumpmind.symmetric.transform.TransformDataLoaderTest;
 import org.jumpmind.symmetric.web.NodeConcurrencyFilterTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,14 +45,13 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(ParameterizedSuite.class)
-@SuiteClasses( { TriggerRouterServiceTest.class, DataLoaderTest.class, DataLoaderMappingTest.class, DataExtractorTest.class,
+@SuiteClasses( { TriggerRouterServiceTest.class, DataExtractorTest.class,
         ParameterFilterTest.class, RouterServiceTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class,
         NodeConcurrencyFilterTest.class, AcknowledgeServiceTest.class, ClusterServiceTest.class,
         DataExtractorServiceTest.class, DataLoaderServiceTest.class, NodeServiceTest.class,
         OutgoingBatchServiceTest.class, ParameterServiceTest.class, PurgeServiceTest.class,
         RegistrationServiceTest.class, StatisticServiceTest.class, XmlPublisherFilterTest.class,
-        TransformDataLoaderTest.class, TransformDataExtractorTest.class,  
-        AdditiveDataLoaderFilterTest.class, DataServiceTest.class, CleanupTest.class })
+        DataServiceTest.class, CleanupTest.class })
 public class DatabaseTestSuite {
 
     String database;

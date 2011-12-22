@@ -90,8 +90,8 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         assertEquals(countLines(loadResults), 5, "Unexpected number of lines in the csv result: " + loadResults);
         assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
         
-        TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT1_VALUES, template, getDbDialect());
-        TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT2_VALUES, template, getDbDialect());
+        TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT1_VALUES, getDbDialect(), false);
+        TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT2_VALUES, getDbDialect(), false);
         
         batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId(), Status.NE);
         outgoingBatchService.insertOutgoingBatch(batch);
@@ -99,9 +99,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         ctx.setBatch(batch);
         dataExtractorService.writeInitialLoad(node, trigger, null, writer, ctx);
         loadResults = mockTransport.toString();
-        assertEquals(countLines(loadResults), 17, "Unexpected number of lines in the csv result: " + loadResults);
-        
-        
+        assertEquals(countLines(loadResults), 17, "Unexpected number of lines in the csv result: " + loadResults);                
     }
 
     @Test
