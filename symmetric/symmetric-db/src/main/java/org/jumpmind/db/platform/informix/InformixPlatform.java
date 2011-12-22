@@ -1,12 +1,14 @@
 package org.jumpmind.db.platform.informix;
 
 import java.sql.Types;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 public class InformixPlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
@@ -36,6 +38,20 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
 
         info.setAlterTableForDropUsed(true);
         info.setSystemIndicesReturned(true);
+        
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+        info.setAutoIncrementUpdateAllowed(false);
+        
+        Map<String, String> env = System.getenv();
+        String clientIdentifierMode = env.get("DELIMIDENT");
+        if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
+            info.setIdentifierQuoteString("\"");
+        }
+        
+        primaryKeyViolationCodes = new int[] {-268};
 
         ddlReader = new InformixDdlReader(log, this);
         ddlBuilder = new InformixBuilder(log, this);
@@ -44,4 +60,19 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
     public String getName() {
         return DATABASENAME;
     }
+    
+
+    public String getDefaultCatalog() {
+        return null;
+    }
+
+    public String getDefaultSchema() {
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = getSqlTemplate().queryForObject("select trim(user) from sysmaster:sysdual",
+                    String.class);
+        }
+        return defaultSchema;
+    }
+    
+
 }

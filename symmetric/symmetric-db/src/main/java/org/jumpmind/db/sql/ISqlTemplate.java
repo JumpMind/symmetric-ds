@@ -12,6 +12,8 @@ import org.jumpmind.db.model.Table;
 public interface ISqlTemplate {
 
     public <T> T queryForObject(String sql, Class<T> clazz, Object... params);
+    
+    public Map<String, Object> queryForMap(String sql, Object... params);
 
     public int queryForInt(String sql);
     
@@ -44,6 +46,8 @@ public interface ISqlTemplate {
 
     public int update(String sql, Object[] values, int[] types);
     
+    public int update(String sql, Object[] values);
+    
     public int update(Table table, Map<String,Object> params);
     
 	public int insert(Table table, Map<String, Object> params);
@@ -62,6 +66,6 @@ public interface ISqlTemplate {
     
     public int getDatabaseMinorVersion();
     
-    public String getDatabaseProductName();
+    public String getDatabaseProductName();    
 
 }

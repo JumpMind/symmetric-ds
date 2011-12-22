@@ -37,6 +37,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * Represents a table in the database model.
  */
 public class Table implements Serializable, Cloneable {
+
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -5541154961302342608L;
 
@@ -68,9 +69,18 @@ public class Table implements Serializable, Cloneable {
     }
 
     public Table(String tableName) {
-        this(null,null,tableName);
+        this(null, null, tableName);
     }
-    
+
+    public Table(String tableName, Column... columns) {
+        this(null, null, tableName);
+        if (columns != null) {
+            for (Column column : columns) {
+                addColumn(column);
+            }
+        }
+    }
+
     public Table(String catalog, String schema, String tableName) {
         this.catalog = catalog;
         this.schema = schema;
@@ -562,10 +572,13 @@ public class Table implements Serializable, Cloneable {
      * @return The index or <code>-1</code> if it is no column of this table
      */
     public int getColumnIndex(Column column) {
-        int idx = 0;
+        return getColumnIndex(column.getName());
+    }
 
+    public int getColumnIndex(String columnName) {
+        int idx = 0;
         for (Iterator<Column> it = columns.iterator(); it.hasNext(); idx++) {
-            if (column == it.next()) {
+            if (columnName != null && columnName.equals(it.next().getName())) {
                 return idx;
             }
         }
@@ -836,7 +849,7 @@ public class Table implements Serializable, Cloneable {
     public static String getQualifiedTablePrefix(String catalogName, String schemaName) {
         return getQualifiedTablePrefix(catalogName, schemaName, null);
     }
-    
+
     public String getFullyQualifiedTableName(String quoteString) {
         return getFullyQualifiedTableName(catalog, schema, name, quoteString);
     }
@@ -850,7 +863,7 @@ public class Table implements Serializable, Cloneable {
                 + tableName + quoteString;
     }
 
-    public static String getQualifiedTablePrefix(String catalogName, String schemaName, 
+    public static String getQualifiedTablePrefix(String catalogName, String schemaName,
             String quoteString) {
         if (quoteString == null) {
             quoteString = "";
@@ -868,7 +881,6 @@ public class Table implements Serializable, Cloneable {
     public String getQualifiedTablePrefix(String quoteString) {
         return getQualifiedTablePrefix(schema, catalog, quoteString);
     }
-    
 
     public Column getColumnWithName(String name) {
         Column[] columns = getColumns();
@@ -920,6 +932,86 @@ public class Table implements Serializable, Cloneable {
         } else {
             return new Column[0];
         }
+    }
+
+    public void reOrderColumns(Column[] targetOrder, boolean copyPrimaryKeys) {
+        ArrayList<Column> orderedColumns = new ArrayList<Column>(targetOrder.length);
+        for (int i = 0; i < targetOrder.length; i++) {
+            String name = targetOrder[i].getName();
+            for (Column column : columns) {
+                if (column.getName().equalsIgnoreCase(name)) {
+                    orderedColumns.add(i, column);
+                    if (copyPrimaryKeys) {
+                        column.setPrimaryKey(targetOrder[i].isPrimaryKey());
+                    }
+                    break;
+                }
+            }
+        }
+        columns = orderedColumns;
+    }
+
+    public static Column[] orderColumns(String[] columnNames, Table table) {
+        Column[] unorderedColumns = table.getColumns();
+        Column[] orderedColumns = new Column[columnNames.length];
+        for (int i = 0; i < columnNames.length; i++) {
+            String name = columnNames[i];
+            for (Column column : unorderedColumns) {
+                if (column.getName().equalsIgnoreCase(name)) {
+                    orderedColumns[i] = column;
+                    break;
+                }
+            }
+        }
+        return orderedColumns;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Table copy() {
+        try {
+            Table result = (Table) super.clone();
+            result.catalog = catalog;
+            result.schema = schema;
+            result.name = name;
+            result.type = type;
+            result.columns = (ArrayList<Column>) columns.clone();
+            result.foreignKeys = (ArrayList<ForeignKey>) foreignKeys.clone();
+            result.indices = (ArrayList<IIndex>) indices.clone();
+            return result;
+        } catch (CloneNotSupportedException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public String[] getColumnNames() {
+        String[] columnNames = new String[columns.size()];
+        int i = 0;
+        for (Column col : columns) {
+            columnNames[i++] = col.getName();
+        }
+        return columnNames;
+    }
+
+    public String[] getPrimaryKeyColumnNames() {
+        Column[] columns = getPrimaryKeyColumns();
+        String[] columnNames = new String[columns.length];
+        int i = 0;
+        for (Column col : columns) {
+            columnNames[i++] = col.getName();
+        }
+        return columnNames;
+    }
+    
+    public static Table buildTable(String tableName, String[] keyNames, String[] columnNames) {
+        Table table = new Table();
+        table.setName(tableName);
+        for (int i = 0; i < columnNames.length; i++) {
+            table.addColumn(new Column(columnNames[i]));
+        }
+        for (int i = 0; i < keyNames.length; i++) {
+            table.getColumnWithName(keyNames[i]).setPrimaryKey(true);
+        }
+        return table;
     }
 
 }

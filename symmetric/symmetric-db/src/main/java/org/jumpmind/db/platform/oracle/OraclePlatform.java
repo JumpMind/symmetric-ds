@@ -23,8 +23,9 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform for Oracle 8.
@@ -94,6 +95,13 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.VARBINARY, 254);
 
         info.setStoresUpperCaseInCatalog(true);
+        info.setDateOverridesToTimestamp(true);
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(true);
+
+        primaryKeyViolationCodes = new int[] {1};
 
         ddlReader = new OracleDdlReader(log, this);
         ddlBuilder = new OracleBuilder(log, this);
@@ -102,4 +110,18 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DATABASENAME;
     }
+    
+
+    public String getDefaultCatalog() {
+        return null;
+    }
+
+    public String getDefaultSchema() {
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) getSqlTemplate().queryForObject(
+                    "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
+        }
+        return defaultSchema;
+    }
+
 }

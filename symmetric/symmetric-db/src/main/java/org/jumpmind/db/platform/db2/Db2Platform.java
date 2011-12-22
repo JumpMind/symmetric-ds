@@ -23,8 +23,9 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The DB2 platform implementation.
@@ -38,7 +39,7 @@ public class Db2Platform extends AbstractJdbcDatabasePlatform {
     public static final String JDBC_DRIVER = "com.ibm.db2.jcc.DB2Driver";
 
     /* The subprotocol used by the standard DB2 driver. */
-    public static final String JDBC_SUBPROTOCOL = "db2";
+    public static final String JDBC_SUBPROTOCOL = "db2";    
 
     /*
      * Creates a new platform instance.
@@ -72,7 +73,14 @@ public class Db2Platform extends AbstractJdbcDatabasePlatform {
         info.setMaxColumnNameLength(128);
         info.setMaxConstraintNameLength(128);
         info.setMaxForeignKeyNameLength(128);
-
+        
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+        
+        primaryKeyViolationCodes = new int[] {-803};
+        
         ddlReader = new Db2DdlReader(log, this);
         ddlBuilder = new Db2Builder(log, this);
     }
@@ -80,4 +88,16 @@ public class Db2Platform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DATABASENAME;
     }
+    
+    public String getDefaultSchema() {
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) getSqlTemplate().queryForObject("values CURRENT SCHEMA", String.class);
+        }
+        return defaultSchema;
+    }
+    
+    public String getDefaultCatalog() {
+        return null;
+    }
+    
 }

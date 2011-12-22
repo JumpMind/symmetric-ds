@@ -9,7 +9,7 @@ public interface IDdlBuilder {
     
     public String createTables(Database database, boolean dropTables);
     
-    public String getTableName(Table table);
+    public String getTableName(String tableName);
     
     public String getIndexName(IIndex index);
     
@@ -19,7 +19,7 @@ public interface IDdlBuilder {
     
     public boolean isAlterDatabase(Database currentModel, Database desiredModel);
     
-    public String createTable(Database database, Table table);
+    public String createTable(Table table);
     
     public String alterDatabase(Database currentModel, Database desiredModel);
     

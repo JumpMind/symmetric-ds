@@ -15,7 +15,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 public class InformixDdlReader extends AbstractJdbcDdlReader {
 

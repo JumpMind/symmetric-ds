@@ -41,7 +41,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The Jdbc Model Reader for Firebird.
@@ -285,7 +285,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
         IDdlBuilder builder = getPlatform().getDdlBuilder();
-        String tableName = builder.getTableName(table);
+        String tableName = builder.getTableName(table.getName());
         String indexName = builder.getIndexName(index);
         StringBuilder query = new StringBuilder();
 
@@ -316,7 +316,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index)
             throws SQLException {
         IDdlBuilder builder = getPlatform().getDdlBuilder();
-        String tableName = builder.getTableName(table);
+        String tableName = builder.getTableName(table.getName());
         String indexName = builder.getIndexName(index);
         String fkName = builder.getForeignKeyName(table, fk);
         StringBuilder query = new StringBuilder();

@@ -8,7 +8,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 public class InformixBuilder extends AbstractDdlBuilder {
 
@@ -36,7 +36,7 @@ public class InformixBuilder extends AbstractDdlBuilder {
             StringBuilder ddl) {
         if (primaryKeyColumns.length > 0 && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(table), ddl);
+            printlnIdentifier(getTableName(table.getName()), ddl);
             printIndent(ddl);
             ddl.append("ADD CONSTRAINT ");
             writePrimaryKeyStmt(table, primaryKeyColumns, ddl);
@@ -55,7 +55,7 @@ public class InformixBuilder extends AbstractDdlBuilder {
             ddl.append("ADD CONSTRAINT FOREIGN KEY (");
             writeLocalReferences(key, ddl);
             ddl.append(") REFERENCES ");
-            printIdentifier(getTableName(database.findTable(key.getForeignTableName())), ddl);
+            printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
             writeForeignReferences(key, ddl);
             ddl.append(") CONSTRAINT ");
@@ -67,7 +67,7 @@ public class InformixBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP CONSTRAINT ");
         printIdentifier(getConstraintName(null, change.getChangedTable(), "PK", null), ddl);
@@ -78,7 +78,7 @@ public class InformixBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             PrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP CONSTRAINT ");
         printIdentifier(getConstraintName(null, change.getChangedTable(), "PK", null), ddl);

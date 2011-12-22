@@ -25,7 +25,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the SQLite database.
@@ -68,6 +68,12 @@ public class SqLitePlatform extends AbstractJdbcDatabasePlatform implements IDat
         info.setDefaultSize(Types.VARCHAR, Integer.MAX_VALUE);
         info.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
+        
+        info.setNonBlankCharColumnSpacePadded(false);
+        info.setBlankCharColumnSpacePadded(false);
+        info.setCharColumnSpaceTrimmed(true);
+        info.setEmptyStringNulled(false);
+
 
         ddlReader = new SqLiteDdlReader(log, this);
         ddlBuilder = new SqLiteBuilder(log, this); 
@@ -75,6 +81,15 @@ public class SqLitePlatform extends AbstractJdbcDatabasePlatform implements IDat
 
     public String getName() {
         return DATABASENAME;
+    }
+    
+    
+    public String getDefaultCatalog() {
+        return null;
+    }
+    
+    public String getDefaultSchema() {
+        return null;
     }
 
 }

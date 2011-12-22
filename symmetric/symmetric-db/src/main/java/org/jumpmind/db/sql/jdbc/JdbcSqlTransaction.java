@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
 
 /**
@@ -17,15 +18,15 @@ import org.jumpmind.db.sql.ISqlTransaction;
  */
 public class JdbcSqlTransaction implements ISqlTransaction {
 
-    protected boolean inBatchMode = true;
+    protected boolean inBatchMode = false;
 
-    protected Connection dbConnection;
+    protected Connection connection;
 
     protected String psql;
 
     protected PreparedStatement pstmt;
 
-    protected JdbcSqlTemplate sqlConnection;
+    protected JdbcSqlTemplate jdbcSqlTemplate;
 
     protected int numberOfRowsBeforeBatchFlush = 1000;
 
@@ -33,14 +34,14 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     protected List<Object> markers = new ArrayList<Object>();
 
-    public JdbcSqlTransaction(JdbcSqlTemplate sqlConnection) {
+    public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate) {
         try {
-            this.sqlConnection = sqlConnection;
-            this.dbConnection = sqlConnection.getDataSource().getConnection();
-            this.oldAutoCommitValue = this.dbConnection.getAutoCommit();
-            this.dbConnection.setAutoCommit(false);
+            this.jdbcSqlTemplate = jdbcSqlTemplate;
+            this.connection = jdbcSqlTemplate.getDataSource().getConnection();
+            this.oldAutoCommitValue = this.connection.getAutoCommit();
+            this.connection.setAutoCommit(false);
         } catch (SQLException ex) {
-            throw sqlConnection.translate(ex);
+            throw jdbcSqlTemplate.translate(ex);
         }
     }
 
@@ -53,7 +54,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public void setInBatchMode(boolean useBatching) {
-        if (dbConnection != null) {
+        if (connection != null) {
             this.inBatchMode = useBatching;
         }
     }
@@ -63,14 +64,14 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public void commit() {
-        if (dbConnection != null) {
+        if (connection != null) {
             try {
                 if (pstmt != null && inBatchMode) {
                     flush();
                 }
-                dbConnection.commit();
+                connection.commit();
             } catch (SQLException ex) {
-                throw sqlConnection.translate(ex);
+                throw jdbcSqlTemplate.translate(ex);
             }
         }
     }
@@ -80,12 +81,12 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     protected void rollback(boolean clearMarkers) {
-        if (dbConnection != null) {
+        if (connection != null) {
             try {
                 if (clearMarkers) {
                     markers.clear();
                 }
-                dbConnection.rollback();
+                connection.rollback();
             } catch (SQLException ex) {
                 // do nothing
             }
@@ -93,19 +94,19 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public void close() {
-        if (dbConnection != null) {
+        if (connection != null) {
             JdbcSqlTemplate.close(pstmt);
             try {
-                dbConnection.setAutoCommit(this.oldAutoCommitValue);
+                connection.setAutoCommit(this.oldAutoCommitValue);
             } catch (SQLException ex) {
                 // do nothing
             }
             try {
-                dbConnection.close();
+                connection.close();
             } catch (SQLException ex) {
                 // do nothing
             } finally {
-                dbConnection = null;
+                connection = null;
             }
         }
     }
@@ -121,16 +122,20 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 markers.clear();
             } catch (BatchUpdateException ex) {
                 removeMarkersThatWereSuccessful(ex);
-                throw sqlConnection.translate(ex);
+                throw jdbcSqlTemplate.translate(ex);
             } catch (SQLException ex) {
-                throw sqlConnection.translate(ex);
+                throw jdbcSqlTemplate.translate(ex);
             }
         }
         return rowsUpdated;
     }
+    
+    public int queryForInt(String sql, Object... args) {
+        return queryForObject(sql, Integer.class, args);
+    }
 
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
-        return execute(this.dbConnection, new IConnectionCallback<T>() {
+        return execute(new IConnectionCallback<T>() {
             @SuppressWarnings("unchecked")
             public T execute(Connection con) throws SQLException {
                 T result = null;
@@ -152,11 +157,33 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         });
     }
 
-    public <T> T execute(Connection c, IConnectionCallback<T> callback) {
+    public int execute(final String sql, final Object... args) {
+        return execute(new IConnectionCallback<Integer>() {
+            public Integer execute(Connection con) throws SQLException {
+                PreparedStatement stmt = null;
+                ResultSet rs = null;
+                try {
+                    stmt = con.prepareStatement(sql);
+                    StatementCreatorUtil.setValues(stmt, args);
+                    if (stmt.execute()) {
+                        rs = stmt.getResultSet();
+                        while (rs.next()) {
+                        }
+                    }
+                    return stmt.getUpdateCount();
+                } finally {
+                    JdbcSqlTemplate.close(rs);
+                }
+
+            }
+        });
+    }
+
+    protected <T> T execute(IConnectionCallback<T> callback) {
         try {
-            return callback.execute(c);
+            return callback.execute(this.connection);
         } catch (SQLException ex) {
-            throw this.sqlConnection.translate(ex);
+            throw this.jdbcSqlTemplate.translate(ex);
         }
     }
 
@@ -194,23 +221,19 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
             JdbcSqlTemplate.close(pstmt);
-            pstmt = dbConnection.prepareStatement(sql);
+            pstmt = connection.prepareStatement(sql);
             psql = sql;
         } catch (SQLException ex) {
-            throw sqlConnection.translate(ex);
+            throw jdbcSqlTemplate.translate(ex);
         }
     }
 
-    public int update(Object marker) {
-        return update(marker, null, null);
-    }
-
-    public int update(Object marker, Object[] args, int[] argTypes) {
+    public int addRow(Object marker, Object[] args, int[] argTypes) {
         int rowsUpdated = 0;
         try {
             if (args != null) {
-                StatementCreatorUtil.setValues(pstmt, args, argTypes, sqlConnection
-                        .getLobHandler());
+                StatementCreatorUtil.setValues(pstmt, args, argTypes,
+                        jdbcSqlTemplate.getLobHandler());
             }
             if (inBatchMode) {
                 if (marker == null) {
@@ -225,7 +248,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 rowsUpdated = pstmt.executeUpdate();
             }
         } catch (SQLException ex) {
-            throw sqlConnection.translate(ex);
+            throw jdbcSqlTemplate.translate(ex);
         }
         return rowsUpdated;
     }
@@ -236,6 +259,13 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             markers.clear();
         }
         return ret;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void allowInsertIntoAutoIncrementColumns(boolean value, Table table) {
     }
 
 }

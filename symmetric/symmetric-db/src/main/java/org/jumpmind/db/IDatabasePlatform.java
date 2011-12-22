@@ -19,17 +19,19 @@ package org.jumpmind.db;
  * under the License.
  */
 
-
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 
 /*
  * A platform encapsulates the database-related functionality such as performing queries
  * and manipulations. It also contains an sql builder that is specific to this platform.
  */
 public interface IDatabasePlatform {
-    
+
     public String getName();
 
     /*
@@ -51,8 +53,20 @@ public interface IDatabasePlatform {
      * @return The model reader
      */
     public IDdlReader getDdlReader();
-    
+
     public ISqlTemplate getSqlTemplate();
+
+/**
+     * The amount of time table metadata will be cached when using {@link IDatabasePlatform#getT
+     * @param clearCacheModelTimeoutInMs
+     */
+    public void setClearCacheModelTimeoutInMs(long clearCacheModelTimeoutInMs);
+
+    public long getClearCacheModelTimeoutInMs();
+
+    public String getDefaultSchema();
+
+    public String getDefaultCatalog();
 
     /*
      * Determines whether script mode is on. This means that the generated SQL
@@ -147,15 +161,43 @@ public interface IDatabasePlatform {
      * Reads the database model from the live database to which the given
      * connection is pointing.
      */
-    public Database readDatabase(String catalog, String schema,
-            String[] tableTypes);
+    public Database readDatabase(String catalog, String schema, String[] tableTypes);
 
-    public Table readTableFromDatabase(String catalogName, String schemaName,
-            String tablename);
-    
+    public Table readTableFromDatabase(String catalogName, String schemaName, String tablename);
+
+    public void resetCachedTableModel();
+
+    public Table getTableFromCache(String tableName, boolean forceReread);
+
+    public Table getTableFromCache(String catalogName, String schemaName, String tableName,
+            boolean forceReread);
+
     public void createDatabase(Database targetDatabase, boolean dropTablesFirst,
-            boolean continueOnError);   
-    
+            boolean continueOnError);
+
+    public void alterDatabase(Database desiredDatabase, boolean continueOnError);
+
+    public void alterTables(boolean continueOnError, Table... desiredTables);
+
     public void dropDatabase(Database database, boolean continueOnError);
+
+    public DmlStatement createDmlStatement(DmlType dmlType, Table table);
+
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
+            String tableName, Column[] keys, Column[] columns);
+
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
+            Column[] orderedMetaData);
+
+    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
+            String[] values);
+
+    public boolean isLob(int type);
+
+    public boolean isClob(int type);
+
+    public boolean isBlob(int type);
+
+    public boolean isPrimaryKeyViolation(Exception ex);
 
 }

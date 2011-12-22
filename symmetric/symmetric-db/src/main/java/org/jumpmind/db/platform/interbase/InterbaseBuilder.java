@@ -34,7 +34,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.util.Jdbc3Utils;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for the Interbase database.
@@ -47,14 +47,14 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    public void createTable(Database database, Table table, StringBuilder ddl) {
-        super.createTable(database, table, ddl);
+    public void createTable(Table table, StringBuilder ddl) {
+        super.createTable(table, ddl);
 
         // creating generator and trigger for auto-increment
         Column[] columns = table.getAutoIncrementColumns();
 
         for (int idx = 0; idx < columns.length; idx++) {
-            writeAutoIncrementCreateStmts(database, table, columns[idx], ddl);
+            writeAutoIncrementCreateStmts(table, columns[idx], ddl);
         }
     }
 
@@ -94,7 +94,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
      * Writes the creation statements to make the given column an auto-increment
      * column.
      */
-    private void writeAutoIncrementCreateStmts(Database database, Table table, Column column,
+    private void writeAutoIncrementCreateStmts(Table table, Column column,
             StringBuilder ddl) {
         ddl.append("CREATE GENERATOR ");
         printIdentifier(getGeneratorName(table, column), ddl);
@@ -103,7 +103,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
         ddl.append("CREATE TRIGGER ");
         printIdentifier(getTriggerName(table, column), ddl);
         ddl.append(" FOR ");
-        printlnIdentifier(getTableName(table), ddl);
+        printlnIdentifier(getTableName(table.getName()), ddl);
         println("ACTIVE BEFORE INSERT POSITION 0 AS", ddl);
         ddl.append("BEGIN IF (NEW.");
         printIdentifier(getColumnName(column), ddl);
@@ -268,7 +268,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -289,7 +289,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
             // Even though Interbase can only add columns, we can move them
             // later on
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+            printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
             printIndent(ddl);
             ddl.append("ALTER ");
             printIdentifier(getColumnName(change.getNewColumn()), ddl);
@@ -300,7 +300,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
         if (change.getNewColumn().isAutoIncrement()) {
-            writeAutoIncrementCreateStmts(currentModel, curTable, change.getNewColumn(), ddl);
+            writeAutoIncrementCreateStmts(curTable, change.getNewColumn(), ddl);
         }
         change.apply(currentModel, platform.isDelimitedIdentifierModeOn());
     }
@@ -314,7 +314,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
             writeAutoIncrementDropStmts(change.getChangedTable(), change.getColumn(), ddl);
         }
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable()), ddl);
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP ");
         printIdentifier(getColumnName(change.getColumn()), ddl);

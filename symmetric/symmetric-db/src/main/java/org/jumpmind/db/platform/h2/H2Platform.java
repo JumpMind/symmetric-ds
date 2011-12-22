@@ -23,9 +23,10 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the H2 database.
@@ -72,6 +73,12 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
         info.setStoresUpperCaseInCatalog(true);
+        info.setNonBlankCharColumnSpacePadded(false);
+        info.setBlankCharColumnSpacePadded(false);
+        info.setCharColumnSpaceTrimmed(true);
+        info.setEmptyStringNulled(false);
+
+        primaryKeyViolationSqlStates = new String[] {"23001"};
 
         ddlReader = new H2DdlReader(log, this);
         ddlBuilder = new H2Builder(log, this);
@@ -79,6 +86,17 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
 
     public String getName() {
         return DATABASENAMES[0];
+    }
+    
+    public String getDefaultSchema() {
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) getSqlTemplate().queryForObject("select SCHEMA()", String.class);
+        }
+        return defaultSchema;
+    }
+    
+    public String getDefaultCatalog() {
+        return null;
     }
 
 }

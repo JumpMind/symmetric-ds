@@ -24,12 +24,13 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the HsqlDb database.
  */
 public class HsqlDb2Platform extends AbstractJdbcDatabasePlatform {
+
     /* Database name of this platform. */
     public static final String DATABASENAME = "HSQL Database Engine2";
 
@@ -71,6 +72,12 @@ public class HsqlDb2Platform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
         info.setStoresUpperCaseInCatalog(true);
+        info.setNonBlankCharColumnSpacePadded(true);
+        info.setBlankCharColumnSpacePadded(true);
+        info.setCharColumnSpaceTrimmed(false);
+        info.setEmptyStringNulled(false);
+        
+        primaryKeyViolationSqlStates = new String[] {"23505"};
 
         ddlReader = new HsqlDb2DdlReader(log, this);
         ddlBuilder = new HsqlDb2Builder(log, this);
@@ -78,6 +85,20 @@ public class HsqlDb2Platform extends AbstractJdbcDatabasePlatform {
 
     public String getName() {
         return DATABASENAME;
+    }
+
+    public String getDefaultSchema() {
+        return null;
+    }
+
+    public String getDefaultCatalog() {
+        if (defaultCatalog == null) {
+            defaultCatalog = (String) getSqlTemplate()
+                    .queryForObject(
+                            "select value from INFORMATION_SCHEMA.SYSTEM_SESSIONINFO where key='CURRENT SCHEMA'",
+                            String.class);
+        }
+        return defaultCatalog;
     }
 
 }

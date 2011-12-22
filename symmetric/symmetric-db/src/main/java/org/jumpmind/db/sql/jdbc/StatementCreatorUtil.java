@@ -29,9 +29,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.util.Log;
-import org.jumpmind.util.LogFactory;
-import org.jumpmind.util.LogLevel;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
+import org.jumpmind.log.LogLevel;
 
 public abstract class StatementCreatorUtil {
 

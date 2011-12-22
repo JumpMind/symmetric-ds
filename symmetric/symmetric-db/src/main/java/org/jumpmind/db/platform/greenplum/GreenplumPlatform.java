@@ -3,7 +3,7 @@ package org.jumpmind.db.platform.greenplum;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 public class GreenplumPlatform extends PostgreSqlPlatform {
 

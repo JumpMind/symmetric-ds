@@ -6,8 +6,8 @@ import java.io.InputStream;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.jumpmind.util.EnvironmentSpecificProperties;
-import org.jumpmind.util.IoException;
+import org.jumpmind.exception.IoException;
+import org.jumpmind.properties.EnvironmentSpecificProperties;
 
 public class DataSourceProperties extends EnvironmentSpecificProperties {
 
@@ -20,8 +20,8 @@ public class DataSourceProperties extends EnvironmentSpecificProperties {
 
     private BasicDataSource dataSource;
 
-    public DataSourceProperties(InputStream is, String... propertiesForEnv) {
-        super(propertiesForEnv);
+    public DataSourceProperties(String systemPropertyName, InputStream is, String... propertiesForEnv) {
+        super(systemPropertyName, propertiesForEnv);
         try {
             load(is);
         } catch (IOException e) {

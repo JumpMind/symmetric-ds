@@ -40,15 +40,15 @@ import org.jumpmind.db.platform.hsqldb.HsqlDbPlatform;
 import org.jumpmind.db.platform.hsqldb2.HsqlDb2Platform;
 import org.jumpmind.db.platform.informix.InformixPlatform;
 import org.jumpmind.db.platform.interbase.InterbasePlatform;
-import org.jumpmind.db.platform.mssql.MSSqlPlatform;
+import org.jumpmind.db.platform.mssql.MsSqlPlatform;
 import org.jumpmind.db.platform.mysql.MySqlPlatform;
 import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.db.platform.sqlite.SqLitePlatform;
 import org.jumpmind.db.platform.sybase.SybasePlatform;
 import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.util.Log;
-import org.jumpmind.util.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 
 /*
  * A factory of {@link IDatabasePlatform} instances based on a case
@@ -79,7 +79,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, HsqlDbPlatform.DATABASENAME, HsqlDbPlatform.class);
         addPlatform(platforms, HsqlDb2Platform.DATABASENAME, HsqlDb2Platform.class);
         addPlatform(platforms, InterbasePlatform.DATABASENAME, InterbasePlatform.class);
-        addPlatform(platforms, MSSqlPlatform.DATABASENAME, MSSqlPlatform.class);
+        addPlatform(platforms, MsSqlPlatform.DATABASENAME, MsSqlPlatform.class);
         addPlatform(platforms, MySqlPlatform.DATABASENAME, MySqlPlatform.class);
         addPlatform(platforms, OraclePlatform.DATABASENAME, OraclePlatform.class);
         addPlatform(platforms, PostgreSqlPlatform.DATABASENAME, PostgreSqlPlatform.class);
@@ -95,7 +95,7 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(HsqlDbPlatform.JDBC_SUBPROTOCOL, HsqlDbPlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(InterbasePlatform.JDBC_SUBPROTOCOL,
                 InterbasePlatform.DATABASENAME);
-        jdbcSubProtocolToPlatform.put(MSSqlPlatform.JDBC_SUBPROTOCOL, MSSqlPlatform.DATABASENAME);
+        jdbcSubProtocolToPlatform.put(MsSqlPlatform.JDBC_SUBPROTOCOL, MsSqlPlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(MySqlPlatform.JDBC_SUBPROTOCOL, MySqlPlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(OraclePlatform.JDBC_SUBPROTOCOL_THIN,
                 OraclePlatform.DATABASENAME);

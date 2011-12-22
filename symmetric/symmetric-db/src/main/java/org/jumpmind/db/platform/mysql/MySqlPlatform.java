@@ -23,8 +23,9 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
-import org.jumpmind.util.Log;
+import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for MySQL.
@@ -92,13 +93,21 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setDefaultSize(Types.VARCHAR, 254);
         info.setDefaultSize(Types.BINARY, 254);
         info.setDefaultSize(Types.VARBINARY, 254);
+        info.setIdentifierQuoteString("`");
+        info.setNonBlankCharColumnSpacePadded(false);
+        info.setBlankCharColumnSpacePadded(false);
+        info.setCharColumnSpaceTrimmed(true);
+        info.setEmptyStringNulled(false);
 
         setDelimitedIdentifierModeOn(true);
+        
 
         // MySql 5.0 returns an empty string for default values for pk columns
         // which is different from the MySql 4 behaviour
         info.setSyntheticDefaultValueForRequiredReturned(false);
 
+        primaryKeyViolationCodes = new int[] {1062};
+        
         ddlReader = new MySqlDdlReader(log, this);
         ddlBuilder = new MySqlBuilder(log, this);
     }
@@ -106,4 +115,17 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DATABASENAME;
     }
+    
+    public String getDefaultSchema() {
+        return null;
+    }
+    
+    public String getDefaultCatalog() {  
+        if (StringUtils.isBlank(defaultCatalog)) {
+            defaultCatalog = getSqlTemplate().queryForObject("select database()", String.class);
+        }
+        return defaultCatalog;
+    }
+
+
 }
