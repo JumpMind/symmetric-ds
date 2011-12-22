@@ -31,7 +31,9 @@ import java.util.List;
 
 import javax.sql.rowset.serial.SerialBlob;
 
+import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -171,8 +173,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void validateTestTableTriggers() throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
+        int count = insert(INSERT1_VALUES, getDbDialect(), false);
         assertTrue(count == 1);
         String csvString = getNextDataRow();
         // DB2 captures decimal differently
@@ -191,7 +192,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
                 .getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true)
                 .iterator().next();
 
-        Table table = getDbDialect().getTable(triggerRouter.getTrigger().getSourceCatalogName(),
+        Table table = getDbDialect().getPlatform().getTableFromCache(
+                triggerRouter.getTrigger().getSourceCatalogName(),
                 triggerRouter.getTrigger().getSourceSchemaName(),
                 triggerRouter.getTrigger().getSourceTableName(), true);
 
@@ -220,8 +222,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         try {
             getParameterService().saveParameter(
                     ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, true);
-            if (!Constants.ALWAYS_TRUE_CONDITION
-                    .equals(getDbDialect().getDataHasChangedCondition(
+            if (!Constants.ALWAYS_TRUE_CONDITION.equals(getDbDialect().getDataHasChangedCondition(
                     getTriggerRouterService().getTriggers().get(0)))) {
                 forceRebuildOfTrigers();
                 Assert.assertTrue(getJdbcTemplate().queryForInt(
@@ -260,7 +261,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
                 1, "We expected only one active record in the trigger_hist table for "
                         + TEST_TRIGGERS_TABLE);
 
-        assertEquals(1, insert(INSERT2_VALUES, jdbcTemplate, getDbDialect()));
+        assertEquals(1, insert(INSERT2_VALUES, getDbDialect(), false));
 
         String csvString = getNextDataRow();
         // DB2 captures decimal differently
@@ -274,10 +275,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testDisableTriggers() throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        getDbDialect().disableSyncTriggers(jdbcTemplate);
-        int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
-        getDbDialect().enableSyncTriggers(jdbcTemplate);
+        int count = insert(INSERT1_VALUES, getDbDialect(), true);
         assertTrue(count == 1);
         String csvString = getNextDataRow();
         // DB2 captures decimal differently
@@ -394,9 +392,20 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         return filteredTypes;
     }
 
-    public static int insert(Object[] values, JdbcTemplate jdbcTemplate, IDbDialect dbDialect) {
-        return jdbcTemplate.update(INSERT, filterValues(values, dbDialect),
+    public static int insert(Object[] values, IDbDialect dbDialect, boolean disableTriggers) {
+        IDatabasePlatform platform = dbDialect.getPlatform();
+        ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
+        if (disableTriggers) {
+            dbDialect.disableSyncTriggers(transaction);
+        }
+        int count = transaction.execute(INSERT, filterValues(values, dbDialect),
                 filterTypes(INSERT_TYPES, dbDialect));
+        if (disableTriggers) {
+            dbDialect.enableSyncTriggers(transaction);
+        }
+        transaction.commit();
+        transaction.close();
+        return count;
     }
 
     protected static Object[] filterValues(Object[] values, IDbDialect dbDialect) {

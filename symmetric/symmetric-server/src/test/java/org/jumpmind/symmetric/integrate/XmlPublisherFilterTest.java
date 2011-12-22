@@ -16,33 +16,36 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.integrate;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.jumpmind.symmetric.ext.ICacheContext;
-import org.jumpmind.symmetric.load.DataLoaderContext;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.TableTemplate;
-import org.jumpmind.symmetric.load.csv.CsvLoader;
-import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.IDataReader;
+import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.util.Context;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * 
- */
-public class XmlPublisherFilterTest extends AbstractDatabaseTest {
+public class XmlPublisherFilterTest {
 
     private static final String TABLE_TEST = "TEST_XML_PUBLISHER";
-    
+
     private static final String TEST_SIMPLE_TRANSFORM_RESULTS = "<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"12\" nodeid=\"54321\" batchid=\"1111\" time=\"test\"><row entity=\"TEST_XML_PUBLISHER\" dml=\"I\"><data key=\"ID1\">1</data><data key=\"ID2\">2</data><data key=\"DATA1\">test embedding an &amp;</data><data key=\"DATA2\">3</data><data key=\"DATA3\" xsi:nil=\"true\" /></row></batch>";
 
-    private DataLoaderContext ctx;
+    private DataContext<IDataReader, IDataWriter> context;
+
+    private Table table;
 
     public XmlPublisherFilterTest() throws Exception {
         super();
@@ -50,14 +53,8 @@ public class XmlPublisherFilterTest extends AbstractDatabaseTest {
 
     @Before
     public void setUp() {
-        ctx = new DataLoaderContext(this.getNodeService(), this.getJdbcTemplate());
-        ctx.setSourceNodeId("54321");
-        ctx.setBatchId(1111);
-        ctx.setTableName(TABLE_TEST);
-        ctx.chooseTableTemplate();
-        ctx.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST, null, false, null, null));
-        ctx.setColumnNames(new String[] { "ID1", "ID2", "DATA1", "DATA2", "DATA3" });
-
+        context = new DataContext<IDataReader, IDataWriter>(new Batch(1111, "default", BinaryEncoding.BASE64, "54321"));
+        table = Table.buildTable(TABLE_TEST, new String[] { "ID1", "ID2" }, new String[] { "ID1", "ID2", "DATA1", "DATA2", "DATA3" });
     }
 
     @Test
@@ -75,19 +72,16 @@ public class XmlPublisherFilterTest extends AbstractDatabaseTest {
         columns.add("ID1");
         columns.add("ID2");
         filter.setGroupByColumnNames(columns);
+        
         Output output = new Output();
         filter.setPublisher(output);
 
-        String[][] data = { { "1", "1", "The Angry Brown", "3", "2008-10-24 00:00:00.0" },
+        String[][] datas = { { "1", "1", "The Angry Brown", "3", "2008-10-24 00:00:00.0" },
                 { "1", "2", "test embedding an &", "3", null } };
-        for (String[] strings : data) {
-            filter.filterInsert(ctx, strings);
-            filter.batchComplete(new CsvLoader() {
-                @Override
-                public IDataLoaderContext getContext() {
-                    return ctx;
-                }
-            }, null);
+        for (String[] strings : datas) {
+            CsvData data = new CsvData(DataEventType.INSERT, strings);
+            filter.beforeWrite(context, table, data);
+            filter.batchComplete(context);
         }
 
         Assert.assertEquals(TEST_SIMPLE_TRANSFORM_RESULTS.trim(), output.toString().trim());
@@ -97,7 +91,7 @@ public class XmlPublisherFilterTest extends AbstractDatabaseTest {
     class Output implements IPublisher {
         private String output;
 
-        public void publish(ICacheContext context, String text) {
+        public void publish(Context context, String text) {
             this.output = text;
         }
 

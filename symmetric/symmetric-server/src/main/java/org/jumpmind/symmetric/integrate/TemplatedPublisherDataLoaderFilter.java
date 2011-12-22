@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.integrate;
 
@@ -25,27 +26,26 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.IDataReader;
+import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
  * A convenience class that allows the end user to template a message using
- * SymmetricDS filter data.
- * </p>
- * You may use %COLUMN% formatted tokens in your template data which will be
- * replaced by data coming in through the filter. The following tokens are also
- * supported:
+ * SymmetricDS filter data. </p> You may use %COLUMN% formatted tokens in your
+ * template data which will be replaced by data coming in through the filter.
+ * The following tokens are also supported:
  * <ol>
  * <li>%DMLTYPE% - evaluates to INSERT, UPDATE or DELETE</li>
  * <li>%TIMESTAMP% - evaluates to ms value returned by
  * System.currentTimeInMillis()</li>
  * </ol>
- * </p>
- * If you have special formatting needs, implement the {@link IFormat} interface
- * and map your formatter to the column you want to 'massage.'
- *
- * 
+ * </p> If you have special formatting needs, implement the {@link IFormat}
+ * interface and map your formatter to the column you want to 'massage.'
  */
 public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDataLoaderFilter {
 
@@ -59,16 +59,22 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
     private boolean processInsert = true;
     private boolean processUpdate = true;
 
-    private IDataLoaderFilter dataFilter;
+    private IDatabaseWriterFilter dataFilter;
 
     @Override
-    protected String addTextElementForDelete(IDataLoaderContext ctx, String[] keys) {
-        if (this.dataFilter == null || this.dataFilter.filterDelete(ctx, keys)) {
+    protected String addTextElement(
+            DataContext<? extends IDataReader, ? extends IDataWriter> context, Table table,
+            CsvData data) {
+        if (this.dataFilter == null
+                || this.dataFilter.beforeWrite(context, table, data)) {
+            DataEventType eventType = data.getDataEventType();
             String template = null;
-            if (processDelete) {
+            if ((processInsert && eventType == DataEventType.INSERT)
+                    || (processUpdate && eventType == DataEventType.UPDATE)
+                    || (processDelete && eventType == DataEventType.DELETE)) {
                 template = contentTableTemplate;
                 if (template != null) {
-                    template = fillOutTemplate(DmlType.DELETE, template, ctx, null, keys);
+                    template = fillOutTemplate(table, data, template, context);
                 }
             }
             return template;
@@ -78,64 +84,34 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
     }
 
     @Override
-    protected String addTextElementForInsert(IDataLoaderContext ctx, String[] data) {
-        if (this.dataFilter == null || this.dataFilter.filterInsert(ctx, data)) {
-            String template = null;
-            if (processInsert) {
-                template = contentTableTemplate;
-                if (template != null) {
-                    template = fillOutTemplate(DmlType.INSERT, template, ctx, data, null);
-                }
-            }
-            return template;
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    protected String addTextElementForUpdate(IDataLoaderContext ctx, String[] data, String[] keys) {
-        if (this.dataFilter == null || this.dataFilter.filterUpdate(ctx, data, keys)) {
-            String template = null;
-            if (processUpdate) {
-                template = contentTableTemplate;
-                if (template != null) {
-                    template = fillOutTemplate(DmlType.UPDATE, template, ctx, data, keys);
-                }
-            }
-            return template;
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    protected String addTextFooter(IDataLoaderContext ctx) {
+    protected String addTextFooter(DataContext<? extends IDataReader, ? extends IDataWriter> context) {
         return footerTableTemplate;
     }
 
     @Override
-    protected String addTextHeader(IDataLoaderContext ctx) {
+    protected String addTextHeader(DataContext<? extends IDataReader, ? extends IDataWriter> context) {
         return headerTableTemplate;
     }
 
-    protected String fillOutTemplate(DmlType dmlType, String template, IDataLoaderContext ctx, String[] data,
-            String[] keys) {
+    protected String fillOutTemplate(Table table, CsvData data, String template,
+            DataContext<? extends IDataReader, ? extends IDataWriter> context) {
+        DataEventType eventType = data.getDataEventType();
         String[] colNames = null;
-
-        if (data == null) {
-            colNames = ctx.getKeyNames();
-            data = keys;
+        String[] colValues = null;
+        if (eventType == DataEventType.DELETE) {
+            colNames = table.getPrimaryKeyColumnNames();
+            colValues = data.getParsedData(CsvData.PK_DATA);
         } else {
-            colNames = ctx.getColumnNames();
+            colNames = table.getColumnNames();
+            colValues = data.getParsedData(CsvData.ROW_DATA);
         }
 
-        for (int i = 0; i < data.length; i++) {
+        for (int i = 0; i < colValues.length; i++) {
             String col = colNames[i];
-            template = replace(template, col, format(col, data[i]));
+            template = replace(template, col, format(col, colValues[i]));
         }
 
-        template = template.replace("DMLTYPE", dmlType.name());
+        template = template.replace("DMLTYPE", eventType.name());
         template = template.replace("TIMESTAMP", Long.toString(System.currentTimeMillis()));
 
         return template;
@@ -159,11 +135,11 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
         if (value == null) {
             value = "";
         }
-        
+
         if (template != null) {
             template = template.replace("%" + token + "%", value);
         }
-        
+
         return template;
     }
 
@@ -199,7 +175,7 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
         public String format(String data) throws ParseException;
     }
 
-    public void setDataFilter(IDataLoaderFilter dataFilter) {
+    public void setDataFilter(IDatabaseWriterFilter dataFilter) {
         this.dataFilter = dataFilter;
     }
 

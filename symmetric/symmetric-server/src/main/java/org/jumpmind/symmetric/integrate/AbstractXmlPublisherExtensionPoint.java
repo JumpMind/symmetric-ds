@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.integrate;
 
@@ -34,17 +35,21 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.ext.ICacheContext;
-import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
+import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.IDataReader;
+import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.util.Context;
 
 /**
  * An abstract class that accumulates data to publish.
  */
-public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INodeGroupExtensionPoint {
+abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint,
+        INodeGroupExtensionPoint {
 
     protected final ILog log = LogFactory.getLog(getClass());
 
@@ -80,36 +85,34 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, Element> getXmlCache(ICacheContext ctx) {
-        Map<String, Object> cache = ctx.getContextCache();
-        Map<String, Element> xmlCache = (Map<String, Element>) cache.get(XML_CACHE);
+    protected Map<String, Element> getXmlCache(Context context) {
+        Map<String, Element> xmlCache = (Map<String, Element>) context.get(XML_CACHE);
         if (xmlCache == null) {
             xmlCache = new HashMap<String, Element>();
-            cache.put(XML_CACHE, xmlCache);
+            context.put(XML_CACHE, xmlCache);
         }
         return xmlCache;
     }
 
     @SuppressWarnings("unchecked")
-    protected boolean doesXmlExistToPublish(ICacheContext ctx) {
-        Map<String, Object> cache = ctx.getContextCache();
-        Map<String, StringBuilder> xmlCache = (Map<String, StringBuilder>) cache.get(XML_CACHE);
+    protected boolean doesXmlExistToPublish(Context context) {
+        Map<String, StringBuilder> xmlCache = (Map<String, StringBuilder>) context.get(XML_CACHE);
         return xmlCache != null && xmlCache.size() > 0;
     }
 
-    protected void finalizeXmlAndPublish(ICacheContext ctx) {
-        Map<String, Element> ctxCache = getXmlCache(ctx);
-        Collection<Element> buffers = ctxCache.values();
+    protected void finalizeXmlAndPublish(Context context) {
+        Map<String, Element> contextCache = getXmlCache(context);
+        Collection<Element> buffers = contextCache.values();
         for (Iterator<Element> iterator = buffers.iterator(); iterator.hasNext();) {
             String xml = new XMLOutputter(xmlFormat).outputString(new Document(iterator.next()));
             log.debug("XMLSending", xml);
             iterator.remove();
-            publisher.publish(ctx, xml.toString());
+            publisher.publish(context, xml.toString());
         }
     }
 
-    protected void toXmlElement(DataEventType dml, Element xml, String tableName, String[] columnNames, String[] data,
-            String[] keyNames, String[] keys) {
+    protected void toXmlElement(DataEventType dml, Element xml, String tableName,
+            String[] columnNames, String[] data, String[] keyNames, String[] keys) {
         Element row = new Element("row");
         xml.addContent(row);
         row.setAttribute("entity", tableName);
@@ -140,39 +143,44 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
     /**
      * Give the opportunity for the user of this publisher to add in additional
      * attributes. The default implementation adds in the nodeId from the
-     * {@link ICacheContext}.
+     * {@link Context}.
      * 
-     * @param ctx
+     * @param context
      * @param xml
      *            append XML attributes to this buffer
      */
-    protected void addFormattedExtraGroupAttributes(ICacheContext ctx, Element xml) {
-        xml.setAttribute("nodeid", ctx.getSourceNodeId());
-        xml.setAttribute("batchid", Long.toString(ctx.getBatchId()));
+    @SuppressWarnings("unchecked")
+    protected void addFormattedExtraGroupAttributes(Context context, Element xml) {
+        if (context instanceof DataContext) {
+            DataContext<? extends IDataReader, ? extends IDataWriter> dataContext = (DataContext<? extends IDataReader, ? extends IDataWriter>) context;
+            xml.setAttribute("nodeid", dataContext.getBatch().getSourceNodeId());
+            xml.setAttribute("batchid", Long.toString(dataContext.getBatch().getBatchId()));
+        }
         if (timeStringGenerator != null) {
             xml.setAttribute("time", timeStringGenerator.getTime());
         }
     }
 
-    protected Element getXmlFromCache(ICacheContext ctx, String[] columnNames, String[] data, String[] keyNames,
-            String[] keys) {
+    protected Element getXmlFromCache(Context context, String[] columnNames, String[] data,
+            String[] keyNames, String[] keys) {
+        Map<String,Element> xmlCache = getXmlCache(context);
         Element xml = null;
-        Map<String, Element> ctxCache = getXmlCache(ctx);
         String txId = toXmlGroupId(columnNames, data, keyNames, keys);
         if (txId != null) {
-            xml = ctxCache.get(txId);
+            xml = (Element) xmlCache.get(txId);
             if (xml == null) {
                 xml = new Element(xmlTagNameToUseForGroup);
                 xml.addNamespaceDeclaration(getXmlNamespace());
                 xml.setAttribute("id", txId);
-                addFormattedExtraGroupAttributes(ctx, xml);
-                ctxCache.put(txId, xml);
+                addFormattedExtraGroupAttributes(context, xml);
+                xmlCache.put(txId, xml);
             }
         }
         return xml;
     }
 
-    protected String toXmlGroupId(String[] columnNames, String[] data, String[] keyNames, String[] keys) {
+    protected String toXmlGroupId(String[] columnNames, String[] data, String[] keyNames,
+            String[] keys) {
         if (groupByColumnNames != null) {
             StringBuilder id = new StringBuilder();
 
@@ -205,8 +213,7 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
                 return id.toString().replaceAll("-", "");
             }
         } else {
-            log
-                    .warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
+            log.warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
         }
         return null;
     }
@@ -222,7 +229,7 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
     public void setNodeGroups(String[] nodeGroups) {
         this.nodeGroups = nodeGroups;
     }
-    
+
     public void setNodeGroup(String nodeGroup) {
         this.nodeGroups = new String[] { nodeGroup };
     }

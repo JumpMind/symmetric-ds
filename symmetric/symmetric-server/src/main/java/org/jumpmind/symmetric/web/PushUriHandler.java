@@ -49,7 +49,7 @@ public class PushUriHandler extends AbstractUriHandler {
         InputStream inputStream = createInputStream(req);
         OutputStream outputStream = res.getOutputStream();
 
-        push(inputStream, outputStream);
+        push(nodeId, inputStream, outputStream);
 
         // Not sure if this is necessary, but it's been here and it hasn't hurt
         // anything ...
@@ -58,10 +58,10 @@ public class PushUriHandler extends AbstractUriHandler {
 
     }
 
-    protected void push(InputStream inputStream, OutputStream outputStream) throws IOException {
+    protected void push(String sourceNodeId, InputStream inputStream, OutputStream outputStream) throws IOException {
         long ts = System.currentTimeMillis();
         try {
-            getDataLoaderService().loadData(inputStream, outputStream);
+            getDataLoaderService().loadDataFromPush(sourceNodeId, inputStream, outputStream);
         } finally {
             statisticManager.incrementNodesPushed(1);
             statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);

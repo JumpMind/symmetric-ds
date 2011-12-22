@@ -23,17 +23,20 @@ package org.jumpmind.symmetric.map;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.IDataReader;
+import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.jumpmind.util.Context;
 import org.springframework.scripting.ScriptCompilationException;
 
-/**
- * 
- */
-public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtensionPoint {
+public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements IDatabaseWriterFilter, INodeGroupExtensionPoint {
 
     final ILog log = LogFactory.getLog(getClass());
 
@@ -46,31 +49,41 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
     private boolean ignoreCase = true;
 
     private boolean enabled = true;
+    
+    @Override
+    public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
+            DataContext<R, W> context, Table table, CsvData data) {
+        filterColumnValues(context, table, data);
+        return true;
+    }
 
-    protected void filterColumnValues(IDataLoaderContext context, String[] columnValues) {
+    protected void filterColumnValues(Context context, Table table, CsvData data) {
         if (enabled && filters != null) {
             for (TableColumnValueFilter filteredColumn : filters) {
                 try {
                     if (filteredColumn.isEnabled()
                             && ((ignoreCase && filteredColumn.getTableName().equalsIgnoreCase(
-                                    context.getTableName())) || (!ignoreCase && filteredColumn
-                                    .getTableName().equals(context.getTableName())))) {
+                                    table.getName())) || (!ignoreCase && filteredColumn
+                                    .getTableName().equals(table.getName())))) {
                         String columnName = filteredColumn.getColumnName();
-                        int index = context.getColumnIndex(columnName);
+                        int index = table.getColumnIndex(columnName);
                         if (index < 0 && ignoreCase) {
                             columnName = columnName.toUpperCase();
-                            index = context.getColumnIndex(columnName);
+                            index = table.getColumnIndex(columnName);
                             if (index < 0) {
                                 columnName = columnName.toLowerCase();
-                                index = context.getColumnIndex(columnName);
+                                index = table.getColumnIndex(columnName);
                             }
                         }
                         if (index >= 0) {
                             try {
+                                String[] columnValues = data.getParsedData(CsvData.ROW_DATA);
+                                if (columnValues != null && columnValues.length > index) {
                                 columnValues[index] = filteredColumn.getFilter().filter(
                                         filteredColumn.getTableName(),
                                         filteredColumn.getColumnName(), columnValues[index],
-                                        context.getContextCache());
+                                        context);
+                                }
                             } catch (RuntimeException ex) {
                                 // Try to log script errors so they are more
                                 // readable
@@ -93,21 +106,6 @@ public class ColumnDataFilters implements IDataLoaderFilter, INodeGroupExtension
                 }
             }
         }
-    }
-
-    public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
-        return true;
-    }
-
-    public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
-        filterColumnValues(context, columnValues);
-        return true;
-    }
-
-    public boolean filterUpdate(IDataLoaderContext context, String[] columnValues,
-            String[] keyValues) {
-        filterColumnValues(context, columnValues);
-        return true;
     }
 
     public void setFilters(List<TableColumnValueFilter> filters) {

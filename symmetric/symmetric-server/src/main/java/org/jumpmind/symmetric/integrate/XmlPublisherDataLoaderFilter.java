@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.integrate;
 
@@ -24,26 +25,31 @@ import java.util.List;
 import java.util.Set;
 
 import org.jdom.Element;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
-import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.load.IBatchListener;
-import org.jumpmind.symmetric.load.IDataLoader;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.IDataLoaderFilter;
-import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.IDataReader;
+import org.jumpmind.symmetric.io.data.IDataWriter;
 
 /**
- * This is an optional {@link IDataLoaderFilter} and {@link IBatchListener} that is capable of translating table data to
- * XML and publishing it for consumption by the enterprise. It uses JDOM internally to create an XML representation of
+ * This is an optional {@link IDataLoaderFilter} and {@link IBatchListener} that
+ * is capable of translating table data to XML and publishing it for consumption
+ * by the enterprise. It uses JDOM internally to create an XML representation of
  * SymmetricDS data.
  * <p>
- * This filter is typically configured as a Spring bean. The table names that should be published are identified by {@link #setTableNamesToPublishAsGroup(Set)}. Rows
- * from tables can be grouped together (which get synchronized in the same batch) by identifying columns that are the
- * same that act as a 'key' by setting {@link #setGroupByColumnNames(List)}
+ * This filter is typically configured as a Spring bean. The table names that
+ * should be published are identified by
+ * {@link #setTableNamesToPublishAsGroup(Set)}. Rows from tables can be grouped
+ * together (which get synchronized in the same batch) by identifying columns
+ * that are the same that act as a 'key' by setting
+ * {@link #setGroupByColumnNames(List)}
  * <p>
- * The {@link IPublisher} is typically configured and injected onto this bean as well.  Provided is a {@link SimpleJmsPublisher}.
+ * The {@link IPublisher} is typically configured and injected onto this bean as
+ * well. Provided is a {@link SimpleJmsPublisher}.
  * <p>
  * An example of the XML that is published is as follows:
+ * 
  * <pre>
  * &lt;batch id="2TEST2" nodeid="00001" time="12345678910"&gt;
  *   &lt;row entity="TABLE_NAME" dml="I"&gt;
@@ -56,67 +62,59 @@ import org.jumpmind.symmetric.model.IncomingBatch;
  * &lt;/batch&gt;
  * </pre>
  */
-public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionPoint implements IPublisherFilter, INodeGroupExtensionPoint {
-    
+public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionPoint implements
+        IPublisherFilter, INodeGroupExtensionPoint {
+
     protected boolean loadDataInTargetDatabase = true;
 
-    public XmlPublisherDataLoaderFilter() {
-    }
-
-    public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
-        if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            Element xml = getXmlFromCache(ctx, null, null, ctx.getKeyNames(), keys);
+    public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
+            DataContext<R, W> context, Table table, CsvData data) {
+        if (tableNamesToPublishAsGroup == null
+                || tableNamesToPublishAsGroup.contains(table.getName())) {
+            Element xml = getXmlFromCache(context, table.getColumnNames(),
+                    data.getParsedData(CsvData.ROW_DATA), table.getPrimaryKeyColumnNames(),
+                    data.getParsedData(CsvData.PK_DATA));
             if (xml != null) {
-                toXmlElement(DataEventType.UPDATE, xml, ctx.getTableName(), null, null, ctx.getKeyNames(), keys);
+                toXmlElement(data.getDataEventType(), xml, table.getName(), table.getColumnNames(),
+                        data.getParsedData(CsvData.ROW_DATA), table.getPrimaryKeyColumnNames(),
+                        data.getParsedData(CsvData.PK_DATA));
             }
         } else if (log.isDebugEnabled()) {
-            log.debug("XmlPublisherTableNotFound", ctx.getTableName());
+            log.debug("XmlPublisherTableNotFound", table.getName());
         }
         return loadDataInTargetDatabase;
     }
 
-    public boolean filterUpdate(IDataLoaderContext ctx, String[] data, String[] keys) {
-        if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            Element xml = getXmlFromCache(ctx, ctx.getColumnNames(), data, ctx.getKeyNames(), keys);
-            if (xml != null) {
-                toXmlElement(DataEventType.UPDATE, xml, ctx.getTableName(), ctx.getColumnNames(), data, ctx.getKeyNames(), keys);
-            }
-        } else if (log.isDebugEnabled()) {
-            log.debug("XmlPublisherTableNotFound", ctx.getTableName());
+    public <R extends IDataReader, W extends IDataWriter> void batchComplete(
+            DataContext<R, W> context) {
+        if (doesXmlExistToPublish(context)) {
+            finalizeXmlAndPublish(context);
         }
-        return loadDataInTargetDatabase;
     }
 
-    public boolean filterInsert(IDataLoaderContext ctx, String[] data) {
-        if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            Element xml = getXmlFromCache(ctx, ctx.getColumnNames(), data, null, null);
-            if (xml != null) {
-                toXmlElement(DataEventType.INSERT, xml, ctx.getTableName(), ctx.getColumnNames(), data, null, null);
-            }
-        } else if (log.isDebugEnabled()) {
-            log.debug("XmlPublisherTableNotFound", ctx.getTableName());
-        }
-        return loadDataInTargetDatabase;
-    }
-
-    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
-        IDataLoaderContext ctx = loader.getContext();
-        if (doesXmlExistToPublish(ctx)) {
-            finalizeXmlAndPublish(ctx);
-        }
-    }
-    
     public void setLoadDataInTargetDatabase(boolean loadDataInTargetDatabase) {
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
     }
 
-    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
+    public <R extends IDataReader, W extends IDataWriter> void afterWrite(
+            DataContext<R, W> context, Table table, CsvData data) {
     }
 
-    public void batchRolledback(IDataLoader loader, IncomingBatch batch, Exception ex) {
+    public <R extends IDataReader, W extends IDataWriter> boolean handlesMissingTable(
+            DataContext<R, W> context, Table table) {
+        return false;
     }
-    
-    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
+
+    public <R extends IDataReader, W extends IDataWriter> void earlyCommit(
+            DataContext<R, W> context) {
+    }
+
+    public <R extends IDataReader, W extends IDataWriter> void batchCommitted(
+            DataContext<R, W> context) {
+    }
+
+    public <R extends IDataReader, W extends IDataWriter> void batchRolledback(
+            DataContext<R, W> context) {
     }
 
 }

@@ -16,59 +16,56 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.integrate;
 
 import java.util.Collections;
 import java.util.Set;
 
 import org.jdom.Element;
-import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.route.IDataRouter;
-import org.jumpmind.symmetric.route.IRouterContext;
-import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.route.SimpleRouterContext;
 
 /**
- * This is an {@link IDataRouter} that can be configured as an extension point. Instead of routing data to other nodes,
- * it publishes data to the {@link IPublisher} interface. The most common implementation of the {@link IPublisher} is
- * the {@link SimpleJmsPublisher}.
+ * This is an {@link IDataRouter} that can be configured as an extension point.
+ * Instead of routing data to other nodes, it publishes data to the
+ * {@link IPublisher} interface. The most common implementation of the
+ * {@link IPublisher} is the {@link SimpleJmsPublisher}.
  */
-public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements IDataRouter {
+public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements
+        IDataRouter {
 
     boolean onePerBatch = false;
-    
-    private INodeService nodeService;
-    
-    public void contextCommitted(IRouterContext context) {
+
+    public void contextCommitted(SimpleRouterContext context) {
         if (doesXmlExistToPublish(context)) {
             finalizeXmlAndPublish(context);
         }
     }
-    
-    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
-        DataLoaderContext contextForPublishing = new DataLoaderContext(nodeService, context.getJdbcTemplate());
-        contextForPublishing.setSourceNodeId(batch.getNodeId());
-        contextForPublishing.setBatchId(batch.getBatchId());
-        if (onePerBatch && doesXmlExistToPublish(contextForPublishing)) {
-            finalizeXmlAndPublish(contextForPublishing);
-        }
-    }            
 
-    public Set<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
-            boolean initialLoad) {
+    public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
+        if (onePerBatch && doesXmlExistToPublish(context)) {
+            finalizeXmlAndPublish(context);
+        }
+    }
+
+    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
+            Set<Node> nodes, boolean initialLoad) {
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(dataMetaData.getData().getTableName())) {
-            Element xml = getXmlFromCache(context, dataMetaData.getTriggerHistory().getParsedColumnNames(),
-                    dataMetaData.getData().toParsedRowData(), dataMetaData.getTriggerHistory()
-                            .getParsedPkColumnNames(), dataMetaData.getData().toParsedPkData());
+            Element xml = getXmlFromCache(context, dataMetaData.getTriggerHistory()
+                    .getParsedColumnNames(), dataMetaData.getData().toParsedRowData(), dataMetaData
+                    .getTriggerHistory().getParsedPkColumnNames(), dataMetaData.getData()
+                    .toParsedPkData());
             if (xml != null) {
-                toXmlElement(dataMetaData.getData().getEventType(), xml, dataMetaData.getData().getTableName(),
-                        dataMetaData.getTriggerHistory().getParsedColumnNames(), dataMetaData.getData()
-                                .toParsedRowData(), dataMetaData.getTriggerHistory().getParsedPkColumnNames(),
-                        dataMetaData.getData().toParsedPkData());
+                toXmlElement(dataMetaData.getData().getEventType(), xml, dataMetaData.getData()
+                        .getTableName(), dataMetaData.getTriggerHistory().getParsedColumnNames(),
+                        dataMetaData.getData().toParsedRowData(), dataMetaData.getTriggerHistory()
+                                .getParsedPkColumnNames(), dataMetaData.getData().toParsedPkData());
             }
         } else if (log.isDebugEnabled()) {
             log.debug("XmlPublisherTableNotFound", dataMetaData.getData().getTableName());
@@ -77,16 +74,15 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
     }
 
     /**
-     * Indicates that one message should be published per batch.  If this is set to false, then
-     * only one message will be published once for each set of data that is routed (even though 
-     * it may have been routed to several nodes across several different batches).
+     * Indicates that one message should be published per batch. If this is set
+     * to false, then only one message will be published once for each set of
+     * data that is routed (even though it may have been routed to several nodes
+     * across several different batches).
+     * 
      * @param onePerBatch
      */
     public void setOnePerBatch(boolean onePerBatch) {
         this.onePerBatch = onePerBatch;
     }
-    
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
+
 }

@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Level;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -46,6 +47,7 @@ import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.db.interbase.InterbaseDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterPropertyConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -205,19 +207,20 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 rootJdbcTemplate
                         .queryForInt("select count(*) from sym_node_security where initial_load_enabled=1"),
                 0, "Initial load was not successful accordign to the root");
-        assertTestUseStreamBlobInClientDatabase(100, "test_use_stream_lob",THIS_IS_A_TEST);
-        assertTestUseStreamBlobInClientDatabase(100, "test_use_capture_lob",THIS_IS_A_TEST);
+        assertTestUseStreamBlobInClientDatabase(100, "test_use_stream_lob", THIS_IS_A_TEST);
+        assertTestUseStreamBlobInClientDatabase(100, "test_use_capture_lob", THIS_IS_A_TEST);
     }
 
     private void insertIntoTestTriggerTable(JdbcTemplate jdbcTemplate, IDbDialect dialect,
             Object[] values) {
-        Table testTriggerTable = dialect.getTable(null, null, "test_triggers_table", true);
-        try {
-            dialect.allowIdentityInserts(jdbcTemplate, testTriggerTable);
-            jdbcTemplate.update(insertTestTriggerTableSql, values);
-        } finally {
-            dialect.revertAllowIdentityInserts(jdbcTemplate, testTriggerTable);
-        }
+        Table testTriggerTable = dialect.getPlatform().getTableFromCache(null, null,
+                "test_triggers_table", true);
+        ISqlTransaction transaction = dialect.getPlatform().getSqlTemplate().startSqlTransaction();
+        transaction.allowInsertIntoAutoIncrementColumns(true, testTriggerTable);
+        transaction.execute(insertTestTriggerTableSql, values);
+        transaction.allowInsertIntoAutoIncrementColumns(false, testTriggerTable);
+        transaction.commit();
+        transaction.close();
     }
 
     @Test(timeout = 120000)
@@ -293,13 +296,16 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertEquals(NEW_NAME, results.get("NAME"));
 
     }
-    
+
     @Test(timeout = 120000)
     public void testInsertSqlEvent() {
-        Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from sym_node where schema_version='test'") == 0);
-        getRootEngine().getDataService().insertSqlEvent(TestConstants.TEST_CLIENT_NODE, "update sym_node set schema_version='test'", false);        
+        Assert.assertTrue(clientJdbcTemplate
+                .queryForInt("select count(*) from sym_node where schema_version='test'") == 0);
+        getRootEngine().getDataService().insertSqlEvent(TestConstants.TEST_CLIENT_NODE,
+                "update sym_node set schema_version='test'", false);
         clientPull();
-        Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from sym_node where schema_version='test'") > 0);
+        Assert.assertTrue(clientJdbcTemplate
+                .queryForInt("select count(*) from sym_node where schema_version='test'") > 0);
     }
 
     @Test(timeout = 120000)
@@ -308,8 +314,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         final String queryIcon = "select icon from test_customer where customer_id = 300";
 
         // Test empty large object
-        int blobType = getRootDbDialect().getTable(null, null, "test_customer", false)
-                .getColumn(11).getTypeCode();
+        int blobType = getRootDbDialect().getPlatform()
+                .getTableFromCache(null, null, "test_customer", false).getColumn(11).getTypeCode();
         Object[] args = new Object[] { 300, "Eric", "1", "100 Main Street", "Columbus", "OH",
                 43082, new Date(), new Date(), "", new byte[0] };
         int[] argTypes = new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
@@ -789,15 +795,16 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 .getApplicationContext().getBean(Constants.PARAMETER_SERVICE);
         IParameterService rootParameterService = (IParameterService) AppUtils.find(
                 Constants.PARAMETER_SERVICE, getRootEngine());
-        Assert.assertEquals(
-                clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE),
-                rootParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
+        Assert.assertEquals(clientParameterService
+                .is(DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE),
+                rootParameterService
+                        .is(DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
         boolean oldValue = clientParameterService
-                .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
-        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
-                newValue);
-        rootParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
-                newValue);
+                .is(DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
+        clientParameterService.saveParameter(
+                DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, newValue);
+        rootParameterService.saveParameter(
+                DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, newValue);
         return oldValue;
     }
 
@@ -911,7 +918,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void syncUpdateWithEmptyKey() {
         logTestRunning();
         try {
-            if (getClientDbDialect().isEmptyStringNulled()) {
+            if (getClientDbDialect().getPlatform().getPlatformInfo().isEmptyStringNulled()) {
                 return;
             }
 
@@ -1131,15 +1138,17 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             return;
         }
         // alter the table to have column names that are not usually allowed
-        String rquote = getRootDbDialect().getIdentifierQuoteString();
-        String cquote = getClientDbDialect().getIdentifierQuoteString();
+        String rquote = getRootDbDialect().getPlatform().getPlatformInfo()
+                .getIdentifierQuoteString();
+        String cquote = getClientDbDialect().getPlatform().getPlatformInfo()
+                .getIdentifierQuoteString();
         rootJdbcTemplate.update(alterKeyWordSql.replaceAll("\"", rquote));
         rootJdbcTemplate.update(alterKeyWordSql2.replaceAll("\"", rquote));
         clientJdbcTemplate.update(alterKeyWordSql.replaceAll("\"", cquote));
         clientJdbcTemplate.update(alterKeyWordSql2.replaceAll("\"", cquote));
 
-        getClientDbDialect().resetCachedTableModel();
-        getRootDbDialect().resetCachedTableModel();
+        getClientDbDialect().getPlatform().resetCachedTableModel();
+        getRootDbDialect().getPlatform().resetCachedTableModel();
 
         // enable the trigger for the table and update the client with
         // configuration
@@ -1265,9 +1274,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IParameterService clientParameterService = (IParameterService) getClientEngine()
                 .getApplicationContext().getBean(Constants.PARAMETER_SERVICE);
         long oldMaxRowsBeforeCommit = clientParameterService
-                .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
-        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
-                5);
+                .getLong(DatabaseWriterPropertyConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
+        clientParameterService.saveParameter(
+                DatabaseWriterPropertyConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT, 5);
         int oldCount = clientJdbcTemplate.queryForInt("select count(*) from one_column_table");
         IStatisticManager statisticManager = AppUtils.find(Constants.STATISTIC_MANAGER,
                 getClientEngine());
@@ -1294,10 +1303,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         } while (getClientEngine().pull().wasDataProcessed());
         int newCount = clientJdbcTemplate.queryForInt("select count(*) from one_column_table");
         Assert.assertEquals(50, newCount - oldCount);
-        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
+        clientParameterService.saveParameter(
+                DatabaseWriterPropertyConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
                 oldMaxRowsBeforeCommit);
     }
-    
+
     @Test(timeout = 120000)
     public void testLobSyncUsingStreaming() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
@@ -1312,7 +1322,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             assertTestUseStreamBlobInClientDatabase(200, "test_use_stream_lob", text);
         }
     }
-    
+
     @Test(timeout = 120000)
     public void testLobSyncUsingCapture() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
@@ -1324,18 +1334,18 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             Assert.assertTrue("Did not find the id in the row data", rowData.contains("200"));
             clientPull();
             assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob", text);
-            
+
             String updateText = "The text was updated";
             updateTestUseStreamLob(200, "test_use_capture_lob", updateText);
             clientPull();
             assertTestUseStreamBlobInClientDatabase(200, "test_use_capture_lob", updateText);
         }
-    }      
+    }
 
     @Test(timeout = 120000)
     public void testSyncDisabled() {
         clientPull();
-        
+
         logTestRunning();
 
         Node clientIdentity = getClientEngine().getNodeService().findIdentity();
@@ -1426,21 +1436,21 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 Constants.STATISTIC_MANAGER);
         statMgr.flush();
     }
-    
+
     @Test(timeout = 120000)
     public void cleanupAfterTests() {
         clientPull();
         getClientEngine().purge();
         getRootEngine().purge();
     }
-    
+
     private String replace(String prop, String replaceWith, String sourceString) {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }
 
     private Date getDate(String dateString) throws ParseException {
-        if (!getClientDbDialect().isDateOverrideToTimestamp()
-                || !getRootDbDialect().isDateOverrideToTimestamp()) {
+        if (!getClientDbDialect().getPlatform().getPlatformInfo().isDateOverridesToTimestamp()
+                || !getRootDbDialect().getPlatform().getPlatformInfo().isDateOverridesToTimestamp()) {
             return DateUtils.parseDate(dateString.split(" ")[0], new String[] { "yyyy-MM-dd" });
         } else {
             return DateUtils.parseDate(dateString, new String[] { "yyyy-MM-dd HH:mm:ss" });
@@ -1451,37 +1461,35 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     private boolean insertIntoTestUseStreamLob(int id, String tableName, String lobValue) {
         if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)
                 && !(getRootDbDialect() instanceof InformixDbDialect)) {
-            rootJdbcTemplate.update(
-                    "insert into "+tableName+" (test_id, test_blob) values(?, ?)",
-                    new ArgTypePreparedStatementSetter(new Object[] { id, lobValue.getBytes() },
-                            new int[] { Types.INTEGER, Types.BLOB }, getRootDbDialect()
+            rootJdbcTemplate.update("insert into " + tableName
+                    + " (test_id, test_blob) values(?, ?)", new ArgTypePreparedStatementSetter(
+                    new Object[] { id, lobValue.getBytes() },
+                    new int[] { Types.INTEGER, Types.BLOB }, getRootDbDialect().getLobHandler()));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // TODO support insert of blob test for postgres and informix
+    private boolean updateTestUseStreamLob(int id, String tableName, String lobValue) {
+        if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)
+                && !(getRootDbDialect() instanceof InformixDbDialect)) {
+            rootJdbcTemplate.update("update " + tableName + " set test_blob=? where test_id=?",
+                    new ArgTypePreparedStatementSetter(new Object[] { lobValue.getBytes(), id },
+                            new int[] { Types.BLOB, Types.INTEGER }, getRootDbDialect()
                                     .getLobHandler()));
             return true;
         } else {
             return false;
         }
     }
-    
-    // TODO support insert of blob test for postgres and informix
-    private boolean updateTestUseStreamLob(int id, String tableName, String lobValue) {
-        if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)
-                && !(getRootDbDialect() instanceof InformixDbDialect)) {
-            rootJdbcTemplate.update(
-                    "update "+tableName+" set test_blob=? where test_id=?",
-                    new ArgTypePreparedStatementSetter(new Object[] { lobValue.getBytes(), id },
-                            new int[] {  Types.BLOB, Types.INTEGER }, getRootDbDialect()
-                                    .getLobHandler()));
-            return true;
-        } else {
-            return false;
-        }
-    }    
 
     private void assertTestUseStreamBlobInClientDatabase(int id, String tableName, String value) {
         if (!(getRootDbDialect() instanceof PostgreSqlDbDialect)
                 && !(getRootDbDialect() instanceof InformixDbDialect)) {
-            Map<String, Object> values = clientJdbcTemplate.queryForMap(
-                    "select test_blob from "+tableName+" where test_id=?", id);
+            Map<String, Object> values = clientJdbcTemplate.queryForMap("select test_blob from "
+                    + tableName + " where test_id=?", id);
             assertEquals(new String((byte[]) values.get("TEST_BLOB")), value,
                     "The blob column for test_use_stream_lob was not loaded into the client database");
         }
