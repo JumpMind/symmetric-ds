@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.db.mssql;
 
@@ -27,19 +27,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.Table;
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
-import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /*
  * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
@@ -53,11 +49,6 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
-    }    
-
-    @Override
-    public IColumnFilter newDatabaseColumnFilter() {
-        return new AutoIncrementColumnFilter();
     }
 
     @Override
@@ -68,7 +59,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             jdbcTemplate.execute(new ConnectionCallback<Object>() {
-                public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+                public Object doInConnection(Connection con) throws SQLException,
+                        DataAccessException {
                     String previousCatalog = con.getCatalog();
                     Statement stmt = null;
                     try {
@@ -95,7 +87,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
+    protected String switchCatalogForTriggerInstall(String catalog, Connection c)
+            throws SQLException {
         if (catalog != null) {
             String previousCatalog = c.getCatalog();
             c.setCatalog(catalog);
@@ -106,27 +99,13 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public void allowIdentityInserts(JdbcTemplate template, Table table) {
-        if (table != null && table.getAutoIncrementColumns().length > 0) {
-            template.execute("SET IDENTITY_INSERT " + table.getFullyQualifiedTableName() + " ON");
-        }
-    }
-
-    @Override
-    public void revertAllowIdentityInserts(JdbcTemplate template, Table table) {
-        if (table != null && table.getAutoIncrementColumns().length > 0) {
-            template.execute("SET IDENTITY_INSERT " + table.getFullyQualifiedTableName() + " OFF");
-        }
-    }
-
-    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName,
-            final String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema,
+            String tableName, final String triggerName) {
         return jdbcTemplate.execute(new ConnectionCallback<Boolean>() {
             public Boolean doInConnection(Connection con) throws SQLException, DataAccessException {
                 String previousCatalog = con.getCatalog();
@@ -153,24 +132,25 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         });
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         if (nodeId == null) {
             nodeId = "";
         }
-        jdbcTemplate.update("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId + "' as varbinary(128));"
-                + "SET context_info @CI;");
+        transaction.execute("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId
+                + "' as varbinary(128));" + "SET context_info @CI;");
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.update("set context_info 0x0");
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.execute("set context_info 0x0");
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultCatalog)dbo."+tablePrefix+"_triggers_disabled() = 0";
+        return "$(defaultCatalog)dbo." + tablePrefix + "_triggers_disabled() = 0";
     }
 
     @Override
-    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
+            Trigger trigger) {
         return "@TransactionId";
     }
 
@@ -179,39 +159,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    /*
-     * SQL Server always pads character fields out to the right to fill out
-     * field with space characters.
-     * 
-     * @return true always
-     */
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
-    }
-
-    /*
-     * @return false always
-     */
-    public boolean isCharColumnSpaceTrimmed() {
-        return false;
-    }
-
     @Override
     public boolean isTransactionIdOverrideSupported() {
-        return false;
-    }
-
-    @Override
-    public boolean isDateOverrideToTimestamp() {
-        return true;
-    }
-
-    /*
-     * SQL Server pads an empty string with spaces.
-     * 
-     * @return false always
-     */
-    public boolean isEmptyStringNulled() {
         return false;
     }
 
@@ -219,19 +168,6 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
      * Nothing to do for SQL Server
      */
     public void purge() {
-    }
-
-    public String getDefaultCatalog() {
-        return (String) jdbcTemplate.queryForObject("select DB_NAME()", String.class);
-    }
-
-    @Override
-    public String getDefaultSchema() {
-        String defaultSchema = super.getDefaultSchema();
-        if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
-        }
-        return defaultSchema;
     }
 
     public boolean needsToSelectLobData() {

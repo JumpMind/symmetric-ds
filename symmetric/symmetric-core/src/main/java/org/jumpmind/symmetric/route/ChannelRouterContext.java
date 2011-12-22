@@ -43,10 +43,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.support.JdbcUtils;
 
-/**
- * 
- */
-public class ChannelRouterContext extends SimpleRouterContext implements IRouterContext {
+public class ChannelRouterContext extends SimpleRouterContext {
 
     static final ILog log = LogFactory.getLog(ChannelRouterContext.class);
     

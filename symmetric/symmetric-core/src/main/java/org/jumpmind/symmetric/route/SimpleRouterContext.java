@@ -27,18 +27,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.util.Context;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class SimpleRouterContext implements IRouterContext {
+public class SimpleRouterContext extends Context {
 
     protected NodeChannel channel;
     protected JdbcTemplate jdbcTemplate;
     protected boolean encountedTransactionBoundary = false;
-    protected Map<String, Object> contextCache = new HashMap<String, Object>();
     protected Map<String, Long> stats = new HashMap<String, Long>();
     protected String nodeId;
 
@@ -72,7 +72,7 @@ public class SimpleRouterContext implements IRouterContext {
     }
 
     public Map<String, Object> getContextCache() {
-        return this.contextCache;
+        return this.context;
     }
 
     public JdbcTemplate getJdbcTemplate() {

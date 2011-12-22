@@ -76,6 +76,7 @@
         <property name="queryTimeout" value="$[sym.db.sql.query.timeout.seconds]"/>   
         <property name="forceDelimitedIdentifierModeOn" value="$[sym.db.force.delimited.identifier.mode.on]"/>
         <property name="forceDelimitedIdentifierModeOff" value="$[sym.db.force.delimited.identifier.mode.off]"/>
+        <property name="tableCacheTimeoutInMs" value="$[sym.cache.table.time.ms]"/>
         <property name="parameterService" ref="parameterService" />             
     </bean>
 

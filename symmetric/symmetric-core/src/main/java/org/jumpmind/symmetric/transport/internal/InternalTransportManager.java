@@ -89,7 +89,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
-    public IOutgoingWithResponseTransport getPushTransport(Node remote,
+    public IOutgoingWithResponseTransport getPushTransport(final Node remote,
         Node local, String securityToken, String registrationUrl) throws IOException {
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
@@ -101,7 +101,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the push servlet does ...
                 IDataLoaderService service = (IDataLoaderService) factory.getBean(Constants.DATALOADER_SERVICE);
-                service.loadData(pushIs, respOs);
+                service.loadDataFromPush(remote.getNodeId(), pushIs, respOs);
             }
         });
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);

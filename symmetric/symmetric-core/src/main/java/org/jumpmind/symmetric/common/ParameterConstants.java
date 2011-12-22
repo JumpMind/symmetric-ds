@@ -113,6 +113,7 @@ final public class ParameterConstants {
     public final static String DATA_LOADER_ENABLE_FALLBACK_INSERT = "dataloader.enable.fallback.insert";
     public final static String DATA_LOADER_ALLOW_MISSING_DELETE = "dataloader.allow.missing.delete";
     public final static String DATA_LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
+    public final static String DATA_LOADER_TREAT_DATETIME_AS_VARCHAR = "db.treat.date.time.as.varchar.enabled";
 
     public final static String DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL = "datareload.batch.insert.transactional";
 
@@ -186,8 +187,6 @@ final public class ParameterConstants {
     
     public final static String DB_MASTER_COLLATION = "db.master.collation";
     
-    public final static String DB_TREAT_DATE_TIME_AS_VARCHAR = "db.treat.date.time.as.varchar.enabled";
-
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

@@ -30,19 +30,15 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.Table;
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
-import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /*
  * Sybase dialect was tested with jconn4 JDBC driver.
@@ -65,11 +61,6 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }  
-
-    @Override
-    public IColumnFilter newDatabaseColumnFilter() {
-        return new AutoIncrementColumnFilter();
-    }
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName,
@@ -117,20 +108,6 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public void allowIdentityInserts(JdbcTemplate jdbcTemplate, Table table) {
-        if (table != null && table.getAutoIncrementColumns().length > 0) {
-            jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " ON");
-        }
-    }
-
-    @Override
-    public void revertAllowIdentityInserts(JdbcTemplate jdbcTemplate, Table table) {
-        if (table != null && table.getAutoIncrementColumns().length > 0) {
-            jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " OFF");
-        }
-    }
-
-    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }
@@ -164,17 +141,17 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
         });
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         if (nodeId == null) {
             nodeId = "";
         }
-        jdbcTemplate.update("exec set clientapplname 'SymmetricDS'");
-        jdbcTemplate.update("exec set clientname '" + nodeId + "'");
+        transaction.execute("exec set clientapplname 'SymmetricDS'");
+        transaction.execute("exec set clientname '" + nodeId + "'");
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.update("exec set clientapplname null");
-        jdbcTemplate.update("exec set clientname null");
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.execute("exec set clientapplname null");
+        transaction.execute("exec set clientname null");
     }
 
     public String getSyncTriggersExpression() {
@@ -183,7 +160,7 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-    	return getDefaultCatalog() + ".dbo."+tablePrefix+"_txid(0)";
+    	return platform.getDefaultCatalog() + ".dbo."+tablePrefix+"_txid(0)";
     }
 
     @Override
@@ -191,42 +168,12 @@ public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return false;
-    }
-
     @Override
     public boolean isTransactionIdOverrideSupported() {
         return true;
     }
 
-    @Override
-    public boolean isDateOverrideToTimestamp() {
-        return true;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
-    }
-
     public void purge() {
-    }
-
-    public String getDefaultCatalog() {
-        return (String) jdbcTemplate.queryForObject("select DB_NAME()", String.class);
-    }
-
-    @Override
-    public String getDefaultSchema() {
-        String defaultSchema = super.getDefaultSchema();
-        if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = (String) jdbcTemplate.queryForObject("select USER_NAME()", String.class);
-        }
-        return defaultSchema;
     }
 
     public boolean needsToSelectLobData() {

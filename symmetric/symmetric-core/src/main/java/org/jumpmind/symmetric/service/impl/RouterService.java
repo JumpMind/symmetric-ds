@@ -52,7 +52,7 @@ import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IDataToRouteGapDetector;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
-import org.jumpmind.symmetric.route.IRouterContext;
+import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -98,7 +98,7 @@ public class RouterService extends AbstractService implements IRouterService {
     /**
      * For use in data load events
      */
-    public boolean shouldDataBeRouted(IRouterContext context, DataMetaData dataMetaData,
+    public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad) {
         IDataRouter router = getDataRouter(dataMetaData.getTriggerRouter());
         Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, nodes, initialLoad);

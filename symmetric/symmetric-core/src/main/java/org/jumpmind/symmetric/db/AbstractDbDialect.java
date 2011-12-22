@@ -24,9 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.math.BigDecimal;
 import java.net.URL;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -34,10 +32,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,7 +43,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.IDdlBuilder;
 import org.jumpmind.db.io.DatabaseIO;
@@ -58,19 +52,15 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.DmlStatement;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.sybase.SybaseDbDialect;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -80,9 +70,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.dao.TransientDataAccessResourceException;
-import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
@@ -96,17 +83,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected ILog log = LogFactory.getLog(getClass());
 
-    public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
-
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
     protected JdbcTemplate jdbcTemplate;
 
     protected IDatabasePlatform platform;
-
-    protected Database cachedModel = new Database();
-
-    protected long lastTimeCachedModelClearedInMs = System.currentTimeMillis();
 
     protected SqlTemplate sqlTemplate;
 
@@ -130,11 +111,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected String databaseProductVersion;
 
-    protected String identifierQuoteString = "";
-
     protected Set<String> sqlKeywords;
-
-    private String defaultSchema;
 
     protected LobHandler lobHandler;
 
@@ -142,9 +119,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected int queryTimeoutInSeconds = 300;
 
-    protected int[] primaryKeyViolationCodes;
-
-    protected String[] primaryKeyViolationSqlStates;
 
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
 
@@ -173,34 +147,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return ts.toString();
     }
 
-    public IColumnFilter newDatabaseColumnFilter() {
-        return null;
-    }
-
-    public void allowIdentityInserts(JdbcTemplate jdbcTemplate, Table table) {
-    }
-
-    public void revertAllowIdentityInserts(JdbcTemplate jdbcTemplate, Table table) {
-    }
-
     protected boolean allowsNullForIdentityColumn() {
         return true;
     }
 
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return false;
-    }
-
-    public void resetCachedTableModel() {
-        synchronized (this.getClass()) {
-            this.cachedModel.resetTableIndexCache();
-            Table[] tables = this.cachedModel.getTables();
-            if (tables != null) {
-                for (Table table : tables) {
-                    this.cachedModel.removeTable(table);
-                }
-            }
-        }
     }
 
     /*
@@ -219,7 +171,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.queryTimeoutInSeconds = queryTimeout;
         this.jdbcTemplate.setQueryTimeout(queryTimeout);
         this.platform = pf;
-        this.identifierQuoteString = "\"";
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 DatabaseMetaData meta = c.getMetaData();
@@ -246,7 +197,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         initTablesAndFunctionsForSpecificDialect();
         createTablesIfNecessary();
         createRequiredFunctions();
-        resetCachedTableModel();
+        platform.resetCachedTableModel();
     }
 
     final public boolean doesTriggerExist(String catalogName, String schema, String tableName,
@@ -264,9 +215,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         for (int i = 0; i < functions.length; i++) {
             String funcName = tablePrefix + "_" + functions[i];
             if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName,
-                    getDefaultSchema())) == 0) {
+                    platform.getDefaultSchema())) == 0) {
                 jdbcTemplate.update(sqlTemplate.getFunctionSql(functions[i], funcName,
-                        getDefaultSchema()));
+                        platform.getDefaultSchema()));
                 log.info("FunctionInstalled", funcName);
             }
         }
@@ -274,10 +225,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.NONE;
-    }
-
-    public boolean isDateOverrideToTimestamp() {
-        return false;
     }
 
     abstract protected boolean doesTriggerExistOnPlatform(String catalogName, String schema,
@@ -306,8 +253,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 this,
                 trigger,
                 triggerHistory,
-                getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName(), true), channel, whereClause).trim();
+                platform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                        trigger.getSourceTableName(), false), channel, whereClause).trim();
     }
 
     public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory,
@@ -316,53 +263,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 this,
                 trigger,
                 triggerHistory,
-                getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName(), true), channel, whereClause).trim();
-    }
-
-    public Table getTable(Trigger trigger, boolean useCache) {
-        return getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                trigger.getSourceTableName(), useCache);
-    }
-
-    /*
-     * This method uses the ddlutil's model reader which uses the jdbc metadata
-     * to lookup up table metadata. <p/> Dialect may optionally override this
-     * method to more efficiently lookup up table metadata directly against
-     * information schemas.
-     */
-    public Table getTable(String catalogName, String schemaName, String tableName, boolean useCache) {
-        if (System.currentTimeMillis() - lastTimeCachedModelClearedInMs > parameterService
-                .getLong(ParameterConstants.CACHE_TIMEOUT_TABLES_IN_MS)) {
-            synchronized (this.getClass()) {
-                cachedModel = new Database();
-                lastTimeCachedModelClearedInMs = System.currentTimeMillis();
-            }
-        }
-        Database model = cachedModel;
-        Table retTable = model != null ? model.findTable(catalogName, schemaName, tableName) : null;
-        if (retTable == null || !useCache) {
-            synchronized (this.getClass()) {
-                try {
-                    Table table = getTable(catalogName, schemaName, tableName);
-
-                    if (retTable != null) {
-                        cachedModel.removeTable(retTable);
-                    }
-
-                    if (table != null) {
-                        cachedModel.addTable(table);
-                    }
-
-                    retTable = table;
-                } catch (RuntimeException ex) {
-                    throw ex;
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        }
-        return retTable;
+                platform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                        trigger.getSourceTableName(), false), channel, whereClause).trim();
     }
 
     public Set<String> getSqlKeywords() {
@@ -378,83 +280,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
             });
         }
         return sqlKeywords;
-    }
-
-    /*
-     * Returns a new {@link Table} object.
-     */
-    protected Table getTable(String catalogName, String schemaName, String tblName) {
-        Table table = getTableCaseSensitive(catalogName, schemaName, tblName, true);
-
-        try {
-            if (table == null && parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
-                table = getTableCaseSensitive(StringUtils.upperCase(catalogName),
-                        StringUtils.upperCase(schemaName), StringUtils.upperCase(tblName), true);
-                if (table == null) {
-                    table = getTableCaseSensitive(StringUtils.lowerCase(catalogName),
-                            StringUtils.lowerCase(schemaName), StringUtils.lowerCase(tblName), true);
-                    if (table == null) {
-                        table = getTableCaseSensitive(catalogName, schemaName,
-                                StringUtils.upperCase(tblName), true);
-                        if (table == null) {
-                            table = getTableCaseSensitive(catalogName, schemaName,
-                                    StringUtils.lowerCase(tblName), true);
-                            if (table == null) {
-                                table = getTableCaseSensitive(catalogName, schemaName, tblName,
-                                        true);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (UncategorizedSQLException e) {
-            if (this instanceof SybaseDbDialect && e.getCause() instanceof SQLException
-                    && ((SQLException) e.getCause()).getErrorCode() == 911) {
-                // Sybase is case sensitive and it will throw an exception
-                // if you ask for a catalog or schema that does not exist
-            } else {
-                throw e;
-            }
-        }
-        return table;
-    }
-
-    protected Table getTableCaseSensitive(String catalogName, String schemaName,
-            final String tablename, final boolean massageTableForChangeDataCapture) {
-        Table table = null;
-        try {
-            // If we don't provide a default schema or catalog, then on some
-            // databases multiple results will be found in the metadata from
-            // multiple schemas/catalogs
-            final String schema = StringUtils.isBlank(schemaName) ? getDefaultSchema() : schemaName;
-            final String catalog = StringUtils.isBlank(catalogName) ? getDefaultCatalog()
-                    : catalogName;
-            table = (Table) jdbcTemplate.execute(new ConnectionCallback<Table>() {
-                public Table doInConnection(Connection c) throws SQLException, DataAccessException {
-                    Table table = platform.readTableFromDatabase(catalog, schema, tablename);
-                    if (table != null && massageTableForChangeDataCapture) {
-                        boolean treatDateTimeFieldsAsVarchar = parameterService.is(
-                                ParameterConstants.DB_TREAT_DATE_TIME_AS_VARCHAR, false);
-                        Column[] columns = table.getColumns();
-                        for (Column column : columns) {
-                            int typeCode = column.getTypeCode();
-                            if (treatDateTimeFieldsAsVarchar
-                                    && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
-                                typeCode = Types.VARCHAR;
-                            }
-                            column.setTypeCode(typeCode);
-                        }
-                    }
-                    return table;
-                }
-            });
-        } catch (DataAccessResourceFailureException ex) {
-            log.debug("Message", ex.getMessage());
-        } catch (TransientDataAccessResourceException ex) {
-            log.debug("Message", ex.getMessage());
-        }
-
-        return table;
     }
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
@@ -493,8 +318,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
                 String previousCatalog = null;
                 String sourceCatalogName = trigger.getSourceCatalogName();
-                String defaultCatalog = getDefaultCatalog();
-                String defaultSchema = getDefaultSchema();
+                String defaultCatalog = platform.getDefaultCatalog();
+                String defaultSchema = platform.getDefaultSchema();
                 try {
                     previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, con);
 
@@ -549,7 +374,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist,
             Channel channel, String tablePrefix, Table table) {
         return sqlTemplate.createPostTriggerDDL(this, dml, trigger, hist, channel, tablePrefix,
-                table, getDefaultCatalog(), getDefaultSchema());
+                table, platform.getDefaultCatalog(), platform.getDefaultSchema());
     }
 
     public String getCreateSymmetricDDL() {
@@ -560,15 +385,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getCreateTableSQL(TriggerRouter triggerRouter) {
-        Table table = getTable(null, triggerRouter.getTrigger().getSourceSchemaName(),
-                triggerRouter.getTrigger().getSourceTableName(), true);
-        return platform.getDdlBuilder().createTable(cachedModel, table);
+        Table table = platform.getTableFromCache(null, triggerRouter.getTrigger().getSourceSchemaName(),
+                triggerRouter.getTrigger().getSourceTableName(), false);
+        return platform.getDdlBuilder().createTable(table);
     }
 
     private void setDatabaseName(TriggerRouter triggerRouter, Database db) {
-        db.setName(triggerRouter.getTargetSchema(getDefaultSchema()));
+        db.setName(triggerRouter.getTargetSchema(platform.getDefaultSchema()));
         if (db.getName() == null) {
-            db.setName(getDefaultCatalog());
+            db.setName(platform.getDefaultCatalog());
         }
         if (db.getName() == null) {
             db.setName("DDL");
@@ -576,8 +401,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getCreateTableXML(TriggerRouter triggerRouter) {
-        Table table = getTable(null, triggerRouter.getTrigger().getSourceSchemaName(),
-                triggerRouter.getTrigger().getSourceTableName());
+        Table table = getTable(triggerRouter.getTrigger(), true);
         table.setName(triggerRouter.getTargetTable());
         Database db = new Database();
         setDatabaseName(triggerRouter, db);
@@ -603,7 +427,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public boolean doesDatabaseNeedConfigured() {
         return prefixConfigDatabase(readSymmetricSchemaFromXml());
-    }
+    }        
 
     protected boolean prefixConfigDatabase(Database targetTables) {
         try {
@@ -616,7 +440,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 table.setName(tblPrefix + table.getName());
                 fixForeignKeys(table, tblPrefix);
                 fixIndexes(table, tblPrefix);
-                if (getTable(getDefaultCatalog(), getDefaultSchema(), table.getName(), false) == null) {
+                if (platform.getTableFromCache(platform.getDefaultCatalog(), platform.getDefaultSchema(), table.getName(), true) == null) {
                     createTables = true;
                 }
             }
@@ -625,6 +449,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public Table getTable(Trigger trigger, boolean useCache) {
+        return platform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                trigger.getSourceTableName(), !useCache);
     }
 
     /*
@@ -650,8 +479,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
             Table[] tablesFromXml = modelFromXml.getTables();
             for (Table tableFromXml : tablesFromXml) {
-                Table tableFromDatabase = getTableCaseSensitive(getDefaultCatalog(),
-                        getDefaultSchema(), tableFromXml.getName(), false);
+                Table tableFromDatabase = platform.getTableFromCache(platform.getDefaultCatalog(),
+                        platform.getDefaultSchema(), tableFromXml.getName(), true);
                 if (tableFromDatabase != null) {
                     modelFromDatabase.addTable(tableFromDatabase);
                 }
@@ -829,6 +658,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
 
+    @Deprecated
     public Column[] orderColumns(String[] columnNames, Table table) {
         Column[] unorderedColumns = table.getColumns();
         Column[] orderedColumns = new Column[columnNames.length];
@@ -843,108 +673,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
         return orderedColumns;
     }
-
-    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
-            String[] values) {
-        Column[] metaData = orderColumns(columnNames, table);
-        return getObjectValues(encoding, values, metaData);
-    }
-
-    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-            Column[] orderedMetaData) {
-        List<Object> list = new ArrayList<Object>(values.length);
-        for (int i = 0; i < values.length; i++) {
-            String value = values[i];
-            Object objectValue = value;
-            Column column = orderedMetaData[i];
-            try {
-                if (column != null) {
-                    int type = column.getTypeCode();
-                    if ((value == null || (isEmptyStringNulled() && value.equals("")))
-                            && column.isRequired() && column.isOfTextType()) {
-                        objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
-                    }
-                    if (value != null) {
-                        if (type == Types.DATE && !isDateOverrideToTimestamp()) {
-                            objectValue = getDate(value, SqlConstants.TIMESTAMP_PATTERNS);
-                        } else if (type == Types.TIMESTAMP
-                                || (type == Types.DATE && isDateOverrideToTimestamp())) {
-                            objectValue = new Timestamp(getTime(value,
-                                    SqlConstants.TIMESTAMP_PATTERNS));
-                        } else if (type == Types.CHAR) {
-                            String charValue = value.toString();
-                            if ((StringUtils.isBlank(charValue) && isBlankCharColumnSpacePadded())
-                                    || (StringUtils.isNotBlank(charValue) && isNonBlankCharColumnSpacePadded())) {
-                                objectValue = StringUtils.rightPad(value.toString(),
-                                        column.getSizeAsInt(), ' ');
-                            }
-                        } else if (type == Types.INTEGER || type == Types.SMALLINT
-                                || type == Types.BIT) {
-                            objectValue = Integer.valueOf(value);
-                        } else if (type == Types.NUMERIC || type == Types.DECIMAL
-                                || type == Types.FLOAT || type == Types.DOUBLE) {
-                            // The number will have either one period or one
-                            // comma
-                            // for the decimal point, but we need a period
-                            objectValue = new BigDecimal(value.replace(',', '.'));
-                        } else if (type == Types.BOOLEAN) {
-                            objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-                        } else if (type == Types.BLOB || type == Types.LONGVARBINARY
-                                || type == Types.BINARY || type == Types.VARBINARY ||
-                                // SQLServer ntext type
-                                type == -10) {
-                            if (encoding == BinaryEncoding.NONE) {
-                                objectValue = value.getBytes();
-                            } else if (encoding == BinaryEncoding.BASE64) {
-                                objectValue = Base64.decodeBase64(value.getBytes());
-                            } else if (encoding == BinaryEncoding.HEX) {
-                                objectValue = Hex.decodeHex(value.toCharArray());
-                            }
-                        } else if (type == Types.TIME) {
-                            objectValue = new Time(getTime(value, SqlConstants.TIME_PATTERNS));
-                        } else if (type == Types.ARRAY) {
-                            objectValue = createArray(column, value);
-                        }
-                    }
-                    if (objectValue instanceof String) {
-                        objectValue = cleanTextForTextBasedColumns((String) objectValue);
-                    }
-                    list.add(objectValue);
-                }
-            } catch (Exception ex) {
-                log.error("DbDialectTroubleConvertingColumnValue", value, column.getName(),
-                        column.getType());
-                throw new RuntimeException(ex);
-            }
-        }
-
-        return list.toArray();
-    }
-
-    protected String cleanTextForTextBasedColumns(String text) {
-        return text;
-    }
-
-    protected Array createArray(Column column, final String value) {
-        return null;
-    }
-
-    public boolean isBlankCharColumnSpacePadded() {
-        return isNonBlankCharColumnSpacePadded();
-    }
-
-    final private java.util.Date getDate(String value, String[] pattern) {
-        try {
-            return DateUtils.parseDate(value, pattern);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    final private long getTime(String value, String[] pattern) {
-        return getDate(value, pattern).getTime();
-    }
-
+    
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
             final PreparedStatementCallback<Object> callback) {
         return insertWithGeneratedKey(jdbcTemplate, sql, sequenceId, callback);
@@ -1068,8 +797,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return false;
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        disableSyncTriggers(jdbcTemplate, null);
+    public void disableSyncTriggers(ISqlTransaction transaction) {
+        disableSyncTriggers(transaction, null);
     }
 
     public boolean supportsTransactionId() {
@@ -1117,10 +846,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.log = LogFactory.getLog(parameterService);
     }
 
-    public String getIdentifierQuoteString() {
-        return identifierQuoteString;
-    }
-
     public boolean supportsOpenCursorsAcrossCommit() {
         return true;
     }
@@ -1135,24 +860,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public int getRouterDataPeekAheadCount() {
         return parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
-    }
-
-    /*
-     * Returns the current schema name
-     * 
-     * @return String
-     */
-    public String getDefaultSchema() {
-        return StringUtils.isBlank(defaultSchema) ? null : defaultSchema;
-    }
-
-    /*
-     * Sets the current schema name from properties file
-     * 
-     * @param currentSchema
-     */
-    public void setDefaultSchema(String currentSchema) {
-        this.defaultSchema = currentSchema;
     }
 
     public void truncateTable(String tableName) {
@@ -1226,23 +933,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return false;
     }
 
-    public boolean isClob(int type) {
-        return type == Types.CLOB || type == Types.LONGVARCHAR;
-    }
-
-    public boolean isBlob(int type) {
-        return type == Types.BLOB || type == Types.BINARY || type == Types.VARBINARY
-                || type == Types.LONGVARBINARY || type == -10;
-    }
-
-    public boolean isLob(int type) {
-        return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY
-                || type == Types.VARBINARY || type == Types.LONGVARBINARY
-                || type == Types.LONGNVARCHAR ||
-                // SQL-Server ntext binary type
-                type == -10;
-    }
-
     public boolean canGapsOccurInCapturedDataIds() {
         return true;
     }
@@ -1305,65 +995,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * updates
      */
     protected void initLobHandler() {
-    }
-
-    public DmlStatement createStatementBuilder(DmlType type, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, Column[] preFilteredColumns) {
-        return new DmlStatement(type, catalogName, schemaName, tableName, keys, columns,
-                preFilteredColumns, isDateOverrideToTimestamp(), getIdentifierQuoteString());
-    }
-
-    public void setPrimaryKeyViolationCodes(int[] primaryKeyViolationCodes) {
-        this.primaryKeyViolationCodes = primaryKeyViolationCodes;
-    }
-
-    public void setPrimaryKeyViolationSqlStates(String[] primaryKeyViolationSqlStates) {
-        this.primaryKeyViolationSqlStates = primaryKeyViolationSqlStates;
-    }
-
-    public boolean isPrimaryKeyViolation(Exception ex) {
-        boolean primaryKeyViolation = false;
-        if (primaryKeyViolationCodes != null || primaryKeyViolationSqlStates != null) {
-            SQLException sqlEx = findSQLException(ex);
-            if (sqlEx != null) {
-                if (primaryKeyViolationCodes != null) {
-                    int errorCode = sqlEx.getErrorCode();
-                    for (int primaryKeyViolationCode : primaryKeyViolationCodes) {
-                        if (primaryKeyViolationCode == errorCode) {
-                            primaryKeyViolation = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (primaryKeyViolationSqlStates != null) {
-                    String sqlState = sqlEx.getSQLState();
-                    if (sqlState != null) {
-                        for (String primaryKeyViolationSqlState : primaryKeyViolationSqlStates) {
-                            if (primaryKeyViolationSqlState != null
-                                    && primaryKeyViolationSqlState.equals(sqlState)) {
-                                primaryKeyViolation = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return primaryKeyViolation;
-    }
-
-    protected SQLException findSQLException(Throwable ex) {
-        if (ex instanceof SQLException) {
-            return (SQLException) ex;
-        } else {
-            Throwable cause = ex.getCause();
-            if (cause != null && !cause.equals(ex)) {
-                return findSQLException(cause);
-            }
-        }
-        return null;
     }
     
     public JdbcTemplate getJdbcTemplate() {

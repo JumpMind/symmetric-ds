@@ -362,8 +362,8 @@ public class DataService extends AbstractService implements IDataService {
             for (Iterator<TriggerRouter> iterator = triggerRouters.iterator(); iterator.hasNext();) {
                 TriggerRouter triggerRouter = iterator.next();
                 Trigger trigger = triggerRouter.getTrigger();
-                Table table = dbDialect.getTable(trigger.getSourceCatalogName(), trigger
-                        .getSourceSchemaName(), trigger.getSourceTableName(), false);
+                Table table = dbDialect.getPlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger
+                        .getSourceSchemaName(), trigger.getSourceTableName(), true);
                 if (table == null) {
                     log.warn("TriggerTableMissing",trigger.qualifiedSourceTableName());
                     iterator.remove();

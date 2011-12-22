@@ -178,12 +178,12 @@ public class ConfigurationChangedDataRouterTest {
             }
 
             @Override
-            protected List<NodeGroupLink> getNodeGroupLinksFromContext(IRouterContext routingContext) {
+            protected List<NodeGroupLink> getNodeGroupLinksFromContext(SimpleRouterContext routingContext) {
                 return links;
             }
 
             @Override
-            protected NetworkedNode getRootNetworkNodeFromContext(IRouterContext routingContext) {
+            protected NetworkedNode getRootNetworkNodeFromContext(SimpleRouterContext routingContext) {
                 return root;
             }
         };

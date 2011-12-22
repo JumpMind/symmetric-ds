@@ -20,28 +20,18 @@
 
 package org.jumpmind.symmetric.db.h2;
 
-import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /*
  * Synchronization support for the H2 database platform. 
  */
 public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
-
-    @Override
-    public String getDefaultSchema() {
-        String defaultSchema = super.getDefaultSchema();
-        if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = (String) jdbcTemplate.queryForObject("select SCHEMA()", String.class);
-        }
-        return defaultSchema;
-    }
     
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
@@ -93,14 +83,14 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
         return true;
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
-        jdbcTemplate.update("set @sync_prevented=1");
-        jdbcTemplate.update("set @node_value=?", new Object[] { nodeId });
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+        transaction.execute("set @sync_prevented=1");
+        transaction.execute("set @node_value=?", new Object[] { nodeId });
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.update("set @sync_prevented=null");
-        jdbcTemplate.update("set @node_value=null");
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.execute("set @sync_prevented=null");
+        transaction.execute("set @node_value=null");
     }
 
     public String getSyncTriggersExpression() {
@@ -123,18 +113,6 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
-    }
-
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return false;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return true;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
     }
 
     @Override

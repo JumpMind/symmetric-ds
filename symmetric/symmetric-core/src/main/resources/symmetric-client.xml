@@ -16,7 +16,6 @@
     <import resource="classpath:/symmetric-jobs.xml" />
     <import resource="classpath:/symmetric-jmx.xml" />
     <import resource="classpath:/symmetric-routers.xml" />
-    <import resource="classpath:/symmetric-transform.xml" />
     <import resource="classpath:/symmetric-extensions.xml" />
     
 </beans>

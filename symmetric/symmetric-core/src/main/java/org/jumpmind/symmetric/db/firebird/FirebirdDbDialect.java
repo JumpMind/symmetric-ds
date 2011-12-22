@@ -19,12 +19,12 @@
  * under the License.  */
 package org.jumpmind.symmetric.db.firebird;
 
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /*
  * Database dialect for <a href="http://www.firebirdsql.org/">Firebird</a>.
@@ -54,19 +54,19 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
-        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+        transaction.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
                 + "',1) from rdb$database");
         if (nodeId != null) {
-            jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
+            transaction.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
                     + "','" + nodeId + "') from rdb$database");
         }
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
                 + "',null) from rdb$database");
-        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
+        transaction.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
                 + "',null) from rdb$database");
     }
 
@@ -94,18 +94,6 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         return BinaryEncoding.HEX;
     }
 
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return false;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
-    }
-
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return true;
@@ -117,10 +105,6 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public String getName() {
         return super.getName().substring(0, 49);
-    }
-
-    public String getDefaultCatalog() {
-        return null;
     }
 
     @Override

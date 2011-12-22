@@ -79,7 +79,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     final static String EXPRESSION_KEY = String.format("%s.Expression.", ColumnMatchDataRouter.class
             .getName());
 
-    public Set<String> routeToNodes(IRouterContext routingContext,
+    public Set<String> routeToNodes(SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Set<String> nodeIds = null;
         List<Expression> expressions = getExpressions(dataMetaData.getTriggerRouter().getRouter(), routingContext);
@@ -150,7 +150,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
      * we have to do when we have lots of throughput.
      */
     @SuppressWarnings("unchecked")
-    protected List<Expression> getExpressions(Router router, IRouterContext context) {
+    protected List<Expression> getExpressions(Router router, SimpleRouterContext context) {
         final String KEY = EXPRESSION_KEY + router.getRouterId();
         List<Expression> expressions = (List<Expression>) context.getContextCache().get(
                 KEY);
@@ -191,7 +191,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getRedirectMap(IRouterContext ctx) {
+    protected Map<String, String> getRedirectMap(SimpleRouterContext ctx) {
         final String CTX_CACHE_KEY = ColumnMatchDataRouter.class.getSimpleName() + "RouterMap";
         Map<String, String> redirectMap = (Map<String, String>) ctx.getContextCache().get(
                 CTX_CACHE_KEY);

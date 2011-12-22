@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
@@ -32,11 +34,9 @@ import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
-import org.jumpmind.symmetric.load.IBatchListener;
-import org.jumpmind.symmetric.load.IColumnFilter;
-import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.IReloadListener;
-import org.jumpmind.symmetric.load.ITableColumnFilter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
@@ -49,9 +49,8 @@ import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.transform.IColumnTransform;
-import org.jumpmind.symmetric.transform.ITransformService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -189,41 +188,16 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
             triggerRouterService.addTriggerCreationListeners((ITriggerCreationListener) ext);
         }
 
-        if (ext instanceof IBatchListener) {
+        if (ext instanceof IDatabaseWriterFilter) {
             installed = true;
-            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IBatchListener.class, true));
-            dataLoaderService.addBatchListener((IBatchListener) ext);
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IDatabaseWriterFilter.class, true));
+            dataLoaderService.addDatabaseWriterFilter((IDatabaseWriterFilter) ext);
         }
 
         if (ext instanceof IHeartbeatListener) {
             installed = true;
             extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IHeartbeatListener.class, true));
             dataService.addHeartbeatListener((IHeartbeatListener) ext);
-        }
-
-        if (ext instanceof IDataLoaderFilter) {
-            installed = true;
-            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IDataLoaderFilter.class, true));
-            dataLoaderService.addDataLoaderFilter((IDataLoaderFilter) ext);
-        }
-
-        if (ext instanceof IColumnFilter) {
-            if (ext instanceof ITableColumnFilter) {
-                ITableColumnFilter tableColumnFilter = (ITableColumnFilter) ext;
-                if (tableColumnFilter.getTables() != null) {
-                    String[] tables = tableColumnFilter.getTables();
-                    for (String table : tables) {
-                        installed = true;
-                        extensionPoints.add(new ExtensionPointMetaData(ext, beanName, ITableColumnFilter.class, true, table));
-                        dataLoaderService.addColumnFilter(table, tableColumnFilter);
-                    }
-                }
-
-            } else {
-                throw new UnsupportedOperationException(
-                        "IColumnFilter cannot be auto registered.  Please use "
-                                + ITableColumnFilter.class.getName() + " instead.");
-            }
         }
 
         if (ext instanceof IReloadListener) {
@@ -286,7 +260,8 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         
         if (ext instanceof IColumnTransform) {
             IColumnTransform<?> t = (IColumnTransform<?>)ext;
-            transformService.addColumnTransform(t.getName(), t);
+            // TODO 
+            //transformService.addColumnTransform(t.getName(), t);
         }
 
         return installed;

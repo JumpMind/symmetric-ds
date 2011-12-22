@@ -72,7 +72,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                 final String[] rowData = data.toParsedRowData();
                                 Column[] orderedColumns = dbDialect
                                         .orderColumns(columnNames, table);
-                                Object[] objectValues = dbDialect.getObjectValues(
+                                Object[] objectValues = dbDialect.getPlatform().getObjectValues(
                                         dbDialect.getBinaryEncoding(), rowData, orderedColumns);
                                 Map<String, Object> columnDataMap = AppUtils.toMap(columnNames,
                                         objectValues);
@@ -96,7 +96,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                         }
                                         for (Column col : lobColumns) {
                                             String valueForCsv = null;
-                                            if (dbDialect.isBlob(col.getTypeCode())) {
+                                            if (dbDialect.getPlatform().isBlob(col.getTypeCode())) {
                                                 byte[] blobBytes = lobHandler.getBlobAsBytes(rs,
                                                         col.getName());
                                                 valueForCsv = dbDialect.encodeForCsv(blobBytes);
@@ -146,7 +146,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
 
     protected String buildSelect(Table table, List<Column> lobColumns, Column[] pkColumns) {
         StringBuilder sql = new StringBuilder("select ");
-        String quote = dbDialect.getIdentifierQuoteString();
+        String quote = dbDialect.getPlatform().getPlatformInfo().getIdentifierQuoteString();
         for (Column col : lobColumns) {
             sql.append(quote);
             sql.append(col.getName());
@@ -171,7 +171,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
         List<Column> lobColumns = new ArrayList<Column>(1);
         Column[] allColumns = table.getColumns();
         for (Column column : allColumns) {
-            if (dbDialect.isLob(column.getTypeCode())) {
+            if (dbDialect.getPlatform().isLob(column.getTypeCode())) {
                 lobColumns.add(column);
             }
         }

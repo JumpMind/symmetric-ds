@@ -23,15 +23,13 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.DmlStatement;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -62,26 +60,6 @@ public interface IDbDialect {
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 
     /*
-     * This is called by the data loader each time the table context changes,
-     * giving the dialect an opportunity to allow inserts into identity columns
-     */
-    public void allowIdentityInserts(JdbcTemplate jdbcTemplate, Table table);
-
-    /*
-     * This is called by the data loader each time the table context changes
-     * away from a table or when the the data loader is closed, giving the
-     * dialect an opportunity to reset the state of a table to allow identity 
-     * inserts to work
-     */
-    public void revertAllowIdentityInserts(JdbcTemplate jdbcTemplate, Table table);
-
-    /*
-     * For performance reasons, the as table metadata is read in, it is cached.
-     * This method will clear that cache.
-     */
-    public void resetCachedTableModel();
-
-    /*
      * Check to see if the database is configured for symmetric already, or if
      * it needs configured.
      * 
@@ -107,10 +85,6 @@ public interface IDbDialect {
     
     public String encodeForCsv(byte[] data);
 
-    public Table getTable(String catalogName, String schemaName, final String tableName, boolean useCache);
-
-    public Table getTable(Trigger trigger, boolean useCache);
-
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory, Channel channel);
@@ -120,20 +94,6 @@ public interface IDbDialect {
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause);
 
     public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause);
-
-    /*
-     * @return true if blank characters are padded out
-     */
-    public boolean isBlankCharColumnSpacePadded();
-    
-    /*
-     * @return true if non-blank characters are padded out
-     */
-    public boolean isNonBlankCharColumnSpacePadded();
-
-    public boolean isCharColumnSpaceTrimmed();
-
-    public boolean isEmptyStringNulled();
 
     /*
      * Get the maximum size the name of a trigger can be for the database
@@ -153,20 +113,6 @@ public interface IDbDialect {
      */
     public boolean supportsTransactionViews();
 
-    @Deprecated
-    public boolean requiresSavepointForFallback();
-
-    public Object createSavepoint(JdbcTemplate jdbcTemplate);
-
-    @Deprecated
-    public Object createSavepointForFallback(JdbcTemplate jdbcTemplate);
-
-    public void rollbackToSavepoint(JdbcTemplate jdbcTemplate, Object savepoint);
-
-    public void releaseSavepoint(JdbcTemplate jdbcTemplate, Object savepoint);
-
-    public IColumnFilter newDatabaseColumnFilter();
-
     /*
      * Implement this if the database has some type of cleanup functionality
      * that needs to be run when dropping database objects. An example is
@@ -174,19 +120,15 @@ public interface IDbDialect {
      */
     public void purge();
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate);
+    public void disableSyncTriggers(ISqlTransaction transaction);
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId);
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId);
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate);
+    public void enableSyncTriggers(ISqlTransaction transaction);
 
     public String getSyncTriggersExpression();
     
     public String getSourceNodeExpression();
-
-    public String getDefaultSchema();
-
-    public String getDefaultCatalog();
 
     public int getStreamingResultsFetchSize();
 
@@ -198,8 +140,6 @@ public interface IDbDialect {
 
     public boolean isBlobSyncSupported();
 
-    public boolean isDateOverrideToTimestamp();
-
     public boolean isClobSyncSupported();
 
     /*
@@ -209,13 +149,13 @@ public interface IDbDialect {
      */
     public boolean isTransactionIdOverrideSupported();
 
-    public String getIdentifierQuoteString();
-
     public void createTables(String xml);
 
     public boolean supportsGetGeneratedKeys();
 
     public boolean supportsReturningKeys();
+    
+    public Table getTable(Trigger trigger, boolean useCache);
 
     public String getSelectLastInsertIdSql(String sequenceName);
 
@@ -229,10 +169,6 @@ public interface IDbDialect {
 
     public Column[] orderColumns(String[] columnNames, Table table);
     
-    public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] orderedMetaData);
-
-    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames, String[] values);
-
     /*
      * Get the string prepended to the Symmetric configuration tables.
      */
@@ -278,12 +214,6 @@ public interface IDbDialect {
      */
     public boolean needsToSelectLobData();
     
-    public boolean isLob(int type);
-    
-    public boolean isClob(int type);
-    
-    public boolean isBlob(int type);
-    
     /*
      * This is a SQL clause that compares the old data to the new data in a trigger.
      */
@@ -322,16 +252,6 @@ public interface IDbDialect {
     public String getDriverName();
     
     public String getDriverVersion();
-    
-    public DmlStatement createStatementBuilder(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys, Column[] columns,
-            Column[] preFilteredColumns);
-    
-    /*
-     * Check to see if the passed in exception (or a nested exception) was caused by a primary key violation.
-     * @param ex The exception to check
-     * @return true if the exception was caused by a primary key violation
-     */
-    public boolean isPrimaryKeyViolation(Exception ex);
     
     public JdbcTemplate getJdbcTemplate();
     

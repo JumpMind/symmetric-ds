@@ -53,7 +53,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         this.autoRegister = autoRegister;
     }
     
-    public void contextCommitted(IRouterContext context) {
+    public void contextCommitted(SimpleRouterContext context) {
     }
 
     protected Map<String, String> getDataMap(DataMetaData dataMetaData) {
@@ -179,7 +179,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         if (rowData != null) {
             Map<String, Object> data = new HashMap<String, Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-            Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(),
+            Object[] objects = dbDialect.getPlatform().getObjectValues(dbDialect.getBinaryEncoding(),
                     dataMetaData.getTable(), columnNames, rowData);
             for (int i = 0; i < columnNames.length; i++) {
                 String upperCase = columnNames[i].toUpperCase();
@@ -197,7 +197,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         if (rowData != null) {
             Map<String, Object> data = new HashMap<String, Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-            Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(),
+            Object[] objects = dbDialect.getPlatform().getObjectValues(dbDialect.getBinaryEncoding(),
                     dataMetaData.getTable(), columnNames, rowData);
             for (int i = 0; i < columnNames.length; i++) {
                 data.put(columnNames[i]
@@ -239,7 +239,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
     /**
      * Override if needed.
      */
-    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
+    public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
         log.debug("BatchCompleting", batch.getBatchId());
     }
 }

@@ -21,12 +21,11 @@
 
 package org.jumpmind.symmetric.db.db2;
 
-import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /*
  * A dialect that is specific to DB2 databases
@@ -51,7 +50,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
-        schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
+        schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform.getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("select count(*) from syscat.triggers where trigname = ? and trigschema = ?",
                 new Object[] { triggerName.toUpperCase(), schema.toUpperCase() }) > 0;
     }
@@ -71,12 +70,13 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
         return BinaryEncoding.HEX;
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
-    }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
+    public void enableSyncTriggers(ISqlTransaction transaction) {
     }
-
+    
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+    }
+    
     public String getSyncTriggersExpression() {
         return "1=1";
     }
@@ -89,18 +89,6 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "values IDENTITY_VAL_LOCAL()";
-    }
-
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return false;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
     }
 
     @Override
@@ -119,19 +107,6 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void purge() {
-    }
-
-    public String getDefaultCatalog() {
-        return null;
-    }
-
-    @Override
-    public String getDefaultSchema() {
-        String defaultSchema = super.getDefaultSchema();
-        if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
-        }
-        return defaultSchema;
     }
 
     @Override

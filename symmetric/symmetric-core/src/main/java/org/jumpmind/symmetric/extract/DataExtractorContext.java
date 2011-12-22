@@ -23,18 +23,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.ext.ICacheContext;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.util.Context;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Holds the current state of a data extraction
  */
-public class DataExtractorContext implements Cloneable, ICacheContext {
+public class DataExtractorContext extends Context implements Cloneable {
 
     private Map<String, String> historyRecordsWritten = new HashMap<String,String>();
     private String lastTriggerHistoryId;
@@ -42,7 +42,6 @@ public class DataExtractorContext implements Cloneable, ICacheContext {
     private OutgoingBatch batch;
     private IDataExtractor dataExtractor;
     private IDbDialect dbDialect;
-    private Map<String,Object> cache;
     private JdbcTemplate jdbcTemplate;
     private INodeService nodeService;
 
@@ -52,7 +51,7 @@ public class DataExtractorContext implements Cloneable, ICacheContext {
         try {
             newVersion = (DataExtractorContext) super.clone();
             newVersion.historyRecordsWritten = new HashMap<String, String>();
-            newVersion.cache = null;
+            newVersion.context = new HashMap<String, Object>();
             return newVersion;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
@@ -68,10 +67,7 @@ public class DataExtractorContext implements Cloneable, ICacheContext {
     }
     
     public Map<String, Object> getContextCache() {
-        if (cache == null) {
-            cache = new HashMap<String, Object>();
-        }
-        return cache;
+       return context;
     }
     
     public JdbcTemplate getJdbcTemplate() {

@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
-import org.jumpmind.symmetric.route.IRouterContext;
+import org.jumpmind.symmetric.route.SimpleRouterContext;
 
 
 /**
@@ -43,7 +43,7 @@ public interface IRouterService extends ISqlProvider {
  
     public long getUnroutedDataCount();
     
-    public boolean shouldDataBeRouted(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
+    public boolean shouldDataBeRouted(SimpleRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
  
     public void addDataRouter(String name, IDataRouter dataRouter);
     

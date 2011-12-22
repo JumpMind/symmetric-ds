@@ -20,7 +20,7 @@
 
 package org.jumpmind.symmetric.transport;
 
-import org.jumpmind.symmetric.ext.IExtensionPoint;
+import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.BatchInfo;
 
 /**

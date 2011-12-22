@@ -22,19 +22,18 @@ package org.jumpmind.symmetric.db.interbase;
 
 import java.util.List;
 
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 
 /*
  * Database dialect for <a href="http://www.embarcadero.com/products/interbase/">Interbase</a>.
  */
-
 public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public static final String CONTEXT_TABLE_NAME = "context";
@@ -81,19 +80,19 @@ public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect 
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         String contextTableName = tablePrefix + "_" + CONTEXT_TABLE_NAME;
-        jdbcTemplate.update(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
+        transaction.execute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
             SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1" });
         if (nodeId != null) {
-            jdbcTemplate.update(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
+            transaction.execute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
                 SYNC_TRIGGERS_DISABLED_NODE_VARIABLE, nodeId });
         }
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
+    public void enableSyncTriggers(ISqlTransaction transaction) {
         String contextTableName = tablePrefix + "_" + CONTEXT_TABLE_NAME;
-        jdbcTemplate.update("delete from " + contextTableName);
+        transaction.execute("delete from " + contextTableName);
     }
 
     public String getSyncTriggersExpression() {
@@ -133,18 +132,6 @@ public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect 
         return BinaryEncoding.HEX;
     }
 
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return false;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
-    }
-
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return true;
@@ -156,10 +143,6 @@ public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect 
     @Override
     public String getName() {
         return super.getName();
-    }
-
-    public String getDefaultCatalog() {
-        return null;
     }
 
     @Override
