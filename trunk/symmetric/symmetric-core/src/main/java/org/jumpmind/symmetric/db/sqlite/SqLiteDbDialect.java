@@ -24,18 +24,15 @@ package org.jumpmind.symmetric.db.sqlite;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-/*
- * 
- */
 public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
@@ -60,7 +57,7 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
-        catalog = catalog == null ? (getDefaultCatalog() == null ? null : getDefaultCatalog()) : catalog;
+        catalog = catalog == null ? (platform.getDefaultCatalog() == null ? null : platform.getDefaultCatalog()) : catalog;
         String checkCatalogSql = (catalog != null && catalog.length() > 0) ? " and trigger_schema='" + catalog + "'"
                 : "";
         return jdbcTemplate.queryForInt(
@@ -83,14 +80,14 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
    //     jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
     //    if (nodeId != null) {
       //      jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
        // }
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
+    public void enableSyncTriggers(ISqlTransaction transaction) {
 //        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
  //       jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
@@ -111,25 +108,9 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
         return "select last_insert_id()";
     }
 
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return false;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return true;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
-    }
-
     public void purge() {
     }
-
-    public String getDefaultCatalog() {
-        return null;
-    }
-
+    
     @Override
     protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
         if (catalog != null) {

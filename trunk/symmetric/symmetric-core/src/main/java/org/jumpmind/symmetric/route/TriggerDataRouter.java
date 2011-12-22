@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.util.AbstractVersion;
  */
 public class TriggerDataRouter extends ConfigurationChangedDataRouter {
 
-    public Set<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData,
+    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad) {
         Set<String> nodeIds = super.routeToNodes(context, dataMetaData, nodes, initialLoad);
         if (!initialLoad) {

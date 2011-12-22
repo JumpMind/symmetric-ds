@@ -27,14 +27,14 @@ import java.sql.Statement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
@@ -64,7 +64,7 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
-        schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
+        schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform.getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("SELECT COUNT(*) FROM SYSIBM.SYSTRIGGERS WHERE NAME = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
@@ -123,10 +123,10 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
         return null;
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
+    public void enableSyncTriggers(ISqlTransaction transaction) {
     }
-
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
+    
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
     }
 
     public String getSyncTriggersExpression() {

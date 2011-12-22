@@ -56,7 +56,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
 
     private JdbcTemplate jdbcTemplate;
 
-    public Set<String> routeToNodes(IRouterContext routingContext,
+    public Set<String> routeToNodes(SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
 
         Set<String> nodeIds = null;
@@ -92,7 +92,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
      * we have to do when we have lots of throughput.
      */
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getParams(Router router, IRouterContext routingContext) {
+    protected Map<String, String> getParams(Router router, SimpleRouterContext routingContext) {
         final String KEY = EXPRESSION_KEY + router.getRouterId();
         Map<String, String> params = (Map<String, String>) routingContext.getContextCache()
                 .get(KEY);
@@ -119,7 +119,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
 
     @SuppressWarnings("unchecked")
     protected Map<String, Set<String>> getLookupTable(Map<String, String> params, Router router,
-            IRouterContext routingContext) {
+            SimpleRouterContext routingContext) {
         final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get("TABLENAME");
         Map<String, Set<String>> lookupMap = (Map<String, Set<String>>) routingContext.getContextCache().get(
                 CTX_CACHE_KEY);

@@ -47,7 +47,6 @@ public class DefaultParameterParser {
     public Map<String, ParameterMetaData> parse() {
         Map<String, ParameterMetaData> metaData = new TreeMap<String, DefaultParameterParser.ParameterMetaData>();
         try {
-            @SuppressWarnings("unchecked")
             List<String> lines = IOUtils.readLines(getClass().getResourceAsStream(
                     "/symmetric-default.properties"));
             ParameterMetaData currentMetaData = new ParameterMetaData();

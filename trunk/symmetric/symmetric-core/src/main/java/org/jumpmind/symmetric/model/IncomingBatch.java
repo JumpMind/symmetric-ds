@@ -16,14 +16,17 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.Date;
 
-import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.IDataLoaderStatistics;
+import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.reader.CsvReaderStatistics;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterStatistics;
+import org.jumpmind.util.Statistics;
 
 public class IncomingBatch implements Serializable {
 
@@ -31,13 +34,13 @@ public class IncomingBatch implements Serializable {
 
     public enum Status {
         LD("Loading"), OK("Ok"), ER("Error");
-        
+
         private String description;
-        
-        Status (String desc) {
+
+        Status(String desc) {
             this.description = desc;
         }
-        
+
         @Override
         public String toString() {
             return description;
@@ -51,9 +54,9 @@ public class IncomingBatch implements Serializable {
     private String channelId;
 
     private Status status;
-    
+
     private boolean errorFlag;
-    
+
     private long byteCount;
 
     private long networkMillis;
@@ -69,7 +72,7 @@ public class IncomingBatch implements Serializable {
     private long fallbackUpdateCount;
 
     private long missingDeleteCount;
-    
+
     private long skipCount;
 
     private long failedRowNumber;
@@ -83,7 +86,7 @@ public class IncomingBatch implements Serializable {
     private String lastUpdatedHostName;
 
     private Date lastUpdatedTime;
-    
+
     private Date createTime;
 
     private boolean retry;
@@ -91,27 +94,28 @@ public class IncomingBatch implements Serializable {
     public IncomingBatch() {
     }
 
-    public IncomingBatch(long batchId, IDataLoaderContext context) {
-        this.batchId = batchId;
-        this.nodeId = context.getSourceNodeId();
-        this.channelId = context.getChannelId();
+    public IncomingBatch(Batch batch) {
+        this.batchId = batch.getBatchId();
+        this.nodeId = batch.getSourceNodeId();
+        this.channelId = batch.getChannelId();
         this.status = Status.LD;
     }
 
-    public void setValues(IDataLoaderStatistics statistics, boolean isSuccess) {
-        byteCount = statistics.getByteCount();
-        filterMillis = statistics.getFilterMillis();
-        databaseMillis = statistics.getDatabaseMillis();
-        statementCount = statistics.getStatementCount();
-        fallbackInsertCount = statistics.getFallbackInsertCount();
-        fallbackUpdateCount = statistics.getFallbackUpdateCount();
-        missingDeleteCount = statistics.getMissingDeleteCount();
+    public void setValues(Statistics readerStatistics, Statistics writerStatistics,
+            boolean isSuccess) {
+        byteCount = readerStatistics.get(CsvReaderStatistics.READ_BYTE_COUNT);
+        filterMillis = writerStatistics.get(DatabaseWriterStatistics.FILTERMILLIS);
+        databaseMillis = writerStatistics.get(DatabaseWriterStatistics.DATABASEMILLIS);
+        statementCount = writerStatistics.get(DatabaseWriterStatistics.STATEMENTCOUNT);
+        fallbackInsertCount = writerStatistics.get(DatabaseWriterStatistics.FALLBACKINSERTCOUNT);
+        fallbackUpdateCount = writerStatistics.get(DatabaseWriterStatistics.FALLBACKUPDATECOUNT);
+        missingDeleteCount = writerStatistics.get(DatabaseWriterStatistics.MISSINGDELETECOUNT);
         lastUpdatedTime = new Date();
         if (!isSuccess) {
-            failedRowNumber = statistics.getStatementCount();
+            failedRowNumber = statementCount;
         }
     }
-    
+
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;
     }
@@ -155,7 +159,7 @@ public class IncomingBatch implements Serializable {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-    
+
     public long getByteCount() {
         return byteCount;
     }
@@ -219,11 +223,11 @@ public class IncomingBatch implements Serializable {
     public void setMissingDeleteCount(long missingDeleteCount) {
         this.missingDeleteCount = missingDeleteCount;
     }
-    
+
     public void setSkipCount(long skipCount) {
         this.skipCount = skipCount;
     }
-    
+
     public long getSkipCount() {
         return skipCount;
     }
@@ -277,7 +281,9 @@ public class IncomingBatch implements Serializable {
     }
 
     /**
-     * An indicator to the incoming batch service as to whether this batch should be saved off.
+     * An indicator to the incoming batch service as to whether this batch
+     * should be saved off.
+     * 
      * @return
      */
     public boolean isPersistable() {
@@ -291,15 +297,15 @@ public class IncomingBatch implements Serializable {
     public void setChannelId(String channelId) {
         this.channelId = channelId;
     }
-    
+
     public void setErrorFlag(boolean errorFlag) {
         this.errorFlag = errorFlag;
     }
-    
+
     public boolean isErrorFlag() {
         return errorFlag;
     }
-    
+
     @Override
     public String toString() {
         return Long.toString(batchId);

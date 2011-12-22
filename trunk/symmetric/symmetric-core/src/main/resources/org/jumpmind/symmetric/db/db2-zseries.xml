@@ -10,9 +10,8 @@
 	<bean id="db2zSeriesDialect"
 		class="org.jumpmind.symmetric.db.db2.Db2zSeriesDbDialect"
 		scope="prototype">
-		<property name="primaryKeyViolationCodes" value="-803"/>
 		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
-		<property name="defaultSchema" value="$[sym.db.default.schema]" />
+		
 		<property name="userName" value="$[sym.db.user]" />
 		<property name="parameterService" ref="parameterService" />
 		<property name="streamingResultsFetchSize"

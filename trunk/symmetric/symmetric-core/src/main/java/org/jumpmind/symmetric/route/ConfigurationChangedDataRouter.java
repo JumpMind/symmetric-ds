@@ -37,8 +37,8 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.transform.ITransformService;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter {
 
@@ -65,7 +65,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     protected ITransformService transformService;
 
-    public Set<String> routeToNodes(IRouterContext routingContext,
+    public Set<String> routeToNodes(SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> possibleTargetNodes, boolean initialLoad) {
 
         // the list of nodeIds that we will return
@@ -157,7 +157,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     }
 
     @SuppressWarnings("unchecked")
-    protected List<NodeGroupLink> getNodeGroupLinksFromContext(IRouterContext routingContext) {
+    protected List<NodeGroupLink> getNodeGroupLinksFromContext(SimpleRouterContext routingContext) {
         List<NodeGroupLink> list = (List<NodeGroupLink>) routingContext.getContextCache().get(
                 NodeGroupLink.class.getName());
         if (list == null) {
@@ -167,7 +167,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         return list;
     }
 
-    protected NetworkedNode getRootNetworkNodeFromContext(IRouterContext routingContext) {
+    protected NetworkedNode getRootNetworkNodeFromContext(SimpleRouterContext routingContext) {
         NetworkedNode root = (NetworkedNode) routingContext.getContextCache().get(
                 NetworkedNode.class.getName());
         if (root == null) {
@@ -236,7 +236,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     }
 
     @Override
-    public void contextCommitted(IRouterContext routingContext) {
+    public void contextCommitted(SimpleRouterContext routingContext) {
         if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("ChannelFlushed");
             configurationService.reloadChannels();

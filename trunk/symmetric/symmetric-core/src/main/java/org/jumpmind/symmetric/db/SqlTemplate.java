@@ -151,7 +151,7 @@ public class SqlTemplate {
     }    
 
     protected String quote(String name, IDbDialect dbDialect) {
-        String quote = dbDialect.getIdentifierQuoteString();
+        String quote = dbDialect.getPlatform().getPlatformInfo().getIdentifierQuoteString();
         if (StringUtils.isNotBlank(quote)) {
             return quote + name + quote;
         } else {
@@ -160,9 +160,9 @@ public class SqlTemplate {
     }
 
     protected String replaceDefaultSchemaAndCatalog(IDbDialect dbDialect, Trigger trigger,
-            String sql) {
-        String defaultCatalog = dbDialect.getDefaultCatalog();
-        String defaultSchema = dbDialect.getDefaultSchema();
+            String sql) {        
+        String defaultCatalog = dbDialect.getPlatform().getDefaultCatalog();
+        String defaultSchema = dbDialect.getPlatform().getDefaultSchema();
 
         boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
         || trigger.getSourceSchemaName() != null;

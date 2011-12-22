@@ -80,8 +80,6 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.DataExtractorStatisticsWriter;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
-import org.jumpmind.symmetric.transform.IgnoreRowException;
-import org.jumpmind.symmetric.transform.TransformDataExtractor;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
@@ -119,8 +117,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private DataExtractorContext clonableContext;
 
     private List<IExtractorFilter> extractorFilters;
-
-    private TransformDataExtractor transformDataExtractor;
 
     private IStatisticManager statisticManager;
 
@@ -296,9 +292,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         // The table to use for the SQL may be different than the configured
         // table if there is a legacy table that is swapped out by the dataExtractor.
-        Table tableForSql = dbDialect.getTable(triggerRouter.getTrigger().getSourceCatalogName(),
+        Table tableForSql = dbDialect.getPlatform().getTableFromCache(triggerRouter.getTrigger().getSourceCatalogName(),
                 triggerRouter.getTrigger().getSourceSchemaName(), tableNameToSend,
-                true);
+                false);
         
         if (tableForSql == null) {
             throw new RuntimeException(
@@ -390,14 +386,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     || routingService.shouldDataBeRouted(routingContext,
                                             dataMetaData, oneNodeSet, true);
                             if (writeData) {
-                                List<Data> transformedData = transformDataExtractor.transformData(
-                                        data, routerId, ctx);
-                                if (transformedData != null) {
-                                    for (Data data2 : transformedData) {
-                                        dataExtractor.write(writer, data2, routerId, ctxCopy);
-                                        dataRouted++;
-                                    }
-                                } else {
+//                                List<Data> transformedData = transformDataExtractor.transformData(
+//                                        data, routerId, ctx);
+//                                if (transformedData != null) {
+//                                    for (Data data2 : transformedData) {
+//                                        dataExtractor.write(writer, data2, routerId, ctxCopy);
+//                                        dataRouted++;
+//                                    }
+//                                } else 
+                                {
                                     dataExtractor.write(writer, data, routerId, ctxCopy);
                                     dataRouted++;
                                 }
@@ -866,19 +863,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
             }
-            try {
-                List<Data> transformedData = transformDataExtractor.transformData(
-                        data, routerId, context);
-                if (transformedData != null) {
-                    for (Data data2 : transformedData) {
-                        dataExtractor.write(writer, data2, routerId, context);
-                    }
-                } else {
+//            try {
+//                List<Data> transformedData = transformDataExtractor.transformData(
+//                        data, routerId, context);
+//                if (transformedData != null) {
+//                    for (Data data2 : transformedData) {
+//                        dataExtractor.write(writer, data2, routerId, context);
+//                    }
+//                } else 
+//                {
                     dataExtractor.write(writer, data, routerId, context);
-                }
-            } catch (IgnoreRowException e) {
-                // Ignore the row
-            }
+//                }
+//            } catch (IgnoreRowException e) {
+//                // Ignore the row
+//            }
         }
 
         public void done() throws IOException {
@@ -941,7 +939,4 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         this.statisticManager = statisticManager;
     }
 
-    public void setTransformDataExtractor(TransformDataExtractor transformDataExtractor) {
-        this.transformDataExtractor = transformDataExtractor;
-    }
 }

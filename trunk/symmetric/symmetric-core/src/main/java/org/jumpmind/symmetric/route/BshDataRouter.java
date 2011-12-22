@@ -47,7 +47,7 @@ public class BshDataRouter extends AbstractDataRouter {
     
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
-    public Set<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
+    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
         try {
             long ts = System.currentTimeMillis();
@@ -67,7 +67,7 @@ public class BshDataRouter extends AbstractDataRouter {
         }
     }
 
-    protected Interpreter getInterpreter(IRouterContext context) {
+    protected Interpreter getInterpreter(SimpleRouterContext context) {
         Interpreter interpreter = (Interpreter) context.getContextCache().get(INTERPRETER_KEY);
         if (interpreter == null) {
             interpreter = new Interpreter();

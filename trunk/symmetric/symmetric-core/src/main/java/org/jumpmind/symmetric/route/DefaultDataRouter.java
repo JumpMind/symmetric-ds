@@ -31,12 +31,12 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  */
 public class DefaultDataRouter extends AbstractDataRouter {
 
-    public Set<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
+    public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
         return toNodeIds(nodes, null);
     }
 
-    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
+    public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
 
     }
 

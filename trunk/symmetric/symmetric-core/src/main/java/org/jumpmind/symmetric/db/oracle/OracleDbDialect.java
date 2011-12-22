@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.db.oracle;
 
@@ -26,13 +26,14 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
@@ -51,7 +52,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
     String selectTriggerSql;
-    
+
     String selectTransactionsSql;
 
     @Override
@@ -71,8 +72,9 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     protected void initLobHandler() {
         lobHandler = new OracleLobHandler();
         try {
-            Class<? extends NativeJdbcExtractor> clazz = Class.forName(parameterService
-                    .getString(ParameterConstants.DB_NATIVE_EXTRACTOR)).asSubclass(NativeJdbcExtractor.class);
+            Class<? extends NativeJdbcExtractor> clazz = Class.forName(
+                    parameterService.getString(ParameterConstants.DB_NATIVE_EXTRACTOR)).asSubclass(
+                    NativeJdbcExtractor.class);
             NativeJdbcExtractor nativeJdbcExtractor = (NativeJdbcExtractor) clazz.newInstance();
             ((OracleLobHandler) lobHandler).setNativeJdbcExtractor(nativeJdbcExtractor);
         } catch (Exception e) {
@@ -89,9 +91,12 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             if (ex.getSQLException().getErrorCode() == 4095) {
                 try {
                     // a trigger of the same name must already exist on a table
-                    log.warn("TriggerAlreadyExists", jdbcTemplate.queryForMap(
-                            "select * " + selectTriggerSql,
-                            new Object[] { history.getTriggerNameForDmlType(dml), history.getSourceTableName() }));
+                    log.warn(
+                            "TriggerAlreadyExists",
+                            jdbcTemplate.queryForMap(
+                                    "select * " + selectTriggerSql,
+                                    new Object[] { history.getTriggerNameForDmlType(dml),
+                                            history.getSourceTableName() }));
                 } catch (DataAccessException e) {
                 }
             }
@@ -102,23 +107,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
-    }
-
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return false;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return true;
-    }
-
-    @Override
-    public boolean isDateOverrideToTimestamp() {
-        return true;
     }
 
     @Override
@@ -153,10 +141,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
-        return jdbcTemplate
-                .queryForInt(
-                        "select count(*) " + selectTriggerSql,
-                        new Object[] { triggerName, tableName }) > 0;
+        return jdbcTemplate.queryForInt("select count(*) " + selectTriggerSql, new Object[] {
+                triggerName, tableName }) > 0;
     }
 
     public void purge() {
@@ -167,35 +153,21 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return tablePrefix + "_pkg";
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
-        jdbcTemplate.update(String.format("call %s.setValue(1)", getSymmetricPackageName()));
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+        transaction.execute(String.format("call %s.setValue(1)", getSymmetricPackageName()));
         if (nodeId != null) {
-            jdbcTemplate.update(String.format("call %s.setNodeValue('" + nodeId + "')",
+            transaction.execute(String.format("call %s.setNodeValue('" + nodeId + "')",
                     getSymmetricPackageName()));
         }
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.update(String.format("call %s.setValue(null)", getSymmetricPackageName()));
-        jdbcTemplate.update(String.format("call %s.setNodeValue(null)", getSymmetricPackageName()));
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.execute(String.format("call %s.setValue(null)", getSymmetricPackageName()));
+        transaction.execute(String.format("call %s.setNodeValue(null)", getSymmetricPackageName()));
     }
 
     public String getSyncTriggersExpression() {
         return tablePrefix + "_trigger_disabled() is null";
-    }
-
-    public String getDefaultCatalog() {
-        return null;
-    }
-
-    @Override
-    public String getDefaultSchema() {
-        String defaultSchema = super.getDefaultSchema();
-        if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = (String) jdbcTemplate.queryForObject(
-                    "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
-        }
-        return defaultSchema;
     }
 
     @Override
@@ -219,16 +191,17 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public void setSelectTransactionsSql(String selectTransactionSql) {
         this.selectTransactionsSql = selectTransactionSql;
     }
-    
+
     public void setSelectTriggerSql(String selectTriggerSql) {
         this.selectTriggerSql = selectTriggerSql;
     }
-    
+
     @Override
     public boolean supportsTransactionViews() {
-        return supportsTransactionViews && parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW);
+        return supportsTransactionViews
+                && parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW);
     }
-    
+
     @Override
     public String massageDataExtractionSql(String sql, Channel channel) {
         if (channel != null && !channel.isContainsBigLob()) {
@@ -236,18 +209,18 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             sql = StringUtils.replace(sql, "d.old_data", "dbms_lob.substr(d.old_data, 4000, 1 )");
             sql = StringUtils.replace(sql, "d.pk_data", "dbms_lob.substr(d.pk_data, 4000, 1 )");
         }
-        return sql;        
+        return sql;
     }
 
     @Override
     public String massageForLob(String sql, Channel channel) {
         if (channel != null && !channel.isContainsBigLob()) {
-           return String.format("dbms_lob.substr(%s, 4000, 1)", sql); 
+            return String.format("dbms_lob.substr(%s, 4000, 1)", sql);
         } else {
-           return super.massageForLob(sql, channel);
+            return super.massageForLob(sql, channel);
         }
     }
-    
+
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
         if (!trigger.isUseCaptureLobs()) {
@@ -256,5 +229,5 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             return "dbms_lob.compare(nvl(var_row_data,'Null'),nvl(var_old_data,'Null')) != 0 ";
         }
     }
- 
+
 }

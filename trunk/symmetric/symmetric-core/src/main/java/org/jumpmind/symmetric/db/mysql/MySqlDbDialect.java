@@ -23,23 +23,16 @@ package org.jumpmind.symmetric.db.mysql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.List;
-import java.util.Map;
 
-import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-/*
- * 
- */
 public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     private static final String TRANSACTION_ID = "transaction_id";
@@ -61,12 +54,6 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     @Override
-    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
-        super.init(pf, queryTimeout, jdbcTemplate);
-        this.identifierQuoteString =  "`";
-    }
-    
-    @Override
     public boolean supportsTransactionId() {
         return true;
     }
@@ -78,8 +65,8 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
             if (functions[i].endsWith(this.functionTemplateKeySuffix)) {
                 String funcName = tablePrefix + "_"
                         + functions[i].substring(0, functions[i].length() - this.functionTemplateKeySuffix.length());
-                if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName, getDefaultSchema())) == 0) {
-                    jdbcTemplate.update(sqlTemplate.getFunctionSql(functions[i], funcName, getDefaultSchema()));
+                if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
+                    jdbcTemplate.update(sqlTemplate.getFunctionSql(functions[i], funcName, platform.getDefaultSchema()));
                     log.info("FunctionInstalled", funcName);
                 }
             }
@@ -88,7 +75,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
-        catalog = catalog == null ? (getDefaultCatalog() == null ? null : getDefaultCatalog()) : catalog;
+        catalog = catalog == null ? (platform.getDefaultCatalog() == null ? null : platform.getDefaultCatalog()) : catalog;
         String checkCatalogSql = (catalog != null && catalog.length() > 0) ? " and trigger_schema='" + catalog + "'"
                 : "";
         return jdbcTemplate.queryForInt(
@@ -111,16 +98,16 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
         if (nodeId != null) {
-            jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
+            transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
         }
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
 
     public String getSyncTriggersExpression() {
@@ -128,7 +115,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     private final String getTransactionFunctionName() {
-        return getDefaultCatalog() + "." + tablePrefix + "_" + TRANSACTION_ID;
+        return platform.getDefaultCatalog() + "." + tablePrefix + "_" + TRANSACTION_ID;
     }
 
     @Override
@@ -141,23 +128,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return "select last_insert_id()";
     }
 
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return false;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return true;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
-    }
-
     public void purge() {
-    }
-
-    public String getDefaultCatalog() {
-        return (String) jdbcTemplate.queryForObject("select database()", String.class);
     }
 
     @Override

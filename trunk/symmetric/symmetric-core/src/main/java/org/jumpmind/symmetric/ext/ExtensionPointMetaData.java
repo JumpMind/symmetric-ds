@@ -22,6 +22,9 @@ package org.jumpmind.symmetric.ext;
 
 import java.io.Serializable;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.extension.IExtensionPoint;
+
 /**
  * Wrapper class for installed extension points.
  */

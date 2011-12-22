@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.ext;
 import java.io.IOException;
 
 import org.jumpmind.db.model.Database;
+import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.db.IDbDialect;
 
 public interface IDatabaseUpgradeListener extends IExtensionPoint {

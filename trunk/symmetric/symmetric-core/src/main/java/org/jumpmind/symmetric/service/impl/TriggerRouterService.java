@@ -788,8 +788,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
-                Table table = dbDialect.getTable(trigger.getSourceCatalogName(), trigger
-                        .getSourceSchemaName(), trigger.getSourceTableName(), false);
+                Table table = dbDialect.getPlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger
+                        .getSourceSchemaName(), trigger.getSourceTableName(), true);
 
                 String errorMessage = null;
                 Channel channel = configurationService.getChannel(trigger.getChannelId());

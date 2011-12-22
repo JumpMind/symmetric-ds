@@ -20,24 +20,13 @@
  */
 package org.jumpmind.symmetric.db.postgresql;
 
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.Map;
-
-import javax.sql.rowset.serial.SerialBlob;
-
-import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.IDatabasePlatform;
-import org.jumpmind.db.model.Column;
-import org.jumpmind.db.sql.DmlStatement;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -69,11 +58,17 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             supportsTransactionId = true;
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;
         }
+        ISqlTransaction transaction = null;
         try {
-            enableSyncTriggers(jdbcTemplate);
+            transaction = platform.getSqlTemplate().startSqlTransaction();
+            enableSyncTriggers(transaction);
         } catch (Exception e) {
             log.error("PostgreSqlCustomVariableMissing");
             throw new SymmetricException("PostgreSqlCustomVariableMissing", e);
+        } finally {
+            if (transaction != null) {
+                transaction.close();
+            }
         }
 
     }
@@ -82,30 +77,12 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return true;
     }
-    
-    @Override
-    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-        Column[] orderedMetaData) {
-
-        Object[] objectValues = super.getObjectValues(encoding, values, orderedMetaData);
-        for (int i = 0; i < orderedMetaData.length; i++) {
-            if (orderedMetaData[i] != null && orderedMetaData[i].getTypeCode() == Types.BLOB
-                    && objectValues[i] != null) {
-                try {
-                    objectValues[i] = new SerialBlob((byte[]) objectValues[i]);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }                
-            }
-        }
-        return objectValues;
-    }
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return jdbcTemplate.queryForInt("select count(*) from information_schema.triggers where trigger_name = ? "
                 + "and event_object_table = ? and trigger_schema = ?", new Object[] { triggerName.toLowerCase(),
-                tableName, schema == null ? getDefaultSchema() : schema }) > 0;
+                tableName, schema == null ? platform.getDefaultSchema() : schema }) > 0;
     }
     
     @Override
@@ -126,18 +103,18 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         }
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
-        jdbcTemplate.queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '1', false)");
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+        transaction.execute("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '1', false)");
         if (nodeId == null) {
             nodeId = "";
         }
-        jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '" + nodeId + "', false)");
+        transaction.execute("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '" + nodeId + "', false)");
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.execute("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE
                 + "', '', false)");
-        jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE
+        transaction.execute("select set_config('" + SYNC_NODE_DISABLED_VARIABLE
                 + "', '', false)");
     }
 
@@ -160,18 +137,6 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return true;
     }
 
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return false;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
-    }
-
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
@@ -185,104 +150,9 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public void purge() {
     }
 
-    public String getDefaultCatalog() {
-        return null;
-    }
-
-    @Override
-    public String getDefaultSchema() {
-        String defaultSchema = super.getDefaultSchema();
-        if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = (String) jdbcTemplate.queryForObject("select current_schema()", String.class);
-        }
-        return defaultSchema;
-    }
-
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
-    }
-
-    @Override
-    protected Array createArray(Column column, final String value) {
-        if (StringUtils.isNotBlank(value)) {
-
-            String jdbcTypeName = column.getJdbcTypeName();
-            if (jdbcTypeName.startsWith("_")) {
-                jdbcTypeName = jdbcTypeName.substring(1);
-            }
-            int jdbcBaseType = Types.VARCHAR;
-            if (jdbcTypeName.toLowerCase().contains("int")) {
-                jdbcBaseType = Types.INTEGER;
-            }
-                        
-            final String baseTypeName = jdbcTypeName;
-            final int baseType = jdbcBaseType;
-            return new Array() {
-                public String getBaseTypeName() {
-                    return baseTypeName;
-                }
-
-                public void free() throws SQLException {
-                }
-
-                public int getBaseType() {
-                    return baseType;
-                }
-
-                public Object getArray() {
-                    return null;
-                }
-
-                public Object getArray(Map<String, Class<?>> map) {
-                    return null;
-                }
-
-                public Object getArray(long index, int count) {
-                    return null;
-                }
-
-                public Object getArray(long index, int count, Map<String, Class<?>> map) {
-                    return null;
-                }
-
-                public ResultSet getResultSet() {
-                    return null;
-                }
-
-                public ResultSet getResultSet(Map<String, Class<?>> map) {
-                    return null;
-                }
-
-                public ResultSet getResultSet(long index, int count) {
-                    return null;
-                }
-
-                public ResultSet getResultSet(long index, int count, Map<String, Class<?>> map) {
-                    return null;
-                }
-
-                public String toString() {
-                    return value;
-                }
-            };
-        } else {
-            return null;
-        }
-    }
-    
-    @Override
-    protected String cleanTextForTextBasedColumns(String text) {
-        return text.replace("\0", "");
-    }
-    
-    @Override
-    public DmlStatement createStatementBuilder(DmlType type, String catalogName, String schemaName, String tableName, Column[] keys,
-            Column[] columns, Column[] preFilteredColumns) {
-        return new PostgresDmlStatement(type, catalogName, schemaName, tableName, keys,
-                columns,
-                preFilteredColumns, isDateOverrideToTimestamp(), getIdentifierQuoteString());
-    }
-
+    }    
     
 }

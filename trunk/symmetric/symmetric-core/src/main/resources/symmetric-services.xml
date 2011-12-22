@@ -125,7 +125,6 @@
         <property name="configurationService" ref="configurationService" />
         <property name="statisticManager" ref="statisticManager" />
         <property name="context" ref="extractorContext" />
-        <property name="transformDataExtractor" ref="transformDataExtractor"/>
     </bean>
 
     <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService" scope="singleton" parent="abstractService">
@@ -157,17 +156,11 @@
 
     <bean id="dataLoaderService" class="org.jumpmind.symmetric.service.impl.DataLoaderService" scope="singleton" parent="abstractService">
         <property name="transportManager" ref="transportManager" />
+        <property name="transformService" ref="transformService"/>
         <property name="incomingBatchService" ref="incomingBatchService" />
         <property name="configurationService" ref="configurationService"/>
         <property name="statisticManager" ref="statisticManager" />
         <property name="nodeService" ref="nodeService" />
-    </bean>
-
-    <bean id="dataLoader" class="org.jumpmind.symmetric.load.csv.CsvLoader" scope="prototype">
-        <property name="dbDialect" ref="dbDialect" />
-        <property name="nodeService" ref="nodeService" />
-        <property name="parameterService" ref="parameterService" />
-        <property name="statisticManager" ref="statisticManager" />
     </bean>
 
     <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService" scope="singleton" parent="abstractService">
@@ -207,6 +200,7 @@
     <bean id="extractorContext" class="org.jumpmind.symmetric.extract.DataExtractorContext" scope="prototype">
         <property name="dbDialect" ref="dbDialect"/>
         <property name="jdbcTemplate" ref="jdbcTemplate"/>
+        <property name="nodeService" ref="nodeService"/>
     </bean>
 
 	<bean id="abstractDataCommand"
@@ -357,4 +351,9 @@
         <property name="statisticManager" ref="statisticManager" />
     </bean>
 
+	<bean id="transformService" class="org.jumpmind.symmetric.service.impl.TransformService"
+		parent="abstractService">
+		<property name="sql" ref="transformServiceSql" />
+	</bean>
+	
 </beans>

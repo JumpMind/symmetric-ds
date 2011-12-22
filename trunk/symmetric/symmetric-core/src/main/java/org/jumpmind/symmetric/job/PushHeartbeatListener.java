@@ -22,9 +22,9 @@ package org.jumpmind.symmetric.job;
 import java.util.List;
 import java.util.Set;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.ext.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataService;

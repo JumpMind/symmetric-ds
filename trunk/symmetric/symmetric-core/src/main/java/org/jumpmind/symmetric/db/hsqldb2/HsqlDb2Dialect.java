@@ -20,18 +20,16 @@
 
 package org.jumpmind.symmetric.db.hsqldb2;
 
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/*
- * 
- */
 public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
@@ -77,14 +75,14 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
-        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('sync_prevented','1')");
-        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('node_value','" + nodeId + "')");
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+        transaction.execute("CALL " + tablePrefix + "_set_session('sync_prevented','1')");
+        transaction.execute("CALL " + tablePrefix + "_set_session('node_value','" + nodeId + "')");
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('sync_prevented',null)");
-        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('node_value',null)");
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.execute("CALL " + tablePrefix + "_set_session('sync_prevented',null)");
+        transaction.execute("CALL " + tablePrefix + "_set_session('node_value',null)");
     }
 
     public String getSyncTriggersExpression() {
@@ -110,23 +108,6 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
-    
-    @Override
-    public boolean isBlankCharColumnSpacePadded() {
-        return true;
-    }
-    
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return false;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
-    }
 
     @Override
     public boolean supportsTransactionId() {
@@ -144,11 +125,6 @@ public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void purge() {
-    }
-
-    public String getDefaultCatalog() {
-        return (String) jdbcTemplate.queryForObject("select value from INFORMATION_SCHEMA.SYSTEM_SESSIONINFO where key='CURRENT SCHEMA'",
-                String.class);
     }
 
     @Override

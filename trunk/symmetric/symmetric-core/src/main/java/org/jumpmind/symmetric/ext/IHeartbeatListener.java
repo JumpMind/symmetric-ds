@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.ext;
 
 import java.util.Set;
 
+import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.job.HeartbeatJob;
 import org.jumpmind.symmetric.model.Node;
 

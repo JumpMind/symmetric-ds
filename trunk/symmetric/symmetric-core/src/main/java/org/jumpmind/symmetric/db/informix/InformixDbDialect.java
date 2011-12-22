@@ -23,14 +23,10 @@ package org.jumpmind.symmetric.db.informix;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.AutoIncrementColumnFilter;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.Trigger;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -39,24 +35,7 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
     public InformixDbDialect() {
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");
-    }
-    
-    @Override
-    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
-        super.init(pf, queryTimeout, jdbcTemplate);
-        Map<String, String> env = System.getenv();
-        String clientIdentifierMode = env.get("DELIMIDENT");
-        if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
-            identifierQuoteString = "\"";
-        } else {
-            identifierQuoteString = "";
-        }
-    }
-
-    @Override
-    public IColumnFilter newDatabaseColumnFilter() {
-        return new AutoIncrementColumnFilter();
-    }
+    }    
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
@@ -66,14 +45,14 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
                 new Object[] { triggerName.toLowerCase() }) > 0;
     }
 
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
-        jdbcTemplate.queryForList("select " + tablePrefix + "_triggers_set_disabled('t'), "
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+        transaction.execute("select " + tablePrefix + "_triggers_set_disabled('t'), "
                 + tablePrefix + "_node_set_disabled(?) from sysmaster:sysdual",
                 new Object[] { nodeId });
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.queryForList("select " + tablePrefix + "_triggers_set_disabled('f'), "
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.execute("select " + tablePrefix + "_triggers_set_disabled('f'), "
                 + tablePrefix + "_node_set_disabled(null) from sysmaster:sysdual");
     }
 
@@ -114,35 +93,8 @@ public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
-    public boolean isNonBlankCharColumnSpacePadded() {
-        return true;
-    }
-
-    public boolean isCharColumnSpaceTrimmed() {
-        return false;
-    }
-
-    public boolean isEmptyStringNulled() {
-        return false;
-    }
-
     public void purge() {
     }
-
-    public String getDefaultCatalog() {
-        return null;
-    }
-
-    @Override
-    public String getDefaultSchema() {
-        String defaultSchema = super.getDefaultSchema();
-        if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = jdbcTemplate.queryForObject("select trim(user) from sysmaster:sysdual",
-                    String.class);
-        }
-        return defaultSchema;
-    }
-    
     @Override
     public Map<String, String> getSqlScriptReplacementTokens() {
         return sqlScriptReplacementTokens;

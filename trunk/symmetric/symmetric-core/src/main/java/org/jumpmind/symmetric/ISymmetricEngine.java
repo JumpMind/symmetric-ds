@@ -50,10 +50,10 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.IStatisticService;
+import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.transform.ITransformService;
 import org.springframework.context.ApplicationContext;
 
 public interface ISymmetricEngine {

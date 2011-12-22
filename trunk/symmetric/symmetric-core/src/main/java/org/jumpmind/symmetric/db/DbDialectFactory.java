@@ -35,7 +35,7 @@ import org.jumpmind.db.platform.hsqldb.HsqlDbPlatform;
 import org.jumpmind.db.platform.hsqldb2.HsqlDb2Platform;
 import org.jumpmind.db.platform.informix.InformixPlatform;
 import org.jumpmind.db.platform.interbase.InterbasePlatform;
-import org.jumpmind.db.platform.mssql.MSSqlPlatform;
+import org.jumpmind.db.platform.mssql.MsSqlPlatform;
 import org.jumpmind.db.platform.mysql.MySqlPlatform;
 import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
@@ -74,13 +74,15 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     private boolean forceDelimitedIdentifierModeOn = false;
     
     private boolean forceDelimitedIdentifierModeOff = false;
+    
+    private long tableCacheTimeoutInMs;    
 
     public IDbDialect getObject() throws Exception {
 
         waitForAvailableDatabase();
         
         IDatabasePlatform pf = JdbcDatabasePlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource(), 
-                org.jumpmind.util.LogFactory.getLog("org.jumpmind." + parameterService.getString(ParameterConstants.ENGINE_NAME)));
+                org.jumpmind.log.LogFactory.getLog("org.jumpmind." + parameterService.getString(ParameterConstants.ENGINE_NAME)));
         
         if (forceDelimitedIdentifierModeOn) {
             pf.setDelimitedIdentifierModeOn(true);
@@ -89,6 +91,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         if (forceDelimitedIdentifierModeOff) {
             pf.setDelimitedIdentifierModeOn(false);
         }
+        
+        pf.setClearCacheModelTimeoutInMs(tableCacheTimeoutInMs);
 
         AbstractDbDialect dialect = null;
 
@@ -96,7 +100,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
             dialect = (AbstractDbDialect) beanFactory.getBean("mysqlDialect");
         } else if (pf instanceof OraclePlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
-        } else if (pf instanceof MSSqlPlatform) {
+        } else if (pf instanceof MsSqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("msSqlDialect");
         } else if (pf instanceof GreenplumPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("greenplumDialect");              
@@ -200,6 +204,10 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+    
+    public void setTableCacheTimeoutInMs(long tableCacheTimeoutInMs) {
+        this.tableCacheTimeoutInMs = tableCacheTimeoutInMs;
     }
     
 }
