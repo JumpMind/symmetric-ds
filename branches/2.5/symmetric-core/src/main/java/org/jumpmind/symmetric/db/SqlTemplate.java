@@ -22,6 +22,8 @@
 package org.jumpmind.symmetric.db;
 
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -117,7 +119,7 @@ public class SqlTemplate {
         sql = AppUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(),
-                        table.getPrimaryKeyColumns()), sql);
+                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to
         // reference the node that is being loaded
@@ -194,7 +196,7 @@ public class SqlTemplate {
         sql = AppUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(),
-                        table.getPrimaryKeyColumns()), sql);
+                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), sql);
 
         sql = replaceDefaultSchemaAndCatalog(dialect, trigger, sql);
 
@@ -339,7 +341,7 @@ public class SqlTemplate {
         ddl = AppUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue
-                        : newTriggerValue, columns), ddl);
+                        : newTriggerValue, table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), ddl);
 
         ddl = AppUtils.replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"),
                 ddl);
@@ -476,8 +478,15 @@ public class SqlTemplate {
 
     // TODO: move to DerbySqlTemplate or change language for use in all DBMSes
     private String getPrimaryKeyWhereString(String alias, Column[] columns) {
+    	List<Column> columnsMinusLobs = new ArrayList<Column>();
+    	for (Column column : columns) {
+    		if (!column.isOfBinaryType()) {
+    			columnsMinusLobs.add(column);
+    		}
+    	}
+    	
         StringBuilder b = new StringBuilder("'");
-        for (Column column : columns) {
+        for (Column column : columnsMinusLobs) {
             b.append("\"").append(column.getName()).append("\"=");
             switch (column.getTypeCode()) {
             case Types.BIT:
@@ -511,7 +520,7 @@ public class SqlTemplate {
                 b.append(triggerConcatCharacter).append("'''}");
                 break;
             }
-            if (!column.equals(columns[columns.length - 1])) {
+            if (!column.equals(columnsMinusLobs.get(columnsMinusLobs.size() - 1))) {
                 b.append(" and ");
             }
         }
