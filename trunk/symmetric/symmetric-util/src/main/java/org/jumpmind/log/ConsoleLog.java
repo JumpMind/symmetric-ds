@@ -1,4 +1,4 @@
-package org.jumpmind.util;
+package org.jumpmind.log;
 
 import org.apache.commons.lang.StringUtils;
 

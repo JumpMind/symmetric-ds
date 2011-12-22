@@ -73,6 +73,10 @@ public enum DataEventType {
     DataEventType(String code) {
         this.code = code;
     }
+    
+    public boolean isDml() {
+        return this == INSERT || this == DELETE || this == UPDATE;
+    }
 
     public String getCode() {
         return this.code;

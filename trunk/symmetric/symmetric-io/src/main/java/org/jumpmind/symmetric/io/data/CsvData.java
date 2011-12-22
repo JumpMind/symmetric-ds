@@ -25,8 +25,9 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.db.model.Table;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.csv.CsvReader;
-import org.jumpmind.util.IoException;
 
 /**
  * Holder for references to both parsed and unparsed CSV data.
@@ -35,35 +36,59 @@ public class CsvData {
 
     public static final String OLD_DATA = "oldData";
     public static final String ROW_DATA = "rowData";
-    public static final String PK_DATA = "pkData";    
-    
+    public static final String PK_DATA = "pkData";
+
     public static final String ATTRIBUTE_CHANNEL_IDENTIFIER = "channelId";
 
     private Map<String, String[]> parsedCsvData = null;
 
     private Map<String, String> csvData = null;
-    
-    private Map<String, String> attributes;
-    
+
+    private Map<String, Object> attributes;
+
     protected DataEventType dataEventType;
-    
+
+    public CsvData(DataEventType dataEventType) {
+        this.dataEventType = dataEventType;
+    }
+
+    public CsvData(DataEventType dataEventType, String[] pkData, String[] rowData) {
+        this(dataEventType);
+        this.putParsedData(PK_DATA, pkData);
+        this.putParsedData(ROW_DATA, rowData);
+    }
+
+    public CsvData(DataEventType dataEventType, String[] rowData) {
+        this(dataEventType);
+        this.putParsedData(ROW_DATA, rowData);
+    }
+
+    public CsvData() {
+    }
+
+    public boolean contains(String key) {
+        return (parsedCsvData != null && parsedCsvData.containsKey(key))
+                || (csvData != null && csvData.containsKey(key));
+    }
+
     public void setDataEventType(DataEventType dataEventType) {
         this.dataEventType = dataEventType;
     }
-    
+
     public DataEventType getDataEventType() {
         return dataEventType;
     }
-    
-    public void putAttribute(String attributeName, String attributeValue) {
+
+    public void putAttribute(String attributeName, Object attributeValue) {
         if (attributes == null) {
-            attributes = new HashMap<String, String>();
+            attributes = new HashMap<String, Object>();
         }
         attributes.put(attributeName, attributeValue);
     }
-    
-    public String getAttribute(String attributeName) {
-        return attributes == null ? null : attributes.get(attributeName);
+
+    @SuppressWarnings("unchecked")
+    public <T> T getAttribute(String attributeName) {
+        return attributes == null ? null : (T)attributes.get(attributeName);
     }
 
     public void removeData(String key) {
@@ -98,6 +123,20 @@ public class CsvData {
         return data;
     }
 
+    public boolean[] getChangedDataIndicators() {
+        String[] newData = getParsedData(ROW_DATA);
+        boolean[] changes = new boolean[newData.length];
+        String[] oldData = getParsedData(OLD_DATA);
+        for (int i = 0; i < newData.length; i++) {
+            if (oldData != null && oldData.length > i) {
+                changes[i] = !newData[i].equals(oldData[i]);
+            } else {
+                changes[i] = true;
+            }
+        }
+        return changes;
+    }
+
     public void putParsedData(String key, String[] data) {
         if (parsedCsvData == null) {
             parsedCsvData = new HashMap<String, String[]>(2);
@@ -127,4 +166,17 @@ public class CsvData {
         return values;
     }
 
+    public Map<String, String> toColumnNameValuePairs(Table table, String key) {
+        String[] values = getParsedData(key);
+        String[] keyNames = table.getColumnNames();
+        if (values != null && keyNames != null && values.length >= keyNames.length) {
+            Map<String, String> map = new HashMap<String, String>(keyNames.length);
+            for (int i = 0; i < keyNames.length; i++) {
+                map.put(keyNames[i], values[i]);
+            }
+            return map;
+        } else {
+            return new HashMap<String, String>(0);
+        }
+    }
 }

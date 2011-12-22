@@ -1,7 +1,8 @@
-package org.jumpmind.util;
+package org.jumpmind.log;
 
 import java.util.HashMap;
 import java.util.Map;
+
 
 public class LogFactory {
     

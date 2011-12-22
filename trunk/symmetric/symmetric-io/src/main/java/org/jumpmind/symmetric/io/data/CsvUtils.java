@@ -28,10 +28,10 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.csv.CsvWriter;
-import org.jumpmind.util.Log;
-import org.jumpmind.util.LogFactory;
 
 
 public class CsvUtils {

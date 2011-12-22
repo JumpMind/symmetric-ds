@@ -17,8 +17,17 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-package org.jumpmind.symmetric.io.data;
+package org.jumpmind.extension;
 
-public enum BinaryEncoding {
-    NONE, BASE64, HEX;
+/**
+ * This is a marker interface that identifies ways that SymmetricDS can be extended.
+ */
+public interface IExtensionPoint {
+
+    /**
+     * Allow the plug-in implementation to specific whether the SymmetricDS
+     * runtime should auto register it or if it will register itself.
+     */
+    public boolean isAutoRegister();
+
 }

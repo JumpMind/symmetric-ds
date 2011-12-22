@@ -1,67 +1,82 @@
 package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.util.Log;
-import org.jumpmind.util.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 
-
-public class DataProcessor {
+public class DataProcessor<R extends IDataReader, W extends IDataWriter> {
 
     private static final String STAT_WRITE_DATA = "statWriteData";
     private static final String STAT_READ_DATA = "statReadData";
 
     static final Log log = LogFactory.getLog(DataProcessor.class);
 
-    protected IDataReader dataReader;
-    protected IDataWriter dataWriter;
-    protected IDataProcessorListener listener;
-    protected IDataWriterErrorHandler errorHandler;
+    protected R dataReader;
+    protected W dataWriter;
+    protected IDataProcessorListener<R, W> listener;
 
     public DataProcessor() {
     }
 
-    public DataProcessor(IDataReader dataReader, IDataWriter dataWriter) {
-        this(dataReader, dataWriter, null, null);
+    public DataProcessor(R dataReader, W dataWriter) {
+        this(dataReader, dataWriter, null);
     }
 
-    public DataProcessor(IDataReader dataReader, IDataWriter dataWriter,
-            IDataProcessorListener listener, IDataWriterErrorHandler errorHandler) {
+    public DataProcessor(R dataReader, W dataWriter, IDataProcessorListener<R, W> listener) {
         this.dataReader = dataReader;
         this.dataWriter = dataWriter;
         this.listener = listener;
-        this.errorHandler = errorHandler;
     }
 
     public void process() {
-        process(new DataContext());
+        process(new DataContext<R, W>(this.dataReader, this.dataWriter));
     }
 
-    public void process(DataContext ctx) {
+    public void process(DataContext<R, W> context) {
         try {
-            dataReader.open(ctx);
+            dataReader.open(context);
             boolean dataWriterOpened = false;
             Batch batch = null;
             do {
                 batch = dataReader.nextBatch();
                 if (batch != null) {
-                    int dataRow = 0;
-                    boolean processBatch = listener == null ? true : listener
-                            .batchBegin(ctx, batch);
-                    if (processBatch) {
-                        if (!dataWriterOpened) {
-                            dataWriter.open(ctx);
+                    context.setBatch(batch);
+                    boolean endBatchCalled = false;
+                    try {
+                        int dataRow = 0;
+                        boolean processBatch = listener == null ? true : listener.beforeBatchStarted(
+                                context);
+                        if (processBatch) {
+                            if (!dataWriterOpened) {
+                                dataWriter.open(context);
+                            }
+                            dataWriter.start(batch);
+                            if (listener != null) {
+                                listener.afterBatchStarted(context);
+                            }
                         }
-                        dataWriter.startBatch(batch);
-                    }
-                    dataRow += forEachTableInBatch(ctx, processBatch, batch);
-                    if (processBatch) {
-                        if (listener != null) {
-                            listener.batchBeforeCommit(ctx, batch);
+                        dataRow += forEachTableInBatch(context, processBatch, batch);
+                        if (processBatch) {
+                            if (listener != null) {
+                                listener.beforeBatchEnd(context);
+                            }
+                            dataWriter.end(batch, false);
+                            endBatchCalled = true;
+                            if (listener != null) {
+                                listener.batchSuccessful(context);
+                            }
                         }
-                        dataWriter.finishBatch(batch);
-                        if (listener != null) {
-                            listener.batchCommit(ctx, batch);
+                    } catch (Exception ex) {
+                        try {
+                            if (listener != null) {
+                                listener.batchInError(context, ex);
+                            }
+                        } finally {
+                            if (!endBatchCalled) {
+                                dataWriter.end(batch, true);
+                            }
                         }
+                        rethrow(ex);
                     }
                 }
             } while (batch != null);
@@ -71,25 +86,29 @@ public class DataProcessor {
         }
     }
 
-    protected int forEachTableInBatch(DataContext ctx, boolean processBatch, Batch batch) {
+    protected int forEachTableInBatch(DataContext<R, W> context, boolean processBatch, Batch batch) {
         int dataRow = 0;
         Table table = null;
         do {
             table = dataReader.nextTable();
             if (table != null) {
-                if (listener == null || listener.processTable(ctx, batch, table)) {
-                    boolean processTable = false;
+                boolean processTable = false;
+                try {
                     if (processBatch) {
-                        processTable = dataWriter.writeTable(table);
+                        processTable = dataWriter.start(table);
                     }
-                    dataRow += forEachDataInTable(ctx, processTable, batch);
+                    dataRow += forEachDataInTable(context, processTable, batch);
+                } finally {
+                    if (processTable) {
+                        dataWriter.end(table);
+                    }
                 }
             }
         } while (table != null);
         return dataRow;
     }
 
-    protected int forEachDataInTable(DataContext ctx, boolean processTable, Batch batch) {
+    protected int forEachDataInTable(DataContext<R, W> context, boolean processTable, Batch batch) {
         int dataRow = 0;
         CsvData data = null;
         do {
@@ -97,25 +116,12 @@ public class DataProcessor {
             data = dataReader.nextData();
             batch.incrementDataReadMillis(batch.endTimer(STAT_READ_DATA));
             if (data != null) {
-                try {
-                    dataRow++;
-                    if (processTable) {
-                        batch.startTimer(STAT_WRITE_DATA);
-                        batch.incrementLineCount();
-                        boolean needsCommit = dataWriter.writeData(data);
-                        batch.incrementDataWriteMillis(batch.endTimer(STAT_WRITE_DATA));
-                        if (needsCommit && listener != null) {
-                            listener.batchEarlyCommit(ctx, batch, dataRow);
-                        }
-                    }
-                } catch (Exception ex) {
-                    if (errorHandler != null) {
-                        if (!errorHandler.handleWriteError(ex, batch, data, dataRow)) {
-                            rethrow(ex);
-                        }
-                    } else {
-                        rethrow(ex);
-                    }
+                dataRow++;
+                if (processTable) {
+                    batch.startTimer(STAT_WRITE_DATA);
+                    batch.incrementLineCount();
+                    dataWriter.write(data);
+                    batch.incrementDataWriteMillis(batch.endTimer(STAT_WRITE_DATA));
                 }
             }
         } while (data != null);
@@ -138,12 +144,16 @@ public class DataProcessor {
         }
     }
 
-    public void setErrorHandler(IDataWriterErrorHandler errorHandler) {
-        this.errorHandler = errorHandler;
+    public void setListener(IDataProcessorListener<R, W> listener) {
+        this.listener = listener;
     }
 
-    public void setListener(IDataProcessorListener listener) {
-        this.listener = listener;
+    public void setDataReader(R dataReader) {
+        this.dataReader = dataReader;
+    }
+
+    public void setDataWriter(W dataWriter) {
+        this.dataWriter = dataWriter;
     }
 
 }

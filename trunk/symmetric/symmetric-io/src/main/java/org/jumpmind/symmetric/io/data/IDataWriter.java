@@ -5,15 +5,14 @@ import org.jumpmind.db.model.Table;
 
 public interface IDataWriter extends IDataResource {
 
-    public void startBatch(Batch batch);
+    public void start(Batch batch);
 
-    public boolean writeTable(Table table);
+    public boolean start(Table table);
 
-    public boolean writeData(CsvData data);
-    
-    // TODO
-    // public void writeStream(Outputstream)
+    public void write(CsvData data);
 
-    public void finishBatch(Batch batch);
+    public void end(Table table);
+
+    public void end(Batch batch, boolean inError);
 
 }

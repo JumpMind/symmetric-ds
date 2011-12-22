@@ -1,20 +1,23 @@
-package org.jumpmind.util;
+package org.jumpmind.properties;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-public class Parameters extends HashMap<String, String> {
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
+import org.jumpmind.log.LogLevel;
+
+public class TypedProperties extends Properties {
 
     private static final long serialVersionUID = 1L;
 
-    protected static Log log = LogFactory.getLog(Parameters.class);
+    protected static Log log = LogFactory.getLog(TypedProperties.class);
 
-    public Parameters() {
+    public TypedProperties() {
     }
 
-    public Parameters(Properties properties) {
+    public TypedProperties(Properties properties) {
         this();
         putAll(properties);
     }
@@ -27,7 +30,7 @@ public class Parameters extends HashMap<String, String> {
 
     public long getLong(String key, long defaultValue) {
         long returnValue = defaultValue;
-        String value = get(key);
+        String value = getProperty(key);
         if (value != null) {
             try {
                 returnValue = Long.parseLong(value);
@@ -39,7 +42,7 @@ public class Parameters extends HashMap<String, String> {
 
     public int getInt(String key, int defaultValue) {
         int returnValue = defaultValue;
-        String value = get(key);
+        String value = getProperty(key);
         if (value != null) {
             try {
                 returnValue = Integer.parseInt(value);
@@ -51,7 +54,7 @@ public class Parameters extends HashMap<String, String> {
 
     public boolean is(String key, boolean defaultValue) {
         boolean returnValue = defaultValue;
-        String value = get(key);
+        String value = getProperty(key);
         if (value != null) {
             returnValue = Boolean.parseBoolean(value);
         }
@@ -60,7 +63,7 @@ public class Parameters extends HashMap<String, String> {
 
     public String get(String key, String defaultValue) {
         String returnValue = defaultValue;
-        String value = get(key);
+        String value = getProperty(key);
         if (value != null) {
             returnValue = value;
         }
@@ -68,7 +71,7 @@ public class Parameters extends HashMap<String, String> {
     }
 
     public String[] getArray(String key, String[] defaultValue) {
-        String value = get(key);
+        String value = getProperty(key);
         String[] retValue = defaultValue;
         if (value != null) {
             retValue = value.split(",");

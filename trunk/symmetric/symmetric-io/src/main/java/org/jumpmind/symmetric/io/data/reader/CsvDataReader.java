@@ -14,32 +14,38 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.exception.IoException;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.io.data.Batch;
-import org.jumpmind.symmetric.io.data.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.util.IoException;
-import org.jumpmind.util.Log;
-import org.jumpmind.util.LogFactory;
+import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.util.Statistics;
 
 public class CsvDataReader implements IDataReader {
 
     protected Log log = LogFactory.getLog(getClass());
     
     protected Reader reader;
+    protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected CsvReader csvReader;
-    protected DataContext context;
+    protected DataContext<? extends IDataReader, ? extends IDataWriter> context;
     protected Map<String, Table> tables = new HashMap<String, Table>();
     protected Object next;
     protected Batch batch;
     protected Table table;
+    protected String channelId;
+    protected String sourceNodeId;
+    protected BinaryEncoding binaryEncoding;
 
     public CsvDataReader(StringBuilder input) {
         this(new BufferedReader(new StringReader(input.toString())));
@@ -62,8 +68,8 @@ public class CsvDataReader implements IDataReader {
             throw new IoException(ex);
         }
     }
-
-    public void open(DataContext context) {
+    
+    public <R extends IDataReader,W extends IDataWriter> void open(DataContext<R,W> context) {
         this.context = context;
         this.csvReader = CsvUtils.getCsvReader(reader);
         this.next = readNext();
@@ -71,7 +77,6 @@ public class CsvDataReader implements IDataReader {
 
     protected Object readNext() {
         try {
-            String channelId = null;
             Set<String> keys = null;
             String schemaName = null;
             String catalogName = null;
@@ -82,17 +87,19 @@ public class CsvDataReader implements IDataReader {
                 if (batch == null) {
                     bytesRead += csvReader.getRawRecord().length();
                 } else {
-                    batch.incrementReadByteCount(csvReader.getRawRecord().length() + bytesRead);
+                    statistics.get(batch).increment(CsvReaderStatistics.READ_BYTE_COUNT, csvReader.getRawRecord().length() + bytesRead);
                     bytesRead = 0;
                 }
                 if (tokens[0].equals(CsvConstants.BATCH)) {
-                    return new Batch(Long.parseLong(tokens[1]), channelId);
+                    Batch batch = new Batch(Long.parseLong(tokens[1]), channelId, binaryEncoding, sourceNodeId);
+                    statistics.put(batch, new CsvReaderStatistics());
+                    return batch;
                 } else if (tokens[0].equals(CsvConstants.NODEID)) {
-                    this.context.setSourceNodeId(tokens[1]);
+                    this.sourceNodeId = tokens[1];
                 } else if (tokens[0].equals(CsvConstants.BINARY)) {
-                    context.setBinaryEncoding(BinaryEncoding.valueOf(tokens[1]));
+                    this.binaryEncoding = BinaryEncoding.valueOf(tokens[1]);
                 } else if (tokens[0].equals(CsvConstants.CHANNEL)) {
-                    channelId = tokens[1];
+                    this.channelId = tokens[1];
                 } else if (tokens[0].equals(CsvConstants.SCHEMA)) {
                     schemaName = StringUtils.isBlank(tokens[1]) ? null : tokens[1];
                 } else if (tokens[0].equals(CsvConstants.CATALOG)) {
@@ -219,6 +226,10 @@ public class CsvDataReader implements IDataReader {
         if (csvReader != null) {
             csvReader.close();
         }
+    }
+    
+    public Map<Batch, Statistics> getStatistics() {
+        return statistics;
     }
 
 }
