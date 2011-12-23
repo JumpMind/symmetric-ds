@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
@@ -49,7 +50,6 @@ import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
@@ -94,9 +94,7 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
     private ITransportManager transportManager;
 
     private IRouterService routingService;
-    
-    private ITransformService transformService;
-    
+        
     private IDbDialect dbDialect;
 
     private BeanFactory beanFactory;
@@ -260,8 +258,7 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         
         if (ext instanceof IColumnTransform) {
             IColumnTransform<?> t = (IColumnTransform<?>)ext;
-            // TODO 
-            //transformService.addColumnTransform(t.getName(), t);
+            TransformWriter.addColumnTransform(t);
         }
 
         return installed;
@@ -320,7 +317,4 @@ public class ExtensionPointManager implements IExtensionPointManager, BeanFactor
         this.dbDialect = dbDialect;
     }
  
-    public void setTransformService(ITransformService transformService) {
-        this.transformService = transformService;
-    }
 }

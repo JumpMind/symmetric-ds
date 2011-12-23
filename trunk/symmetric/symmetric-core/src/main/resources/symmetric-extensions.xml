@@ -19,7 +19,6 @@
         <property name="transportManager" ref="transportManager" />
         <property name="routingService" ref="routingService" />
         <property name="dbDialect" ref="dbDialect" />
-        <property name="transformService" ref="transformService" />
         <property name="offlineDetectorServices">
           <list>
             <ref bean="pullService"/>
