@@ -13,7 +13,6 @@
   * Add settings to channel
   * Lookup/choose datawriter based on channel settings
   * clean up error handling in loader service
-  * add transform extensions back in
   
 * Add table copy utility
 * Clean up service tests    
