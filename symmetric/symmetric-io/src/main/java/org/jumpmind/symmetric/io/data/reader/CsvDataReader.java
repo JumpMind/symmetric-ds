@@ -229,7 +229,7 @@ public class CsvDataReader implements IDataReader {
                     next = null;
                     return data;
                 }
-            } while (next != null && !(next instanceof Batch) && !(next instanceof org.jumpmind.db.model.Table));
+            } while (next != null && !(next instanceof Batch) && !(next instanceof Table));
         }
         return null;
     }
