@@ -81,6 +81,8 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 
 /**
+ * Responsible for writing batch data to the database
+ * 
  * @see IDataLoaderService
  */
 public class DataLoaderService extends AbstractService implements IDataLoaderService {
@@ -396,7 +398,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             enableSyncTriggers(context);
         }
 
-        public boolean beforeBatchStarted(DataContext<CsvDataReader, TransformDatabaseWriter> context) {
+        public boolean beforeBatchStarted(
+                DataContext<CsvDataReader, TransformDatabaseWriter> context) {
             this.currentBatch = null;
             Batch batch = context.getBatch();
             if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED)
@@ -408,16 +411,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     this.currentBatch = incomingBatch;
                     return true;
                 }
-
             }
             return false;
         }
-        
-        public void afterBatchStarted(
-                DataContext<CsvDataReader, TransformDatabaseWriter> context) {
+
+        public void afterBatchStarted(DataContext<CsvDataReader, TransformDatabaseWriter> context) {
             Batch batch = context.getBatch();
-            dbDialect.disableSyncTriggers(context.getWriter().getDatabaseWriter()
-                    .getTransaction(), batch.getSourceNodeId());
+            dbDialect.disableSyncTriggers(context.getWriter().getDatabaseWriter().getTransaction(),
+                    batch.getSourceNodeId());
         }
 
         public void batchSuccessful(DataContext<CsvDataReader, TransformDatabaseWriter> context) {
@@ -449,6 +450,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void batchInError(DataContext<CsvDataReader, TransformDatabaseWriter> context,
                 Exception ex) {
+            Batch batch = context.getBatch();
+            this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
+                    .getWriter().getStatistics().get(batch), false);
             enableSyncTriggers(context);
             statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
             if (ex instanceof IOException || ex instanceof TransportException) {

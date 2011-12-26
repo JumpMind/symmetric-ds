@@ -42,6 +42,11 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>provided</scope>
+        </dependency>		
 		<!-- Databases -->
 		<dependency>
 			<groupId>org.apache.derby</groupId>

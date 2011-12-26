@@ -25,6 +25,7 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.log.Log4jLog;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -53,6 +54,10 @@ public class AbstractDatabaseTest extends AbstractTest {
     private String database = TestSetupUtil.getRootDbTypes(DatabaseTestSuite.DEFAULT_TEST_PREFIX)[0];
 
     static boolean standalone = true;
+    
+    static {
+        org.jumpmind.log.LogFactory.setLogClass(Log4jLog.class);        
+    }
 
     public void init(String database) {
         this.database = database;
