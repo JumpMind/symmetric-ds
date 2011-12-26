@@ -108,7 +108,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter
     }
 
     private boolean matchesTable(Table table, String tableSuffix) {
-        if (table.getName() != null) {
+        if (table != null && table.getName() != null) {
             return table.getName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix, tableSuffix));
         } else {
             return false;

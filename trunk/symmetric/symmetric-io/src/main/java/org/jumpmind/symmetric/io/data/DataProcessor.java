@@ -55,7 +55,12 @@ public class DataProcessor<R extends IDataReader, W extends IDataWriter> {
                                 listener.afterBatchStarted(context);
                             }
                         }
-                        dataRow += forEachTableInBatch(context, processBatch, batch);
+                        // pull and process any data events that are not wrapped in a table
+                        dataRow += forEachDataInTable(context, processBatch, batch);
+                        
+                        // pull and process all data events wrapped in tables
+                        dataRow += forEachTableInBatch(context, processBatch, batch);                       
+                        
                         if (processBatch) {
                             if (listener != null) {
                                 listener.beforeBatchEnd(context);

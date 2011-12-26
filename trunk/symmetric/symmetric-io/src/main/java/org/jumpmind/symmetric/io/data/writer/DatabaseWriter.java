@@ -48,6 +48,8 @@ public class DatabaseWriter implements IDataWriter {
 
     protected Table targetTable;
 
+    protected Map<String, Table> targetTables = new HashMap<String, Table>();
+
     protected CsvData lastData;
 
     protected Batch batch;
@@ -495,11 +497,17 @@ public class DatabaseWriter implements IDataWriter {
     protected String[] getPkData(CsvData data) {
         String[] pkData = null;
         if (batchSettings.isUseAllColumnsToIdentifyUpdateConflicts()) {
-            pkData = data.getParsedData(CsvData.ROW_DATA);
+            pkData = data.getParsedData(CsvData.OLD_DATA);
+            if (pkData == null) {
+                pkData = data.getParsedData(CsvData.ROW_DATA);
+            }
         } else {
             pkData = data.getParsedData(CsvData.PK_DATA);
-            if (pkData == null) {
-                String[] values = data.getParsedData(CsvData.ROW_DATA);
+            if (pkData == null || pkData.length < targetTable.getPrimaryKeyColumnCount()) {
+                String[] values = data.getParsedData(CsvData.OLD_DATA);
+                if (values == null) {
+                    values = data.getParsedData(CsvData.ROW_DATA);
+                }
                 Column[] pkColumns = targetTable.getPrimaryKeyColumns();
                 pkData = new String[pkColumns.length];
                 int i = 0;
@@ -569,22 +577,32 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected Table lookupTableAtTarget(Table sourceTable) {
-        Table table = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
-                sourceTable.getName(), false);
-        if (table != null) {
-            Column[] columns = table.getColumns();
-            for (Column column : columns) {
-                int typeCode = column.getTypeCode();
-                if (this.batchSettings.isTreatDateTimeFieldsAsVarchar()
-                        && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
-                    typeCode = Types.VARCHAR;
+        String tableNameKey = sourceTable.getFullyQualifiedTableName();
+        Table table = targetTables.get(tableNameKey);
+        if (table == null) {
+            table = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
+                    sourceTable.getName(), false);
+            if (table != null) {
+                table = table.copy();
+                table.reOrderColumns(sourceTable.getColumns(),
+                        this.batchSettings.isUsePrimaryKeysFromSource());
+
+                boolean setAllColumnsAsPrimaryKey = table.getPrimaryKeyColumnCount() == 0;
+
+                Column[] columns = table.getColumns();
+                for (Column column : columns) {
+                    int typeCode = column.getTypeCode();
+                    if (this.batchSettings.isTreatDateTimeFieldsAsVarchar()
+                            && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
+                        column.setTypeCode(Types.VARCHAR);
+                    }
+
+                    if (setAllColumnsAsPrimaryKey) {
+                        column.setPrimaryKey(true);
+                    }
                 }
-                column.setTypeCode(typeCode);
+                this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable);
             }
-            table = table.copy();
-            table.reOrderColumns(sourceTable.getColumns(),
-                    this.batchSettings.isUsePrimaryKeysFromSource());
-            this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable);
         }
         return table;
     }
