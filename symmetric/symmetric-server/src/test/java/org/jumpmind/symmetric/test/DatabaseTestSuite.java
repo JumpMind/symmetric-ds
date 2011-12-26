@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.test;
 
@@ -24,7 +25,6 @@ import java.util.Collection;
 
 import org.jumpmind.symmetric.config.ParameterFilterTest;
 import org.jumpmind.symmetric.extract.DataExtractorTest;
-import org.jumpmind.symmetric.integrate.XmlPublisherFilterTest;
 import org.jumpmind.symmetric.service.impl.AcknowledgeServiceTest;
 import org.jumpmind.symmetric.service.impl.ClusterServiceTest;
 import org.jumpmind.symmetric.service.impl.DataExtractorServiceTest;
@@ -45,26 +45,26 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(ParameterizedSuite.class)
-@SuiteClasses( { TriggerRouterServiceTest.class, DataExtractorTest.class,
-        ParameterFilterTest.class, RouterServiceTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class,
+@SuiteClasses({ TriggerRouterServiceTest.class, DataExtractorTest.class, ParameterFilterTest.class,
+        RouterServiceTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class,
         NodeConcurrencyFilterTest.class, AcknowledgeServiceTest.class, ClusterServiceTest.class,
         DataExtractorServiceTest.class, DataLoaderServiceTest.class, NodeServiceTest.class,
         OutgoingBatchServiceTest.class, ParameterServiceTest.class, PurgeServiceTest.class,
-        RegistrationServiceTest.class, StatisticServiceTest.class, XmlPublisherFilterTest.class,
-        DataServiceTest.class, CleanupTest.class })
+        RegistrationServiceTest.class, StatisticServiceTest.class, DataServiceTest.class,
+        CleanupTest.class })
 public class DatabaseTestSuite {
 
     String database;
-    
+
     public static final String DEFAULT_TEST_PREFIX = "test";
 
     public DatabaseTestSuite() throws Exception {
     }
-    
+
     public void init(String database) {
         this.database = database;
     }
-    
+
     @Parameters
     public static Collection<String[]> lookupDatabases() {
         return TestSetupUtil.lookupDatabases(DEFAULT_TEST_PREFIX);
@@ -74,7 +74,8 @@ public class DatabaseTestSuite {
     public void setup() throws Exception {
         TestSetupUtil.cleanup();
         AbstractDatabaseTest.standalone = false;
-        TestSetupUtil.setup(DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null, database);
+        TestSetupUtil.setup(DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null,
+                database);
     }
 
 }

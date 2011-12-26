@@ -718,7 +718,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         resetBatches();
 
-        update(TEST_TABLE_1, "Not Routed");
+        insert(TEST_TABLE_1, "Not Routed");
 
         Assert.assertEquals(
                 0,
@@ -736,7 +736,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         resetBatches();
 
-        update(TEST_TABLE_1, null);
+        insert(TEST_TABLE_1, null);
 
         Assert.assertEquals(
                 0,
@@ -768,7 +768,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         resetBatches();
 
-        update(TEST_TABLE_1, "Not Routed");
+        insert(TEST_TABLE_1, "Not Routed");
 
         Assert.assertEquals(
                 0,
@@ -786,7 +786,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         resetBatches();
 
-        update(TEST_TABLE_1, null);
+        insert(TEST_TABLE_1, null);
 
         Assert.assertEquals(
                 0,
@@ -1426,7 +1426,6 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             dialect.disableSyncTriggers(transaction, node2disable);
         }
         for (int i = 0; i < count; i++) {
-            update(tableName, routingVarcharFieldValue);
             transaction.execute(
                     String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName),
                     routingVarcharFieldValue);
@@ -1457,9 +1456,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         return getJdbcTemplate().queryForObject("select max(data_id) from sym_data", Long.class);
     }
 
-    protected void update(String tableName, String value) {
-        getJdbcTemplate().update(
-                String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName), value);
+    protected void insert(String tableName, String value) {
+        insert(tableName, 1, true, null, value);
     }
 
     protected void execute(final String sql, final String node2disable) {

@@ -13,13 +13,15 @@
         <priority value="INFO" />
     </category>
         
-    <category name="org.jumpmind.symmetric.io">
+    <!-- 
+    <category name="org.jumpmind.symmetric.io.data.writer">
         <priority value="DEBUG" />
     </category>    
     
     <category name="org.jumpmind.db.sql.jdbc">
         <priority value="DEBUG" />
-    </category>    
+    </category>
+     -->    
 
     <category name="org.jumpmind.symmetric.ddlutils">
         <priority value="WARN" />
