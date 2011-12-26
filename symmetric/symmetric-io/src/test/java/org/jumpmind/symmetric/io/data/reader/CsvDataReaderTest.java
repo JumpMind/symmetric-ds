@@ -76,6 +76,85 @@ public class CsvDataReaderTest {
         
         reader.close();
     }
+    
+    @Test
+    public void testTableContextSwitch() {
+        String nodeId= "1";
+        long batchId = 1;
+        String channelId = "test";
+        StringBuilder builder = beginCsv(nodeId);
+        beginBatch(builder, batchId, channelId);
+        putTableN(builder, 1, true);
+        putInsert(builder, 4);
+        putTableN(builder, 2, true);
+        putInsert(builder, 4);        
+        putTableN(builder, 1, false);
+        putInsert(builder, 2);
+        putTableN(builder, 2, false);
+        putInsert(builder, 2);
+        endCsv(builder);
+        
+        CsvDataReader reader = new CsvDataReader(builder);
+        DataContext<CsvDataReader, IDataWriter> ctx = new DataContext<CsvDataReader, IDataWriter>(reader, null);
+        reader.open(ctx);
+        
+        Batch batch = reader.nextBatch();
+        Assert.assertNotNull(batch);
+        
+        Table table = reader.nextTable();
+        Assert.assertNotNull(table);
+        Assert.assertEquals(2, table.getColumnCount());
+        Assert.assertEquals(1, table.getPrimaryKeyColumnCount());
+        Assert.assertEquals("test1", table.getName());
+        
+        int dataCount = 0;
+        while (reader.nextData() != null) {
+            dataCount++;
+        }
+        
+        Assert.assertEquals(4, dataCount);
+        
+        table = reader.nextTable();
+        Assert.assertNotNull(table);
+        Assert.assertEquals(2, table.getColumnCount());
+        Assert.assertEquals(1, table.getPrimaryKeyColumnCount());
+        Assert.assertEquals("test2", table.getName());
+        
+        dataCount = 0;
+        while (reader.nextData() != null) {
+            dataCount++;
+        }
+        
+        Assert.assertEquals(4, dataCount);
+        
+        table = reader.nextTable();
+        Assert.assertNotNull(table);
+        Assert.assertEquals(2, table.getColumnCount());
+        Assert.assertEquals(1, table.getPrimaryKeyColumnCount());
+        Assert.assertEquals("test1", table.getName());
+        
+        dataCount = 0;
+        while (reader.nextData() != null) {
+            dataCount++;
+        }
+        
+        Assert.assertEquals(2, dataCount);
+        
+        table = reader.nextTable();
+        Assert.assertNotNull(table);
+        Assert.assertEquals(2, table.getColumnCount());
+        Assert.assertEquals(1, table.getPrimaryKeyColumnCount());
+        Assert.assertEquals("test2", table.getName());
+        
+        dataCount = 0;
+        while (reader.nextData() != null) {
+            dataCount++;
+        }
+        
+        Assert.assertEquals(2, dataCount);
+        
+
+    }
 
     protected StringBuilder beginCsv(String nodeId) {
         StringBuilder builder = new StringBuilder();

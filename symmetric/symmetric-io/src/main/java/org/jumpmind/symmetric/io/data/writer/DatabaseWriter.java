@@ -127,15 +127,10 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     public boolean start(Table table) {
+        this.lastData = null;
+        this.currentDmlStatement = null;
         this.sourceTable = table;
         this.targetTable = lookupTableAtTarget(table);
-        if (this.targetTable != null) {
-            this.targetTable = targetTable.copy();
-            this.targetTable.reOrderColumns(sourceTable.getColumns(),
-                    this.batchSettings.isUsePrimaryKeysFromSource());
-            this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable);
-        }
-
         if (this.targetTable != null || hasFilterThatHandlesMissingTable(table)) {
             return true;
         } else {
@@ -573,9 +568,9 @@ public class DatabaseWriter implements IDataWriter {
         return false;
     }
 
-    protected Table lookupTableAtTarget(Table table) {
-        table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(),
-                false);
+    protected Table lookupTableAtTarget(Table sourceTable) {
+        Table table = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
+                sourceTable.getName(), false);
         if (table != null) {
             Column[] columns = table.getColumns();
             for (Column column : columns) {
@@ -586,6 +581,10 @@ public class DatabaseWriter implements IDataWriter {
                 }
                 column.setTypeCode(typeCode);
             }
+            table = table.copy();
+            table.reOrderColumns(sourceTable.getColumns(),
+                    this.batchSettings.isUsePrimaryKeysFromSource());
+            this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable);
         }
         return table;
     }

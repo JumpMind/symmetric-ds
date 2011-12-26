@@ -21,9 +21,14 @@ package org.jumpmind.symmetric.test;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jumpmind.log.Log4jLog;
 
 abstract public class AbstractTest {
 
+    static {
+        org.jumpmind.log.LogFactory.setLogClass(Log4jLog.class);        
+    }
+    
     protected Level setLoggingLevelForTest(Level level) {
         Level old = Logger.getLogger(getClass()).getLevel();
         Logger.getLogger("org.jumpmind").setLevel(level);

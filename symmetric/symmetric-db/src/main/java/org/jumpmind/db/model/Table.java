@@ -191,6 +191,10 @@ public class Table implements Serializable, Cloneable {
         return columns.size();
     }
 
+    public int getPrimaryKeyColumnCount() {
+        return getPrimaryKeyColumns().length;
+    }
+    
     /**
      * Returns the column at the specified position.
      * 

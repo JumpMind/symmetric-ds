@@ -351,7 +351,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 objectValue = Hex.decodeHex(value.toCharArray());
                             }
                         } else if (type == Types.TIME) {
-                            objectValue = Time.valueOf(value);
+                            objectValue = new Time(Timestamp.valueOf(value).getTime());
                         } else if (type == Types.ARRAY) {
                             objectValue = createArray(column, value);
                         }
