@@ -150,12 +150,15 @@ public class DatabaseWriter implements IDataWriter {
             boolean success = false;
             switch (data.getDataEventType()) {
             case UPDATE:
+                statistics.get(batch).increment(DatabaseWriterStatistics.STATEMENTCOUNT);
                 success = update(data);
                 break;
             case INSERT:
+                statistics.get(batch).increment(DatabaseWriterStatistics.STATEMENTCOUNT);
                 success = insert(data);
                 break;
             case DELETE:
+                statistics.get(batch).increment(DatabaseWriterStatistics.STATEMENTCOUNT);
                 success = delete(data);
                 break;
             case BSH:
@@ -180,7 +183,6 @@ public class DatabaseWriter implements IDataWriter {
                 }
             } else {
                 uncommittedCount++;
-                statistics.get(batch).increment(DatabaseWriterStatistics.STATEMENTCOUNT);
             }
 
             lastData = data;
@@ -224,8 +226,9 @@ public class DatabaseWriter implements IDataWriter {
         uncommittedCount = 0;
     }
 
-    protected boolean requireNewStatement(CsvData data) {
+    protected boolean requireNewStatement(DmlType currentType, CsvData data) {
         boolean requiresNew = currentDmlStatement == null || lastData == null
+                || currentDmlStatement.getDmlType() != currentType
                 || lastData.getDataEventType() != data.getDataEventType();
         if (!requiresNew && data.getDataEventType() == DataEventType.UPDATE) {
             String currentChanges = Arrays.toString(data.getChangedDataIndicators());
@@ -241,8 +244,8 @@ public class DatabaseWriter implements IDataWriter {
             try {
                 statistics.get(batch).startTimer(DatabaseWriterStatistics.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
-                    process &= filter.beforeWrite(this.context, this.targetTable != null ? this.targetTable : this.sourceTable,
-                            data);
+                    process &= filter.beforeWrite(this.context,
+                            this.targetTable != null ? this.targetTable : this.sourceTable, data);
                 }
             } finally {
                 statistics.get(batch).stopTimer(DatabaseWriterStatistics.FILTERMILLIS);
@@ -308,8 +311,8 @@ public class DatabaseWriter implements IDataWriter {
             try {
                 statistics.get(batch).startTimer(DatabaseWriterStatistics.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
-                    filter.afterWrite(this.context, this.targetTable != null ? this.targetTable : this.sourceTable,
-                            data);
+                    filter.afterWrite(this.context, this.targetTable != null ? this.targetTable
+                            : this.sourceTable, data);
                 }
             } finally {
                 statistics.get(batch).stopTimer(DatabaseWriterStatistics.FILTERMILLIS);
@@ -320,7 +323,7 @@ public class DatabaseWriter implements IDataWriter {
     protected boolean insert(CsvData data) {
         try {
             statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
-            if (requireNewStatement(data)) {
+            if (requireNewStatement(DmlType.INSERT, data)) {
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable);
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
@@ -346,7 +349,7 @@ public class DatabaseWriter implements IDataWriter {
     protected boolean delete(CsvData data) {
         try {
             statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
-            if (requireNewStatement(data)) {
+            if (requireNewStatement(DmlType.DELETE, data)) {
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE, targetTable);
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
@@ -377,7 +380,7 @@ public class DatabaseWriter implements IDataWriter {
                 }
             }
             if (changedColumnNameList.size() > 0) {
-                if (requireNewStatement(data)) {
+                if (requireNewStatement(DmlType.UPDATE, data)) {
                     this.currentDmlStatement = platform
                             .createDmlStatement(
                                     DmlType.UPDATE,
@@ -598,7 +601,7 @@ public class DatabaseWriter implements IDataWriter {
     public IDatabaseWriterConflictResolver getConflictResolver() {
         return conflictResolver;
     }
-    
+
     public void setConflictResolver(IDatabaseWriterConflictResolver conflictResolver) {
         this.conflictResolver = conflictResolver;
     }
@@ -622,5 +625,5 @@ public class DatabaseWriter implements IDataWriter {
     public ISqlTransaction getTransaction() {
         return transaction;
     }
-    
+
 }

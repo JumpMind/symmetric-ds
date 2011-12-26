@@ -134,9 +134,9 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
-        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
 
         // Update becomes fallback insert
         writer.write(CsvConstants.UPDATE);
@@ -175,7 +175,7 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
         assertNotNull(batch);
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
         assertEquals(batch.getFailedRowNumber(), 8l, "Wrong failed row number. " + printDatabase());
-        assertEquals(batch.getByteCount(), 322l, "Wrong byte count. " + printDatabase());
+        assertEquals(batch.getByteCount(), 509l, "Wrong byte count. " + printDatabase());
         assertEquals(batch.getStatementCount(), 8l, "Wrong statement count. " + printDatabase());
         assertEquals(batch.getFallbackInsertCount(), 1l, "Wrong fallback insert count. "
                 + printDatabase());
@@ -202,11 +202,9 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
-        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
-
         String nextBatchId = getNextBatchId();
-
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
 
         // This insert will be OK
         writer.write(CsvConstants.INSERT);
@@ -302,10 +300,6 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
         for (long i = 0; i < 7; i++) {
             batchId--;
             testSimple(CsvConstants.INSERT, values, values);
-            long expectedCount = 1;
-            if (i > 0) {
-                expectedCount = 0;
-            }
             assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                     IncomingBatch.Status.OK, "Wrong status");
             IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
@@ -314,7 +308,7 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
             assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status");
             assertEquals(batch.getSkipCount(), i);
             assertEquals(batch.getFailedRowNumber(), 0l, "Wrong failed row number");
-            assertEquals(batch.getStatementCount(), expectedCount, "Wrong statement count");
+            assertEquals(batch.getStatementCount(), 1l, "Wrong statement count");
             assertEquals(batch.getFallbackInsertCount(), 0l, "Wrong fallback insert count");
             assertEquals(batch.getFallbackUpdateCount(), 0l, "Wrong fallback update count");
             // pause to make sure we get a different start time on the incoming
@@ -487,16 +481,16 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
-        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
-
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(values, true);
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
 
         String nextBatchId2 = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId2 });
+        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(values2, true);
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId2 });

@@ -216,7 +216,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             Assert.assertEquals("test 1 2 3", result);
         }
     }
-
+    
     @Test
     public void testBenchmark() throws Exception {
         Table table = buildSourceTable(TEST_TABLE, TEST_KEYS, TEST_COLUMNS);

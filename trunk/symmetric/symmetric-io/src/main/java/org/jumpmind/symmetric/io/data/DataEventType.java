@@ -21,6 +21,8 @@
 
 package org.jumpmind.symmetric.io.data;
 
+import org.jumpmind.db.sql.DmlStatement.DmlType;
+
 /**
  * 
  */
@@ -80,6 +82,19 @@ public enum DataEventType {
 
     public String getCode() {
         return this.code;
+    }
+    
+    public DmlType getDmlType() {
+        switch (this) {
+        case INSERT:
+            return DmlType.INSERT;
+        case UPDATE:
+            return DmlType.UPDATE;
+        case DELETE:
+            return DmlType.DELETE;
+        default:
+            return DmlType.UNKNOWN;
+        }
     }
 
     public static DataEventType getEventType(String s) {

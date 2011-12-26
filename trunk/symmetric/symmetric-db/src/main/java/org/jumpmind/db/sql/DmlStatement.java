@@ -39,7 +39,7 @@ import org.jumpmind.db.model.Table;
 public class DmlStatement {
     
     public enum DmlType {
-        INSERT, UPDATE, DELETE, COUNT
+        INSERT, UPDATE, DELETE, COUNT, UNKNOWN
     };
 
     protected DmlType dmlType;

@@ -940,7 +940,7 @@ public class Table implements Serializable, Cloneable {
             String name = targetOrder[i].getName();
             for (Column column : columns) {
                 if (column.getName().equalsIgnoreCase(name)) {
-                    orderedColumns.add(i, column);
+                    orderedColumns.add(column);
                     if (copyPrimaryKeys) {
                         column.setPrimaryKey(targetOrder[i].isPrimaryKey());
                     }

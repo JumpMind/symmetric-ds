@@ -10,13 +10,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 
 /**
  * TODO Support Oracle's non-standard way of batching
  */
 public class JdbcSqlTransaction implements ISqlTransaction {
+    
+    protected final static Log log = LogFactory.getLog(JdbcSqlTransaction.class);
 
     protected boolean inBatchMode = false;
 
@@ -215,12 +220,15 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public void prepare(String sql) {
-        try {
+        try {            
             if (this.markers.size() > 0) {
                 throw new IllegalStateException(
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
             JdbcSqlTemplate.close(pstmt);
+            if (log.isDebugEnabled()) {
+                log.debug("Preparing: %s", sql);
+            }
             pstmt = connection.prepareStatement(sql);
             psql = sql;
         } catch (SQLException ex) {
@@ -231,6 +239,9 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     public int addRow(Object marker, Object[] args, int[] argTypes) {
         int rowsUpdated = 0;
         try {
+            if (log.isDebugEnabled()) {
+                log.debug("Adding %s %s", ArrayUtils.toString(args), inBatchMode ? " in batch mode" : "");
+            }
             if (args != null) {
                 StatementCreatorUtil.setValues(pstmt, args, argTypes,
                         jdbcSqlTemplate.getLobHandler());
