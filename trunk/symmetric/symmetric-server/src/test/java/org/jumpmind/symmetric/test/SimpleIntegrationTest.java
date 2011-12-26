@@ -1066,7 +1066,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "Table name in mixed case was not synced");
     }
 
-    @Test(timeout = 120000)
+    @Test //(timeout = 120000)
     public void testSyncShellCommand() throws Exception {
         logTestRunning();
         IDataService rootDataService = AppUtils.find(Constants.DATA_SERVICE, getRootEngine());

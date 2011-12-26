@@ -83,6 +83,9 @@ public class CsvDataReader implements IDataReader {
             String[] parsedOldData = null;
             long bytesRead = 0;
             while (csvReader.readRecord()) {
+                if (log.isDebugEnabled()) {
+                    log.debug(csvReader.getRawRecord());
+                }
                 String[] tokens = csvReader.getValues();
                 if (batch == null) {
                     bytesRead += csvReader.getRawRecord().length();
@@ -106,8 +109,7 @@ public class CsvDataReader implements IDataReader {
                     catalogName = StringUtils.isBlank(tokens[1]) ? null : tokens[1];
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
                     String tableName = tokens[1];
-                    table = tables.get(Table.getFullyQualifiedTableName(tableName, schemaName,
-                            catalogName, ""));
+                    table = tables.get(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
                     if (table != null) {
                         return table;
                     } else {
@@ -126,7 +128,7 @@ public class CsvDataReader implements IDataReader {
                                 && keys.contains(tokens[i]));
                         table.addColumn(column);
                     }
-                    tables.put(table.getFullyQualifiedTableName(""), table);
+                    tables.put(table.getFullyQualifiedTableName(), table);
                     return table;
                 } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                     return null;
@@ -156,6 +158,16 @@ public class CsvDataReader implements IDataReader {
                     data.setDataEventType(DataEventType.SQL);
                     data.putCsvData(CsvData.ROW_DATA, tokens[1]);
                     return data;
+                } else if (tokens[0].equals(CsvConstants.BSH)) {
+                    CsvData data = new CsvData();
+                    data.setDataEventType(DataEventType.BSH);
+                    data.putCsvData(CsvData.ROW_DATA, tokens[1]);
+                    return data;
+                } else if (tokens[0].equals(CsvConstants.CREATE)) {
+                    CsvData data = new CsvData();
+                    data.setDataEventType(DataEventType.CREATE);
+                    data.putCsvData(CsvData.ROW_DATA, tokens[1]);
+                    return data;                    
                 } else {
                     log.info("Unable to handle unknown csv values: " + Arrays.toString(tokens));
                 }

@@ -99,7 +99,7 @@ public class CsvUtils {
 
         writer.write(buffer.toString());
         if (log.isDebugEnabled()) {
-            log.debug("BufferWriting", buffer);
+            log.debug(buffer.toString());
         }
         return buffer.length();
     }

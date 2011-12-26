@@ -88,7 +88,7 @@ public class CsvData {
 
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String attributeName) {
-        return attributes == null ? null : (T)attributes.get(attributeName);
+        return attributes == null ? null : (T) attributes.get(attributeName);
     }
 
     public void removeData(String key) {
@@ -129,7 +129,13 @@ public class CsvData {
         String[] oldData = getParsedData(OLD_DATA);
         for (int i = 0; i < newData.length; i++) {
             if (oldData != null && oldData.length > i) {
-                changes[i] = !newData[i].equals(oldData[i]);
+                if (newData[i] == null) {
+                    changes[i] = oldData[i] != null;
+                } else if (oldData[i] == null) {
+                    changes[i] = newData[i] != null;
+                } else {
+                    changes[i] = !newData[i].equals(oldData[i]);
+                }
             } else {
                 changes[i] = true;
             }
