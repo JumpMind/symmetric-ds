@@ -393,18 +393,24 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     }
 
     public static int insert(Object[] values, IDbDialect dbDialect, boolean disableTriggers) {
+        int count = -1;
         IDatabasePlatform platform = dbDialect.getPlatform();
         ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
-        if (disableTriggers) {
-            dbDialect.disableSyncTriggers(transaction);
+        try {
+            if (disableTriggers) {
+                dbDialect.disableSyncTriggers(transaction);
+            }
+            count = transaction.execute(INSERT, filterValues(values, dbDialect));
+            if (disableTriggers) {
+                dbDialect.enableSyncTriggers(transaction);
+            }
+            transaction.commit();
+        } catch (RuntimeException ex) {
+            transaction.rollback();
+            throw ex;
+        } finally {
+            transaction.close();
         }
-        int count = transaction.execute(INSERT, filterValues(values, dbDialect),
-                filterTypes(INSERT_TYPES, dbDialect));
-        if (disableTriggers) {
-            dbDialect.enableSyncTriggers(transaction);
-        }
-        transaction.commit();
-        transaction.close();
         return count;
     }
 
