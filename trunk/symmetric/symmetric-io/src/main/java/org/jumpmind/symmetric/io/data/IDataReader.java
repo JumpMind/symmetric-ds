@@ -10,8 +10,5 @@ public interface IDataReader extends IDataResource {
     public Table nextTable();
 
     public CsvData nextData();
-    
-    // TODO think about streaming big data
-    //public InputStream getStream();
 
 }

@@ -9,7 +9,7 @@
   + Introduce handler for conflict resolution.  Implement default handler to start with
   + Setting for whether to update all columns or only the columns that changed
   + plug in transform database writer  
-  * LobHandler for Oracle
+  + LobHandler for Oracle
   * Add settings to channel
   * Lookup/choose datawriter based on channel settings
   * clean up error handling in loader service
