@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -34,7 +35,7 @@ import org.jumpmind.util.Statistics;
 public class CsvDataReader implements IDataReader {
 
     protected Log log = LogFactory.getLog(getClass());
-    
+
     protected Reader reader;
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected CsvReader csvReader;
@@ -49,6 +50,18 @@ public class CsvDataReader implements IDataReader {
 
     public CsvDataReader(StringBuilder input) {
         this(new BufferedReader(new StringReader(input.toString())));
+    }
+
+    public CsvDataReader(InputStream is) {
+        this(toReader(is));
+    }
+
+    protected static Reader toReader(InputStream is) {
+        try {
+            return new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        }
     }
 
     public CsvDataReader(String input) {
@@ -68,8 +81,8 @@ public class CsvDataReader implements IDataReader {
             throw new IoException(ex);
         }
     }
-    
-    public <R extends IDataReader,W extends IDataWriter> void open(DataContext<R,W> context) {
+
+    public <R extends IDataReader, W extends IDataWriter> void open(DataContext<R, W> context) {
         this.context = context;
         this.csvReader = CsvUtils.getCsvReader(reader);
         this.next = readNext();
@@ -90,11 +103,13 @@ public class CsvDataReader implements IDataReader {
                 if (batch == null) {
                     bytesRead += csvReader.getRawRecord().length();
                 } else {
-                    statistics.get(batch).increment(CsvReaderStatistics.READ_BYTE_COUNT, csvReader.getRawRecord().length() + bytesRead);
+                    statistics.get(batch).increment(CsvReaderStatistics.READ_BYTE_COUNT,
+                            csvReader.getRawRecord().length() + bytesRead);
                     bytesRead = 0;
                 }
                 if (tokens[0].equals(CsvConstants.BATCH)) {
-                    Batch batch = new Batch(Long.parseLong(tokens[1]), channelId, binaryEncoding, sourceNodeId);
+                    Batch batch = new Batch(Long.parseLong(tokens[1]), channelId, binaryEncoding,
+                            sourceNodeId);
                     statistics.put(batch, new CsvReaderStatistics());
                     return batch;
                 } else if (tokens[0].equals(CsvConstants.NODEID)) {
@@ -109,7 +124,8 @@ public class CsvDataReader implements IDataReader {
                     catalogName = StringUtils.isBlank(tokens[1]) ? null : tokens[1];
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
                     String tableName = tokens[1];
-                    table = tables.get(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+                    table = tables.get(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                            tableName));
                     if (table != null) {
                         return table;
                     } else {
@@ -135,22 +151,25 @@ public class CsvDataReader implements IDataReader {
                 } else if (tokens[0].equals(CsvConstants.INSERT)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.INSERT);
-                    data.putParsedData(CsvData.ROW_DATA, Arrays.copyOfRange(tokens, 1, tokens.length));
+                    data.putParsedData(CsvData.ROW_DATA,
+                            Arrays.copyOfRange(tokens, 1, tokens.length));
                     return data;
                 } else if (tokens[0].equals(CsvConstants.OLD)) {
                     parsedOldData = Arrays.copyOfRange(tokens, 1, tokens.length);
                 } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.UPDATE);
-                    data.putParsedData(CsvData.ROW_DATA, Arrays.copyOfRange(tokens, 1, table.getColumnCount() + 1));
-                    data.putParsedData(CsvData.PK_DATA, Arrays.copyOfRange(tokens, table.getColumnCount() + 1,
-                            tokens.length));
+                    data.putParsedData(CsvData.ROW_DATA,
+                            Arrays.copyOfRange(tokens, 1, table.getColumnCount() + 1));
+                    data.putParsedData(CsvData.PK_DATA,
+                            Arrays.copyOfRange(tokens, table.getColumnCount() + 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
                     return data;
                 } else if (tokens[0].equals(CsvConstants.DELETE)) {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.DELETE);
-                    data.putParsedData(CsvData.PK_DATA, Arrays.copyOfRange(tokens, 1, tokens.length));
+                    data.putParsedData(CsvData.PK_DATA,
+                            Arrays.copyOfRange(tokens, 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
                     return data;
                 } else if (tokens[0].equals(CsvConstants.SQL)) {
@@ -167,7 +186,7 @@ public class CsvDataReader implements IDataReader {
                     CsvData data = new CsvData();
                     data.setDataEventType(DataEventType.CREATE);
                     data.putCsvData(CsvData.ROW_DATA, tokens[1]);
-                    return data;                    
+                    return data;
                 } else {
                     log.info("Unable to handle unknown csv values: " + Arrays.toString(tokens));
                 }
@@ -239,7 +258,7 @@ public class CsvDataReader implements IDataReader {
             csvReader.close();
         }
     }
-    
+
     public Map<Batch, Statistics> getStatistics() {
         return statistics;
     }
