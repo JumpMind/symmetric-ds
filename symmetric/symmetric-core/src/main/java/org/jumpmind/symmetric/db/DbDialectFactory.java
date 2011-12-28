@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.db;
 
@@ -26,6 +26,7 @@ import java.sql.SQLException;
 
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.JdbcDatabasePlatformFactory;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.db2.Db2Platform;
 import org.jumpmind.db.platform.derby.DerbyPlatform;
 import org.jumpmind.db.platform.firebird.FirebirdPlatform;
@@ -54,44 +55,49 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Factory class that is responsible for creating the appropriate {@link IDbDialect} for
- * the configured database. 
+ * Factory class that is responsible for creating the appropriate
+ * {@link IDbDialect} for the configured database.
  */
 public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAware {
 
     private static final ILog log = LogFactory.getLog(DbDialectFactory.class);
 
     private IParameterService parameterService;
-    
+
     private String db2zSeriesProductVersion;
 
     private JdbcTemplate jdbcTemplate;
 
     private BeanFactory beanFactory;
-    
+
     private int queryTimeout;
-    
+
+    private int fetchSize;
+
     private boolean forceDelimitedIdentifierModeOn = false;
-    
+
     private boolean forceDelimitedIdentifierModeOff = false;
-    
-    private long tableCacheTimeoutInMs;    
+
+    private long tableCacheTimeoutInMs;
 
     public IDbDialect getObject() throws Exception {
 
         waitForAvailableDatabase();
-        
-        IDatabasePlatform pf = JdbcDatabasePlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource(), 
-                org.jumpmind.log.LogFactory.getLog("org.jumpmind." + parameterService.getString(ParameterConstants.ENGINE_NAME)));
-        
+
+        IDatabasePlatform pf = JdbcDatabasePlatformFactory.createNewPlatformInstance(
+                jdbcTemplate.getDataSource(),
+                new DatabasePlatformSettings(fetchSize, queryTimeout),
+                org.jumpmind.log.LogFactory.getLog("org.jumpmind."
+                        + parameterService.getString(ParameterConstants.ENGINE_NAME)));
+
         if (forceDelimitedIdentifierModeOn) {
             pf.setDelimitedIdentifierModeOn(true);
         }
-        
+
         if (forceDelimitedIdentifierModeOff) {
             pf.setDelimitedIdentifierModeOn(false);
         }
-        
+
         pf.setClearCacheModelTimeoutInMs(tableCacheTimeoutInMs);
 
         AbstractDbDialect dialect = null;
@@ -103,7 +109,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         } else if (pf instanceof MsSqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("msSqlDialect");
         } else if (pf instanceof GreenplumPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("greenplumDialect");              
+            dialect = (AbstractDbDialect) beanFactory.getBean("greenplumDialect");
         } else if (pf instanceof PostgreSqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("postgresqlDialect");
         } else if (pf instanceof DerbyPlatform) {
@@ -115,17 +121,19 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         } else if (pf instanceof HsqlDbPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
         } else if (pf instanceof HsqlDb2Platform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("hsqldb2Dialect");            
+            dialect = (AbstractDbDialect) beanFactory.getBean("hsqldb2Dialect");
         } else if (pf instanceof InformixPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("informixDialect");          
+            dialect = (AbstractDbDialect) beanFactory.getBean("informixDialect");
         } else if (pf instanceof Db2Platform) {
-            String currentDbProductVersion = JdbcDatabasePlatformFactory.getDatabaseProductVersion(jdbcTemplate
-                    .getDataSource());
+            String currentDbProductVersion = JdbcDatabasePlatformFactory
+                    .getDatabaseProductVersion(jdbcTemplate.getDataSource());
             if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
                 dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
             } else {
-                int dbMajorVersion = JdbcDatabasePlatformFactory.getDatabaseMajorVersion(jdbcTemplate.getDataSource());
-                int dbMinorVersion = JdbcDatabasePlatformFactory.getDatabaseMinorVersion(jdbcTemplate.getDataSource());
+                int dbMajorVersion = JdbcDatabasePlatformFactory
+                        .getDatabaseMajorVersion(jdbcTemplate.getDataSource());
+                int dbMinorVersion = JdbcDatabasePlatformFactory
+                        .getDatabaseMinorVersion(jdbcTemplate.getDataSource());
                 if (dbMajorVersion < 9 || (dbMajorVersion == 9 && dbMinorVersion < 5)) {
                     dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
                 } else {
@@ -189,25 +197,29 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
     public void setDb2zSeriesProductVersion(String version) {
         this.db2zSeriesProductVersion = version;
     }
-    
+
     public void setQueryTimeout(int queryTimeout) {
         this.queryTimeout = queryTimeout;
     }
-    
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
     public void setForceDelimitedIdentifierModeOn(boolean forceDelimitedIdentifierModeOn) {
         this.forceDelimitedIdentifierModeOn = forceDelimitedIdentifierModeOn;
     }
-    
+
     public void setForceDelimitedIdentifierModeOff(boolean forceDelimitedIdentifierModeOff) {
         this.forceDelimitedIdentifierModeOff = forceDelimitedIdentifierModeOff;
     }
-    
+
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
-    
+
     public void setTableCacheTimeoutInMs(long tableCacheTimeoutInMs) {
         this.tableCacheTimeoutInMs = tableCacheTimeoutInMs;
     }
-    
+
 }

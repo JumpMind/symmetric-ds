@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.log.Log;
 
 public class InformixPlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
@@ -18,8 +19,8 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
 
     public static final String JDBC_SUBPROTOCOL = "informix-sqli";
 
-    public InformixPlatform(DataSource dataSource, Log log) {
-        super(dataSource, log);
+    public InformixPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
+        super(dataSource, settings, log);
 
         info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
         info.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);

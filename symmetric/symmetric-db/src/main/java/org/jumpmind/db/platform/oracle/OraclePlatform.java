@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.log.Log;
 
 /*
@@ -53,8 +54,8 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public OraclePlatform(DataSource dataSource, Log log) {
-        super(dataSource, log);
+    public OraclePlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
+        super(dataSource, settings, log);
         
         info.setMaxIdentifierLength(30);
         info.setIdentityStatusReadingSupported(false);

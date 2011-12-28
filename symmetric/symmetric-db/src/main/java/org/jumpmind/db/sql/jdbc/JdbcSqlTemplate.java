@@ -12,6 +12,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.AbstractSqlTemplate;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -23,7 +24,6 @@ import org.jumpmind.log.LogFactory;
 import org.jumpmind.log.LogLevel;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 
-// TODO make sure connection timeouts are set properly
 public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
 
     static final Log log = LogFactory.getLog(JdbcSqlTemplate.class);
@@ -32,12 +32,14 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     protected boolean requiresAutoCommitFalseToSetFetchSize = false;
 
-    protected int queryTimeout;
+    protected DatabasePlatformSettings settings;
+    
+    protected ILobHandler lobHandler;
 
-    protected int fetchSize = 1000;
-
-    public JdbcSqlTemplate(DataSource dataSource) {
+    public JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings, ILobHandler lobHandler) {
         this.dataSource = dataSource;
+        this.settings = settings;
+        this.lobHandler = lobHandler;
     }
 
     public DataSource getDataSource() {
@@ -52,25 +54,17 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             boolean requiresAutoCommitFalseToSetFetchSize) {
         this.requiresAutoCommitFalseToSetFetchSize = requiresAutoCommitFalseToSetFetchSize;
     }
-
-    public int getQueryTimeout() {
-        return queryTimeout;
+    
+    public void setSettings(DatabasePlatformSettings settings) {
+        this.settings = settings;
     }
-
-    public void setQueryTimeout(int queryTimeout) {
-        this.queryTimeout = queryTimeout;
-    }
-
-    public int getFetchSize() {
-        return fetchSize;
-    }
-
-    public void setFetchSize(int fetchSize) {
-        this.fetchSize = fetchSize;
+    
+    public DatabasePlatformSettings getSettings() {
+        return settings;
     }
 
     public ILobHandler getLobHandler() {
-        return null;
+        return lobHandler;
     }
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
@@ -87,7 +81,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 ResultSet rs = null;
                 try {
                     ps = con.prepareStatement(sql);
-                    ps.setQueryTimeout(queryTimeout);
+                    ps.setQueryTimeout(settings.getQueryTimeout());
                     StatementCreatorUtil.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
@@ -110,7 +104,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 ResultSet rs = null;
                 try {
                     ps = con.prepareStatement(sql);
-                    ps.setQueryTimeout(queryTimeout);
+                    ps.setQueryTimeout(settings.getQueryTimeout());
                     StatementCreatorUtil.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
@@ -151,7 +145,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     PreparedStatement ps = null;
                     try {
                         ps = con.prepareStatement(sql);
-                        ps.setQueryTimeout(queryTimeout);
+                        ps.setQueryTimeout(settings.getQueryTimeout());
                         if (types != null) {
                             StatementCreatorUtil.setValues(ps, values, types, getLobHandler());
                         } else {

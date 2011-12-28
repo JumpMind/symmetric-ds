@@ -15,14 +15,17 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
 
     protected ISqlTemplate sqlTemplate;
     
-    public AbstractJdbcDatabasePlatform(DataSource dataSource, Log log) {
+    protected DatabasePlatformSettings settings;
+    
+    public AbstractJdbcDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
         super(log);
         this.dataSource = dataSource;
-        createSqlTemplate(dataSource);
+        this.settings = settings;
+        createSqlTemplate();
     }
     
-    protected void createSqlTemplate(DataSource dataSource) {
-        this.sqlTemplate = new JdbcSqlTemplate(dataSource);        
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new JdbcSqlTemplate(dataSource, settings, null);        
     }
 
     @Override

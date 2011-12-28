@@ -24,6 +24,7 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.log.Log;
 
 /*
@@ -45,8 +46,8 @@ public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public InterbasePlatform(DataSource dataSource, Log log) {
-        super(dataSource, log);
+    public InterbasePlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
+        super(dataSource, settings, log);
 
         info.setMaxIdentifierLength(31);
         info.setCommentPrefix("/*");

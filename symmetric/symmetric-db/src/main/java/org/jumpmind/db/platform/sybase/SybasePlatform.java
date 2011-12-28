@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.log.Log;
 
 /*
@@ -47,8 +48,8 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
     /* The maximum size that text and binary columns can have. */
     public static final long MAX_TEXT_SIZE = 2147483647;
 
-    public SybasePlatform(DataSource dataSource, Log log) {
-        super(dataSource, log);
+    public SybasePlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
+        super(dataSource, settings, log);
 
         info.setMaxIdentifierLength(128);
         info.setNullAsDefaultValueRequired(true);
