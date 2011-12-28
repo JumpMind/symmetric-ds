@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.log.Log;
 
 /*
@@ -45,8 +46,8 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
     /*
      * Creates a new instance of the H2 platform.
      */
-    public H2Platform(DataSource dataSource, Log log) {
-        super(dataSource, log);
+    public H2Platform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
+        super(dataSource, settings, log);
 
         info.setNonPKIdentityColumnsSupported(false);
         info.setIdentityOverrideAllowed(false);

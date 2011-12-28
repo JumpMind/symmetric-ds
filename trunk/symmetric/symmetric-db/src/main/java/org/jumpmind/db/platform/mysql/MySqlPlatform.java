@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.log.Log;
 
 /*
@@ -47,8 +48,8 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MySqlPlatform(DataSource dataSource, Log log) {
-        super(dataSource, log);
+    public MySqlPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
+        super(dataSource, settings, log);
 
         info.setMaxIdentifierLength(64);
         info.setNullAsDefaultValueRequired(true);

@@ -21,8 +21,6 @@ import org.jumpmind.util.Statistics;
 
 public class BatchCsvDataReader implements IDataReader {
 
-    protected static final CsvDataRowMapper MAPPER = new CsvDataRowMapper();
-
     protected String selectSql;
 
     protected IDatabasePlatform platform;
@@ -41,9 +39,12 @@ public class BatchCsvDataReader implements IDataReader {
 
     protected CsvData data;
 
+    protected boolean extractOldData = true;
+
     public BatchCsvDataReader(IDatabasePlatform platform, String sql, Map<Long, Table> tables,
-            Batch... batches) {
+            boolean extractOldData, Batch... batches) {
         this.selectSql = sql;
+        this.extractOldData = extractOldData;
         this.platform = platform;
         this.tables = tables;
         this.batchesToSend = new ArrayList<Batch>(batches.length);
@@ -60,8 +61,9 @@ public class BatchCsvDataReader implements IDataReader {
         if (this.batchesToSend.size() > 0) {
             this.batch = this.batchesToSend.remove(0);
             this.statistics.put(batch, new Statistics());
-            dataCursor = platform.getSqlTemplate().queryForCursor(selectSql, MAPPER,
-                    new Object[] { batch.getBatchId() }, new int[] { Types.NUMERIC });
+            dataCursor = platform.getSqlTemplate().queryForCursor(selectSql,
+                    new CsvDataRowMapper(), new Object[] { batch.getBatchId() },
+                    new int[] { Types.NUMERIC });
             return batch;
         } else {
             this.batch = null;
@@ -83,7 +85,9 @@ public class BatchCsvDataReader implements IDataReader {
         if (data != null) {
             table = tables.get(data.getAttribute(CsvData.ATTRIBUTE_TABLE_ID));
             if (table == null) {
-                // TODO throw exception
+                throw new RuntimeException(String.format(
+                        "Table mapping for id of %d was not found",
+                        data.getAttribute(CsvData.ATTRIBUTE_TABLE_ID)));
             }
         }
         return table;
@@ -113,12 +117,14 @@ public class BatchCsvDataReader implements IDataReader {
         return statistics;
     }
 
-    static class CsvDataRowMapper implements ISqlRowMapper<CsvData> {
+    class CsvDataRowMapper implements ISqlRowMapper<CsvData> {
         public CsvData mapRow(Row row) {
             CsvData data = new CsvData();
             data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA"));
             data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA"));
-            data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA"));
+            if (extractOldData) {
+                data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA"));
+            }
             data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
             data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID"));
             data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));

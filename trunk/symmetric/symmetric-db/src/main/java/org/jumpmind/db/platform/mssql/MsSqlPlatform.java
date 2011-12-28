@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.log.Log;
 
 /*
@@ -44,8 +45,8 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MsSqlPlatform(DataSource dataSource, Log log) {
-        super(dataSource, log);
+    public MsSqlPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
+        super(dataSource, settings, log);
 
         info.setMaxIdentifierLength(128);
 
@@ -93,8 +94,8 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
-    protected void createSqlTemplate(DataSource dataSource) {
-        this.sqlTemplate = new MsSqlJdbcSqlTemplate(dataSource);
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new MsSqlJdbcSqlTemplate(dataSource, settings);
     }
 
     public String getName() {

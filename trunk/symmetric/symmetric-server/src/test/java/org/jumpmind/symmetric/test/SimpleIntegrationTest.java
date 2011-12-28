@@ -47,7 +47,6 @@ import org.jumpmind.symmetric.db.informix.InformixDbDialect;
 import org.jumpmind.symmetric.db.interbase.InterbaseDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
-import org.jumpmind.symmetric.io.data.writer.DatabaseWriterPropertyConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -795,16 +794,15 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 .getApplicationContext().getBean(Constants.PARAMETER_SERVICE);
         IParameterService rootParameterService = (IParameterService) AppUtils.find(
                 Constants.PARAMETER_SERVICE, getRootEngine());
-        Assert.assertEquals(clientParameterService
-                .is(DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE),
-                rootParameterService
-                        .is(DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
+        Assert.assertEquals(
+                clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE),
+                rootParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
         boolean oldValue = clientParameterService
-                .is(DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
-        clientParameterService.saveParameter(
-                DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, newValue);
-        rootParameterService.saveParameter(
-                DatabaseWriterPropertyConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, newValue);
+                .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
+                newValue);
+        rootParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
+                newValue);
         return oldValue;
     }
 
@@ -1066,7 +1064,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "Table name in mixed case was not synced");
     }
 
-    @Test //(timeout = 120000)
+    @Test
+    // (timeout = 120000)
     public void testSyncShellCommand() throws Exception {
         logTestRunning();
         IDataService rootDataService = AppUtils.find(Constants.DATA_SERVICE, getRootEngine());
@@ -1274,9 +1273,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IParameterService clientParameterService = (IParameterService) getClientEngine()
                 .getApplicationContext().getBean(Constants.PARAMETER_SERVICE);
         long oldMaxRowsBeforeCommit = clientParameterService
-                .getLong(DatabaseWriterPropertyConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
-        clientParameterService.saveParameter(
-                DatabaseWriterPropertyConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT, 5);
+                .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
+                5);
         int oldCount = clientJdbcTemplate.queryForInt("select count(*) from one_column_table");
         IStatisticManager statisticManager = AppUtils.find(Constants.STATISTIC_MANAGER,
                 getClientEngine());
@@ -1303,8 +1302,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         } while (getClientEngine().pull().wasDataProcessed());
         int newCount = clientJdbcTemplate.queryForInt("select count(*) from one_column_table");
         Assert.assertEquals(50, newCount - oldCount);
-        clientParameterService.saveParameter(
-                DatabaseWriterPropertyConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
                 oldMaxRowsBeforeCommit);
     }
 

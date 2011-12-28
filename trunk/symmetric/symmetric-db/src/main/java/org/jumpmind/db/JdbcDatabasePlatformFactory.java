@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.db2.Db2Platform;
 import org.jumpmind.db.platform.derby.DerbyPlatform;
 import org.jumpmind.db.platform.firebird.FirebirdPlatform;
@@ -110,9 +111,9 @@ public class JdbcDatabasePlatformFactory {
                 FirebirdPlatform.DATABASENAME);
     }
     
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, DatabasePlatformSettings settings)
     throws DdlException {
-        return createNewPlatformInstance(dataSource, null);
+        return createNewPlatformInstance(dataSource, settings, null);
     }
     
     /*
@@ -125,7 +126,7 @@ public class JdbcDatabasePlatformFactory {
      * @return The platform or <code>null</code> if the database is not
      * supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, Log log)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, DatabasePlatformSettings settings, Log log)
             throws DdlException {
         
         if (log == null) {
@@ -139,8 +140,8 @@ public class JdbcDatabasePlatformFactory {
         Class<? extends IDatabasePlatform> clazz =  findPlatformClass(nameVersion);
         
         try {
-            Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, Log.class);
-            return construtor.newInstance(dataSource, log);
+            Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, DatabasePlatformSettings.class, Log.class);
+            return construtor.newInstance(dataSource, settings, log);
         } catch (Exception e) {
             throw new DdlException("Could not create a platform of type " + nameVersion[0], e);
         }

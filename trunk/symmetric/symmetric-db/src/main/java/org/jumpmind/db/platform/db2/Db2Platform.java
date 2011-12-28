@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.log.Log;
 
 /*
@@ -44,8 +45,8 @@ public class Db2Platform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public Db2Platform(DataSource dataSource, Log log) {
-        super(dataSource, log);
+    public Db2Platform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
+        super(dataSource, settings, log);
 
         // the BINARY types are also handled by Db2Builder.getSqlType(Column)
         info.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);

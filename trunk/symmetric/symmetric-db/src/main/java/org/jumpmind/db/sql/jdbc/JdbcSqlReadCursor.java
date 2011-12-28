@@ -43,11 +43,11 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 
             st = c.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
                     java.sql.ResultSet.CONCUR_READ_ONLY);
-            st.setQueryTimeout(sqlTemplate.getQueryTimeout());
+            st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
             if (values != null) {
                 StatementCreatorUtil.setValues(st, values, types, sqlTemplate.getLobHandler());
             }
-            st.setFetchSize(sqlTemplate.getFetchSize());
+            st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
             rs = st.executeQuery();
         } catch (SQLException ex) {
             throw sqlTemplate.translate(sql, ex);

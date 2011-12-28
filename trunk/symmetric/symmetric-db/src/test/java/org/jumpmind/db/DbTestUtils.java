@@ -3,6 +3,7 @@ package org.jumpmind.db;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.util.DataSourceProperties;
 
 abstract public class DbTestUtils {
@@ -14,7 +15,7 @@ abstract public class DbTestUtils {
         FileUtils.deleteDirectory(new File(String.format("target/%sdbs", name)));
         DataSourceProperties properties = new DataSourceProperties(String.format("test.%s", name),
                 DatabasePlatformTest.class.getResourceAsStream("/test-db.properties"), name);
-        return JdbcDatabasePlatformFactory.createNewPlatformInstance(properties.getDataSource());
+        return JdbcDatabasePlatformFactory.createNewPlatformInstance(properties.getDataSource(), new DatabasePlatformSettings());
     }
 
 }
