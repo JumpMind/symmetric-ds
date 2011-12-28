@@ -297,10 +297,10 @@ public abstract class StatementCreatorUtil {
         } else if (sqlType == Types.TIMESTAMP) {
             if (inValue instanceof java.util.Date) {
                 if (inValue instanceof java.sql.Timestamp) {
-                    ps.setTimestamp(paramIndex, (java.sql.Timestamp) inValue);
+                    ps.setTimestamp(paramIndex, (java.sql.Timestamp) inValue, Calendar.getInstance());
                 } else {
                     ps.setTimestamp(paramIndex,
-                            new java.sql.Timestamp(((java.util.Date) inValue).getTime()));
+                            new java.sql.Timestamp(((java.util.Date) inValue).getTime()), Calendar.getInstance());
                 }
             } else if (inValue instanceof Calendar) {
                 Calendar cal = (Calendar) inValue;
