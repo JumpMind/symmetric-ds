@@ -31,22 +31,22 @@ public class BatchCsvDataReader implements IDataReader {
 
     protected List<Batch> batchesToSend;
 
+    protected Map<Long, CsvDataSettings> csvDataSettings;
+
     protected Batch batch;
 
-    protected Table table;
-
-    protected Map<Long, Table> tables;
+    protected CsvDataSettings csvDataSetting;
 
     protected CsvData data;
 
     protected boolean extractOldData = true;
 
-    public BatchCsvDataReader(IDatabasePlatform platform, String sql, Map<Long, Table> tables,
-            boolean extractOldData, Batch... batches) {
+    public BatchCsvDataReader(IDatabasePlatform platform, String sql,
+            Map<Long, CsvDataSettings> csvDataSettings, boolean extractOldData, Batch... batches) {
         this.selectSql = sql;
         this.extractOldData = extractOldData;
         this.platform = platform;
-        this.tables = tables;
+        this.csvDataSettings = csvDataSettings;
         this.batchesToSend = new ArrayList<Batch>(batches.length);
         for (Batch batch : batches) {
             this.batchesToSend.add(batch);
@@ -80,17 +80,17 @@ public class BatchCsvDataReader implements IDataReader {
     }
 
     public Table nextTable() {
-        table = null;
+        csvDataSetting = null;
         data = this.dataCursor.next();
         if (data != null) {
-            table = tables.get(data.getAttribute(CsvData.ATTRIBUTE_TABLE_ID));
-            if (table == null) {
+            csvDataSetting = csvDataSettings.get(data.getAttribute(CsvData.ATTRIBUTE_TABLE_ID));
+            if (csvDataSetting == null) {
                 throw new RuntimeException(String.format(
                         "Table mapping for id of %d was not found",
                         data.getAttribute(CsvData.ATTRIBUTE_TABLE_ID)));
             }
         }
-        return table;
+        return csvDataSetting != null ? csvDataSetting.getTableMetaData() : null;
     }
 
     public CsvData nextData() {
@@ -100,8 +100,12 @@ public class BatchCsvDataReader implements IDataReader {
 
         CsvData returnData = null;
         if (data != null) {
-            Table newTable = tables.get(data.getAttribute(CsvData.ATTRIBUTE_TABLE_ID));
-            if (newTable != null && newTable.equals(table)) {
+            CsvDataSettings newCsvDataSetting = csvDataSettings.get(data
+                    .getAttribute(CsvData.ATTRIBUTE_TABLE_ID));
+            if (newCsvDataSetting != null
+                    && csvDataSetting != null
+                    && newCsvDataSetting.getTableMetaData().equals(
+                            csvDataSetting.getTableMetaData())) {
                 returnData = data;
                 data = null;
             }
@@ -117,10 +121,19 @@ public class BatchCsvDataReader implements IDataReader {
         return statistics;
     }
 
+    protected String enhanceWithLobsFromTargetIfNeeded(String rowData) {
+        // TODO
+        return rowData;
+    }
+
     class CsvDataRowMapper implements ISqlRowMapper<CsvData> {
         public CsvData mapRow(Row row) {
             CsvData data = new CsvData();
-            data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA"));
+            String rowData = row.getString("ROW_DATA");
+            if (rowData != null && csvDataSetting.isSelectLobsFromTarget()) {
+                rowData = enhanceWithLobsFromTargetIfNeeded(rowData);
+            }
+            data.putCsvData(CsvData.ROW_DATA, rowData);
             data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA"));
             if (extractOldData) {
                 data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA"));
@@ -135,6 +148,33 @@ public class BatchCsvDataReader implements IDataReader {
             data.putAttribute(CsvData.ATTRIBUTE_DATA_ID, row.getLong("DATA_ID"));
             return data;
         }
+    }
+
+    public static class CsvDataSettings {
+        protected boolean selectLobsFromTarget = false;
+        protected Table tableMetaData;
+
+        public CsvDataSettings(boolean useStreamLobs, Table tableMetaData) {
+            this.selectLobsFromTarget = useStreamLobs;
+            this.tableMetaData = tableMetaData;
+        }
+
+        public boolean isSelectLobsFromTarget() {
+            return selectLobsFromTarget;
+        }
+
+        public void setSelectLobsFromTarget(boolean selectLobsFromTarget) {
+            this.selectLobsFromTarget = selectLobsFromTarget;
+        }
+
+        public Table getTableMetaData() {
+            return tableMetaData;
+        }
+
+        public void setTableMetaData(Table tableMetaData) {
+            this.tableMetaData = tableMetaData;
+        }
+
     }
 
 }
