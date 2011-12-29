@@ -50,7 +50,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
-import org.jumpmind.db.util.Jdbc3Utils;
+import org.jumpmind.db.sql.jdbc.JdbcUtils;
 import org.jumpmind.log.Log;
 
 /*
@@ -179,7 +179,7 @@ public class MsSqlBuilder extends AbstractDdlBuilder {
     protected String getNativeDefaultValue(Column column) {
         // Sql Server wants BIT default values as 0 or 1
         if ((column.getTypeCode() == Types.BIT)
-                || (Jdbc3Utils.supportsJava14JdbcTypes() && (column.getTypeCode() == Jdbc3Utils
+                || (JdbcUtils.supportsJava14JdbcTypes() && (column.getTypeCode() == JdbcUtils
                         .determineBooleanTypeCode()))) {
             return getDefaultValueHelper().convert(column.getDefaultValue(), column.getTypeCode(),
                     Types.SMALLINT).toString();

@@ -23,6 +23,7 @@ import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;
 import org.jumpmind.log.LogLevel;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
+import org.springframework.jdbc.support.lob.LobHandler;
 
 public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
 
@@ -34,9 +35,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     protected DatabasePlatformSettings settings;
     
-    protected ILobHandler lobHandler;
+    protected LobHandler lobHandler;
 
-    public JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings, ILobHandler lobHandler) {
+    public JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings, LobHandler lobHandler) {
         this.dataSource = dataSource;
         this.settings = settings;
         this.lobHandler = lobHandler;
@@ -63,7 +64,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return settings;
     }
 
-    public ILobHandler getLobHandler() {
+    public LobHandler getLobHandler() {
         return lobHandler;
     }
 
@@ -82,7 +83,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 try {
                     ps = con.prepareStatement(sql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
-                    StatementCreatorUtil.setValues(ps, args);
+                    JdbcUtils.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
                         result = (T) rs.getObject(1);
@@ -105,7 +106,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 try {
                     ps = con.prepareStatement(sql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
-                    StatementCreatorUtil.setValues(ps, args);
+                    JdbcUtils.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
                         ResultSetMetaData meta = rs.getMetaData();
@@ -147,9 +148,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         ps = con.prepareStatement(sql);
                         ps.setQueryTimeout(settings.getQueryTimeout());
                         if (types != null) {
-                            StatementCreatorUtil.setValues(ps, values, types, getLobHandler());
+                            JdbcUtils.setValues(ps, values, types, getLobHandler());
                         } else {
-                            StatementCreatorUtil.setValues(ps, values);
+                            JdbcUtils.setValues(ps, values);
                         }
                         return ps.executeUpdate();
                     } finally {
