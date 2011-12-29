@@ -28,6 +28,7 @@ import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
 import org.jumpmind.log.Log;
+import org.springframework.jdbc.support.lob.OracleLobHandler;
 
 /*
  * The platform for Oracle 8.

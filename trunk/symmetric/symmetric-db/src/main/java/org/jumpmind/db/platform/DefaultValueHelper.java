@@ -27,7 +27,7 @@ import java.sql.Types;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.util.Jdbc3Utils;
+import org.jumpmind.db.sql.jdbc.JdbcUtils;
 
 /**
  * Helper class for dealing with default values, e.g. converting them to other
@@ -77,8 +77,8 @@ public class DefaultValueHelper {
                 }
                 break;
             default:
-                if (Jdbc3Utils.supportsJava14JdbcTypes()
-                        && (originalTypeCode == Jdbc3Utils.determineBooleanTypeCode())) {
+                if (JdbcUtils.supportsJava14JdbcTypes()
+                        && (originalTypeCode == JdbcUtils.determineBooleanTypeCode())) {
                     result = convertBoolean(defaultValue, targetTypeCode).toString();
                 }
                 break;
@@ -107,7 +107,7 @@ public class DefaultValueHelper {
         }
 
         if ((targetTypeCode == Types.BIT)
-                || (Jdbc3Utils.supportsJava14JdbcTypes() && (targetTypeCode == Jdbc3Utils
+                || (JdbcUtils.supportsJava14JdbcTypes() && (targetTypeCode == JdbcUtils
                         .determineBooleanTypeCode()))) {
             result = value;
         } else if (TypeMap.isNumericType(targetTypeCode)) {

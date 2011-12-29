@@ -148,7 +148,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 ResultSet rs = null;
                 try {
                     ps = con.prepareStatement(sql);
-                    StatementCreatorUtil.setValues(ps, args);
+                    JdbcUtils.setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
                         result = (T) rs.getObject(1);
@@ -169,7 +169,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 ResultSet rs = null;
                 try {
                     stmt = con.prepareStatement(sql);
-                    StatementCreatorUtil.setValues(stmt, args);
+                    JdbcUtils.setValues(stmt, args);
                     if (stmt.execute()) {
                         rs = stmt.getResultSet();
                         while (rs.next()) {
@@ -243,7 +243,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 log.debug("Adding %s %s", ArrayUtils.toString(args), inBatchMode ? " in batch mode" : "");
             }
             if (args != null) {
-                StatementCreatorUtil.setValues(pstmt, args, argTypes,
+                JdbcUtils.setValues(pstmt, args, argTypes,
                         jdbcSqlTemplate.getLobHandler());
             }
             if (inBatchMode) {

@@ -29,7 +29,7 @@ import java.sql.Types;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.jumpmind.db.util.Jdbc3Utils;
+import org.jumpmind.db.sql.jdbc.JdbcUtils;
 
 /**
  * Represents a column in the database model.
@@ -446,8 +446,8 @@ public class Column implements Cloneable, Serializable {
                 case Types.BIT:
                     return ConvertUtils.convert(defaultValue, Boolean.class);
                 default:
-                    if (Jdbc3Utils.supportsJava14JdbcTypes()
-                            && (typeCode == Jdbc3Utils.determineBooleanTypeCode())) {
+                    if (JdbcUtils.supportsJava14JdbcTypes()
+                            && (typeCode == JdbcUtils.determineBooleanTypeCode())) {
                         return ConvertUtils.convert(defaultValue, Boolean.class);
                     }
                     break;
