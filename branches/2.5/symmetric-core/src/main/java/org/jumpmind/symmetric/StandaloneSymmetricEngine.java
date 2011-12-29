@@ -59,6 +59,17 @@ public class StandaloneSymmetricEngine extends AbstractSymmetricEngine {
                 overridePropertiesResource2);
     }
 
+    public StandaloneSymmetricEngine(ApplicationContext parentContext, boolean isParentContext,
+            Properties overrideProperties, String overridePropertiesResource1,
+            String overridePropertiesResource2, boolean isClient) {
+    	
+    	if (isClient) {
+    		springXml = Constants.CLIENT_SPRING_XML;
+    	}
+        init(parentContext, isParentContext, overrideProperties, overridePropertiesResource1,
+                overridePropertiesResource2);
+    }
+
     public StandaloneSymmetricEngine() {
         this(null, false, null, null, null);
     }
