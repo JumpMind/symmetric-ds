@@ -246,11 +246,17 @@ public class TransformDataLoader extends AbstractTransformer implements IBuiltIn
         }
     }
 
-    public boolean isHandlingMissingTable(IDataLoaderContext context) {
-        List<TransformTable> transformationsToPerform = findTablesToTransform(
-                context.getNodeGroupLink(),
-                context.getTableTemplate().getFullyQualifiedTableName(true));
-        return transformationsToPerform != null && transformationsToPerform.size() > 0;
-    }
+	public boolean isHandlingMissingTable(IDataLoaderContext context) {
+		if (isEligibleForTransform(context.getCatalogName(),
+				context.getSchemaName(), context.getTableName())) {
+			List<TransformTable> transformationsToPerform = findTablesToTransform(
+					context.getNodeGroupLink(), context.getTableTemplate()
+							.getFullyQualifiedTableName(true));
+			return transformationsToPerform != null
+					&& transformationsToPerform.size() > 0;
+		} else {
+			return false;
+		}
+	}
 
 }
