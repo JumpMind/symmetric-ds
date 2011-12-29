@@ -20,7 +20,7 @@
     </organization>
 
     <properties>
-        <version.springframwork>3.0.4.RELEASE</version.springframwork>
+        <version.springframwork>3.0.7.RELEASE</version.springframwork>
         <version.jetty>7.1.6.v20100715</version.jetty>
         <version.derby>10.5.3.0_1</version.derby>
         <version.hsqldb>2.2.4</version.hsqldb>
@@ -299,7 +299,7 @@
                         <artifactId>stax-api</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
+            </dependency>            
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-db</artifactId>
@@ -311,7 +311,24 @@
                         <artifactId>stax-api</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>            
+            </dependency>
+            <dependency>
+                <groupId>org.jumpmind.symmetric</groupId>
+                <artifactId>symmetric-jdbc</artifactId>
+                <version>3.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jumpmind.symmetric</groupId>
+                <artifactId>symmetric-jdbc</artifactId>
+                <type>test-jar</type>
+                <version>3.0.0-SNAPSHOT</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>stax</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>                            
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-io</artifactId>

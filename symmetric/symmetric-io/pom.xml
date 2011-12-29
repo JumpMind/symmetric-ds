@@ -23,9 +23,14 @@
 			<groupId>org.jumpmind.symmetric</groupId>
 			<artifactId>symmetric-db</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-jdbc</artifactId>
+            <scope>test</scope>
+        </dependency>   		
 		<dependency>
 			<groupId>org.jumpmind.symmetric</groupId>
-			<artifactId>symmetric-db</artifactId>
+			<artifactId>symmetric-jdbc</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

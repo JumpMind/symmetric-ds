@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jumpmind.db.sql.jdbc.JdbcUtils;
+import org.jumpmind.db.platform.PlatformUtils;
 
 /**
  * A class that maps SQL type names to their JDBC type ID found in
@@ -140,10 +140,10 @@ public abstract class TypeMap
         registerJdbcType(Types.VARCHAR,       VARCHAR,       JdbcTypeCategoryEnum.TEXTUAL);
 
         // only available in JDK 1.4 and above:
-        if (JdbcUtils.supportsJava14JdbcTypes())
+        if (PlatformUtils.supportsJava14JdbcTypes())
         {
-            registerJdbcType(JdbcUtils.determineBooleanTypeCode(),  BOOLEAN,  JdbcTypeCategoryEnum.NUMERIC);
-            registerJdbcType(JdbcUtils.determineDatalinkTypeCode(), DATALINK, JdbcTypeCategoryEnum.SPECIAL);
+            registerJdbcType(PlatformUtils.determineBooleanTypeCode(),  BOOLEAN,  JdbcTypeCategoryEnum.NUMERIC);
+            registerJdbcType(PlatformUtils.determineDatalinkTypeCode(), DATALINK, JdbcTypeCategoryEnum.SPECIAL);
         }
 
         // Torque/Turbine extensions which we only support when reading from an XML schema

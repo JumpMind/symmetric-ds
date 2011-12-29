@@ -25,8 +25,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.jumpmind.db.IDatabasePlatform;
-import org.jumpmind.db.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.platform.db2.Db2Platform;
 import org.jumpmind.db.platform.derby.DerbyPlatform;
 import org.jumpmind.db.platform.firebird.FirebirdPlatform;

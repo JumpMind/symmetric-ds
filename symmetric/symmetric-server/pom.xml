@@ -86,6 +86,10 @@
         </dependency>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-jdbc</artifactId>
+        </dependency>        
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-core</artifactId>
         </dependency>
         <dependency>
