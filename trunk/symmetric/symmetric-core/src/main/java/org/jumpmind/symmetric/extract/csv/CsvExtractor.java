@@ -44,7 +44,7 @@ public class CsvExtractor extends CsvExtractor16 {
     
     public void init(Writer writer, DataExtractorContext context) throws IOException {
         super.init(writer, context);
-        CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, dbDialect.getBinaryEncoding().name());
+        CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, symmetricDialect.getBinaryEncoding().name());
         CsvUtils.writeLineFeed(writer);
     }
 

@@ -32,7 +32,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.model.Data;
@@ -55,14 +55,14 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
 
     protected ITriggerRouterService triggerRouterService;
 
-    protected IDbDialect dbDialect;
+    protected ISymmetricDialect symmetricDialect;
 
     protected void selectAndEnhanceWithLobsIfEnabled(Data data, DataExtractorContext context) {
         TriggerHistory triggerHistory = data.getTriggerHistory();
         if (triggerHistory != null) {
             Trigger trigger = findTrigger(triggerHistory);
             if (trigger != null) {
-                Table table = dbDialect.getTable(trigger, true);
+                Table table = symmetricDialect.getTable(trigger, true);
                 if (table != null) {
                     if (trigger.isUseStreamLobs()) {
                         final List<Column> lobColumns = getLobColumns(table);
@@ -70,10 +70,10 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                             try {
                                 final String[] columnNames = triggerHistory.getParsedColumnNames();
                                 final String[] rowData = data.toParsedRowData();
-                                Column[] orderedColumns = dbDialect
+                                Column[] orderedColumns = symmetricDialect
                                         .orderColumns(columnNames, table);
-                                Object[] objectValues = dbDialect.getPlatform().getObjectValues(
-                                        dbDialect.getBinaryEncoding(), rowData, orderedColumns);
+                                Object[] objectValues = symmetricDialect.getPlatform().getObjectValues(
+                                        symmetricDialect.getBinaryEncoding(), rowData, orderedColumns);
                                 Map<String, Object> columnDataMap = CollectionUtils.toMap(columnNames,
                                         objectValues);
                                 Column[] pkColumns = table.getPrimaryKeyColumns();
@@ -88,7 +88,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                 template.query(sql, args, types, new RowMapper<Object>() {
                                     public Object mapRow(ResultSet rs, int rowNum)
                                             throws SQLException {
-                                        LobHandler lobHandler = dbDialect.getLobHandler();
+                                        LobHandler lobHandler = symmetricDialect.getLobHandler();
                                         if (lobHandler == null) {
                                             // If there isn't a lob handler already defined for a platform
                                             // then use the default.  
@@ -96,10 +96,10 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                         }
                                         for (Column col : lobColumns) {
                                             String valueForCsv = null;
-                                            if (dbDialect.getPlatform().isBlob(col.getTypeCode())) {
+                                            if (symmetricDialect.getPlatform().isBlob(col.getTypeCode())) {
                                                 byte[] blobBytes = lobHandler.getBlobAsBytes(rs,
                                                         col.getName());
-                                                valueForCsv = dbDialect.encodeForCsv(blobBytes);
+                                                valueForCsv = symmetricDialect.encodeForCsv(blobBytes);
                                             } else {
                                                 String clobText = lobHandler.getClobAsString(rs,
                                                         col.getName());
@@ -146,7 +146,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
 
     protected String buildSelect(Table table, List<Column> lobColumns, Column[] pkColumns) {
         StringBuilder sql = new StringBuilder("select ");
-        String quote = dbDialect.getPlatform().getPlatformInfo().getIdentifierQuoteString();
+        String quote = symmetricDialect.getPlatform().getPlatformInfo().getIdentifierQuoteString();
         for (Column col : lobColumns) {
             sql.append(quote);
             sql.append(col.getName());
@@ -171,7 +171,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
         List<Column> lobColumns = new ArrayList<Column>(1);
         Column[] allColumns = table.getColumns();
         for (Column column : allColumns) {
-            if (dbDialect.getPlatform().isLob(column.getTypeCode())) {
+            if (symmetricDialect.getPlatform().isLob(column.getTypeCode())) {
                 lobColumns.add(column);
             }
         }
@@ -182,8 +182,8 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
         this.triggerRouterService = triggerRouterService;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
     }
 
 }

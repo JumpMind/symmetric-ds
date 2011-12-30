@@ -25,13 +25,13 @@ import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.AbstractEmbeddedDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
+public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
 
     public static String DUAL_TABLE = "DUAL";
 

@@ -24,15 +24,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 
-public class InformixDbDialect extends AbstractDbDialect implements IDbDialect {
+public class InformixSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     private Map<String, String> sqlScriptReplacementTokens;
 
-    public InformixDbDialect() {
+    public InformixSymmetricDialect() {
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");
     }    

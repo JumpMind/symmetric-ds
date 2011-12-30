@@ -23,15 +23,15 @@ package org.jumpmind.symmetric.db.h2;
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.AbstractEmbeddedDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
 /*
  * Synchronization support for the H2 database platform. 
  */
-public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
+public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
     
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,

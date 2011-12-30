@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 /**
  * 
  */
-abstract public class AbstractEmbeddedDbDialect extends AbstractDbDialect implements IDbDialect {
+abstract public class AbstractEmbeddedSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     
     /**
      * All the templates have ' escaped because the SQL is inserted into a view.

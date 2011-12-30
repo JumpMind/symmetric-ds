@@ -70,7 +70,7 @@
         <property name="propagationBehaviorName" value="PROPAGATION_REQUIRED" />
     </bean>
     
-    <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
+    <bean id="symmetricDialect" class="org.jumpmind.symmetric.db.SymmetricDialectFactory" scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="db2zSeriesProductVersion" value="$[sym.db2.zseries.version]" />
         <property name="queryTimeout" value="$[sym.db.sql.query.timeout.seconds]"/>   

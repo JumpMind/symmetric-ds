@@ -25,8 +25,8 @@ import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -34,7 +34,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /*
  * Support for PostgreSQL
  */
-public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
+public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     static final String TRANSACTION_ID_EXPRESSION = "txid_current()";
 

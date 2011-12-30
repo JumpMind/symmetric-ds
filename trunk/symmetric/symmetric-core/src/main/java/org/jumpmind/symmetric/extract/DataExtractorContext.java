@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.util.Context;
@@ -41,7 +41,7 @@ public class DataExtractorContext extends Context implements Cloneable {
     private String lastRouterId;
     private OutgoingBatch batch;
     private IDataExtractor dataExtractor;
-    private IDbDialect dbDialect;
+    private ISymmetricDialect symmetricDialect;
     private JdbcTemplate jdbcTemplate;
     private INodeService nodeService;
 
@@ -63,7 +63,7 @@ public class DataExtractorContext extends Context implements Cloneable {
     }
     
     public BinaryEncoding getBinaryEncoding() {
-        return dbDialect.getBinaryEncoding();
+        return symmetricDialect.getBinaryEncoding();
     }
     
     public Map<String, Object> getContextCache() {
@@ -122,8 +122,8 @@ public class DataExtractorContext extends Context implements Cloneable {
         }
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
     }
     
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {

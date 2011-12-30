@@ -58,7 +58,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -621,7 +621,7 @@ public class SymmetricLauncher {
             file.getParentFile().mkdirs();
         }
         FileWriter os = new FileWriter(file, false);
-        os.write(((IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT))
+        os.write(((ISymmetricDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT))
                 .getCreateSymmetricDDL());
         os.close();
     }
@@ -650,7 +650,7 @@ public class SymmetricLauncher {
     }
 
     private void runDdlXml(ISymmetricEngine engine, String fileName) throws FileNotFoundException {
-        IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(
+        ISymmetricDialect dialect = (ISymmetricDialect) engine.getApplicationContext().getBean(
                 Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
@@ -664,7 +664,7 @@ public class SymmetricLauncher {
 
     private void runSql(ISymmetricEngine engine, String fileName) throws FileNotFoundException,
             MalformedURLException {
-        IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(
+        ISymmetricDialect dialect = (ISymmetricDialect) engine.getApplicationContext().getBean(
                 Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {

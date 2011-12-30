@@ -28,7 +28,7 @@ import java.sql.Statement;
 import org.apache.commons.dbcp.DelegatingPreparedStatement;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
+import org.jumpmind.symmetric.db.oracle.OracleSymmetricDialect;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.PreparedStatementCallback;
@@ -39,13 +39,13 @@ public class JdbcBatchPreparedStatementCallback implements PreparedStatementCall
     static final ILog log = LogFactory.getLog(JdbcBatchPreparedStatementCallback.class);
     static private boolean firstInitialization = true;
     BatchPreparedStatementSetter pss;
-    IDbDialect dbDialect;
+    ISymmetricDialect symmetricDialect;
     int executeBatchSize;
 
-    public JdbcBatchPreparedStatementCallback(IDbDialect dbDialect,
+    public JdbcBatchPreparedStatementCallback(ISymmetricDialect symmetricDialect,
             BatchPreparedStatementSetter pss, int executeBatchSize) {
         this.pss = pss;
-        this.dbDialect = dbDialect;
+        this.symmetricDialect = symmetricDialect;
         this.executeBatchSize = executeBatchSize;
     }
 
@@ -53,7 +53,7 @@ public class JdbcBatchPreparedStatementCallback implements PreparedStatementCall
         boolean oracleStyle = false;
         if (ps instanceof DelegatingPreparedStatement) {
             DelegatingPreparedStatement dps = (DelegatingPreparedStatement) ps;
-            if (dbDialect instanceof OracleDbDialect) {
+            if (symmetricDialect instanceof OracleSymmetricDialect) {
                 try {
                     Class<?> clazz = Class.forName("oracle.jdbc.OraclePreparedStatement");
                     Statement delegate = dps.getDelegate();
@@ -79,7 +79,7 @@ public class JdbcBatchPreparedStatementCallback implements PreparedStatementCall
         int rowsAffected = 0;
         boolean oracleStyle = setupForOracleBatching(ps);
         int batchSize = pss.getBatchSize();
-        if (JdbcUtils.supportsBatchUpdates(ps.getConnection()) && dbDialect.supportsBatchUpdates()) {
+        if (JdbcUtils.supportsBatchUpdates(ps.getConnection()) && symmetricDialect.supportsBatchUpdates()) {
             for (int i = 0; i < batchSize; i++) {
                 pss.setValues(ps, i);
                 if (oracleStyle) {

@@ -30,8 +30,8 @@ import java.sql.Statement;
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
@@ -44,7 +44,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
  * inserted or deleted tables in the triggers. Here is one idea we could
  * implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
  */
-public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
+public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     @Override
     protected boolean allowsNullForIdentityColumn() {

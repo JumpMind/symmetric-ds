@@ -21,15 +21,15 @@ package org.jumpmind.symmetric.db.firebird;
 
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.UncategorizedSQLException;
 
 /*
  * Database dialect for <a href="http://www.firebirdsql.org/">Firebird</a>.
  */
-public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
+public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 

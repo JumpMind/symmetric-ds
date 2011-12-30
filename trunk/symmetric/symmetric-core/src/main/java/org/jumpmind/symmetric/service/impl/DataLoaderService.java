@@ -39,7 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.ThresholdFileWriter;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -87,7 +87,7 @@ import org.jumpmind.symmetric.web.WebConstants;
  */
 public class DataLoaderService extends AbstractService implements IDataLoaderService {
 
-    private IDbDialect dbDialect;
+    private ISymmetricDialect symmetricDialect;
 
     private IIncomingBatchService incomingBatchService;
 
@@ -117,7 +117,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         try {
             Node local = nodeService.findIdentity();
             if (local == null) {
-                local = new Node(this.parameterService, dbDialect);
+                local = new Node(this.parameterService, symmetricDialect);
             }
             NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId());
             IIncomingTransport transport = null;
@@ -229,7 +229,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transforms = transformsList != null ? transformsList
                         .toArray(new TransformTable[transformsList.size()]) : null;
             }
-            TransformDatabaseWriter writer = new TransformDatabaseWriter(dbDialect.getPlatform(),
+            TransformDatabaseWriter writer = new TransformDatabaseWriter(symmetricDialect.getPlatform(),
                     settings, null, transforms, filters.toArray(new IDatabaseWriterFilter[filters
                             .size()]));
             DataProcessor<TextualCsvDataReader, TransformDatabaseWriter> processor = new DataProcessor<TextualCsvDataReader, TransformDatabaseWriter>(
@@ -371,8 +371,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.incomingBatchService = incomingBatchService;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
     }
 
     public void setStatisticManager(IStatisticManager statisticManager) {
@@ -417,7 +417,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void afterBatchStarted(DataContext<TextualCsvDataReader, TransformDatabaseWriter> context) {
             Batch batch = context.getBatch();
-            dbDialect.disableSyncTriggers(context.getWriter().getDatabaseWriter().getTransaction(),
+            symmetricDialect.disableSyncTriggers(context.getWriter().getDatabaseWriter().getTransaction(),
                     batch.getSourceNodeId());
         }
 
@@ -441,7 +441,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 ISqlTransaction transaction = context.getWriter().getDatabaseWriter()
                         .getTransaction();
                 if (transaction != null) {
-                    dbDialect.enableSyncTriggers(transaction);
+                    symmetricDialect.enableSyncTriggers(transaction);
                 }
             } catch (Exception ex) {
                 log.error(ex);

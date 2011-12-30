@@ -6,14 +6,14 @@
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
 
-    <bean id="informixDialect" class="org.jumpmind.symmetric.db.informix.InformixDbDialect"
+    <bean id="informixDialect" class="org.jumpmind.symmetric.db.informix.InformixSymmetricDialect"
         scope="prototype">
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="parameterService" ref="parameterService" />
         
         <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />        
-        <property name="sqlTemplate">
-            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+        <property name="triggerText">
+            <bean class="org.jumpmind.symmetric.db.TriggerText">
                 <property name="functionInstalledSql">
                     <value>
                         <![CDATA[select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)]]>

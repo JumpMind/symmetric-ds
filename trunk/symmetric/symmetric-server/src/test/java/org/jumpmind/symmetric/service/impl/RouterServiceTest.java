@@ -32,9 +32,9 @@ import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
-import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.derby.DerbySymmetricDialect;
+import org.jumpmind.symmetric.db.mssql.MsSqlSymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
@@ -608,7 +608,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         TriggerRouter trigger2 = getTestRoutingTableTrigger(TEST_SUBTABLE);
         trigger2.getRouter().setRouterType("column");
         trigger2.getRouter().setRouterExpression("EXTERNAL_DATA=:NODE_ID");
-        if (getDbDialect() instanceof DerbyDbDialect || getDbDialect() instanceof MsSqlDbDialect) {
+        if (getDbDialect() instanceof DerbySymmetricDialect || getDbDialect() instanceof MsSqlSymmetricDialect) {
             // TODO could not get subselect to work in trigger text for derby or
             // mssql. probably need to work on derby's support of
             // external_select a bit more
@@ -1001,7 +1001,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
             // evidently, derby only leaves a gap of one, no matter how many
             // rows you insert
-            int gapsize = getDbDialect() instanceof DerbyDbDialect ? 1 : 10;
+            int gapsize = getDbDialect() instanceof DerbySymmetricDialect ? 1 : 10;
 
             insert(TEST_TABLE_1, gapsize, true, null, NODE_GROUP_NODE_1.getNodeId(), true);
             insert(TEST_TABLE_1, 10, true, null, NODE_GROUP_NODE_1.getNodeId(), false);
@@ -1419,7 +1419,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
     protected void insert(final String tableName, final int count, boolean transactional,
             final String node2disable, final String routingVarcharFieldValue, final boolean rollback) {
-        IDbDialect dialect = getDbDialect();
+        ISymmetricDialect dialect = getDbDialect();
         IDatabasePlatform platform = dialect.getPlatform();
         ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
         if (node2disable != null) {
@@ -1461,7 +1461,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
 
     protected void execute(final String sql, final String node2disable) {
-        IDbDialect dialect = getDbDialect();
+        ISymmetricDialect dialect = getDbDialect();
         IDatabasePlatform platform = dialect.getPlatform();
         ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
         if (node2disable != null) {

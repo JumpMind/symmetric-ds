@@ -49,10 +49,10 @@ public class DataToRouteReaderFactory extends AbstractService implements ISqlPro
     public IDataToRouteGapDetector getDataToRouteGapDetector() {
         String type = parameterService.getString(ParameterConstants.ROUTING_DATA_READER_TYPE);
         if (type == null || type.equals(GAP_DETECTOR_TYPE_REF)) {
-            return new DataRefGapDetector(dataService, parameterService, jdbcTemplate, dbDialect,
+            return new DataRefGapDetector(dataService, parameterService, jdbcTemplate, symmetricDialect,
                     this);
         } else if (type == null || type.equals(GAP_DETECTOR_TYPE_GAP)) {
-            return new DataGapDetector(dataService, parameterService, jdbcTemplate, dbDialect, this);
+            return new DataGapDetector(dataService, parameterService, jdbcTemplate, symmetricDialect, this);
         } else {
             throw unsupportedType(type);
         }

@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.service.IDataService;
@@ -68,15 +68,15 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
 
     protected boolean reading = true;
 
-    protected IDbDialect dbDialect;
+    protected ISymmetricDialect symmetricDialect;
 
     public AbstractDataToRouteReader(ILog log, ISqlProvider sqlProvider,
             ChannelRouterContext context, IDataService dataService) {
         this.log = log;
         this.jdbcTemplate = dataService != null ? dataService.getJdbcTemplate() : null;
-        this.dbDialect = dataService != null ? dataService.getDbDialect() : null;
+        this.symmetricDialect = dataService != null ? dataService.getSymmetricDialect() : null;
         this.dataQueue = new LinkedBlockingQueue<Data>(
-                dbDialect != null ? dbDialect.getRouterDataPeekAheadCount() : 1000);
+                symmetricDialect != null ? symmetricDialect.getRouterDataPeekAheadCount() : 1000);
         this.sqlProvider = sqlProvider;
         this.context = context;
         this.dataService = dataService;
@@ -117,7 +117,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
         if (!channel.isUsePkDataToRoute()) {
             select = select.replace("d.pk_data", "''");
         }
-        return dbDialect == null ? select : dbDialect.massageDataExtractionSql(select, channel);
+        return symmetricDialect == null ? select : symmetricDialect.massageDataExtractionSql(select, channel);
     }
 
     public void run() {
@@ -136,12 +136,12 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                 ResultSet rs = null;
                 boolean autoCommit = c.getAutoCommit();
                 try {
-                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                    if (symmetricDialect.requiresAutoCommitFalseToSetFetchSize()) {
                         c.setAutoCommit(false);
                     }
 
                     long maxDataToRoute = context.getChannel().getMaxDataToRoute();
-                    int peekAheadCount = dbDialect.getRouterDataPeekAheadCount();
+                    int peekAheadCount = symmetricDialect.getRouterDataPeekAheadCount();
                     String lastTransactionId = null;
                     List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
                     boolean nontransactional = context.getChannel().getBatchAlgorithm().equals("nontransactional");
@@ -191,7 +191,7 @@ abstract public class AbstractDataToRouteReader implements IDataToRouteReader {
                     rs = null;
                     ps = null;
 
-                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                    if (symmetricDialect.requiresAutoCommitFalseToSetFetchSize()) {
                         c.commit();
                         c.setAutoCommit(autoCommit);
                     }

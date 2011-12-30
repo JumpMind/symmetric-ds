@@ -32,8 +32,8 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
-import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
+import org.jumpmind.symmetric.db.mssql.MsSqlSymmetricDialect;
+import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
@@ -46,7 +46,7 @@ import org.jumpmind.util.FormatUtils;
  * Responsible for generating dialect specific SQL such as trigger bodies and
  * functions
  */
-public class SqlTemplate {
+public class TriggerText {
 
     private static final String ORIG_TABLE_ALIAS = "orig";
 
@@ -100,7 +100,7 @@ public class SqlTemplate {
 
     private String otherColumnTemplate;
     
-    public String createInitalLoadSql(Node node, IDbDialect dialect, TriggerRouter triggerRouter,
+    public String createInitalLoadSql(Node node, ISymmetricDialect dialect, TriggerRouter triggerRouter,
             Table table, TriggerHistory triggerHistory, Channel channel) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         Column[] columns = dialect.orderColumns(triggerHistory.getParsedColumnNames(), table);
@@ -134,7 +134,7 @@ public class SqlTemplate {
         return sql;
     }
 
-    protected String getSourceTablePrefix(Trigger trigger, IDbDialect dbDialect) {
+    protected String getSourceTablePrefix(Trigger trigger, ISymmetricDialect symmetricDialect) {
         String schemaPlus = (trigger.getSourceSchemaName() != null ?
                 trigger.getSourceSchemaName() + "." : "");
         String catalogPlus = (trigger.getSourceCatalogName() != null ?
@@ -143,7 +143,7 @@ public class SqlTemplate {
         return catalogPlus;
     }
     
-    protected String getSourceTablePrefix(TriggerHistory triggerHistory, IDbDialect dbDialect) {
+    protected String getSourceTablePrefix(TriggerHistory triggerHistory, ISymmetricDialect symmetricDialect) {
         String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? 
                 triggerHistory.getSourceSchemaName() + "." : "");
         String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? 
@@ -152,8 +152,8 @@ public class SqlTemplate {
         return catalogPlus;
     }    
 
-    protected String quote(String name, IDbDialect dbDialect) {
-        String quote = dbDialect.getPlatform().getPlatformInfo().getIdentifierQuoteString();
+    protected String quote(String name, ISymmetricDialect symmetricDialect) {
+        String quote = symmetricDialect.getPlatform().getPlatformInfo().getIdentifierQuoteString();
         if (StringUtils.isNotBlank(quote)) {
             return quote + name + quote;
         } else {
@@ -161,10 +161,10 @@ public class SqlTemplate {
         }
     }
 
-    protected String replaceDefaultSchemaAndCatalog(IDbDialect dbDialect, Trigger trigger,
+    protected String replaceDefaultSchemaAndCatalog(ISymmetricDialect symmetricDialect, Trigger trigger,
             String sql) {        
-        String defaultCatalog = dbDialect.getPlatform().getDefaultCatalog();
-        String defaultSchema = dbDialect.getPlatform().getDefaultSchema();
+        String defaultCatalog = symmetricDialect.getPlatform().getDefaultCatalog();
+        String defaultSchema = symmetricDialect.getPlatform().getDefaultSchema();
 
         boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
         || trigger.getSourceSchemaName() != null;
@@ -177,7 +177,7 @@ public class SqlTemplate {
                 : "", sql);
     }
 
-    public String createCsvDataSql(IDbDialect dialect, Trigger trigger, TriggerHistory triggerHistory, Table table,
+    public String createCsvDataSql(ISymmetricDialect dialect, Trigger trigger, TriggerHistory triggerHistory, Table table,
             Channel channel, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
@@ -203,7 +203,7 @@ public class SqlTemplate {
         return sql;
     }
 
-    public String createCsvPrimaryKeySql(IDbDialect dialect, Trigger trigger, TriggerHistory triggerHistory, Table table,
+    public String createCsvPrimaryKeySql(ISymmetricDialect dialect, Trigger trigger, TriggerHistory triggerHistory, Table table,
             Channel channel, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
@@ -232,7 +232,7 @@ public class SqlTemplate {
         }
     }
 
-    public String createTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger,
+    public String createTriggerDDL(ISymmetricDialect dialect, DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table table,
             String defaultCatalog, String defaultSchema) {
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
@@ -244,7 +244,7 @@ public class SqlTemplate {
                 table, defaultCatalog, defaultSchema, ddl);
     }
 
-    public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger,
+    public String createPostTriggerDDL(ISymmetricDialect dialect, DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table table,
             String defaultCatalog, String defaultSchema) {
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
@@ -262,7 +262,7 @@ public class SqlTemplate {
         return targetTableName;
     }
 
-    public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
+    public String replaceTemplateVariables(ISymmetricDialect dialect, DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
 
@@ -391,7 +391,7 @@ public class SqlTemplate {
         return ddl;
     }
 
-    private String buildVirtualTableSql(IDbDialect dialect, String oldTriggerValue,
+    private String buildVirtualTableSql(ISymmetricDialect dialect, String oldTriggerValue,
             String newTriggerValue, Column[] columns) {
         if (oldTriggerValue.indexOf(".") >= 0) {
             oldTriggerValue = oldTriggerValue.substring(oldTriggerValue.indexOf(".") + 1);
@@ -529,12 +529,12 @@ public class SqlTemplate {
     }
 
     private ColumnString buildColumnString(String origTableAlias, String tableAlias,
-            String columnPrefix, Column[] columns, IDbDialect dbDialect, DataEventType dml,
+            String columnPrefix, Column[] columns, ISymmetricDialect symmetricDialect, DataEventType dml,
             boolean isOld, Channel channel, Trigger trigger) {
         String columnsText = "";
         boolean isLob = false;
 
-        String lastCommandToken = dbDialect.escapesTemplatesForDatabaseInserts() ? (triggerConcatCharacter
+        String lastCommandToken = symmetricDialect.escapesTemplatesForDatabaseInserts() ? (triggerConcatCharacter
                 + "'',''" + triggerConcatCharacter)
                 : (triggerConcatCharacter + "','" + triggerConcatCharacter);
 
@@ -569,7 +569,7 @@ public class SqlTemplate {
                     templateToUse = arrayColumnTemplate;
                     break;
                 case Types.CLOB:
-                    if (isOld && dbDialect.needsToSelectLobData()) {
+                    if (isOld && symmetricDialect.needsToSelectLobData()) {
                         templateToUse = emptyColumnTemplate;
                     } else {
                         templateToUse = clobColumnTemplate;
@@ -577,7 +577,7 @@ public class SqlTemplate {
                     isLob = true;
                     break;
                 case Types.BLOB:
-                    if (dbDialect instanceof PostgreSqlDbDialect) {
+                    if (symmetricDialect instanceof PostgreSqlSymmetricDialect) {
                         templateToUse = wrappedBlobColumnTemplate;
                         isLob = true;
                         break;
@@ -587,7 +587,7 @@ public class SqlTemplate {
                 case Types.LONGVARBINARY:
                     // SQL-Server ntext binary type
                 case -10:
-                    if (isOld && dbDialect.needsToSelectLobData()) {
+                    if (isOld && symmetricDialect.needsToSelectLobData()) {
                         templateToUse = emptyColumnTemplate;
                     } else {
                         templateToUse = blobColumnTemplate;
@@ -634,7 +634,7 @@ public class SqlTemplate {
                             + column.getType() + " with JDBC type of " + column.getJdbcTypeName());
                 }
 
-                if (dml == DataEventType.DELETE && isLob && dbDialect instanceof MsSqlDbDialect) {
+                if (dml == DataEventType.DELETE && isLob && symmetricDialect instanceof MsSqlSymmetricDialect) {
                     templateToUse = emptyColumnTemplate;
                 } else if (isLob && trigger.isUseStreamLobs()) {
                     templateToUse = emptyColumnTemplate;
@@ -650,10 +650,10 @@ public class SqlTemplate {
                         String.format("%s%s", columnPrefix, column.getName()), templateToUse);
 
                 formattedColumnText = FormatUtils.replace("masterCollation",
-                        dbDialect.getMasterCollation(), formattedColumnText);
+                        symmetricDialect.getMasterCollation(), formattedColumnText);
 
                 if (isLob) {
-                    formattedColumnText = dbDialect.massageForLob(formattedColumnText, channel);
+                    formattedColumnText = symmetricDialect.massageForLob(formattedColumnText, channel);
                 }
 
                 columnsText = columnsText + "\n          " + formattedColumnText + lastCommandToken;
@@ -668,7 +668,7 @@ public class SqlTemplate {
 
         columnsText = FormatUtils.replace("origTableAlias", origTableAlias, columnsText);
         columnsText = FormatUtils.replace("tableAlias", tableAlias, columnsText);
-        columnsText = FormatUtils.replace("prefixName", dbDialect.getTablePrefix(), columnsText);
+        columnsText = FormatUtils.replace("prefixName", symmetricDialect.getTablePrefix(), columnsText);
         return new ColumnString(columnsText, isLob);
     }
 

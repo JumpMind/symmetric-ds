@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
@@ -93,7 +93,7 @@ public class AbstractDatabaseTest extends AbstractTest {
         return AppUtils.find(Constants.PARAMETER_SERVICE, getSymmetricEngine());
     }
     
-    protected IDbDialect getDbDialect() {
+    protected ISymmetricDialect getDbDialect() {
         return AppUtils.find(Constants.DB_DIALECT, getSymmetricEngine());
     }
 

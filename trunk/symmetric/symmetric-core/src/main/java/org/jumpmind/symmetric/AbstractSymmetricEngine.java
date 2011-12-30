@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.config.PropertiesFactoryBean;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;
@@ -83,7 +83,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     private boolean started = false;
     private boolean starting = false;
     private boolean setup = false;
-    private IDbDialect dbDialect;
+    private ISymmetricDialect symmetricDialect;
     private IJobManager jobManager;
 
     protected AbstractSymmetricEngine() {
@@ -167,14 +167,14 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
         log.info("SymmetricDSInfo", getDeploymentType().getDeploymentType(), getEngineName(),
                 Version.version(), getParameterService().getNodeGroupId(), getParameterService()
-                        .getExternalId(), dbDialect.getName(), dbDialect.getVersion(), dbDialect
-                        .getDriverName(), dbDialect.getDriverVersion());
+                        .getExternalId(), symmetricDialect.getName(), symmetricDialect.getVersion(), symmetricDialect
+                        .getDriverName(), symmetricDialect.getDriverVersion());
         return started;
     }
 
     public synchronized void stop() {
         log.info("SymmetricDSClosing", getParameterService().getExternalId(), Version.version(),
-                dbDialect.getName());
+                symmetricDialect.getName());
         jobManager.stopJobs();
         getRouterService().stop();
         started = false;
@@ -198,7 +198,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
         applicationContext = null;
         jdbcTemplate = null;
-        dbDialect = null;
+        symmetricDialect = null;
     }
 
     /**
@@ -245,7 +245,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     protected void init(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.log = LogFactory.getLog(getParameterService());
-        dbDialect = AppUtils.find(Constants.DB_DIALECT, this);
+        symmetricDialect = AppUtils.find(Constants.DB_DIALECT, this);
         jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
         jdbcTemplate = AppUtils.find(Constants.JDBC_TEMPLATE, this);
 
@@ -313,7 +313,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public String getEngineName() {
-        return dbDialect.getEngineName();
+        return symmetricDialect.getEngineName();
     }
 
     public synchronized void setup() {
@@ -395,7 +395,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     public boolean isConfigured() {
         boolean configurationValid = false;
 
-        IDbDialect dbDialect = getDbDialect();
+        ISymmetricDialect symmetricDialect = getDbDialect();
 
         boolean isRegistrationServer = getNodeService().isRegistrationServer();
 
@@ -404,8 +404,8 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                         false) || StringUtils.isNotBlank(getParameterService().getString(
                         ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT)));
 
-        Table symNodeTable = dbDialect.getPlatform().getTableFromCache(
-                TableConstants.getTableName(dbDialect.getTablePrefix(), TableConstants.SYM_NODE),
+        Table symNodeTable = symmetricDialect.getPlatform().getTableFromCache(
+                TableConstants.getTableName(symmetricDialect.getTablePrefix(), TableConstants.SYM_NODE),
                 false);
 
         Node node = symNodeTable != null ? getNodeService().findIdentity() : null;
@@ -524,8 +524,8 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         return AppUtils.find(Constants.DATA_SERVICE, this);
     }
 
-    public IDbDialect getDbDialect() {
-        return dbDialect;
+    public ISymmetricDialect getDbDialect() {
+        return symmetricDialect;
     }
 
     public IJobManager getJobManager() {

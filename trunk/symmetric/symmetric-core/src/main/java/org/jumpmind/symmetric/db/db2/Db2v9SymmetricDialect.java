@@ -22,10 +22,10 @@ package org.jumpmind.symmetric.db.db2;
 import java.net.URL;
 
 import org.jumpmind.db.sql.SqlScript;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class Db2v9DbDialect extends Db2DbDialect implements IDbDialect {
+public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymmetricDialect {
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 

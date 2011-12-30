@@ -56,7 +56,7 @@ import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.junit.Assert;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -142,7 +142,7 @@ public class TestSetupUtil {
             dropAndCreateDatabaseTables(rootDb, setupEngine);
             setupEngine.setup();
             
-            IDbDialect dialect = (IDbDialect) setupEngine.getApplicationContext().getBean(Constants.DB_DIALECT);
+            ISymmetricDialect dialect = (ISymmetricDialect) setupEngine.getApplicationContext().getBean(Constants.DB_DIALECT);
             new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), dialect.getPlatform().getSqlTemplate(), true, SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens()).execute();
             setupEngine.destroy();
             
@@ -233,7 +233,7 @@ public class TestSetupUtil {
 
     protected static void dropAndCreateDatabaseTables(String databaseType, ISymmetricEngine engine) {
         try {
-            IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+            ISymmetricDialect dialect = (ISymmetricDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
             IDatabasePlatform platform = dialect.getPlatform();
             
             dialect.cleanupTriggers();

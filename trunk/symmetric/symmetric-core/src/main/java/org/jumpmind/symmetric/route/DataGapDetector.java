@@ -30,7 +30,7 @@ import java.util.List;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -53,7 +53,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
 
     private JdbcTemplate jdbcTemplate;
 
-    private IDbDialect dbDialect;
+    private ISymmetricDialect symmetricDialect;
 
     private ISqlProvider sqlProvider;
 
@@ -61,11 +61,11 @@ public class DataGapDetector implements IDataToRouteGapDetector {
     }
 
     public DataGapDetector(IDataService dataService, IParameterService parameterService,
-            JdbcTemplate jdbcTemplate, IDbDialect dbDialect, ISqlProvider sqlProvider) {
+            JdbcTemplate jdbcTemplate, ISymmetricDialect symmetricDialect, ISqlProvider sqlProvider) {
         this.dataService = dataService;
         this.parameterService = parameterService;
         this.jdbcTemplate = jdbcTemplate;
-        this.dbDialect = dbDialect;
+        this.symmetricDialect = symmetricDialect;
         this.sqlProvider = sqlProvider;
     }
 
@@ -117,7 +117,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                     } else if (!lastGap) {
                         if (dataService.countDataInRange(dataGap.getStartId() - 1,
                                 dataGap.getEndId() + 1) == 0) {
-                            if (dbDialect.supportsTransactionViews()) {
+                            if (symmetricDialect.supportsTransactionViews()) {
                                 long transactionViewClockSyncThresholdInMs = parameterService
                                         .getLong(
                                                 ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS,
@@ -125,7 +125,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                                 Date createTime = dataService.findCreateTimeOfData(dataGap
                                         .getEndId() + 1);
                                 if (createTime != null
-                                        && !dbDialect
+                                        && !symmetricDialect
                                                 .areDatabaseTransactionsPendingSince(createTime
                                                         .getTime()
                                                         + transactionViewClockSyncThresholdInMs)) {

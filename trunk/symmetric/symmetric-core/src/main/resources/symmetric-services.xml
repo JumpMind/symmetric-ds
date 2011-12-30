@@ -40,7 +40,7 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="dataSource" ref="dataSource" />        
         <property name="parameterService" ref="parameterService" />
-        <property name="dbDialect" ref="dbDialect" />
+        <property name="symmetricDialect" ref="symmetricDialect" />
         <property name="newTransactionTemplate" ref="transactionTemplate" />  
     </bean>
 
@@ -100,7 +100,7 @@
         <property name="dataToRouteReaderFactory">
         <bean class="org.jumpmind.symmetric.route.DataToRouteReaderFactory">
             <property name="dataService" ref="dataService"/>
-            <property name="dbDialect" ref="dbDialect"/>
+            <property name="symmetricDialect" ref="symmetricDialect"/>
             <property name="jdbcTemplate" ref="jdbcTemplate"/>
             <property name="sql" ref="routerServiceSql"/>
             <property name="parameterService" ref="parameterService"/>
@@ -198,7 +198,7 @@
     </bean>
 
     <bean id="extractorContext" class="org.jumpmind.symmetric.extract.DataExtractorContext" scope="prototype">
-        <property name="dbDialect" ref="dbDialect"/>
+        <property name="symmetricDialect" ref="symmetricDialect"/>
         <property name="jdbcTemplate" ref="jdbcTemplate"/>
         <property name="nodeService" ref="nodeService"/>
     </bean>
@@ -207,11 +207,11 @@
 		class="org.jumpmind.symmetric.extract.csv.AbstractStreamDataCommand"
 		abstract="true">
 		<property name="triggerRouterService" ref="triggerRouterService" />
-		<property name="dbDialect" ref="dbDialect" />
+		<property name="symmetricDialect" ref="symmetricDialect" />
 	</bean>
 
     <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
-        <property name="dbDialect" ref="dbDialect" />
+        <property name="symmetricDialect" ref="symmetricDialect" />
         <property name="parameterService" ref="parameterService" />
         <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="nodeService" ref="nodeService" />
@@ -252,21 +252,21 @@
     </bean>
 
     <bean id="dataExtractor16" class="org.jumpmind.symmetric.extract.csv.CsvExtractor16">
-        <property name="dbDialect" ref="dbDialect" />
+        <property name="symmetricDialect" ref="symmetricDialect" />
         <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dictionary" ref="dataExtractorDictionary13" />
     </bean>
 
     <bean id="dataExtractor14" class="org.jumpmind.symmetric.extract.csv.CsvExtractor14">
-        <property name="dbDialect" ref="dbDialect" />
+        <property name="symmetricDialect" ref="symmetricDialect" />
         <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dictionary" ref="dataExtractorDictionary13" />
     </bean>
 
     <bean id="dataExtractor13" class="org.jumpmind.symmetric.extract.csv.CsvExtractor13">
-        <property name="dbDialect" ref="dbDialect" />
+        <property name="symmetricDialect" ref="symmetricDialect" />
         <property name="parameterService" ref="parameterService" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="dictionary" ref="dataExtractorDictionary13" />

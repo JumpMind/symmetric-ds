@@ -123,7 +123,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
-        long batchId = dbDialect.insertWithGeneratedKey(jdbcTemplate,
+        long batchId = symmetricDialect.insertWithGeneratedKey(jdbcTemplate,
                 getSql("insertOutgoingBatchSql"), SequenceIdentifier.OUTGOING_BATCH,
                 new PreparedStatementCallback<Object>() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
