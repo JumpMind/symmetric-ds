@@ -29,6 +29,7 @@ import java.security.spec.KeySpec;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
@@ -69,12 +70,16 @@ public class SecurityService extends AbstractService implements ISecurityService
             secretKey = getSecretKey();
         }
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
-        if (secretKey.getAlgorithm().indexOf("PBE") != -1) {
-	        AlgorithmParameterSpec paramSpec = new PBEParameterSpec(SecurityConstants.SALT,
-	                SecurityConstants.ITERATION_COUNT);
+        AlgorithmParameterSpec paramSpec = Cipher.getMaxAllowedParameterSpec(cipher.getAlgorithm());
+        
+        if (paramSpec instanceof PBEParameterSpec) {
+	        paramSpec = new PBEParameterSpec(SecurityConstants.SALT, SecurityConstants.ITERATION_COUNT);
+	        cipher.init(mode, secretKey, paramSpec);
+        } else if (paramSpec instanceof IvParameterSpec) {
+        	paramSpec = new IvParameterSpec(SecurityConstants.SALT);
 	        cipher.init(mode, secretKey, paramSpec);
         } else {
-        	cipher.init(mode, secretKey);
+        	cipher.init(mode, secretKey, (AlgorithmParameterSpec) null);
         }
         return cipher;
     }
