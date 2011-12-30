@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.io.data.CsvConstants;
@@ -49,7 +49,7 @@ public class CsvExtractor14 implements IDataExtractor {
 
     protected IParameterService parameterService;
 
-    protected IDbDialect dbDialect;
+    protected ISymmetricDialect symmetricDialect;
 
     protected INodeService nodeService;
 
@@ -68,7 +68,7 @@ public class CsvExtractor14 implements IDataExtractor {
     public void begin(OutgoingBatch batch, Writer writer) throws IOException {
         batch.incrementByteCount(CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId())));
         CsvUtils.writeLineFeed(writer);
-        batch.incrementByteCount(CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, dbDialect.getBinaryEncoding().name()));
+        batch.incrementByteCount(CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, symmetricDialect.getBinaryEncoding().name()));
         CsvUtils.writeLineFeed(writer);
     }
 
@@ -113,8 +113,8 @@ public class CsvExtractor14 implements IDataExtractor {
         this.dictionary = dictionary;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
     }
 
     public void setParameterService(IParameterService parameterService) {

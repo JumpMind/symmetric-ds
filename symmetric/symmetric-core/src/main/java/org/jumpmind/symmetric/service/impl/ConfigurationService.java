@@ -298,7 +298,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void autoConfigDatabase(boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
             log.info("SymmetricDSDatabaseInitializing");
-            dbDialect.initTablesAndFunctions();
+            symmetricDialect.initTablesAndFunctions();
             autoConfigChannels();
             autoConfigRegistrationServer();
             parameterService.rereadParameters();
@@ -382,7 +382,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     log.info("DatabaseSchemaBuilding", xml);
                     Database database = new DatabaseIO().read(new InputStreamReader(fileUrl
                             .openStream()));
-                    IDatabasePlatform platform = dbDialect.getPlatform();
+                    IDatabasePlatform platform = symmetricDialect.getPlatform();
                     platform.createDatabase(database, true, true);
                     loaded = true;
                 } catch (Exception e) {
@@ -422,7 +422,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
 
             if (fileUrl != null) {
-                new SqlScript(fileUrl, dbDialect.getPlatform().getSqlTemplate(), true).execute();
+                new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(), true).execute();
                 loaded = true;
             }
         }

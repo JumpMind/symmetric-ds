@@ -28,7 +28,7 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -124,27 +124,27 @@ public abstract class AbstractDataRouter implements IDataRouter {
         return map;
     }
 
-    protected Map<String, Object> getDataObjectMap(DataMetaData dataMetaData, IDbDialect dbDialect) {
+    protected Map<String, Object> getDataObjectMap(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect) {
         Map<String, Object> data = null;
         DataEventType dml = dataMetaData.getData().getEventType();
         switch (dml) {
         case UPDATE:
             data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
-            data.putAll(getNewDataAsObject(null, dataMetaData, dbDialect));
-            data.putAll(getOldDataAsObject(OLD_, dataMetaData, dbDialect));
+            data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect));
+            data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect));
             break;
         case INSERT:
             data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
-            data.putAll(getNewDataAsObject(null, dataMetaData, dbDialect));
+            data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect));
             Map<String, Object> map = getNullData(OLD_, dataMetaData);
             data.putAll(map);
             break;
         case DELETE:
             data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
-            data.putAll(getOldDataAsObject(null, dataMetaData, dbDialect));
-            data.putAll(getOldDataAsObject(OLD_, dataMetaData, dbDialect));
+            data.putAll(getOldDataAsObject(null, dataMetaData, symmetricDialect));
+            data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect));
             if (data.size() == 0) {
-                data.putAll(getPkDataAsObject(dataMetaData, dbDialect));
+                data.putAll(getPkDataAsObject(dataMetaData, symmetricDialect));
             }            
             break;
         default:
@@ -154,14 +154,14 @@ public abstract class AbstractDataRouter implements IDataRouter {
     }
 
     protected Map<String, Object> getNewDataAsObject(String prefix, DataMetaData dataMetaData,
-            IDbDialect dbDialect) {
-        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData()
+            ISymmetricDialect symmetricDialect) {
+        return getDataAsObject(prefix, dataMetaData, symmetricDialect, dataMetaData.getData()
                 .toParsedRowData());
     }
 
     protected Map<String, Object> getOldDataAsObject(String prefix, DataMetaData dataMetaData,
-            IDbDialect dbDialect) {
-        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData()
+            ISymmetricDialect symmetricDialect) {
+        return getDataAsObject(prefix, dataMetaData, symmetricDialect, dataMetaData.getData()
                 .toParsedOldData());
     }
 
@@ -175,11 +175,11 @@ public abstract class AbstractDataRouter implements IDataRouter {
     }
 
     protected Map<String, Object> getDataAsObject(String prefix, DataMetaData dataMetaData,
-            IDbDialect dbDialect, String[] rowData) {
+            ISymmetricDialect symmetricDialect, String[] rowData) {
         if (rowData != null) {
             Map<String, Object> data = new HashMap<String, Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-            Object[] objects = dbDialect.getPlatform().getObjectValues(dbDialect.getBinaryEncoding(),
+            Object[] objects = symmetricDialect.getPlatform().getObjectValues(symmetricDialect.getBinaryEncoding(),
                     dataMetaData.getTable(), columnNames, rowData);
             for (int i = 0; i < columnNames.length; i++) {
                 String upperCase = columnNames[i].toUpperCase();
@@ -192,12 +192,12 @@ public abstract class AbstractDataRouter implements IDataRouter {
     }
     
     protected Map<String, Object> getPkDataAsObject(DataMetaData dataMetaData,
-            IDbDialect dbDialect) {
+            ISymmetricDialect symmetricDialect) {
         String[] rowData = dataMetaData.getData().toParsedPkData();
         if (rowData != null) {
             Map<String, Object> data = new HashMap<String, Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-            Object[] objects = dbDialect.getPlatform().getObjectValues(dbDialect.getBinaryEncoding(),
+            Object[] objects = symmetricDialect.getPlatform().getObjectValues(symmetricDialect.getBinaryEncoding(),
                     dataMetaData.getTable(), columnNames, rowData);
             for (int i = 0; i < columnNames.length; i++) {
                 data.put(columnNames[i]

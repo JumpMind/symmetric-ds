@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.UncategorizedSQLException;
@@ -34,7 +34,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 /*
  * Database dialect for <a href="http://www.embarcadero.com/products/interbase/">Interbase</a>.
  */
-public class InterbaseDbDialect extends AbstractDbDialect implements IDbDialect {
+public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     public static final String CONTEXT_TABLE_NAME = "context";
 

@@ -30,7 +30,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.jumpmind.symmetric.service.ISqlProvider;
@@ -50,7 +50,7 @@ abstract public class AbstractService implements IService, ISqlProvider {
 
     protected DataSource dataSource;
 
-    protected IDbDialect dbDialect;
+    protected ISymmetricDialect symmetricDialect;
 
     protected String tablePrefix;
 
@@ -105,8 +105,8 @@ abstract public class AbstractService implements IService, ISqlProvider {
                 }
             }
 
-            if (dbDialect != null) {
-               sqlBuffer = dbDialect.scrubSql(sqlBuffer);
+            if (symmetricDialect != null) {
+               sqlBuffer = symmetricDialect.scrubSql(sqlBuffer);
             }
         }
         return sqlBuffer.toString();
@@ -133,12 +133,12 @@ abstract public class AbstractService implements IService, ISqlProvider {
         this.dataSource = dataSource;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
     }
     
-    public IDbDialect getDbDialect() {
-        return dbDialect;
+    public ISymmetricDialect getSymmetricDialect() {
+        return symmetricDialect;
     }
     
     public String getTablePrefix() {

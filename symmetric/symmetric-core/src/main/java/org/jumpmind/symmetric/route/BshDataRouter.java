@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 
@@ -43,7 +43,7 @@ import bsh.Interpreter;
  */
 public class BshDataRouter extends AbstractDataRouter {
 
-    protected IDbDialect dbDialect;
+    protected ISymmetricDialect symmetricDialect;
     
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
@@ -103,7 +103,7 @@ public class BshDataRouter extends AbstractDataRouter {
             throws EvalError {
         interpreter.set("nodes", nodes);
         interpreter.set("targetNodes", targetNodes);
-        Map<String, Object> params = getDataObjectMap(dataMetaData, dbDialect);
+        Map<String, Object> params = getDataObjectMap(dataMetaData, symmetricDialect);
         if (params != null) {
             for (String param : params.keySet()) {
                 interpreter.set(param, params.get(param));
@@ -111,7 +111,7 @@ public class BshDataRouter extends AbstractDataRouter {
         }
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
     }
 }

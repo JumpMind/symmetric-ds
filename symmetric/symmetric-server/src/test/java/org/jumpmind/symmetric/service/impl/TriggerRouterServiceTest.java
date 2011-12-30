@@ -36,11 +36,11 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.db2.Db2DbDialect;
-import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
-import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
-import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.db2.Db2SymmetricDialect;
+import org.jumpmind.symmetric.db.derby.DerbySymmetricDialect;
+import org.jumpmind.symmetric.db.oracle.OracleSymmetricDialect;
+import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
@@ -289,8 +289,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testBinaryColumnTypesForOracle() {
-        IDbDialect dialect = getDbDialect();
-        if (dialect instanceof OracleDbDialect) {
+        ISymmetricDialect dialect = getDbDialect();
+        if (dialect instanceof OracleSymmetricDialect) {
             getJdbcTemplate().update(CREATE_ORACLE_BINARY_TYPE);
             TriggerRouter trouter = new TriggerRouter();
             Trigger trigger = trouter.getTrigger();
@@ -313,8 +313,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testBinaryColumnTypesForPostgres() {
-        IDbDialect dialect = getDbDialect();
-        if (dialect instanceof PostgreSqlDbDialect) {
+        ISymmetricDialect dialect = getDbDialect();
+        if (dialect instanceof PostgreSqlSymmetricDialect) {
             getJdbcTemplate().update(DROP_POSTGRES_BINARY_TYPE);
             getJdbcTemplate().update(CREATE_POSTGRES_BINARY_TYPE);
             TriggerRouter trouter = new TriggerRouter();
@@ -349,8 +349,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testBinaryColumnTypesForDerby() {
-        IDbDialect dialect = getDbDialect();
-        if (dialect instanceof DerbyDbDialect) {
+        ISymmetricDialect dialect = getDbDialect();
+        if (dialect instanceof DerbySymmetricDialect) {
             try {
                 getJdbcTemplate().update("drop table test_derby_binary_types");
             } catch (Exception e) {
@@ -379,8 +379,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         }
     }
 
-    protected static int[] filterTypes(int[] types, IDbDialect dbDialect) {
-        boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect) || (dbDialect instanceof Db2DbDialect));
+    protected static int[] filterTypes(int[] types, ISymmetricDialect symmetricDialect) {
+        boolean isBooleanSupported = !((symmetricDialect instanceof OracleSymmetricDialect) || (symmetricDialect instanceof Db2SymmetricDialect));
         int[] filteredTypes = new int[types.length];
         for (int i = 0; i < types.length; i++) {
             if (types[i] == Types.BOOLEAN && !isBooleanSupported) {
@@ -392,17 +392,17 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         return filteredTypes;
     }
 
-    public static int insert(Object[] values, IDbDialect dbDialect, boolean disableTriggers) {
+    public static int insert(Object[] values, ISymmetricDialect symmetricDialect, boolean disableTriggers) {
         int count = -1;
-        IDatabasePlatform platform = dbDialect.getPlatform();
+        IDatabasePlatform platform = symmetricDialect.getPlatform();
         ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
         try {
             if (disableTriggers) {
-                dbDialect.disableSyncTriggers(transaction);
+                symmetricDialect.disableSyncTriggers(transaction);
             }
-            count = transaction.execute(INSERT, filterValues(values, dbDialect));
+            count = transaction.execute(INSERT, filterValues(values, symmetricDialect));
             if (disableTriggers) {
-                dbDialect.enableSyncTriggers(transaction);
+                symmetricDialect.enableSyncTriggers(transaction);
             }
             transaction.commit();
         } catch (RuntimeException ex) {
@@ -414,8 +414,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         return count;
     }
 
-    protected static Object[] filterValues(Object[] values, IDbDialect dbDialect) {
-        boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect) || (dbDialect instanceof Db2DbDialect));
+    protected static Object[] filterValues(Object[] values, ISymmetricDialect symmetricDialect) {
+        boolean isBooleanSupported = !((symmetricDialect instanceof OracleSymmetricDialect) || (symmetricDialect instanceof Db2SymmetricDialect));
         Object[] filteredValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
             if (values[i] instanceof Boolean && !isBooleanSupported) {

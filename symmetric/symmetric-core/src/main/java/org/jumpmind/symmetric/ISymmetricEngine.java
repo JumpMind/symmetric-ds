@@ -24,7 +24,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.common.DeploymentType;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.OutgoingPurgeJob;
 import org.jumpmind.symmetric.job.PullJob;
@@ -221,7 +221,7 @@ public interface ISymmetricEngine {
 
     public IDataService getDataService();
 
-    public IDbDialect getDbDialect();
+    public ISymmetricDialect getDbDialect();
 
     public IJobManager getJobManager();
     

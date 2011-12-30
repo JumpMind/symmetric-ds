@@ -24,13 +24,13 @@ import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class HsqlDb2Dialect extends AbstractDbDialect implements IDbDialect {
+public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     @Override
     public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {

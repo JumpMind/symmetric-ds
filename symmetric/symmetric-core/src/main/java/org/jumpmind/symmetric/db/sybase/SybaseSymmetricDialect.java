@@ -33,8 +33,8 @@ import java.util.Map;
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
@@ -42,17 +42,17 @@ import org.springframework.jdbc.core.ConnectionCallback;
 
 /*
  * Sybase dialect was tested with jconn4 JDBC driver.
- * Based on the MsSqlDbDialect.
+ * Based on the MsSqlSymmetricDialect.
  *
  *  disk resize name = master, size = 16384
  *  create database symmetricclient on master = '30M'
  *  
  */
-public class SybaseDbDialect extends AbstractDbDialect implements IDbDialect {
+public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     
     private Map<String, String> sqlScriptReplacementTokens;
 
-    public SybaseDbDialect() {
+    public SybaseSymmetricDialect() {
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
     }

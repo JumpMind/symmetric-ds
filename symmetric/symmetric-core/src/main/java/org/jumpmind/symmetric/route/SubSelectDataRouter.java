@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -61,7 +61,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
 
     private JdbcTemplate jdbcTemplate;
 
-    private IDbDialect dbDialect;
+    private ISymmetricDialect symmetricDialect;
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
@@ -70,7 +70,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
         Set<String> nodeIds = null;
         if (!StringUtils.isBlank(subSelect)) {
             SimpleJdbcTemplate simpleTemplate = new SimpleJdbcTemplate(jdbcTemplate);
-            Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, dbDialect);
+            Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, symmetricDialect);
             sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getNodeGroupLink().getTargetNodeGroupId());
             List<String> ids = simpleTemplate.query(String.format("%s%s", sql, subSelect),
                     new SingleColumnRowMapper<String>(), sqlParams);
@@ -91,8 +91,8 @@ public class SubSelectDataRouter extends AbstractDataRouter {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
     }
 
 }

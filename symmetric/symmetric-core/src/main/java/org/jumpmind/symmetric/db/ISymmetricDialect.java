@@ -42,7 +42,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 /*
  * A dialect is the interface that insulates SymmetricDS from database implementation specifics. 
  */
-public interface IDbDialect {
+public interface ISymmetricDialect {
 
     public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, 
             Trigger trigger, TriggerHistory hist, Channel channel, 

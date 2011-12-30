@@ -28,7 +28,7 @@ import java.util.Date;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -50,16 +50,16 @@ public class DataRefGapDetector implements IDataToRouteGapDetector {
     
     private JdbcTemplate jdbcTemplate;
     
-    private IDbDialect dbDialect;
+    private ISymmetricDialect symmetricDialect;
     
     private ISqlProvider sqlProvider;
     
     public DataRefGapDetector(IDataService dataService, IParameterService parameterService,
-            JdbcTemplate jdbcTemplate, IDbDialect dbDialect, ISqlProvider sqlProvider) {
+            JdbcTemplate jdbcTemplate, ISymmetricDialect symmetricDialect, ISqlProvider sqlProvider) {
         this.dataService = dataService;
         this.parameterService = parameterService;
         this.jdbcTemplate = jdbcTemplate;
-        this.dbDialect = dbDialect;
+        this.symmetricDialect = symmetricDialect;
         this.sqlProvider = sqlProvider;
     }
     
@@ -84,8 +84,8 @@ public class DataRefGapDetector implements IDataToRouteGapDetector {
                                 lastDataId = dataId;
                             } else {
                                 if (dataService.countDataInRange(lastDataId, dataId) == 0) {
-                                    if (dbDialect.supportsTransactionViews()) {
-                                        if (!dbDialect
+                                    if (symmetricDialect.supportsTransactionViews()) {
+                                        if (!symmetricDialect
                                                     .areDatabaseTransactionsPendingSince(dataService
                                                             .findCreateTimeOfData(dataId).getTime() + 5000)) {
                                             if (dataService.countDataInRange(lastDataId, dataId) == 0) {

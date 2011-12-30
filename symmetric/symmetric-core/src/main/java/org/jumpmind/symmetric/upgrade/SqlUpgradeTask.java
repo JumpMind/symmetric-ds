@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
@@ -35,7 +35,7 @@ public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
 
     private static final ILog log = LogFactory.getLog(SqlUpgradeTask.class);
 
-    protected IDbDialect dbDialect;
+    protected ISymmetricDialect symmetricDialect;
 
     protected String dialectName;
 
@@ -51,7 +51,7 @@ public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
     }
 
     public void upgrade(String nodeId, IParameterService parameterService, int[] fromVersion) {
-        if (dialectName == null || (dbDialect != null && dbDialect.getName().equalsIgnoreCase((dialectName)))) {
+        if (dialectName == null || (symmetricDialect != null && symmetricDialect.getName().equalsIgnoreCase((dialectName)))) {
             for (String sql : sqlList) {
                 sql = prepareSql(nodeId, parameterService, sql);
                 log.warn("SqlUpgrade", sql);
@@ -76,8 +76,8 @@ public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
         this.ignoreFailure = ignoreFailure;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
     }
 
     public void setDialectName(String dialectName) {

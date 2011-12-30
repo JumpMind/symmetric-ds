@@ -153,7 +153,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertPurgeEvent(final Node targetNode, final TriggerRouter triggerRouter, boolean isLoad) {
-        String sql = dbDialect.createPurgeSqlFor(targetNode, triggerRouter);
+        String sql = symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter);
         TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                 .getTriggerId());
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL, CsvUtils
@@ -219,7 +219,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public long insertData(final Data data) {
-        long id = dbDialect.insertWithGeneratedKey(getSql("insertIntoDataSql"),
+        long id = symmetricDialect.insertWithGeneratedKey(getSql("insertIntoDataSql"),
                 SequenceIdentifier.DATA, new PreparedStatementCallback<Object>() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
                             DataAccessException {
@@ -261,7 +261,7 @@ public class DataService extends AbstractService implements IDataService {
     public void insertDataEvents(JdbcTemplate template, final List<DataEvent> events) {
         if (events.size() > 0) {
             JdbcBatchPreparedStatementCallback callback = new JdbcBatchPreparedStatementCallback(
-                    dbDialect, new BatchPreparedStatementSetter() {
+                    symmetricDialect, new BatchPreparedStatementSetter() {
 
                         public void setValues(PreparedStatement ps, int i) throws SQLException {
                             DataEvent event = events.get(i);
@@ -362,7 +362,7 @@ public class DataService extends AbstractService implements IDataService {
             for (Iterator<TriggerRouter> iterator = triggerRouters.iterator(); iterator.hasNext();) {
                 TriggerRouter triggerRouter = iterator.next();
                 Trigger trigger = triggerRouter.getTrigger();
-                Table table = dbDialect.getPlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger
+                Table table = symmetricDialect.getPlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger
                         .getSourceSchemaName(), trigger.getSourceTableName(), true);
                 if (table == null) {
                     log.warn("TriggerTableMissing",trigger.qualifiedSourceTableName());
@@ -372,7 +372,7 @@ public class DataService extends AbstractService implements IDataService {
 
             if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
                 for (TriggerRouter triggerRouter : triggerRouters) {
-                    String xml = dbDialect.getCreateTableXML(triggerRouter);
+                    String xml = symmetricDialect.getCreateTableXML(triggerRouter);
                     insertCreateEvent(targetNode, triggerRouter, xml, true);
                 }
             }
@@ -474,7 +474,7 @@ public class DataService extends AbstractService implements IDataService {
 
         for (TriggerRouter triggerRouter : triggerRouters) {
             if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
-                String xml = dbDialect.getCreateTableXML(triggerRouter);
+                String xml = symmetricDialect.getCreateTableXML(triggerRouter);
                 insertCreateEvent(targetNode, triggerRouter, xml, true);
             } else if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
                 insertPurgeEvent(targetNode, triggerRouter, true);
@@ -548,13 +548,13 @@ public class DataService extends AbstractService implements IDataService {
             String rowData = null;
             String pkData = null;
             if (whereClause != null) {
-                rowData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trigger, triggerHistory,
+                rowData = (String) jdbcTemplate.queryForObject(symmetricDialect.createCsvDataSql(trigger, triggerHistory,
                         configurationService.getChannel(trigger.getChannelId()),
                         whereClause), String.class);
                 if (rowData != null) {
                     rowData = rowData.trim();
                 }
-                pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(
+                pkData = (String) jdbcTemplate.queryForObject(symmetricDialect.createCsvPrimaryKeySql(
                         trigger, triggerHistory, configurationService.getChannel(trigger.getChannelId()), whereClause), String.class);
                 if (pkData != null) {
                     pkData = pkData.trim();
@@ -735,8 +735,8 @@ public class DataService extends AbstractService implements IDataService {
                 me.setHeartbeatTime(now.getTime());
                 me.setTimezoneOffset(AppUtils.getTimezoneOffset());
                 me.setSymmetricVersion(Version.version());
-                me.setDatabaseType(dbDialect.getName());
-                me.setDatabaseVersion(dbDialect.getVersion());
+                me.setDatabaseType(symmetricDialect.getName());
+                me.setDatabaseVersion(symmetricDialect.getVersion());
                 me.setBatchInErrorCount(outgoingBatchService
                         .countOutgoingBatchesInError());
                 if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
@@ -832,17 +832,17 @@ public class DataService extends AbstractService implements IDataService {
                 PreparedStatement ps = null;
                 boolean autoCommitFlag = conn.getAutoCommit();
                 try {
-                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                    if (symmetricDialect.requiresAutoCommitFalseToSetFetchSize()) {
                         conn.setAutoCommit(false);
                     }
                     String orderBy = getOrderByDataId(descending);
                     String startAtDataIdSql = startDataId >= 0l ? (descending ? " and d.data_id <= ? " : " and d.data_id >= ? ") : "";
-                    String sql = dbDialect.massageDataExtractionSql(getSql("selectEventDataToExtractSql", startAtDataIdSql, orderBy), 
+                    String sql = symmetricDialect.massageDataExtractionSql(getSql("selectEventDataToExtractSql", startAtDataIdSql, orderBy), 
                             configurationService.getNodeChannel(channelId, false).getChannel());
                     ps = conn.prepareStatement(sql,
                             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                     ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-                    ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                    ps.setFetchSize(symmetricDialect.getStreamingResultsFetchSize());
                     ps.setLong(1, batchId);
                     if (StringUtils.isNotBlank(startAtDataIdSql)) {
                         ps.setLong(2, startDataId);
@@ -872,7 +872,7 @@ public class DataService extends AbstractService implements IDataService {
                         }
                     }
                 } finally {
-                    if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                    if (symmetricDialect.requiresAutoCommitFalseToSetFetchSize()) {
                         conn.commit();
                         conn.setAutoCommit(autoCommitFlag);
                     }

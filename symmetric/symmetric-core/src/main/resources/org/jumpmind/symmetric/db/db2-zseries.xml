@@ -8,7 +8,7 @@
 	default-lazy-init="true">
 
 	<bean id="db2zSeriesDialect"
-		class="org.jumpmind.symmetric.db.db2.Db2zSeriesDbDialect"
+		class="org.jumpmind.symmetric.db.db2.Db2zSeriesSymmetricDialect"
 		scope="prototype">
 		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
 		
@@ -16,8 +16,8 @@
 		<property name="parameterService" ref="parameterService" />
 		<property name="streamingResultsFetchSize"
 			value="$[sym.db.jdbc.streaming.results.fetch.size]" />				
-		<property name="sqlTemplate">
-			<bean class="org.jumpmind.symmetric.db.SqlTemplate">
+		<property name="triggerText">
+			<bean class="org.jumpmind.symmetric.db.TriggerText">
 				<property name="functionInstalledSql">
 					<value>
 						<![CDATA[select count(*) from sysibm.sysfunctions where name = '$(functionName)']]>

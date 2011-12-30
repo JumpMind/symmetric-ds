@@ -149,7 +149,7 @@ final public class Constants {
 
     public static final String CONCURRENT_CONNECTION_MANGER = "concurrentConnectionManager";
 
-    public static final String DB_DIALECT = "dbDialect";
+    public static final String DB_DIALECT = "symmetricDialect";
     
     public static final String JOB_MANAGER = "jobManager";
 

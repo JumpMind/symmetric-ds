@@ -27,7 +27,7 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
@@ -88,11 +88,11 @@ public class Node implements Serializable {
         this.nodeGroupId = nodeGroupId;
     }    
 
-    public Node(IParameterService parameterService, IDbDialect dbDialect) {
+    public Node(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
         setNodeGroupId(parameterService.getNodeGroupId());
         setExternalId(parameterService.getExternalId());
-        setDatabaseType(dbDialect.getName());
-        setDatabaseVersion(dbDialect.getVersion());
+        setDatabaseType(symmetricDialect.getName());
+        setDatabaseVersion(symmetricDialect.getVersion());
         setSyncUrl(parameterService.getSyncUrl());
         setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
     }

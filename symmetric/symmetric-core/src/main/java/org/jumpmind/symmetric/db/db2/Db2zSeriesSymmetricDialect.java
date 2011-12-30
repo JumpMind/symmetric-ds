@@ -29,8 +29,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.dao.DataAccessException;
@@ -38,9 +38,9 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
-public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect {
+public class Db2zSeriesSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    static final Log logger = LogFactory.getLog(Db2zSeriesDbDialect.class);
+    static final Log logger = LogFactory.getLog(Db2zSeriesSymmetricDialect.class);
 
     private String userName;
 

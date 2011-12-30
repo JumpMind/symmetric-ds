@@ -31,8 +31,8 @@ import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
@@ -47,7 +47,7 @@ import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 /*
  * A dialect that is specific to Oracle databases
  */
-public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
+public class OracleSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 

@@ -26,7 +26,7 @@ import java.io.Writer;
 import java.util.Map;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.io.data.CsvConstants;
@@ -35,20 +35,13 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IParameterService;
 
-/**
- * 
- *
- * 
- *
- * 
- */
 public class CsvExtractor13 implements IDataExtractor {
 
     private Map<String, IStreamDataCommand> dictionary = null;
 
     private IParameterService parameterService;
 
-    private IDbDialect dbDialect;
+    private ISymmetricDialect symmetricDialect;
 
     private String tablePrefix;
 
@@ -61,7 +54,7 @@ public class CsvExtractor13 implements IDataExtractor {
     public void begin(OutgoingBatch batch, Writer writer) throws IOException {
         CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
         CsvUtils.writeLineFeed(writer);
-        CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, dbDialect.getBinaryEncoding()
+        CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, symmetricDialect.getBinaryEncoding()
                 .name());
         CsvUtils.writeLineFeed(writer);
     }
@@ -117,8 +110,8 @@ public class CsvExtractor13 implements IDataExtractor {
         this.dictionary = dictionary;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
     }
 
     public void setTablePrefix(String tablePrefix) {

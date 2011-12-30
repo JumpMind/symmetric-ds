@@ -79,7 +79,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 /*
  * The abstract class for database dialects.
  */
-abstract public class AbstractDbDialect implements IDbDialect {
+abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected ILog log = LogFactory.getLog(getClass());
 
@@ -89,7 +89,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected IDatabasePlatform platform;
 
-    protected SqlTemplate sqlTemplate;
+    protected TriggerText triggerText;
 
     protected IParameterService parameterService;
 
@@ -122,7 +122,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
 
-    protected AbstractDbDialect() {
+    protected AbstractSymmetricDialect() {
     }
 
     public String encodeForCsv(byte[] data) {
@@ -211,12 +211,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     protected void createRequiredFunctions() {
-        String[] functions = sqlTemplate.getFunctionsToInstall();
+        String[] functions = triggerText.getFunctionsToInstall();
         for (int i = 0; i < functions.length; i++) {
             String funcName = tablePrefix + "_" + functions[i];
-            if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName,
+            if (jdbcTemplate.queryForInt(triggerText.getFunctionInstalledSql(funcName,
                     platform.getDefaultSchema())) == 0) {
-                jdbcTemplate.update(sqlTemplate.getFunctionSql(functions[i], funcName,
+                jdbcTemplate.update(triggerText.getFunctionSql(functions[i], funcName,
                         platform.getDefaultSchema()));
                 log.info("FunctionInstalled", funcName);
             }
@@ -237,7 +237,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table,
             TriggerHistory triggerHistory, Channel channel) {
-        return sqlTemplate.createInitalLoadSql(node, this, trigger, table, triggerHistory, channel)
+        return triggerText.createInitalLoadSql(node, this, trigger, table, triggerHistory, channel)
                 .trim();
     }
 
@@ -249,7 +249,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
             String whereClause) {
-        return sqlTemplate.createCsvDataSql(
+        return triggerText.createCsvDataSql(
                 this,
                 trigger,
                 triggerHistory,
@@ -259,7 +259,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory,
             Channel channel, String whereClause) {
-        return sqlTemplate.createCsvPrimaryKeySql(
+        return triggerText.createCsvPrimaryKeySql(
                 this,
                 trigger,
                 triggerHistory,
@@ -323,7 +323,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 try {
                     previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, con);
 
-                    String triggerSql = sqlTemplate.createTriggerDDL(AbstractDbDialect.this, dml,
+                    String triggerSql = triggerText.createTriggerDDL(AbstractSymmetricDialect.this, dml,
                             trigger, hist, channel, tablePrefix, table, defaultCatalog,
                             defaultSchema);
 
@@ -373,7 +373,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist,
             Channel channel, String tablePrefix, Table table) {
-        return sqlTemplate.createPostTriggerDDL(this, dml, trigger, hist, channel, tablePrefix,
+        return triggerText.createPostTriggerDDL(this, dml, trigger, hist, channel, tablePrefix,
                 table, platform.getDefaultCatalog(), platform.getDefaultSchema());
     }
 
@@ -539,7 +539,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     protected Database readDatabaseFromXml(String resourceName) throws IOException {
-        URL url = AbstractDbDialect.class.getResource(resourceName);
+        URL url = AbstractSymmetricDialect.class.getResource(resourceName);
         if (url != null) {
             DatabaseIO io = new DatabaseIO();
             io.setValidateXml(false);
@@ -817,8 +817,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    public void setSqlTemplate(SqlTemplate sqlTemplate) {
-        this.sqlTemplate = sqlTemplate;
+    public void setTriggerText(TriggerText triggerText) {
+        this.triggerText = triggerText;
     }
 
     public void setTablePrefix(String tablePrefix) {

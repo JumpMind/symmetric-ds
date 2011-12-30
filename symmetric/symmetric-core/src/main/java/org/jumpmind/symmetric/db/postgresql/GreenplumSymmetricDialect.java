@@ -13,7 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
-public class GreenplumDbDialect extends PostgreSqlDbDialect {
+public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
 
     @Override
     public boolean supportsGetGeneratedKeys() {

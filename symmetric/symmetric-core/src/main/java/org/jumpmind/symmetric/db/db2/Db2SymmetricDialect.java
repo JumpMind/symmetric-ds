@@ -23,14 +23,14 @@ package org.jumpmind.symmetric.db.db2;
 
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 
 /*
  * A dialect that is specific to DB2 databases
  */
-public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
+public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     
     protected boolean createTablesIfNecessary() {
         boolean tablesCreated = super.createTablesIfNecessary();

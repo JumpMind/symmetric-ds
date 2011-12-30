@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -119,11 +119,11 @@ public class AbstractIntegrationTest extends AbstractTest {
         return TestSetupUtil.getClientEngine();
     }
 
-    protected IDbDialect getRootDbDialect() {
+    protected ISymmetricDialect getRootDbDialect() {
         return AppUtils.find(Constants.DB_DIALECT, getRootEngine());
     }
 
-    protected IDbDialect getClientDbDialect() {
+    protected ISymmetricDialect getClientDbDialect() {
         return AppUtils.find(Constants.DB_DIALECT, getClientEngine());
     }
 

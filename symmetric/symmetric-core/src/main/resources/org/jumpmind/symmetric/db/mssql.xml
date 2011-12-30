@@ -14,14 +14,14 @@
         </constructor-arg>
     </bean>
 
-    <bean id="msSqlDialect" class="org.jumpmind.symmetric.db.mssql.MsSqlDbDialect"
+    <bean id="msSqlDialect" class="org.jumpmind.symmetric.db.mssql.MsSqlSymmetricDialect"
         scope="prototype">
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="parameterService" ref="parameterService" />
         
         <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
-        <property name="sqlTemplate">
-            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+        <property name="triggerText">
+            <bean class="org.jumpmind.symmetric.db.TriggerText">
                 
                 <property name="functionInstalledSql">
                     <value>

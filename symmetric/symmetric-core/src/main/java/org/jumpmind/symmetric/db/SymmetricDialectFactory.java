@@ -56,11 +56,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Factory class that is responsible for creating the appropriate
- * {@link IDbDialect} for the configured database.
+ * {@link ISymmetricDialect} for the configured database.
  */
-public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAware {
+public class SymmetricDialectFactory implements FactoryBean<ISymmetricDialect>, BeanFactoryAware {
 
-    private static final ILog log = LogFactory.getLog(DbDialectFactory.class);
+    private static final ILog log = LogFactory.getLog(SymmetricDialectFactory.class);
 
     private IParameterService parameterService;
 
@@ -80,7 +80,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
 
     private long tableCacheTimeoutInMs;
 
-    public IDbDialect getObject() throws Exception {
+    public ISymmetricDialect getObject() throws Exception {
 
         waitForAvailableDatabase();
 
@@ -100,52 +100,52 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
 
         pf.setClearCacheModelTimeoutInMs(tableCacheTimeoutInMs);
 
-        AbstractDbDialect dialect = null;
+        AbstractSymmetricDialect dialect = null;
 
         if (pf instanceof MySqlPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("mysqlDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("mysqlDialect");
         } else if (pf instanceof OraclePlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("oracleDialect");
         } else if (pf instanceof MsSqlPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("msSqlDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("msSqlDialect");
         } else if (pf instanceof GreenplumPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("greenplumDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("greenplumDialect");
         } else if (pf instanceof PostgreSqlPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("postgresqlDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("postgresqlDialect");
         } else if (pf instanceof DerbyPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("derbyDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("derbyDialect");
         } else if (pf instanceof H2Platform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("h2Dialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("h2Dialect");
         } else if (pf instanceof SqLitePlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("sqliteDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("sqliteDialect");
         } else if (pf instanceof HsqlDbPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("hsqldbDialect");
         } else if (pf instanceof HsqlDb2Platform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("hsqldb2Dialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("hsqldb2Dialect");
         } else if (pf instanceof InformixPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("informixDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("informixDialect");
         } else if (pf instanceof Db2Platform) {
             String currentDbProductVersion = JdbcDatabasePlatformFactory
                     .getDatabaseProductVersion(jdbcTemplate.getDataSource());
             if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
-                dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
+                dialect = (AbstractSymmetricDialect) beanFactory.getBean("db2zSeriesDialect");
             } else {
                 int dbMajorVersion = JdbcDatabasePlatformFactory
                         .getDatabaseMajorVersion(jdbcTemplate.getDataSource());
                 int dbMinorVersion = JdbcDatabasePlatformFactory
                         .getDatabaseMinorVersion(jdbcTemplate.getDataSource());
                 if (dbMajorVersion < 9 || (dbMajorVersion == 9 && dbMinorVersion < 5)) {
-                    dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
+                    dialect = (AbstractSymmetricDialect) beanFactory.getBean("db2Dialect");
                 } else {
-                    dialect = (AbstractDbDialect) beanFactory.getBean("db2v9Dialect");
+                    dialect = (AbstractSymmetricDialect) beanFactory.getBean("db2v9Dialect");
                 }
             }
         } else if (pf instanceof FirebirdPlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("firebirdDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("firebirdDialect");
         } else if (pf instanceof SybasePlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("sybaseDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("sybaseDialect");
         } else if (pf instanceof InterbasePlatform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("interbaseDialect");
+            dialect = (AbstractSymmetricDialect) beanFactory.getBean("interbaseDialect");
         } else {
             throw new DbNotSupportedException();
         }
@@ -175,8 +175,8 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         }
     }
 
-    public Class<IDbDialect> getObjectType() {
-        return IDbDialect.class;
+    public Class<ISymmetricDialect> getObjectType() {
+        return ISymmetricDialect.class;
     }
 
     public boolean isSingleton() {

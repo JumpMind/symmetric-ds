@@ -18,7 +18,7 @@
         <property name="registrationService" ref="registrationService" />
         <property name="transportManager" ref="transportManager" />
         <property name="routingService" ref="routingService" />
-        <property name="dbDialect" ref="dbDialect" />
+        <property name="symmetricDialect" ref="symmetricDialect" />
         <property name="offlineDetectorServices">
           <list>
             <ref bean="pullService"/>
@@ -43,7 +43,7 @@
     <bean id="sendHeartbeat" class="org.jumpmind.symmetric.job.PushHeartbeatListener">
         <property name="dataService" ref="dataService" />
         <property name="nodeService" ref="nodeService" />
-        <property name="dbDialect" ref="dbDialect"/>
+        <property name="symmetricDialect" ref="symmetricDialect"/>
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="enabled" value="$[sym.heartbeat.sync.on.push]"/>
         <property name="timeBetweenHeartbeats" value="$[sym.heartbeat.sync.on.push.period.sec]" />

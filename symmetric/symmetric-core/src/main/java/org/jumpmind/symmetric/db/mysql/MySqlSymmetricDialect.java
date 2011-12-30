@@ -19,40 +19,58 @@
  * under the License.  */
 
 
-package org.jumpmind.symmetric.db.sqlite;
+package org.jumpmind.symmetric.db.mysql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.db.sql.SqlConstants;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
-public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
+public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
+
+    private static final String TRANSACTION_ID = "transaction_id";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
-   
-    public String toFormattedTimestamp(java.util.Date time) {
-        StringBuilder ts = new StringBuilder("datetime('");
-        ts.append(SqlConstants.JDBC_TIMESTAMP_FORMATTER.format(time));
-        ts.append("')");
-        return ts.toString();
+    
+    private String functionTemplateKeySuffix = null;
+
+    @Override
+    protected void initTablesAndFunctionsForSpecificDialect() {
+        int[] versions = Version.parseVersion(getProductVersion());
+        if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
+            this.functionTemplateKeySuffix = "_pre_5_1_23";
+        } else {
+            this.functionTemplateKeySuffix = "_post_5_1_23";
+        }
     }
     
     @Override
     public boolean supportsTransactionId() {
-        return false;
+        return true;
     }
 
-    private final String getTransactionFunctionName() {
-        return null;
+    @Override
+    protected void createRequiredFunctions() {
+        String[] functions = triggerText.getFunctionsToInstall();
+        for (int i = 0; i < functions.length; i++) {
+            if (functions[i].endsWith(this.functionTemplateKeySuffix)) {
+                String funcName = tablePrefix + "_"
+                        + functions[i].substring(0, functions[i].length() - this.functionTemplateKeySuffix.length());
+                if (jdbcTemplate.queryForInt(triggerText.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
+                    jdbcTemplate.update(triggerText.getFunctionSql(functions[i], funcName, platform.getDefaultSchema()));
+                    log.info("FunctionInstalled", funcName);
+                }
+            }
+        }
     }
 
     @Override
@@ -61,7 +79,7 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
         String checkCatalogSql = (catalog != null && catalog.length() > 0) ? " and trigger_schema='" + catalog + "'"
                 : "";
         return jdbcTemplate.queryForInt(
-                "select count(*) from sqlite_master where type='trigger' and name like ? and tbl_name like ?"
+                "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
                         + checkCatalogSql, new Object[] { triggerName, tableName }) > 0;
     }
 
@@ -81,22 +99,24 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-   //     jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
-    //    if (nodeId != null) {
-      //      jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
-       // }
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
+        if (nodeId != null) {
+            transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
+        }
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-//        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
- //       jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
 
     public String getSyncTriggersExpression() {
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
 
-
+    private final String getTransactionFunctionName() {
+        return platform.getDefaultCatalog() + "." + tablePrefix + "_" + TRANSACTION_ID;
+    }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
@@ -110,7 +130,7 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public void purge() {
     }
-    
+
     @Override
     protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
         if (catalog != null) {
@@ -122,9 +142,22 @@ public class SqLiteDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
+    /*
+     * According to the documentation (and experience) the jdbc driver for mysql
+     * requires the fetch size to be as follows.
+     */
+    @Override
+    public int getStreamingResultsFetchSize() {
+        return Integer.MIN_VALUE;
+    }
+
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
 
+    @Override
+    protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
+        return "var_row_data != var_old_data";
+    }
 }

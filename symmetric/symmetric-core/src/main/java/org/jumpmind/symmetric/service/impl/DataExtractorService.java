@@ -187,11 +187,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                                 .getTriggerId());
                 if (triggerHistory == null) {
-                    triggerHistory = new TriggerHistory(dbDialect.getTable(
+                    triggerHistory = new TriggerHistory(symmetricDialect.getTable(
                             triggerRouter.getTrigger(), false), triggerRouter.getTrigger());
                     triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
                 }
-                StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node,
+                StringBuilder sql = new StringBuilder(symmetricDialect.createPurgeSqlFor(node,
                         triggerRouter));
                 addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger()
                         .getSourceTableName(), sql);
@@ -207,7 +207,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             TriggerHistory triggerHistory = triggerRouterService
                     .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
             if (triggerHistory == null) {
-                triggerHistory = new TriggerHistory(dbDialect.getTable(triggerRouter.getTrigger(),
+                triggerHistory = new TriggerHistory(symmetricDialect.getTable(triggerRouter.getTrigger(),
                         false), triggerRouter.getTrigger());
                 triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
             }
@@ -229,9 +229,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     private void addPurgeCriteriaToConfigurationTables(String sourceTableName, StringBuilder sql) {
-        if ((TableConstants.getTableName(dbDialect.getTablePrefix(), TableConstants.SYM_NODE)
+        if ((TableConstants.getTableName(symmetricDialect.getTablePrefix(), TableConstants.SYM_NODE)
                 .equalsIgnoreCase(sourceTableName))
-                || TableConstants.getTableName(dbDialect.getTablePrefix(),
+                || TableConstants.getTableName(symmetricDialect.getTablePrefix(),
                         TableConstants.SYM_NODE_SECURITY).equalsIgnoreCase(sourceTableName)) {
             Node me = nodeService.findIdentity();
             if (me != null) {
@@ -292,7 +292,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         // The table to use for the SQL may be different than the configured
         // table if there is a legacy table that is swapped out by the dataExtractor.
-        Table tableForSql = dbDialect.getPlatform().getTableFromCache(triggerRouter.getTrigger().getSourceCatalogName(),
+        Table tableForSql = symmetricDialect.getPlatform().getTableFromCache(triggerRouter.getTrigger().getSourceCatalogName(),
                 triggerRouter.getTrigger().getSourceSchemaName(), tableNameToSend,
                 false);
         
@@ -304,7 +304,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     .getSourceSchemaName(), tableNameToSend)));
         }
 
-        final String sql = dbDialect.createInitialLoadSqlFor(node, triggerRouter, tableForSql,
+        final String sql = symmetricDialect.createInitialLoadSqlFor(node, triggerRouter, tableForSql,
                 triggerHistory,
                 configurationService.getChannel(triggerRouter.getTrigger().getChannelId()));
 
@@ -323,7 +323,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
                     OutgoingBatch batch = ctx.getBatch();
-                    Table table = dbDialect.getTable(triggerRouter.getTrigger(), true);
+                    Table table = symmetricDialect.getTable(triggerRouter.getTrigger(), true);
                     NodeChannel channel = batch != null ? configurationService.getNodeChannel(
                             batch.getChannelId(), false) : new NodeChannel(triggerRouter
                             .getTrigger().getChannelId());
@@ -335,14 +335,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ResultSet rs = null;
                     try {
 
-                        if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                        if (symmetricDialect.requiresAutoCommitFalseToSetFetchSize()) {
                             conn.setAutoCommit(false);
                         }
 
                         st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
                                 java.sql.ResultSet.CONCUR_READ_ONLY);
                         st.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-                        st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                        st.setFetchSize(symmetricDialect.getStreamingResultsFetchSize());
                         long ts = System.currentTimeMillis();
                         rs = st.executeQuery();
                         long executeTimeInMs = System.currentTimeMillis() - ts;
@@ -420,7 +420,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.commit(batch, writer);
                         }
                     } finally {
-                        if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
+                        if (symmetricDialect.requiresAutoCommitFalseToSetFetchSize()) {
                             conn.commit();
                             conn.setAutoCommit(autoCommitFlag);
                         }

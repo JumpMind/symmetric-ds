@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.load.IReloadListener;
@@ -150,7 +150,7 @@ public interface IDataService {
     
     public IParameterService getParameterService();
     
-    public IDbDialect getDbDialect();
+    public ISymmetricDialect getSymmetricDialect();
     
     public JdbcTemplate getJdbcTemplate();
 

@@ -728,13 +728,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         for (TriggerHistory history : activeHistories) {
             if (!triggerIdsThatShouldBeActive.contains(history.getTriggerId())) {
                 log.info("TriggersRemoving", history.getSourceTableName());
-                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
                         history.getSourceSchemaName(), history.getNameForInsertTrigger(),
                         history.getSourceTableName(), history);
-                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
                         history.getSourceSchemaName(), history.getNameForDeleteTrigger(),
                         history.getSourceTableName(), history);
-                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
+                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
                         history.getSourceSchemaName(), history.getNameForUpdateTrigger(),
                         history.getSourceTableName(), history);
 
@@ -746,13 +746,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
 
-                boolean triggerExists = dbDialect.doesTriggerExist(history.getSourceCatalogName(),
+                boolean triggerExists = symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
                         history.getSourceSchemaName(), history.getSourceTableName(),
                         history.getNameForInsertTrigger());
-                triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(),
+                triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
                         history.getSourceSchemaName(), history.getSourceTableName(),
                         history.getNameForUpdateTrigger());
-                triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(),
+                triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
                         history.getSourceSchemaName(), history.getSourceTableName(),
                         history.getNameForDeleteTrigger());
                 if (triggerExists) {
@@ -788,7 +788,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
-                Table table = dbDialect.getPlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger
+                Table table = symmetricDialect.getPlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger
                         .getSourceSchemaName(), trigger.getSourceTableName(), true);
 
                 String errorMessage = null;
@@ -824,7 +824,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         forceRebuildOfTriggers = true;
                     }
                     
-                    boolean supportsTriggers = dbDialect.getPlatform().getPlatformInfo().isTriggersSupported();
+                    boolean supportsTriggers = symmetricDialect.getPlatform().getPlatformInfo().isTriggersSupported();
 
                     newestHistory = rebuildTriggerIfNecessary(sqlBuffer,
                             forceRebuildOfTriggers, trigger, DataEventType.INSERT, reason,
@@ -867,9 +867,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 
                 if (newestHistory != null) {
                     // Make sure all the triggers are removed from the table
-                    dbDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), newestHistory.getNameForInsertTrigger(), trigger.getSourceTableName(), newestHistory);
-                    dbDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), newestHistory.getNameForUpdateTrigger(), trigger.getSourceTableName(), newestHistory);
-                    dbDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), newestHistory.getNameForDeleteTrigger(), trigger.getSourceTableName(), newestHistory);
+                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), newestHistory.getNameForInsertTrigger(), trigger.getSourceTableName(), newestHistory);
+                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), newestHistory.getNameForUpdateTrigger(), trigger.getSourceTableName(), newestHistory);
+                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), newestHistory.getNameForDeleteTrigger(), trigger.getSourceTableName(), newestHistory);
                 }
                 
                 if (this.triggerCreationListeners != null) {
@@ -891,7 +891,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         boolean triggerRemoved = false;
 
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
-        int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
+        int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
 
         newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
                 maxTriggerNameLength, trigger).toUpperCase());
@@ -907,7 +907,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             oldTriggerName = oldhist.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = oldhist.getSourceSchemaName();
             oldCatalogName = oldhist.getSourceCatalogName();
-            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, oldhist
+            triggerExists = symmetricDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, oldhist
                     .getSourceTableName(), oldTriggerName);
         } else {
             // We had no trigger_hist row, lets validate that the trigger as
@@ -915,7 +915,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             oldTriggerName = newTriggerHist.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = trigger.getSourceSchemaName();
             oldCatalogName = trigger.getSourceCatalogName();
-            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, trigger
+            triggerExists = symmetricDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, trigger
                     .getSourceTableName(), oldTriggerName);
         }
 
@@ -924,7 +924,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         if ((forceRebuild || !triggerIsActive) && triggerExists) {
-            dbDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema, oldTriggerName,
+            symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema, oldTriggerName,
                     trigger.getSourceTableName(), oldhist);
             triggerExists = false;
             triggerRemoved = true;
@@ -941,7 +941,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         
         try {
             if (!triggerExists && triggerIsActive) {
-                dbDialect
+                symmetricDialect
                         .createTrigger(sqlBuffer, dmlType, trigger, hist,
                                 configurationService.getChannel(trigger.getChannelId()),
                                 tablePrefix, table);
@@ -955,7 +955,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
 
         } catch (RuntimeException ex) {
-            if (!dbDialect.doesTriggerExist(hist.getSourceCatalogName(),
+            if (!symmetricDialect.doesTriggerExist(hist.getSourceCatalogName(),
                     hist.getSourceSchemaName(), hist.getSourceTableName(),
                     hist.getTriggerNameForDmlType(dmlType))) {
                 log.warn("TriggerHistCleanup", hist.getTriggerHistoryId());
