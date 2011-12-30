@@ -23,6 +23,7 @@ import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;
 import org.jumpmind.log.LogLevel;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
@@ -40,7 +41,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings, LobHandler lobHandler) {
         this.dataSource = dataSource;
         this.settings = settings;
-        this.lobHandler = lobHandler;
+        this.lobHandler = lobHandler == null ? new DefaultLobHandler() : lobHandler;
     }
 
     public DataSource getDataSource() {
@@ -96,6 +97,52 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         });
     }
+    
+    public byte[] queryForBlob(final String sql, final Object... args) {
+        return execute(new IConnectionCallback<byte[]>() {
+            public byte[] execute(Connection con) throws SQLException {
+                byte[] result = null;
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                try {
+                    ps = con.prepareStatement(sql);
+                    ps.setQueryTimeout(settings.getQueryTimeout());
+                    JdbcUtils.setValues(ps, args);
+                    rs = ps.executeQuery();
+                    if (rs.next()) {
+                        result = lobHandler.getBlobAsBytes(rs, 1);
+                    }
+                } finally {
+                    close(rs);
+                    close(ps);
+                }
+                return result;
+            }
+        });       
+    }
+    
+    public String queryForClob(final String sql, final Object... args) {
+        return execute(new IConnectionCallback<String>() {
+            public String execute(Connection con) throws SQLException {
+                String result = null;
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                try {
+                    ps = con.prepareStatement(sql);
+                    ps.setQueryTimeout(settings.getQueryTimeout());
+                    JdbcUtils.setValues(ps, args);
+                    rs = ps.executeQuery();
+                    if (rs.next()) {
+                        result = lobHandler.getClobAsString(rs, 1);
+                    }
+                } finally {
+                    close(rs);
+                    close(ps);
+                }
+                return result;
+            }
+        });        
+    }    
 
     public Map<String, Object> queryForMap(final String sql, final Object... args) {
         return execute(new IConnectionCallback<Map<String, Object>>() {

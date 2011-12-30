@@ -19,6 +19,8 @@ package org.jumpmind.db;
  * under the License.
  */
 
+import java.util.List;
+
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -197,6 +199,8 @@ public interface IDatabasePlatform {
     public boolean isClob(int type);
 
     public boolean isBlob(int type);
+    
+    public List<Column> getLobColumns(Table table);
 
     public boolean isPrimaryKeyViolation(Exception ex);
 

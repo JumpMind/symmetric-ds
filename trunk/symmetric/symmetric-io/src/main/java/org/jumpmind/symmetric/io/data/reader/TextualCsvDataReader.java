@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 
-public class CsvDataReader implements IDataReader {
+public class TextualCsvDataReader implements IDataReader {
 
     protected Log log = LogFactory.getLog(getClass());
 
@@ -48,11 +48,11 @@ public class CsvDataReader implements IDataReader {
     protected String sourceNodeId;
     protected BinaryEncoding binaryEncoding;
 
-    public CsvDataReader(StringBuilder input) {
+    public TextualCsvDataReader(StringBuilder input) {
         this(new BufferedReader(new StringReader(input.toString())));
     }
 
-    public CsvDataReader(InputStream is) {
+    public TextualCsvDataReader(InputStream is) {
         this(toReader(is));
     }
 
@@ -64,15 +64,15 @@ public class CsvDataReader implements IDataReader {
         }
     }
 
-    public CsvDataReader(String input) {
+    public TextualCsvDataReader(String input) {
         this(new BufferedReader(new StringReader(input)));
     }
 
-    public CsvDataReader(Reader reader) {
+    public TextualCsvDataReader(Reader reader) {
         this.reader = reader;
     }
 
-    public CsvDataReader(File file) {
+    public TextualCsvDataReader(File file) {
         try {
             FileInputStream fis = new FileInputStream(file);
             InputStreamReader in = new InputStreamReader(fis, "UTF-8");
