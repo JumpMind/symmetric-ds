@@ -395,6 +395,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return type == Types.BLOB || type == Types.BINARY || type == Types.VARBINARY
                 || type == Types.LONGVARBINARY || type == -10;
     }
+    
+    public List<Column> getLobColumns(Table table) {
+        List<Column> lobColumns = new ArrayList<Column>(1);
+        Column[] allColumns = table.getColumns();
+        for (Column column : allColumns) {
+            if (isLob(column.getTypeCode())) {
+                lobColumns.add(column);
+            }
+        }
+        return lobColumns;
+    }
 
     public boolean isLob(int type) {
         return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY

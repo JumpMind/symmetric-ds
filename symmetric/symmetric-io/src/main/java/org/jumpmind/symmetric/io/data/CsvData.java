@@ -108,6 +108,7 @@ public class CsvData {
     }
 
     public void putCsvData(String key, String data) {
+        removeData(key);
         if (csvData == null) {
             csvData = new HashMap<String, String>(2);
         }
@@ -150,6 +151,7 @@ public class CsvData {
     }
 
     public void putParsedData(String key, String[] data) {
+        removeData(key);
         if (parsedCsvData == null) {
             parsedCsvData = new HashMap<String, String[]>(2);
         }

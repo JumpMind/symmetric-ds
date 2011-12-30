@@ -6,10 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -17,9 +23,10 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
 
-public class BatchCsvDataReader implements IDataReader {
+public class DatabaseCapturedCsvDataReader implements IDataReader {
 
     protected String selectSql;
 
@@ -31,22 +38,23 @@ public class BatchCsvDataReader implements IDataReader {
 
     protected List<Batch> batchesToSend;
 
-    protected Map<Long, CsvDataSettings> csvDataSettings;
+    protected Map<Long, DatabaseCaptureSettings> settings;
 
     protected Batch batch;
 
-    protected CsvDataSettings csvDataSetting;
+    protected DatabaseCaptureSettings setting;
 
     protected CsvData data;
 
     protected boolean extractOldData = true;
 
-    public BatchCsvDataReader(IDatabasePlatform platform, String sql,
-            Map<Long, CsvDataSettings> csvDataSettings, boolean extractOldData, Batch... batches) {
+    public DatabaseCapturedCsvDataReader(IDatabasePlatform platform, String sql,
+            Map<Long, DatabaseCaptureSettings> csvDataSettings, boolean extractOldData,
+            Batch... batches) {
         this.selectSql = sql;
         this.extractOldData = extractOldData;
         this.platform = platform;
-        this.csvDataSettings = csvDataSettings;
+        this.settings = csvDataSettings;
         this.batchesToSend = new ArrayList<Batch>(batches.length);
         for (Batch batch : batches) {
             this.batchesToSend.add(batch);
@@ -80,17 +88,17 @@ public class BatchCsvDataReader implements IDataReader {
     }
 
     public Table nextTable() {
-        csvDataSetting = null;
+        setting = null;
         data = this.dataCursor.next();
         if (data != null) {
-            csvDataSetting = csvDataSettings.get(data.getAttribute(CsvData.ATTRIBUTE_TABLE_ID));
-            if (csvDataSetting == null) {
+            setting = settings.get(data.getAttribute(CsvData.ATTRIBUTE_TABLE_ID));
+            if (setting == null) {
                 throw new RuntimeException(String.format(
                         "Table mapping for id of %d was not found",
                         data.getAttribute(CsvData.ATTRIBUTE_TABLE_ID)));
             }
         }
-        return csvDataSetting != null ? csvDataSetting.getTableMetaData() : null;
+        return setting != null ? setting.getTableMetaData() : null;
     }
 
     public CsvData nextData() {
@@ -100,12 +108,10 @@ public class BatchCsvDataReader implements IDataReader {
 
         CsvData returnData = null;
         if (data != null) {
-            CsvDataSettings newCsvDataSetting = csvDataSettings.get(data
+            DatabaseCaptureSettings newCsvDataSetting = settings.get(data
                     .getAttribute(CsvData.ATTRIBUTE_TABLE_ID));
-            if (newCsvDataSetting != null
-                    && csvDataSetting != null
-                    && newCsvDataSetting.getTableMetaData().equals(
-                            csvDataSetting.getTableMetaData())) {
+            if (newCsvDataSetting != null && setting != null
+                    && newCsvDataSetting.getTableMetaData().equals(setting.getTableMetaData())) {
                 returnData = data;
                 data = null;
             }
@@ -121,23 +127,87 @@ public class BatchCsvDataReader implements IDataReader {
         return statistics;
     }
 
-    protected String enhanceWithLobsFromTargetIfNeeded(String rowData) {
-        // TODO
-        return rowData;
+    protected void enhanceWithLobsFromTargetIfNeeded(CsvData data) {
+        Table table = setting.getTableMetaData();
+        table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(),
+                false);
+        if (table != null) {
+            List<Column> lobColumns = platform.getLobColumns(table);
+            if (lobColumns.size() > 0) {
+                String[] columnNames = table.getColumnNames();
+                String[] rowData = data.getParsedData(CsvData.ROW_DATA);
+                Column[] orderedColumns = table.getColumns();
+                Object[] objectValues = platform.getObjectValues(batch.getBinaryEncoding(),
+                        rowData, orderedColumns);
+                Map<String, Object> columnDataMap = CollectionUtils
+                        .toMap(columnNames, objectValues);
+                Column[] pkColumns = table.getPrimaryKeyColumns();
+                ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+                Object[] args = new Object[pkColumns.length];
+                for (int i = 0; i < pkColumns.length; i++) {
+                    args[i] = columnDataMap.get(pkColumns[i].getName());
+                }
+
+                for (Column lobColumn : lobColumns) {
+                    String sql = buildSelect(table, lobColumn, pkColumns);
+                    String valueForCsv = null;
+                    if (platform.isBlob(lobColumn.getTypeCode())) {
+                        byte[] binaryData = sqlTemplate.queryForBlob(sql, args);
+                        if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
+                            valueForCsv = new String(Base64.encodeBase64(binaryData));
+                        } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
+                            valueForCsv = new String(Hex.encodeHex(binaryData));
+                        } else {
+                            valueForCsv = new String(binaryData);
+                        }
+                    } else {
+                        valueForCsv = sqlTemplate.queryForClob(sql, args);
+                    }
+
+                    int index = ArrayUtils.indexOf(columnNames, lobColumn.getName());
+                    rowData[index] = valueForCsv;
+
+                }
+
+                data.putParsedData(CsvData.ROW_DATA, rowData);
+            }
+        }
+    }
+
+    protected String buildSelect(Table table, Column lobColumn, Column[] pkColumns) {
+        StringBuilder sql = new StringBuilder("select ");
+        String quote = platform.getPlatformInfo().getIdentifierQuoteString();
+        sql.append(quote);
+        sql.append(lobColumn.getName());
+        sql.append(quote);
+        sql.append(",");
+        sql.delete(sql.length() - 1, sql.length());
+        sql.append(" from ");
+        sql.append(table.getFullyQualifiedTableName());
+        sql.append(" where ");
+        for (Column col : pkColumns) {
+            sql.append(quote);
+            sql.append(col.getName());
+            sql.append(quote);
+            sql.append("=? and ");
+        }
+        sql.delete(sql.length() - 5, sql.length());
+        return sql.toString();
     }
 
     class CsvDataRowMapper implements ISqlRowMapper<CsvData> {
         public CsvData mapRow(Row row) {
             CsvData data = new CsvData();
-            String rowData = row.getString("ROW_DATA");
-            if (rowData != null && csvDataSetting.isSelectLobsFromTarget()) {
-                rowData = enhanceWithLobsFromTargetIfNeeded(rowData);
-            }
-            data.putCsvData(CsvData.ROW_DATA, rowData);
+            data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA"));
             data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA"));
             if (extractOldData) {
                 data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA"));
             }
+
+            if (setting.isSelectLobsFromTarget()) {
+                enhanceWithLobsFromTargetIfNeeded(data);
+            }
+
             data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
             data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID"));
             data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));
@@ -150,11 +220,13 @@ public class BatchCsvDataReader implements IDataReader {
         }
     }
 
-    public static class CsvDataSettings {
+    public static class DatabaseCaptureSettings {
+
         protected boolean selectLobsFromTarget = false;
+
         protected Table tableMetaData;
 
-        public CsvDataSettings(boolean useStreamLobs, Table tableMetaData) {
+        public DatabaseCaptureSettings(boolean useStreamLobs, Table tableMetaData) {
             this.selectLobsFromTarget = useStreamLobs;
             this.tableMetaData = tableMetaData;
         }

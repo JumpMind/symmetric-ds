@@ -40,7 +40,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.util.CollectionUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -74,7 +74,7 @@ abstract class AbstractStreamDataCommand implements IStreamDataCommand {
                                         .orderColumns(columnNames, table);
                                 Object[] objectValues = dbDialect.getPlatform().getObjectValues(
                                         dbDialect.getBinaryEncoding(), rowData, orderedColumns);
-                                Map<String, Object> columnDataMap = AppUtils.toMap(columnNames,
+                                Map<String, Object> columnDataMap = CollectionUtils.toMap(columnNames,
                                         objectValues);
                                 Column[] pkColumns = table.getPrimaryKeyColumns();
                                 String sql = buildSelect(table, lobColumns, pkColumns);

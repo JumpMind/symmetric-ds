@@ -25,8 +25,8 @@ public class CsvDataReaderTest {
         putInsert(builder, 4);
         endCsv(builder);
         
-        CsvDataReader reader = new CsvDataReader(builder);
-        DataContext<CsvDataReader, IDataWriter> ctx = new DataContext<CsvDataReader, IDataWriter>(reader, null);
+        TextualCsvDataReader reader = new TextualCsvDataReader(builder);
+        DataContext<TextualCsvDataReader, IDataWriter> ctx = new DataContext<TextualCsvDataReader, IDataWriter>(reader, null);
         reader.open(ctx);
         
         Batch batch = reader.nextBatch();
@@ -94,8 +94,8 @@ public class CsvDataReaderTest {
         putInsert(builder, 2);
         endCsv(builder);
         
-        CsvDataReader reader = new CsvDataReader(builder);
-        DataContext<CsvDataReader, IDataWriter> ctx = new DataContext<CsvDataReader, IDataWriter>(reader, null);
+        TextualCsvDataReader reader = new TextualCsvDataReader(builder);
+        DataContext<TextualCsvDataReader, IDataWriter> ctx = new DataContext<TextualCsvDataReader, IDataWriter>(reader, null);
         reader.open(ctx);
         
         Batch batch = reader.nextBatch();

@@ -16,7 +16,7 @@ import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.MemoryIoResource;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataProcessor;
-import org.jumpmind.symmetric.io.data.reader.CsvDataReader;
+import org.jumpmind.symmetric.io.data.reader.TextualCsvDataReader;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,9 +54,9 @@ public class FileCsvDataWriterTest {
         String origCsv = IOUtils.toString(is);
         is.close();
 
-        CsvDataReader reader = new CsvDataReader(origCsv);
+        TextualCsvDataReader reader = new TextualCsvDataReader(origCsv);
         FileCsvDataWriter writer = new FileCsvDataWriter(DIR, threshold, new BatchListener());
-        DataProcessor<CsvDataReader, FileCsvDataWriter> processor = new DataProcessor<CsvDataReader, FileCsvDataWriter>(
+        DataProcessor<TextualCsvDataReader, FileCsvDataWriter> processor = new DataProcessor<TextualCsvDataReader, FileCsvDataWriter>(
                 reader, writer);
         processor.process();
         
