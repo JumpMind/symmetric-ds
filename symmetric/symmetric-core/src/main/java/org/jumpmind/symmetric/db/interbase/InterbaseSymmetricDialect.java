@@ -46,6 +46,10 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
+    public InterbaseSymmetricDialect() {
+        this.triggerText = new InterbaseTriggerText();
+    }
+    
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
         String contextTableName = tablePrefix + "_" + CONTEXT_TABLE_NAME;

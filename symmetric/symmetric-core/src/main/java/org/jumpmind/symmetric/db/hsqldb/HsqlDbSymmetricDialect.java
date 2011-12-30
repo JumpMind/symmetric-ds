@@ -36,6 +36,10 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     public static String DUAL_TABLE = "DUAL";
 
     private boolean enforceStrictSize = true;
+    
+    public HsqlDbSymmetricDialect() {
+        this.triggerText = new HsqlDbTriggerText();
+    }
    
     @Override
     public void init(IDatabasePlatform pf, int queryTimeout, final JdbcTemplate jdbcTemplate) {

@@ -53,6 +53,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
     private Map<String, String> sqlScriptReplacementTokens;
 
     public SybaseSymmetricDialect() {
+        this.triggerText = new SybaseTriggerText();
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
     }

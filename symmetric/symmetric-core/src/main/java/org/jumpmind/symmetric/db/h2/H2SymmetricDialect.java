@@ -33,6 +33,10 @@ import org.jumpmind.symmetric.model.TriggerHistory;
  */
 public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
     
+    public H2SymmetricDialect() {
+        this.triggerText = new H2TriggerText();
+    }
+    
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
             String triggerName) {

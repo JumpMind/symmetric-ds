@@ -15,6 +15,10 @@ import org.springframework.jdbc.support.JdbcUtils;
 
 public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
 
+    public GreenplumSymmetricDialect() {
+        this.triggerText = new GreenplumTriggerText();
+    }
+    
     @Override
     public boolean supportsGetGeneratedKeys() {
         return false;

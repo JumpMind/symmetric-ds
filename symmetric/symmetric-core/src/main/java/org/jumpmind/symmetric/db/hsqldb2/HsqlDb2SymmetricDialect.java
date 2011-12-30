@@ -32,6 +32,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
+    public HsqlDb2SymmetricDialect() {
+        this.triggerText = new HsqlDb2TriggerText();
+    }
+    
     @Override
     public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
         super.init(pf, queryTimeout, jdbcTemplate);

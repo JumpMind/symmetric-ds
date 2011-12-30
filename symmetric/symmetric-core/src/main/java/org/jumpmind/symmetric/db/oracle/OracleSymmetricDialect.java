@@ -54,6 +54,10 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     String selectTriggerSql;
 
     String selectTransactionsSql;
+    
+    public OracleSymmetricDialect() {
+        this.triggerText = new OracleTriggerText();
+    }
 
     @Override
     public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {

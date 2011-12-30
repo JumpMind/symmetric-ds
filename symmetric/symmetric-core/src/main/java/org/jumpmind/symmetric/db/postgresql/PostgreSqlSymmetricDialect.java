@@ -45,6 +45,10 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     private boolean supportsTransactionId = false;
 
     private String transactionIdExpression = "null";
+    
+    public PostgreSqlSymmetricDialect() {
+        this.triggerText = new PostgreSqlTriggerText();
+    }
 
     @Override
     public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {        

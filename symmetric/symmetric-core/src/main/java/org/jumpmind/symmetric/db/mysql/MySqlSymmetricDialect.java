@@ -43,6 +43,10 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     
     private String functionTemplateKeySuffix = null;
 
+    public MySqlSymmetricDialect() {
+        this.triggerText = new MySqlTriggerText();
+    }
+    
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
         int[] versions = Version.parseVersion(getProductVersion());

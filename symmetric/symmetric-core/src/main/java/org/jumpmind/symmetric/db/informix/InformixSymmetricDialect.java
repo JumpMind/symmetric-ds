@@ -31,8 +31,9 @@ import org.jumpmind.symmetric.model.Trigger;
 public class InformixSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     private Map<String, String> sqlScriptReplacementTokens;
-
+    
     public InformixSymmetricDialect() {
+        this.triggerText = new InformixTriggerText();
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");
     }    
