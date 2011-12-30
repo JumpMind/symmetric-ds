@@ -46,6 +46,10 @@ import org.springframework.jdbc.core.ConnectionCallback;
  */
 public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
+    public MsSqlSymmetricDialect() {
+        this.triggerText = new MsSqlTriggerText();
+    }
+    
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;

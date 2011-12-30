@@ -48,7 +48,7 @@ import org.jumpmind.util.FormatUtils;
  */
 public class TriggerText {
 
-    private static final String ORIG_TABLE_ALIAS = "orig";
+    protected static final String ORIG_TABLE_ALIAS = "orig";
 
     static final String INSERT_TRIGGER_TEMPLATE = "insertTriggerTemplate";
 
@@ -58,47 +58,47 @@ public class TriggerText {
 
     static final String INITIAL_LOAD_SQL_TEMPLATE = "initialLoadSqlTemplate";
 
-    private Map<String, String> sqlTemplates;
+    protected Map<String, String> sqlTemplates;
 
-    private Map<String, String> functionTemplatesToInstall;
+    protected Map<String, String> functionTemplatesToInstall;
 
-    private String functionInstalledSql;
+    protected String functionInstalledSql;
 
-    private String emptyColumnTemplate = "''";
+    protected String emptyColumnTemplate = "''";
 
-    private String stringColumnTemplate;
+    protected String stringColumnTemplate;
 
-    private String xmlColumnTemplate;
+    protected String xmlColumnTemplate;
 
-    private String arrayColumnTemplate;
+    protected String arrayColumnTemplate;
 
-    private String numberColumnTemplate;
+    protected String numberColumnTemplate;
 
-    private String datetimeColumnTemplate;
+    protected String datetimeColumnTemplate;
 
-    private String timeColumnTemplate;
+    protected String timeColumnTemplate;
 
-    private String dateColumnTemplate;
+    protected String dateColumnTemplate;
 
-    private String clobColumnTemplate;
+    protected String clobColumnTemplate;
 
-    private String blobColumnTemplate;
+    protected String blobColumnTemplate;
 
-    private String wrappedBlobColumnTemplate;
+    protected String wrappedBlobColumnTemplate;
 
-    private String booleanColumnTemplate;
+    protected String booleanColumnTemplate;
 
-    private String triggerConcatCharacter;
+    protected String triggerConcatCharacter;
 
-    private String newTriggerValue;
+    protected String newTriggerValue;
 
-    private String oldTriggerValue;
+    protected String oldTriggerValue;
 
-    private String oldColumnPrefix = "";
+    protected String oldColumnPrefix = "";
 
-    private String newColumnPrefix = "";
+    protected String newColumnPrefix = "";
 
-    private String otherColumnTemplate;
+    protected String otherColumnTemplate;
     
     public String createInitalLoadSql(Node node, ISymmetricDialect dialect, TriggerRouter triggerRouter,
             Table table, TriggerHistory triggerHistory, Channel channel) {
@@ -252,7 +252,7 @@ public class TriggerText {
                 table, defaultCatalog, defaultSchema, ddl);
     }
 
-    private String getDefaultTargetTableName(Trigger trigger, TriggerHistory history) {
+    protected String getDefaultTargetTableName(Trigger trigger, TriggerHistory history) {
         String targetTableName = null;
         if (history != null) {
             targetTableName = history.getSourceTableName();
@@ -391,7 +391,7 @@ public class TriggerText {
         return ddl;
     }
 
-    private String buildVirtualTableSql(ISymmetricDialect dialect, String oldTriggerValue,
+    protected String buildVirtualTableSql(ISymmetricDialect dialect, String oldTriggerValue,
             String newTriggerValue, Column[] columns) {
         if (oldTriggerValue.indexOf(".") >= 0) {
             oldTriggerValue = oldTriggerValue.substring(oldTriggerValue.indexOf(".") + 1);
@@ -418,7 +418,7 @@ public class TriggerText {
         return b.toString();
     }
 
-    private String eval(boolean condition, String prop, String ddl) {
+    protected String eval(boolean condition, String prop, String ddl) {
         if (ddl != null) {
             String ifStmt = "$(if:" + prop + ")";
             String elseStmt = "$(else:" + prop + ")";
@@ -451,7 +451,7 @@ public class TriggerText {
         return ddl;
     }
 
-    private String aliasedPrimaryKeyJoin(String aliasOne, String aliasTwo, Column[] columns) {
+    protected String aliasedPrimaryKeyJoin(String aliasOne, String aliasTwo, Column[] columns) {
         StringBuilder b = new StringBuilder();
         for (Column column : columns) {
             b.append(aliasOne).append(".\"").append(column.getName()).append("\"");
@@ -464,7 +464,7 @@ public class TriggerText {
         return b.toString();
     }
 
-    private String aliasedPrimaryKeyJoinVar(String alias, String prefix, Column[] columns) {
+    protected String aliasedPrimaryKeyJoinVar(String alias, String prefix, Column[] columns) {
         String text = "";
         for (int i = 0; i < columns.length; i++) {
             text += alias + ".\"" + columns[i].getName() + "\"";
@@ -477,7 +477,7 @@ public class TriggerText {
     }
 
     // TODO: move to DerbySqlTemplate or change language for use in all DBMSes
-    private String getPrimaryKeyWhereString(String alias, Column[] columns) {
+    protected String getPrimaryKeyWhereString(String alias, Column[] columns) {
         List<Column> columnsMinusLobs = new ArrayList<Column>();
         for (Column column : columns) {
             if (!column.isOfBinaryType()) {
@@ -528,7 +528,7 @@ public class TriggerText {
         return b.toString();
     }
 
-    private ColumnString buildColumnString(String origTableAlias, String tableAlias,
+    protected ColumnString buildColumnString(String origTableAlias, String tableAlias,
             String columnPrefix, Column[] columns, ISymmetricDialect symmetricDialect, DataEventType dml,
             boolean isOld, Channel channel, Trigger trigger) {
         String columnsText = "";
@@ -680,17 +680,17 @@ public class TriggerText {
 		this.otherColumnTemplate = otherColumnTemplate;
 	}
 
-	private boolean noTimeColumnTemplate() {
+	protected boolean noTimeColumnTemplate() {
         return timeColumnTemplate == null || timeColumnTemplate.equals("null")
                 || timeColumnTemplate.trim().equals("");
     }
 
-    private boolean noDateColumnTemplate() {
+    protected boolean noDateColumnTemplate() {
         return dateColumnTemplate == null || dateColumnTemplate.equals("null")
                 || dateColumnTemplate.trim().equals("");
     }
 
-    private String buildColumnNameString(String tableAlias, Column[] columns) {
+    protected String buildColumnNameString(String tableAlias, Column[] columns) {
         String columnsText = "";
         for (int i = 0; i < columns.length; i++) {
             columnsText += tableAlias + ".\"" + columns[i].getName() + "\"";
@@ -701,7 +701,7 @@ public class TriggerText {
         return columnsText;
     }
 
-    private String buildKeyVariablesDeclare(Column[] columns, String prefix) {
+    protected String buildKeyVariablesDeclare(Column[] columns, String prefix) {
         String text = "";
         for (int i = 0; i < columns.length; i++) {
             text += "declare @" + prefix + "pk" + i + " ";
@@ -766,7 +766,7 @@ public class TriggerText {
         return text;
     }
 
-    private String buildKeyVariablesString(Column[] columns, String prefix) {
+    protected String buildKeyVariablesString(Column[] columns, String prefix) {
         String text = "";
         for (int i = 0; i < columns.length; i++) {
             text += "@" + prefix + "pk" + i;
@@ -910,7 +910,7 @@ public class TriggerText {
         this.dateColumnTemplate = dateColumnTemplate;
     }
 
-    private class ColumnString {
+    protected class ColumnString {
 
         String columnString;
         boolean isBlobClob = false;

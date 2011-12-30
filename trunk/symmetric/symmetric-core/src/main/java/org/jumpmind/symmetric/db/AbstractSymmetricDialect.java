@@ -817,10 +817,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return true;
     }
 
-    public void setTriggerText(TriggerText triggerText) {
-        this.triggerText = triggerText;
-    }
-
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
     }
@@ -1000,4 +996,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public JdbcTemplate getJdbcTemplate() {
 		return jdbcTemplate;
 	}
+    
+    public TriggerText getTriggerText() {
+        return triggerText;
+    }
 }
