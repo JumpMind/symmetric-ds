@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataReader;

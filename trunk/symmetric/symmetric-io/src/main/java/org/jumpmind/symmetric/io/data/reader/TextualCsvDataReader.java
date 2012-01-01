@@ -15,9 +15,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;

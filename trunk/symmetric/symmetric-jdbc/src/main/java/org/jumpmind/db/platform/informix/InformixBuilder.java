@@ -1,6 +1,5 @@
 package org.jumpmind.db.platform.informix;
 
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
 import org.jumpmind.db.model.Column;
@@ -8,6 +7,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.log.Log;
 
 public class InformixBuilder extends AbstractDdlBuilder {

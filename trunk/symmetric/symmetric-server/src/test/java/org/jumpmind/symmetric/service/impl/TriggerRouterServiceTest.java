@@ -31,8 +31,8 @@ import java.util.List;
 
 import javax.sql.rowset.serial.SerialBlob;
 
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;

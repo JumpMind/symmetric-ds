@@ -4,7 +4,6 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.db.AbstractDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
 import org.jumpmind.log.Log;

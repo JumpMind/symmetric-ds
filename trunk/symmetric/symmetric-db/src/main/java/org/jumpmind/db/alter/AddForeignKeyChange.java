@@ -19,10 +19,10 @@ package org.jumpmind.db.alter;
  * under the License.
  */
 
-import org.jumpmind.db.DdlException;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DdlException;
 
 /**
  * Represents the addition of a foreign key to a table. Note that for

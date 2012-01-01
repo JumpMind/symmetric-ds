@@ -1,6 +1,6 @@
 package org.jumpmind.symmetric.service.impl;
 
-import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import java.util.Map;
 

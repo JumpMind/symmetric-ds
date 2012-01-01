@@ -23,7 +23,6 @@ import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
@@ -33,6 +32,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
 import org.jumpmind.log.Log;
 

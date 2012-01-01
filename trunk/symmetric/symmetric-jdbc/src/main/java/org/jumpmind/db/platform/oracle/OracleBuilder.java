@@ -28,8 +28,6 @@ import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.PatternCompiler;
 import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
-import org.jumpmind.db.DdlException;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
@@ -42,6 +40,8 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.DdlException;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
 import org.jumpmind.log.Log;
 

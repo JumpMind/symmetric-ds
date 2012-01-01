@@ -20,9 +20,9 @@
  */
 package org.jumpmind.symmetric.db.postgresql;
 
-import org.jumpmind.db.BinaryEncoding;
-import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;

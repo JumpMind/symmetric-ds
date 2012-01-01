@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.ColumnChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
@@ -47,6 +46,7 @@ import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.log.Log;
 
 /*

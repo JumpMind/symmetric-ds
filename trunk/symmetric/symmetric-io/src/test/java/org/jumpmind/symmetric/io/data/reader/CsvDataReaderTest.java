@@ -2,8 +2,8 @@ package org.jumpmind.symmetric.io.data.reader;
 
 import junit.framework.Assert;
 
-import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;

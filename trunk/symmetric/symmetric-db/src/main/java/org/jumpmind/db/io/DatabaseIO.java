@@ -32,8 +32,8 @@ import java.io.Writer;
 import org.apache.commons.betwixt.io.BeanReader;
 import org.apache.commons.betwixt.io.BeanWriter;
 import org.apache.commons.betwixt.strategy.HyphenatedNameMapper;
-import org.jumpmind.db.DdlException;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.platform.DdlException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 

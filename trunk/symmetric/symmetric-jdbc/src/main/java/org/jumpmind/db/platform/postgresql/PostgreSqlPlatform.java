@@ -29,12 +29,12 @@ import javax.sql.DataSource;
 import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.log.Log;
 
 /*

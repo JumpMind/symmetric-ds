@@ -3,6 +3,7 @@ package org.jumpmind.db;
 import java.io.InputStreamReader;
 
 import org.jumpmind.db.io.DatabaseIO;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

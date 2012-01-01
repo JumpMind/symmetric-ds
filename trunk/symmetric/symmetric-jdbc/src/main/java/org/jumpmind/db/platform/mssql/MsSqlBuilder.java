@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddForeignKeyChange;
 import org.jumpmind.db.alter.AddIndexChange;
@@ -50,6 +49,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
 import org.jumpmind.log.Log;
 

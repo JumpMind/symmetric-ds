@@ -1,4 +1,4 @@
-package org.jumpmind.db;
+package org.jumpmind.db.platform;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -40,6 +40,7 @@ import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;
 import org.jumpmind.util.FormatUtils;

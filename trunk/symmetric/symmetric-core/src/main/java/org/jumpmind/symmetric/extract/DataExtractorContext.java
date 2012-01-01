@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.OutgoingBatch;

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.log.Log;
