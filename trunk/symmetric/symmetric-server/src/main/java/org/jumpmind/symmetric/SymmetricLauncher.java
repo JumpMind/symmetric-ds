@@ -670,7 +670,7 @@ public class SymmetricLauncher {
         if (file.exists() && file.isFile()) {
             SqlScript script = new SqlScript(file.toURI().toURL(), dialect.getPlatform()
                     .getSqlTemplate(), true, SqlScript.QUERY_ENDS,
-                    dialect.getSqlScriptReplacementTokens());
+                    dialect.getPlatform().getSqlScriptReplacementTokens());
             script.execute();
         } else {
             throw new SymmetricException("FileNotFound", fileName);

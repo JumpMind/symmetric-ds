@@ -27,6 +27,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -35,8 +36,6 @@ import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 
 /**
  * @see IBandwidthService
- *
- * 
  */
 public class BandwidthService extends AbstractService implements IBandwidthService {
     
@@ -92,5 +91,10 @@ public class BandwidthService extends AbstractService implements IBandwidthServi
                 parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME),
                 parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD));
         }
+    }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return null;
     }
 }

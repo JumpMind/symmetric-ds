@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -157,4 +158,9 @@ public class ClusterService extends AbstractService implements IClusterService {
         }
     }
 
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new ClusterServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
+    }
 }

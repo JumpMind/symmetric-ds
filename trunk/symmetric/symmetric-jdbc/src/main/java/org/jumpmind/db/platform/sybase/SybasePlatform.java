@@ -20,6 +20,8 @@ package org.jumpmind.db.platform.sybase;
  */
 
 import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -47,6 +49,8 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The maximum size that text and binary columns can have. */
     public static final long MAX_TEXT_SIZE = 2147483647;
+    
+    private Map<String, String> sqlScriptReplacementTokens;
 
     public SybasePlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
         super(dataSource, settings, log);
@@ -99,6 +103,9 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
         primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
         ddlReader = new SybaseDdlReader(log, this);
         ddlBuilder = new SybaseBuilder(log, this);
+        
+        sqlScriptReplacementTokens = new HashMap<String, String>();
+        sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
     }
 
     public String getName() {
@@ -118,5 +125,10 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
                     String.class);
         }
         return defaultSchema;
+    }
+    
+    @Override
+    public Map<String, String> getSqlScriptReplacementTokens() {
+        return sqlScriptReplacementTokens;
     }
 }

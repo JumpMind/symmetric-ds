@@ -43,6 +43,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.DeploymentType;
@@ -116,6 +117,12 @@ public class DataService extends AbstractService implements IDataService {
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
 
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new DataServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
+    }
+    
     @Transactional
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter) {
         insertReloadEvent(targetNode, triggerRouter, null);

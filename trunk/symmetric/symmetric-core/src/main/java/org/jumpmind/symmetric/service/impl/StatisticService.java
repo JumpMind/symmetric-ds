@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.ChannelStats;
 import org.jumpmind.symmetric.statistic.ChannelStatsByPeriodMap;
@@ -113,6 +114,12 @@ public class StatisticService extends AbstractService implements IStatisticServi
         cal.set(Calendar.MILLISECOND, 0);
         cal.set(Calendar.SECOND, 0);
         return cal.getTime();        
+    }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new StatisticServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
     }
     
     class JobStatsMapper implements RowMapper<JobStats> {

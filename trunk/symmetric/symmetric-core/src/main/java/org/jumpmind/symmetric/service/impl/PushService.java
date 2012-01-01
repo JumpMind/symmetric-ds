@@ -27,6 +27,7 @@ import java.net.SocketException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -166,6 +167,11 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             }
         }
         return status;
+    }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return null;
     }
 
     public void setExtractor(IDataExtractorService extractor) {

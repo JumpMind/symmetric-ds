@@ -35,12 +35,10 @@ import javax.crypto.spec.PBEParameterSpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.math.random.RandomDataImpl;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.service.ISecurityService;
 
-/**
- * 
- */
 public class SecurityService extends AbstractService implements ISecurityService {
 
     private SecretKey secretKey;
@@ -118,6 +116,11 @@ public class SecurityService extends AbstractService implements ISecurityService
         FileOutputStream os = new FileOutputStream(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
         ks.store(os, password.toCharArray());
         os.close();
+    }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return null;
     }
 
 }

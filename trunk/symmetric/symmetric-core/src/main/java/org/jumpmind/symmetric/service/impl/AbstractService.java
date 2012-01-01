@@ -22,12 +22,14 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -53,8 +55,8 @@ abstract public class AbstractService implements IService, ISqlProvider {
     protected ISymmetricDialect symmetricDialect;
 
     protected String tablePrefix;
-
-    private Map<String, String> sql;
+    
+    private AbstractSqlMap sqlMap;
 
     public void setJdbcTemplate(JdbcTemplate jdbc) {
         this.jdbcTemplate = jdbc;
@@ -90,26 +92,24 @@ abstract public class AbstractService implements IService, ISqlProvider {
         }
         return null;
     }
-
-    public void setSql(Map<String, String> sql) {
-        this.sql = sql;
+    
+    final protected AbstractSqlMap getSqlMap() {
+        if (sqlMap == null) {
+            sqlMap = createSqlMap();
+        }
+        return sqlMap;
     }
+    
+    abstract protected AbstractSqlMap createSqlMap();
+    
+    protected Map<String,String> createReplacementTokens() {
+        Map<String,String> map = new HashMap<String, String>();
+        map.put("prefixName", this.tablePrefix);
+        return map;
+    }    
 
     public String getSql(String... keys) {
-        StringBuilder sqlBuffer = new StringBuilder();
-        if (keys != null) {
-            for (String key : keys) {
-                if (key != null) {
-                    String value = sql.get(key);
-                    sqlBuffer.append(value == null ? key : value);
-                }
-            }
-
-            if (symmetricDialect != null) {
-               sqlBuffer = symmetricDialect.scrubSql(sqlBuffer);
-            }
-        }
-        return sqlBuffer.toString();
+        return getSqlMap().getSql(keys);
     }
 
     public void setTablePrefix(String tablePrefix) {

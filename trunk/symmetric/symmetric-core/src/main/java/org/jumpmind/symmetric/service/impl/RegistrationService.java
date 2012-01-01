@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
@@ -367,6 +368,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
             throw new IllegalStateException(
                     "This node has not been configured.  Could not find a row in the identity table.");
         }
+    }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
     }
 
     public void setNodeService(INodeService nodeService) {

@@ -27,6 +27,7 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -41,6 +42,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;
+import org.jumpmind.util.FormatUtils;
 
 /*
  * Base class for platform implementations.
@@ -369,6 +371,28 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
 
         return list.toArray();
+    }
+    
+    public Map<String, String> getSqlScriptReplacementTokens() {
+        return null;
+    }
+
+    public String scrubSql(String sql) {
+        Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
+        if (replacementTokens != null) {
+            return FormatUtils.replaceTokens(sql, replacementTokens, false).trim();
+        } else {
+            return sql;
+        }
+    }
+
+    public StringBuilder scrubSql(StringBuilder sql) {
+        Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
+        if (replacementTokens != null) {
+            return new StringBuilder(scrubSql(sql.toString()));
+        } else {
+            return sql;
+        }
     }
 
     protected Array createArray(Column column, final String value) {

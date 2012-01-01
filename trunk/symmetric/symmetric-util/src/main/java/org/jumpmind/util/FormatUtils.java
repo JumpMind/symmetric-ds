@@ -7,9 +7,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 public final class FormatUtils {
-    
+
     private static Pattern pattern = Pattern.compile("\\$\\((.+?)\\)");
-    
+
     private FormatUtils() {
     }
 
@@ -17,6 +17,19 @@ public final class FormatUtils {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }
 
+    /**
+     * Replace the keys found in the target text with the values found in the
+     * replacements map.
+     * 
+     * @param text
+     *            The text to replace
+     * @param replacements
+     *            The map that contains the replacement values
+     * @param matchUsingPrefixSuffix
+     *            If true, look for the $(key) pattern to replace. If false,
+     *            just replace the key outright.
+     * @return The text with the token keys replaced
+     */
     public static String replaceTokens(String text, Map<String, String> replacements,
             boolean matchUsingPrefixSuffix) {
         if (replacements != null && replacements.size() > 0) {
@@ -55,6 +68,5 @@ public final class FormatUtils {
             return String.format(format, arg);
         }
     }
-
 
 }
