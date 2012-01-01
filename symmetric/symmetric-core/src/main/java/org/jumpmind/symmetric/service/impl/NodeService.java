@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
@@ -72,6 +73,12 @@ public class NodeService extends AbstractService implements INodeService {
     private long offlineNodeDetectionMinutes;
         
     private List<IOfflineServerListener> offlineServerListeners;
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new NodeServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
+    }
 
     public String findSymmetricVersion() {
         try {

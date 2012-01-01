@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
@@ -64,6 +65,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private INodeService nodeService;
 
     private IConfigurationService configurationService;
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
+    }
 
     @Transactional
     public void markAllAsSentForNode(Node node) {

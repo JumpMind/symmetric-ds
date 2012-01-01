@@ -20,9 +20,6 @@
 
 package org.jumpmind.symmetric.db.informix;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -30,12 +27,9 @@ import org.jumpmind.symmetric.model.Trigger;
 
 public class InformixSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    private Map<String, String> sqlScriptReplacementTokens;
     
     public InformixSymmetricDialect() {
         this.triggerText = new InformixTriggerText();
-        sqlScriptReplacementTokens = new HashMap<String, String>();
-        sqlScriptReplacementTokens.put("current_timestamp", "current");
     }    
 
     @Override
@@ -96,8 +90,5 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
 
     public void purge() {
     }
-    @Override
-    public Map<String, String> getSqlScriptReplacementTokens() {
-        return sqlScriptReplacementTokens;
-    }
+
 }

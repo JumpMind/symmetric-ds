@@ -42,6 +42,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -827,6 +828,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 });
     }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new DataExtractorServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
+    }
 
     public void setOutgoingBatchService(IOutgoingBatchService batchBuilderService) {
         this.outgoingBatchService = batchBuilderService;
@@ -877,7 +884,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 //            } catch (IgnoreRowException e) {
 //                // Ignore the row
 //            }
-        }
+        }                
 
         public void done() throws IOException {
         }

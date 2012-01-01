@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
@@ -24,6 +25,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
@@ -40,10 +42,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
 
     private IOutgoingBatchService outgoingBatchService;
-    
+
     private List<IAcknowledgeEventListener> batchEventListeners;
-    
+
     private IRegistrationService registrationService;
+
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
+    }
 
     @Transactional
     public void ack(final BatchInfo batch) {
@@ -59,16 +67,18 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 registrationService.markNodeAsRegistered(batch.getNodeId());
             }
         } else {
-            OutgoingBatch outgoingBatch = outgoingBatchService.findOutgoingBatch(batch.getBatchId());
+            OutgoingBatch outgoingBatch = outgoingBatchService
+                    .findOutgoingBatch(batch.getBatchId());
             Status status = batch.isOk() ? Status.OK : Status.ER;
             if (outgoingBatch != null) {
                 // Allow an outside system/user to indicate that a batch
                 // is OK.
-                if (outgoingBatch.getStatus() != Status.OK) {                    
+                if (outgoingBatch.getStatus() != Status.OK) {
                     outgoingBatch.setStatus(status);
                     outgoingBatch.setErrorFlag(!batch.isOk());
                 } else {
-                    // clearing the error flag in case the user set the batch status to OK
+                    // clearing the error flag in case the user set the batch
+                    // status to OK
                     outgoingBatch.setErrorFlag(false);
                     log.warn("AckNotUpdatingBatchState", batch.getBatchId(), status.name());
                 }
@@ -77,25 +87,23 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
 
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
-                    CallBackHandler handler = new CallBackHandler(batch
-                            .getErrorLine());
+                    CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
                     jdbcTemplate.query(getSql("selectDataIdSql"),
-                            new Object[] { outgoingBatch.getBatchId() },
-                            handler);
+                            new Object[] { outgoingBatch.getBatchId() }, handler);
                     outgoingBatch.setFailedDataId(handler.getDataId());
                     outgoingBatch.setSqlCode(batch.getSqlCode());
                     outgoingBatch.setSqlState(batch.getSqlState());
-                    outgoingBatch.setSqlMessage(batch.getSqlMessage());                    
+                    outgoingBatch.setSqlMessage(batch.getSqlMessage());
                 }
-                
+
                 if (status == Status.ER) {
-                    log.error("AckReceivedError", outgoingBatch.getNodeId(), outgoingBatch.getBatchId());
+                    log.error("AckReceivedError", outgoingBatch.getNodeId(),
+                            outgoingBatch.getBatchId());
                 }
 
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
             } else {
-                log.error("BatchNotFoundForAck", batch.getBatchId(), status
-                        .name());
+                log.error("BatchNotFoundForAck", batch.getBatchId(), status.name());
             }
         }
     }
@@ -130,12 +138,11 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         this.registrationService = registrationService;
     }
 
-	public void addAcknowledgeEventListener(
-			IAcknowledgeEventListener statusChangeListner) {
-		
+    public void addAcknowledgeEventListener(IAcknowledgeEventListener statusChangeListner) {
+
         if (batchEventListeners == null) {
             batchEventListeners = new ArrayList<IAcknowledgeEventListener>();
         }
         batchEventListeners.add(statusChangeListner);
-	}
+    }
 }

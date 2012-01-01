@@ -1,6 +1,7 @@
 package org.jumpmind.db.platform.informix;
 
 import java.sql.Types;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -18,6 +19,8 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
     public static final String JDBC_DRIVER = "com.informix.jdbc.IfxDriver";
 
     public static final String JDBC_SUBPROTOCOL = "informix-sqli";
+    
+    private Map<String, String> sqlScriptReplacementTokens;
 
     public InformixPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
         super(dataSource, settings, log);
@@ -56,6 +59,9 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
 
         ddlReader = new InformixDdlReader(log, this);
         ddlBuilder = new InformixBuilder(log, this);
+        
+        sqlScriptReplacementTokens = new HashMap<String, String>();
+        sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
 
     public String getName() {
@@ -74,6 +80,9 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
         }
         return defaultSchema;
     }
-    
-
+        
+    @Override
+    public Map<String, String> getSqlScriptReplacementTokens() {
+        return sqlScriptReplacementTokens;
+    }
 }

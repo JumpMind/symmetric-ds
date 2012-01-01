@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
@@ -57,6 +58,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new IncomingBatchServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
     }
     
     public int countIncomingBatchesInError() {

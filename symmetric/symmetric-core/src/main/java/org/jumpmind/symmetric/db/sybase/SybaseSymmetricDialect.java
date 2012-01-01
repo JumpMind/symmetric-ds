@@ -27,8 +27,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -50,12 +48,10 @@ import org.springframework.jdbc.core.ConnectionCallback;
  */
 public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     
-    private Map<String, String> sqlScriptReplacementTokens;
+   
 
     public SybaseSymmetricDialect() {
         this.triggerText = new SybaseTriggerText();
-        sqlScriptReplacementTokens = new HashMap<String, String>();
-        sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
     }
     
     @Override
@@ -179,11 +175,6 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
 
     public boolean needsToSelectLobData() {
         return true;
-    }
-
-    @Override
-    public Map<String, String> getSqlScriptReplacementTokens() {
-        return sqlScriptReplacementTokens;
     }
 
 }

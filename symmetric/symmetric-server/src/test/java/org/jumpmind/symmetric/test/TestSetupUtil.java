@@ -143,7 +143,7 @@ public class TestSetupUtil {
             setupEngine.setup();
             
             ISymmetricDialect dialect = (ISymmetricDialect) setupEngine.getApplicationContext().getBean(Constants.DB_DIALECT);
-            new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), dialect.getPlatform().getSqlTemplate(), true, SqlScript.QUERY_ENDS, dialect.getSqlScriptReplacementTokens()).execute();
+            new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), dialect.getPlatform().getSqlTemplate(), true, SqlScript.QUERY_ENDS, dialect.getPlatform().getSqlScriptReplacementTokens()).execute();
             setupEngine.destroy();
             
             rootServer = new SymmetricWebServer("file:"

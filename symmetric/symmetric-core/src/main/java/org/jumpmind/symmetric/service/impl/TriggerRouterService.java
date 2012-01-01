@@ -34,6 +34,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.Message;
@@ -95,6 +96,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public TriggerRouterService() {
         this.addTriggerCreationListeners(this.failureListener);
+    }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
     }
 
     public List<Trigger> getTriggers() {
@@ -295,7 +302,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     private String getTriggerRouterSql(String sql) {
-        return getSql("select", "selectTriggersColumnList", ",", "selectRoutersColumnList", ",",
+        return getSql("select ", "selectTriggersColumnList", ",", "selectRoutersColumnList", ",",
                 "selectTriggerRoutersColumnList","selectTriggerRoutersSql", sql);
     }
     
@@ -491,7 +498,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     public List<Router> getRouters() {
-        return jdbcTemplate.query(getSql("select", "selectRoutersColumnList", "selectRoutersSql"),
+        return jdbcTemplate.query(getSql("select ", "selectRoutersColumnList", "selectRoutersSql"),
                 new RouterMapper());
     }
 

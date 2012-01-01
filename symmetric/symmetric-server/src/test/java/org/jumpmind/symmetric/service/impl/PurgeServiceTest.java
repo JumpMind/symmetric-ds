@@ -160,7 +160,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
         getDataService().insertData(data);
         if (getJdbcTemplate().update(
                 "update sym_data_ref set ref_data_id=(select max(data_id)-1 from sym_data)") == 0) {
-            getJdbcTemplate().update(getDbDialect().scrubSql("insert into sym_data_ref values(1, current_timestamp)"));
+            getJdbcTemplate().update(getDbDialect().getPlatform().scrubSql("insert into sym_data_ref values(1, current_timestamp)"));
         }
     }
 

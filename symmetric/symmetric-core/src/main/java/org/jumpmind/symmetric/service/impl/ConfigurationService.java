@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Channel;
@@ -465,6 +466,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public ChannelMap getSuspendIgnoreChannelLists() {
         return getSuspendIgnoreChannelLists(nodeService.findIdentityNodeId());
 
+    }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
     }
 
     public void setDefaultChannels(List<Channel> defaultChannels) {

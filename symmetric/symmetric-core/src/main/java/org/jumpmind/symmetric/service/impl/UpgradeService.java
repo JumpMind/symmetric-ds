@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
@@ -32,15 +33,17 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.upgrade.IUpgradeTask;
 
-/**
- * 
- */
 public class UpgradeService extends AbstractService implements IUpgradeService {
 
     private INodeService nodeService;
 
     private Map<String, List<IUpgradeTask>> upgradeTaskMap;
 
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return null;
+    }
+    
     public boolean isUpgradeNecessary() {
         boolean isUpgradeNecessary = false;
         String symmetricVersion = nodeService.findSymmetricVersion();

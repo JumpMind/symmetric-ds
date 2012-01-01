@@ -20,7 +20,6 @@
 package org.jumpmind.symmetric.db;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.db.BinaryEncoding;
@@ -218,12 +217,6 @@ public interface ISymmetricDialect {
      * This is a SQL clause that compares the old data to the new data in a trigger.
      */
     public String getDataHasChangedCondition(Trigger trigger);
-    
-    public Map<String, String> getSqlScriptReplacementTokens();
-    
-    public String scrubSql(String sql);
-    
-    public StringBuilder scrubSql(StringBuilder sql);
     
     /*
      * Indicates whether captured data can contain gaps.

@@ -36,6 +36,7 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -102,6 +103,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private INodeService nodeService;
 
     private ITransformService transformService;
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return null;
+    }
 
     /**
      * Connect to the remote node and pull data. The acknowledgment of

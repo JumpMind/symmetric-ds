@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
@@ -896,7 +895,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public long getDatabaseTime() {
         try {
             String sql = "select current_timestamp from " + tablePrefix + "_node_identity";
-            sql = FormatUtils.replaceTokens(sql, getSqlScriptReplacementTokens(), false);
+            sql = FormatUtils.replaceTokens(sql, platform.getSqlScriptReplacementTokens(), false);
             return jdbcTemplate.queryForObject(sql, java.util.Date.class).getTime();
 
         } catch (Exception ex) {
@@ -921,10 +920,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return Constants.ALWAYS_TRUE_CONDITION;
     }
 
-    public Map<String, String> getSqlScriptReplacementTokens() {
-        return null;
-    }
-
     public boolean needsToSelectLobData() {
         return false;
     }
@@ -943,25 +938,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getDriverVersion() {
         return driverVersion;
-    }
-
-    public String scrubSql(String sql) {
-        Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
-        if (replacementTokens != null) {
-            return FormatUtils.replaceTokens(sql, replacementTokens, false).trim();
-        } else {
-            return sql;
-        }
-    }
-
-    public StringBuilder scrubSql(StringBuilder sql) {
-        Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
-        if (replacementTokens != null) {
-            return new StringBuilder(scrubSql(sql.toString()));
-        } else {
-            return sql;
-        }
-    }
+    }    
 
     public String massageForLob(String sql, Channel channel) {
         return sql;

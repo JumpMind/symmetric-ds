@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
@@ -23,6 +24,12 @@ public class TransformService extends AbstractService implements ITransformServi
     private Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> transformsCacheByNodeGroupLinkByTransformPoint;
 
     private long lastCacheTimeInMs;
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new TransformServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
+    }
     
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink nodeGroupLink,
             TransformPoint transformPoint, boolean useCache) {

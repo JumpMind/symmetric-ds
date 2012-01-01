@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Data;
@@ -524,10 +525,16 @@ public class RouterService extends AbstractService implements IRouterService {
         } else {
             return 0;
         }
-    }
+    }       
 
     public List<String> getAvailableBatchAlgorithms() {
         return new ArrayList<String>(batchAlgorithms.keySet());
+    }
+    
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new RouterServiceSqlMap(symmetricDialect.getPlatform(),
+                createReplacementTokens());
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {

@@ -20,6 +20,7 @@ package org.jumpmind.db;
  */
 
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -203,5 +204,12 @@ public interface IDatabasePlatform {
     public List<Column> getLobColumns(Table table);
 
     public boolean isPrimaryKeyViolation(Exception ex);
+    
+    public Map<String, String> getSqlScriptReplacementTokens();
+    
+    public String scrubSql(String sql);
+    
+    public StringBuilder scrubSql(StringBuilder sql);
+    
 
 }

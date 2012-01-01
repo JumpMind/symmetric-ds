@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.service.impl;
 
 import java.math.BigDecimal;
@@ -30,6 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.IParameterFilter;
@@ -64,6 +66,11 @@ public class ParameterService extends AbstractService implements IParameterServi
 
     public ParameterService() {
         systemProperties = (Properties) System.getProperties().clone();
+    }
+
+    @Override
+    protected AbstractSqlMap createSqlMap() {
+        return new ParameterServiceSqlMap(null, createReplacementTokens());
     }
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
@@ -164,11 +171,11 @@ public class ParameterService extends AbstractService implements IParameterServi
 
         rereadParameters();
     }
-    
+
     public void deleteParameter(String externalId, String nodeGroupId, String key) {
         jdbcTemplate.update(getSql("deleteParameterSql"), externalId, nodeGroupId, key);
         rereadParameters();
-        
+
     }
 
     public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters) {
@@ -193,11 +200,12 @@ public class ParameterService extends AbstractService implements IParameterServi
 
     private Map<String, String> rereadDatabaseParameters(Properties p) {
         try {
-            Map<String, String> map = rereadDatabaseParameters(ParameterConstants.ALL, ParameterConstants.ALL);
-            map.putAll(rereadDatabaseParameters(ParameterConstants.ALL, p
-                    .getProperty(ParameterConstants.NODE_GROUP_ID)));
-            map.putAll(rereadDatabaseParameters(p.getProperty(ParameterConstants.EXTERNAL_ID), p
-                    .getProperty(ParameterConstants.NODE_GROUP_ID)));
+            Map<String, String> map = rereadDatabaseParameters(ParameterConstants.ALL,
+                    ParameterConstants.ALL);
+            map.putAll(rereadDatabaseParameters(ParameterConstants.ALL,
+                    p.getProperty(ParameterConstants.NODE_GROUP_ID)));
+            map.putAll(rereadDatabaseParameters(p.getProperty(ParameterConstants.EXTERNAL_ID),
+                    p.getProperty(ParameterConstants.NODE_GROUP_ID)));
             return map;
         } catch (Exception ex) {
             if (initialized) {
@@ -238,7 +246,7 @@ public class ParameterService extends AbstractService implements IParameterServi
                 || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System
                         .currentTimeMillis() - cacheTimeoutInMs))) {
             lastTimeParameterWereCached = new Date();
-            parameters = rereadApplicationParameters();            
+            parameters = rereadApplicationParameters();
             cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
         }
         return parameters;
@@ -270,12 +278,13 @@ public class ParameterService extends AbstractService implements IParameterServi
         }
         return value;
     }
-    
+
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {
-        return jdbcTemplate.query(getSql("selectParametersByKeySql"), new DatabaseParameterMapper(), paramKey);
+        return jdbcTemplate.query(getSql("selectParametersByKeySql"),
+                new DatabaseParameterMapper(), paramKey);
     }
-    
-    public Map<String,String> getDatabaseParametersByNodeGroupId(String nodeGroupId) {
+
+    public Map<String, String> getDatabaseParametersByNodeGroupId(String nodeGroupId) {
         return rereadDatabaseParameters(ParameterConstants.ALL, nodeGroupId);
     }
 
@@ -301,19 +310,20 @@ public class ParameterService extends AbstractService implements IParameterServi
         if (url != null) {
             url = url.trim();
         }
-        return url; 
+        return url;
     }
-    
+
     public Map<String, String> getReplacementValues() {
-        Map<String,String> replacementValues = new HashMap<String, String>(2);
+        Map<String, String> replacementValues = new HashMap<String, String>(2);
         replacementValues.put("externalId", getExternalId());
         replacementValues.put("nodeGroupId", getNodeGroupId());
         return replacementValues;
     }
-    
+
     class DatabaseParameterMapper implements RowMapper<DatabaseParameter> {
-        public DatabaseParameter mapRow(ResultSet rs, int rowNum) throws SQLException {            
-            return new DatabaseParameter(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4));
+        public DatabaseParameter mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new DatabaseParameter(rs.getString(1), rs.getString(2), rs.getString(3),
+                    rs.getString(4));
         }
     }
 

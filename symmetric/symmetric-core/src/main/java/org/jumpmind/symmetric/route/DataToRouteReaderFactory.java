@@ -20,10 +20,12 @@
 
 package org.jumpmind.symmetric.route;
 
+import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ISqlProvider;
 import org.jumpmind.symmetric.service.impl.AbstractService;
+import org.jumpmind.symmetric.service.impl.RouterServiceSqlMap;
 
 /**
  * Factory that creates and initializes the correct {@link IDataToRouteReader}.
@@ -66,6 +68,11 @@ public class DataToRouteReaderFactory extends AbstractService implements ISqlPro
     private RuntimeException unsupportedType(String type) {
         return new UnsupportedOperationException("The data to route type of '" + type
                 + "' is not supported");
+    }
+    
+    @Override
+    public AbstractSqlMap createSqlMap() {
+        return new RouterServiceSqlMap(symmetricDialect.getPlatform(), createReplacementTokens());
     }
 
     public void setDataService(IDataService dataService) {
