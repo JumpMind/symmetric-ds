@@ -22,11 +22,11 @@ package org.jumpmind.symmetric.db;
 import java.util.Date;
 import java.util.Set;
 
-import org.jumpmind.db.BinaryEncoding;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;

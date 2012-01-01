@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.model.NodeChannel;

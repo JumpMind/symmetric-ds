@@ -26,12 +26,12 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.db.DatabasePlatformInfo;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 
 /**
  * Compares two database models and creates change objects that express how to

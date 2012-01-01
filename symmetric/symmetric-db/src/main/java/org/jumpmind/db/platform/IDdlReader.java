@@ -1,4 +1,4 @@
-package org.jumpmind.db;
+package org.jumpmind.db.platform;
 
 
 import org.jumpmind.db.model.Database;

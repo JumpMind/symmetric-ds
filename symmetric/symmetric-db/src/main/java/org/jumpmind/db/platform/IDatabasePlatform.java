@@ -1,4 +1,4 @@
-package org.jumpmind.db;
+package org.jumpmind.db.platform;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -28,6 +28,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.util.BinaryEncoding;
 
 /*
  * A platform encapsulates the database-related functionality such as performing queries

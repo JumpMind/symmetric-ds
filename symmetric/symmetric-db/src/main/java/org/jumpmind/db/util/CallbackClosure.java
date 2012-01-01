@@ -26,7 +26,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.apache.commons.collections.Closure;
-import org.jumpmind.db.DdlException;
+import org.jumpmind.db.platform.DdlException;
 
 /**
  * A closure that determines a callback for the type of the object and calls it.

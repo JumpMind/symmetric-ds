@@ -24,8 +24,8 @@ import java.sql.DriverManager;
 
 import junit.framework.Assert;
 
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.SqlScript;
 import org.junit.Test;

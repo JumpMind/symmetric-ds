@@ -37,7 +37,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.jumpmind.db.AbstractDatabasePlatform;
+import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.ext.NodeGroupTestDataWriterFilter;

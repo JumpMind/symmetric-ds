@@ -2,7 +2,7 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import java.util.Map;
 
-import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 

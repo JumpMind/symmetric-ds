@@ -6,10 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDdlReader;
 import org.jumpmind.log.Log;
 

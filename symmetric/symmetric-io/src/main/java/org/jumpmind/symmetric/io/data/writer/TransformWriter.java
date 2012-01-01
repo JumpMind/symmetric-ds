@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.io.data.Batch;

@@ -23,9 +23,9 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.log.Log;
 
 /*

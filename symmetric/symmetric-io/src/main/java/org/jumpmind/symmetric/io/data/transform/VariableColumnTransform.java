@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.io.data.transform;
 import java.util.Map;
 
 import org.apache.commons.lang.time.DateFormatUtils;
-import org.jumpmind.db.IDatabasePlatform;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataReader;

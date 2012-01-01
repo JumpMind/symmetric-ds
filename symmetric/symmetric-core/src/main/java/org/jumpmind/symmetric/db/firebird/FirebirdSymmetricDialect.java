@@ -19,8 +19,8 @@
  * under the License.  */
 package org.jumpmind.symmetric.db.firebird;
 
-import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;

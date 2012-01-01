@@ -20,10 +20,10 @@
 
 package org.jumpmind.symmetric.db.hsqldb;
 
-import org.jumpmind.db.BinaryEncoding;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;

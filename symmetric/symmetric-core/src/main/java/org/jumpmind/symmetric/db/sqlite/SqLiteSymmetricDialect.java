@@ -24,9 +24,9 @@ package org.jumpmind.symmetric.db.sqlite;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.jumpmind.db.BinaryEncoding;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlConstants;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;

@@ -31,8 +31,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.DdlException;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.db2.Db2Platform;
 import org.jumpmind.db.platform.derby.DerbyPlatform;

@@ -2,7 +2,8 @@ package org.jumpmind.db.sql;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.jumpmind.db.IDatabasePlatform;
+
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.util.FormatUtils;
 
 /**

@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.db.BinaryEncoding;
+import org.jumpmind.db.util.BinaryEncoding;
 
 public class Batch {
     

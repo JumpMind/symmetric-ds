@@ -34,14 +34,14 @@ import org.apache.oro.text.regex.PatternCompiler;
 import org.apache.oro.text.regex.PatternMatcher;
 import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
-import org.jumpmind.db.DdlException;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
+import org.jumpmind.db.platform.DdlException;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.log.Log;
 
 /*

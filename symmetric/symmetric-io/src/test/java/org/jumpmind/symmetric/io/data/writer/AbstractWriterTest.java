@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.AbstractDatabasePlatform;
 import org.jumpmind.db.AbstractDbTest;
-import org.jumpmind.db.BinaryEncoding;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.AbstractDatabasePlatform;
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;

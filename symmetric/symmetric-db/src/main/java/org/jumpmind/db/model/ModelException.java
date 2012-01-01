@@ -19,7 +19,7 @@ package org.jumpmind.db.model;
  * under the License.
  */
 
-import org.jumpmind.db.DdlException;
+import org.jumpmind.db.platform.DdlException;
 
 /**
  * Indicates a model error.

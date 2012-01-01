@@ -23,8 +23,8 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.db.DatabasePlatformInfo;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.log.Log;
 

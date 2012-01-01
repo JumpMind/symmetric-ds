@@ -27,7 +27,6 @@ package org.jumpmind.db.platform.h2;
 import java.sql.Types;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.IDatabasePlatform;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.model.Column;
@@ -37,6 +36,7 @@ import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.log.Log;
 
 /*
