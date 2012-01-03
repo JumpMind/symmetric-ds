@@ -616,9 +616,14 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataGap(DataGap gap) {
+    	try {
         jdbcTemplate.update(getSql("insertDataGapSql"), new Object[] { DataGap.Status.GP.name(),
                 AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
+    	} catch (DataIntegrityViolationException ex) {
+    		log.warn("GapAlreadyExisted", gap.getStartId(), gap.getEndId());
+    		updateDataGap(gap,  DataGap.Status.GP);
+    	}
     }
 
     public void updateDataGap(DataGap gap, DataGap.Status status) {
