@@ -20,6 +20,8 @@ import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.config.PropertiesFactoryBean;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
 import org.jumpmind.symmetric.ext.ExtensionPointManager;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -91,6 +93,12 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         }
         return dataSource;
 
+    }
+    
+    @Override
+    protected ISymmetricDialect createSymmetricDialect() {
+        return new JdbcSymmetricDialectFactory(parameterService, platform, log)
+        .create();
     }
 
     @Override

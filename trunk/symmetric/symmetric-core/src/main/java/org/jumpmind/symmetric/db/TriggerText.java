@@ -32,8 +32,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.mssql.MsSqlSymmetricDialect;
-import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
@@ -527,6 +525,14 @@ public class TriggerText {
         b.append("'");
         return b.toString();
     }
+    
+    protected boolean requiresWrappedBlobTemplateForBlobType() {
+        return false;
+    }
+    
+    protected boolean requiresEmptyLobTemplateForDeletes() {
+        return false;
+    }
 
     protected ColumnString buildColumnString(String origTableAlias, String tableAlias,
             String columnPrefix, Column[] columns, ISymmetricDialect symmetricDialect, DataEventType dml,
@@ -577,7 +583,7 @@ public class TriggerText {
                     isLob = true;
                     break;
                 case Types.BLOB:
-                    if (symmetricDialect instanceof PostgreSqlSymmetricDialect) {
+                    if (requiresWrappedBlobTemplateForBlobType()) {
                         templateToUse = wrappedBlobColumnTemplate;
                         isLob = true;
                         break;
@@ -634,7 +640,7 @@ public class TriggerText {
                             + column.getType() + " with JDBC type of " + column.getJdbcTypeName());
                 }
 
-                if (dml == DataEventType.DELETE && isLob && symmetricDialect instanceof MsSqlSymmetricDialect) {
+                if (dml == DataEventType.DELETE && isLob && requiresEmptyLobTemplateForDeletes()) {
                     templateToUse = emptyColumnTemplate;
                 } else if (isLob && trigger.isUseStreamLobs()) {
                     templateToUse = emptyColumnTemplate;

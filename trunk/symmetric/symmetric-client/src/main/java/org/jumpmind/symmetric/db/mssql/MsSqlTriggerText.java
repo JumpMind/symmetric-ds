@@ -142,4 +142,9 @@ public class MsSqlTriggerText extends TriggerText {
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
     }
 
+    
+    @Override
+    protected boolean requiresEmptyLobTemplateForDeletes() {
+        return true;
+    }
 }
