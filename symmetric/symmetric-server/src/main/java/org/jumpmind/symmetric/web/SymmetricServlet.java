@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.SymmetricEngineHolder;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
@@ -67,7 +66,7 @@ public class SymmetricServlet extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         String method = req.getMethod();
-        ISymmetricEngine engine = findEngine(req);
+        ServerSymmetricEngine engine = findEngine(req);
         IUriHandler handler = findMatchingHandler(engine, req);
         if (handler != null) {
             List<IInterceptor> interceptors = handler.getInterceptors();
@@ -104,9 +103,9 @@ public class SymmetricServlet extends HttpServlet {
         }
     }
 
-    protected ISymmetricEngine findEngine(HttpServletRequest req) {
+    protected ServerSymmetricEngine findEngine(HttpServletRequest req) {
         String engineName = getEngineNameFromUrl((HttpServletRequest) req);
-        ISymmetricEngine engine = null;
+        ServerSymmetricEngine engine = null;
         SymmetricEngineHolder holder = ServletUtils.getSymmetricEngineHolder(getServletContext());
         if (holder != null) {
             if (engineName != null) {
@@ -131,15 +130,15 @@ public class SymmetricServlet extends HttpServlet {
         return engineName;
     }
 
-    protected Collection<IUriHandler> getUriHandlersFrom(ISymmetricEngine engine) {
+    protected Collection<IUriHandler> getUriHandlersFrom(ServerSymmetricEngine engine) {
         if (engine != null) {
-            return engine.getApplicationContext().getBeansOfType(IUriHandler.class).values();
+            return engine.getUriHandlers();
         } else {
             return null;
         }
     }
 
-    protected IUriHandler findMatchingHandler(ISymmetricEngine engine, HttpServletRequest req)
+    protected IUriHandler findMatchingHandler(ServerSymmetricEngine engine, HttpServletRequest req)
             throws ServletException {
         Collection<IUriHandler> handlers = getUriHandlersFrom(engine);
         if (handlers != null) {

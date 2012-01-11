@@ -1,5 +1,8 @@
 package org.jumpmind.db.sql;
 
+import java.math.BigDecimal;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -17,6 +20,32 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     public Row(String columnName, Object value) {
         super(1);
         put(columnName, value);
+    }
+
+    public Number numberValue() {
+        Object obj = this.values().iterator().next();
+        if (obj != null) {
+            if (obj instanceof Number) {
+                return (Number) obj;
+            } else {
+                return new BigDecimal(obj.toString());
+            }
+        } else {
+            return null;
+        }
+    }
+    
+    public Date dateValue() {
+        Object obj = this.values().iterator().next();
+        if (obj != null) {
+            if (obj instanceof Date) {
+                return (Date) obj;
+            } else {
+                return Timestamp.valueOf(obj.toString());
+            }
+        } else {
+            return null;
+        }
     }
 
     public String stringValue() {
@@ -74,6 +103,16 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         } else {
             checkForColumn(columnName);
             return false;
+        }
+    }
+
+    public Time getTime(String columnName) {
+        Object obj = this.get(columnName);
+        if (obj instanceof Time) {
+            return (Time) obj;
+        } else {
+            Date date = getDateTime(columnName);
+            return new Time(date.getTime());
         }
     }
 

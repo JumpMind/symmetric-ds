@@ -22,5 +22,10 @@ public class FileIoResource implements IoResource {
             throw new IoException(e);
         }
     }
+    
+    public boolean exists() {
+        return file.exists();
+    }
+
 
 }

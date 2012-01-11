@@ -52,17 +52,6 @@
         <property name="configurationService" ref="configurationService"/>
     </bean>
 
-    <bean id="incomingManagementService" class="org.jumpmind.symmetric.service.jmx.IncomingManagementService">
-        <property name="statisticManager" ref="statisticManager" />
-    </bean>
-
-    <bean id="notificationService" class="org.jumpmind.symmetric.service.jmx.NotificationService"></bean>
-
-    <bean id="outgoingManagementService" class="org.jumpmind.symmetric.service.jmx.OutgoingManagementService">
-        <property name="statisticManager" ref="statisticManager" />
-        <property name="dataExtractorService" ref="dataExtractorService" />        
-    </bean>
-
     <bean id="parameterManagementService" class="org.jumpmind.symmetric.service.jmx.ParameterManagementService">
         <property name="parameterService" ref="parameterService" />
     </bean>

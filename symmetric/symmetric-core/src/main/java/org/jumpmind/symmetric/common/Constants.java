@@ -75,83 +75,13 @@ final public class Constants {
     
     public static final String SYMMETRIC_ENGINE = "symmetricEngine";
     
-    public static final String MBEAN_SERVER = "mbeanserver";
-    
-    public static final String PROPERTIES = "symmetricProperties";
+    public static final String MBEAN_SERVER = "mbeanserver";  
 
     public static final String CHANNEL_CONFIG = "config";
     
     public static final String CHANNEL_RELOAD = "reload";
     
     public static final String CHANNEL_DEFAULT = "default";
-
-    public static final String DATA_SOURCE = "dataSource";
-
-    public static final String NODE_SERVICE = "nodeService";
-    
-    public static final String ROUTER_SERVICE = "routingService";
-
-    public static final String DATALOADER_SERVICE = "dataLoaderService";
-
-    public static final String CLUSTER_SERVICE = "clusterService";
-
-    public static final String PARAMETER_SERVICE = "parameterService";
-    
-    public static final String TRIGGER_ROUTER_SERVICE = "triggerRouterService";
-
-    public static final String DATALOADER = "dataLoader";
-
-    public static final String INCOMING_BATCH_SERVICE = "incomingBatchService";
-
-    public static final String DATAEXTRACTOR_SERVICE = "dataExtractorService";
-
-    public static final String CONFIG_SERVICE = "configurationService";
-
-    public static final String TRANSPORT_MANAGER = "transportManager";
-    
-    public static final String EXTENSION_MANAGER = "extensionManager";
-
-    public static final String ACKNOWLEDGE_SERVICE = "acknowledgeService";
-
-    public static final String REGISTRATION_SERVICE = "registrationService";
-    
-    public static final String UPGRADE_SERVICE = "upgradeService";
-
-    public static final String DATA_SERVICE = "dataService";
-
-    public static final String PUSH_SERVICE = "pushService";
-
-    public static final String PULL_SERVICE = "pullService";
-    
-    public static final String BANDWIDTH_SERVICE = "bandwidthService";
-
-    public static final String ACK_RESOURCE_HANDLER = "ackUriHandler";
-
-    public static final String ALERT_RESOURCE_HANDLER = "alertUriHandler";
-
-    public static final String STATISTIC_MANAGER = "statisticManager";
-    
-    public static final String STATISTIC_SERVICE = "statisticService";
-    
-    public static final String SECURITY_SERVICE = "securityService";
-
-    public static final String PULL_URI_HANDLER = "pullUriHandler";
-
-    public static final String PUSH_URI_HANDLER = "pushUriHandler";
-
-    public static final String REGISTRATION_URI_HANDLER = "registrationUriHandler";
-
-    public static final String AUTHENTICATION_INTERCEPTOR = "authenticationInterceptor";
-
-    public static final String NODE_CONCURRENCY_INTERCEPTOR = "nodeConcurrencyInterceptor";
-    
-    public static final String DEPLOYMENT_TYPE = "deploymentType";
-
-    public static final String CONCURRENT_CONNECTION_MANGER = "concurrentConnectionManager";
-
-    public static final String DB_DIALECT = "symmetricDialect";
-    
-    public static final String JOB_MANAGER = "jobManager";
 
     public static final String PUSH_JOB_TIMER = "job.push";
 

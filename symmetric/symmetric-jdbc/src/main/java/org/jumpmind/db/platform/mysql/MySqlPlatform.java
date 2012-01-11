@@ -49,7 +49,7 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
      * Creates a new platform instance.
      */
     public MySqlPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+        super(dataSource, overrideSettings(settings), log);
 
         info.setMaxIdentifierLength(64);
         info.setNullAsDefaultValueRequired(true);
@@ -111,6 +111,20 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
         
         ddlReader = new MySqlDdlReader(log, this);
         ddlBuilder = new MySqlBuilder(log, this);
+    }
+    
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new MySqlJdbcSqlTemplate(dataSource, settings, null);
+    }
+    
+    /*
+     * According to the documentation (and experience) the jdbc driver for mysql
+     * requires the fetch size to be as follows.
+     */
+    protected static DatabasePlatformSettings overrideSettings(DatabasePlatformSettings settings) {        
+        settings.setFetchSize(Integer.MIN_VALUE);
+        return settings;
     }
 
     public String getName() {

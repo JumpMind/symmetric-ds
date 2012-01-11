@@ -85,6 +85,11 @@ public class Db2Platform extends AbstractJdbcDatabasePlatform {
         ddlReader = new Db2DdlReader(log, this);
         ddlBuilder = new Db2Builder(log, this);
     }
+    
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new Db2JdbcSqlTemplate(dataSource, settings, null);
+    }
 
     public String getName() {
         return DATABASENAME;

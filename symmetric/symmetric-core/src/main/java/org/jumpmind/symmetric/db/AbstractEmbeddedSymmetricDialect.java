@@ -21,17 +21,21 @@
 package org.jumpmind.symmetric.db;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.IParameterService;
 
-/**
- * 
- */
 abstract public class AbstractEmbeddedSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     
+    public AbstractEmbeddedSymmetricDialect(IParameterService parameterService,
+            IDatabasePlatform platform) {
+        super(parameterService, platform);
+    }
+
     /**
      * All the templates have ' escaped because the SQL is inserted into a view.
      * When returning the raw SQL for use as SQL it needs to be un-escaped.

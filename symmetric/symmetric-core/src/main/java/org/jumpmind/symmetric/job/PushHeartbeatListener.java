@@ -16,35 +16,40 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.job;
 
-import java.util.List;
 import java.util.Set;
 
-import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 
-public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtensionPoint {
+public class PushHeartbeatListener implements IHeartbeatListener {
 
-    private boolean enabled;
     private IDataService dataService;
     private INodeService nodeService;
-    private IOutgoingBatchService outgoingBatchService;
-    private long timeBetweenHeartbeats;
     private ISymmetricDialect symmetricDialect;
+    private IParameterService parameterService;
+
+    public PushHeartbeatListener(IParameterService parameterService, IDataService dataService,
+            INodeService nodeService, ISymmetricDialect symmetricDialect) {
+        this.parameterService = parameterService;
+        this.dataService = dataService;
+        this.nodeService = nodeService;
+        this.symmetricDialect = symmetricDialect;
+    }
 
     public void heartbeat(Node me, Set<Node> children) {
-        if (enabled) {
+        if (parameterService.is(ParameterConstants.HEARTBEAT_ENABLED)) {
             // don't send new heart beat events if we haven't sent
             // the last ones ...
-            if (!nodeService.isRegistrationServer() && !isUnsentDataPresentOnConfigChannel()) {
+            if (!nodeService.isRegistrationServer()) {
                 if (!symmetricDialect.getPlatform().getPlatformInfo().isTriggersSupported()) {
                     dataService.insertHeartbeatEvent(me, false);
                     for (Node node : children) {
@@ -54,48 +59,13 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
             }
         }
     }
-    
-    protected boolean isUnsentDataPresentOnConfigChannel() {
-        boolean isUnsentDataOnChannel = false;
-        List<Node> nodes = nodeService.findNodesToPushTo();
-        if (nodes != null) {
-            for (Node node : nodes) {
-                isUnsentDataOnChannel |= outgoingBatchService.isUnsentDataOnChannelForNode(
-                        Constants.CHANNEL_CONFIG, node.getNodeId());
-            }
-        }
-        return isUnsentDataOnChannel;
-    }
-    
+
     public long getTimeBetweenHeartbeatsInSeconds() {
-        return this.timeBetweenHeartbeats;
-    }
-    
-    public void setTimeBetweenHeartbeats(long timeBetweenHeartbeats) {
-        this.timeBetweenHeartbeats = timeBetweenHeartbeats;
+        return parameterService.getLong(ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC, 600);
     }
 
     public boolean isAutoRegister() {
-        return enabled;
+        return true;
     }
 
-    public void setDataService(IDataService dataService) {
-        this.dataService = dataService;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
-        this.outgoingBatchService = outgoingBatchService;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-    
-    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
-        this.symmetricDialect = symmetricDialect;
-    }
 }

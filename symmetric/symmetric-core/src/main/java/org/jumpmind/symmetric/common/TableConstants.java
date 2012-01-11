@@ -43,6 +43,7 @@ public class TableConstants {
     public static final String SYM_NODE_SECURITY = "node_security";
     public static final String SYM_NODE_IDENTITY = "node_identity";
     public static final String SYM_NODE_CHANNEL_CTL = "node_channel_ctl";
+    public static final String SYM_NODE_GROUP_CHANNEL_WINDOW = "node_group_channel_window";
     public static final String SYM_PARAMETER = "parameter";    
 
     public static String[] NODE_TABLES = { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY };

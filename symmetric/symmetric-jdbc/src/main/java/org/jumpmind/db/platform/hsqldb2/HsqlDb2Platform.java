@@ -83,6 +83,11 @@ public class HsqlDb2Platform extends AbstractJdbcDatabasePlatform {
         ddlReader = new HsqlDb2DdlReader(log, this);
         ddlBuilder = new HsqlDb2Builder(log, this);
     }
+    
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new HsqlDb2JdbcSqlTemplate(dataSource, settings, null);
+    }
 
     public String getName() {
         return DATABASENAME;

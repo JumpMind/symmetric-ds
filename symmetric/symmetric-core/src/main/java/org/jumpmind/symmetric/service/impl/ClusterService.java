@@ -30,8 +30,6 @@ import static org.jumpmind.symmetric.service.ClusterConstants.PUSH;
 import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
 import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,14 +37,15 @@ import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @see IClusterService
@@ -54,6 +53,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClusterService extends AbstractService implements IClusterService {
 
     protected String serverId = AppUtils.getServerId();
+        
+    public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
+        super(parameterService, dialect);
+    }
 
     public void initLockTable() {
         initLockTable(ROUTE);
@@ -69,7 +72,7 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     public void initLockTable(final String action) {
         try {
-            jdbcTemplate.update(getSql("insertLockSql"), new Object[] { action });
+            sqlTemplate.update(getSql("insertLockSql"), new Object[] { action });
             log.debug("LockInserted", action);
 
         } catch (final DataIntegrityViolationException ex) {
@@ -78,10 +81,9 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public void clearAllLocks() {
-        jdbcTemplate.update(getSql("clearAllLocksSql"));
+        sqlTemplate.update(getSql("clearAllLocksSql"));
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean lock(final String action) {
         if (isClusteringEnabled()) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
@@ -94,21 +96,21 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected boolean lock(String action, Date timeToBreakLock, Date timeLockAquired,
             String serverId) {
-        return jdbcTemplate.update(getSql("aquireLockSql"), new Object[] { serverId,
+        return sqlTemplate.update(getSql("aquireLockSql"), new Object[] { serverId,
                 timeLockAquired, action, timeToBreakLock, serverId }) == 1;
     }
 
     public Map<String, Lock> findLocks() {
         final Map<String, Lock> locks = new HashMap<String, Lock>();
         if (isClusteringEnabled()) {
-            jdbcTemplate.query(getSql("findLocksSql"), new RowMapper<Lock>() {
-                public Lock mapRow(ResultSet rs, int rowNum) throws SQLException {
+            sqlTemplate.query(getSql("findLocksSql"), new ISqlRowMapper<Lock>() {
+                public Lock mapRow(Row rs) {                
                     Lock lock = new Lock();
-                    lock.setLockAction(rs.getString(1));
-                    lock.setLockingServerId(rs.getString(2));
-                    lock.setLockTime(rs.getTimestamp(3));
-                    lock.setLastLockingServerId(rs.getString(4));
-                    lock.setLastLockTime(rs.getTimestamp(5));
+                    lock.setLockAction(rs.getString("lock_action"));
+                    lock.setLockingServerId(rs.getString("locking_server_id"));
+                    lock.setLockTime(rs.getDateTime("lock_time"));
+                    lock.setLastLockingServerId(rs.getString("last_locking_server_id"));
+                    lock.setLastLockTime(rs.getDateTime("last_lock_time"));
                     locks.put(lock.getLockAction(), lock);
                     return lock;
                 }
@@ -117,15 +119,10 @@ public class ClusterService extends AbstractService implements IClusterService {
         return locks;
     }
 
-    public void setServerId(String serverId) {
-        this.serverId = serverId;
-    }
-
     public String getServerId() {
         return serverId;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void unlock(final String action) {
         if (isClusteringEnabled()) {
             if (!unlock(action, serverId)) {
@@ -135,7 +132,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     protected boolean unlock(String action, String serverId) {
-        return jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { serverId, action,
+        return sqlTemplate.update(getSql("releaseLockSql"), new Object[] { serverId, action,
                 serverId }) > 0;
     }
 
@@ -161,6 +158,6 @@ public class ClusterService extends AbstractService implements IClusterService {
     @Override
     protected AbstractSqlMap createSqlMap() {
         return new ClusterServiceSqlMap(symmetricDialect.getPlatform(),
-                createReplacementTokens());
+                createSqlReplacementTokens());
     }
 }

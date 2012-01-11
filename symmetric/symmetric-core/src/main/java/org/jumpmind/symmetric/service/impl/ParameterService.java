@@ -21,8 +21,6 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -31,28 +29,29 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.sql.AbstractSqlMap;
-import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
+import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.jdbc.core.RowMapper;
 
 /**
  * @see IParameterService
  */
-public class ParameterService extends AbstractService implements IParameterService,
-        BeanFactoryAware {
+public class ParameterService implements IParameterService {
 
-    private Map<String, String> parameters;
+    protected Log log = LogFactory.getLog(getClass());
 
-    private BeanFactory beanFactory;
+    private TypedProperties parameters;
 
     private long cacheTimeoutInMs = 0;
 
@@ -63,18 +62,25 @@ public class ParameterService extends AbstractService implements IParameterServi
     private Properties systemProperties;
 
     private boolean initialized = false;
+    
+    private String tablePrefix;
 
-    public ParameterService() {
-        systemProperties = (Properties) System.getProperties().clone();
-    }
+    private ITypedPropertiesFactory factory;
 
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new ParameterServiceSqlMap(null, createReplacementTokens());
-    }
+    private ParameterServiceSqlMap sql;
 
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
+    private ISqlTemplate jdbcTemplate;
+
+    public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory,
+            String tablePrefix, Log log) {
+        this.log = log;
+        this.systemProperties = (Properties) System.getProperties().clone();
+        this.tablePrefix = tablePrefix;
+        this.factory = factory;
+        this.sql = new ParameterServiceSqlMap(null,
+                AbstractService.createSqlReplacementTokens(tablePrefix));
+        this.jdbcTemplate = platform.getSqlTemplate();
+
     }
 
     public BigDecimal getDecimal(String key, BigDecimal defaultVal) {
@@ -139,7 +145,7 @@ public class ParameterService extends AbstractService implements IParameterServi
         String value = null;
 
         if (StringUtils.isBlank(value)) {
-            value = getParameters().get(key);
+            value = getParameters().get(key, defaultVal);
         }
 
         if (this.parameterFilter != null) {
@@ -158,14 +164,13 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
-
         paramValue = paramValue != null ? paramValue.toString() : null;
 
-        int count = jdbcTemplate.update(getSql("updateParameterSql"), new Object[] { paramValue,
-                externalId, nodeGroupId, key });
+        int count = jdbcTemplate.update(sql.getSql("updateParameterSql"), new Object[] {
+                paramValue, externalId, nodeGroupId, key });
 
         if (count == 0) {
-            jdbcTemplate.update(getSql("insertParameterSql"), new Object[] { externalId,
+            jdbcTemplate.update(sql.getSql("insertParameterSql"), new Object[] { externalId,
                     nodeGroupId, key, paramValue });
         }
 
@@ -173,7 +178,7 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public void deleteParameter(String externalId, String nodeGroupId, String key) {
-        jdbcTemplate.update(getSql("deleteParameterSql"), externalId, nodeGroupId, key);
+        jdbcTemplate.update(sql.getSql("deleteParameterSql"), externalId, nodeGroupId, key);
         rereadParameters();
 
     }
@@ -190,57 +195,44 @@ public class ParameterService extends AbstractService implements IParameterServi
         getParameters();
     }
 
-    /**
-     * Every time we pull the properties out of the bean factory they should get
-     * reread from the file system.
-     */
-    private Properties rereadFileParameters() {
-        return (Properties) beanFactory.getBean(Constants.PROPERTIES);
-    }
-
-    private Map<String, String> rereadDatabaseParameters(Properties p) {
+    private TypedProperties rereadDatabaseParameters(Properties p) {
         try {
-            Map<String, String> map = rereadDatabaseParameters(ParameterConstants.ALL,
+            TypedProperties properties = rereadDatabaseParameters(ParameterConstants.ALL,
                     ParameterConstants.ALL);
-            map.putAll(rereadDatabaseParameters(ParameterConstants.ALL,
+            properties.putAll(rereadDatabaseParameters(ParameterConstants.ALL,
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
-            map.putAll(rereadDatabaseParameters(p.getProperty(ParameterConstants.EXTERNAL_ID),
+            properties.putAll(rereadDatabaseParameters(
+                    p.getProperty(ParameterConstants.EXTERNAL_ID),
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
-            return map;
+            return properties;
         } catch (Exception ex) {
             if (initialized) {
-                log.warn("DatabaseParametersReadingFailed");
+                log.warn("Could not read database parameters.  We will try again later");
             }
-            return new HashMap<String, String>();
+            return new TypedProperties();
         }
     }
 
-    private Map<String, String> rereadDatabaseParameters(String externalId, String nodeGroupId) {
-        final Map<String, String> map = new HashMap<String, String>();
-        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId },
-                new RowMapper<Object>() {
-                    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        map.put(rs.getString(1), rs.getString(2));
-                        return null;
-                    }
-                });
-        return map;
+    private TypedProperties rereadDatabaseParameters(String externalId, String nodeGroupId) {
+        final TypedProperties properties = new TypedProperties();
+        jdbcTemplate.query(sql.getSql("selectParametersSql"), new ISqlRowMapper<Object>() {
+            public Object mapRow(Row row) {
+                properties.setProperty(row.getString("param_key"), row.getString("param_value"));
+                return null;
+            }
+        }, externalId, nodeGroupId);
+        return properties;
     }
 
-    private Map<String, String> rereadApplicationParameters() {
-        final Map<String, String> map = new HashMap<String, String>();
-        Properties p = rereadFileParameters();
+    private TypedProperties rereadApplicationParameters() {
+        TypedProperties p = this.factory.reload();
         p.putAll(systemProperties);
-        for (Object key : p.keySet()) {
-            map.put((String) key, p.getProperty((String) key));
-        }
-        map.putAll(rereadDatabaseParameters(p));
+        p.putAll(rereadDatabaseParameters(p));
         initialized = true;
-        return map;
-
+        return p;
     }
 
-    private Map<String, String> getParameters() {
+    private TypedProperties getParameters() {
         if (parameters == null
                 || lastTimeParameterWereCached == null
                 || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System
@@ -252,7 +244,7 @@ public class ParameterService extends AbstractService implements IParameterServi
         return parameters;
     }
 
-    public Map<String, String> getAllParameters() {
+    public TypedProperties getAllParameters() {
         return getParameters();
     }
 
@@ -269,22 +261,15 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public String getSyncUrl() {
-        String value = getWithHostName(ParameterConstants.SYNC_URL);
-        if (StringUtils.isBlank(value)) {
-            value = getWithHostName("my.url");
-            if (!StringUtils.isBlank(value)) {
-                log.warn("DeprecatedPropertyMsg", "my.url", ParameterConstants.SYNC_URL);
-            }
-        }
-        return value;
+        return getWithHostName(ParameterConstants.SYNC_URL);
     }
 
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {
-        return jdbcTemplate.query(getSql("selectParametersByKeySql"),
+        return jdbcTemplate.query(sql.getSql("selectParametersByKeySql"),
                 new DatabaseParameterMapper(), paramKey);
     }
 
-    public Map<String, String> getDatabaseParametersByNodeGroupId(String nodeGroupId) {
+    public TypedProperties getDatabaseParametersByNodeGroupId(String nodeGroupId) {
         return rereadDatabaseParameters(ParameterConstants.ALL, nodeGroupId);
     }
 
@@ -318,13 +303,21 @@ public class ParameterService extends AbstractService implements IParameterServi
         replacementValues.put("externalId", getExternalId());
         replacementValues.put("nodeGroupId", getNodeGroupId());
         return replacementValues;
+    }    
+
+    class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {
+        public DatabaseParameter mapRow(Row row) {
+            return new DatabaseParameter(row.getString("param_key"), row.getString("param_value"),
+                    row.getString("external_id"), row.getString("node_group_id"));
+        }
     }
 
-    class DatabaseParameterMapper implements RowMapper<DatabaseParameter> {
-        public DatabaseParameter mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new DatabaseParameter(rs.getString(1), rs.getString(2), rs.getString(3),
-                    rs.getString(4));
-        }
+    public String getTablePrefix() {
+        return this.tablePrefix;
+    }
+    
+    public String getEngineName() {
+        return getString(ParameterConstants.ENGINE_NAME, "SymmetricDS");
     }
 
 }

@@ -92,6 +92,11 @@ public class FirebirdPlatform extends AbstractJdbcDatabasePlatform {
         ddlReader = new FirebirdDdlReader(log, this);
         ddlBuilder = new FirebirdBuilder(log, this);
     }
+    
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new FirebirdJdbcSqlTemplate(dataSource, settings, null);   
+    }
 
     public String getName() {
         return DATABASENAME;

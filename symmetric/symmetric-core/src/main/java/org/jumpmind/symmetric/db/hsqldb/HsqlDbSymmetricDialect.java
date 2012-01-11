@@ -29,28 +29,25 @@ import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
 
     public static String DUAL_TABLE = "DUAL";
 
-    private boolean enforceStrictSize = true;
-    
-    public HsqlDbSymmetricDialect() {
+    private boolean enforceStrictSize = true;    
+
+    public HsqlDbSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new HsqlDbTriggerText();
-    }
-   
-    @Override
-    public void init(IDatabasePlatform pf, int queryTimeout, final JdbcTemplate jdbcTemplate) {
-        super.init(pf, queryTimeout, jdbcTemplate);
-        jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
-        jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
-        jdbcTemplate.update("SET PROPERTY \"sql.enforce_strict_size\" " + enforceStrictSize);
+
+        platform.getSqlTemplate().update("SET WRITE_DELAY 100 MILLIS");
+        platform.getSqlTemplate().update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
+        platform.getSqlTemplate().update("SET PROPERTY \"sql.enforce_strict_size\" " + enforceStrictSize);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                jdbcTemplate.update("SHUTDOWN");
+                HsqlDbSymmetricDialect.this.platform.getSqlTemplate().update("SHUTDOWN");
             }
         });
         createDummyDualTable();        
@@ -59,10 +56,10 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
             String triggerName) {
-        boolean exists = (jdbcTemplate.queryForInt(
+        boolean exists = (platform.getSqlTemplate().queryForInt(
                 "select count(*) from INFORMATION_SCHEMA.SYSTEM_TRIGGERS WHERE TRIGGER_NAME = ?",
                 new Object[] { triggerName }) > 0)
-                || (jdbcTemplate.queryForInt(
+                || (platform.getSqlTemplate().queryForInt(
                         "select count(*) from INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_NAME = ?",
                         new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
         return exists;
@@ -75,9 +72,9 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     private void createDummyDualTable() {
         Table table = platform.getTableFromCache(null, null, DUAL_TABLE, true);
         if (table == null) {
-            jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR(1))");
-            jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
-            jdbcTemplate.update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
+            platform.getSqlTemplate().update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR(1))");
+            platform.getSqlTemplate().update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
+            platform.getSqlTemplate().update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
         }
 
     }
@@ -93,7 +90,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
-                int count = jdbcTemplate.update(dropSql);
+                int count = platform.getSqlTemplate().update(dropSql);
                 if (count > 0) {
                     log.info("TriggerDropped", triggerName);
                 }
@@ -101,7 +98,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
                 log.warn("TriggerDropError", triggerName, e.getMessage());
             }
             try {
-                int count = jdbcTemplate.update(dropTable);
+                int count = platform.getSqlTemplate().update(dropTable);
                 if (count > 0) {
                     log.info("TableDropped", triggerName);
                 }
@@ -122,17 +119,17 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.execute("CALL " + tablePrefix + "_set_session('sync_prevented','1')");
-        transaction.execute("CALL " + tablePrefix + "_set_session('node_value','"+nodeId+"')");
+        transaction.execute("CALL " + parameterService.getTablePrefix() + "_set_session('sync_prevented','1')");
+        transaction.execute("CALL " + parameterService.getTablePrefix() + "_set_session('node_value','"+nodeId+"')");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("CALL " + tablePrefix + "_set_session('sync_prevented',null)");
-        transaction.execute("CALL " + tablePrefix + "_set_session('node_value',null)");
+        transaction.execute("CALL " + parameterService.getTablePrefix() + "_set_session('sync_prevented',null)");
+        transaction.execute("CALL " + parameterService.getTablePrefix() + "_set_session('node_value',null)");
     }
 
     public String getSyncTriggersExpression() {
-        return " " + tablePrefix + "_get_session(''sync_prevented'') is null ";
+        return " " + parameterService.getTablePrefix() + "_get_session(''sync_prevented'') is null ";
     }
 
     /*
@@ -142,11 +139,6 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         // TODO Get I use a temporary table and a randomly generated GUID?
         return "null";
-    }
-
-    @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "call IDENTITY()";
     }
 
    @Override
@@ -172,13 +164,8 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     }
 
     @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return false;
-    }
-
-    @Override
     public void truncateTable(String tableName) {
-        jdbcTemplate.update("delete from " + tableName);
+        platform.getSqlTemplate().update("delete from " + tableName);
     }
 
     @Override

@@ -22,10 +22,11 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -33,7 +34,7 @@ import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 
 abstract public class AbstractUriHandler implements IUriHandler {
     
-    protected ILog log = LogFactory.getLog(getClass());
+    protected Log log = LogFactory.getLog(getClass());
     
     private String uriPattern;
     
@@ -42,6 +43,17 @@ abstract public class AbstractUriHandler implements IUriHandler {
     protected IParameterService parameterService;
     
     private boolean enabled = true;
+    
+    public AbstractUriHandler(Log log, String uriPattern, 
+            IParameterService parameterService, IInterceptor... interceptors) {
+        this.log = log;
+        this.uriPattern = uriPattern;
+        this.interceptors = new ArrayList<IInterceptor>(interceptors.length);
+        for (IInterceptor i : interceptors) {
+            this.interceptors.add(i);
+        }
+        this.parameterService = parameterService;
+    }
 
     public void setUriPattern(String uriPattern) {
         this.uriPattern = uriPattern;
@@ -77,6 +89,5 @@ abstract public class AbstractUriHandler implements IUriHandler {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
-        this.log = LogFactory.getLog(parameterService);
     }
 }

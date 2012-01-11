@@ -22,14 +22,16 @@ package org.jumpmind.symmetric.db.interbase;
 
 import java.util.List;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 
 /*
  * Database dialect for <a href="http://www.embarcadero.com/products/interbase/">Interbase</a>.
@@ -46,19 +48,20 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
-    public InterbaseSymmetricDialect() {
+    public InterbaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new InterbaseTriggerText();
     }
     
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
-        String contextTableName = tablePrefix + "_" + CONTEXT_TABLE_NAME;
+        String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         try {
-            jdbcTemplate.queryForInt("select count(*) from " + contextTableName);
+            platform.getSqlTemplate().queryForInt("select count(*) from " + contextTableName);
         } catch (Exception e) {
             try {
                 log.info("GlobalTempTableCreating", contextTableName);
-                jdbcTemplate.execute(String.format(CONTEXT_TABLE_CREATE, contextTableName));
+                platform.getSqlTemplate().update(String.format(CONTEXT_TABLE_CREATE, contextTableName));
             } catch (Exception ex) {
                 log.error("InterbaseDialectInitializingError", ex);
             }
@@ -69,7 +72,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     protected void createRequiredFunctions() {
         super.createRequiredFunctions();
         try {
-            jdbcTemplate.queryForObject("select sym_escape('') from rdb$database", String.class);
+            platform.getSqlTemplate().queryForObject("select sym_escape('') from rdb$database", String.class);
         } catch (UncategorizedSQLException e) {
             if (e.getSQLException().getErrorCode() == -804) {
                 log.error("InterbaseSymUdfMissing");
@@ -80,12 +83,12 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
-        return jdbcTemplate.queryForInt("select count(*) from rdb$triggers where rdb$trigger_name = ?",
+        return platform.getSqlTemplate().queryForInt("select count(*) from rdb$triggers where rdb$trigger_name = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        String contextTableName = tablePrefix + "_" + CONTEXT_TABLE_NAME;
+        String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         transaction.execute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
             SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1" });
         if (nodeId != null) {
@@ -95,7 +98,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        String contextTableName = tablePrefix + "_" + CONTEXT_TABLE_NAME;
+        String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         transaction.execute("delete from " + contextTableName);
     }
 
@@ -104,7 +107,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     }
     
     @Override
-    protected String getSequenceName(SequenceIdentifier identifier) {
+    public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
         case OUTGOING_BATCH:
             return "SYM_OUTGOING_BATCH_BATCH_ID";
@@ -122,11 +125,6 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     }
 
     @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select gen_id(gen_" + sequenceName + ", 0) from rdb$database";
-    }
-
-    @Override
     public boolean isBlobSyncSupported() {
         return true;
     }
@@ -134,11 +132,6 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
-    }
-
-    @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return true;
     }
 
     public void purge() {
@@ -168,16 +161,15 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
 
     @Override
     public void truncateTable(String tableName) {
-        jdbcTemplate.update("delete from " + tableName);
+        platform.getSqlTemplate().update("delete from " + tableName);
     }
-    
-    
+        
     @Override
     public void cleanupTriggers() {
-        List<String> names = jdbcTemplate.query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '"+tablePrefix.toUpperCase()+"_%'", new SingleColumnRowMapper<String>());
+        List<String> names = platform.getSqlTemplate().query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '"+parameterService.getTablePrefix().toUpperCase()+"_%'", new StringMapper());
         int count = 0;
         for (String name : names) {
-            count += jdbcTemplate.update("drop trigger " + name);
+            count += platform.getSqlTemplate().update("drop trigger " + name);
         }
         log.info("RemovedTriggers", count);
     }

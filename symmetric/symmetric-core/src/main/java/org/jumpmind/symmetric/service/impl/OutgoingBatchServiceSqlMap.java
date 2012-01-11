@@ -54,8 +54,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 "  failed_data_id, last_update_hostname, last_update_time, create_time, batch_id, load_flag, error_flag from      " + 
 "  $(prefixName)_outgoing_batch                                                                                        " );
 
-        putSql("selectOutgoingBatchErrorsSql" ,"" + 
-"where error_flag=1 order by batch_id   " );
+        putSql("selectOutgoingBatchErrorsSql" , 
+" where error_flag=1 order by batch_id   " );
 
         putSql("countOutgoingBatchesErrorsSql" ,"" + 
 "select count(*) from $(prefixName)_outgoing_batch where error_flag=1   " );

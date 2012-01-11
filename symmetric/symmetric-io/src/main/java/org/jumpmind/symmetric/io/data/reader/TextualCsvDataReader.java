@@ -22,6 +22,7 @@ import org.jumpmind.exception.IoException;
 import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.csv.CsvReader;
+import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -36,6 +37,7 @@ public class TextualCsvDataReader implements IDataReader {
 
     protected Log log = LogFactory.getLog(getClass());
 
+    protected IoResource ioResource;
     protected Reader reader;
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected CsvReader csvReader;
@@ -54,6 +56,10 @@ public class TextualCsvDataReader implements IDataReader {
 
     public TextualCsvDataReader(InputStream is) {
         this(toReader(is));
+    }
+
+    public TextualCsvDataReader(IoResource ioResource) {
+        this.ioResource = ioResource;
     }
 
     protected static Reader toReader(InputStream is) {
@@ -83,6 +89,9 @@ public class TextualCsvDataReader implements IDataReader {
     }
 
     public <R extends IDataReader, W extends IDataWriter> void open(DataContext<R, W> context) {
+        if (this.ioResource != null && this.reader == null) {
+            this.reader = toReader(this.ioResource.open());
+        }
         this.context = context;
         this.csvReader = CsvUtils.getCsvReader(reader);
         this.next = readNext();
@@ -257,6 +266,7 @@ public class TextualCsvDataReader implements IDataReader {
         if (csvReader != null) {
             csvReader.close();
         }
+        
     }
 
     public Map<Batch, Statistics> getStatistics() {

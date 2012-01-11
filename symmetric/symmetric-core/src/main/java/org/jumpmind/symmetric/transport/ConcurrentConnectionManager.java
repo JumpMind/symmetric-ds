@@ -38,7 +38,13 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
 
     protected Map<String, Map<String, NodeConnectionStatistics>> nodeConnectionStatistics = new HashMap<String, Map<String, NodeConnectionStatistics>>();
 
-    protected Set<String> whiteList = new HashSet<String>();
+    protected Set<String> whiteList = new HashSet<String>();        
+
+    public ConcurrentConnectionManager(IParameterService parameterService,
+            IStatisticManager statisticManager) {
+        this.parameterService = parameterService;
+        this.statisticManager = statisticManager;
+    }
 
     protected void logTooBusyRejection(String nodeId, String poolId) {
         getNodeConnectionStatistics(nodeId, poolId).numOfRejections++;
@@ -127,14 +133,6 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             activeReservationsByNodeByPool.put(poolId, reservations);
         }
         return reservations;
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-    }
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
     }
 
     protected static class Reservation {

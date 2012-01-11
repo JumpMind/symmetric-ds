@@ -63,6 +63,11 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
+    
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new InformixJdbcSqlTemplate(dataSource, settings, null);
+    }
 
     public String getName() {
         return DATABASENAME;

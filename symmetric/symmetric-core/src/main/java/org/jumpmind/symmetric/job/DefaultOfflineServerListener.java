@@ -22,8 +22,8 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
@@ -36,12 +36,20 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 public class DefaultOfflineServerListener implements IOfflineServerListener,
  IBuiltInExtensionPoint {
 
-    protected static final ILog log = LogFactory.getLog(DefaultOfflineServerListener.class);
+    protected Log log = LogFactory.getLog(DefaultOfflineServerListener.class);
 
     protected IStatisticManager statisticManager;
     protected INodeService nodeService;
     protected IOutgoingBatchService outgoingBatchService;
     
+    public DefaultOfflineServerListener(Log log, IStatisticManager statisticManager,
+            INodeService nodeService, IOutgoingBatchService outgoingBatchService) {
+        this.log = log;
+        this.statisticManager = statisticManager;
+        this.nodeService = nodeService;
+        this.outgoingBatchService = outgoingBatchService;
+    }
+
     /*
      * Handle a client node that was determined to be offline.
      * Syncing is disabled for the node, node security is deleted, and cleanup processing is done for
@@ -58,18 +66,6 @@ public class DefaultOfflineServerListener implements IOfflineServerListener,
 
     public boolean isAutoRegister() {
         return true;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-    
-    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
-        this.outgoingBatchService = outgoingBatchService;
-    }
-    
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
     }
     
 }

@@ -37,7 +37,7 @@ import org.jumpmind.symmetric.route.SimpleRouterContext;
  * 
  * @since 2.0
  */
-public interface IRouterService extends ISqlProvider {
+public interface IRouterService {
 
     public long routeData();
  

@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 
@@ -68,9 +69,9 @@ public interface IParameterService {
     
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey);
     
-    public Map<String,String> getDatabaseParametersByNodeGroupId(String nodeGroupId);
+    public TypedProperties getDatabaseParametersByNodeGroupId(String nodeGroupId);
 
-    public Map<String, String> getAllParameters();
+    public TypedProperties getAllParameters();
 
     public void setParameterFilter(IParameterFilter f);
 
@@ -98,4 +99,7 @@ public interface IParameterService {
     public String getSyncUrl();
 
     public String getTablePrefix();
+    
+    public String getEngineName();
+    
 }

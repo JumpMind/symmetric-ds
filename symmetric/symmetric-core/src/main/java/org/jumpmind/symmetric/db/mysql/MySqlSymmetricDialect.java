@@ -16,15 +16,18 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.db.mysql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.jdbc.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -32,6 +35,7 @@ import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
@@ -40,23 +44,26 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
-    
+
     private String functionTemplateKeySuffix = null;
 
-    public MySqlSymmetricDialect() {
+    public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new MySqlTriggerText();
+        this.parameterService = parameterService;
     }
-    
+
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
         int[] versions = Version.parseVersion(getProductVersion());
-        if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
+        if (getMajorVersion() == 5
+                && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
             this.functionTemplateKeySuffix = "_pre_5_1_23";
         } else {
             this.functionTemplateKeySuffix = "_post_5_1_23";
         }
     }
-    
+
     @Override
     public boolean supportsTransactionId() {
         return true;
@@ -67,10 +74,15 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         String[] functions = triggerText.getFunctionsToInstall();
         for (int i = 0; i < functions.length; i++) {
             if (functions[i].endsWith(this.functionTemplateKeySuffix)) {
-                String funcName = tablePrefix + "_"
-                        + functions[i].substring(0, functions[i].length() - this.functionTemplateKeySuffix.length());
-                if (jdbcTemplate.queryForInt(triggerText.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
-                    jdbcTemplate.update(triggerText.getFunctionSql(functions[i], funcName, platform.getDefaultSchema()));
+                String funcName = parameterService.getTablePrefix()
+                        + "_"
+                        + functions[i].substring(0, functions[i].length()
+                                - this.functionTemplateKeySuffix.length());
+                if (platform.getSqlTemplate().queryForInt(
+                        triggerText.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
+                    platform.getSqlTemplate().update(
+                            triggerText.getFunctionSql(functions[i], funcName,
+                                    platform.getDefaultSchema()));
                     log.info("FunctionInstalled", funcName);
                 }
             }
@@ -78,24 +90,29 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
-        catalog = catalog == null ? (platform.getDefaultCatalog() == null ? null : platform.getDefaultCatalog()) : catalog;
-        String checkCatalogSql = (catalog != null && catalog.length() > 0) ? " and trigger_schema='" + catalog + "'"
+    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+            String triggerName) {
+        catalog = catalog == null ? (platform.getDefaultCatalog() == null ? null : platform
+                .getDefaultCatalog()) : catalog;
+        String checkCatalogSql = (catalog != null && catalog.length() > 0) ? " and trigger_schema='"
+                + catalog + "'"
                 : "";
-        return jdbcTemplate.queryForInt(
-                "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
-                        + checkCatalogSql, new Object[] { triggerName, tableName }) > 0;
+        return platform
+                .getSqlTemplate()
+                .queryForInt(
+                        "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
+                                + checkCatalogSql, new Object[] { triggerName, tableName }) > 0;
     }
 
     @Override
-    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
-            String tableName, TriggerHistory oldHistory) {
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
+            String triggerName, String tableName, TriggerHistory oldHistory) {
         catalogName = catalogName == null ? "" : (catalogName + ".");
         final String sql = "drop trigger " + catalogName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
-                jdbcTemplate.update(sql);
+                platform.getSqlTemplate().update(sql);
             } catch (Exception e) {
                 log.warn("TriggerDoesNotExist");
             }
@@ -105,7 +122,8 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
         if (nodeId != null) {
-            transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
+            transaction
+                    .execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
         }
     }
 
@@ -119,40 +137,34 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     private final String getTransactionFunctionName() {
-        return platform.getDefaultCatalog() + "." + tablePrefix + "_" + TRANSACTION_ID;
+        return platform.getDefaultCatalog() + "." + parameterService.getTablePrefix() + "_"
+                + TRANSACTION_ID;
     }
 
     @Override
-    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
+            Trigger trigger) {
         return getTransactionFunctionName() + "()";
-    }
-
-    @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select last_insert_id()";
     }
 
     public void purge() {
     }
 
     @Override
-    protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
+    protected String switchCatalogForTriggerInstall(String catalog, ISqlTransaction transaction) {
         if (catalog != null) {
-            String previousCatalog = c.getCatalog();
-            c.setCatalog(catalog);
-            return previousCatalog;
+            Connection c = ((JdbcSqlTransaction) transaction).getConnection();
+            String previousCatalog;
+            try {
+                previousCatalog = c.getCatalog();
+                c.setCatalog(catalog);
+                return previousCatalog;
+            } catch (SQLException e) {
+                throw new SqlException(e);
+            }
         } else {
             return null;
         }
-    }
-
-    /*
-     * According to the documentation (and experience) the jdbc driver for mysql
-     * requires the fetch size to be as follows.
-     */
-    @Override
-    public int getStreamingResultsFetchSize() {
-        return Integer.MIN_VALUE;
     }
 
     @Override

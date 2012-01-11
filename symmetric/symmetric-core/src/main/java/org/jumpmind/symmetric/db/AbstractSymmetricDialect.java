@@ -25,16 +25,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Savepoint;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -50,8 +41,10 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlConstants;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.Constants;
@@ -69,10 +62,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 /*
@@ -84,17 +73,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
-    protected JdbcTemplate jdbcTemplate;
-
     protected IDatabasePlatform platform;
 
     protected TriggerText triggerText;
 
     protected IParameterService parameterService;
-
-    protected String tablePrefix;
-
-    protected int streamingResultsFetchSize;
 
     protected Boolean supportsGetGeneratedKeys;
 
@@ -116,12 +99,21 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected boolean supportsTransactionViews = false;
 
-    protected int queryTimeoutInSeconds = 300;
-
-
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
 
-    protected AbstractSymmetricDialect() {
+    public AbstractSymmetricDialect(IParameterService parameterService,
+            IDatabasePlatform platform) {
+        log.info("The DbDialect being used is %s", this.getClass().getName());
+        this.parameterService = parameterService;
+        this.platform = platform;
+        ISqlTemplate sqlTemplate = this.platform.getSqlTemplate();
+        this.databaseMajorVersion = sqlTemplate.getDatabaseMajorVersion();
+        this.databaseMinorVersion = sqlTemplate.getDatabaseMinorVersion();
+        this.databaseName = sqlTemplate.getDatabaseProductName();
+        this.databaseProductVersion = sqlTemplate.getDatabaseProductVersion();
+        this.driverName = sqlTemplate.getDriverName();
+        this.driverVersion = sqlTemplate.getDriverVersion();
+        this.initLobHandler();
     }
 
     public String encodeForCsv(byte[] data) {
@@ -146,10 +138,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return ts.toString();
     }
 
-    protected boolean allowsNullForIdentityColumn() {
-        return true;
-    }
-
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return false;
     }
@@ -162,31 +150,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         int max = getPlatform().getPlatformInfo().getMaxColumnNameLength();
         return max < MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE && max > 0 ? max
                 : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
-    }
-
-    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
-        log.info("DbDialectInUse", this.getClass().getName());
-        this.jdbcTemplate = jdbcTemplate;
-        this.queryTimeoutInSeconds = queryTimeout;
-        this.jdbcTemplate.setQueryTimeout(queryTimeout);
-        this.platform = pf;
-        jdbcTemplate.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                DatabaseMetaData meta = c.getMetaData();
-                databaseName = meta.getDatabaseProductName();
-                databaseMajorVersion = meta.getDatabaseMajorVersion();
-                databaseMinorVersion = meta.getDatabaseMinorVersion();
-                databaseProductVersion = meta.getDatabaseProductVersion();
-                driverName = meta.getDriverName();
-                driverVersion = meta.getDriverVersion();
-                return null;
-            }
-        });
-        this.initLobHandler();
-    }
-
-    public int getQueryTimeoutInSeconds() {
-        return queryTimeoutInSeconds;
     }
 
     protected void initTablesAndFunctionsForSpecificDialect() {
@@ -212,11 +175,12 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected void createRequiredFunctions() {
         String[] functions = triggerText.getFunctionsToInstall();
         for (int i = 0; i < functions.length; i++) {
-            String funcName = tablePrefix + "_" + functions[i];
-            if (jdbcTemplate.queryForInt(triggerText.getFunctionInstalledSql(funcName,
-                    platform.getDefaultSchema())) == 0) {
-                jdbcTemplate.update(triggerText.getFunctionSql(functions[i], funcName,
-                        platform.getDefaultSchema()));
+            String funcName = this.parameterService.getTablePrefix() + "_" + functions[i];
+            if (this.platform.getSqlTemplate().queryForInt(
+                    triggerText.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
+                this.platform.getSqlTemplate().update(
+                        triggerText.getFunctionSql(functions[i], funcName,
+                                platform.getDefaultSchema()));
                 log.info("FunctionInstalled", funcName);
             }
         }
@@ -252,8 +216,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 this,
                 trigger,
                 triggerHistory,
-                platform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName(), false), channel, whereClause).trim();
+                platform.getTableFromCache(trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
+                channel, whereClause).trim();
     }
 
     public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory,
@@ -262,21 +227,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 this,
                 trigger,
                 triggerHistory,
-                platform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName(), false), channel, whereClause).trim();
+                platform.getTableFromCache(trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
+                channel, whereClause).trim();
     }
 
     public Set<String> getSqlKeywords() {
         if (sqlKeywords == null) {
-            jdbcTemplate.execute(new ConnectionCallback<Object>() {
-                public Object doInConnection(Connection con) throws SQLException,
-                        DataAccessException {
-                    DatabaseMetaData metaData = con.getMetaData();
-                    sqlKeywords = new HashSet<String>(Arrays.asList(metaData.getSQLKeywords()
-                            .split(",")));
-                    return null;
-                }
-            });
+            this.sqlKeywords = this.platform.getSqlTemplate().getSqlKeywords();
         }
         return sqlKeywords;
     }
@@ -288,7 +246,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
-                jdbcTemplate.update(sql);
+                this.platform.getSqlTemplate().update(sql);
             } catch (Exception e) {
                 log.warn("TriggerDoesNotExist");
             }
@@ -296,7 +254,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     final protected void logSql(String sql, StringBuilder sqlBuffer) {
-        if (sqlBuffer != null) {
+        if (sqlBuffer != null && StringUtils.isNotBlank(sql)) {
             sqlBuffer.append(sql);
             sqlBuffer.append(System.getProperty("line.separator"));
             sqlBuffer.append(System.getProperty("line.separator"));
@@ -310,63 +268,68 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml,
             final Trigger trigger, final TriggerHistory hist, final Channel channel,
             final String tablePrefix, final Table table) {
-        jdbcTemplate.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection con) throws SQLException, DataAccessException {
-                log.info("TriggerCreating", hist.getTriggerNameForDmlType(dml),
-                        trigger.getSourceTableName());
+        log.info("Creating %s trigger for %s", hist.getTriggerNameForDmlType(dml),
+                trigger.getSourceTableName());
 
-                String previousCatalog = null;
-                String sourceCatalogName = trigger.getSourceCatalogName();
-                String defaultCatalog = platform.getDefaultCatalog();
-                String defaultSchema = platform.getDefaultSchema();
+        String previousCatalog = null;
+        String sourceCatalogName = trigger.getSourceCatalogName();
+        String defaultCatalog = platform.getDefaultCatalog();
+        String defaultSchema = platform.getDefaultSchema();
+
+        String triggerSql = triggerText.createTriggerDDL(AbstractSymmetricDialect.this, dml,
+                trigger, hist, channel, tablePrefix, table, defaultCatalog, defaultSchema);
+        
+        String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
+                table);
+
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            ISqlTransaction transaction = null;
+            try {
+                transaction = this.platform.getSqlTemplate().startSqlTransaction();
+                previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, transaction);
+
                 try {
-                    previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, con);
+                    log.debug("Running: %s", triggerSql);
+                    transaction.execute(triggerSql);
+                } catch (SqlException ex) {
+                    log.error("Failed to create trigger: %s", triggerSql);
+                    throw ex;
+                }
 
-                    String triggerSql = triggerText.createTriggerDDL(AbstractSymmetricDialect.this, dml,
-                            trigger, hist, channel, tablePrefix, table, defaultCatalog,
-                            defaultSchema);
-
-                    if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                        Statement stmt = con.createStatement();
-                        stmt.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-                        try {
-                            log.debug("Sql", triggerSql);
-                            stmt.executeUpdate(triggerSql);
-                        } catch (SQLException ex) {
-                            log.error("TriggerCreateFailed", triggerSql);
-                            throw ex;
-                        }
-                        String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel,
-                                tablePrefix, table);
-                        if (postTriggerDml != null) {
-                            try {
-                                stmt.executeUpdate(postTriggerDml);
-                            } catch (SQLException ex) {
-                                log.error("PostTriggerCreateFailed", postTriggerDml);
-                                throw ex;
-                            }
-                        }
-                        stmt.close();
-                    }
-
-                    logSql(triggerSql, sqlBuffer);
-
-                } finally {
-                    if (sourceCatalogName != null
-                            && !sourceCatalogName.equalsIgnoreCase(previousCatalog)) {
-                        switchCatalogForTriggerInstall(previousCatalog, con);
+                if (StringUtils.isNotBlank(postTriggerDml)) {
+                    try {
+                        transaction.execute(postTriggerDml);
+                    } catch (SqlException ex) {
+                        log.error("Failed to create post trigger: %s", postTriggerDml);
+                        throw ex;
                     }
                 }
-                return null;
+                transaction.commit();
+            } catch (SqlException ex) {
+                transaction.rollback();
+                throw ex;
+            } finally {
+                try {
+                    if (sourceCatalogName != null
+                            && !sourceCatalogName.equalsIgnoreCase(previousCatalog)) {
+                        switchCatalogForTriggerInstall(previousCatalog, transaction);
+                    }
+                } finally {
+                    transaction.close();
+                }
+
             }
-        });
+        }
+
+        logSql(triggerSql, sqlBuffer);
+        logSql(postTriggerDml, sqlBuffer);
+
     }
 
     /*
      * Provide the option switch a connection's schema for trigger installation.
      */
-    protected String switchCatalogForTriggerInstall(String catalog, Connection c)
-            throws SQLException {
+    protected String switchCatalogForTriggerInstall(String catalog, ISqlTransaction transaction) {
         return null;
     }
 
@@ -384,8 +347,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String getCreateTableSQL(TriggerRouter triggerRouter) {
-        Table table = platform.getTableFromCache(null, triggerRouter.getTrigger().getSourceSchemaName(),
-                triggerRouter.getTrigger().getSourceTableName(), false);
+        Table table = platform.getTableFromCache(null, triggerRouter.getTrigger()
+                .getSourceSchemaName(), triggerRouter.getTrigger().getSourceTableName(), false);
         return platform.getDdlBuilder().createTable(table);
     }
 
@@ -426,11 +389,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public boolean doesDatabaseNeedConfigured() {
         return prefixConfigDatabase(readSymmetricSchemaFromXml());
-    }        
+    }
 
     protected boolean prefixConfigDatabase(Database targetTables) {
         try {
-            String tblPrefix = this.tablePrefix + "_";
+            String tblPrefix = parameterService.getTablePrefix() + "_";
 
             Table[] tables = targetTables.getTables();
 
@@ -439,7 +402,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 table.setName(tblPrefix + table.getName());
                 fixForeignKeys(table, tblPrefix);
                 fixIndexes(table, tblPrefix);
-                if (platform.getTableFromCache(platform.getDefaultCatalog(), platform.getDefaultSchema(), table.getName(), true) == null) {
+                if (platform.getTableFromCache(platform.getDefaultCatalog(),
+                        platform.getDefaultSchema(), table.getName(), true) == null) {
                     createTables = true;
                 }
             }
@@ -449,10 +413,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             throw new RuntimeException(e);
         }
     }
-    
+
     public Table getTable(Trigger trigger, boolean useCache) {
-        return platform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                trigger.getSourceTableName(), !useCache);
+        return platform.getTableFromCache(trigger.getSourceCatalogName(),
+                trigger.getSourceSchemaName(), trigger.getSourceTableName(), !useCache);
     }
 
     /*
@@ -473,7 +437,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
 
         try {
-            log.info("TablesAutoUpdatingStart");
+            log.info("Checking if SymmetricDS tables need created or altered");
             Database modelFromDatabase = new Database();
 
             Table[] tablesFromXml = modelFromXml.getTables();
@@ -488,28 +452,32 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             IDdlBuilder builder = platform.getDdlBuilder();
 
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
-                log.info("TablesAutoUpdatingFoundTablesToAlter");
+                log.info("There are SymmetricDS tables that needed altered");
                 String delimiter = platform.getPlatformInfo().getSqlCommandDelimiter();
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
-                    String sql = listener.beforeUpgrade(this, tablePrefix, modelFromDatabase,
-                            modelFromXml);
-                    new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null).execute();
+                    String sql = listener
+                            .beforeUpgrade(this, this.parameterService.getTablePrefix(),
+                                    modelFromDatabase, modelFromXml);
+                    new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null)
+                            .execute();
                 }
 
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
-                
+
                 if (log.isDebugEnabled()) {
-                    log.debug("TablesAutoUpdatingAlterSql", alterSql);
+                    log.debug("Alter SQL Generated: %s", alterSql);
                 }
-                new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, delimiter, null).execute();
+                new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, delimiter, null)
+                        .execute();
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
-                    String sql = listener.afterUpgrade(this, tablePrefix, modelFromXml);
-                    new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null).execute();
+                    String sql = listener.afterUpgrade(this, this.parameterService.getTablePrefix(), modelFromXml);
+                    new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null)
+                            .execute();
                 }
 
-                log.info("TablesAutoUpdatingDone");
+                log.info("Done with auto update of SymmetricDS tables");
                 return true;
             } else {
                 return false;
@@ -605,35 +573,19 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return databaseProductVersion;
     }
 
-    public boolean supportsGetGeneratedKeys() {
-        if (supportsGetGeneratedKeys == null) {
-            supportsGetGeneratedKeys = jdbcTemplate.execute(new ConnectionCallback<Boolean>() {
-                public Boolean doInConnection(Connection conn) throws SQLException,
-                        DataAccessException {
-                    return conn.getMetaData().supportsGetGeneratedKeys();
-                }
-            });
-        }
-        return supportsGetGeneratedKeys;
-    }
-
     public boolean supportsTransactionViews() {
         return supportsTransactionViews;
     }
-
-    public boolean supportsReturningKeys() {
-        return false;
+    
+    public long insertWithGeneratedKey(String sql, SequenceIdentifier sequenceId) {
+        return insertWithGeneratedKey(sql, sequenceId, null, null);
     }
 
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        throw new UnsupportedOperationException();
+    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier identifier, Object... args) {
+        return platform.getSqlTemplate().insertWithGeneratedKey(sql, getSequenceKeyName(identifier), getSequenceKeyName(identifier), args, null);
     }
 
-    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId) {
-        return insertWithGeneratedKey(jdbcTemplate, sql, sequenceId, null);
-    }
-
-    protected String getSequenceName(SequenceIdentifier identifier) {
+    public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
         case OUTGOING_BATCH:
             return "sym_outgoing_batch_batch_id";
@@ -645,7 +597,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return null;
     }
 
-    protected String getSequenceKeyName(SequenceIdentifier identifier) {
+    public String getSequenceKeyName(SequenceIdentifier identifier) {
         switch (identifier) {
         case OUTGOING_BATCH:
             return "batch_id";
@@ -672,129 +624,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
         return orderedColumns;
     }
-    
-    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
-            final PreparedStatementCallback<Object> callback) {
-        return insertWithGeneratedKey(jdbcTemplate, sql, sequenceId, callback);
-    }
-
-    public long insertWithGeneratedKey(final JdbcTemplate jdbcTemplate, final String sql,
-            final SequenceIdentifier sequenceId, final PreparedStatementCallback<Object> callback) {
-        return jdbcTemplate.execute(new ConnectionCallback<Long>() {
-            public Long doInConnection(Connection conn) throws SQLException, DataAccessException {
-
-                long key = 0;
-                PreparedStatement ps = null;
-                try {
-                    boolean supportsGetGeneratedKeys = supportsGetGeneratedKeys();
-                    boolean supportsReturningKeys = supportsReturningKeys();
-                    if (allowsNullForIdentityColumn()) {
-                        if (supportsGetGeneratedKeys) {
-                            ps = conn.prepareStatement(sql, new int[] { 1 });
-                        } else if (supportsReturningKeys) {
-                            ps = conn.prepareStatement(sql + " returning "
-                                    + getSequenceKeyName(sequenceId));
-                        } else {
-                            ps = conn.prepareStatement(sql);
-                        }
-                    } else {
-                        String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst(
-                                "\\(null,", "(");
-                        if (supportsGetGeneratedKeys) {
-                            ps = conn.prepareStatement(replaceSql, Statement.RETURN_GENERATED_KEYS);
-                        } else {
-                            ps = conn.prepareStatement(replaceSql);
-                        }
-                    }
-                    ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-                    if (callback != null) {
-                        callback.doInPreparedStatement(ps);
-                    }
-
-                    ResultSet rs = null;
-                    if (supportsGetGeneratedKeys) {
-                        ps.executeUpdate();
-                        try {
-                            rs = ps.getGeneratedKeys();
-                            if (rs.next()) {
-                                key = rs.getLong(1);
-                            }
-                        } finally {
-                            JdbcUtils.closeResultSet(rs);
-                        }
-                    } else if (supportsReturningKeys) {
-                        try {
-                            rs = ps.executeQuery();
-                            if (rs.next()) {
-                                key = rs.getLong(1);
-                            }
-                        } finally {
-                            JdbcUtils.closeResultSet(rs);
-                        }
-                    } else {
-                        Statement st = null;
-                        ps.executeUpdate();
-                        try {
-                            st = conn.createStatement();
-                            rs = st.executeQuery(getSelectLastInsertIdSql(getSequenceName(sequenceId)));
-                            if (rs.next()) {
-                                key = rs.getLong(1);
-                            }
-                        } finally {
-                            JdbcUtils.closeResultSet(rs);
-                            JdbcUtils.closeStatement(st);
-                        }
-                    }
-                } finally {
-                    JdbcUtils.closeStatement(ps);
-                }
-                return key;
-            }
-        });
-    }
-
-    public Object createSavepoint(JdbcTemplate jdbcTemplate) {
-        return jdbcTemplate.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection con) throws SQLException, DataAccessException {
-                return con.setSavepoint();
-            }
-        });
-    }
-
-    public Object createSavepointForFallback(JdbcTemplate jdbcTemplate) {
-        if (requiresSavepointForFallback()) {
-            return createSavepoint(jdbcTemplate);
-        }
-        return null;
-    }
-
-    public void rollbackToSavepoint(JdbcTemplate jdbcTemplate, final Object savepoint) {
-        if (savepoint != null && savepoint instanceof Savepoint) {
-            jdbcTemplate.execute(new ConnectionCallback<Object>() {
-                public Object doInConnection(Connection con) throws SQLException,
-                        DataAccessException {
-                    con.rollback((Savepoint) savepoint);
-                    return null;
-                }
-            });
-        }
-    }
-
-    public void releaseSavepoint(JdbcTemplate jdbcTemplate, final Object savepoint) {
-        if (savepoint != null && savepoint instanceof Savepoint) {
-            jdbcTemplate.execute(new ConnectionCallback<Object>() {
-                public Object doInConnection(Connection con) throws SQLException,
-                        DataAccessException {
-                    con.releaseSavepoint((Savepoint) savepoint);
-                    return null;
-                }
-            });
-        }
-    }
-
-    public boolean requiresSavepointForFallback() {
-        return false;
-    }
 
     public void disableSyncTriggers(ISqlTransaction transaction) {
         disableSyncTriggers(transaction, null);
@@ -816,29 +645,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return true;
     }
 
-    public void setTablePrefix(String tablePrefix) {
-        this.tablePrefix = tablePrefix;
-    }
-
-    public int getStreamingResultsFetchSize() {
-        return streamingResultsFetchSize;
-    }
-
-    public void setStreamingResultsFetchSize(int streamingResultsFetchSize) {
-        this.streamingResultsFetchSize = streamingResultsFetchSize;
-    }
-
     public String getEngineName() {
         return parameterService.getString(ParameterConstants.ENGINE_NAME);
-    }
-
-    public String getTablePrefix() {
-        return tablePrefix;
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-        this.log = LogFactory.getLog(parameterService);
     }
 
     public boolean supportsOpenCursorsAcrossCommit() {
@@ -864,7 +672,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         int tryCount = 5;
         while (!success && tryCount > 0) {
             try {
-                jdbcTemplate.update("truncate table " + quote + tableName + quote);
+                platform.getSqlTemplate().update("truncate table " + quote + tableName + quote);
                 success = true;
             } catch (DataAccessException ex) {
                 log.warn(ex);
@@ -894,10 +702,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public long getDatabaseTime() {
         try {
-            String sql = "select current_timestamp from " + tablePrefix + "_node_identity";
+            String sql = "select current_timestamp from " + this.parameterService.getTablePrefix()
+                    + "_node_identity";
             sql = FormatUtils.replaceTokens(sql, platform.getSqlScriptReplacementTokens(), false);
-            return jdbcTemplate.queryForObject(sql, java.util.Date.class).getTime();
-
+            return this.platform.getSqlTemplate().queryForObject(sql, java.util.Date.class)
+                    .getTime();
         } catch (Exception ex) {
             log.error(ex);
             return System.currentTimeMillis();
@@ -938,7 +747,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getDriverVersion() {
         return driverVersion;
-    }    
+    }
 
     public String massageForLob(String sql, Channel channel) {
         return sql;
@@ -969,12 +778,18 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
      */
     protected void initLobHandler() {
     }
-    
-    public JdbcTemplate getJdbcTemplate() {
-		return jdbcTemplate;
-	}
-    
+
     public TriggerText getTriggerText() {
         return triggerText;
+    }
+    
+    protected void close(ISqlTransaction transaction) {
+        if (transaction != null) {
+            transaction.close();
+        }
+    }
+    
+    public String getTablePrefix() {
+        return parameterService.getTablePrefix();
     }
 }

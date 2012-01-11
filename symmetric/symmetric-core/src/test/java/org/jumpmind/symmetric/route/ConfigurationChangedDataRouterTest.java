@@ -162,7 +162,7 @@ public class ConfigurationChangedDataRouterTest {
     protected DataMetaData buildDataMetaData(String tableName, String nodeId) {
         Data data = new Data();
         data.setTableName(tableName);
-        data.setEventType(DataEventType.UPDATE);
+        data.setDataEventType(DataEventType.UPDATE);
         data.setTriggerHistory(new TriggerHistory(tableName, "NODE_ID", "NODE_ID"));
         data.setPkData(nodeId);
         data.setRowData(nodeId);

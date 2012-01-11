@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
  * Service API that is responsible for pushing data to the list of configured
  * {@link Node}s that are configured to {@link NodeGroupLinkAction#P}
  */
-public interface IPushService {
+public interface IPushService extends IOfflineDetectorService {
 
     /**
      * Attempt to push data, if any has been captured, to nodes that the

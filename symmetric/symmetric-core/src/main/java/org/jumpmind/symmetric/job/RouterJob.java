@@ -20,26 +20,24 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IRouterService;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 
 /*
  * This job calls {@link IRouterService#routeData()} 
- *
- * 
  */
 public class RouterJob extends AbstractJob {
-
-    IRouterService routingService;
+    
+    public RouterJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.routing", true, engine.getParameterService().is("start.route.job"),
+                engine, taskScheduler);
+    }
     
     @Override
     long doJob() throws Exception {
-        return routingService.routeData();
-    }
-    
-    public void setRoutingService(IRouterService routingService) {
-        this.routingService = routingService;
+        return engine.getRouterService().routeData();
     }
 
     public String getClusterLockName() {

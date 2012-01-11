@@ -35,13 +35,20 @@ import javax.crypto.spec.PBEParameterSpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.math.random.RandomDataImpl;
-import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.service.ISecurityService;
 
-public class SecurityService extends AbstractService implements ISecurityService {
+public class SecurityService implements ISecurityService {
 
+    protected Log log = LogFactory.getLog(getClass());
+    
     private SecretKey secretKey;
+    
+    public SecurityService() {
+     
+    }
 
     public String encrypt(String plainText) {
         try {
@@ -90,7 +97,7 @@ public class SecurityService extends AbstractService implements ISecurityService
         KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY,
                 param);
         if (entry == null) {
-            log.debug("SecretKeyGenerating");
+            log.debug("Generating secret key");
             String keyPassword = new RandomDataImpl().nextSecureHexString(16);
             KeySpec keySpec = new PBEKeySpec(keyPassword.toCharArray(), SecurityConstants.SALT,
                     SecurityConstants.ITERATION_COUNT);
@@ -99,7 +106,7 @@ public class SecurityService extends AbstractService implements ISecurityService
             ks.setEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, entry, param);
             saveKeyStore(ks, password);
         } else {
-            log.debug("SecretKeyRetrieving");
+            log.debug("Retrieving secret key");
         }
         return entry.getSecretKey();
     }
@@ -116,11 +123,6 @@ public class SecurityService extends AbstractService implements ISecurityService
         FileOutputStream os = new FileOutputStream(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
         ks.store(os, password.toCharArray());
         os.close();
-    }
-    
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return null;
     }
 
 }

@@ -16,15 +16,15 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.File;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,8 +36,12 @@ import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlScript;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
@@ -49,10 +53,8 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.springframework.dao.DataAccessException;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.jdbc.core.RowMapper;
 
 /**
  * @see IConfigurationService
@@ -67,23 +69,32 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private List<Channel> defaultChannels;
 
-    public ConfigurationService() {
+    public ConfigurationService(IParameterService parameterService, ISymmetricDialect dialect,
+            INodeService nodeService) {
+        super(parameterService, dialect);
+        this.nodeService = nodeService;
+        this.defaultChannels = new ArrayList<Channel>();
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 100, 100, true, 0));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0));
+        this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0));
     }
-    
-    public void saveNodeGroupLink(NodeGroupLink link) {        
+
+    public void saveNodeGroupLink(NodeGroupLink link) {
         if (!doesNodeGroupExist(link.getSourceNodeGroupId())) {
             saveNodeGroup(new NodeGroup(link.getSourceNodeGroupId()));
         }
-        
+
         if (!doesNodeGroupExist(link.getTargetNodeGroupId())) {
             saveNodeGroup(new NodeGroup(link.getTargetNodeGroupId()));
         }
-        
-        if (jdbcTemplate.update(getSql("updateNodeGroupLinkSql"), link.getDataEventAction().name(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId()) == 0) {
-            jdbcTemplate.update(getSql("insertNodeGroupLinkSql"), link.getDataEventAction().name(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
+
+        if (sqlTemplate.update(getSql("updateNodeGroupLinkSql"), link.getDataEventAction().name(),
+                link.getSourceNodeGroupId(), link.getTargetNodeGroupId()) == 0) {
+            sqlTemplate.update(getSql("insertNodeGroupLinkSql"), link.getDataEventAction().name(),
+                    link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
         }
     }
-    
+
     public boolean doesNodeGroupExist(String nodeGroupId) {
         boolean exists = false;
         List<NodeGroup> groups = getNodeGroups();
@@ -92,32 +103,35 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return exists;
     }
-    
+
     public void saveNodeGroup(NodeGroup group) {
-        if (jdbcTemplate.update(getSql("updateNodeGroupSql"), group.getDescription(), group.getNodeGroupId()) == 0) {
-            jdbcTemplate.update(getSql("insertNodeGroupSql"), group.getDescription(), group.getNodeGroupId());
+        if (sqlTemplate.update(getSql("updateNodeGroupSql"), group.getDescription(),
+                group.getNodeGroupId()) == 0) {
+            sqlTemplate.update(getSql("insertNodeGroupSql"), group.getDescription(),
+                    group.getNodeGroupId());
         }
     }
-    
+
     public void deleteNodeGroup(String nodeGroupId) {
-        jdbcTemplate.update(getSql("deleteNodeGroupSql"), nodeGroupId);
+        sqlTemplate.update(getSql("deleteNodeGroupSql"), nodeGroupId);
     }
-    
+
     public void deleteNodeGroupLink(NodeGroupLink link) {
-        jdbcTemplate.update(getSql("deleteNodeGroupLinkSql"), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
-    }   
-    
-    public List<NodeGroup> getNodeGroups() {        
-        return jdbcTemplate.query(getSql("selectNodeGroupsSql"), new NodeGroupMapper());
+        sqlTemplate.update(getSql("deleteNodeGroupLinkSql"), link.getSourceNodeGroupId(),
+                link.getTargetNodeGroupId());
+    }
+
+    public List<NodeGroup> getNodeGroups() {
+        return sqlTemplate.query(getSql("selectNodeGroupsSql"), new NodeGroupMapper());
     }
 
     public List<NodeGroupLink> getNodeGroupLinks() {
-        return jdbcTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
+        return sqlTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
     }
 
     public List<NodeGroupLink> getNodeGroupLinksFor(String sourceNodeGroupId) {
-        return jdbcTemplate.query(getSql("groupsLinksForSql"), new Object[] { sourceNodeGroupId },
-                new NodeGroupLinkMapper());
+        return sqlTemplate.query(getSql("groupsLinksForSql"), new NodeGroupLinkMapper(),
+                sourceNodeGroupId);
     }
 
     public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId) {
@@ -131,28 +145,30 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return links.size() > 0 ? links.get(0) : null;
     }
-    
+
     public boolean isChannelInUse(String channelId) {
-        return jdbcTemplate.queryForInt(getSql("isChannelInUseSql"), channelId) > 0;
+        return sqlTemplate.queryForInt(getSql("isChannelInUseSql"), channelId) > 0;
     }
 
     public void saveChannel(Channel channel, boolean reloadChannels) {
-        if (0 == jdbcTemplate.update(getSql("updateChannelSql"), new Object[] {
-                channel.getProcessingOrder(), channel.getMaxBatchSize(),
-                channel.getMaxBatchToSend(), channel.getMaxDataToRoute(),
-                channel.isUseOldDataToRoute() ? 1 : 0, channel.isUseRowDataToRoute() ? 1 : 0,
-                channel.isUsePkDataToRoute() ? 1 : 0,
-                channel.isContainsBigLob() ? 1 : 0,
-                channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
-                channel.getExtractPeriodMillis(), channel.getChannelId() })) {
-            jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getChannelId(),
-                    channel.getProcessingOrder(), channel.getMaxBatchSize(),
-                    channel.getMaxBatchToSend(), channel.getMaxDataToRoute(),
-                    channel.isUseOldDataToRoute() ? 1 : 0, channel.isUseRowDataToRoute() ? 1 : 0,
-                    channel.isUsePkDataToRoute() ? 1 : 0,
-                    channel.isContainsBigLob() ? 1 : 0,
-                    channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
-                    channel.getExtractPeriodMillis() });
+        if (0 == sqlTemplate.update(
+                getSql("updateChannelSql"),
+                new Object[] { channel.getProcessingOrder(), channel.getMaxBatchSize(),
+                        channel.getMaxBatchToSend(), channel.getMaxDataToRoute(),
+                        channel.isUseOldDataToRoute() ? 1 : 0,
+                        channel.isUseRowDataToRoute() ? 1 : 0,
+                        channel.isUsePkDataToRoute() ? 1 : 0, channel.isContainsBigLob() ? 1 : 0,
+                        channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
+                        channel.getExtractPeriodMillis(), channel.getChannelId() })) {
+            sqlTemplate.update(
+                    getSql("insertChannelSql"),
+                    new Object[] { channel.getChannelId(), channel.getProcessingOrder(),
+                            channel.getMaxBatchSize(), channel.getMaxBatchToSend(),
+                            channel.getMaxDataToRoute(), channel.isUseOldDataToRoute() ? 1 : 0,
+                            channel.isUseRowDataToRoute() ? 1 : 0,
+                            channel.isUsePkDataToRoute() ? 1 : 0,
+                            channel.isContainsBigLob() ? 1 : 0, channel.isEnabled() ? 1 : 0,
+                            channel.getBatchAlgorithm(), channel.getExtractPeriodMillis() });
         }
         if (reloadChannels) {
             reloadChannels();
@@ -169,14 +185,17 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void saveNodeChannelControl(NodeChannel nodeChannel, boolean reloadChannels) {
-        if (0 == jdbcTemplate.update(getSql("updateNodeChannelControlSql"), new Object[] {
-                nodeChannel.isSuspendEnabled() ? 1 : 0, nodeChannel.isIgnoreEnabled() ? 1 : 0,
-                nodeChannel.getLastExtractedTime(), nodeChannel.getNodeId(),
-                nodeChannel.getChannelId() })) {
-            jdbcTemplate.update(getSql("insertNodeChannelControlSql"), new Object[] {
-                    nodeChannel.getNodeId(), nodeChannel.getChannelId(),
-                    nodeChannel.isSuspendEnabled() ? 1 : 0, nodeChannel.isIgnoreEnabled() ? 1 : 0,
-                    nodeChannel.getLastExtractedTime() });
+        if (0 == sqlTemplate.update(
+                getSql("updateNodeChannelControlSql"),
+                new Object[] { nodeChannel.isSuspendEnabled() ? 1 : 0,
+                        nodeChannel.isIgnoreEnabled() ? 1 : 0, nodeChannel.getLastExtractedTime(),
+                        nodeChannel.getNodeId(), nodeChannel.getChannelId() })) {
+            sqlTemplate.update(
+                    getSql("insertNodeChannelControlSql"),
+                    new Object[] { nodeChannel.getNodeId(), nodeChannel.getChannelId(),
+                            nodeChannel.isSuspendEnabled() ? 1 : 0,
+                            nodeChannel.isIgnoreEnabled() ? 1 : 0,
+                            nodeChannel.getLastExtractedTime() });
         }
         if (reloadChannels) {
             reloadChannels();
@@ -184,8 +203,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void deleteChannel(Channel channel) {
-        jdbcTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { channel.getChannelId() });
-        jdbcTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getChannelId() });
+        sqlTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { channel.getChannelId() });
+        sqlTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getChannelId() });
         reloadChannels();
     }
 
@@ -211,42 +230,50 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         boolean loaded = false;
         long channelCacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS);
-        List<NodeChannel> nodeChannels = nodeChannelCache != null ? nodeChannelCache.get(nodeId) : null;
+        List<NodeChannel> nodeChannels = nodeChannelCache != null ? nodeChannelCache.get(nodeId)
+                : null;
         if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
                 || nodeChannels == null) {
             synchronized (this) {
                 if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
-                        || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null || nodeChannels == null) {
+                        || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null
+                        || nodeChannels == null) {
                     if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs
                             || nodeChannelCache == null) {
                         nodeChannelCache = new HashMap<String, List<NodeChannel>>();
                         nodeChannelCacheTime = System.currentTimeMillis();
                     }
-                    nodeChannels = jdbcTemplate.query(getSql("selectChannelsSql"),
-                            new Object[] { nodeId }, new RowMapper<NodeChannel>() {
-                        public NodeChannel mapRow(java.sql.ResultSet rs, int arg1)
-                                throws SQLException {
-                            NodeChannel nodeChannel = new NodeChannel();
-                            nodeChannel.setChannelId(rs.getString(1));
-                            nodeChannel.setNodeId(nodeId);
-                            // note that 2 is intentionally missing here.                            
-                            nodeChannel.setIgnoreEnabled(isSet(rs.getObject(3)));
-                            nodeChannel.setSuspendEnabled(isSet(rs.getObject(4)));
-                            nodeChannel.setProcessingOrder(rs.getInt(5));
-                            nodeChannel.setMaxBatchSize(rs.getInt(6));
-                            nodeChannel.setEnabled(rs.getBoolean(7));
-                            nodeChannel.setMaxBatchToSend(rs.getInt(8));
-                            nodeChannel.setMaxDataToRoute(rs.getInt(9));
-                            nodeChannel.setUseOldDataToRoute(rs.getBoolean(10));
-                            nodeChannel.setUseRowDataToRoute(rs.getBoolean(11));
-                            nodeChannel.setUsePkDataToRoute(rs.getBoolean(12));
-                            nodeChannel.setContainsBigLobs(rs.getBoolean(13));
-                            nodeChannel.setBatchAlgorithm(rs.getString(14));
-                            nodeChannel.setLastExtractedTime(rs.getTimestamp(15));
-                            nodeChannel.setExtractPeriodMillis(rs.getLong(16));
-                            return nodeChannel;
-                        };
-                    });
+                    nodeChannels = sqlTemplate.query(getSql("selectChannelsSql"),
+                            new ISqlRowMapper<NodeChannel>() {
+                                public NodeChannel mapRow(Row row) {
+                                    NodeChannel nodeChannel = new NodeChannel();
+                                    nodeChannel.setChannelId(row.getString("channel_id"));
+                                    nodeChannel.setNodeId(nodeId);
+                                    // note that 2 is intentionally missing
+                                    // here.
+                                    nodeChannel.setIgnoreEnabled(row.getBoolean("ignore_enabled"));
+                                    nodeChannel.setSuspendEnabled(row.getBoolean("suspend_enabled"));
+                                    nodeChannel.setProcessingOrder(row.getInt("processing_order"));
+                                    nodeChannel.setMaxBatchSize(row.getInt("max_batch_size"));
+                                    nodeChannel.setEnabled(row.getBoolean("enabled"));
+                                    nodeChannel.setMaxBatchToSend(row.getInt("max_batch_to_send"));
+                                    nodeChannel.setMaxDataToRoute(row.getInt("max_data_to_route"));
+                                    nodeChannel.setUseOldDataToRoute(row
+                                            .getBoolean("use_old_data_to_route"));
+                                    nodeChannel.setUseRowDataToRoute(row
+                                            .getBoolean("use_row_data_to_route"));
+                                    nodeChannel.setUsePkDataToRoute(row
+                                            .getBoolean("use_pk_data_to_route"));
+                                    nodeChannel.setContainsBigLobs(row
+                                            .getBoolean("contains_big_lobs"));
+                                    nodeChannel.setBatchAlgorithm(row.getString("batch_algorithm"));
+                                    nodeChannel.setLastExtractedTime(row
+                                            .getDateTime("last_extracted_time"));
+                                    nodeChannel.setExtractPeriodMillis(row
+                                            .getLong("extract_period_millis"));
+                                    return nodeChannel;
+                                };
+                            }, nodeId);
                     nodeChannelCache.put(nodeId, nodeChannels);
                     loaded = true;
                 }
@@ -254,28 +281,24 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
 
         if (!loaded && refreshExtractMillis) {
-                // need to read last extracted time from database regardless of
-                // whether we used the cache or not.
-                // locate the nodes in the cache, and update it.
-                final Map<String, NodeChannel> nodeChannelsMap = new HashMap<String, NodeChannel>();
+            // need to read last extracted time from database regardless of
+            // whether we used the cache or not.
+            // locate the nodes in the cache, and update it.
+            final Map<String, NodeChannel> nodeChannelsMap = new HashMap<String, NodeChannel>();
 
-                for (NodeChannel nc : nodeChannels) {
-                    nodeChannelsMap.put(nc.getChannelId(), nc);
-                }
+            for (NodeChannel nc : nodeChannels) {
+                nodeChannelsMap.put(nc.getChannelId(), nc);
+            }
 
-                jdbcTemplate.query(getSql("selectNodeChannelControlLastExtractTimeSql"),
-                        new Object[] { nodeId }, new ResultSetExtractor<Object>() {
-                            public Object extractData(ResultSet rs) throws SQLException,
-                                    DataAccessException {
-                                if (rs.next()) {
-                                    String channelId = rs.getString(1);
-                                    Date extractTime = rs.getTimestamp(2);
-                                    nodeChannelsMap.get(channelId)
-                                            .setLastExtractedTime(extractTime);
-                                }
-                                return null;
-                            };
-                        });
+            sqlTemplate.query(getSql("selectNodeChannelControlLastExtractTimeSql"),
+                    new ISqlRowMapper<Object>() {
+                        public Object mapRow(Row row) {
+                            String channelId = row.getString("channel_id");
+                            Date extractTime = row.getDateTime("last_extract_time");
+                            nodeChannelsMap.get(channelId).setLastExtractedTime(extractTime);
+                            return null;
+                        };
+                    }, nodeId);
 
         }
 
@@ -290,9 +313,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public NodeGroupLinkAction getDataEventActionByGroupLinkId(String sourceGroupId,
             String targetGroupId) {
-        String code = (String) jdbcTemplate.queryForObject(getSql("selectDataEventActionsByIdSql"),
-                new Object[] { sourceGroupId, targetGroupId }, String.class);
-
+        String code = (String) sqlTemplate.queryForObject(getSql("selectDataEventActionsByIdSql"),
+                String.class, sourceGroupId, targetGroupId);
         return NodeGroupLinkAction.fromCode(code);
     }
 
@@ -332,7 +354,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             buildTablesFromDdlUtilXmlIfProvided();
             loadFromScriptIfProvided();
         }
-        
+
         node = nodeService.findIdentity();
 
         if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())
@@ -423,7 +445,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
 
             if (fileUrl != null) {
-                new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(), true).execute();
+                new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(), true)
+                        .execute();
                 loaded = true;
             }
         }
@@ -432,9 +455,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String nodeGroupId,
             String channelId) {
-        return (List<NodeGroupChannelWindow>) jdbcTemplate.query(
-                getSql("selectNodeGroupChannelWindowSql"), new Object[] { nodeGroupId, channelId },
-                new NodeGroupChannelWindowMapper());
+        return (List<NodeGroupChannelWindow>) sqlTemplate.query(
+                getSql("selectNodeGroupChannelWindowSql"), new NodeGroupChannelWindowMapper(),
+                nodeGroupId, channelId);
     }
 
     public ChannelMap getSuspendIgnoreChannelLists(final String nodeId) {
@@ -453,7 +476,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return map;
     }
-    
+
     public Channel getChannel(String channelId) {
         NodeChannel nodeChannel = getNodeChannel(channelId, false);
         if (nodeChannel != null) {
@@ -467,50 +490,47 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return getSuspendIgnoreChannelLists(nodeService.findIdentityNodeId());
 
     }
-    
+
     @Override
     protected AbstractSqlMap createSqlMap() {
         return new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
-                createReplacementTokens());
+                createSqlReplacementTokens());
     }
 
-    public void setDefaultChannels(List<Channel> defaultChannels) {
-        this.defaultChannels = defaultChannels;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    class NodeGroupChannelWindowMapper implements RowMapper<NodeGroupChannelWindow> {
-        public NodeGroupChannelWindow mapRow(ResultSet rs, int rowNum) throws SQLException {
+    class NodeGroupChannelWindowMapper implements ISqlRowMapper<NodeGroupChannelWindow> {
+        public NodeGroupChannelWindow mapRow(Row row) {
             NodeGroupChannelWindow window = new NodeGroupChannelWindow();
-            window.setNodeGroupId(rs.getString(1));
-            window.setChannelId(rs.getString(2));
-            window.setStartTime(rs.getTime(3));
-            window.setEndTime(rs.getTime(4));
-            window.setEnabled(rs.getBoolean(5));
+            window.setNodeGroupId(row.getString("node_group_id"));
+            window.setChannelId(row.getString("channel_id"));
+            window.setStartTime(row.getTime("start_time"));
+            window.setEndTime(row.getTime("end_time"));
+            window.setEnabled(row.getBoolean("enabled"));
             return window;
         }
     }
 
-    class NodeGroupLinkMapper implements RowMapper<NodeGroupLink> {
-        public NodeGroupLink mapRow(ResultSet rs, int num) throws SQLException {
+    class NodeGroupLinkMapper implements ISqlRowMapper<NodeGroupLink> {
+        public NodeGroupLink mapRow(Row row) {
             NodeGroupLink link = new NodeGroupLink();
-            link.setSourceNodeGroupId(rs.getString(1));
-            link.setTargetNodeGroupId(rs.getString(2));
-            link.setDataEventAction(NodeGroupLinkAction.fromCode(rs.getString(3)));
+            link.setSourceNodeGroupId(row.getString("source_node_group_id"));
+            link.setTargetNodeGroupId(row.getString("target_node_group_id"));
+            link.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
             return link;
         }
     }
-    
-    class NodeGroupMapper implements RowMapper<NodeGroup> {
-        public NodeGroup mapRow(ResultSet rs, int num) throws SQLException {
+
+    class NodeGroupMapper implements ISqlRowMapper<NodeGroup> {
+        public NodeGroup mapRow(Row row) {
             NodeGroup group = new NodeGroup();
-            group.setNodeGroupId(rs.getString(1));
-            group.setDescription(rs.getString(2));
+            group.setNodeGroupId(row.getString("node_group_id"));
+            group.setDescription(row.getString("description"));
             return group;
         }
+    }
+
+    public Map<String, String> getRegistrationRedirectMap() {
+        return this.sqlTemplate.queryForMap(getSql("getRegistrationRedirectSql"),
+                "registrant_external_id", "registration_node_id");
     }
 
 }

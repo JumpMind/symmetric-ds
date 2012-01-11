@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * This service provides an API to access to the incoming batch table. 
@@ -42,8 +41,6 @@ public interface IIncomingBatchService {
 
     public void insertIncomingBatch(IncomingBatch batch);
 
-    public int updateIncomingBatch(JdbcTemplate jdbcTemplate, IncomingBatch batch);
-    
     public int updateIncomingBatch(IncomingBatch batch);
     
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,

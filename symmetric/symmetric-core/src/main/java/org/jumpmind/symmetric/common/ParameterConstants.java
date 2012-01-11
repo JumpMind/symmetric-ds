@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.DefaultParameterParser;
 import org.jumpmind.symmetric.util.DefaultParameterParser.ParameterMetaData;
@@ -36,8 +34,6 @@ import org.jumpmind.symmetric.util.DefaultParameterParser.ParameterMetaData;
  * {@link IParameterService}
  */
 final public class ParameterConstants {
-
-    static final ILog log = LogFactory.getLog(ParameterConstants.class);
 
     public static final String ALL = "ALL";
     
@@ -96,11 +92,11 @@ final public class ParameterConstants {
 
     public final static String OUTGOING_BATCH_PEEK_AHEAD_BATCH_COMMIT_SIZE = "outgoing.batches.peek.ahead.batch.commit.size";
     public final static String ROUTING_FLUSH_JDBC_BATCH_SIZE = "routing.flush.jdbc.batch.size";
+    public final static String ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS = "routing.wait.for.data.timeout.seconds";
     public final static String ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL = "routing.max.gaps.to.qualify.in.sql";
     public final static String ROUTING_PEEK_AHEAD_WINDOW = "routing.peek.ahead.window.after.max.size";
     public final static String ROUTING_STALE_DATA_ID_GAP_TIME = "routing.stale.dataid.gap.time.ms";
     public final static String ROUTING_LARGEST_GAP_SIZE = "routing.largest.gap.size";
-    public final static String ROUTING_DATA_READER_TYPE = "routing.data.reader.type";
     public final static String ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES = "routing.data.reader.type.gap.retention.period.minutes";
 
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
@@ -114,8 +110,6 @@ final public class ParameterConstants {
     public final static String DATA_LOADER_ALLOW_MISSING_DELETE = "dataloader.allow.missing.delete";
     public final static String DATA_LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
     public final static String DATA_LOADER_TREAT_DATETIME_AS_VARCHAR = "db.treat.date.time.as.varchar.enabled";
-
-    public final static String DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL = "datareload.batch.insert.transactional";
 
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
     public final static String DATA_EXTRACTOR_FLUSH_FOR_KEEP_ALIVE = "dataextractor.keepalive.period.ms";
@@ -156,11 +150,18 @@ final public class ParameterConstants {
     public final static String DBPOOL_USER = "db.user";
     public final static String DBPOOL_PASSWORD = "db.password";
     public final static String DBPOOL_INITIAL_SIZE = "db.pool.initial.size";
+    public final static String DBPOOL_MAX_ACTIVE = "db.pool.max.active";
+    public final static String DBPOOL_MAX_WAIT = "db.pool.max.wait.millis";
+    public final static String DBPOOL_MIN_EVICTABLE_IDLE_TIME_MILLIS = "db.pool.min.evictable.idle.millis";
     public final static String DBPOOL_VALIDATION_QUERY = "db.validation.query";
+    public final static String DBPOOL_CONNECTION_PROPERTIES = "db.connection.properties";
 
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
     public final static String DB_QUERY_TIMEOUT_SECS = "db.sql.query.timeout.seconds";
+    public final static String DB_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";
+    public final static String DB_FORCE_DELIMITED_IDENTIFIER_ON = "db.force.delimited.identifier.mode.on";
+    public final static String DB_FORCE_DELIMITED_IDENTIFIER_OFF = "db.force.delimited.identifier.mode.off";
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
 
@@ -176,16 +177,18 @@ final public class ParameterConstants {
 
     public final static String IP_FILTERS = "ip.filters";
 
-    public final static String WEB_BATCH_SERVLET_ENABLE = "web.batch.servlet.enable";
+    public final static String WEB_BATCH_URI_HANDLER_ENABLE = "web.batch.servlet.enable";
 
     public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
     public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC = "heartbeat.sync.on.push.period.sec";
+    
+    public final static String HEARTBEAT_ENABLED = "heartbeat.sync.on.push.enabled";
 
     public final static String STATISTIC_RECORD_ENABLE = "statistic.record.enable";
     
     public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";
     
-    public final static String DB_MASTER_COLLATION = "db.master.collation";
+    public final static String DB_MASTER_COLLATION = "db.master.collation";   
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

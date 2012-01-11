@@ -3,12 +3,17 @@ package org.jumpmind.db.sql.jdbc;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -18,6 +23,7 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;
@@ -35,10 +41,13 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected boolean requiresAutoCommitFalseToSetFetchSize = false;
 
     protected DatabasePlatformSettings settings;
-    
+
     protected LobHandler lobHandler;
 
-    public JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings, LobHandler lobHandler) {
+    protected Boolean supportsGetGeneratedKeys = null;
+
+    public JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
+            LobHandler lobHandler) {
         this.dataSource = dataSource;
         this.settings = settings;
         this.lobHandler = lobHandler == null ? new DefaultLobHandler() : lobHandler;
@@ -52,15 +61,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return requiresAutoCommitFalseToSetFetchSize;
     }
 
-    public void setRequiresAutoCommitFalseToSetFetchSize(
-            boolean requiresAutoCommitFalseToSetFetchSize) {
-        this.requiresAutoCommitFalseToSetFetchSize = requiresAutoCommitFalseToSetFetchSize;
-    }
-    
     public void setSettings(DatabasePlatformSettings settings) {
         this.settings = settings;
     }
-    
+
     public DatabasePlatformSettings getSettings() {
         return settings;
     }
@@ -82,9 +86,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 PreparedStatement ps = null;
                 ResultSet rs = null;
                 try {
-                    ps = con.prepareStatement(sql);
+                    ps = con.prepareStatement(expandSql(sql, args));
                     ps.setQueryTimeout(settings.getQueryTimeout());
-                    JdbcUtils.setValues(ps, args);
+                    JdbcUtils.setValues(ps, expandArgs(sql, args));
                     rs = ps.executeQuery();
                     if (rs.next()) {
                         result = (T) rs.getObject(1);
@@ -97,7 +101,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         });
     }
-    
+
     public byte[] queryForBlob(final String sql, final Object... args) {
         return execute(new IConnectionCallback<byte[]>() {
             public byte[] execute(Connection con) throws SQLException {
@@ -118,9 +122,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 }
                 return result;
             }
-        });       
+        });
     }
-    
+
     public String queryForClob(final String sql, final Object... args) {
         return execute(new IConnectionCallback<String>() {
             public String execute(Connection con) throws SQLException {
@@ -141,8 +145,22 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 }
                 return result;
             }
-        });        
-    }    
+        });
+    }
+
+    public <T> Map<String, T> queryForMap(final String sql, final ISqlRowMapper<T> mapper,
+            final String keyColumn, Object... args) {
+        final Map<String, T> result = new HashMap<String, T>();
+        query(sql, new ISqlRowMapper<T>() {
+            public T mapRow(Row row) {
+                String keyName = row.getString(keyColumn);
+                T object = mapper.mapRow(row);
+                result.put(keyName, object);
+                return object;
+            }
+        }, args);
+        return result;
+    }
 
     public Map<String, Object> queryForMap(final String sql, final Object... args) {
         return execute(new IConnectionCallback<Map<String, Object>>() {
@@ -411,10 +429,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     public SqlException translate(String message, Exception ex) {
-        // TODO
-        // if (getDbDialect().isDataIntegrityException(ex)) {
-        // return new DataIntegrityViolationException(message, ex);
-        // } else
         if (ex instanceof SqlException) {
             return (SqlException) ex;
         } else {
@@ -444,6 +458,138 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 return con.getMetaData().getDatabaseProductName();
             }
         });
+    }
+
+    public String getDatabaseProductVersion() {
+        return execute(new IConnectionCallback<String>() {
+            public String execute(Connection con) throws SQLException {
+                return con.getMetaData().getDatabaseProductVersion();
+            }
+        });
+    }
+
+    public String getDriverName() {
+        return execute(new IConnectionCallback<String>() {
+            public String execute(Connection con) throws SQLException {
+                return con.getMetaData().getDriverName();
+            }
+        });
+    }
+
+    public String getDriverVersion() {
+        return execute(new IConnectionCallback<String>() {
+            public String execute(Connection con) throws SQLException {
+                return con.getMetaData().getDriverVersion();
+            }
+        });
+    }
+
+    public Set<String> getSqlKeywords() {
+        return execute(new IConnectionCallback<Set<String>>() {
+            public Set<String> execute(Connection con) throws SQLException {
+                DatabaseMetaData sqlTemplateData = con.getMetaData();
+                return new HashSet<String>(Arrays.asList(sqlTemplateData.getSQLKeywords()
+                        .split(",")));
+            }
+        });
+    }
+
+    public boolean supportsGetGeneratedKeys() {
+        if (supportsGetGeneratedKeys == null) {
+            supportsGetGeneratedKeys = execute(new IConnectionCallback<Boolean>() {
+                public Boolean execute(Connection con) throws SQLException {
+                    return con.getMetaData().supportsGetGeneratedKeys();
+                }
+            });
+        }
+        return supportsGetGeneratedKeys;
+    }
+
+    public boolean supportsReturningKeys() {
+        return false;
+    }
+
+    protected boolean allowsNullForIdentityColumn() {
+        return true;
+    }
+
+    protected String getSelectLastInsertIdSql(String sequenceName) {
+        throw new UnsupportedOperationException();
+    }
+
+    public long insertWithGeneratedKey(final String sql, final String column,
+            final String sequenceName, final Object[] args, final int[] types) {
+        return execute(new IConnectionCallback<Long>() {
+            public Long execute(Connection conn) throws SQLException {
+                return insertWithGeneratedKey(conn, sql, column, sequenceName, args, types);
+            }
+        });
+    }
+
+    protected long insertWithGeneratedKey(Connection conn, String sql, String column,
+            String sequenceName, Object[] args, int[] types) throws SQLException {
+        long key = 0;
+        PreparedStatement ps = null;
+        try {
+            boolean supportsGetGeneratedKeys = supportsGetGeneratedKeys();
+            boolean supportsReturningKeys = supportsReturningKeys();
+            if (allowsNullForIdentityColumn()) {
+                if (supportsGetGeneratedKeys) {
+                    ps = conn.prepareStatement(sql, new int[] { 1 });
+                } else if (supportsReturningKeys) {
+                    ps = conn.prepareStatement(sql + " returning " + sequenceName);
+                } else {
+                    ps = conn.prepareStatement(sql);
+                }
+            } else {
+                String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst("\\(null,", "(");
+                if (supportsGetGeneratedKeys) {
+                    ps = conn.prepareStatement(replaceSql, Statement.RETURN_GENERATED_KEYS);
+                } else {
+                    ps = conn.prepareStatement(replaceSql);
+                }
+            }
+            ps.setQueryTimeout(settings.getQueryTimeout());
+            JdbcUtils.setValues(ps, args, types, lobHandler);
+
+            ResultSet rs = null;
+            if (supportsGetGeneratedKeys) {
+                ps.executeUpdate();
+                try {
+                    rs = ps.getGeneratedKeys();
+                    if (rs.next()) {
+                        key = rs.getLong(1);
+                    }
+                } finally {
+                    close(rs);
+                }
+            } else if (supportsReturningKeys) {
+                try {
+                    rs = ps.executeQuery();
+                    if (rs.next()) {
+                        key = rs.getLong(1);
+                    }
+                } finally {
+                    close(rs);
+                }
+            } else {
+                Statement st = null;
+                ps.executeUpdate();
+                try {
+                    st = conn.createStatement();
+                    rs = st.executeQuery(getSelectLastInsertIdSql(sequenceName));
+                    if (rs.next()) {
+                        key = rs.getLong(1);
+                    }
+                } finally {
+                    close(rs);
+                    close(st);
+                }
+            }
+        } finally {
+            close(ps);
+        }
+        return key;
     }
 
 }

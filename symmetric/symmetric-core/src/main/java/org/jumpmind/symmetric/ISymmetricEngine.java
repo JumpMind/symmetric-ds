@@ -21,8 +21,7 @@ package org.jumpmind.symmetric;
 
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -52,9 +51,9 @@ import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.springframework.context.ApplicationContext;
+import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
+import org.jumpmind.symmetric.transport.ITransportManager;
 
 public interface ISymmetricEngine {
 
@@ -198,13 +197,6 @@ public interface ISymmetricEngine {
      */
     public void setupDatabase(boolean force);
 
-    /**
-     * Expose access to the Spring context. This is for advanced use only.
-     * 
-     * @return the Spring application context that SymmetricDS runs in
-     */
-    public ApplicationContext getApplicationContext();
-
     public IConfigurationService getConfigurationService();
 
     public IParameterService getParameterService();
@@ -213,15 +205,13 @@ public interface ISymmetricEngine {
 
     public IRegistrationService getRegistrationService();
 
-    public IUpgradeService getUpgradeService();
-
     public IClusterService getClusterService();
 
     public IPurgeService getPurgeService();
 
     public IDataService getDataService();
 
-    public ISymmetricDialect getDbDialect();
+    public ISymmetricDialect getSymmetricDialect();
 
     public IJobManager getJobManager();
     
@@ -251,12 +241,16 @@ public interface ISymmetricEngine {
     
     public IStatisticManager getStatisticManager();
     
-    public DataSource getDataSource();
-    
     public DeploymentType getDeploymentType();
+    
+    public IConcurrentConnectionManager getConcurrentConnectionManager();
     
     public ITransformService getTransformService();
     
+    public ITransportManager getTransportManager();
+    
     public String getTablePrefix();
+    
+    public Log getLog();
 
 }

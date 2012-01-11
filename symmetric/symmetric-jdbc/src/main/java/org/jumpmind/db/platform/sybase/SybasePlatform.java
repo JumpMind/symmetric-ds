@@ -108,6 +108,11 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
     }
 
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new SybaseJdbcSqlTemplate(dataSource, settings, null);
+    }
+    
     public String getName() {
         return DATABASENAME;
     }

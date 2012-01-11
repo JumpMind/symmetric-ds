@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.util;
 
@@ -29,8 +29,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 /**
  * Use runtime configuration specific seeding to get a random number for use in
  * time slotting nodes to help stagger load.
- *
- * 
  */
 public class RandomTimeSlot {
 
@@ -40,6 +38,14 @@ public class RandomTimeSlot {
 
     public RandomTimeSlot() {
         random = new Random();
+    }
+
+    public RandomTimeSlot(IParameterService parameterService) {
+        long seed = fromExternalId(parameterService.getExternalId());
+        random = new Random(seed);
+        if (maxValue < 0) {
+            maxValue = parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS);
+        }
     }
 
     public RandomTimeSlot(String externalId, int maxValue) {
@@ -52,14 +58,6 @@ public class RandomTimeSlot {
             return Math.abs(externalId.hashCode());
         } else {
             return Integer.MAX_VALUE;
-        }
-    }
-
-    public void setParameterService(IParameterService s) {
-        long seed = fromExternalId(s.getExternalId());
-        random = new Random(seed);
-        if (maxValue < 0) {
-            maxValue = s.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS);
         }
     }
 

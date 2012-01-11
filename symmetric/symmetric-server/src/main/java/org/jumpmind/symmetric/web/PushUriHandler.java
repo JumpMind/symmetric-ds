@@ -29,7 +29,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 /**
@@ -40,6 +42,14 @@ public class PushUriHandler extends AbstractUriHandler {
     private IDataLoaderService dataLoaderService;
 
     private IStatisticManager statisticManager;
+    
+    public PushUriHandler(Log log, IParameterService parameterService, IDataLoaderService dataLoaderService,
+            IStatisticManager statisticManager,
+            IInterceptor... interceptors) {
+        super(log, "/push/*", parameterService, interceptors);
+        this.dataLoaderService = dataLoaderService;
+        this.statisticManager = statisticManager;
+    }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
@@ -61,7 +71,7 @@ public class PushUriHandler extends AbstractUriHandler {
     protected void push(String sourceNodeId, InputStream inputStream, OutputStream outputStream) throws IOException {
         long ts = System.currentTimeMillis();
         try {
-            getDataLoaderService().loadDataFromPush(sourceNodeId, inputStream, outputStream);
+            dataLoaderService.loadDataFromPush(sourceNodeId, inputStream, outputStream);
         } finally {
             statisticManager.incrementNodesPushed(1);
             statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);
@@ -78,17 +88,5 @@ public class PushUriHandler extends AbstractUriHandler {
         }
         return is;
     }
-
-    private IDataLoaderService getDataLoaderService() {
-        return dataLoaderService;
-    }
-
-    public void setDataLoaderService(IDataLoaderService dataLoaderService) {
-        this.dataLoaderService = dataLoaderService;
-    }
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
-    }
-
+    
 }

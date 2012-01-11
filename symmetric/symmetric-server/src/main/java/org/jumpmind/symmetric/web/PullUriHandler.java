@@ -27,11 +27,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -50,6 +52,19 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
     private IRegistrationService registrationService;
     
     private IStatisticManager statisticManager;
+    
+    public PullUriHandler(Log log, IParameterService parameterService,
+            INodeService nodeService,
+            IConfigurationService configurationService, IDataExtractorService dataExtractorService,
+            IRegistrationService registrationService, IStatisticManager statisticManager,  IInterceptor... interceptors) {
+        super(log, "/pull/*", parameterService, interceptors);
+        this.nodeService = nodeService;
+        this.configurationService = configurationService;
+        this.dataExtractorService = dataExtractorService;
+        this.registrationService = registrationService;
+        this.statisticManager = statisticManager;
+    }
+
 
     public void handleWithCompression(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {

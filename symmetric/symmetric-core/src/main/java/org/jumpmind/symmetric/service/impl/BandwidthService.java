@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service.impl;
 
@@ -27,7 +28,8 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -37,9 +39,16 @@ import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 /**
  * @see IBandwidthService
  */
-public class BandwidthService extends AbstractService implements IBandwidthService {
-    
+public class BandwidthService implements IBandwidthService {
+
+    protected Log log = LogFactory.getLog(getClass());
+
     private IParameterService parameterService;
+
+    public BandwidthService(IParameterService parameterService, Log log) {
+        this.parameterService = parameterService;
+        this.log = log;
+    }
 
     public double getDownloadKbpsFor(String syncUrl, long sampleSize, long maxTestDuration) {
         double downloadSpeed = -1d;
@@ -47,20 +56,16 @@ public class BandwidthService extends AbstractService implements IBandwidthServi
             BandwidthTestResults bw = getDownloadResultsFor(syncUrl, sampleSize, maxTestDuration);
             downloadSpeed = (int) bw.getKbps();
         } catch (SocketTimeoutException e) {
-            log.warn("SocketTimeOut", syncUrl);
+            log.warn("Socket timeout while attempting to contact %s", syncUrl);
         } catch (Exception e) {
             log.error(e);
         }
         return downloadSpeed;
 
     }
-    
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-    }
 
-    protected BandwidthTestResults getDownloadResultsFor(String syncUrl, long sampleSize, long maxTestDuration)
-            throws IOException {
+    protected BandwidthTestResults getDownloadResultsFor(String syncUrl, long sampleSize,
+            long maxTestDuration) throws IOException {
         byte[] buffer = new byte[1024];
         InputStream is = null;
         try {
@@ -69,7 +74,7 @@ public class BandwidthService extends AbstractService implements IBandwidthServi
             bw.start();
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             setBasicAuthIfNeeded(conn);
-       
+
             conn.connect();
             is = conn.getInputStream();
             int r;
@@ -78,7 +83,7 @@ public class BandwidthService extends AbstractService implements IBandwidthServi
             }
             is.close();
             bw.stop();
-            log.info("BandwidthCalculated", syncUrl, bw.getKbps());
+            log.info("%s was calculated to have a download bandwidth of %s kbps", syncUrl, bw.getKbps());
             return bw;
         } finally {
             IOUtils.closeQuietly(is);
@@ -87,14 +92,11 @@ public class BandwidthService extends AbstractService implements IBandwidthServi
 
     protected void setBasicAuthIfNeeded(HttpURLConnection conn) {
         if (parameterService != null) {
-            HttpTransportManager.setBasicAuthIfNeeded(conn, 
-                parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME),
-                parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD));
+            HttpTransportManager.setBasicAuthIfNeeded(conn, parameterService
+                    .getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME),
+                    parameterService
+                            .getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD));
         }
     }
-    
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return null;
-    }
+
 }

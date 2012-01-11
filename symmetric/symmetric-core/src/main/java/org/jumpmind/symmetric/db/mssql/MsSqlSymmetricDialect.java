@@ -27,15 +27,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.jdbc.IConnectionCallback;
+import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
+import org.jumpmind.db.sql.jdbc.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /*
  * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
@@ -46,13 +50,9 @@ import org.springframework.jdbc.core.ConnectionCallback;
  */
 public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    public MsSqlSymmetricDialect() {
+    public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new MsSqlTriggerText();
-    }
-    
-    @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return false;
     }
 
     @Override
@@ -62,41 +62,46 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            jdbcTemplate.execute(new ConnectionCallback<Object>() {
-                public Object doInConnection(Connection con) throws SQLException,
-                        DataAccessException {
-                    String previousCatalog = con.getCatalog();
-                    Statement stmt = null;
-                    try {
-                        if (catalogName != null) {
-                            con.setCatalog(catalogName);
+            ((JdbcSqlTemplate) platform.getSqlTemplate())
+                    .execute(new IConnectionCallback<Boolean>() {
+                        public Boolean execute(Connection con) throws SQLException {
+                            String previousCatalog = con.getCatalog();
+                            Statement stmt = null;
+                            try {
+                                if (catalogName != null) {
+                                    con.setCatalog(catalogName);
+                                }
+                                stmt = con.createStatement();
+                                stmt.execute(sql);
+                            } catch (Exception e) {
+                                log.warn("TriggerDropError", triggerName, e.getMessage());
+                            } finally {
+                                if (catalogName != null) {
+                                    con.setCatalog(previousCatalog);
+                                }
+                                try {
+                                    stmt.close();
+                                } catch (Exception e) {
+                                }
+                            }
+                            return Boolean.FALSE;
                         }
-                        stmt = con.createStatement();
-                        stmt.execute(sql);
-                    } catch (Exception e) {
-                        log.warn("TriggerDropError", triggerName, e.getMessage());
-                    } finally {
-                        if (catalogName != null) {
-                            con.setCatalog(previousCatalog);
-                        }
-                        try {
-                            stmt.close();
-                        } catch (Exception e) {
-                        }
-                    }
-                    return Boolean.FALSE;
-                }
-            });
+                    });
         }
     }
 
     @Override
-    protected String switchCatalogForTriggerInstall(String catalog, Connection c)
-            throws SQLException {
+    protected String switchCatalogForTriggerInstall(String catalog, ISqlTransaction transaction) {
         if (catalog != null) {
-            String previousCatalog = c.getCatalog();
-            c.setCatalog(catalog);
-            return previousCatalog;
+            Connection c = ((JdbcSqlTransaction) transaction).getConnection();
+            String previousCatalog;
+            try {
+                previousCatalog = c.getCatalog();
+                c.setCatalog(catalog);
+                return previousCatalog;
+            } catch (SQLException e) {
+                throw new SqlException(e);
+            }
         } else {
             return null;
         }
@@ -110,30 +115,31 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema,
             String tableName, final String triggerName) {
-        return jdbcTemplate.execute(new ConnectionCallback<Boolean>() {
-            public Boolean doInConnection(Connection con) throws SQLException, DataAccessException {
-                String previousCatalog = con.getCatalog();
-                PreparedStatement stmt = con
-                        .prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");
-                try {
-                    if (catalogName != null) {
-                        con.setCatalog(catalogName);
+        return ((JdbcSqlTemplate) platform.getSqlTemplate())
+                .execute(new IConnectionCallback<Boolean>() {
+                    public Boolean execute(Connection con) throws SQLException {
+                        String previousCatalog = con.getCatalog();
+                        PreparedStatement stmt = con
+                                .prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");
+                        try {
+                            if (catalogName != null) {
+                                con.setCatalog(catalogName);
+                            }
+                            stmt.setString(1, triggerName);
+                            ResultSet rs = stmt.executeQuery();
+                            if (rs.next()) {
+                                int count = rs.getInt(1);
+                                return count > 0;
+                            }
+                        } finally {
+                            if (catalogName != null) {
+                                con.setCatalog(previousCatalog);
+                            }
+                            stmt.close();
+                        }
+                        return Boolean.FALSE;
                     }
-                    stmt.setString(1, triggerName);
-                    ResultSet rs = stmt.executeQuery();
-                    if (rs.next()) {
-                        int count = rs.getInt(1);
-                        return count > 0;
-                    }
-                } finally {
-                    if (catalogName != null) {
-                        con.setCatalog(previousCatalog);
-                    }
-                    stmt.close();
-                }
-                return Boolean.FALSE;
-            }
-        });
+                });
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
@@ -149,7 +155,8 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultCatalog)dbo." + tablePrefix + "_triggers_disabled() = 0";
+        return "$(defaultCatalog)dbo." + parameterService.getTablePrefix()
+                + "_triggers_disabled() = 0";
     }
 
     @Override

@@ -38,6 +38,7 @@ public class CsvData {
     public static final String ROW_DATA = "rowData";
     public static final String PK_DATA = "pkData";
 
+    public static final String ATTRIBUTE_TABLE_NAME = "tableName";
     public static final String ATTRIBUTE_CHANNEL_ID = "channelId";
     public static final String ATTRIBUTE_TABLE_ID = "tableId";
     public static final String ATTRIBUTE_TX_ID = "transactionId";
@@ -45,6 +46,7 @@ public class CsvData {
     public static final String ATTRIBUTE_EXTERNAL_DATA = "externalData";
     public static final String ATTRIBUTE_ROUTER_ID = "routerId";
     public static final String ATTRIBUTE_DATA_ID = "dataId";
+    public static final String ATTRIBUTE_CREATE_TIME = "createTime";
 
     private Map<String, String[]> parsedCsvData = null;
 

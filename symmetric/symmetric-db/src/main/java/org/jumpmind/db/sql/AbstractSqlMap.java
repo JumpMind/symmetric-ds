@@ -10,7 +10,7 @@ import org.jumpmind.util.FormatUtils;
  * Utility SQL container that should be sub-classed in order to populate with
  * SQL statements from the subclasses constructor.
  */
-abstract public class AbstractSqlMap {
+abstract public class AbstractSqlMap implements ISqlMap {
 
     private IDatabasePlatform platform;
 

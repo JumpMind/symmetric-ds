@@ -28,13 +28,10 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.INotificationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -46,8 +43,6 @@ public class StatisticManager implements IStatisticManager {
 
     private static final String UNKNOWN = "Unknown";
 
-    static final ILog log = LogFactory.getLog(StatisticManager.class);
-
     private Map<String, ChannelStats> channelStats = new HashMap<String, ChannelStats>();
 
     private List<JobStats> jobStats = new ArrayList<JobStats>();
@@ -57,8 +52,6 @@ public class StatisticManager implements IStatisticManager {
     protected INodeService nodeService;
 
     protected IStatisticService statisticService;
-
-    protected INotificationService notificationService;
 
     protected IParameterService parameterService;
 
@@ -72,7 +65,12 @@ public class StatisticManager implements IStatisticManager {
 
     Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
-    public StatisticManager() {
+    public StatisticManager(IParameterService parameterService, INodeService nodeService,
+            IConfigurationService configurationService, IStatisticService statisticsService) {
+        this.parameterService = parameterService;
+        this.nodeService = nodeService;
+        this.configurationService = configurationService;
+        this.statisticService = statisticsService;
     }
 
     protected void init() {
@@ -342,7 +340,8 @@ public class StatisticManager implements IStatisticManager {
     }
 
     public void flush() {
-        boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE, false);
+        boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE,
+                false);
         if (channelStats != null) {
             channelStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
@@ -469,26 +468,6 @@ public class StatisticManager implements IStatisticManager {
 
         }
         return hostStats;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setStatisticService(IStatisticService statisticService) {
-        this.statisticService = statisticService;
-    }
-
-    public void setNotificationService(INotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
     }
 
 }

@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -42,31 +42,23 @@ import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.IDataExtractorService;
-import org.jumpmind.symmetric.service.IDataLoaderService;
-import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
-import org.springframework.beans.factory.BeanFactory;
 
 /**
  * Coordinates interaction between two symmetric engines in the same JVM.
- *
- * 
  */
 public class InternalTransportManager extends AbstractTransportManager implements ITransportManager {
 
     static final ILog log = LogFactory.getLog(InternalTransportManager.class);
 
-    IConfigurationService configurationService;
-    public InternalTransportManager(IConfigurationService configurationService) {
-        super();
-        this.configurationService = configurationService;
+    protected ISymmetricEngine symmetricEngine;
+    
+    public InternalTransportManager(ISymmetricEngine engine) {
+        this.symmetricEngine = engine;
     }
 
     public IIncomingTransport getPullTransport(Node remote, final Node local,
@@ -75,14 +67,12 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
-        final ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(remote.getNodeId());
+        final ChannelMap suspendIgnoreChannels = symmetricEngine.getConfigurationService().getSuspendIgnoreChannelLists(remote.getNodeId());
 
         runAtClient(remote.getSyncUrl(), null, respOs, new IClientRunnable() {
-            public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
-                IDataExtractorService extractor = (IDataExtractorService) factory
-                        .getBean(Constants.DATAEXTRACTOR_SERVICE);
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
                 IOutgoingTransport transport = new InternalOutgoingTransport(respOs, suspendIgnoreChannels);
-                extractor.extract(local, transport);
+                engine.getDataExtractorService().extract(local, transport);
                 transport.close();
             }
         });
@@ -98,10 +88,9 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
         runAtClient(remote.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
-            public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the push servlet does ...
-                IDataLoaderService service = (IDataLoaderService) factory.getBean(Constants.DATALOADER_SERVICE);
-                service.loadDataFromPush(remote.getNodeId(), pushIs, respOs);
+                engine.getDataLoaderService().loadDataFromPush(remote.getNodeId(), pushIs, respOs);
             }
         });
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
@@ -113,11 +102,10 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
         runAtClient(registrationUrl, null, respOs, new IClientRunnable() {
-            public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the registration servlet does
                 // ...
-                IRegistrationService service = (IRegistrationService) factory.getBean(Constants.REGISTRATION_SERVICE);
-                service.registerNode(client, os, false);
+                engine.getRegistrationService().registerNode(client, os, false);
             }
         });
         return new InternalIncomingTransport(respIs);
@@ -128,15 +116,11 @@ public class InternalTransportManager extends AbstractTransportManager implement
         try {
             if (list != null && list.size() > 0) {
                 ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncUrl());
-
                 String ackData = getAcknowledgementData(local.getNodeId(), list);
-                List<BatchInfo> batches = readAcknowledgement(ackData);
-                IAcknowledgeService service = (IAcknowledgeService) remoteEngine.getApplicationContext().getBean(
-                        Constants.ACKNOWLEDGE_SERVICE);
+                List<BatchInfo> batches = readAcknowledgement(ackData);                
                 for (BatchInfo batchInfo : batches) {
-                    service.ack(batchInfo);
+                    remoteEngine.getAcknowledgeService().ack(batchInfo);
                 }
-
             }
             return HttpURLConnection.HTTP_OK;
         } catch (Exception ex) {
@@ -159,7 +143,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             public void run() {
                 try {
                     ISymmetricEngine engine = getTargetEngine(url);
-                    runnable.run(engine.getApplicationContext(), is, os);
+                    runnable.run(engine, is, os);
                 } catch (Exception e) {
                     log.error(e);
                 } finally {
@@ -171,7 +155,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     }
 
     private ISymmetricEngine getTargetEngine(String url) {
-        ISymmetricEngine engine = StandaloneSymmetricEngine.findEngineByUrl(url);
+        ISymmetricEngine engine = AbstractSymmetricEngine.findEngineByUrl(url);
         if (engine == null) {
             throw new NullPointerException("Could not find the engine reference for the following url: " + url);
         } else {
@@ -180,7 +164,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     }
 
     interface IClientRunnable {
-        public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception;
+        public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception;
     }
 
 }

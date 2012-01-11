@@ -1,5 +1,6 @@
 package org.jumpmind.util;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,6 +16,12 @@ public final class FormatUtils {
 
     public static String replace(String prop, String replaceWith, String sourceString) {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
+    }
+    
+    public static String replaceToken(String text, String tokenToReplace, String replaceWithText, boolean matchUsingPrefixSuffix) {
+        Map<String, String> replacements = new HashMap<String, String>(1);
+        replacements.put(tokenToReplace,replaceWithText);
+        return replaceTokens(text, replacements, matchUsingPrefixSuffix);
     }
 
     /**

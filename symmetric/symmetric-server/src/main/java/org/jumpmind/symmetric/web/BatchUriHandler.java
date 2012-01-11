@@ -27,12 +27,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class BatchUriHandler extends AbstractCompressionUriHandler {
 
     private IDataExtractorService dataExtractorService;
+
+    public BatchUriHandler(Log log, IParameterService parameterService,
+            IDataExtractorService dataExtractorService) {
+        super(log, "/batch/*", parameterService);
+        this.dataExtractorService = dataExtractorService;
+    }
 
     public void handleWithCompression(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {

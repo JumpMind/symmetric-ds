@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
@@ -56,6 +57,8 @@ public interface IOutgoingBatchService {
     public void updateOutgoingBatches(List<OutgoingBatch> batches);
 
     public void insertOutgoingBatch(OutgoingBatch outgoingBatch);
+    
+    public void insertOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch);
 
     public int countOutgoingBatchesInError();
     

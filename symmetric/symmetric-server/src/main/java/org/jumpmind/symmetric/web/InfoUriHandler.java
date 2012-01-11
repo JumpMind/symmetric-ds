@@ -28,12 +28,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.InfoConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /**
  * Responsible for providing high level information about the node in property
@@ -46,6 +48,14 @@ public class InfoUriHandler extends AbstractUriHandler {
     private INodeService nodeService;
 
     private IConfigurationService configurationService;
+       
+    public InfoUriHandler(Log log, IParameterService parameterService,
+            INodeService nodeService,
+            IConfigurationService configurationService) {
+        super(log, "/info/*", parameterService);
+        this.nodeService = nodeService;
+        this.configurationService = configurationService;
+    }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
@@ -76,14 +86,6 @@ public class InfoUriHandler extends AbstractUriHandler {
 
         properties.store(res.getOutputStream(), "SymmetricDS");
         res.flushBuffer();
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
     }
 
 }

@@ -42,8 +42,6 @@ public interface IClusterService {
     
     public String getServerId();
     
-    public void setServerId(String serverId);
-    
     public boolean isClusteringEnabled();
     
     public Map<String,Lock> findLocks();

@@ -41,6 +41,10 @@ public class AuthenticationInterceptor implements IInterceptor {
     };
 
     private INodeService nodeService;
+    
+    public AuthenticationInterceptor(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
 
     public boolean before(HttpServletRequest req, HttpServletResponse resp) throws IOException,
             ServletException {
@@ -82,10 +86,6 @@ public class AuthenticationInterceptor implements IInterceptor {
             retVal = AuthenticationStatus.FORBIDDEN;
         }
         return retVal;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
     }
 
     protected boolean syncEnabled(String nodeId) {

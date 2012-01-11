@@ -20,21 +20,20 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
-import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @see IAcknowledgeService
@@ -47,13 +46,20 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     private IRegistrationService registrationService;
 
+    public AcknowledgeService(IParameterService parameterService,
+            ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
+            IRegistrationService registrationService) {
+        super(parameterService, symmetricDialect);
+        this.outgoingBatchService = outgoingBatchService;
+        this.registrationService = registrationService;
+    }
+
     @Override
     protected AbstractSqlMap createSqlMap() {
         return new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
-                createReplacementTokens());
+                createSqlReplacementTokens());
     }
 
-    @Transactional
     public void ack(final BatchInfo batch) {
 
         if (batchEventListeners != null) {
@@ -87,10 +93,12 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
 
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
-                    CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
-                    jdbcTemplate.query(getSql("selectDataIdSql"),
-                            new Object[] { outgoingBatch.getBatchId() }, handler);
-                    outgoingBatch.setFailedDataId(handler.getDataId());
+                    List<Number> ids = sqlTemplate.query(getSql("selectDataIdSql"),
+                            new NumberMapper(), outgoingBatch.getBatchId());
+                    if (ids.size() >= batch.getErrorLine()) {
+                        outgoingBatch.setFailedDataId(ids.get((int) batch.getErrorLine() - 1)
+                                .longValue());
+                    }
                     outgoingBatch.setSqlCode(batch.getSqlCode());
                     outgoingBatch.setSqlState(batch.getSqlState());
                     outgoingBatch.setSqlMessage(batch.getSqlMessage());
@@ -106,36 +114,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 log.error("BatchNotFoundForAck", batch.getBatchId(), status.name());
             }
         }
-    }
-
-    class CallBackHandler implements RowCallbackHandler {
-        int index = 0;
-
-        long dataId = -1;
-
-        long rowNumber;
-
-        CallBackHandler(long rowNumber) {
-            this.rowNumber = rowNumber;
-        }
-
-        public void processRow(ResultSet rs) throws SQLException {
-            if (++index == rowNumber) {
-                dataId = rs.getLong(1);
-            }
-        }
-
-        public long getDataId() {
-            return dataId;
-        }
-    }
-
-    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
-        this.outgoingBatchService = outgoingBatchService;
-    }
-
-    public void setRegistrationService(IRegistrationService registrationService) {
-        this.registrationService = registrationService;
     }
 
     public void addAcknowledgeEventListener(IAcknowledgeEventListener statusChangeListner) {

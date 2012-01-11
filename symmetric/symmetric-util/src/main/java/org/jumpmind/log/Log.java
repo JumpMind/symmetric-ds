@@ -26,6 +26,10 @@ abstract public class Log {
         log(LogLevel.WARN, msg, params);
     }
     
+    public void warn(Throwable ex) {
+        log(LogLevel.WARN, ex);
+    }
+    
     public void warn(Throwable ex, String msg, Object... params) {
         log(LogLevel.WARN, ex, msg, params);
     }

@@ -58,7 +58,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
     protected Map<String, String> getDataMap(DataMetaData dataMetaData) {
         Map<String, String> data = null;
-        DataEventType dml = dataMetaData.getData().getEventType();
+        DataEventType dml = dataMetaData.getData().getDataEventType();
         switch (dml) {
         case UPDATE:
             data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
@@ -126,7 +126,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
     protected Map<String, Object> getDataObjectMap(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect) {
         Map<String, Object> data = null;
-        DataEventType dml = dataMetaData.getData().getEventType();
+        DataEventType dml = dataMetaData.getData().getDataEventType();
         switch (dml) {
         case UPDATE:
             data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);

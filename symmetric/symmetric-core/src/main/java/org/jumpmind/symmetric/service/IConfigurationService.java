@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -96,5 +97,10 @@ public interface IConfigurationService {
     public ChannelMap getSuspendIgnoreChannelLists(String nodeId);
 
     public ChannelMap getSuspendIgnoreChannelLists();
+    
+    /**
+     * @return a map of nodes to redirect to that is keyed by a list of external_ids that should be redirected.
+     */
+    public Map<String,String> getRegistrationRedirectMap();
 
 }
