@@ -1,0 +1,190 @@
+package org.jumpmind.symmetric;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
+import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
+import org.jumpmind.exception.IoException;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
+import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.symmetric.config.PropertiesFactoryBean;
+import org.jumpmind.symmetric.ext.ExtensionPointManager;
+import org.jumpmind.symmetric.ext.IExtensionPointManager;
+import org.jumpmind.symmetric.job.IJobManager;
+import org.jumpmind.symmetric.job.JobManager;
+import org.jumpmind.symmetric.service.ISecurityService;
+import org.jumpmind.symmetric.util.AppUtils;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+
+public class ClientSymmetricEngine extends AbstractSymmetricEngine {
+
+    protected File propertiesFile;
+
+    protected BasicDataSource dataSource;
+
+    public ClientSymmetricEngine(File propertiesFile) {
+        this.propertiesFile = propertiesFile;
+        this.init();
+    }
+
+    public DataSource getDataSource() {
+        return ((JdbcSqlTemplate) platform.getSqlTemplate()).getDataSource();
+    }
+
+    public static BasicDataSource createBasicDataSource(File propsFile) {
+        return createBasicDataSource(LogFactory.getLog(ClientSymmetricEngine.class),
+                createTypedPropertiesFactory(propsFile).reload(), createSecurityService());
+    }
+
+    public static BasicDataSource createBasicDataSource(Log log, TypedProperties properties,
+            ISecurityService securityService) {
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setDriverClassName(properties.get(ParameterConstants.DBPOOL_DRIVER, null));
+        dataSource.setUrl(properties.get(ParameterConstants.DBPOOL_URL, null));
+        String user = properties.get(ParameterConstants.DBPOOL_USER, "");
+        if (user != null && user.startsWith(SecurityConstants.PREFIX_ENC)) {
+            user = securityService.decrypt(user.substring(SecurityConstants.PREFIX_ENC.length()));
+        }
+        dataSource.setUsername(user);
+
+        String password = properties.get(ParameterConstants.DBPOOL_PASSWORD, "");
+        if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
+            password = securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC
+                    .length()));
+        }
+        dataSource.setUsername(password);
+        dataSource.setInitialSize(properties.getInt(ParameterConstants.DBPOOL_INITIAL_SIZE, 5));
+        dataSource.setMaxActive(properties.getInt(ParameterConstants.DBPOOL_MAX_ACTIVE, 20));
+        dataSource.setMaxWait(properties.getInt(ParameterConstants.DBPOOL_MAX_WAIT, 5000));
+        dataSource.setMinEvictableIdleTimeMillis(properties.getInt(
+                ParameterConstants.DBPOOL_MIN_EVICTABLE_IDLE_TIME_MILLIS, 60000));
+        dataSource.setTimeBetweenEvictionRunsMillis(120000);
+        dataSource.setNumTestsPerEvictionRun(10);
+        dataSource.setValidationQuery(properties.get(ParameterConstants.DBPOOL_VALIDATION_QUERY,
+                null));
+
+        String connectionProperties = properties.get(
+                ParameterConstants.DBPOOL_CONNECTION_PROPERTIES, null);
+        if (StringUtils.isNotBlank(connectionProperties)) {
+            String[] tokens = connectionProperties.split(";");
+            for (String property : tokens) {
+                String[] keyValue = property.split("=");
+                if (keyValue != null && keyValue.length > 1) {
+                    log.info("Setting database connection property %s=%s", keyValue[0], keyValue[1]);
+                    dataSource.addConnectionProperty(keyValue[0], keyValue[1]);
+                }
+            }
+        }
+        return dataSource;
+
+    }
+
+    @Override
+    protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
+        createDataSource(properties);
+        waitForAvailableDatabase();
+        return JdbcDatabasePlatformFactory.createNewPlatformInstance(this.dataSource,
+                createDatabasePlatformSettings(properties), log);
+    }
+
+    protected DatabasePlatformSettings createDatabasePlatformSettings(TypedProperties properties) {
+        DatabasePlatformSettings settings = new DatabasePlatformSettings();
+        settings.setFetchSize(properties.getInt(ParameterConstants.DB_FETCH_SIZE, 1000));
+        settings.setQueryTimeout(properties.getInt(ParameterConstants.DB_QUERY_TIMEOUT_SECS, 300));
+        settings.setBatchSize(properties.getInt(ParameterConstants.JDBC_EXECUTE_BATCH_SIZE, 100));
+        return settings;
+    }
+
+    protected void createDataSource(TypedProperties properties) {
+        this.dataSource = createBasicDataSource(log, properties, securityService);
+    }
+
+    @Override
+    protected IExtensionPointManager createExtensionPointManager() {
+        return new ExtensionPointManager(log, this);
+    }
+
+    @Override
+    protected IJobManager createJobManager() {
+        return new JobManager(log, this);
+    }
+
+    protected void waitForAvailableDatabase() {
+        boolean success = false;
+        while (!success) {
+            Connection c = null;
+            try {
+                c = this.dataSource.getConnection();
+            } catch (Exception ex) {
+                log.error(
+                        "Could not get a connection to the database: %s.  Waiting for 10 seconds before trying to connect to the database again.",
+                        ex.getMessage());
+                AppUtils.sleep(10000);
+            } finally {
+                JdbcSqlTemplate.close(c);
+            }
+        }
+    }
+
+    @Override
+    protected ITypedPropertiesFactory createTypedPropertiesFactory() {
+        return createTypedPropertiesFactory(propertiesFile);
+    }
+
+    protected static ITypedPropertiesFactory createTypedPropertiesFactory(final File propertiesFile) {
+        return new ITypedPropertiesFactory() {
+            public TypedProperties reload() {
+                PropertiesFactoryBean factoryBean = new PropertiesFactoryBean();
+                factoryBean.setIgnoreResourceNotFound(true);
+                factoryBean.setSingleton(false);
+                factoryBean.setLocations(buildLocations(propertiesFile));
+                try {
+                    return new TypedProperties(factoryBean.getObject());
+                } catch (IOException e) {
+                    throw new IoException(e);
+                }
+            }
+
+            protected Resource[] buildLocations(File properties) {
+                return new Resource[] { new ClassPathResource("/symmetric-default.properties"),
+                        new ClassPathResource("/symmetric-console-default.properties"),
+                        new FileSystemResource("../conf/symmetric.properties"),
+                        new ClassPathResource("/symmetric.properties"),
+                        new ClassPathResource("/symmetric-override.properties"),
+                        new FileSystemResource(properties.getAbsolutePath()), };
+
+            }
+        };
+    }
+
+    @Override
+    public synchronized void destroy() {
+        super.destroy();
+        if (dataSource != null) {
+            try {
+                dataSource.close();
+            } catch (SQLException e) {
+            }
+        }
+    }
+
+    @Override
+    protected void registerWithJMX() {
+        // TODO
+    }
+
+}

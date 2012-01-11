@@ -35,8 +35,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -55,15 +54,15 @@ import org.jumpmind.symmetric.web.WebConstants;
  */
 public class HttpTransportManager extends AbstractTransportManager implements ITransportManager {
 
-    protected static final Log logger = LogFactory.getLog(HttpTransportManager.class);
-
     private IParameterService parameterService;
     
     public HttpTransportManager() {
     }
     
-    public HttpTransportManager(IParameterService parameterService) {
-        this.parameterService = parameterService;
+    public HttpTransportManager(ISymmetricEngine engine) {
+        super(engine.getLog());
+        this.parameterService = engine.getParameterService();
+        this.addExtensionSyncUrlHandler("httpBandwidthUrlSelector", new HttpBandwidthUrlSelector(log, engine.getNodeService(), engine.getBandwidthService()));
     }
     
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException {

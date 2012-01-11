@@ -19,11 +19,12 @@
  * under the License.  */
 package org.jumpmind.symmetric.job;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -31,12 +32,33 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  */
 public class JobManager implements IJobManager {
 
-    ILog log = LogFactory.getLog(JobManager.class);
+    Log log = LogFactory.getLog(JobManager.class);
 
     private List<IJob> jobs;
     
     private ThreadPoolTaskScheduler taskScheduler;
     
+    public JobManager(Log log, ISymmetricEngine engine) {
+        this.log = log;
+        
+        this.taskScheduler = new ThreadPoolTaskScheduler();
+        this.taskScheduler.setThreadNamePrefix(String.format("%s-job-", engine.getParameterService().getEngineName()));
+        this.taskScheduler.setPoolSize(20);
+        
+        this.jobs = new ArrayList<IJob>();
+        this.jobs.add(new RouterJob(engine, taskScheduler));
+        this.jobs.add(new PushJob(engine, taskScheduler));
+        this.jobs.add(new PullJob(engine, taskScheduler));
+        this.jobs.add(new OutgoingPurgeJob(engine, taskScheduler));
+        this.jobs.add(new IncomingPurgeJob(engine, taskScheduler));
+        this.jobs.add(new DataGapPurgeJob(engine, taskScheduler));
+        this.jobs.add(new StatisticFlushJob(engine, taskScheduler));
+        this.jobs.add(new SyncTriggersJob(engine, taskScheduler));
+        this.jobs.add(new HeartbeatJob(engine, taskScheduler));
+        this.jobs.add(new WatchdogJob(engine, taskScheduler));
+        
+    }
+
     public IJob getJob(String name) {
         for (IJob job : jobs) {
             if (job.getName().equals(name)) {
@@ -55,7 +77,7 @@ public class JobManager implements IJobManager {
             if (job.isAutoStartConfigured()) {
                 job.start();
             } else {
-                log.info("JobNoAutoStart", job.getName());
+                log.info("Job %s not configured for auto start", job.getName());
             }
         }
     }
@@ -73,19 +95,7 @@ public class JobManager implements IJobManager {
         }
     }
 
-    public void setJobs(List<IJob> jobs) {
-        this.jobs = jobs;
-    }
-    
     public List<IJob> getJobs() {
         return jobs;
-    }
-
-    public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
-        this.taskScheduler = taskScheduler;
-    }
-    
-    public void setParameterService(IParameterService parameterService) {
-        this.log = LogFactory.getLog(parameterService);
     }
 }

@@ -62,7 +62,7 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
                     .getTriggerHistory().getParsedPkColumnNames(), dataMetaData.getData()
                     .toParsedPkData());
             if (xml != null) {
-                toXmlElement(dataMetaData.getData().getEventType(), xml, dataMetaData.getData()
+                toXmlElement(dataMetaData.getData().getDataEventType(), xml, dataMetaData.getData()
                         .getTableName(), dataMetaData.getTriggerHistory().getParsedColumnNames(),
                         dataMetaData.getData().toParsedRowData(), dataMetaData.getTriggerHistory()
                                 .getParsedPkColumnNames(), dataMetaData.getData().toParsedPkData());

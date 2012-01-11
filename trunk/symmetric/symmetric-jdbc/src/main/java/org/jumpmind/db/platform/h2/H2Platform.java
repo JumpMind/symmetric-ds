@@ -84,6 +84,11 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
         ddlReader = new H2DdlReader(log, this);
         ddlBuilder = new H2Builder(log, this);
     }
+    
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new H2JdbcSqlTemplate(dataSource, settings, null);
+    }
 
     public String getName() {
         return DATABASENAMES[0];

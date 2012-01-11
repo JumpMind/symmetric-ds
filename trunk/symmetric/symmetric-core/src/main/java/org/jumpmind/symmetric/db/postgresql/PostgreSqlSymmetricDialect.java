@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /*
  * Support for PostgreSQL
@@ -45,14 +45,10 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     private boolean supportsTransactionId = false;
 
     private String transactionIdExpression = "null";
-    
-    public PostgreSqlSymmetricDialect() {
+        
+    public PostgreSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new PostgreSqlTriggerText();
-    }
-
-    @Override
-    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {        
-        super.init(pf, 0, jdbcTemplate);
     }
     
     @Override
@@ -84,7 +80,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
-        return jdbcTemplate.queryForInt("select count(*) from information_schema.triggers where trigger_name = ? "
+        return platform.getSqlTemplate().queryForInt("select count(*) from information_schema.triggers where trigger_name = ? "
                 + "and event_object_table = ? and trigger_schema = ?", new Object[] { triggerName.toLowerCase(),
                 tableName, schema == null ? platform.getDefaultSchema() : schema }) > 0;
     }
@@ -99,8 +95,8 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         logSql(dropFunction, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
-                jdbcTemplate.update(dropSql);
-                jdbcTemplate.update(dropFunction);
+                platform.getSqlTemplate().update(dropSql);
+                platform.getSqlTemplate().update(dropFunction);
             } catch (Exception e) {
                 log.warn("TriggerDoesNotExist");
             }
@@ -123,27 +119,12 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultSchema)" + tablePrefix + "_triggers_disabled() = 0";
+        return "$(defaultSchema)" + parameterService.getTablePrefix() + "_triggers_disabled() = 0";
     }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return transactionIdExpression;
-    }
-
-    @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select currval('" + sequenceName + "_seq')";
-    }
-
-    @Override
-    public boolean requiresSavepointForFallback() {
-        return true;
-    }
-
-    @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return false;
     }
 
     @Override

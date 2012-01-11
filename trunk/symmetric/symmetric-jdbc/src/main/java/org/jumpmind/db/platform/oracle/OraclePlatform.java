@@ -26,7 +26,6 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
 import org.jumpmind.log.Log;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
 
@@ -109,10 +108,11 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
         ddlReader = new OracleDdlReader(log, this);
         ddlBuilder = new OracleBuilder(log, this);
     }
+        
     
     @Override
     protected void createSqlTemplate() {
-        this.sqlTemplate = new JdbcSqlTemplate(dataSource, settings, new OracleLobHandler());
+        this.sqlTemplate = new OracleJdbcSqlTemplate(dataSource, settings, new OracleLobHandler());
     }
 
     public String getName() {

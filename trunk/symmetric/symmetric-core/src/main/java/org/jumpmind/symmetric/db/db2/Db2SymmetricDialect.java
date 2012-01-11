@@ -21,39 +21,42 @@
 
 package org.jumpmind.symmetric.db.db2;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /*
  * A dialect that is specific to DB2 databases
  */
 public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    public Db2SymmetricDialect() {
+    public Db2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new Db2TriggerText();
     }
 
     protected boolean createTablesIfNecessary() {
         boolean tablesCreated = super.createTablesIfNecessary();
         if (tablesCreated) {
-            long triggerHistId = jdbcTemplate.queryForLong("select max(trigger_hist_id) from "
-                    + tablePrefix + "_trigger_hist") + 1;
-            jdbcTemplate.update("alter table " + tablePrefix
+            long triggerHistId = platform.getSqlTemplate().queryForLong("select max(trigger_hist_id) from "
+                    + parameterService.getTablePrefix() + "_trigger_hist") + 1;
+            platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
                     + "_trigger_hist alter column trigger_hist_id restart with " + triggerHistId);
-            log.info("DB2ResettingAutoIncrementColumns", tablePrefix + "_trigger_hist");
-            long outgoingBatchId = jdbcTemplate.queryForLong("select max(batch_id) from "
-                    + tablePrefix + "_outgoing_batch") + 1;
-            jdbcTemplate.update("alter table " + tablePrefix
+            log.info("DB2ResettingAutoIncrementColumns", parameterService.getTablePrefix() + "_trigger_hist");
+            long outgoingBatchId = platform.getSqlTemplate().queryForLong("select max(batch_id) from "
+                    + parameterService.getTablePrefix() + "_outgoing_batch") + 1;
+            platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
                     + "_outgoing_batch alter column batch_id restart with " + outgoingBatchId);
-            log.info("DB2ResettingAutoIncrementColumns", tablePrefix + "_outgoing_batch");
-            long dataId = jdbcTemplate.queryForLong("select max(data_id) from " + tablePrefix
+            log.info("DB2ResettingAutoIncrementColumns", parameterService.getTablePrefix() + "_outgoing_batch");
+            long dataId = platform.getSqlTemplate().queryForLong("select max(data_id) from " + parameterService.getTablePrefix()
                     + "_data") + 1;
-            jdbcTemplate.update("alter table " + tablePrefix
+            platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
                     + "_data alter column data_id restart with " + dataId);
-            log.info("DB2ResettingAutoIncrementColumns", tablePrefix + "_data");
+            log.info("DB2ResettingAutoIncrementColumns", parameterService.getTablePrefix() + "_data");
         }
         return tablesCreated;
     }
@@ -63,7 +66,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
             String triggerName) {
         schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform
                 .getDefaultSchema()) : schema;
-        return jdbcTemplate.queryForInt(
+        return platform.getSqlTemplate().queryForInt(
                 "select count(*) from syscat.triggers where trigname = ? and trigschema = ?",
                 new Object[] { triggerName.toUpperCase(), schema.toUpperCase() }) > 0;
     }
@@ -100,22 +103,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "values IDENTITY_VAL_LOCAL()";
-    }
-
-    @Override
     public boolean supportsTransactionId() {
-        return false;
-    }
-
-    @Override
-    public boolean supportsGetGeneratedKeys() {
-        return false;
-    }
-
-    @Override
-    protected boolean allowsNullForIdentityColumn() {
         return false;
     }
 
@@ -124,7 +112,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     public void truncateTable(String tableName) {
-        jdbcTemplate.update("delete from " + tableName);
+        platform.getSqlTemplate().update("delete from " + tableName);
     }
 
     @Override

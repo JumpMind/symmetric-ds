@@ -25,18 +25,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
-import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
-import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * This service provides an API to access and update {@link Data}.
@@ -75,17 +72,11 @@ public interface IDataService {
     public void heartbeat(boolean force);
 
     public void insertHeartbeatEvent(Node node, boolean isReload);
-
-    public long insertData(Data data);
-
-    public void insertDataEvent(long dataId, long batchId, String routerId);
-
-    public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId);
-
-    public void insertDataEvents(JdbcTemplate template, List<DataEvent> events);
     
-    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, DataEventType eventType, String routerId, boolean isLoad);
-
+    public long insertData(Data data);
+    
+    public void insertDataEvents(ISqlTransaction transaction, List<DataEvent> events);
+    
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId, boolean isLoad);
 
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad);
@@ -105,10 +96,6 @@ public interface IDataService {
     
     public void checkForAndUpdateMissingChannelIds(long firstDataId, long lastDataId);
 
-    public void saveDataRef(DataRef dataRef);
-
-    public DataRef getDataRef();
-    
     public List<DataGap> findDataGapsByStatus(DataGap.Status status);
     
     public List<DataGap> findDataGaps();
@@ -139,19 +126,10 @@ public interface IDataService {
     
     public List<Data> listData(long batchId, long startDataId, String channelId, boolean descending, int maxRowsToRetrieve);
     
-    public void handleDataSelect(final long batchId, final long startDataId, final String channelId, final boolean descending,  
-            final IModelRetrievalHandler<Data, String> handler);
-    
     public void insertDataGap(DataGap gap);
     
     public void updateDataGap(DataGap gap, DataGap.Status status);
     
     public long findMaxDataId();
-    
-    public IParameterService getParameterService();
-    
-    public ISymmetricDialect getSymmetricDialect();
-    
-    public JdbcTemplate getJdbcTemplate();
-
+        
 }

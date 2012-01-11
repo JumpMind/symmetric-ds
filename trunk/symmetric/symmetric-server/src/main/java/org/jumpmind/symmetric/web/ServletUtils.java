@@ -29,18 +29,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.StandaloneSymmetricEngine;
-import org.jumpmind.symmetric.SymmetricEngineHolder;
-import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.service.IParameterService;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Utility methods for working with {@link Servlet}s
  */
 public class ServletUtils {
+    
     /**
      * Because you can't send an error when the response is already committed,
      * this helps to avoid unnecessary errors in the logs.
@@ -106,28 +100,6 @@ public class ServletUtils {
             retVal = sendError((HttpServletResponse) resp, statusCode, message);
         }
         return retVal;
-    }
-
-    /**
-     * Search in several places for an {@link ApplicationContext} that contains
-     * SymmetricDS services. This method uses existence of
-     * {@link IParameterService} in the context as a clue as to if the context
-     * contains SymmetricDS artifacts.
-     */
-    public static ApplicationContext getApplicationContext(ServletContext servletContext) {
-        ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-        if (!(ctx.containsBean(Constants.PARAMETER_SERVICE) && ctx.getBean(Constants.PARAMETER_SERVICE) instanceof IParameterService)) {
-            ISymmetricEngine engine = null;
-            if (ctx != null && ctx.containsBean(Constants.SYMMETRIC_ENGINE)) {
-                engine = (ISymmetricEngine) ctx.getBean(Constants.SYMMETRIC_ENGINE);
-            } else {
-                engine = StandaloneSymmetricEngine.getEngine();
-            }
-            if (engine != null) {
-                ctx = engine.getApplicationContext();
-            }
-        }
-        return ctx;
     }
     
     /**

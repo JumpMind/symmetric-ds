@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -47,20 +49,32 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.route.BshDataRouter;
 import org.jumpmind.symmetric.route.ChannelRouterContext;
-import org.jumpmind.symmetric.route.DataToRouteReaderFactory;
+import org.jumpmind.symmetric.route.ColumnMatchDataRouter;
+import org.jumpmind.symmetric.route.ConfigurationChangedDataRouter;
+import org.jumpmind.symmetric.route.DataGapDetector;
+import org.jumpmind.symmetric.route.DataGapRouteReader;
+import org.jumpmind.symmetric.route.DefaultBatchAlgorithm;
+import org.jumpmind.symmetric.route.DefaultDataRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IDataToRouteGapDetector;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
+import org.jumpmind.symmetric.route.LookupTableDataRouter;
+import org.jumpmind.symmetric.route.NonTransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
+import org.jumpmind.symmetric.route.SubSelectDataRouter;
+import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
@@ -86,14 +100,38 @@ public class RouterService extends AbstractService implements IRouterService {
 
     private Map<String, IBatchAlgorithm> batchAlgorithms;
 
-    private DataToRouteReaderFactory dataToRouteReaderFactory;
-
     private IStatisticManager statisticManager;
 
     transient ExecutorService readThread = null;
 
-    public Map<String, IDataRouter> getRouters() {
-        return routers;
+    public RouterService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+            IClusterService clusterService, IDataService dataService,
+            IConfigurationService configurationService, ITriggerRouterService triggerRouterService,
+            IOutgoingBatchService outgoingBatchService, INodeService nodeService,
+            IStatisticManager statisticManager, ITransformService transformService) {
+        super(parameterService, symmetricDialect);
+        this.clusterService = clusterService;
+        this.dataService = dataService;
+        this.configurationService = configurationService;
+        this.triggerRouterService = triggerRouterService;
+        this.outgoingBatchService = outgoingBatchService;
+        this.nodeService = nodeService;
+        this.statisticManager = statisticManager;
+
+        this.batchAlgorithms = new HashMap<String, IBatchAlgorithm>();
+        this.batchAlgorithms.put("default", new DefaultBatchAlgorithm());
+        this.batchAlgorithms.put("nontransactional", new NonTransactionalBatchAlgorithm());
+        this.batchAlgorithms.put("transactional", new TransactionalBatchAlgorithm());
+
+        this.routers = new HashMap<String, IDataRouter>();
+        this.routers.put("configurationChanged", new ConfigurationChangedDataRouter(
+                configurationService, nodeService, triggerRouterService, parameterService,
+                transformService));
+        this.routers.put("bsh", new BshDataRouter(symmetricDialect));
+        this.routers.put("subselect", new SubSelectDataRouter(symmetricDialect));
+        this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
+        this.routers.put("default", new DefaultDataRouter());
+        this.routers.put("column", new ColumnMatchDataRouter(configurationService));
     }
 
     /**
@@ -115,8 +153,7 @@ public class RouterService extends AbstractService implements IRouterService {
         if (readThread == null) {
             readThread = Executors.newCachedThreadPool(new ThreadFactory() {
                 final AtomicInteger threadNumber = new AtomicInteger(1);
-                final String namePrefix = parameterService.getString(
-                        ParameterConstants.ENGINE_NAME, "").toLowerCase()
+                final String namePrefix = parameterService.getEngineName().toLowerCase()
                         + "-router-reader-";
 
                 public Thread newThread(Runnable r) {
@@ -158,8 +195,8 @@ public class RouterService extends AbstractService implements IRouterService {
             try {
                 insertInitialLoadEvents();
                 long ts = System.currentTimeMillis();
-                IDataToRouteGapDetector gapDetector = dataToRouteReaderFactory
-                        .getDataToRouteGapDetector();
+                IDataToRouteGapDetector gapDetector = new DataGapDetector(log, dataService,
+                        parameterService, symmetricDialect, getSqlMap());
                 gapDetector.beforeRouting();
                 dataCount = routeDataForEachChannel();
                 gapDetector.afterRouting();
@@ -230,7 +267,8 @@ public class RouterService extends AbstractService implements IRouterService {
         long ts = System.currentTimeMillis();
         int dataCount = -1;
         try {
-            context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel, dataSource);
+            context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
+                    symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction());
             dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (Exception ex) {
@@ -243,7 +281,7 @@ public class RouterService extends AbstractService implements IRouterService {
             try {
                 if (dataCount > 0) {
                     long insertTs = System.currentTimeMillis();
-                    dataService.insertDataEvents(context.getJdbcTemplate(),
+                    dataService.insertDataEvents(context.getSqlTransaction(),
                             context.getDataEventList());
                     context.clearDataEventsList();
                     completeBatchesAndCommit(context);
@@ -252,7 +290,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (context.getLastDataIdProcessed() > 0) {
                         String channelId = nodeChannel.getChannelId();
                         long queryTs = System.currentTimeMillis();
-                        long dataLeftToRoute = jdbcTemplate.queryForInt(
+                        long dataLeftToRoute = sqlTemplate.queryForInt(
                                 getSql("selectUnroutedCountForChannelSql"), channelId,
                                 context.getLastDataIdProcessed());
                         queryTs = System.currentTimeMillis() - queryTs;
@@ -333,7 +371,8 @@ public class RouterService extends AbstractService implements IRouterService {
      *            The current context of the routing process
      */
     protected int selectDataAndRoute(ChannelRouterContext context) throws SQLException {
-        IDataToRouteReader reader = dataToRouteReaderFactory.getDataToRouteReader(context);
+        IDataToRouteReader reader = new DataGapRouteReader(log, getSqlMap(), context, dataService,
+                symmetricDialect, parameterService);
         getReadService().execute(reader);
         Data data = null;
         int totalDataCount = 0;
@@ -356,7 +395,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     try {
                         if (maxNumberOfEventsBeforeFlush <= context.getDataEventList().size()
                                 || context.isNeedsCommitted()) {
-                            dataService.insertDataEvents(context.getJdbcTemplate(),
+                            dataService.insertDataEvents(context.getSqlTransaction(),
                                     context.getDataEventList());
                             context.clearDataEventsList();
                         }
@@ -406,7 +445,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         context.getChannel());
                 Collection<String> nodeIds = null;
                 if (!context.getChannel().isIgnoreEnabled()
-                        && triggerRouter.isRouted(data.getEventType())) {
+                        && triggerRouter.isRouted(data.getDataEventType())) {
                     IDataRouter dataRouter = getDataRouter(triggerRouter);
                     context.addUsedDataRouter(dataRouter);
                     long ts = System.currentTimeMillis();
@@ -453,7 +492,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 outgoingBatchService.insertOutgoingBatch(batch);
                 context.getBatchesByNodes().put(nodeId, batch);
             }
-            batch.incrementEventCount(dataMetaData.getData().getEventType());
+            batch.incrementEventCount(dataMetaData.getData().getDataEventType());
             batch.incrementDataEventCount();
             numberOfDataEventsInserted++;
             context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
@@ -510,71 +549,27 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     public long getUnroutedDataCount() {
-        long maxDataIdAlreadyRouted = 0;
-        if (dataToRouteReaderFactory.isUsingDataRef()) {
-            maxDataIdAlreadyRouted = jdbcTemplate
-                    .queryForLong(getSql("selectLastDataIdRoutedUsingDataRefSql"));
-        } else {
-            maxDataIdAlreadyRouted = jdbcTemplate
-                    .queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
-        }
-
+        long maxDataIdAlreadyRouted = sqlTemplate
+                .queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
         long leftToRoute = dataService.findMaxDataId() - maxDataIdAlreadyRouted;
         if (leftToRoute > 0) {
             return leftToRoute;
         } else {
             return 0;
         }
-    }       
+    }
 
     public List<String> getAvailableBatchAlgorithms() {
         return new ArrayList<String>(batchAlgorithms.keySet());
     }
-    
+
+    public Map<String, IDataRouter> getRouters() {
+        return routers;
+    }
+
     @Override
     protected AbstractSqlMap createSqlMap() {
-        return new RouterServiceSqlMap(symmetricDialect.getPlatform(),
-                createReplacementTokens());
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
-    }
-
-    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
-        this.outgoingBatchService = outgoingBatchService;
-    }
-
-    public void setClusterService(IClusterService clusterService) {
-        this.clusterService = clusterService;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setDataService(IDataService dataService) {
-        this.dataService = dataService;
-    }
-
-    public void setRouters(Map<String, IDataRouter> routers) {
-        this.routers = routers;
-    }
-
-    public void setBatchAlgorithms(Map<String, IBatchAlgorithm> batchAlgorithms) {
-        this.batchAlgorithms = batchAlgorithms;
-    }
-
-    public void setTriggerRouterService(ITriggerRouterService triggerService) {
-        this.triggerRouterService = triggerService;
-    }
-
-    public void setDataToRouteReaderFactory(DataToRouteReaderFactory dataToRouteReaderFactory) {
-        this.dataToRouteReaderFactory = dataToRouteReaderFactory;
-    }
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
+        return new RouterServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
     }
 
 }

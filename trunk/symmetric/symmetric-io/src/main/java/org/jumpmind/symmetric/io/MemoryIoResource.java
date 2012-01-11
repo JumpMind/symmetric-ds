@@ -14,5 +14,9 @@ public class MemoryIoResource implements IoResource {
     public InputStream open() {
         return new ByteArrayInputStream(buffer);
     }
+    
+    public boolean exists() {
+        return buffer != null && buffer.length > 0;
+    }
 
 }

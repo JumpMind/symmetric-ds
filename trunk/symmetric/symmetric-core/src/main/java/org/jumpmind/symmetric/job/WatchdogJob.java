@@ -21,40 +21,33 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.INodeService;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
  * Background job that is responsible for checking on node health. It will
  * disable nodes that have been offline for a configurable period of time.
  */
 public class WatchdogJob extends AbstractJob {
-
-    private INodeService nodeService;
-
-    private IClusterService clusterService;
+    
+    public WatchdogJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.watchdog", false, engine.getParameterService().is("start.watchdog.job"),
+                engine, taskScheduler);
+    }
 
     @Override
     public long doJob() throws Exception {
-        if (clusterService.lock(ClusterConstants.WATCHDOG)) {
+        if (engine.getClusterService().lock(ClusterConstants.WATCHDOG)) {
             synchronized (this) {
                 try {
-                    nodeService.checkForOfflineNodes();
+                    engine.getNodeService().checkForOfflineNodes();
                 } finally {
-                    clusterService.unlock(ClusterConstants.WATCHDOG);
+                    engine.getClusterService().unlock(ClusterConstants.WATCHDOG);
                 }
             }
         }
         return -1l;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setClusterService(IClusterService clusterService) {
-        this.clusterService = clusterService;
     }
 
     public String getClusterLockName() {

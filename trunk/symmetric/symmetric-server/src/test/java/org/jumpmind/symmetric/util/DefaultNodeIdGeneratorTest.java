@@ -24,7 +24,7 @@ import junit.framework.Assert;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.service.mock.MockNodeService;
+import org.jumpmind.symmetric.service.impl.MockNodeService;
 import org.junit.Test;
 
 /**

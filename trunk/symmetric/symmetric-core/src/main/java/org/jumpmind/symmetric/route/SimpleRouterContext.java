@@ -28,33 +28,26 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.util.Context;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 public class SimpleRouterContext extends Context {
 
     protected NodeChannel channel;
-    protected JdbcTemplate jdbcTemplate;
     protected boolean encountedTransactionBoundary = false;
     protected Map<String, Long> stats = new HashMap<String, Long>();
     protected String nodeId;
 
-    public SimpleRouterContext(String nodeId, JdbcTemplate jdbcTemplate, NodeChannel channel) {
-        this.init(jdbcTemplate, channel, nodeId);
+    public SimpleRouterContext() {     
     }
-
-    protected SimpleRouterContext() {
-    }
-
-    protected void init(JdbcTemplate jdbcTemplate, NodeChannel channel, String nodeId) {
-        this.channel = channel;
-        this.jdbcTemplate = jdbcTemplate;
+    
+    public SimpleRouterContext(String nodeId, NodeChannel channel) {
         this.nodeId = nodeId;
+        this.channel = channel;
     }
-
+    
     public BinaryEncoding getBinaryEncoding() {
         return null;
     }    
@@ -73,10 +66,6 @@ public class SimpleRouterContext extends Context {
 
     public Map<String, Object> getContextCache() {
         return this.context;
-    }
-
-    public JdbcTemplate getJdbcTemplate() {
-        return this.jdbcTemplate;
     }
 
     public void setEncountedTransactionBoundary(boolean encountedTransactionBoundary) {
@@ -104,7 +93,7 @@ public class SimpleRouterContext extends Context {
         return val;
     }
 
-    synchronized public void logStats(ILog log, long totalTimeInMs) {
+    synchronized public void logStats(Log log, long totalTimeInMs) {
         boolean infoLevel = totalTimeInMs > Constants.LONG_OPERATION_THRESHOLD;
         Set<String> keys = new TreeSet<String>(stats.keySet());
         StringBuilder statsPrintout = new StringBuilder(channel.getChannelId());

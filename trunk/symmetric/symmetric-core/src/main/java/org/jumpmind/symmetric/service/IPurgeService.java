@@ -21,8 +21,6 @@ package org.jumpmind.symmetric.service;
 
 import java.util.Calendar;
 
-import org.springframework.transaction.annotation.Transactional;
-
 /**
  * This service provides an API to kick off purge processes with or 
  * without specific dates.
@@ -44,7 +42,6 @@ public interface IPurgeService {
     
     public long purgeIncoming(Calendar retentionCutoff);
 
-    @Transactional
     public void purgeAllIncomingEventsForNode(String nodeId);
     
 }

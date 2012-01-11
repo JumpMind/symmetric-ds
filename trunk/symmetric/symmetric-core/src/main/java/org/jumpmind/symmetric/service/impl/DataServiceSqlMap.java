@@ -45,15 +45,6 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("findDataCreateTimeSql" ,"" + 
 "select create_time from $(prefixName)_data where data_id=?   " );
 
-        putSql("updateDataRefSql" ,"" + 
-"update $(prefixName)_data_ref set ref_data_id=?, ref_time=?   " );
-
-        putSql("insertDataRefSql" ,"" + 
-"insert into $(prefixName)_data_ref (ref_data_id, ref_time) values(?,?)   " );
-
-        putSql("findDataRefSql" ,"" + 
-"select ref_data_id, ref_time from $(prefixName)_data_ref   " );
-
         putSql("findDataGapsByStatusSql" ,"" + 
 "select start_id, end_id, create_time from $(prefixName)_data_gap where status=? order by start_id asc   " );
 

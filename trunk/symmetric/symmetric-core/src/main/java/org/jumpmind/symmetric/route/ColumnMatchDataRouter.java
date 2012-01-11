@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.common.TokenConstants;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
-import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 
 /**
  * This data router is invoked when the router_type='column'. The
@@ -74,10 +74,17 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
     private static final String NULL_VALUE = "NULL";
 
-    private IRegistrationService registrationService;
+    private IConfigurationService configurationService;
 
     final static String EXPRESSION_KEY = String.format("%s.Expression.", ColumnMatchDataRouter.class
-            .getName());
+            .getName());        
+    
+    public ColumnMatchDataRouter() {
+    }
+
+    public ColumnMatchDataRouter(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
@@ -196,14 +203,10 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         Map<String, String> redirectMap = (Map<String, String>) ctx.getContextCache().get(
                 CTX_CACHE_KEY);
         if (redirectMap == null) {
-            redirectMap = registrationService.getRegistrationRedirectMap();
+            redirectMap = configurationService.getRegistrationRedirectMap();
             ctx.getContextCache().put(CTX_CACHE_KEY, redirectMap);
         }
         return redirectMap;
-    }
-
-    public void setRegistrationService(IRegistrationService registrationService) {
-        this.registrationService = registrationService;
     }
 
     class Expression {

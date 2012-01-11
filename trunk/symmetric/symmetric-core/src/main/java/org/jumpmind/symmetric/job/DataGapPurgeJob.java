@@ -16,39 +16,36 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IPurgeService;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
  * Background job that is responsible for purging already synchronized data
  */
 public class DataGapPurgeJob extends AbstractJob {
 
-    private IPurgeService purgeService;
-
-    public DataGapPurgeJob() {
+    public DataGapPurgeJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.purge.datagaps", true, engine.getParameterService().is("start.purge.job"),
+                engine, taskScheduler);
     }
 
     @Override
     public long doJob() throws Exception {
-        return purgeService.purgeDataGaps();        
+        return engine.getPurgeService().purgeDataGaps();
     }
-    
+
     public String getClusterLockName() {
         return ClusterConstants.PURGE_DATA_GAPS;
     }
-    
+
     public boolean isClusterable() {
         return true;
     }
 
-    public void setPurgeService(IPurgeService service) {
-        this.purgeService = service;
-    }
-    
 }

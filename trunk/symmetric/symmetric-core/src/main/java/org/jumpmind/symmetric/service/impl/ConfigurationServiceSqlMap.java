@@ -89,6 +89,9 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
 "update $(prefixName)_node_channel_ctl set                                                          " + 
 "  suspend_enabled=?, ignore_enabled=?, last_extract_time=? where node_id=? and channel_id=?   " );
 
+        putSql("getRegistrationRedirectSql" ,"" + 
+        "select registrant_external_id, registration_node_id from $(prefixName)_registration_redirect   " );
+
     }
 
 }

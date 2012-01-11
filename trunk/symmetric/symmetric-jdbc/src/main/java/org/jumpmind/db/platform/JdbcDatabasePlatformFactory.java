@@ -31,7 +31,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.db2.Db2Platform;
 import org.jumpmind.db.platform.derby.DerbyPlatform;
 import org.jumpmind.db.platform.firebird.FirebirdPlatform;
@@ -45,7 +44,6 @@ import org.jumpmind.db.platform.mssql.MsSqlPlatform;
 import org.jumpmind.db.platform.mysql.MySqlPlatform;
 import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
-import org.jumpmind.db.platform.sqlite.SqLitePlatform;
 import org.jumpmind.db.platform.sybase.SybasePlatform;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.log.Log;
@@ -72,7 +70,6 @@ public class JdbcDatabasePlatformFactory {
         for (String name : H2Platform.DATABASENAMES) {
             addPlatform(platforms, name, H2Platform.class);
         }
-        addPlatform(platforms, SqLitePlatform.DATABASENAME, SqLitePlatform.class);
         addPlatform(platforms, InformixPlatform.DATABASENAME, InformixPlatform.class);
         addPlatform(platforms, DerbyPlatform.DATABASENAME, DerbyPlatform.class);
         addPlatform(platforms, FirebirdPlatform.DATABASENAME, FirebirdPlatform.class);

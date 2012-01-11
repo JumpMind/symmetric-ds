@@ -29,11 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.impl.BandwidthService;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 
 /**
@@ -45,12 +44,10 @@ import org.jumpmind.symmetric.transport.ISyncUrlExtension;
  * <p/>
  * Valid parameters are constants on this class that start with PARAM_. Any
  * parameter that is a numeral will be designated a possible URL.
- *
- * 
  */
 public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExtensionPoint {
     
-    protected ILog log = LogFactory.getLog(getClass());
+    protected Log log = LogFactory.getLog(getClass());
 
     public static String PARAM_PRELOAD_ONLY = "initialLoadOnly";
     public static String PARAM_SAMPLE_SIZE = "sampleSize";
@@ -65,7 +62,14 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
     private Map<URI, List<SyncUrl>> cachedUrls = new HashMap<URI, List<SyncUrl>>();
 
     private INodeService nodeService;
-    private IBandwidthService bandwidthService = new BandwidthService();
+    private IBandwidthService bandwidthService;
+    
+    public HttpBandwidthUrlSelector(Log log, INodeService nodeService,
+            IBandwidthService bandwidthService) {
+        this.log = log;
+        this.nodeService = nodeService;
+        this.bandwidthService = bandwidthService;
+    }
 
     public String resolveUrl(URI uri) {
         Map<String, String> params = getParameters(uri);
@@ -182,14 +186,6 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
 
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setBandwidthService(IBandwidthService bandwidthService) {
-        this.bandwidthService = bandwidthService;
     }
 
     public void setDefaultMaxSampleDuration(long defaultMaxSampleDuration) {

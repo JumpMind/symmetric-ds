@@ -21,18 +21,23 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
 
 /*
  * Background job that is responsible for writing statistics to database tables.
  */
 public class StatisticFlushJob extends AbstractJob {
 
-    public StatisticFlushJob() {
+    public StatisticFlushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.stat.flush", true, engine.getParameterService().is("start.stat.flush.job"),
+                engine, taskScheduler);
     }
 
     @Override
     public long doJob() throws Exception {
-        statisticManager.flush();
+        engine.getStatisticManager().flush();
         return -1l;
     }
     

@@ -38,9 +38,9 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.BadSqlGrammarException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
@@ -51,17 +51,13 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
-    String selectTriggerSql;
+    String selectTriggerSql = "from ALL_TRIGGERS where owner in (SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual) and trigger_name like upper(?) and table_name like upper(?)";
 
-    String selectTransactionsSql;
-    
-    public OracleSymmetricDialect() {
+    String selectTransactionsSql = "select min(start_time) from gv$transaction";
+
+    public OracleSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new OracleTriggerText();
-    }
-
-    @Override
-    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
-        super.init(pf, queryTimeout, jdbcTemplate);
         try {
             areDatabaseTransactionsPendingSince(System.currentTimeMillis());
             supportsTransactionViews = true;
@@ -90,14 +86,15 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table table) {
         try {
-            super.createTrigger(sqlBuffer, dml, trigger, history, channel, tablePrefix, table);
+            super.createTrigger(sqlBuffer, dml, trigger, history, channel,
+                    parameterService.getTablePrefix(), table);
         } catch (BadSqlGrammarException ex) {
             if (ex.getSQLException().getErrorCode() == 4095) {
                 try {
                     // a trigger of the same name must already exist on a table
                     log.warn(
                             "TriggerAlreadyExists",
-                            jdbcTemplate.queryForMap(
+                            platform.getSqlTemplate().queryForMap(
                                     "select * " + selectTriggerSql,
                                     new Object[] { history.getTriggerNameForDmlType(dml),
                                             history.getSourceTableName() }));
@@ -116,7 +113,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
             Trigger trigger) {
-        return tablePrefix + "_" + "transaction_id()";
+        return parameterService.getTablePrefix() + "_" + "transaction_id()";
     }
 
     @Override
@@ -125,7 +122,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    protected String getSequenceName(SequenceIdentifier identifier) {
+    public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
         case OUTGOING_BATCH:
             return "SEQ_SYM_OUTGOIN_BATCH_BATCH_ID";
@@ -138,23 +135,18 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select " + sequenceName + ".currval from dual";
-    }
-
-    @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
-        return jdbcTemplate.queryForInt("select count(*) " + selectTriggerSql, new Object[] {
-                triggerName, tableName }) > 0;
+        return platform.getSqlTemplate().queryForInt("select count(*) " + selectTriggerSql,
+                new Object[] { triggerName, tableName }) > 0;
     }
 
     public void purge() {
-        jdbcTemplate.update("purge recyclebin");
+        platform.getSqlTemplate().update("purge recyclebin");
     }
 
     protected String getSymmetricPackageName() {
-        return tablePrefix + "_pkg";
+        return parameterService.getTablePrefix() + "_pkg";
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
@@ -171,12 +163,13 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     public String getSyncTriggersExpression() {
-        return tablePrefix + "_trigger_disabled() is null";
+        return parameterService.getTablePrefix() + "_trigger_disabled() is null";
     }
 
     @Override
     public boolean areDatabaseTransactionsPendingSince(long time) {
-        String returnValue = jdbcTemplate.queryForObject(selectTransactionsSql, String.class);
+        String returnValue = platform.getSqlTemplate().queryForObject(selectTransactionsSql,
+                String.class);
         if (returnValue != null) {
             Date date;
             try {

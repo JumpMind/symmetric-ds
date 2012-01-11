@@ -33,9 +33,9 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
@@ -46,12 +46,17 @@ import org.jumpmind.symmetric.web.WebConstants;
  */
 abstract public class AbstractTransportManager {
 
-    protected ILog log = LogFactory.getLog(getClass());
+    protected Log log = LogFactory.getLog(getClass());
 
     protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers  = new HashMap<String, ISyncUrlExtension>();
 
     public AbstractTransportManager() {
     }
+    
+    public AbstractTransportManager(Log log) {
+        this.log = log;
+    }
+
     
     public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler) {
         if (extensionSyncUrlHandlers == null) {

@@ -20,7 +20,7 @@ import org.jumpmind.log.LogFactory;
  * TODO Support Oracle's non-standard way of batching
  */
 public class JdbcSqlTransaction implements ISqlTransaction {
-    
+
     protected final static Log log = LogFactory.getLog(JdbcSqlTransaction.class);
 
     protected boolean inBatchMode = false;
@@ -32,8 +32,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     protected PreparedStatement pstmt;
 
     protected JdbcSqlTemplate jdbcSqlTemplate;
-
-    protected int numberOfRowsBeforeBatchFlush = 1000;
 
     protected boolean oldAutoCommitValue;
 
@@ -48,14 +46,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         } catch (SQLException ex) {
             throw jdbcSqlTemplate.translate(ex);
         }
-    }
-
-    public void setNumberOfRowsBeforeBatchFlush(int numberOfRowsBeforeBatchFlush) {
-        this.numberOfRowsBeforeBatchFlush = numberOfRowsBeforeBatchFlush;
-    }
-
-    public int getNumberOfRowsBeforeBatchFlush() {
-        return numberOfRowsBeforeBatchFlush;
     }
 
     public void setInBatchMode(boolean useBatching) {
@@ -134,7 +124,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
         return rowsUpdated;
     }
-    
+
     public int queryForInt(String sql, Object... args) {
         return queryForObject(sql, Integer.class, args);
     }
@@ -220,7 +210,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public void prepare(String sql) {
-        try {            
+        try {
             if (this.markers.size() > 0) {
                 throw new IllegalStateException(
                         "Cannot prepare a new batch before the last batch has been flushed.");
@@ -240,11 +230,11 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         int rowsUpdated = 0;
         try {
             if (log.isDebugEnabled()) {
-                log.debug("Adding %s %s", ArrayUtils.toString(args), inBatchMode ? " in batch mode" : "");
+                log.debug("Adding %s %s", ArrayUtils.toString(args), inBatchMode ? " in batch mode"
+                        : "");
             }
             if (args != null) {
-                JdbcUtils.setValues(pstmt, args, argTypes,
-                        jdbcSqlTemplate.getLobHandler());
+                JdbcUtils.setValues(pstmt, args, argTypes, jdbcSqlTemplate.getLobHandler());
             }
             if (inBatchMode) {
                 if (marker == null) {
@@ -252,7 +242,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 }
                 markers.add(marker);
                 pstmt.addBatch();
-                if (markers.size() >= numberOfRowsBeforeBatchFlush) {
+                if (markers.size() >= jdbcSqlTemplate.getSettings().getBatchSize()) {
                     rowsUpdated = flush();
                 }
             } else {
@@ -277,6 +267,16 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public void allowInsertIntoAutoIncrementColumns(boolean value, Table table) {
+    }
+
+    public long insertWithGeneratedKey(String sql, String column, String sequenceName,
+            Object...args) {
+        try {
+            return jdbcSqlTemplate.insertWithGeneratedKey(connection, sql, column, sequenceName,
+                    args, null);
+        } catch (SQLException ex) {
+            throw jdbcSqlTemplate.translate(ex);
+        }
     }
 
 }

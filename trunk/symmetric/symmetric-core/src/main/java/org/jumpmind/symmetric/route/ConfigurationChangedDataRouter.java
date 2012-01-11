@@ -28,7 +28,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -53,8 +52,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     public final static String KEY = "symconfig";
 
-    protected String tablePrefix;
-
     protected IConfigurationService configurationService;
 
     protected INodeService nodeService;
@@ -64,6 +61,22 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     protected IParameterService parameterService;
 
     protected ITransformService transformService;
+    
+    protected String tablePrefix;
+    
+    public ConfigurationChangedDataRouter() {     
+    }
+       
+    public ConfigurationChangedDataRouter(IConfigurationService configurationService,
+            INodeService nodeService, ITriggerRouterService triggerRouterService,
+            IParameterService parameterService, ITransformService transformService) {
+        this.configurationService = configurationService;
+        this.nodeService = nodeService;
+        this.triggerRouterService = triggerRouterService;
+        this.parameterService = parameterService;
+        this.tablePrefix = parameterService.getTablePrefix();
+        this.transformService = transformService;
+    }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> possibleTargetNodes, boolean initialLoad) {
@@ -138,7 +151,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
      * so, then don't propagate the change.
      */
     protected boolean didNodeSecurityChangeForNodeInitialization(DataMetaData dataMetaData) {
-    	if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY) && dataMetaData.getData().getEventType() == DataEventType.UPDATE) {
+    	if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY) && dataMetaData.getData().getDataEventType() == DataEventType.UPDATE) {
     		Map<String,String> oldData = getOldDataAsString("", dataMetaData);
     		Map<String,String> newData = getNewDataAsString("", dataMetaData);
     		if (newData.get("REGISTRATION_ENABLED") != null && 
@@ -238,44 +251,19 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     @Override
     public void contextCommitted(SimpleRouterContext routingContext) {
         if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
-            log.info("ChannelFlushed");
+            log.info("Channels flushed because new channels came through the dataloader");
             configurationService.reloadChannels();
         }
         if (routingContext.getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.info("ConfigurationChanged");
+            log.info("About to syncTriggers because new configuration came through the dataloader");
             triggerRouterService.syncTriggers();
         }
         if (routingContext.getContextCache().get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-            log.info("ConfigurationChanged");
+            log.info("About to refresh the cache of transformation because new configuration come through the dataloader");
             transformService.resetCache();
         }
-    }
-
-    public void setTablePrefix(String tablePrefix) {
-        this.tablePrefix = tablePrefix;
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setTriggerRouterService(ITriggerRouterService triggerRouterService) {
-        this.triggerRouterService = triggerRouterService;
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-        log = LogFactory.getLog(parameterService);
-    }
-
-    public void setTransformService(ITransformService transformService) {
-        this.transformService = transformService;
     }
 
     private boolean tableMatches(DataMetaData dataMetaData, String tableName) {
@@ -285,6 +273,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             matches = true;
         }
         return matches;
+    }
+    
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
     }
 
 }

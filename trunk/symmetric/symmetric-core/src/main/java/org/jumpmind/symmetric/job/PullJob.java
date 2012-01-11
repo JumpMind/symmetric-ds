@@ -19,32 +19,33 @@
  * under the License.  */
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IPullService;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
  * Background job that pulls data from remote nodes and then loads it.
  */
 public class PullJob extends AbstractJob {
 
-    private IPullService pullService;
+    public PullJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.pull", false, engine.getParameterService().is("start.pull.job"),
+                engine, taskScheduler);
+    }
     
-    private INodeService nodeService;
-
     @Override
     public long doJob() throws Exception {
-        RemoteNodeStatuses statuses = pullService.pullData();
+        RemoteNodeStatuses statuses = engine.getPullService().pullData();
 
         // Re-pull immediately if we are in the middle of an initial load
         // so that the initial load completes as quickly as possible.
         // only process
-        while (nodeService.isDataLoadStarted() &&
+        while (engine.getNodeService().isDataLoadStarted() &&
                 !statuses.errorOccurred() && 
                 statuses.wasBatchProcessed()) {
             log.info("DataPullingInReloadMode");
-            statuses = pullService.pullData();
+            statuses = engine.getPullService().pullData();
         }
         
         return statuses.getDataProcessedCount();
@@ -58,11 +59,4 @@ public class PullJob extends AbstractJob {
         return true;
     }
 
-    public void setPullService(IPullService service) {
-        this.pullService = service;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
 }

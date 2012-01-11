@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service.jmx;
 
@@ -31,27 +32,13 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.AbstractSymmetricEngine;
-import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.IDataExtractorService;
-import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.IPurgeService;
-import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.ISecurityService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
-import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -61,59 +48,28 @@ import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for a node")
-/**
- * ,
- */
 public class NodeManagementService {
-    
+
     final ILog log = LogFactory.getLog(getClass());
 
-    private IPurgeService purgeService;
+    protected ClientSymmetricEngine engine;
 
-    private INodeService nodeService;
-
-    private IDataService dataService;
-
-    private IOutgoingBatchService outgoingBatchService;
-    
-    private IConfigurationService configurationService;
-    
-    private ITriggerRouterService triggerRouterService;
-
-    private IRegistrationService registrationService;
-
-    private IDataExtractorService dataExtractorService;
-
-    private IClusterService clusterService;
-
-    private IParameterService parameterService;
-
-    private IConcurrentConnectionManager concurrentConnectionManager;
-
-    private ISecurityService securityService;
-
-    private DataSource dataSource;
-
-    IStatisticManager statisticManager;
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
+    public NodeManagementService(ClientSymmetricEngine engine) {
+        this.engine = engine;
     }
 
     @ManagedAttribute(description = "Checks if SymmetricDS has been started.")
     public boolean isStarted() {
-        ISymmetricEngine engine = getEngine();
         if (engine != null) {
             return engine.isStarted();
         } else {
             return false;
         }
     }
-    
+
     @ManagedOperation(description = "Start the SymmetricDS engine")
     public boolean start() {
         try {
-            ISymmetricEngine engine = getEngine();
             if (engine != null) {
                 return engine.start();
             } else {
@@ -128,7 +84,6 @@ public class NodeManagementService {
     @ManagedOperation(description = "Stop the SymmetricDS engine")
     public void stop() {
         try {
-            ISymmetricEngine engine = getEngine();
             if (engine != null) {
                 engine.stop();
             }
@@ -136,66 +91,64 @@ public class NodeManagementService {
             log.error(ex);
         }
     }
-    
+
     @ManagedOperation(description = "Run the purge process")
     public void purge() {
-        purgeService.purgeOutgoing();
-    }        
-    
+        engine.getPurgeService().purgeOutgoing();
+    }
+
     @ManagedOperation(description = "Force the channel settings to be read from the database")
     public void clearChannelCache() {
-        configurationService.reloadChannels();
+        engine.getConfigurationService().reloadChannels();
     }
 
     @ManagedOperation(description = "Synchronize the triggers")
     public void syncTriggers() {
-        triggerRouterService.syncTriggers();
+        engine.getTriggerRouterService().syncTriggers();
     }
-    
-    protected ISymmetricEngine getEngine() {
-        return AbstractSymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME));
-    }
-    
+
     @ManagedAttribute(description = "Get the number of current connections allowed to this "
             + "instance of the node via HTTP.  If this value is 20, then 20 concurrent push"
             + " clients and 20 concurrent pull clients will be allowed")
     public int getNumfNodeConnectionsPerInstance() {
-        return parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
+        return engine.getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS);
     }
 
     @ManagedAttribute(description = "Get connection statistics about indivdual nodes")
     public String getNodeConcurrencyStatisticsAsText() {
         String lineFeed = "\n";
-        if (parameterService.getString(ParameterConstants.JMX_LINE_FEED).equals("html")) {
+        if (engine.getParameterService().getString(ParameterConstants.JMX_LINE_FEED).equals("html")) {
             lineFeed = "</br>";
         }
-        Map<String, Map<String, NodeConnectionStatistics>> stats = concurrentConnectionManager
-                .getNodeConnectionStatisticsByPoolByNodeId();
+        Map<String, Map<String, NodeConnectionStatistics>> stats = engine
+                .getConcurrentConnectionManager().getNodeConnectionStatisticsByPoolByNodeId();
         StringBuilder out = new StringBuilder();
         for (String pool : stats.keySet()) {
-            out
-            .append("-------------------------------------------------------------------------------------------------------------------------------");            out.append(lineFeed);
+            out.append("-------------------------------------------------------------------------------------------------------------------------------");
+            out.append(lineFeed);
             out.append("  CONNECTION TYPE: ");
             out.append(pool);
             out.append(lineFeed);
-            out
-                    .append("-------------------------------------------------------------------------------------------------------------------------------");
+            out.append("-------------------------------------------------------------------------------------------------------------------------------");
             out.append(lineFeed);
-            out
-                    .append("             NODE ID             LAST CONNECT TIME      NUMBER OF CONNECTIONS     NUMBER OF REJECTIONS       AVG CONNECTED TIME");
+            out.append("             NODE ID             LAST CONNECT TIME      NUMBER OF CONNECTIONS     NUMBER OF REJECTIONS       AVG CONNECTED TIME");
             out.append(lineFeed);
-            out
-            .append("-------------------------------------------------------------------------------------------------------------------------------");            out.append(lineFeed);
+            out.append("-------------------------------------------------------------------------------------------------------------------------------");
+            out.append(lineFeed);
             Map<String, NodeConnectionStatistics> nodeStats = stats.get(pool);
             for (String nodeId : nodeStats.keySet()) {
                 NodeConnectionStatistics nodeStat = nodeStats.get(nodeId);
                 out.append(StringUtils.leftPad(nodeId, 20));
-                out.append(StringUtils.leftPad(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(
-                        new Date(nodeStat.getLastConnectionTimeMs())), 30));
-                out.append(StringUtils.leftPad(Long.toString(nodeStat.getTotalConnectionCount()), 27));
+                out.append(StringUtils.leftPad(
+                        DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM)
+                                .format(new Date(nodeStat.getLastConnectionTimeMs())), 30));
+                out.append(StringUtils.leftPad(Long.toString(nodeStat.getTotalConnectionCount()),
+                        27));
                 out.append(StringUtils.leftPad(Integer.toString(nodeStat.getNumOfRejections()), 25));
-                out.append(StringUtils.leftPad(NumberFormat.getIntegerInstance().format(
-                        nodeStat.getTotalConnectionTimeMs() / nodeStat.getTotalConnectionCount()), 25));
+                out.append(StringUtils.leftPad(
+                        NumberFormat.getIntegerInstance().format(
+                                nodeStat.getTotalConnectionTimeMs()
+                                        / nodeStat.getTotalConnectionCount()), 25));
             }
             out.append(lineFeed);
         }
@@ -209,7 +162,7 @@ public class NodeManagementService {
     @ManagedAttribute(description = "Get a list of nodes that have been added to the white list, a list of node ids that always get through the concurrency manager.")
     public String getNodesInWhiteList() {
         StringBuilder ret = new StringBuilder();
-        String[] list = concurrentConnectionManager.getWhiteList();
+        String[] list = engine.getConcurrentConnectionManager().getWhiteList();
         for (String string : list) {
             ret.append(string);
             ret.append(",");
@@ -218,37 +171,37 @@ public class NodeManagementService {
     }
 
     @ManagedOperation(description = "Add a node id to the list of nodes that will always get through the concurrency manager")
-    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to add to the white list") })
+    @ManagedOperationParameters({ @ManagedOperationParameter(name = "nodeId", description = "The node id to add to the white list") })
     public void addNodeToWhiteList(String nodeId) {
-        concurrentConnectionManager.addToWhitelist(nodeId);
+        engine.getConcurrentConnectionManager().addToWhitelist(nodeId);
     }
 
     @ManagedOperation(description = "Remove a node id to the list of nodes that will always get through the concurrency manager")
-    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to remove from the white list") })
+    @ManagedOperationParameters({ @ManagedOperationParameter(name = "nodeId", description = "The node id to remove from the white list") })
     public void removeNodeFromWhiteList(String nodeId) {
-        concurrentConnectionManager.removeFromWhiteList(nodeId);
+        engine.getConcurrentConnectionManager().removeFromWhiteList(nodeId);
     }
 
     @ManagedAttribute(description = "Configure the number of connections allowed to this node."
             + "  If the value is set to zero you are effectively disabling your transport"
             + " (wihch can be useful for maintainance")
     public void setNumOfNodeConnectionsPerInstance(int value) {
-        parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS, value);
+        engine.getParameterService().saveParameter(ParameterConstants.CONCURRENT_WORKERS, value);
     }
 
     @ManagedAttribute(description = "The group this node belongs to")
     public String getNodeGroupId() {
-        return parameterService.getNodeGroupId();
+        return engine.getParameterService().getNodeGroupId();
     }
 
     @ManagedAttribute(description = "An external name given to this SymmetricDS node")
     public String getExternalId() {
-        return parameterService.getExternalId();
+        return engine.getParameterService().getExternalId();
     }
 
     @ManagedAttribute(description = "The node id given to this SymmetricDS node")
     public String getNodeId() {
-        Node node = nodeService.findIdentity();
+        Node node = engine.getNodeService().findIdentity();
         if (node != null) {
             return node.getNodeId();
         } else {
@@ -258,12 +211,14 @@ public class NodeManagementService {
 
     @ManagedAttribute(description = "Whether the basic DataSource is being used as the default datasource.")
     public boolean isBasicDataSource() {
+        DataSource dataSource = engine.getDataSource();
         return dataSource instanceof BasicDataSource;
     }
 
     @ManagedAttribute(description = "If a BasicDataSource, then show the number of active connections")
     public int getNumberOfActiveConnections() {
         if (isBasicDataSource()) {
+            DataSource dataSource = engine.getDataSource();
             return ((BasicDataSource) dataSource).getNumActive();
         } else {
             return -1;
@@ -271,33 +226,33 @@ public class NodeManagementService {
     }
 
     @ManagedOperation(description = "Check to see if the external id is registered")
-    @ManagedOperationParameters( {
+    @ManagedOperationParameters({
             @ManagedOperationParameter(name = "nodeGroupId", description = "The node group id for a node"),
             @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
     public boolean isExternalIdRegistered(String nodeGroupdId, String externalId) {
-        return nodeService.isExternalIdRegistered(nodeGroupdId, externalId);
+        return engine.getNodeService().isExternalIdRegistered(nodeGroupdId, externalId);
     }
 
     @ManagedOperation(description = "Emergency remove all locks (if left abandoned on a cluster)")
     public void clearAllLocks() {
-        clusterService.clearAllLocks();
+        engine.getClusterService().clearAllLocks();
     }
 
     @ManagedOperation(description = "Check to see if the initial load for a node id is complete.  This method will throw an exception if the load error'd out or was never started.")
-    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id") })
+    @ManagedOperationParameters({ @ManagedOperationParameter(name = "nodeId", description = "The node id") })
     public boolean areAllLoadBatchesComplete(String nodeId) {
-        return outgoingBatchService.areAllLoadBatchesComplete(nodeId);
+        return engine.getOutgoingBatchService().areAllLoadBatchesComplete(nodeId);
     }
 
     @ManagedOperation(description = "Enable or disable synchronization completely for a node")
-    @ManagedOperationParameters( {
+    @ManagedOperationParameters({
             @ManagedOperationParameter(name = "nodeId", description = "The node to enable or disable"),
             @ManagedOperationParameter(name = "syncEnabled", description = "true is enabled, false is disabled") })
     public boolean setSyncEnabledForNode(String nodeId, boolean syncEnabled) {
-        Node node = nodeService.findNode(nodeId);
+        Node node = engine.getNodeService().findNode(nodeId);
         if (node != null) {
             node.setSyncEnabled(syncEnabled);
-            nodeService.updateNode(node);
+            engine.getNodeService().updateNode(node);
             return true;
         } else {
             return false;
@@ -305,140 +260,95 @@ public class NodeManagementService {
     }
 
     @ManagedOperation(description = "Enable or disable a channel for a specific external id")
-    @ManagedOperationParameters( {
+    @ManagedOperationParameters({
             @ManagedOperationParameter(name = "ignore", description = "Set to true to enable and false to disable"),
             @ManagedOperationParameter(name = "channelId", description = "The channel id to enable or disable"),
             @ManagedOperationParameter(name = "nodeGroupId", description = "The node group id for a node"),
             @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
-    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId) {
-        nodeService.ignoreNodeChannelForExternalId(ignore, channelId, nodeGroupId, externalId);
+    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId,
+            String nodeGroupId, String externalId) {
+        engine.getNodeService().ignoreNodeChannelForExternalId(ignore, channelId, nodeGroupId,
+                externalId);
     }
 
     @ManagedOperation(description = "Open the registration for a node with the specified external id")
-    @ManagedOperationParameters( {
+    @ManagedOperationParameters({
             @ManagedOperationParameter(name = "nodeGroup", description = "The node group id this node will belong to"),
             @ManagedOperationParameter(name = "externalId", description = "The external id for the node") })
     public void openRegistration(String nodeGroupId, String externalId) {
-        Node node = nodeService.findNodeByExternalId(nodeGroupId, externalId);
+        Node node = engine.getNodeService().findNodeByExternalId(nodeGroupId, externalId);
         if (node != null) {
-            registrationService.reOpenRegistration(node.getExternalId());
+            engine.getRegistrationService().reOpenRegistration(node.getExternalId());
         } else {
-            registrationService.openRegistration(nodeGroupId, externalId);
+            engine.getRegistrationService().openRegistration(nodeGroupId, externalId);
         }
     }
 
     @ManagedOperation(description = "Send an initial load of data to a node.")
-    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to reload.") })
+    @ManagedOperationParameters({ @ManagedOperationParameter(name = "nodeId", description = "The node id to reload.") })
     public String reloadNode(String nodeId) {
-        return dataService.reloadNode(nodeId);
+        return engine.getDataService().reloadNode(nodeId);
     }
 
     @ManagedOperation(description = "Send a SQL event to a node.")
-    @ManagedOperationParameters( {
+    @ManagedOperationParameters({
             @ManagedOperationParameter(name = "nodeId", description = "The node id to sent the event to."),
             @ManagedOperationParameter(name = "catalogName", description = "The catalog name to reload. Can be null."),
-            @ManagedOperationParameter(name = "schemaName", description = "The schema name to reload. Can be null."),                        
+            @ManagedOperationParameter(name = "schemaName", description = "The schema name to reload. Can be null."),
             @ManagedOperationParameter(name = "tableName", description = "The table name the SQL is for."),
             @ManagedOperationParameter(name = "sql", description = "The SQL statement to send.") })
-    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql) {
-        return dataService.sendSQL(nodeId, catalogName, schemaName, tableName, sql, false);
+    public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
+            String sql) {
+        return engine.getDataService().sendSQL(nodeId, catalogName, schemaName, tableName, sql,
+                false);
     }
 
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")
-    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
-        @ManagedOperationParameter(name = "catalogName", description = "The catalog name to reload. Can be null."),
-        @ManagedOperationParameter(name = "schemaName", description = "The schema name to reload. Can be null."),                    
-            @ManagedOperationParameter(name = "tableName", description = "The table name to reload.") })
-    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName) {
-        return dataService.reloadTable(nodeId, catalogName, schemaName, tableName);
-    }
-
-    @ManagedOperation(description = "Send a delete and reload of a table to a node.")
-    @ManagedOperationParameters( {
+    @ManagedOperationParameters({
             @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
             @ManagedOperationParameter(name = "catalogName", description = "The catalog name to reload. Can be null."),
-            @ManagedOperationParameter(name = "schemaName", description = "The schema name to reload. Can be null."),            
+            @ManagedOperationParameter(name = "schemaName", description = "The schema name to reload. Can be null."),
+            @ManagedOperationParameter(name = "tableName", description = "The table name to reload.") })
+    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName) {
+        return engine.getDataService().reloadTable(nodeId, catalogName, schemaName, tableName);
+    }
+
+    @ManagedOperation(description = "Send a delete and reload of a table to a node.")
+    @ManagedOperationParameters({
+            @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
+            @ManagedOperationParameter(name = "catalogName", description = "The catalog name to reload. Can be null."),
+            @ManagedOperationParameter(name = "schemaName", description = "The schema name to reload. Can be null."),
             @ManagedOperationParameter(name = "tableName", description = "The table name to reload."),
             @ManagedOperationParameter(name = "overrideInitialLoadSelect", description = "Override initial load select where-clause.") })
-    public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect) {
-        return dataService.reloadTable(nodeId, catalogName, schemaName, tableName, overrideInitialLoadSelect);
+    public String reloadTable(String nodeId, String catalogName, String schemaName,
+            String tableName, String overrideInitialLoadSelect) {
+        return engine.getDataService().reloadTable(nodeId, catalogName, schemaName, tableName,
+                overrideInitialLoadSelect);
     }
 
     @ManagedOperation(description = "Write a range of batches to a file in SymmetricDS Data Format.")
-    @ManagedOperationParameters( {
+    @ManagedOperationParameters({
             @ManagedOperationParameter(name = "startBatchId", description = "Starting batch ID of range"),
             @ManagedOperationParameter(name = "endBatchId", description = "Ending batch ID of range"),
             @ManagedOperationParameter(name = "fileName", description = "File name to write batches") })
-    public void writeBatchRangeToFile(String startBatchId, String endBatchId, String fileName) throws Exception {
+    public void writeBatchRangeToFile(String startBatchId, String endBatchId, String fileName)
+            throws Exception {
         FileOutputStream out = new FileOutputStream(fileName);
         IOutgoingTransport transport = new InternalOutgoingTransport(out);
-        dataExtractorService.extractBatchRange(transport, startBatchId, endBatchId);
+        engine.getDataExtractorService().extractBatchRange(transport, startBatchId, endBatchId);
         transport.close();
         out.close();
     }
 
     @ManagedOperation(description = "Encrypts plain text for use with db.user and db.password properties")
-    @ManagedOperationParameters( {
-            @ManagedOperationParameter(name = "plainText", description = "Plain text to encrypt") })
+    @ManagedOperationParameters({ @ManagedOperationParameter(name = "plainText", description = "Plain text to encrypt") })
     public String encryptText(String plainText) throws Exception {
         try {
-        return SecurityConstants.PREFIX_ENC + securityService.encrypt(plainText);
-        }
-        catch (Exception e)
-        {
+            return SecurityConstants.PREFIX_ENC + engine.getSecurityService().encrypt(plainText);
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return "";
     }
-    public void setPurgeService(IPurgeService purgeService) {
-        this.purgeService = purgeService;
-    }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    public void setDataService(IDataService dataService) {
-        this.dataService = dataService;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setRegistrationService(IRegistrationService registrationService) {
-        this.registrationService = registrationService;
-    }
-
-    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
-        this.outgoingBatchService = outgoingBatchService;
-    }
-
-    public void setDataExtractorService(IDataExtractorService dataExtractorService) {
-        this.dataExtractorService = dataExtractorService;
-    }
-
-    public void setClusterService(IClusterService clusterService) {
-        this.clusterService = clusterService;
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-    }
-
-    public void setConcurrentConnectionManager(IConcurrentConnectionManager concurrentConnectionManager) {
-        this.concurrentConnectionManager = concurrentConnectionManager;
-    }
-
-    public void setSecurityService(ISecurityService securityService) {
-        this.securityService = securityService;
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
-    }
-    
-    public void setTriggerRouterService(ITriggerRouterService triggerService) {
-        this.triggerRouterService = triggerService;
-    }
 }

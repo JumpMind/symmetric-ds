@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.service;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RegistrationRequest;
@@ -103,12 +102,7 @@ public interface IRegistrationService {
     /**
      * Add an entry to the registation_redirect table so that if a node tries to register here.  It will be redirected to the correct node.
      */
-    public void saveRegistrationRedirect(String externalIdToRedirect, String nodeIdToRedirectTo);
-    
-    /**
-     * @return a map of nodes to redirect to that is keyed by a list of external_ids that should be redirected.
-     */
-    public Map<String,String> getRegistrationRedirectMap();
+    public void saveRegistrationRedirect(String externalIdToRedirect, String nodeIdToRedirectTo);   
     
     public String getRedirectionUrlFor(String externalId);
        

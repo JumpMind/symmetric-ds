@@ -37,7 +37,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
  * (as may be the case when distributing events to remote locations), then we
  * still have the history of what the columns and primary keys were at the time.
  */
-public class TriggerHistory extends AbstractCsvData implements Serializable {
+public class TriggerHistory implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -54,8 +54,12 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
     private Date createTime;
 
     private String columnNames;
+    
+    private String[] parsedColumnNames;
 
     private String pkColumnNames;
+    
+    private String[] parsedPkColumnNames;
 
     private String nameForInsertTrigger;
 
@@ -169,11 +173,17 @@ public class TriggerHistory extends AbstractCsvData implements Serializable {
     }
 
     public String[] getParsedColumnNames() {
-        return getData("columnNames", columnNames);
+        if (parsedColumnNames == null && columnNames != null) {
+            parsedColumnNames = columnNames.split(",");
+        }
+        return parsedColumnNames;
     }
 
     public String[] getParsedPkColumnNames() {
-        return getData("pkColumnNames", pkColumnNames);
+        if (parsedPkColumnNames == null && pkColumnNames != null) {
+            parsedPkColumnNames = pkColumnNames.split(",");
+        }
+        return parsedPkColumnNames;
     }
 
     public int getTableHash() {

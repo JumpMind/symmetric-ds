@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -53,15 +55,27 @@ import org.jumpmind.symmetric.transport.TransportException;
  */
 public class PushService extends AbstractOfflineDetectorService implements IPushService {
 
-    private IDataExtractorService extractor;
+    private IDataExtractorService dataExtractorService;
 
-    private IAcknowledgeService ackService;
+    private IAcknowledgeService acknowledgeService;
 
     private ITransportManager transportManager;
 
     private INodeService nodeService;
 
     private IClusterService clusterService;
+    
+    public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+            IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
+            ITransportManager transportManager, INodeService nodeService,
+            IClusterService clusterService) {
+        super(parameterService, symmetricDialect);
+        this.dataExtractorService = dataExtractorService;
+        this.acknowledgeService = acknowledgeService;
+        this.transportManager = transportManager;
+        this.nodeService = nodeService;
+        this.clusterService = clusterService;
+    }
 
     synchronized public RemoteNodeStatuses pushData() {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses();
@@ -107,7 +121,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             transport = transportManager.getPushTransport(remote, identity, identitySecurity
                     .getNodePassword(), parameterService.getRegistrationUrl());
 
-            List<OutgoingBatch> extractedBatches = extractor.extract(remote, transport);
+            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(remote, transport);
             if (extractedBatches.size() > 0) {
                 log.info("DataSent", remote);
                 BufferedReader reader = transport.readResponse();
@@ -127,7 +141,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 for (BatchInfo batchInfo : batches) {
                     log.debug("DataAckSaving", batchInfo.getBatchId(), (batchInfo.isOk() ? "OK"
                             : "error"));
-                    ackService.ack(batchInfo);
+                    acknowledgeService.ack(batchInfo);
                 }
                 
                 status.updateOutgoingStatus(extractedBatches, batches);
@@ -172,26 +186,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     @Override
     protected AbstractSqlMap createSqlMap() {
         return null;
-    }
-
-    public void setExtractor(IDataExtractorService extractor) {
-        this.extractor = extractor;
-    }
-
-    public void setTransportManager(ITransportManager tm) {
-        this.transportManager = tm;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setAckService(IAcknowledgeService ackService) {
-        this.ackService = ackService;
-    }
-    
-    public void setClusterService(IClusterService clusterService) {
-        this.clusterService = clusterService;
     }
 
 }

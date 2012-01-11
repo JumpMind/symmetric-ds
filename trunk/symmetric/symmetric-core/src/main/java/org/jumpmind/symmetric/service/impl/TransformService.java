@@ -1,36 +1,41 @@
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.transaction.annotation.Transactional;
 
 public class TransformService extends AbstractService implements ITransformService {
 
     private Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> transformsCacheByNodeGroupLinkByTransformPoint;
 
     private long lastCacheTimeInMs;
-    
+
+    public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
+        super(parameterService, symmetricDialect);
+    }
+
     @Override
     protected AbstractSqlMap createSqlMap() {
         return new TransformServiceSqlMap(symmetricDialect.getPlatform(),
-                createReplacementTokens());
+                createSqlReplacementTokens());
     }
-    
+
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink nodeGroupLink,
             TransformPoint transformPoint, boolean useCache) {
 
@@ -102,7 +107,7 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     private List<TransformTableNodeGroupLink> getTransformTablesFromDB() {
-        List<TransformTableNodeGroupLink> transforms = jdbcTemplate.query(
+        List<TransformTableNodeGroupLink> transforms = sqlTemplate.query(
                 getSql("selectTransformTable"), new TransformTableMapper());
         List<TransformColumn> columns = getTransformColumnsFromDB();
         for (TransformTableNodeGroupLink transformTable : transforms) {
@@ -117,7 +122,7 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     private List<TransformColumn> getTransformColumnsFromDB() {
-        List<TransformColumn> columns = jdbcTemplate.query(getSql("selectTransformColumn"),
+        List<TransformColumn> columns = sqlTemplate.query(getSql("selectTransformColumn"),
                 new TransformColumnMapper());
         return columns;
     }
@@ -131,57 +136,71 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     public List<TransformColumn> getTransformColumnsForTable() {
-        List<TransformColumn> columns = jdbcTemplate.query(getSql("selectTransformColumnForTable"),
+        List<TransformColumn> columns = sqlTemplate.query(getSql("selectTransformColumnForTable"),
                 new TransformColumnMapper());
         return columns;
     }
 
-    @Transactional
     public void saveTransformTable(TransformTableNodeGroupLink transformTable) {
-        if (jdbcTemplate.update(getSql("updateTransformTableSql"), transformTable
-                .getNodeGroupLink().getSourceNodeGroupId(), transformTable.getNodeGroupLink()
-                .getTargetNodeGroupId(), transformTable.getSourceCatalogName(), transformTable
-                .getSourceSchemaName(), transformTable.getSourceTableName(), transformTable
-                .getTargetCatalogName(), transformTable.getTargetSchemaName(), transformTable
-                .getTargetTableName(), transformTable.getTransformPoint().toString(),
-                transformTable.isUpdateFirst(), transformTable.getDeleteAction().toString(),
-                transformTable.getTransformOrder(), transformTable.getTransformId()) == 0) {
-            jdbcTemplate.update(getSql("insertTransformTableSql"), transformTable
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            if (transaction.execute(getSql("updateTransformTableSql"), transformTable
                     .getNodeGroupLink().getSourceNodeGroupId(), transformTable.getNodeGroupLink()
                     .getTargetNodeGroupId(), transformTable.getSourceCatalogName(), transformTable
                     .getSourceSchemaName(), transformTable.getSourceTableName(), transformTable
                     .getTargetCatalogName(), transformTable.getTargetSchemaName(), transformTable
                     .getTargetTableName(), transformTable.getTransformPoint().toString(),
                     transformTable.isUpdateFirst(), transformTable.getDeleteAction().toString(),
-                    transformTable.getTransformOrder(), transformTable.getTransformId());
-        }
-        deleteTransformColumns(transformTable.getTransformId());
-        List<TransformColumn> columns = transformTable.getTransformColumns();
-        if (columns != null) {
-            for (TransformColumn transformColumn : columns) {
-                saveTransformColumn(transformColumn);
+                    transformTable.getTransformOrder(), transformTable.getTransformId()) == 0) {
+                transaction.execute(getSql("insertTransformTableSql"), transformTable
+                        .getNodeGroupLink().getSourceNodeGroupId(), transformTable
+                        .getNodeGroupLink().getTargetNodeGroupId(), transformTable
+                        .getSourceCatalogName(), transformTable.getSourceSchemaName(),
+                        transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
+                        transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
+                        transformTable.getTransformPoint().toString(), transformTable
+                                .isUpdateFirst(), transformTable.getDeleteAction().toString(),
+                        transformTable.getTransformOrder(), transformTable.getTransformId());
             }
+            deleteTransformColumns(transaction, transformTable.getTransformId());
+            List<TransformColumn> columns = transformTable.getTransformColumns();
+            if (columns != null) {
+                for (TransformColumn transformColumn : columns) {
+                    saveTransformColumn(transaction, transformColumn);
+                }
+            }
+            transaction.commit();
+        } finally {
+            close(transaction);
         }
         refreshCache();
     }
 
-    public void deleteTransformColumns(String transformTableId) {
-        jdbcTemplate.update(getSql("deleteTransformColumnsSql"), transformTableId);
+    protected void deleteTransformColumns(ISqlTransaction transaction, String transformTableId) {
+        transaction.execute(getSql("deleteTransformColumnsSql"), (Object) transformTableId);
     }
 
     public void deleteTransformTable(String transformTableId) {
-        deleteTransformColumns(transformTableId);
-        jdbcTemplate.update(getSql("deleteTransformTableSql"), transformTableId);
-        refreshCache();
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteTransformColumns(transaction, transformTableId);
+            transaction.execute(getSql("deleteTransformTableSql"), (Object) transformTableId);
+            refreshCache();
+            transaction.commit();
+        } finally {
+            close(transaction);
+        }
     }
 
-    public void saveTransformColumn(TransformColumn transformColumn) {
-        if (jdbcTemplate.update(getSql("updateTransformColumnSql"),
+    protected void saveTransformColumn(ISqlTransaction transaction, TransformColumn transformColumn) {
+        if (transaction.execute(getSql("updateTransformColumnSql"),
                 transformColumn.getSourceColumnName(), transformColumn.isPk(),
                 transformColumn.getTransformType(), transformColumn.getTransformExpression(),
                 transformColumn.getTransformOrder(), transformColumn.getTransformId(),
                 transformColumn.getIncludeOn().toDbValue(), transformColumn.getTargetColumnName()) == 0) {
-            jdbcTemplate.update(getSql("insertTransformColumnSql"),
+            transaction.execute(getSql("insertTransformColumnSql"),
                     transformColumn.getTransformId(), transformColumn.getIncludeOn().toDbValue(),
                     transformColumn.getTargetColumnName(), transformColumn.getSourceColumnName(),
                     transformColumn.isPk(), transformColumn.getTransformType(),
@@ -193,47 +212,48 @@ public class TransformService extends AbstractService implements ITransformServi
             String targetColumnName) {
 
         String includeOnAsChar = null;
-        // TODO: is this a "Y" or "N" or "1" or "0"
-        if (includeOn)
+        if (includeOn) {
             includeOnAsChar = "Y";
-        else
+        } else {
             includeOnAsChar = "N";
+        }
 
-        jdbcTemplate.update(getSql("deleteTransformColumnSql"), transformTableId, includeOnAsChar,
-                targetColumnName);
+        sqlTemplate.update(getSql("deleteTransformColumnSql"), (Object) transformTableId,
+                includeOnAsChar, targetColumnName);
         refreshCache();
     }
 
-    class TransformTableMapper implements RowMapper<TransformTableNodeGroupLink> {
-        public TransformTableNodeGroupLink mapRow(ResultSet rs, int rowNum) throws SQLException {
+    class TransformTableMapper implements ISqlRowMapper<TransformTableNodeGroupLink> {
+        public TransformTableNodeGroupLink mapRow(Row rs) {
             TransformTableNodeGroupLink table = new TransformTableNodeGroupLink();
-            table.setTransformId(rs.getString(1));
-            table.setNodeGroupLink(new NodeGroupLink(rs.getString(2), rs.getString(3)));
-            table.setSourceCatalogName(rs.getString(4));
-            table.setSourceSchemaName(rs.getString(5));
-            table.setSourceTableName(rs.getString(6));
-            table.setTargetCatalogName(rs.getString(7));
-            table.setTargetSchemaName(rs.getString(8));
-            table.setTargetTableName(rs.getString(9));
-            table.setTransformPoint(TransformPoint.valueOf(rs.getString(10)));
-            table.setTransformOrder(rs.getInt(11));
-            table.setUpdateFirst(rs.getBoolean(12));
-            table.setDeleteAction(DeleteAction.valueOf(rs.getString(13)));
+            table.setTransformId(rs.getString("transform_id"));
+            table.setNodeGroupLink(new NodeGroupLink(rs.getString("source_node_group_id"), rs
+                    .getString("target_node_group_id")));
+            table.setSourceCatalogName(rs.getString("source_catalog_name"));
+            table.setSourceSchemaName(rs.getString("source_schema_name"));
+            table.setSourceTableName(rs.getString("source_table_name"));
+            table.setTargetCatalogName(rs.getString("target_catalog_name"));
+            table.setTargetSchemaName(rs.getString("target_schema_name"));
+            table.setTargetTableName(rs.getString("target_table_name"));
+            table.setTransformPoint(TransformPoint.valueOf(rs.getString("transform_point")));
+            table.setTransformOrder(rs.getInt("transform_order"));
+            table.setUpdateFirst(rs.getBoolean("update_first"));
+            table.setDeleteAction(DeleteAction.valueOf(rs.getString("delete_action")));
             return table;
         }
     }
 
-    class TransformColumnMapper implements RowMapper<TransformColumn> {
-        public TransformColumn mapRow(ResultSet rs, int rowNum) throws SQLException {
+    class TransformColumnMapper implements ISqlRowMapper<TransformColumn> {
+        public TransformColumn mapRow(Row rs) {
             TransformColumn col = new TransformColumn();
-            col.setTransformId(rs.getString(1));
-            col.setIncludeOn(IncludeOnType.decode(rs.getString(2)));
-            col.setTargetColumnName(rs.getString(3));
-            col.setSourceColumnName(rs.getString(4));
-            col.setPk(rs.getBoolean(5));
-            col.setTransformType(rs.getString(6));
-            col.setTransformExpression(rs.getString(7));
-            col.setTransformOrder(rs.getInt(8));
+            col.setTransformId(rs.getString("transform_id"));
+            col.setIncludeOn(IncludeOnType.decode(rs.getString("include_on")));
+            col.setTargetColumnName(rs.getString("target_column_name"));
+            col.setSourceColumnName(rs.getString("source_column_name"));
+            col.setPk(rs.getBoolean("pk"));
+            col.setTransformType(rs.getString("transform_type"));
+            col.setTransformExpression(rs.getString("transform_expression"));
+            col.setTransformOrder(rs.getInt("transform_order"));
             return col;
         }
     }

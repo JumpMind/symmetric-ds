@@ -21,8 +21,10 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IPurgeService;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
  * Background job that is responsible for purging already synchronized data
@@ -31,7 +33,9 @@ public class IncomingPurgeJob extends AbstractJob {
 
     private IPurgeService purgeService;
 
-    public IncomingPurgeJob() {
+    public IncomingPurgeJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.purge.incoming", true, engine.getParameterService().is("start.purge.job"),
+                engine, taskScheduler);
     }
 
     @Override

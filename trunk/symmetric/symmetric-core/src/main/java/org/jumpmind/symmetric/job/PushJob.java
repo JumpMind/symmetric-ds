@@ -21,8 +21,10 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IPushService;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
  * Background job that is responsible for pushing data to linked nodes.
@@ -31,7 +33,9 @@ public class PushJob extends AbstractJob {
 
     private IPushService pushService;
 
-    public PushJob() {
+    public PushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.push", true, engine.getParameterService().is("start.push.job"),
+                engine, taskScheduler);
     }
 
     public void setPushService(IPushService service) {

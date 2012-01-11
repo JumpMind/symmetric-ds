@@ -99,6 +99,11 @@ public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
         ddlReader = new InterbaseDdlReader(log, this);
         ddlBuilder = new InterbaseBuilder(log, this);
     }
+    
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new InterbaseJdbcSqlTemplate(dataSource, settings, null);
+    }
 
     public String getName() {
         return DATABASENAME;

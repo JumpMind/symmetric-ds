@@ -16,52 +16,45 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.IDataService;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
  * Background job that is responsible for updating this node's heart beat time.
  */
 public class HeartbeatJob extends AbstractJob {
 
-    private IDataService dataService;
-
-    private IClusterService clusterService;
+    public HeartbeatJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.heartbeat", false, engine.getParameterService().is("start.heartbeat.job"),
+                engine, taskScheduler);
+    }
 
     @Override
     public long doJob() throws Exception {
-        if (clusterService.lock(getClusterLockName())) {
+        if (engine.getClusterService().lock(getClusterLockName())) {
             try {
-                dataService.heartbeat(false);
+                engine.getDataService().heartbeat(false);
                 return -1l;
             } finally {
-                clusterService.unlock(getClusterLockName());
+                engine.getClusterService().unlock(getClusterLockName());
             }
         } else {
             return -1l;
         }
     }
-    
+
     public String getClusterLockName() {
         return ClusterConstants.HEARTBEAT;
     }
-    
+
     public boolean isClusterable() {
         return true;
-    }
-
-    public void setDataService(IDataService dataService) {
-        this.dataService = dataService;
-    }
-
-    public void setClusterService(IClusterService clusterService) {
-        this.clusterService = clusterService;
     }
 
 }

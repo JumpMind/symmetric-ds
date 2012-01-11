@@ -21,29 +21,26 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
  * Background job that checks to see if triggers need to be regenerated.
  */
 public class SyncTriggersJob extends AbstractJob {
 
-    private ITriggerRouterService triggerRouterService;
-
-    public SyncTriggersJob() {
+    public SyncTriggersJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.synctriggers", true, engine.getParameterService().is("start.synctriggers.job"),
+                engine, taskScheduler);
     }
 
     @Override
     public long doJob() throws Exception {
-        triggerRouterService.syncTriggers();
+        engine.getTriggerRouterService().syncTriggers();
         return -1l;
     }
 
-    public void setTriggerRouterService(ITriggerRouterService triggerService) {
-        this.triggerRouterService = triggerService;
-    }
-    
     public String getClusterLockName() {
         return ClusterConstants.SYNCTRIGGERS;
     }

@@ -34,24 +34,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.ThresholdFileWriter;
+import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
+import org.jumpmind.symmetric.io.data.IDataReader;
+import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.TextualCsvDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
+import org.jumpmind.symmetric.io.data.writer.FileCsvDataWriter;
+import org.jumpmind.symmetric.io.data.writer.ICsvDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.TransformDatabaseWriter;
+import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -64,7 +68,9 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
@@ -75,7 +81,6 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
-import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -87,8 +92,6 @@ import org.jumpmind.symmetric.web.WebConstants;
  * @see IDataLoaderService
  */
 public class DataLoaderService extends AbstractService implements IDataLoaderService {
-
-    private ISymmetricDialect symmetricDialect;
 
     private IIncomingBatchService incomingBatchService;
 
@@ -103,7 +106,24 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private INodeService nodeService;
 
     private ITransformService transformService;
-    
+
+    public DataLoaderService(IParameterService parameterService,
+            ISymmetricDialect symmetricDialect, IIncomingBatchService incomingBatchService,
+            IConfigurationService configurationService, ITransportManager transportManager,
+            IStatisticManager statisticManager, INodeService nodeService,
+            ITransformService transformService, ITriggerRouterService triggerRouterService) {
+        super(parameterService, symmetricDialect);
+        this.incomingBatchService = incomingBatchService;
+        this.configurationService = configurationService;
+        this.transportManager = transportManager;
+        this.statisticManager = statisticManager;
+        this.nodeService = nodeService;
+        this.transformService = transformService;
+        this.filters = new ArrayList<IDatabaseWriterFilter>();
+        this.filters.add(new ConfigurationChangedFilter(parameterService, configurationService,
+                triggerRouterService, transformService));
+    }
+
     @Override
     protected AbstractSqlMap createSqlMap() {
         return null;
@@ -217,13 +237,28 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             IIncomingTransport transport) throws IOException {
         ManageIncomingBatchListener listener = new ManageIncomingBatchListener();
         try {
+            final List<IDataReader> readersForDatabaseLoader = new ArrayList<IDataReader>();
             long totalNetworkMillis = System.currentTimeMillis();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                transport = writeToFile(transport);
+                IDataReader dataReader = new TextualCsvDataReader(transport.open());
+                long memoryThresholdInBytes = parameterService
+                        .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+                IDataWriter dataWriter = new FileCsvDataWriter(new File(
+                        System.getProperty("java.io.tmpdir")), memoryThresholdInBytes,
+                        new ICsvDataWriterListener() {
+                            public void start(Batch batch) {
+                            }
+
+                            public void end(Batch batch, IoResource resource) {
+                                readersForDatabaseLoader.add(new TextualCsvDataReader(resource));
+                            }
+                        });
+                new DataProcessor<IDataReader, IDataWriter>(dataReader, dataWriter).process();
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
+            } else {
+                readersForDatabaseLoader.add(new TextualCsvDataReader(transport.open()));
             }
 
-            TextualCsvDataReader reader = new TextualCsvDataReader(transport.open());
             DatabaseWriterSettings settings = buildDatabaseWriterSettings();
 
             TransformTable[] transforms = null;
@@ -235,12 +270,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transforms = transformsList != null ? transformsList
                         .toArray(new TransformTable[transformsList.size()]) : null;
             }
-            TransformDatabaseWriter writer = new TransformDatabaseWriter(symmetricDialect.getPlatform(),
-                    settings, null, transforms, filters.toArray(new IDatabaseWriterFilter[filters
-                            .size()]));
-            DataProcessor<TextualCsvDataReader, TransformDatabaseWriter> processor = new DataProcessor<TextualCsvDataReader, TransformDatabaseWriter>(
-                    reader, writer, listener);
-            processor.process();
+            TransformDatabaseWriter writer = new TransformDatabaseWriter(
+                    symmetricDialect.getPlatform(), settings, null, transforms,
+                    filters.toArray(new IDatabaseWriterFilter[filters.size()]));
+
+            for (IDataReader reader : readersForDatabaseLoader) {
+                DataProcessor<IDataReader, TransformDatabaseWriter> processor = new DataProcessor<IDataReader, TransformDatabaseWriter>(
+                        reader, writer, listener);
+                processor.process();
+            }
 
             List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
 
@@ -253,13 +291,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (incomingBatch.getBatchId() != BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION
                         && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
                     log.error("LoaderFailedToUpdateBatch", incomingBatch.getBatchId());
-                }
-            }
-
-            if (transport instanceof FileIncomingTransport && batchesProcessed.size() == 0) {
-                File incomingFile = ((FileIncomingTransport) transport).getFile();
-                if (incomingFile != null && incomingFile.exists()) {
-                    log.warn("LoaderNoBatchesLoadedWarning", incomingFile.length());
                 }
             }
 
@@ -326,19 +357,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    protected IIncomingTransport writeToFile(IIncomingTransport transport) throws IOException {
-        ThresholdFileWriter writer = null;
-        try {
-            writer = new ThresholdFileWriter(
-                    parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "load");
-            IOUtils.copy(transport.open(), writer);
-        } finally {
-            IOUtils.closeQuietly(writer);
-            transport.close();
-        }
-        return new FileIncomingTransport(writer);
-    }
-
     /**
      * Load database from input stream and write acknowledgment to output
      * stream. This is used for a "push" request with a response of an
@@ -394,18 +412,17 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     class ManageIncomingBatchListener implements
-            IDataProcessorListener<TextualCsvDataReader, TransformDatabaseWriter> {
+            IDataProcessorListener<IDataReader, TransformDatabaseWriter> {
 
         private List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
 
         private IncomingBatch currentBatch;
 
-        public void beforeBatchEnd(DataContext<TextualCsvDataReader, TransformDatabaseWriter> context) {
+        public void beforeBatchEnd(DataContext<IDataReader, TransformDatabaseWriter> context) {
             enableSyncTriggers(context);
         }
 
-        public boolean beforeBatchStarted(
-                DataContext<TextualCsvDataReader, TransformDatabaseWriter> context) {
+        public boolean beforeBatchStarted(DataContext<IDataReader, TransformDatabaseWriter> context) {
             this.currentBatch = null;
             Batch batch = context.getBatch();
             if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED)
@@ -421,13 +438,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             return false;
         }
 
-        public void afterBatchStarted(DataContext<TextualCsvDataReader, TransformDatabaseWriter> context) {
+        public void afterBatchStarted(DataContext<IDataReader, TransformDatabaseWriter> context) {
             Batch batch = context.getBatch();
-            symmetricDialect.disableSyncTriggers(context.getWriter().getDatabaseWriter().getTransaction(),
-                    batch.getSourceNodeId());
+            symmetricDialect.disableSyncTriggers(context.getWriter().getDatabaseWriter()
+                    .getTransaction(), batch.getSourceNodeId());
         }
 
-        public void batchSuccessful(DataContext<TextualCsvDataReader, TransformDatabaseWriter> context) {
+        public void batchSuccessful(DataContext<IDataReader, TransformDatabaseWriter> context) {
             Batch batch = context.getBatch();
             this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
                     .getWriter().getStatistics().get(batch), true);
@@ -441,8 +458,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
 
-        protected void enableSyncTriggers(
-                DataContext<TextualCsvDataReader, TransformDatabaseWriter> context) {
+        protected void enableSyncTriggers(DataContext<IDataReader, TransformDatabaseWriter> context) {
             try {
                 ISqlTransaction transaction = context.getWriter().getDatabaseWriter()
                         .getTransaction();
@@ -454,7 +470,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
 
-        public void batchInError(DataContext<TextualCsvDataReader, TransformDatabaseWriter> context,
+        public void batchInError(DataContext<IDataReader, TransformDatabaseWriter> context,
                 Exception ex) {
             Batch batch = context.getBatch();
             this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context

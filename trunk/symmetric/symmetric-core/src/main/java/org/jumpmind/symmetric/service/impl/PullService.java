@@ -27,6 +27,7 @@ import java.net.SocketException;
 import java.util.List;
 
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
@@ -34,6 +35,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -54,6 +56,16 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
     private IClusterService clusterService;
     
+    public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+            INodeService nodeService, IDataLoaderService dataLoaderService,
+            IRegistrationService registrationService, IClusterService clusterService) {
+        super(parameterService, symmetricDialect);
+        this.nodeService = nodeService;
+        this.dataLoaderService = dataLoaderService;
+        this.registrationService = registrationService;
+        this.clusterService = clusterService;
+    }
+
     @Override
     protected AbstractSqlMap createSqlMap() {
         return null;
@@ -120,22 +132,6 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         }
 
         return statuses;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setDataLoaderService(IDataLoaderService dataLoaderService) {
-        this.dataLoaderService = dataLoaderService;
-    }
-
-    public void setRegistrationService(IRegistrationService registrationService) {
-        this.registrationService = registrationService;
-    }
-
-    public void setClusterService(IClusterService clusterService) {
-        this.clusterService = clusterService;
     }
 
 }

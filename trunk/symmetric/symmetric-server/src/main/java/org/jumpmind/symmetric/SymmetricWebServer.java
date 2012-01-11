@@ -52,6 +52,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.ServletUtils;
+import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.

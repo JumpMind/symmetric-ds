@@ -46,17 +46,13 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
     /* The standard PostgreSQL jdbc driver. */
     public static final String JDBC_DRIVER = "org.postgresql.Driver";
     /* The subprotocol used by the standard PostgreSQL driver. */
-    public static final String JDBC_SUBPROTOCOL = "postgresql";
+    public static final String JDBC_SUBPROTOCOL = "postgresql";       
 
     /*
      * Creates a new platform instance.
      */
     public PostgreSqlPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
-        
-        // Query timeout needs to be zero for postrgres because the jdbc driver does
-        // not support a timeout setting of of other than zero.
-        settings.setQueryTimeout(0);
+        super(dataSource, overrideSettings(settings), log);
 
         // this is the default length though it might be changed when building
         // PostgreSQL
@@ -103,6 +99,18 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
 
         ddlReader = new PostgreSqlDdlReader(log, this);
         ddlBuilder = new PostgreSqlBuilder(log, this);
+    }
+    
+    protected static DatabasePlatformSettings overrideSettings(DatabasePlatformSettings settings) {        
+        // Query timeout needs to be zero for postrgres because the jdbc driver does
+        // not support a timeout setting of of other than zero.
+        settings.setQueryTimeout(0);
+        return settings;
+    }
+    
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, null);
     }
 
     public String getName() {
@@ -216,7 +224,7 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
     @Override
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns) {
-        return new PostgresDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
+        return new PostgreSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                 getPlatformInfo().isDateOverridesToTimestamp(),
                 getPlatformInfo().getIdentifierQuoteString());
     }

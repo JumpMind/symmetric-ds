@@ -28,15 +28,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.jdbc.IConnectionCallback;
+import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
+import org.jumpmind.db.sql.jdbc.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /*
  * Sybase dialect was tested with jconn4 JDBC driver.
@@ -44,20 +48,13 @@ import org.springframework.jdbc.core.ConnectionCallback;
  *
  *  disk resize name = master, size = 16384
  *  create database symmetricclient on master = '30M'
- *  
  */
 public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-    
-   
-
-    public SybaseSymmetricDialect() {
+       
+    public SybaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new SybaseTriggerText();
-    }
-    
-    @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return false;
-    }  
+    } 
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName,
@@ -66,8 +63,9 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            jdbcTemplate.execute(new ConnectionCallback<Object>() {
-                public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+            ((JdbcSqlTemplate) platform.getSqlTemplate())
+            .execute(new IConnectionCallback<Boolean>() {
+                public Boolean execute(Connection con) throws SQLException {
                     String previousCatalog = con.getCatalog();
                     Statement stmt = null;
                     try {
@@ -94,11 +92,17 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
+    protected String switchCatalogForTriggerInstall(String catalog, ISqlTransaction transaction) {
         if (catalog != null) {
-            String previousCatalog = c.getCatalog();
-            c.setCatalog(catalog);
-            return previousCatalog;
+            Connection c = ((JdbcSqlTransaction) transaction).getConnection();
+            String previousCatalog;
+            try {
+                previousCatalog = c.getCatalog();
+                c.setCatalog(catalog);
+                return previousCatalog;
+            } catch (SQLException e) {
+                throw new SqlException(e);
+            }            
         } else {
             return null;
         }
@@ -112,8 +116,9 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName,
             final String triggerName) {
-        return jdbcTemplate.execute(new ConnectionCallback<Boolean>() {
-            public Boolean doInConnection(Connection con) throws SQLException, DataAccessException {
+        return ((JdbcSqlTemplate) platform.getSqlTemplate())
+        .execute(new IConnectionCallback<Boolean>() {
+            public Boolean execute(Connection con) throws SQLException {
                 String previousCatalog = con.getCatalog();
                 PreparedStatement stmt = con
                         .prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");
@@ -152,12 +157,12 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultCatalog)dbo."+tablePrefix+"_triggers_disabled(0) = 0";
+        return "$(defaultCatalog)dbo."+parameterService.getTablePrefix()+"_triggers_disabled(0) = 0";
     }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-    	return platform.getDefaultCatalog() + ".dbo."+tablePrefix+"_txid(0)";
+    	return platform.getDefaultCatalog() + ".dbo."+parameterService.getTablePrefix()+"_txid(0)";
     }
 
     @Override

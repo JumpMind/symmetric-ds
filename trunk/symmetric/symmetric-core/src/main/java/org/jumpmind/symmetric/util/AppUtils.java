@@ -36,8 +36,6 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
-import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
@@ -125,17 +123,6 @@ public class AppUtils {
             return tz.substring(0, 3) + ":" + tz.substring(3, 5);
         }
         return null;
-    }
-
-    /**
-     * Handy utility method to look up a SymmetricDS component given the bean
-     * name.
-     * 
-     * @see Constants
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T find(String name, ISymmetricEngine engine) {
-        return (T) engine.getApplicationContext().getBean(name);
     }
 
     /**

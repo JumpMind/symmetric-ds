@@ -16,17 +16,15 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.sql.Connection;
 import java.sql.DataTruncation;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -41,9 +39,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.DeploymentType;
@@ -51,16 +52,16 @@ import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
-import org.jumpmind.symmetric.db.JdbcBatchPreparedStatementCallback;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.job.PushHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
-import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
@@ -71,26 +72,15 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.IModelRetrievalHandler;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallback;
 
 /**
  * @see IDataService
@@ -98,7 +88,7 @@ import org.springframework.transaction.support.TransactionCallback;
 public class DataService extends AbstractService implements IDataService {
 
     private DeploymentType deploymentType;
-    
+
     private ITriggerRouterService triggerRouterService;
 
     private INodeService nodeService;
@@ -112,32 +102,48 @@ public class DataService extends AbstractService implements IDataService {
     private List<IReloadListener> reloadListeners;
 
     private List<IHeartbeatListener> heartbeatListeners;
-    
+
     private IStatisticManager statisticManager;
+
+    public DataService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+            DeploymentType deploymentType, ITriggerRouterService triggerRouterService,
+            INodeService nodeService, IPurgeService purgeService,
+            IConfigurationService configurationService, IOutgoingBatchService outgoingBatchService,
+            IStatisticManager statisticManager) {
+        super(parameterService, symmetricDialect);
+        this.deploymentType = deploymentType;
+        this.triggerRouterService = triggerRouterService;
+        this.nodeService = nodeService;
+        this.purgeService = purgeService;
+        this.configurationService = configurationService;
+        this.outgoingBatchService = outgoingBatchService;
+        this.statisticManager = statisticManager;
+        this.reloadListeners = new ArrayList<IReloadListener>();
+        this.heartbeatListeners = new ArrayList<IHeartbeatListener>();
+        this.heartbeatListeners.add(new PushHeartbeatListener(parameterService, this, nodeService,
+                symmetricDialect));
+    }
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
 
     @Override
     protected AbstractSqlMap createSqlMap() {
-        return new DataServiceSqlMap(symmetricDialect.getPlatform(),
-                createReplacementTokens());
+        return new DataServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
     }
-    
-    @Transactional
+
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter) {
         insertReloadEvent(targetNode, triggerRouter, null);
     }
 
-    @Transactional
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter,
             final String overrideInitialLoadSelect) {
         TriggerHistory history = lookupTriggerHistory(triggerRouter.getTrigger());
         // initial_load_select for table can be overridden by populating the
         // row_data
         Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD,
-                overrideInitialLoadSelect != null ? overrideInitialLoadSelect : triggerRouter
-                        .getInitialLoadSelect(), null, history, triggerRouter.getTrigger().getChannelId(), null,
-                null);
+                overrideInitialLoadSelect != null ? overrideInitialLoadSelect
+                        : triggerRouter.getInitialLoadSelect(), null, history, triggerRouter
+                        .getTrigger().getChannelId(), null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), triggerRouter
                 .getRouter().getRouterId(), true);
     }
@@ -145,11 +151,11 @@ public class DataService extends AbstractService implements IDataService {
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
         TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
                 .getTriggerId());
-        
+
         if (history == null) {
             triggerRouterService.syncTriggers();
-            history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
-                    .getTriggerId());
+            history = triggerRouterService
+                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
         }
 
         if (history == null) {
@@ -159,28 +165,33 @@ public class DataService extends AbstractService implements IDataService {
         return history;
     }
 
-    public void insertPurgeEvent(final Node targetNode, final TriggerRouter triggerRouter, boolean isLoad) {
+    public void insertPurgeEvent(final Node targetNode, final TriggerRouter triggerRouter,
+            boolean isLoad) {
         String sql = symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter);
-        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
-                .getTriggerId());
-        Data data = new Data(history.getSourceTableName(), DataEventType.SQL, CsvUtils
-                .escapeCsvData(sql), null, history, triggerRouter.getTrigger().getChannelId(), null, null);
-        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
-                triggerRouter.getRouter().getRouterId(), isLoad);
+        TriggerHistory history = triggerRouterService
+                .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
+        Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
+                CsvUtils.escapeCsvData(sql), null, history, triggerRouter.getTrigger()
+                        .getChannelId(), null, null);
+        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), triggerRouter
+                .getRouter().getRouterId(), isLoad);
     }
 
-    public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql, boolean isLoad) {
+    public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql,
+            boolean isLoad) {
         TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
                 .getTriggerId());
-        Data data = new Data(history.getSourceTableName(), DataEventType.SQL, CsvUtils
-                .escapeCsvData(sql), null, history, trigger.getChannelId(), null, null);
+        Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
+                CsvUtils.escapeCsvData(sql), null, history, trigger.getChannelId(), null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
-    
+
     private TriggerHistory findTriggerHistoryForGenericSync() {
-        String triggerTableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER);
-        TriggerHistory history = triggerRouterService.findTriggerHistory(triggerTableName.toUpperCase());
+        String triggerTableName = TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_TRIGGER);
+        TriggerHistory history = triggerRouterService.findTriggerHistory(triggerTableName
+                .toUpperCase());
         if (history == null) {
             history = triggerRouterService.findTriggerHistory(triggerTableName);
         }
@@ -189,31 +200,37 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(final Node targetNode, String sql, boolean isLoad) {
         TriggerHistory history = findTriggerHistoryForGenericSync();
-        Data data = new Data(history.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null,
-                history, Constants.CHANNEL_CONFIG, null, null);
+        Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
+                CsvUtils.escapeCsvData(sql), null, history, Constants.CHANNEL_CONFIG, null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
 
     public int countDataInRange(long firstDataId, long secondDataId) {
-        return jdbcTemplate.queryForInt(getSql("countDataInRangeSql"), firstDataId, secondDataId);
+        return sqlTemplate.queryForInt(getSql("countDataInRangeSql"), firstDataId, secondDataId);
     }
-    
+
     public void checkForAndUpdateMissingChannelIds(long firstDataId, long lastDataId) {
-        int numberUpdated = jdbcTemplate.update(getSql("checkForAndUpdateMissingChannelIdSql"), Constants.CHANNEL_DEFAULT, 
-                firstDataId, lastDataId);
+        int numberUpdated = sqlTemplate.update(getSql("checkForAndUpdateMissingChannelIdSql"),
+                Constants.CHANNEL_DEFAULT, firstDataId, lastDataId);
         if (numberUpdated > 0) {
-            log.warn("DataFoundWithWrongChannelIds", numberUpdated, firstDataId, lastDataId, Constants.CHANNEL_DEFAULT);   
-        }        
+            log.warn("DataFoundWithWrongChannelIds", numberUpdated, firstDataId, lastDataId,
+                    Constants.CHANNEL_DEFAULT);
+        }
     }
 
     public void insertCreateEvent(final Node targetNode, final TriggerRouter triggerRouter,
             String xml, boolean isLoad) {
         TriggerHistory history = triggerRouterService
                 .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
-        Data data = new Data(triggerRouter.getTrigger().getSourceTableName(), DataEventType.CREATE,
-                CsvUtils.escapeCsvData(xml), null, history, 
-                parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD : triggerRouter.getTrigger().getChannelId(), null, null);
+        Data data = new Data(
+                triggerRouter.getTrigger().getSourceTableName(),
+                DataEventType.CREATE,
+                CsvUtils.escapeCsvData(xml),
+                null,
+                history,
+                parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD
+                        : triggerRouter.getTrigger().getChannelId(), null, null);
         try {
             insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                     Constants.UNKNOWN_ROUTER_ID, isLoad);
@@ -225,91 +242,97 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public long insertData(final Data data) {
-        long id = symmetricDialect.insertWithGeneratedKey(getSql("insertIntoDataSql"),
-                SequenceIdentifier.DATA, new PreparedStatementCallback<Object>() {
-                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
-                            DataAccessException {
-                        ps.setString(1, data.getTableName());
-                        ps.setString(2, data.getEventType().getCode());
-                        ps.setString(3, data.getRowData());
-                        ps.setString(4, data.getPkData());
-                        ps.setString(5, data.getOldData());
-                        ps.setLong(6, data.getTriggerHistory() != null ? data.getTriggerHistory()
-                                .getTriggerHistoryId() : -1);
-                        ps.setString(7, data.getChannelId());
-                        return null;
-                    }
-                });
+    public long insertData(Data data) {
+        ISqlTransaction transaction = null;
+        long dataId = -1;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            dataId = insertData(transaction, data);
+            transaction.commit();
+            return dataId;
+        } finally {
+            close(transaction);
+        }
+    }
+
+    protected long insertData(ISqlTransaction transaction, final Data data) {
+        long id = transaction.insertWithGeneratedKey(getSql("insertIntoDataSql"), symmetricDialect
+                .getSequenceKeyName(SequenceIdentifier.DATA), symmetricDialect
+                .getSequenceName(SequenceIdentifier.DATA), data.getTableName(), data
+                .getDataEventType().getCode(), data.getRowData(), data.getPkData(), data
+                .getOldData(), data.getTriggerHistory() != null ? data.getTriggerHistory()
+                .getTriggerHistoryId() : -1, data.getChannelId());
         data.setDataId(id);
         return id;
     }
 
-    public void insertDataEvent(DataEvent dataEvent) {
-        this.insertDataEvent(jdbcTemplate, dataEvent.getDataId(), dataEvent.getBatchId(), dataEvent
-                .getRouterId());
+    protected void insertDataEvent(ISqlTransaction transaction, DataEvent dataEvent) {
+        this.insertDataEvent(transaction, dataEvent.getDataId(), dataEvent.getBatchId(),
+                dataEvent.getRouterId());
     }
 
-    public void insertDataEvent(long dataId, long batchId, String routerId) {
-        this.insertDataEvent(jdbcTemplate, dataId, batchId, routerId);
-    }
-
-    public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
+    protected void insertDataEvent(ISqlTransaction transaction, long dataId, long batchId,
+            String routerId) {
         try {
-            template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId,
+            transaction.execute(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId,
                     StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId },
                     new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR });
         } catch (RuntimeException ex) {
-            log.error("DataEventInsertFailed", ex, dataId, batchId, routerId);
+            log.error("Could not insert a data event: data_id=%d batch_id=%d router_id=%s", ex,
+                    dataId, batchId, routerId);
             throw ex;
         }
     }
-    
-    public void insertDataEvents(JdbcTemplate template, final List<DataEvent> events) {
+
+    public void insertDataEvents(ISqlTransaction transaction, final List<DataEvent> events) {
         if (events.size() > 0) {
-            JdbcBatchPreparedStatementCallback callback = new JdbcBatchPreparedStatementCallback(
-                    symmetricDialect, new BatchPreparedStatementSetter() {
-
-                        public void setValues(PreparedStatement ps, int i) throws SQLException {
-                            DataEvent event = events.get(i);
-                            ps.setLong(1, event.getDataId());
-                            ps.setLong(2, event.getBatchId());
-                            ps
-                                    .setString(
-                                            3,
-                                            StringUtils.isBlank(event.getRouterId()) ? Constants.UNKNOWN_ROUTER_ID
-                                                    : event.getRouterId());
-                        }
-
-                        public int getBatchSize() {
-                            return events.size();
-                        }
-                    }, parameterService.getInt(ParameterConstants.JDBC_EXECUTE_BATCH_SIZE));
-
-            template.execute(getSql("insertIntoDataEventSql"), callback);
+            for (DataEvent dataEvent : events) {
+                insertDataEvent(transaction, dataEvent);
+            }
         }
-
     }
+
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId,
             List<Node> nodes, String routerId, boolean isLoad) {
-        long dataId = insertData(data);
-        for (Node node : nodes) {
-            insertDataEventAndOutgoingBatch(dataId, channelId, node.getNodeId(), data.getEventType(), routerId, isLoad);
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            long dataId = insertData(transaction, data);
+            for (Node node : nodes) {
+                insertDataEventAndOutgoingBatch(transaction, dataId, channelId, node.getNodeId(),
+                        data.getDataEventType(), routerId, isLoad);
+            }
+            transaction.commit();
+        } finally {
+            close(transaction);
         }
     }
 
-    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad) {
-        long dataId = insertData(data);
-        insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), nodeId, data.getEventType(), routerId, isLoad);
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId,
+            boolean isLoad) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            long dataId = insertData(transaction, data);
+            insertDataEventAndOutgoingBatch(transaction, dataId, data.getChannelId(), nodeId,
+                    data.getDataEventType(), routerId, isLoad);
+            transaction.commit();
+        } finally {
+            close(transaction);
+        }
     }
 
-    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, DataEventType eventType,
-            String routerId, boolean isLoad) {
-        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD : channelId, Status.NE);
+    protected void insertDataEventAndOutgoingBatch(ISqlTransaction transaction, long dataId,
+            String channelId, String nodeId, DataEventType eventType, String routerId,
+            boolean isLoad) {
+        OutgoingBatch outgoingBatch = new OutgoingBatch(
+                nodeId,
+                parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL) && isLoad ? Constants.CHANNEL_RELOAD
+                        : channelId, Status.NE);
         outgoingBatch.setLoadFlag(isLoad);
         outgoingBatch.incrementEventCount(eventType);
-        outgoingBatchService.insertOutgoingBatch(outgoingBatch);
-        insertDataEvent(new DataEvent(dataId, outgoingBatch.getBatchId(), routerId));
+        outgoingBatchService.insertOutgoingBatch(transaction, outgoingBatch);
+        insertDataEvent(transaction, new DataEvent(dataId, outgoingBatch.getBatchId(), routerId));
     }
 
     public String reloadNode(String nodeId) {
@@ -325,33 +348,15 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertReloadEvents(Node targetNode) {
-        
-        // outgoing data events are pointless because we are reloading all data
-        outgoingBatchService.markAllAsSentForNode(targetNode);
-        
-        if (parameterService.is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL)) {
-            newTransactionTemplate.execute(new TransactionalInsertReloadEventsDelegate(targetNode));
-        } else {
-            new TransactionalInsertReloadEventsDelegate(targetNode).doInTransaction(null);
-        }
-        
-        // remove all incoming events from the node are starting a reload for.
-        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
-        
-    }
-    
-    class TransactionalInsertReloadEventsDelegate implements TransactionCallback<Object> {
 
-        Node targetNode;
-
-        public TransactionalInsertReloadEventsDelegate(Node targetNode) {
-            this.targetNode = targetNode;
-        }
-
-        public Object doInTransaction(TransactionStatus status) {
+        // TODO transactional?
+        {
+            // outgoing data events are pointless because we are reloading all
+            // data
+            outgoingBatchService.markAllAsSentForNode(targetNode);
 
             Node sourceNode = nodeService.findIdentity();
-            
+
             if (reloadListeners != null) {
                 for (IReloadListener listener : reloadListeners) {
                     listener.beforeReload(targetNode);
@@ -362,17 +367,18 @@ public class DataService extends AbstractService implements IDataService {
             // that an initial load is currently happening
             insertNodeSecurityUpdate(targetNode, true);
 
-            List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(triggerRouterService
-                    .getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(),
-                            targetNode.getNodeGroupId()));
-            
+            List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
+                    triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(
+                            sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()));
+
             for (Iterator<TriggerRouter> iterator = triggerRouters.iterator(); iterator.hasNext();) {
                 TriggerRouter triggerRouter = iterator.next();
                 Trigger trigger = triggerRouter.getTrigger();
-                Table table = symmetricDialect.getPlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger
-                        .getSourceSchemaName(), trigger.getSourceTableName(), true);
+                Table table = symmetricDialect.getPlatform().getTableFromCache(
+                        trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                        trigger.getSourceTableName(), true);
                 if (table == null) {
-                    log.warn("TriggerTableMissing",trigger.qualifiedSourceTableName());
+                    log.warn("TriggerTableMissing", trigger.qualifiedSourceTableName());
                     iterator.remove();
                 }
             }
@@ -409,31 +415,33 @@ public class DataService extends AbstractService implements IDataService {
                     parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL));
 
             statisticManager.incrementNodesLoaded(1);
-            
-            return null;
+
+            // remove all incoming events from the node are starting a reload
+            // for.
+            purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+
         }
+
     }
 
     private void insertNodeSecurityUpdate(Node node, boolean isReload) {
-        Data data = createData(null, null, tablePrefix + "_node_security", " t.node_id = '"
-                + node.getNodeId() + "'");
+        Data data = createData(null, null, tablePrefix + "_node_security",
+                " t.node_id = '" + node.getNodeId() + "'");
         if (data != null) {
             insertDataAndDataEventAndOutgoingBatch(data, node.getNodeId(),
                     Constants.UNKNOWN_ROUTER_ID, isReload);
         }
     }
 
-    @Transactional
     public void sendScript(String nodeId, String script, boolean isLoad) {
         Node targetNode = nodeService.findNode(nodeId);
         TriggerHistory history = findTriggerHistoryForGenericSync();
-        Data data = new Data(history.getSourceTableName(), DataEventType.BSH, CsvUtils.escapeCsvData(script), null,
-                history, Constants.CHANNEL_CONFIG, null, null);
+        Data data = new Data(history.getSourceTableName(), DataEventType.BSH,
+                CsvUtils.escapeCsvData(script), null, history, Constants.CHANNEL_CONFIG, null, null);
         insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                 Constants.UNKNOWN_ROUTER_ID, isLoad);
     }
 
-    @Transactional
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
             String sql, boolean isLoad) {
         Node sourceNode = nodeService.findIdentity();
@@ -443,8 +451,8 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        Set<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouterForTableForCurrentNode(
-                catalogName, schemaName, tableName, true);
+        Set<TriggerRouter> triggerRouters = triggerRouterService
+                .getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, true);
         if (triggerRouters == null || triggerRouters.size() == 0) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node "
@@ -456,12 +464,10 @@ public class DataService extends AbstractService implements IDataService {
         return "Successfully create SQL event for node " + targetNode.getNodeId();
     }
 
-    @Transactional
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName) {
         return reloadTable(nodeId, catalogName, schemaName, tableName, null);
     }
 
-    @Transactional
     public String reloadTable(String nodeId, String catalogName, String schemaName,
             String tableName, String overrideInitialLoadSelect) {
         Node sourceNode = nodeService.findIdentity();
@@ -471,8 +477,8 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        Set<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouterForTableForCurrentNode(
-                catalogName, schemaName, tableName, true);
+        Set<TriggerRouter> triggerRouters = triggerRouterService
+                .getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, true);
         if (triggerRouters == null || triggerRouters.size() == 0) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node "
@@ -507,10 +513,11 @@ public class DataService extends AbstractService implements IDataService {
         for (NodeGroupLink nodeGroupLink : links) {
             if (nodeGroupLink.getDataEventAction() == NodeGroupLinkAction.P) {
                 Set<TriggerRouter> triggerRouters = triggerRouterService
-                        .getTriggerRouterForTableForCurrentNode(nodeGroupLink, null, null, tableName, false);
+                        .getTriggerRouterForTableForCurrentNode(nodeGroupLink, null, null,
+                                tableName, false);
                 if (triggerRouters != null && triggerRouters.size() > 0) {
-                    Data data = createData(triggerRouters.iterator().next().getTrigger(), String.format(
-                            " t.node_id = '%s'", node.getNodeId()));
+                    Data data = createData(triggerRouters.iterator().next().getTrigger(),
+                            String.format(" t.node_id = '%s'", node.getNodeId()));
                     if (data != null) {
                         insertData(data);
                     } else {
@@ -530,8 +537,8 @@ public class DataService extends AbstractService implements IDataService {
     public Data createData(String catalogName, String schemaName, String tableName,
             String whereClause) {
         Data data = null;
-        Set<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouterForTableForCurrentNode(
-                catalogName, schemaName, tableName, false);
+        Set<TriggerRouter> triggerRouters = triggerRouterService
+                .getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, false);
         if (triggerRouters != null && triggerRouters.size() > 0) {
             data = createData(triggerRouters.iterator().next().getTrigger(), whereClause);
         }
@@ -541,119 +548,100 @@ public class DataService extends AbstractService implements IDataService {
     public Data createData(Trigger trigger, String whereClause) {
         Data data = null;
         if (trigger != null) {
-            TriggerHistory triggerHistory = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger
-                    .getTriggerId());
+            TriggerHistory triggerHistory = triggerRouterService
+                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
             if (triggerHistory == null) {
-                triggerHistory = triggerRouterService.findTriggerHistory(trigger.getSourceTableName());
+                triggerHistory = triggerRouterService.findTriggerHistory(trigger
+                        .getSourceTableName());
                 if (triggerHistory == null) {
-                    triggerHistory = triggerRouterService.findTriggerHistory(trigger.getSourceTableName()
-                            .toUpperCase());
+                    triggerHistory = triggerRouterService.findTriggerHistory(trigger
+                            .getSourceTableName().toUpperCase());
                 }
             }
             if (triggerHistory != null) {
 
-            String rowData = null;
-            String pkData = null;
-            if (whereClause != null) {
-                rowData = (String) jdbcTemplate.queryForObject(symmetricDialect.createCsvDataSql(trigger, triggerHistory,
-                        configurationService.getChannel(trigger.getChannelId()),
-                        whereClause), String.class);
-                if (rowData != null) {
-                    rowData = rowData.trim();
+                String rowData = null;
+                String pkData = null;
+                if (whereClause != null) {
+                    rowData = (String) sqlTemplate.queryForObject(symmetricDialect
+                            .createCsvDataSql(trigger, triggerHistory,
+                                    configurationService.getChannel(trigger.getChannelId()),
+                                    whereClause), String.class);
+                    if (rowData != null) {
+                        rowData = rowData.trim();
+                    }
+                    pkData = (String) sqlTemplate.queryForObject(symmetricDialect
+                            .createCsvPrimaryKeySql(trigger, triggerHistory,
+                                    configurationService.getChannel(trigger.getChannelId()),
+                                    whereClause), String.class);
+                    if (pkData != null) {
+                        pkData = pkData.trim();
+                    }
                 }
-                pkData = (String) jdbcTemplate.queryForObject(symmetricDialect.createCsvPrimaryKeySql(
-                        trigger, triggerHistory, configurationService.getChannel(trigger.getChannelId()), whereClause), String.class);
-                if (pkData != null) {
-                    pkData = pkData.trim();
-                }
-            }
                 data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData,
-                        pkData, triggerHistory, trigger
-                                .getChannelId(), null, null);
+                        pkData, triggerHistory, trigger.getChannelId(), null, null);
             }
         }
         return data;
     }
 
-    public DataRef getDataRef() {
-        List<DataRef> refs = getSimpleTemplate().query(getSql("findDataRefSql"),
-                new RowMapper<DataRef>() {
-                    public DataRef mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        return new DataRef(rs.getLong(1), rs.getDate(2));
-                    }
-                });
-        if (refs.size() > 0) {
-            return refs.get(0);
-        } else {
-            return new DataRef(-1, new Date());
-        }
-    }
-    
     public List<DataGap> findDataGapsByStatus(DataGap.Status status) {
-        return getSimpleTemplate().query(getSql("findDataGapsByStatusSql"),
-                new RowMapper<DataGap>() {
-                    public DataGap mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        return new DataGap(rs.getLong(1), rs.getLong(2), rs.getTimestamp(3));
-                    }
-                }, status.name());
+        return sqlTemplate.query(getSql("findDataGapsByStatusSql"), new ISqlRowMapper<DataGap>() {
+            public DataGap mapRow(Row rs) {
+                return new DataGap(rs.getLong("start_id"), rs.getLong("end_id"), rs
+                        .getDateTime("create_time"));
+            }
+        }, status.name());
     }
-    
-    public List<DataGap> findDataGaps() {    	
-    	final long maxDataToSelect = parameterService.getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
+
+    public List<DataGap> findDataGaps() {
+        final long maxDataToSelect = parameterService
+                .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         List<DataGap> gaps = findDataGapsByStatus(DataGap.Status.GP);
         boolean lastGapExists = false;
         for (DataGap dataGap : gaps) {
-			lastGapExists |= dataGap.gapSize() >= maxDataToSelect-1;		
-		}
-        
-        if (!lastGapExists) {                        
+            lastGapExists |= dataGap.gapSize() >= maxDataToSelect - 1;
+        }
+
+        if (!lastGapExists) {
             long maxDataId = findMaxDataEventDataId();
             if (maxDataId > 0) {
                 maxDataId++;
             }
-            insertDataGap(new DataGap(maxDataId, maxDataId+maxDataToSelect));
+            insertDataGap(new DataGap(maxDataId, maxDataId + maxDataToSelect));
             gaps = findDataGaps();
         }
         return gaps;
 
     }
-    
+
     public long findMaxDataEventDataId() {
-        return jdbcTemplate.queryForLong(getSql("selectMaxDataEventDataIdSql"));
+        return sqlTemplate.queryForLong(getSql("selectMaxDataEventDataIdSql"));
     }
 
     public void insertDataGap(DataGap gap) {
         try {
-        jdbcTemplate.update(getSql("insertDataGapSql"), new Object[] { DataGap.Status.GP.name(),
-                AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
-                Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
+            sqlTemplate.update(getSql("insertDataGapSql"), new Object[] { DataGap.Status.GP.name(),
+                    AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
+                    Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
         } catch (DataIntegrityViolationException ex) {
             log.warn("GapAlreadyExisted", gap.getStartId(), gap.getEndId());
-            updateDataGap(gap,  DataGap.Status.GP);
+            updateDataGap(gap, DataGap.Status.GP);
         }
     }
 
     public void updateDataGap(DataGap gap, DataGap.Status status) {
-        jdbcTemplate.update(
+        sqlTemplate.update(
                 getSql("updateDataGapSql"),
                 new Object[] { status.name(), AppUtils.getHostName(), gap.getStartId(),
                         gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
                         Types.NUMERIC });
     }
 
-    public void saveDataRef(DataRef dataRef) {
-        if (0 >= jdbcTemplate.update(getSql("updateDataRefSql"), new Object[] {
-                dataRef.getRefDataId(), dataRef.getRefTime() }, new int[] { Types.NUMERIC,
-                Types.TIMESTAMP })) {
-            jdbcTemplate.update(getSql("insertDataRefSql"), new Object[] { dataRef.getRefDataId(),
-                    dataRef.getRefTime() }, new int[] { Types.NUMERIC, Types.TIMESTAMP });
-        }
-    }
-
     public Date findCreateTimeOfEvent(long dataId) {
         try {
-            return (Date) jdbcTemplate.queryForObject(getSql("findDataEventCreateTimeSql"),
-                    new Object[] { dataId }, new int[] { Types.NUMERIC }, Date.class);
+            return sqlTemplate.queryForObject(getSql("findDataEventCreateTimeSql"), Date.class,
+                    new Object[] { dataId }, new int[] { Types.NUMERIC });
         } catch (EmptyResultDataAccessException ex) {
             return null;
         }
@@ -661,12 +649,12 @@ public class DataService extends AbstractService implements IDataService {
 
     public Date findCreateTimeOfData(long dataId) {
         try {
-            return (Date) jdbcTemplate.queryForObject(getSql("findDataCreateTimeSql"),
-                    new Object[] { dataId }, new int[] { Types.NUMERIC }, Date.class);
+            return sqlTemplate.queryForObject(getSql("findDataCreateTimeSql"), Date.class,
+                    new Object[] { dataId }, new int[] { Types.NUMERIC });
         } catch (EmptyResultDataAccessException ex) {
             return null;
         }
-    }  
+    }
 
     public Map<String, String> getRowDataAsMap(Data data) {
         Map<String, String> map = new HashMap<String, String>();
@@ -734,7 +722,6 @@ public class DataService extends AbstractService implements IDataService {
     /**
      * @see IDataService#heartbeat()
      */
-    @Transactional
     public void heartbeat(boolean force) {
         List<IHeartbeatListener> listeners = getHeartbeatListeners(force);
         if (listeners.size() > 0) {
@@ -749,8 +736,7 @@ public class DataService extends AbstractService implements IDataService {
                 me.setSymmetricVersion(Version.version());
                 me.setDatabaseType(symmetricDialect.getName());
                 me.setDatabaseVersion(symmetricDialect.getVersion());
-                me.setBatchInErrorCount(outgoingBatchService
-                        .countOutgoingBatchesInError());
+                me.setBatchInErrorCount(outgoingBatchService.countOutgoingBatchesInError());
                 if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
                     log.info("NodeConfigurationUpdating");
                     me.setSchemaVersion(parameterService
@@ -816,91 +802,36 @@ public class DataService extends AbstractService implements IDataService {
             return false;
         }
     }
-    
+
     private final String getOrderByDataId(boolean descending) {
         return descending ? " order by d.data_id desc" : "order by d.data_id asc";
     }
-    
+
     public List<Number> listDataIds(long batchId, boolean descending) {
-        return jdbcTemplate.query(getSql("selectEventDataIdsSql", getOrderByDataId(descending)), new Object[] {batchId}, new SingleColumnRowMapper<Number>());
+        return sqlTemplate.query(getSql("selectEventDataIdsSql", getOrderByDataId(descending)),
+                new NumberMapper(), batchId);
     }
-    
-    public List<Data> listData(long batchId, long startDataId, String channelId, boolean descending, final int maxRowsToRetrieve) {
+
+    public List<Data> listData(long batchId, long startDataId, String channelId,
+            boolean descending, final int maxRowsToRetrieve) {
         final List<Data> list = new ArrayList<Data>(maxRowsToRetrieve);
-        handleDataSelect(batchId, startDataId, channelId, descending, new IModelRetrievalHandler<Data, String>() {
-            public boolean retrieved(Data data, String routerId, int count) throws IOException {
-                list.add(data);
-                return count < maxRowsToRetrieve;
-            }
-        });
+        // TODO
+        // handleDataSelect(batchId, startDataId, channelId, descending,
+        // new IModelRetrievalHandler<Data, String>() {
+        // public boolean retrieved(Data data, String routerId, int count)
+        // throws IOException {
+        // list.add(data);
+        // return count < maxRowsToRetrieve;
+        // }
+        // });
         return list;
     }
 
-    public void handleDataSelect(final long batchId, final long startDataId, final String channelId, final boolean descending,  
-            final IModelRetrievalHandler<Data, String> handler) {
-        jdbcTemplate.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                ResultSet rs = null;
-                PreparedStatement ps = null;
-                boolean autoCommitFlag = conn.getAutoCommit();
-                try {
-                    if (symmetricDialect.requiresAutoCommitFalseToSetFetchSize()) {
-                        conn.setAutoCommit(false);
-                    }
-                    String orderBy = getOrderByDataId(descending);
-                    String startAtDataIdSql = startDataId >= 0l ? (descending ? " and d.data_id <= ? " : " and d.data_id >= ? ") : "";
-                    String sql = symmetricDialect.massageDataExtractionSql(getSql("selectEventDataToExtractSql", startAtDataIdSql, orderBy), 
-                            configurationService.getNodeChannel(channelId, false).getChannel());
-                    ps = conn.prepareStatement(sql,
-                            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                    ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-                    ps.setFetchSize(symmetricDialect.getStreamingResultsFetchSize());
-                    ps.setLong(1, batchId);
-                    if (StringUtils.isNotBlank(startAtDataIdSql)) {
-                        ps.setLong(2, startDataId);
-                    }
-                    long ts = System.currentTimeMillis();
-                    rs = ps.executeQuery();
-                    long executeTimeInMs = System.currentTimeMillis()-ts;
-                    if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-                        log.warn("LongRunningOperation", "selecting data to extract", executeTimeInMs);                        
-                    }
-                    int count = 0;
-                    boolean continueReading = true;
-                    ts = System.currentTimeMillis();
-                    while (rs.next() && continueReading) {
-                        try {
-                            continueReading = handler.retrieved(readData(rs), rs.getString(13), ++count);
-                        } catch (RuntimeException e) {
-                            throw e;
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        
-                        executeTimeInMs = System.currentTimeMillis()-ts;
-                        if (executeTimeInMs >  DateUtils.MILLIS_PER_MINUTE * 10) {
-                            log.warn("LongRunningOperation", "extracted " + count + " data for batch " + batchId, executeTimeInMs);
-                            ts = System.currentTimeMillis();
-                        }
-                    }
-                } finally {
-                    if (symmetricDialect.requiresAutoCommitFalseToSetFetchSize()) {
-                        conn.commit();
-                        conn.setAutoCommit(autoCommitFlag);
-                    }
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(ps);
-                }
-                return null;
-            }
-        });
-    }
-    
     public Data readData(ResultSet results) throws SQLException {
         Data data = new Data();
         data.setDataId(results.getLong(1));
         data.setTableName(results.getString(2));
-        data.setEventType(DataEventType.getEventType(results.getString(3)));
+        data.setDataEventType(DataEventType.getEventType(results.getString(3)));
         data.setRowData(results.getString(4));
         data.setPkData(results.getString(5));
         data.setOldData(results.getString(6));
@@ -917,37 +848,9 @@ public class DataService extends AbstractService implements IDataService {
         // Be careful adding more columns. Callers might not be expecting them!
         return data;
     }
-    
+
     public long findMaxDataId() {
-        return jdbcTemplate.queryForLong(getSql("selectMaxDataIdSql"));
+        return sqlTemplate.queryForLong(getSql("selectMaxDataIdSql"));
     }
 
-
-    public void setTriggerRouterService(ITriggerRouterService triggerService) {
-        this.triggerRouterService = triggerService;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setPurgeService(IPurgeService purgeService) {
-        this.purgeService = purgeService;
-    }
-
-    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
-        this.outgoingBatchService = outgoingBatchService;
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
-    }
-    
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
-    }
- 
-    public void setDeploymentType(DeploymentType deploymentType) {
-        this.deploymentType = deploymentType;
-    }
 }

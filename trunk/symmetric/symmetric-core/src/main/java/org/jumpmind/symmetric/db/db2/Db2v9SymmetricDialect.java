@@ -21,8 +21,11 @@ package org.jumpmind.symmetric.db.db2;
 
 import java.net.URL;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymmetricDialect {
@@ -31,10 +34,17 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
+    public Db2v9SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
+    }
+
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
+        ISqlTransaction transaction = null;
         try {
-            enableSyncTriggers(jdbcTemplate);
+            transaction = platform.getSqlTemplate().startSqlTransaction();
+            enableSyncTriggers(transaction);
+            transaction.commit();
         } catch (Exception e) {
             try {
                 log.info("EnvironmentVariablesCreating", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
@@ -43,6 +53,8 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
             } catch (Exception ex) {
                 log.error("DB2DialectInitializingError", ex);
             }
+        } finally {
+            close(transaction);
         }
     }
     
@@ -57,9 +69,9 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
         }
     }
 
-    public void enableSyncTriggers(JdbcTemplate jdbcTemplate) {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
 
     public String getSyncTriggersExpression() {

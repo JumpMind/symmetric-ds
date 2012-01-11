@@ -16,46 +16,22 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.Date;
 
+import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 /**
  * This is the data that changed due to a data sync trigger firing.
  */
-public class Data extends AbstractCsvData implements Serializable {
-    
+public class Data extends CsvData implements Serializable {
+
     private static final long serialVersionUID = 1L;
-
-    /**
-     * Primary key
-     */
-    private long dataId;
-
-    private String tableName;
-
-    private DataEventType eventType;
-
-    /**
-     * Comma delimited row data.
-     */
-    private String rowData;
-
-    /**
-     * Comma delimited primary key data.
-     */
-    private String pkData;
-
-    /**
-     * To support column-level sync and conflict resolution. Comma delimited old
-     * row data from an update.
-     */
-
-    private String oldData;
 
     /**
      * This is a reference to the triggerHistory row the trigger referred to
@@ -63,111 +39,87 @@ public class Data extends AbstractCsvData implements Serializable {
      */
     private TriggerHistory triggerHistory;
 
-    private String channelId;
-
-    private String transactionId;
-
-    private String sourceNodeId;
-
-    private String externalData;
-
-    /**
-     * This is populated by the trigger when the event happens. It will be
-     * useful for research.
-     */
-    private Date createTime;
-
-    public Data(long dataId, String pkData, String rowData,
-            DataEventType eventType, String tableName, Date createTime,
-            TriggerHistory triggerHistory, String channelId,
+    public Data(long dataId, String pkData, String rowData, DataEventType eventType,
+            String tableName, Date createTime, TriggerHistory triggerHistory, String channelId,
             String transactionId, String sourceNodeId) {
         super();
-        this.dataId = dataId;
-        this.pkData = pkData;
-        this.rowData = rowData;
-        this.eventType = eventType;
-        this.tableName = tableName;
-        this.createTime = createTime;
+        this.setDataId(dataId);
+        this.setPkData(pkData);
+        this.setRowData(rowData);
+        this.setDataEventType(eventType);
+        this.setTableName(tableName);
+        this.setCreateTime(createTime);
+        this.setChannelId(channelId);
+        this.setTransactionId(transactionId);
+        this.setSourceNodeId(sourceNodeId);
         this.triggerHistory = triggerHistory;
-        this.channelId = channelId;
-        this.transactionId = transactionId;
-        this.sourceNodeId = sourceNodeId;
     }
 
-    public Data(String tableName, DataEventType eventType, String rowData,
-            String pkData, TriggerHistory triggerHistory, String channelId,
-            String transactionId, String sourceNodeId) {
-        this.tableName = tableName;
-        this.eventType = eventType;
-        this.rowData = rowData;
-        this.pkData = pkData;
-        this.triggerHistory = triggerHistory;
-        this.channelId = channelId;
-        this.transactionId = transactionId;
-        this.sourceNodeId = sourceNodeId;
+    public Data(String tableName, DataEventType eventType, String rowData, String pkData,
+            TriggerHistory triggerHistory, String channelId, String transactionId,
+            String sourceNodeId) {
+        this(-1, pkData, rowData, eventType, tableName, new Date(), triggerHistory, channelId,
+                transactionId, sourceNodeId);
     }
 
     public Data() {
     }
 
     public String[] toParsedRowData() {
-        return getData("rowData", rowData);
+        return getParsedData(ROW_DATA);
     }
 
     public String[] toParsedOldData() {
-        return getData("oldData", oldData);
+        return getParsedData(OLD_DATA);
     }
 
     public String[] toParsedPkData() {
-        return getData("pkData", pkData);
+        return getParsedData(PK_DATA);
     }
 
     public long getDataId() {
-        return dataId;
+        Long dataId = getAttribute(ATTRIBUTE_DATA_ID);
+        if (dataId != null) {
+            return dataId;
+        } else {
+            return -1l;
+        }
     }
 
     public void setDataId(long dataId) {
-        this.dataId = dataId;
+        putAttribute(ATTRIBUTE_DATA_ID, dataId);
     }
 
     public String getTableName() {
-        return tableName;
+        return getAttribute(ATTRIBUTE_TABLE_NAME);
     }
 
     public void setTableName(String tableName) {
-        this.tableName = tableName;
+        putAttribute(ATTRIBUTE_TABLE_NAME, tableName);
     }
-
-    public DataEventType getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(DataEventType eventType) {
-        this.eventType = eventType;
-    }
-
+    
     public String getRowData() {
-        return rowData;
+        return getCsvData(ROW_DATA);
     }
 
     public void setRowData(String rowData) {
-        this.rowData = rowData;
+        putCsvData(ROW_DATA, rowData);
     }
 
     public String getPkData() {
-        return pkData;
+        return getCsvData(PK_DATA);
     }
 
     public void setPkData(String pkData) {
-        this.pkData = pkData;
+        putCsvData(PK_DATA, pkData);
     }
 
     public String getOldData() {
-        return oldData;
+        return getCsvData(OLD_DATA);
     }
 
     public void setOldData(String oldData) {
-        this.oldData = oldData;
+        putCsvData(OLD_DATA, oldData);
     }
 
     public TriggerHistory getTriggerHistory() {
@@ -179,52 +131,52 @@ public class Data extends AbstractCsvData implements Serializable {
     }
 
     public String getChannelId() {
-        return channelId;
+        return getAttribute(ATTRIBUTE_CHANNEL_ID);
     }
 
     public void setChannelId(String channelId) {
-        this.channelId = channelId;
+        putAttribute(ATTRIBUTE_CHANNEL_ID, channelId);
     }
 
     public String getTransactionId() {
-        return transactionId;
+        return getAttribute(ATTRIBUTE_TX_ID);
     }
 
     public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
+        putAttribute(ATTRIBUTE_TX_ID, transactionId);
     }
 
     public String getSourceNodeId() {
-        return sourceNodeId;
+        return getAttribute(ATTRIBUTE_SOURCE_NODE_ID);
     }
 
     public void setSourceNodeId(String sourceNodeId) {
-        this.sourceNodeId = sourceNodeId;
+        putAttribute(ATTRIBUTE_SOURCE_NODE_ID, sourceNodeId);
     }
 
     public String getExternalData() {
-        return externalData;
+        return getAttribute(ATTRIBUTE_SOURCE_NODE_ID);
     }
 
     public void setExternalData(String externalData) {
-        this.externalData = externalData;
+        putAttribute(ATTRIBUTE_EXTERNAL_DATA, externalData);
     }
 
     public Date getCreateTime() {
-        return createTime;
+        return getAttribute(ATTRIBUTE_CREATE_TIME);
     }
 
     public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
+        putAttribute(ATTRIBUTE_CREATE_TIME, createTime);
     }
-    
+
     public String getPkDataFor(String columnName) {
         String[] pkData = toParsedPkData();
         String[] keyNames = triggerHistory.getParsedPkColumnNames();
         for (int i = 0; i < keyNames.length; i++) {
             if (columnName.equals(keyNames[i])) {
                 return pkData[i];
-            }            
+            }
         }
         return null;
     }

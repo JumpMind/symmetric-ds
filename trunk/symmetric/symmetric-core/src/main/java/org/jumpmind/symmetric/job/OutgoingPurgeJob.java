@@ -21,22 +21,22 @@
 
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IPurgeService;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
  * Background job that is responsible for purging already synchronized data
  */
 public class OutgoingPurgeJob extends AbstractJob {
 
-    private IPurgeService purgeService;
-
-    public OutgoingPurgeJob() {
+    public OutgoingPurgeJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.purge.outgoing", true, engine.getParameterService().is("start.purge.job"),
+                engine, taskScheduler);
     }
-
     @Override
     public long doJob() throws Exception {
-        return purgeService.purgeOutgoing();        
+        return engine.getPurgeService().purgeOutgoing();        
     }
     
     public String getClusterLockName() {
@@ -45,10 +45,6 @@ public class OutgoingPurgeJob extends AbstractJob {
     
     public boolean isClusterable() {
         return true;
-    }
-
-    public void setPurgeService(IPurgeService service) {
-        this.purgeService = service;
     }
     
 }

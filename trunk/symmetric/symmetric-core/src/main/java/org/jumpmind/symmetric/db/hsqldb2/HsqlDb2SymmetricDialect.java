@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.db.hsqldb2;
 
@@ -28,29 +29,25 @@ import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    public HsqlDb2SymmetricDialect() {
+    public HsqlDb2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new HsqlDb2TriggerText();
+        platform.getSqlTemplate().update("SET DATABASE DEFAULT TABLE TYPE CACHED");
     }
-    
-    @Override
-    public void init(IDatabasePlatform pf, int queryTimeout, JdbcTemplate jdbcTemplate) {
-        super.init(pf, queryTimeout, jdbcTemplate);
-        jdbcTemplate.execute("SET DATABASE DEFAULT TABLE TYPE CACHED");
-    }
-    
+
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName,
             String tableName, String triggerName) {
-        boolean exists = (jdbcTemplate.queryForInt(
+        boolean exists = (platform.getSqlTemplate().queryForInt(
                 "select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
                 new Object[] { triggerName }) > 0);
         return exists;
     }
-    
+
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName, TriggerHistory oldHistory) {
@@ -59,7 +56,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
-                int count = jdbcTemplate.update(dropSql);
+                int count = platform.getSqlTemplate().update(dropSql);
                 if (count > 0) {
                     log.info("TriggerDropped", triggerName);
                 }
@@ -80,17 +77,21 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.execute("CALL " + tablePrefix + "_set_session('sync_prevented','1')");
-        transaction.execute("CALL " + tablePrefix + "_set_session('node_value','" + nodeId + "')");
+        transaction.execute("CALL " + parameterService.getTablePrefix()
+                + "_set_session('sync_prevented','1')");
+        transaction.execute("CALL " + parameterService.getTablePrefix()
+                + "_set_session('node_value','" + nodeId + "')");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("CALL " + tablePrefix + "_set_session('sync_prevented',null)");
-        transaction.execute("CALL " + tablePrefix + "_set_session('node_value',null)");
+        transaction.execute("CALL " + parameterService.getTablePrefix()
+                + "_set_session('sync_prevented',null)");
+        transaction.execute("CALL " + parameterService.getTablePrefix()
+                + "_set_session('node_value',null)");
     }
 
     public String getSyncTriggersExpression() {
-        return " " + tablePrefix + "_get_session('sync_prevented') is null ";
+        return " " + parameterService.getTablePrefix() + "_get_session('sync_prevented') is null ";
     }
 
     /*
@@ -99,13 +100,9 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
             Trigger trigger) {
-        // TODO A method is coming that will all access to the transaction id ...
+        // TODO A method is coming that will all access to the transaction id
+        // ...
         return "null";
-    }
-
-    @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "call IDENTITY()";
     }
 
     @Override
@@ -119,13 +116,8 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     }
 
     @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return false;
-    }
-
-    @Override
     public void truncateTable(String tableName) {
-        jdbcTemplate.update("delete from " + tableName);
+        platform.getSqlTemplate().update("delete from " + tableName);
     }
 
     public void purge() {
@@ -135,5 +127,5 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     public boolean canGapsOccurInCapturedDataIds() {
         return false;
     }
-    
+
 }

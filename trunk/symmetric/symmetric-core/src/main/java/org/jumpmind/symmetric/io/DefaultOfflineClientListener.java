@@ -21,12 +21,11 @@
 package org.jumpmind.symmetric.io;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.impl.NodeService;
 
 /**
  * Default implementation of an {@link IOfflineClientListener}.  When the listener detects
@@ -34,47 +33,45 @@ import org.jumpmind.symmetric.service.impl.NodeService;
  */
 public class DefaultOfflineClientListener implements IOfflineClientListener, IBuiltInExtensionPoint {
     
-    protected ILog log = LogFactory.getLog(getClass());
+    protected Log log = LogFactory.getLog(getClass());
     protected IParameterService parameterService;
     protected INodeService nodeService;
-
+    
+    public DefaultOfflineClientListener(Log log, IParameterService parameterService,
+            INodeService nodeService) {
+        this.log = log;
+        this.parameterService = parameterService;
+        this.nodeService = nodeService;
+    }
 
     public void busy(Node remoteNode) {
-        log.warn("TransportFailedConnectionBusy");
+        log.warn("The server was too busy to accept the connection");
     }
 
     public void notAuthenticated(Node remoteNode) {
-        log.warn("AuthenticationFailed");
+        log.warn("Could not authenticate with node");
     }
     
     public void unknownError(Node remoteNode, Exception ex) {
     }
 
     public void offline(Node remoteNode) {
-        log.warn("TransportFailedConnectionUnavailable",
+        log.warn("Could not connect to the transport: %s",
                 (remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode
                         .getSyncUrl()));
     }
 
     public void syncDisabled(Node remoteNode) {
-        log.warn("SyncDisabled");
+        log.warn("Synchronization is disabled on the server node");
         nodeService.deleteIdentity();
     }
     
     public void registrationRequired(Node remoteNode) {
-        log.warn("RegistrationRequired");
+        log.warn("Registration is required before this operation can complete");
     }
 
     public boolean isAutoRegister() {
         return true;
     }
     
-    public void setNodeService(NodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-    
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
-        this.log = LogFactory.getLog(parameterService);
-    }
 }

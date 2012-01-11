@@ -21,23 +21,19 @@
 
 package org.jumpmind.symmetric.route;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.jumpmind.db.sql.ISqlMap;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.ISqlProvider;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 
 /**
  * Responsible for managing gaps in data ids to ensure that all captured data is
@@ -45,28 +41,26 @@ import org.springframework.jdbc.core.ResultSetExtractor;
  */
 public class DataGapDetector implements IDataToRouteGapDetector {
 
-    final ILog log = LogFactory.getLog(getClass());
+    private Log log;
 
     private IDataService dataService;
 
     private IParameterService parameterService;
 
-    private JdbcTemplate jdbcTemplate;
-
     private ISymmetricDialect symmetricDialect;
 
-    private ISqlProvider sqlProvider;
+    private ISqlMap sqlMap;
 
     public DataGapDetector() {
     }
 
-    public DataGapDetector(IDataService dataService, IParameterService parameterService,
-            JdbcTemplate jdbcTemplate, ISymmetricDialect symmetricDialect, ISqlProvider sqlProvider) {
+    public DataGapDetector(Log log, IDataService dataService, IParameterService parameterService,
+            ISymmetricDialect symmetricDialect, ISqlMap sqlMap) {
+        this.log = log;
         this.dataService = dataService;
         this.parameterService = parameterService;
-        this.jdbcTemplate = jdbcTemplate;
+        this.sqlMap = sqlMap;
         this.symmetricDialect = symmetricDialect;
-        this.sqlProvider = sqlProvider;
     }
 
     public void afterRouting() {
@@ -86,75 +80,65 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                 .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         for (final DataGap dataGap : gaps) {
             final boolean lastGap = dataGap.equals(gaps.get(gaps.size() - 1));
-            String sql = sqlProvider.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
+            String sql = sqlMap.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
+            ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
             Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
-            lastDataId = jdbcTemplate.query(sql, params, new ResultSetExtractor<Long>() {
-                public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
-                    long lastDataId = -1;
-                    while (rs.next()) {
-                        long dataId = rs.getLong(1);
-                        if (lastDataId == -1 && dataGap.getStartId() < dataId) {
-                            // there was a new gap at the start
-                            dataService.insertDataGap(new DataGap(dataGap.getStartId(), dataId - 1));
-                        } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
-                                && lastDataId != dataId) {
-                            // found a gap somewhere in the existing gap
-                            dataService.insertDataGap(new DataGap(lastDataId + 1, dataId - 1));
-                        }
-                        lastDataId = dataId;
-                    }
+            lastDataId = -1;
+            List<Number> ids = sqlTemplate.query(sql, new NumberMapper(), params);
+            for (Number number : ids) {
+                long dataId = number.longValue();
+                if (lastDataId == -1 && dataGap.getStartId() < dataId) {
+                    // there was a new gap at the start
+                    dataService.insertDataGap(new DataGap(dataGap.getStartId(), dataId - 1));
+                } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId
+                        && lastDataId != dataId) {
+                    // found a gap somewhere in the existing gap
+                    dataService.insertDataGap(new DataGap(lastDataId + 1, dataId - 1));
+                }
+                lastDataId = dataId;
+            }
 
-                    // if we found data in the gap
-                    if (lastDataId != -1) {
-                        if (!lastGap && lastDataId < dataGap.getEndId()) {
-                            dataService.insertDataGap(new DataGap(lastDataId + 1, dataGap
-                                    .getEndId()));
-                        }
-                        dataService.updateDataGap(dataGap, DataGap.Status.OK);
+            // if we found data in the gap
+            if (lastDataId != -1) {
+                if (!lastGap && lastDataId < dataGap.getEndId()) {
+                    dataService.insertDataGap(new DataGap(lastDataId + 1, dataGap.getEndId()));
+                }
+                dataService.updateDataGap(dataGap, DataGap.Status.OK);
 
-                        // if we did not find data in the gap and it was not the
-                        // last gap
-                    } else if (!lastGap) {
-                        if (dataService.countDataInRange(dataGap.getStartId() - 1,
-                                dataGap.getEndId() + 1) == 0) {
-                            if (symmetricDialect.supportsTransactionViews()) {
-                                long transactionViewClockSyncThresholdInMs = parameterService
-                                        .getLong(
-                                                ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS,
-                                                60000);
-                                Date createTime = dataService.findCreateTimeOfData(dataGap
-                                        .getEndId() + 1);
-                                if (createTime != null
-                                        && !symmetricDialect
-                                                .areDatabaseTransactionsPendingSince(createTime
-                                                        .getTime()
-                                                        + transactionViewClockSyncThresholdInMs)) {
-                                    if (dataService.countDataInRange(dataGap.getStartId() - 1,
-                                            dataGap.getEndId() + 1) == 0) {
-                                        log.info("RouterSkippingDataIdsNoTransactions",
-                                                dataGap.getStartId(), dataGap.getEndId());
-                                        dataService.updateDataGap(dataGap, DataGap.Status.SK);
-                                    }
-                                }
-                            } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
-                                log.info("RouterSkippingDataIdsGapExpired", dataGap.getStartId(),
-                                        dataGap.getEndId());
+                // if we did not find data in the gap and it was not the
+                // last gap
+            } else if (!lastGap) {
+                if (dataService.countDataInRange(dataGap.getStartId() - 1, dataGap.getEndId() + 1) == 0) {
+                    if (symmetricDialect.supportsTransactionViews()) {
+                        long transactionViewClockSyncThresholdInMs = parameterService
+                                .getLong(
+                                        ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS,
+                                        60000);
+                        Date createTime = dataService.findCreateTimeOfData(dataGap.getEndId() + 1);
+                        if (createTime != null
+                                && !symmetricDialect.areDatabaseTransactionsPendingSince(createTime
+                                        .getTime() + transactionViewClockSyncThresholdInMs)) {
+                            if (dataService.countDataInRange(dataGap.getStartId() - 1,
+                                    dataGap.getEndId() + 1) == 0) {
+                                log.info("RouterSkippingDataIdsNoTransactions",
+                                        dataGap.getStartId(), dataGap.getEndId());
                                 dataService.updateDataGap(dataGap, DataGap.Status.SK);
                             }
-                        } else {
-                            dataService.checkForAndUpdateMissingChannelIds(
-                                    dataGap.getStartId() - 1, dataGap.getEndId() + 1);
                         }
+                    } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
+                        log.info("RouterSkippingDataIdsGapExpired", dataGap.getStartId(),
+                                dataGap.getEndId());
+                        dataService.updateDataGap(dataGap, DataGap.Status.SK);
                     }
-
-                    return lastDataId;
+                } else {
+                    dataService.checkForAndUpdateMissingChannelIds(dataGap.getStartId() - 1,
+                            dataGap.getEndId() + 1);
                 }
-
-            });
+            }
         }
 
         if (lastDataId != -1) {
-            dataService.insertDataGap(new DataGap(lastDataId + 1, lastDataId + maxDataToSelect));            
+            dataService.insertDataGap(new DataGap(lastDataId + 1, lastDataId + maxDataToSelect));
         }
 
         long updateTimeInMs = System.currentTimeMillis() - ts;

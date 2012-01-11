@@ -45,6 +45,13 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
     private IConfigurationService configurationService;
 
     private IStatisticManager statisticManager;
+    
+    public NodeConcurrencyInterceptor(IConcurrentConnectionManager concurrentConnectionManager,
+            IConfigurationService configurationService, IStatisticManager statisticManager) {
+        this.concurrentConnectionManager = concurrentConnectionManager;
+        this.configurationService = configurationService;
+        this.statisticManager = statisticManager;
+    }
 
     public boolean before(HttpServletRequest req, HttpServletResponse resp) throws IOException,
             ServletException {
@@ -104,16 +111,4 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 suspendIgnoreChannels.getIgnoreChannelsAsString());
     }
 
-    public void setConcurrentConnectionManager(
-            IConcurrentConnectionManager concurrentConnectionManager) {
-        this.concurrentConnectionManager = concurrentConnectionManager;
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
-    }
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
-    }
 }

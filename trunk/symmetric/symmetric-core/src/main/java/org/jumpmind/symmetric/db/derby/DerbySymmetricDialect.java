@@ -21,15 +21,18 @@
 
 package org.jumpmind.symmetric.db.derby;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class DerbySymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    public DerbySymmetricDialect() {
+    public DerbySymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new DerbyTriggerText();
     }
 
@@ -38,7 +41,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
             String triggerName) {
         schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform
                 .getDefaultSchema()) : schema;
-        return jdbcTemplate.queryForInt(
+        return platform.getSqlTemplate().queryForInt(
                 "select count(*) from sys.systriggers where triggername = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
@@ -65,46 +68,31 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         transaction.queryForObject(
-                String.format("values %s_sync_triggers_set_disabled(1)", tablePrefix),
+                String.format("values %s_sync_triggers_set_disabled(1)", parameterService.getTablePrefix()),
                 Integer.class);
         if (nodeId != null) {
             transaction.queryForObject(
-                    String.format("values %s_sync_node_set_disabled('%s')", tablePrefix, nodeId),
+                    String.format("values %s_sync_node_set_disabled('%s')", parameterService.getTablePrefix(), nodeId),
                     String.class);
         }
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
         transaction.queryForObject(
-                String.format("values %s_sync_triggers_set_disabled(0)", tablePrefix),
+                String.format("values %s_sync_triggers_set_disabled(0)", parameterService.getTablePrefix()),
                 Integer.class);
-        jdbcTemplate.queryForObject(
-                String.format("values %s_sync_node_set_disabled(null)", tablePrefix), String.class);
+        platform.getSqlTemplate().queryForObject(
+                String.format("values %s_sync_node_set_disabled(null)", parameterService.getTablePrefix()), String.class);
     }
 
     public String getSyncTriggersExpression() {
-        return String.format("%s_sync_triggers_disabled() = 0", tablePrefix);
+        return String.format("%s_sync_triggers_disabled() = 0", parameterService.getTablePrefix());
     }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
             Trigger trigger) {
-        return String.format("%s_transaction_id()", tablePrefix);
-    }
-
-    @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "values IDENTITY_VAL_LOCAL()";
-    }
-
-    @Override
-    public boolean supportsGetGeneratedKeys() {
-        return false;
-    }
-
-    @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return false;
+        return String.format("%s_transaction_id()", parameterService.getTablePrefix());
     }
 
     public void purge() {
@@ -112,7 +100,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void truncateTable(String tableName) {
-        jdbcTemplate.update("delete from " + tableName);
+        platform.getSqlTemplate().update("delete from " + tableName);
     }
 
     public boolean needsToSelectLobData() {

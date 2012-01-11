@@ -28,7 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
@@ -40,6 +42,14 @@ public class RegistrationUriHandler extends AbstractUriHandler {
     
     private IRegistrationService registrationService;
     
+    
+    
+    public RegistrationUriHandler(Log log,  IParameterService parameterService,
+            IRegistrationService registrationService, IInterceptor... interceptors) {
+        super(log, "/registration/*", parameterService, interceptors);
+        this.registrationService = registrationService;
+    }
+
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
         Node node = transform(req);
@@ -71,15 +81,7 @@ public class RegistrationUriHandler extends AbstractUriHandler {
     }
 
     protected boolean registerNode(Node node, String remoteHost, String remoteAddress, OutputStream outputStream) throws IOException {
-        return getRegistrationService().registerNode(node, remoteHost, remoteAddress, outputStream, true);
-    }
-
-    private IRegistrationService getRegistrationService() {
-        return registrationService;
-    }
-
-    public void setRegistrationService(IRegistrationService registrationService) {
-        this.registrationService = registrationService;
+        return registrationService.registerNode(node, remoteHost, remoteAddress, outputStream, true);
     }
     
 }

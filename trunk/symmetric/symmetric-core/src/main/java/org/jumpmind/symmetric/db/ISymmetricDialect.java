@@ -34,8 +34,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 /*
@@ -104,8 +102,6 @@ public interface ISymmetricDialect {
 
     public boolean supportsTransactionId();
     
-    public int getQueryTimeoutInSeconds();
-    
     /*
      * Use this call to check to see if the implemented database dialect supports 
      * a way to check on pending database transactions.
@@ -129,8 +125,6 @@ public interface ISymmetricDialect {
     
     public String getSourceNodeExpression();
 
-    public int getStreamingResultsFetchSize();
-
     public String getCreateSymmetricDDL();
 
     public String getCreateTableXML(TriggerRouter triggerRouter);
@@ -149,29 +143,15 @@ public interface ISymmetricDialect {
     public boolean isTransactionIdOverrideSupported();
 
     public void createTables(String xml);
-
-    public boolean supportsGetGeneratedKeys();
-
-    public boolean supportsReturningKeys();
     
     public Table getTable(Trigger trigger, boolean useCache);
 
-    public String getSelectLastInsertIdSql(String sequenceName);
-
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);
-
-    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
-            final PreparedStatementCallback<Object> psCallback);
-
-    public long insertWithGeneratedKey(JdbcTemplate jdbcTemplate, final String sql,
-            final SequenceIdentifier sequenceId, final PreparedStatementCallback<Object> psCallback);
-
-    public Column[] orderColumns(String[] columnNames, Table table);
     
-    /*
-     * Get the string prepended to the Symmetric configuration tables.
-     */
-    public String getTablePrefix();
+    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier identifier, Object... args);
+
+    @Deprecated
+    public Column[] orderColumns(String[] columnNames, Table table);
     
     /*
      * Get the max number of data objects to load before processing.  This parameter typically comes
@@ -198,8 +178,6 @@ public interface ISymmetricDialect {
     public long getDatabaseTime();
     
     public boolean areDatabaseTransactionsPendingSince(long time);
-    
-    public boolean requiresAutoCommitFalseToSetFetchSize();
     
     /*
      * A handler for data loading lobs.  If specified, it will
@@ -246,6 +224,10 @@ public interface ISymmetricDialect {
     
     public String getDriverVersion();
     
-    public JdbcTemplate getJdbcTemplate();
+    public String getSequenceName(SequenceIdentifier identifier);
+
+    public String getSequenceKeyName(SequenceIdentifier identifier);
+    
+    public String getTablePrefix();
     
 }

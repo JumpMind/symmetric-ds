@@ -88,6 +88,10 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
         ddlBuilder = new DerbyBuilder(log, this);
     }
 
+    @Override
+    protected void createSqlTemplate() {
+        this.sqlTemplate = new DerbyJdbcSqlTemplate(dataSource, settings, null);
+    }
 
     public String getName() {
         return DATABASENAME;

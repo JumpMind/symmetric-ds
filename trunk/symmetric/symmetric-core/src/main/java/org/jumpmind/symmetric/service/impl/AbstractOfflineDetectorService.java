@@ -28,11 +28,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
 import org.jumpmind.symmetric.service.IOfflineDetectorService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
@@ -44,6 +46,11 @@ import org.jumpmind.symmetric.transport.SyncDisabledException;
 public abstract class AbstractOfflineDetectorService extends AbstractService implements IOfflineDetectorService {
 
     private List<IOfflineClientListener> offlineListeners;
+    
+    public AbstractOfflineDetectorService(IParameterService parameterService,
+            ISymmetricDialect symmetricDialect) {
+        super(parameterService, symmetricDialect);
+    }
 
     public void setOfflineListeners(List<IOfflineClientListener> listeners) {
         this.offlineListeners = listeners;

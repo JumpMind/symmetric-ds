@@ -16,5 +16,10 @@ public class MsSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     public ISqlTransaction startSqlTransaction() {
         return new MsSqlJdbcSqlTransaction(this);
     }
-
+   
+    @Override
+    protected boolean allowsNullForIdentityColumn() {
+        return false;
+    }
+    
 }

@@ -20,39 +20,41 @@
 
 package org.jumpmind.symmetric.db.informix;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class InformixSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     
-    public InformixSymmetricDialect() {
+    public InformixSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);       
         this.triggerText = new InformixTriggerText();
     }    
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
-        return jdbcTemplate.queryForInt(
+        return platform.getSqlTemplate().queryForInt(
                 "select count(*) from systriggers where lower(trigname) = ?",
                 new Object[] { triggerName.toLowerCase() }) > 0;
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.execute("select " + tablePrefix + "_triggers_set_disabled('t'), "
-                + tablePrefix + "_node_set_disabled(?) from sysmaster:sysdual",
+        transaction.execute("select " + parameterService.getTablePrefix() + "_triggers_set_disabled('t'), "
+                + parameterService.getTablePrefix() + "_node_set_disabled(?) from sysmaster:sysdual",
                 new Object[] { nodeId });
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("select " + tablePrefix + "_triggers_set_disabled('f'), "
-                + tablePrefix + "_node_set_disabled(null) from sysmaster:sysdual");
+        transaction.execute("select " + parameterService.getTablePrefix() + "_triggers_set_disabled('f'), "
+                + parameterService.getTablePrefix() + "_node_set_disabled(null) from sysmaster:sysdual");
     }
 
     public String getSyncTriggersExpression() {
-        return "not $(defaultSchema)" + tablePrefix + "_triggers_disabled()";
+        return "not $(defaultSchema)" + parameterService.getTablePrefix() + "_triggers_disabled()";
     }
 
     @Override
@@ -80,11 +82,6 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
 
     @Override
     public boolean isClobSyncSupported() {
-        return false;
-    }
-
-    @Override
-    public boolean allowsNullForIdentityColumn() {
         return false;
     }
 

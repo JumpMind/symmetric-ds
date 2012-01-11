@@ -52,7 +52,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.StandaloneSymmetricEngine;
+import org.jumpmind.symmetric.OldStandaloneSymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -137,7 +137,7 @@ public class TestSetupUtil {
 
         if (rootDb != null) {
             // Temporary engine used for test database setup
-            ISymmetricEngine setupEngine = new StandaloneSymmetricEngine("file:"
+            ISymmetricEngine setupEngine = new OldStandaloneSymmetricEngine("file:"
                     + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath(), null);            
             dropAndCreateDatabaseTables(rootDb, setupEngine);
             setupEngine.setup();
@@ -159,7 +159,7 @@ public class TestSetupUtil {
             FileReader reader = new FileReader(file);
             properties.load(reader);
             IOUtils.closeQuietly(reader);
-            clientEngine = new StandaloneSymmetricEngine(properties);
+            clientEngine = new OldStandaloneSymmetricEngine(properties);
             dropAndCreateDatabaseTables(clientDb, clientEngine);
         }
     }

@@ -19,11 +19,13 @@
  * under the License.  */
 package org.jumpmind.symmetric.db.firebird;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.UncategorizedSQLException;
 
 /*
@@ -35,7 +37,8 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
-    public FirebirdSymmetricDialect() {
+    public FirebirdSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new FirebirdTriggerText();
     }
     
@@ -43,7 +46,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     protected void createRequiredFunctions() {
         super.createRequiredFunctions();
         try {
-            jdbcTemplate.queryForInt("select char_length(sym_escape('')) from rdb$database");
+            platform.getSqlTemplate().queryForInt("select char_length(sym_escape('')) from rdb$database");
         } catch (UncategorizedSQLException e) {
             if (e.getSQLException().getErrorCode() == -804) {
                 log.error("FirebirdSymUdfMissing");
@@ -54,7 +57,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
-        return jdbcTemplate.queryForInt("select count(*) from rdb$triggers where rdb$trigger_name = ?",
+        return platform.getSqlTemplate().queryForInt("select count(*) from rdb$triggers where rdb$trigger_name = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
 
@@ -84,11 +87,6 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    public boolean supportsReturningKeys() {
-        return true;
-    }
-
-    @Override
     public boolean isBlobSyncSupported() {
         return true;
     }
@@ -96,11 +94,6 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
-    }
-
-    @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return true;
     }
 
     public void purge() {
@@ -123,7 +116,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
 
     @Override
     public void truncateTable(String tableName) {
-        jdbcTemplate.update("delete from " + tableName);
+        platform.getSqlTemplate().update("delete from " + tableName);
     }
     
 }

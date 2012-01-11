@@ -46,6 +46,10 @@ public class BshDataRouter extends AbstractDataRouter {
     protected ISymmetricDialect symmetricDialect;
     
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
+       
+    public BshDataRouter(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
+    }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
@@ -109,9 +113,5 @@ public class BshDataRouter extends AbstractDataRouter {
                 interpreter.set(param, params.get(param));
             }
         }
-    }
-
-    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
-        this.symmetricDialect = symmetricDialect;
     }
 }

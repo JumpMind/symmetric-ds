@@ -87,6 +87,18 @@ public class Table implements Serializable, Cloneable {
         this.name = tableName;
     }
 
+    public Table(String catalog, String schema, String tableName, String[] columnNames,
+            String[] keyNames) {
+        this(catalog, schema, tableName);
+        for (String name : columnNames) {
+            addColumn(new Column(name));
+        }
+        for (String name : keyNames) {
+            getColumnWithName(name).setPrimaryKey(true);
+        }
+
+    }
+
     /**
      * Returns the catalog of this table as read from the database.
      * 
@@ -194,7 +206,7 @@ public class Table implements Serializable, Cloneable {
     public int getPrimaryKeyColumnCount() {
         return getPrimaryKeyColumns().length;
     }
-    
+
     /**
      * Returns the column at the specified position.
      * 
@@ -955,6 +967,14 @@ public class Table implements Serializable, Cloneable {
         columns = orderedColumns;
     }
 
+    public void orderColumns(String[] columnNames) {
+        Column[] orderedColumns = orderColumns(columnNames, this);
+        this.columns.clear();
+        for (Column column : orderedColumns) {
+            this.columns.add(column);
+        }
+    }
+
     public static Column[] orderColumns(String[] columnNames, Table table) {
         Column[] unorderedColumns = table.getColumns();
         Column[] orderedColumns = new Column[columnNames.length];
@@ -1005,7 +1025,7 @@ public class Table implements Serializable, Cloneable {
         }
         return columnNames;
     }
-    
+
     public static Table buildTable(String tableName, String[] keyNames, String[] columnNames) {
         Table table = new Table();
         table.setName(tableName);

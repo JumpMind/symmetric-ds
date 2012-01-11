@@ -29,8 +29,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 
 public class AckUriHandler extends AbstractUriHandler {
@@ -44,6 +46,12 @@ public class AckUriHandler extends AbstractUriHandler {
     };
 
     private IAcknowledgeService acknowledgeService;
+    
+    public AckUriHandler(Log log,
+            IParameterService parameterService, IAcknowledgeService acknowledgeService, IInterceptor...interceptors) {
+        super(log, "/ack/*", parameterService, interceptors);
+        this.acknowledgeService = acknowledgeService;
+    }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
@@ -61,10 +69,6 @@ public class AckUriHandler extends AbstractUriHandler {
         for (BatchInfo batchInfo : batches) {
             acknowledgeService.ack(batchInfo);
         }
-    }
-
-    public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
-        this.acknowledgeService = acknowledgeService;
     }
 
 }

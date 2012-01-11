@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.db.h2;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -27,23 +28,25 @@ import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /*
  * Synchronization support for the H2 database platform. 
  */
 public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
     
-    public H2SymmetricDialect() {
+    public H2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new H2TriggerText();
     }
     
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
             String triggerName) {
-        boolean exists = (jdbcTemplate
+        boolean exists = (platform.getSqlTemplate()
                 .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
                         new Object[] { triggerName }) > 0)
-                && (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
+                && (platform.getSqlTemplate().queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
                         new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
 
         if (!exists) {
@@ -63,11 +66,11 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
-                int count = jdbcTemplate.update(dropSql);
+                int count = platform.getSqlTemplate().update(dropSql);
                 if (count > 0) {
                     log.info("TriggerDropped", triggerName);
                 }
-                count = jdbcTemplate.update(dropTable);
+                count = platform.getSqlTemplate().update(dropTable);
                 if (count > 0) {
                     log.info("TableDropped", triggerName);
                 }
@@ -110,28 +113,14 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     }
 
     @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "call IDENTITY()";
-    }
-
-    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }
 
-    @Override
-    public boolean supportsGetGeneratedKeys() {
-        return false;
-    }
 
     @Override
     public boolean supportsTransactionId() {
         return true;
-    }
-
-    @Override
-    protected boolean allowsNullForIdentityColumn() {
-        return false;
     }
 
 }
