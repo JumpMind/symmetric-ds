@@ -594,6 +594,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public ITransportManager getTransportManager() {
         return transportManager;
     }
+    
+    public IExtensionPointManager getExtensionPointManager() {
+        return extensionPointManger;
+    }
 
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
         Set<String> keys = new HashSet<String>(map.keySet());

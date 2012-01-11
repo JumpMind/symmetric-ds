@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.extract.DataExtractorTest;
 import org.jumpmind.symmetric.service.impl.AcknowledgeServiceTest;
 import org.jumpmind.symmetric.service.impl.ClusterServiceTest;
 import org.jumpmind.symmetric.service.impl.DataExtractorServiceTest;
-import org.jumpmind.symmetric.service.impl.DataLoaderServiceTest;
+import org.jumpmind.symmetric.service.impl.AbstractDataLoaderServiceTest;
 import org.jumpmind.symmetric.service.impl.DataServiceTest;
 import org.jumpmind.symmetric.service.impl.NodeServiceTest;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchServiceTest;
@@ -48,7 +48,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({ TriggerRouterServiceTest.class, DataExtractorTest.class, ParameterFilterTest.class,
         RouterServiceTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class,
         NodeConcurrencyFilterTest.class, AcknowledgeServiceTest.class, ClusterServiceTest.class,
-        DataExtractorServiceTest.class, DataLoaderServiceTest.class, NodeServiceTest.class,
+        DataExtractorServiceTest.class, AbstractDataLoaderServiceTest.class, NodeServiceTest.class,
         OutgoingBatchServiceTest.class, ParameterServiceTest.class, PurgeServiceTest.class,
         RegistrationServiceTest.class, StatisticServiceTest.class, DataServiceTest.class,
         CleanupTest.class })

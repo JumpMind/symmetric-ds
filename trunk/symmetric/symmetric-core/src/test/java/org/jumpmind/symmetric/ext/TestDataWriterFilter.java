@@ -29,9 +29,6 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
-/**
- * 
- */
 public class TestDataWriterFilter extends DatabaseWriterFilterAdapter implements
         IDatabaseWriterFilter {
 

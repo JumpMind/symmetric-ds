@@ -64,6 +64,8 @@ public class ExtensionPointManager implements IExtensionPointManager {
 
     private ISymmetricEngine engine;
 
+    private Map<String, IExtensionPoint> extensions;
+
     private List<ExtensionPointMetaData> extensionPoints = new ArrayList<ExtensionPointMetaData>();
 
     public ExtensionPointManager(Log log, ISymmetricEngine engine) {
@@ -76,7 +78,7 @@ public class ExtensionPointManager implements IExtensionPointManager {
         ApplicationContext cfgBeanFactory = new ClassPathXmlApplicationContext(
                 "classpath://symmetric-extensions.xml");
         if (!initialized) {
-            Map<String, IExtensionPoint> extensions = new TreeMap<String, IExtensionPoint>();
+            extensions = new TreeMap<String, IExtensionPoint>();
             extensions.putAll(cfgBeanFactory.getBeansOfType(IExtensionPoint.class));
             if (cfgBeanFactory.getParentBeanFactory() != null
                     && cfgBeanFactory.getParentBeanFactory() instanceof ListableBeanFactory) {
@@ -243,6 +245,15 @@ public class ExtensionPointManager implements IExtensionPointManager {
         }
 
         return installed;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends IExtensionPoint> T getExtensionPoint(String name) {
+        if (extensions != null) {
+            return (T)extensions.get(name);
+        } else {
+            return null;
+        }
     }
 
 }

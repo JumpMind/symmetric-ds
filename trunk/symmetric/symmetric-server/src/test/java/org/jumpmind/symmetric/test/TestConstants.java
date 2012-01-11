@@ -23,9 +23,6 @@ package org.jumpmind.symmetric.test;
 
 import org.jumpmind.symmetric.model.Node;
 
-/**
- * 
- */
 public class TestConstants {
     
     public final static String TEST_CLIENT_EXTERNAL_ID = "00001";

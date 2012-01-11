@@ -1,23 +1,3 @@
-/*
- * Licensed to JumpMind Inc under one or more contributor 
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding 
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU Lesser General Public License (the
- * "License"); you may not use this file except in compliance
- * with the License. 
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see           
- * <http://www.gnu.org/licenses/>.
- * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License. 
- */
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.ByteArrayInputStream;
@@ -38,7 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
-import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.ext.NodeGroupTestDataWriterFilter;
 import org.jumpmind.symmetric.ext.TestDataWriterFilter;
@@ -47,14 +27,12 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.test.AbstractDatabaseTest;
-import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.MockTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.junit.Test;
 import org.springframework.dao.EmptyResultDataAccessException;
 
-public class DataLoaderServiceTest extends AbstractDatabaseTest {
+abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest {
 
     protected final static String TEST_TABLE = "test_dataloader_table";
 
@@ -72,10 +50,6 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
     protected Node root = new Node(TestConstants.TEST_ROOT_EXTERNAL_ID, null, null);
 
     private MockTransportManager transportManager;
-
-    public DataLoaderServiceTest() throws Exception {
-        super();
-    }
 
     protected synchronized String getNextBatchId() {
         return Integer.toString(++batchId);
@@ -356,7 +330,7 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
         String[] values = { getNextId(), "string3", "string not null3", "char3", "char not null3",
                 "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
 
-        IParameterService paramService = (IParameterService) find(Constants.PARAMETER_SERVICE);
+        IParameterService paramService = getParameterService();
         paramService.saveParameter("dataloader.enable.fallback.update", "false");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -545,13 +519,18 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testAutoRegisteredExtensionPoint() {
-        TestDataWriterFilter registeredFilter = (TestDataWriterFilter) find("registeredDataFilter");
-        TestDataWriterFilter unRegisteredFilter = (TestDataWriterFilter) find("unRegisteredDataFilter");
+        TestDataWriterFilter registeredFilter = getSymmetricEngine().getExtensionPointManager()
+                .getExtensionPoint("registeredDataFilter");
+        TestDataWriterFilter unRegisteredFilter = getSymmetricEngine().getExtensionPointManager()
+                .getExtensionPoint("unRegisteredDataFilter");
         assertTrue(registeredFilter.getNumberOfTimesCalled() > 0);
         assertTrue(unRegisteredFilter.getNumberOfTimesCalled() == 0);
 
-        NodeGroupTestDataWriterFilter registeredNodeGroupFilter = (NodeGroupTestDataWriterFilter) find("registeredNodeGroupTestDataFilter");
-        NodeGroupTestDataWriterFilter unRegisteredNodeGroupFilter = (NodeGroupTestDataWriterFilter) find("unRegisteredNodeGroupTestDataFilter");
+        NodeGroupTestDataWriterFilter registeredNodeGroupFilter = getSymmetricEngine()
+                .getExtensionPointManager().getExtensionPoint("registeredNodeGroupTestDataFilter");
+        NodeGroupTestDataWriterFilter unRegisteredNodeGroupFilter = getSymmetricEngine()
+                .getExtensionPointManager()
+                .getExtensionPoint("unRegisteredNodeGroupTestDataFilter");
         assertTrue(registeredNodeGroupFilter.getNumberOfTimesCalled() > 0);
         assertTrue(unRegisteredNodeGroupFilter.getNumberOfTimesCalled() == 0);
     }
@@ -583,7 +562,7 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
                 + getWhere(TEST_KEYS);
         Map<String, Object> results = null;
         try {
-            results = getJdbcTemplate().queryForMap(sql, new Object[] { new Long(testTableId) });
+            results = getSqlTemplate().queryForMap(sql, new Object[] { new Long(testTableId) });
         } catch (EmptyResultDataAccessException e) {
         }
         if (expectedValues != null) {
@@ -669,7 +648,8 @@ public class DataLoaderServiceTest extends AbstractDatabaseTest {
     }
 
     protected IDataLoaderService getDataLoaderService() {
-        DataLoaderService dataLoaderService = find(Constants.DATALOADER_SERVICE);
+        DataLoaderService dataLoaderService = (DataLoaderService) getSymmetricEngine()
+                .getDataLoaderService();
         dataLoaderService.setTransportManager(transportManager);
         return dataLoaderService;
     }
