@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.OutgoingPurgeJob;
 import org.jumpmind.symmetric.job.PullJob;
@@ -252,5 +253,7 @@ public interface ISymmetricEngine {
     public String getTablePrefix();
     
     public Log getLog();
-
+    
+    public IExtensionPointManager getExtensionPointManager();
+    
 }

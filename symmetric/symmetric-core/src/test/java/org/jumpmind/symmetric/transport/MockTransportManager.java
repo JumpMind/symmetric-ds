@@ -19,7 +19,7 @@
  * under the License.  */
 
 
-package org.jumpmind.symmetric.transport.mock;
+package org.jumpmind.symmetric.transport;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -35,9 +35,6 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.ITransportManager;
 
-/**
- * 
- */
 public class MockTransportManager implements ITransportManager {
 
     protected IIncomingTransport incomingTransport;
