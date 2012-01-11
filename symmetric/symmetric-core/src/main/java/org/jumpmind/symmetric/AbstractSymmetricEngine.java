@@ -17,7 +17,6 @@ import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.io.DefaultOfflineClientListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
@@ -193,8 +192,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TABLES_IN_MS));
 
         this.bandwidthService = new BandwidthService(parameterService, log);
-        this.symmetricDialect = new JdbcSymmetricDialectFactory(parameterService, platform, log)
-                .create();
+        this.symmetricDialect = createSymmetricDialect();
         this.nodeService = new NodeService(parameterService, symmetricDialect);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
                 nodeService);
@@ -258,6 +256,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         // TODO check system property. integrate eric's changes
         return new SecurityService();
     }
+    
+    abstract protected ISymmetricDialect createSymmetricDialect();
 
     abstract protected IJobManager createJobManager();
 

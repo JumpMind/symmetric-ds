@@ -146,5 +146,10 @@ public class PostgreSqlTriggerText extends TriggerText {
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
     }
+    
+    @Override
+    protected boolean requiresWrappedBlobTemplateForBlobType() {
+        return true;
+    }
 
 }
