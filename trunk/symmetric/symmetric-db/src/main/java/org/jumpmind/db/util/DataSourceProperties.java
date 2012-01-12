@@ -1,12 +1,10 @@
 package org.jumpmind.db.util;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.net.URL;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.EnvironmentSpecificProperties;
 
 public class DataSourceProperties extends EnvironmentSpecificProperties {
@@ -20,13 +18,8 @@ public class DataSourceProperties extends EnvironmentSpecificProperties {
 
     private BasicDataSource dataSource;
 
-    public DataSourceProperties(String systemPropertyName, InputStream is, String... propertiesForEnv) {
-        super(systemPropertyName, propertiesForEnv);
-        try {
-            load(is);
-        } catch (IOException e) {
-            throw new IoException(e);
-        }
+    public DataSourceProperties(String systemPropertyName, URL fileUrl, String... propertiesForEnv) {
+        super(fileUrl, systemPropertyName, propertiesForEnv);
     }
 
     public DataSource getDataSource() {

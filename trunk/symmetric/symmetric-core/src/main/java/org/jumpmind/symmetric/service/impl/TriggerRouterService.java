@@ -38,6 +38,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.Message;
@@ -99,10 +100,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      */
     private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
 
-    public TriggerRouterService(IParameterService parameterService,
+    public TriggerRouterService(Log log, IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IClusterService clusterService,
             IConfigurationService configurationService, IStatisticManager statisticManager) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.configurationService = configurationService;
         this.statisticManager = statisticManager;

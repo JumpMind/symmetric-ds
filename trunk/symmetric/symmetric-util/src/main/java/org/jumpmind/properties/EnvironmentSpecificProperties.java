@@ -3,11 +3,14 @@ package org.jumpmind.properties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.exception.IoException;
 
 /**
  * This extension to {@link Properties} reads in a properties file and looks for
@@ -26,11 +29,13 @@ public class EnvironmentSpecificProperties extends TypedProperties {
 
     protected Properties original;
 
-    public EnvironmentSpecificProperties(String systemPropertyName) {
-        this(systemPropertyName, null);
-    }    
+    public EnvironmentSpecificProperties(URL fileUrl, String systemPropertyName,
+            String... propertiesForEnv) {
+        this(new URL[] { fileUrl }, systemPropertyName, propertiesForEnv);
+    }
 
-    public EnvironmentSpecificProperties(String systemPropertyName, String[] propertiesForEnv) {
+    public EnvironmentSpecificProperties(URL[] fileUrls, String systemPropertyName,
+            String... propertiesForEnv) {
         this.propertiesForEnvironment = new HashSet<String>();
         this.systemPropertyName = systemPropertyName;
         if (propertiesForEnv != null) {
@@ -40,20 +45,26 @@ public class EnvironmentSpecificProperties extends TypedProperties {
                 }
             }
         }
+
+        try {
+            this.original = new Properties();
+            for (URL fileUrl : fileUrls) {
+                this.original.load(fileUrl.openStream());
+            }
+            activate();
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
     }
 
     @Override
     public synchronized void load(InputStream inStream) throws IOException {
-        this.original = new Properties();
-        this.original.load(inStream);
-        activate();
+        throw new NotImplementedException();
     }
 
     @Override
     public synchronized void load(Reader reader) throws IOException {
-        this.original = new Properties();
-        this.original.load(reader);
-        activate();
+        throw new NotImplementedException();
     }
 
     protected void activate() {
@@ -88,9 +99,7 @@ public class EnvironmentSpecificProperties extends TypedProperties {
                     }
                 }
 
-                if (!keyName.equals(originalKey.toString())) {
-                    setProperty(keyName, original.getProperty(originalKey.toString()));
-                }
+                setProperty(keyName, original.getProperty(originalKey.toString()));
             }
 
         }

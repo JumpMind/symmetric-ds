@@ -36,6 +36,7 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.StringMapper;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -75,8 +76,8 @@ public class NodeService extends AbstractService implements INodeService {
 
     private List<IOfflineServerListener> offlineServerListeners;
 
-    public NodeService(IParameterService parameterService, ISymmetricDialect dialect) {
-        super(parameterService, dialect);
+    public NodeService(Log log, IParameterService parameterService, ISymmetricDialect dialect) {
+        super(log, parameterService, dialect);
     }
 
     @Override

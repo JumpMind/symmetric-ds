@@ -44,6 +44,7 @@ public class JobManager implements IJobManager {
         this.taskScheduler = new ThreadPoolTaskScheduler();
         this.taskScheduler.setThreadNamePrefix(String.format("%s-job-", engine.getParameterService().getEngineName()));
         this.taskScheduler.setPoolSize(20);
+        this.taskScheduler.initialize();
         
         this.jobs = new ArrayList<IJob>();
         this.jobs.add(new RouterJob(engine, taskScheduler));

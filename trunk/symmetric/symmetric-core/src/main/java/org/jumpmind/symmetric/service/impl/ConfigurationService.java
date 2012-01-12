@@ -39,6 +39,7 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlScript;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -69,9 +70,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private List<Channel> defaultChannels;
 
-    public ConfigurationService(IParameterService parameterService, ISymmetricDialect dialect,
+    public ConfigurationService(Log log, IParameterService parameterService, ISymmetricDialect dialect,
             INodeService nodeService) {
-        super(parameterService, dialect);
+        super(log, parameterService, dialect);
         this.nodeService = nodeService;
         this.defaultChannels = new ArrayList<Channel>();
         this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 100, 100, true, 0));
@@ -188,14 +189,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         if (0 == sqlTemplate.update(
                 getSql("updateNodeChannelControlSql"),
                 new Object[] { nodeChannel.isSuspendEnabled() ? 1 : 0,
-                        nodeChannel.isIgnoreEnabled() ? 1 : 0, nodeChannel.getLastExtractedTime(),
+                        nodeChannel.isIgnoreEnabled() ? 1 : 0, nodeChannel.getLastExtractTime(),
                         nodeChannel.getNodeId(), nodeChannel.getChannelId() })) {
             sqlTemplate.update(
                     getSql("insertNodeChannelControlSql"),
                     new Object[] { nodeChannel.getNodeId(), nodeChannel.getChannelId(),
                             nodeChannel.isSuspendEnabled() ? 1 : 0,
                             nodeChannel.isIgnoreEnabled() ? 1 : 0,
-                            nodeChannel.getLastExtractedTime() });
+                            nodeChannel.getLastExtractTime() });
         }
         if (reloadChannels) {
             reloadChannels();
@@ -265,10 +266,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     nodeChannel.setUsePkDataToRoute(row
                                             .getBoolean("use_pk_data_to_route"));
                                     nodeChannel.setContainsBigLobs(row
-                                            .getBoolean("contains_big_lobs"));
+                                            .getBoolean("contains_big_lob"));
                                     nodeChannel.setBatchAlgorithm(row.getString("batch_algorithm"));
-                                    nodeChannel.setLastExtractedTime(row
-                                            .getDateTime("last_extracted_time"));
+                                    nodeChannel.setLastExtractTime(row
+                                            .getDateTime("last_extract_time"));
                                     nodeChannel.setExtractPeriodMillis(row
                                             .getLong("extract_period_millis"));
                                     return nodeChannel;
@@ -295,7 +296,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         public Object mapRow(Row row) {
                             String channelId = row.getString("channel_id");
                             Date extractTime = row.getDateTime("last_extract_time");
-                            nodeChannelsMap.get(channelId).setLastExtractedTime(extractTime);
+                            nodeChannelsMap.get(channelId).setLastExtractTime(extractTime);
                             return null;
                         };
                     }, nodeId);

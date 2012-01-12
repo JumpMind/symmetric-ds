@@ -39,6 +39,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
@@ -54,8 +55,8 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected String serverId = AppUtils.getServerId();
         
-    public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
-        super(parameterService, dialect);
+    public ClusterService(Log log, IParameterService parameterService, ISymmetricDialect dialect) {
+        super(log, parameterService, dialect);
     }
 
     public void initLockTable() {

@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -104,12 +105,12 @@ public class RouterService extends AbstractService implements IRouterService {
 
     transient ExecutorService readThread = null;
 
-    public RouterService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+    public RouterService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IClusterService clusterService, IDataService dataService,
             IConfigurationService configurationService, ITriggerRouterService triggerRouterService,
             IOutgoingBatchService outgoingBatchService, INodeService nodeService,
             IStatisticManager statisticManager, ITransformService transformService) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.dataService = dataService;
         this.configurationService = configurationService;

@@ -35,6 +35,7 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.StringMapper;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -76,12 +77,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     private IStatisticManager statisticManager;
 
-    public RegistrationService(IParameterService parameterService,
+    public RegistrationService(Log log, IParameterService parameterService,
             ISymmetricDialect symmetricDialect, INodeService nodeService,
             IDataExtractorService dataExtractorService, IDataService dataService,
             IDataLoaderService dataLoaderService, ITransportManager transportManager,
             IStatisticManager statisticManager) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.dataExtractorService = dataExtractorService;
         this.dataService = dataService;

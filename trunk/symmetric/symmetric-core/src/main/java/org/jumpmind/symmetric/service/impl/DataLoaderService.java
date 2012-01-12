@@ -37,6 +37,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -107,12 +108,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private ITransformService transformService;
 
-    public DataLoaderService(IParameterService parameterService,
+    public DataLoaderService(Log log, IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IIncomingBatchService incomingBatchService,
             IConfigurationService configurationService, ITransportManager transportManager,
             IStatisticManager statisticManager, INodeService nodeService,
             ITransformService transformService, ITriggerRouterService triggerRouterService) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.incomingBatchService = incomingBatchService;
         this.configurationService = configurationService;
         this.transportManager = transportManager;

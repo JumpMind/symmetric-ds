@@ -31,6 +31,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -52,9 +53,9 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IStatisticManager statisticManager;
 
-    public PurgeService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+    public PurgeService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IClusterService clusterService, IStatisticManager statisticManager) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.statisticManager = statisticManager;
     }

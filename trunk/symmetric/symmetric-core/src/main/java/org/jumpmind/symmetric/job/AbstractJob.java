@@ -77,7 +77,7 @@ abstract public class AbstractJob implements Runnable, IJob {
     
     protected ISymmetricEngine engine;
 
-    protected AbstractJob(String jobName, boolean requiresRegistration, boolean autoStartRequired, ISymmetricEngine engine, ThreadPoolTaskScheduler  taskScheduler) {
+    protected AbstractJob(String jobName, boolean requiresRegistration, boolean autoStartRequired, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         this.engine = engine;
         this.taskScheduler = taskScheduler;
         this.jobName = jobName;

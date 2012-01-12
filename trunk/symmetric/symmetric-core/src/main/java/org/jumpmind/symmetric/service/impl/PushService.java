@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
@@ -65,11 +66,11 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     private IClusterService clusterService;
     
-    public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+    public PushService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
             IClusterService clusterService) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.dataExtractorService = dataExtractorService;
         this.acknowledgeService = acknowledgeService;
         this.transportManager = transportManager;

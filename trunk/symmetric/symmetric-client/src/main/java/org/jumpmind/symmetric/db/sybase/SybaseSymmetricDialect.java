@@ -35,6 +35,7 @@ import org.jumpmind.db.sql.jdbc.IConnectionCallback;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -51,8 +52,8 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
        
-    public SybaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);
+    public SybaseSymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
+        super(log, parameterService, platform);
         this.triggerText = new SybaseTriggerText();
     } 
 

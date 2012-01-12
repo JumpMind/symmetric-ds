@@ -78,7 +78,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             password = securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC
                     .length()));
         }
-        dataSource.setUsername(password);
+        dataSource.setPassword(password);
         dataSource.setInitialSize(properties.getInt(ParameterConstants.DBPOOL_INITIAL_SIZE, 5));
         dataSource.setMaxActive(properties.getInt(ParameterConstants.DBPOOL_MAX_ACTIVE, 20));
         dataSource.setMaxWait(properties.getInt(ParameterConstants.DBPOOL_MAX_WAIT, 5000));
