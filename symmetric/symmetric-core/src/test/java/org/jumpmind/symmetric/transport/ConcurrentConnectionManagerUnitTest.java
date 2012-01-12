@@ -32,8 +32,7 @@ public class ConcurrentConnectionManagerUnitTest {
 
     @Test
     public void testRemoveTimedOutReservations() {
-        ConcurrentConnectionManager mgr = new ConcurrentConnectionManager();
-        mgr.setStatisticManager(new MockStatisticManager());
+        ConcurrentConnectionManager mgr = new ConcurrentConnectionManager(null, new MockStatisticManager());
         Map<String, Reservation> reservations = new HashMap<String, Reservation>();
 
         String nodeId = "1";

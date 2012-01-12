@@ -28,7 +28,7 @@ public class EnvironmentSpecificProperties extends TypedProperties {
 
     public EnvironmentSpecificProperties(String systemPropertyName) {
         this(systemPropertyName, null);
-    }
+    }    
 
     public EnvironmentSpecificProperties(String systemPropertyName, String[] propertiesForEnv) {
         this.propertiesForEnvironment = new HashSet<String>();

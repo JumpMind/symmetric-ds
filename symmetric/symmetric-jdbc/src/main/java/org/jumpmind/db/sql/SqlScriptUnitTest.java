@@ -17,7 +17,7 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.  */
-package org.jumpmind.symmetric.db;
+package org.jumpmind.db.sql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
