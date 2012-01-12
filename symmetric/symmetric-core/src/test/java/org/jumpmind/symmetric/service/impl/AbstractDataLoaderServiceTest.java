@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.MockTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.junit.Test;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest {
 
@@ -560,11 +559,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
         String sql = "select " + getSelect(TEST_COLUMNS) + " from " + TEST_TABLE + " where "
                 + getWhere(TEST_KEYS);
-        Map<String, Object> results = null;
-        try {
-            results = getSqlTemplate().queryForMap(sql, new Object[] { new Long(testTableId) });
-        } catch (EmptyResultDataAccessException e) {
-        }
+        Map<String, Object> results = getSqlTemplate().queryForMap(sql, new Object[] { new Long(testTableId) });
         if (expectedValues != null) {
             expectedValues[1] = translateExpectedString(expectedValues[1], false);
             expectedValues[2] = translateExpectedString(expectedValues[2], true);

@@ -11,6 +11,7 @@ public class Db2JdbcSqlTemplate extends JdbcSqlTemplate {
     public Db2JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
+        primaryKeyViolationCodes = new int[] {-803};        
     }
     
 

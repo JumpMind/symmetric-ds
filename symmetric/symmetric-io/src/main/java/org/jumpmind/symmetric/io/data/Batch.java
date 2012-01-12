@@ -106,6 +106,9 @@ public class Batch {
     public BinaryEncoding getBinaryEncoding() {
         return binaryEncoding;
     }
-    
+
+    public String getNodeBatchId() {
+        return sourceNodeId + "-" + batchId;
+    }
     
 }

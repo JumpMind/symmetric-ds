@@ -79,8 +79,6 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
         info.setCharColumnSpaceTrimmed(true);
         info.setEmptyStringNulled(false);
 
-        primaryKeyViolationSqlStates = new String[] {"23001"};
-
         ddlReader = new H2DdlReader(log, this);
         ddlBuilder = new H2Builder(log, this);
     }

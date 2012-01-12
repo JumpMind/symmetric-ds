@@ -25,6 +25,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;
 import org.jumpmind.log.LogLevel;
@@ -45,6 +46,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected LobHandler lobHandler;
 
     protected Boolean supportsGetGeneratedKeys = null;
+
+    protected int[] primaryKeyViolationCodes;
+
+    protected String[] primaryKeyViolationSqlStates;
 
     public JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
@@ -440,7 +445,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     public SqlException translate(String message, Exception ex) {
-        if (ex instanceof SqlException) {
+        if (isUniqueKeyViolation(ex) && !(ex instanceof UniqueKeyException)) {
+            throw new UniqueKeyException(ex);
+        } else if (ex instanceof SqlException) {
             return (SqlException) ex;
         } else {
             return new SqlException(message, ex);
@@ -603,4 +610,48 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return key;
     }
 
+    public boolean isUniqueKeyViolation(Exception ex) {
+        boolean primaryKeyViolation = false;
+        if (primaryKeyViolationCodes != null || primaryKeyViolationSqlStates != null) {
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                if (primaryKeyViolationCodes != null) {
+                    int errorCode = sqlEx.getErrorCode();
+                    for (int primaryKeyViolationCode : primaryKeyViolationCodes) {
+                        if (primaryKeyViolationCode == errorCode) {
+                            primaryKeyViolation = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (primaryKeyViolationSqlStates != null) {
+                    String sqlState = sqlEx.getSQLState();
+                    if (sqlState != null) {
+                        for (String primaryKeyViolationSqlState : primaryKeyViolationSqlStates) {
+                            if (primaryKeyViolationSqlState != null
+                                    && primaryKeyViolationSqlState.equals(sqlState)) {
+                                primaryKeyViolation = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return primaryKeyViolation;
+    }
+
+    protected SQLException findSQLException(Throwable ex) {
+        if (ex instanceof SQLException) {
+            return (SQLException) ex;
+        } else {
+            Throwable cause = ex.getCause();
+            if (cause != null && !cause.equals(ex)) {
+                return findSQLException(cause);
+            }
+        }
+        return null;
+    }
 }

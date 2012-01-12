@@ -11,6 +11,7 @@ public class DerbyJdbcSqlTemplate extends JdbcSqlTemplate {
     public DerbyJdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
+        primaryKeyViolationSqlStates = new String[] {"23505"};        
     }
     
     @Override

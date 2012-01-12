@@ -87,8 +87,6 @@ public class FirebirdPlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
 
-        primaryKeyViolationCodes = new int [] {335544665};
-
         ddlReader = new FirebirdDdlReader(log, this);
         ddlBuilder = new FirebirdBuilder(log, this);
     }

@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -52,8 +53,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.CannotAcquireLockException;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 /**
  * @see INodeService
@@ -86,12 +85,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public String findSymmetricVersion() {
-        try {
-            return (String) sqlTemplate.queryForObject(getSql("findSymmetricVersionSql"),
-                    String.class);
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
-        }
+        return (String) sqlTemplate.queryForObject(getSql("findSymmetricVersionSql"), String.class);
     }
 
     public String findIdentityNodeId() {
@@ -100,8 +94,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId) {
-        return sqlTemplate.query(
-                getSql("selectNodePrefixSql", "findEnabledNodesFromNodeGroupSql"),
+        return sqlTemplate.query(getSql("selectNodePrefixSql", "findEnabledNodesFromNodeGroupSql"),
                 new NodeRowMapper(), new Object[] { nodeGroupId });
     }
 
@@ -110,8 +103,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Collection<Node> findNodesWithOpenRegistration() {
-        return sqlTemplate.query(
-                getSql("selectNodePrefixSql", "findNodesWithOpenRegistrationSql"),
+        return sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWithOpenRegistrationSql"),
                 new NodeRowMapper());
     }
 
@@ -218,8 +210,10 @@ public class NodeService extends AbstractService implements INodeService {
                 log.debug("A 'null' node id was passed into findNodeSecurity.");
                 return null;
             }
-        } catch (DataIntegrityViolationException ex) {
-            log.error("Could not find a node security row for %s.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.", nodeId);
+        } catch (UniqueKeyException ex) {
+            log.error(
+                    "Could not find a node security row for %s.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.",
+                    nodeId);
             throw ex;
         }
     }
@@ -476,7 +470,8 @@ public class NodeService extends AbstractService implements INodeService {
             }
             return NodeStatus.DATA_LOAD_NOT_STARTED;
         } catch (CannotAcquireLockException ex) {
-            log.error("Could not acquire lock on the table after %s ms.  The status is unknown.", (System.currentTimeMillis() - ts));
+            log.error("Could not acquire lock on the table after %s ms.  The status is unknown.",
+                    (System.currentTimeMillis() - ts));
             return NodeStatus.STATUS_UNKNOWN;
         }
     }

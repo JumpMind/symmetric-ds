@@ -189,7 +189,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             loadDataFromPull(null, status);
             nodeService.findIdentity(false);
         } catch (MalformedURLException e) {
-            log.error("Could not connect to the %s node's transport because of a bad URL: %s", remote.getNodeId(), remote.getSyncUrl());
+            log.error("Could not connect to the %s node's transport because of a bad URL: %s",
+                    remote.getNodeId(), remote.getSyncUrl());
             throw e;
         }
     }
@@ -208,10 +209,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 sendAck = transportManager.sendAcknowledgement(remote, list, local,
                         localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
             } catch (IOException ex) {
-                log.warn("Ack was not sent successfully on try number %d.  %s", (i + 1), ex.getMessage());
+                log.warn("Ack was not sent successfully on try number %d.  %s", (i + 1),
+                        ex.getMessage());
                 error = ex;
             } catch (RuntimeException ex) {
-                log.warn("Ack was not sent successfully on try number %d.  %s", (i + 1), ex.getMessage());
+                log.warn("Ack was not sent successfully on try number %d.  %s", (i + 1),
+                        ex.getMessage());
                 error = ex;
             }
             if (sendAck != HttpURLConnection.HTTP_OK) {
@@ -271,6 +274,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transforms = transformsList != null ? transformsList
                         .toArray(new TransformTable[transformsList.size()]) : null;
             }
+            
             TransformDatabaseWriter writer = new TransformDatabaseWriter(
                     symmetricDialect.getPlatform(), settings, null, transforms,
                     filters.toArray(new IDatabaseWriterFilter[filters.size()]));
@@ -288,10 +292,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
 
             for (IncomingBatch incomingBatch : batchesProcessed) {
-                // TODO I wonder if there is a way to avoid the second update?
                 if (incomingBatch.getBatchId() != BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION
                         && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
-                    log.error("Failed to update batch %d.  Zero rows returned.", incomingBatch.getBatchId());
+                    log.error("Failed to update batch %d.  Zero rows returned.",
+                            incomingBatch.getBatchId());
                 }
             }
 
@@ -300,7 +304,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (ConnectException ex) {
             throw ex;
         } catch (UnknownHostException ex) {
-            log.warn("Could not connect to the transport because the host was unknown: %s", ex.getMessage());
+            log.warn("Could not connect to the transport because the host was unknown: %s",
+                    ex.getMessage());
             throw ex;
         } catch (RegistrationNotOpenException ex) {
             log.warn("Registration attempt failed.  Registration was not open for the node.");
@@ -473,28 +478,29 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void batchInError(DataContext<IDataReader, TransformDatabaseWriter> context,
                 Exception ex) {
-            Batch batch = context.getBatch();
-            this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
-                    .getWriter().getStatistics().get(batch), false);
-            enableSyncTriggers(context);
-            statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
-            if (ex instanceof IOException || ex instanceof TransportException) {
-                log.warn("Failed to load batch %s because: %s", this.currentBatch.getNodeBatchId(), ex.getMessage());
-                this.currentBatch.setSqlMessage(ex.getMessage());
-            } else {
-                log.error("Failed to load batch %s because: %s", ex, this.currentBatch.getNodeBatchId(),
-                        ex.getMessage());
-                SQLException se = unwrapSqlException(ex);
-                if (se != null) {
-                    this.currentBatch.setSqlState(se.getSQLState());
-                    this.currentBatch.setSqlCode(se.getErrorCode());
-                    this.currentBatch.setSqlMessage(se.getMessage());
-                } else {
-                    this.currentBatch.setSqlMessage(ex.getMessage());
-                }
-            }
-
             try {
+                Batch batch = context.getBatch();
+                this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
+                        .getWriter().getStatistics().get(batch), false);
+                enableSyncTriggers(context);
+                statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
+                if (ex instanceof IOException || ex instanceof TransportException) {
+                    log.warn("Failed to load batch %s because: %s",
+                            this.currentBatch.getNodeBatchId(), ex.getMessage());
+                    this.currentBatch.setSqlMessage(ex.getMessage());
+                } else {
+                    log.error("Failed to load batch %s because: %s", ex,
+                            this.currentBatch.getNodeBatchId(), ex.getMessage());
+                    SQLException se = unwrapSqlException(ex);
+                    if (se != null) {
+                        this.currentBatch.setSqlState(se.getSQLState());
+                        this.currentBatch.setSqlCode(se.getErrorCode());
+                        this.currentBatch.setSqlMessage(se.getMessage());
+                    } else {
+                        this.currentBatch.setSqlMessage(ex.getMessage());
+                    }
+                }
+
                 // If we were in the process of skipping a batch
                 // then its status would have been OK. We should not
                 // set the status to ER.
@@ -503,7 +509,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
                 incomingBatchService.updateIncomingBatch(this.currentBatch);
             } catch (Exception e) {
-                log.error("Failed to record status of batch %s", this.currentBatch.getNodeBatchId());
+                log.error("Failed to record status of batch %s",
+                        this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
+                                .getBatch().getNodeBatchId());
             }
         }
 

@@ -85,8 +85,6 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
         info.setAutoIncrementUpdateAllowed(false);
         
-        primaryKeyViolationSqlStates = new String[] {"2627"};
-
         ddlReader = new MsSqlDdlReader(log, this);
         ddlBuilder = new MsSqlBuilder(log, this);
 

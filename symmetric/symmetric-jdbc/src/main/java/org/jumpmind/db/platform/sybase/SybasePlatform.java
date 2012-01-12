@@ -100,7 +100,6 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
         info.setAutoIncrementUpdateAllowed(false);
         
-        primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
         ddlReader = new SybaseDdlReader(log, this);
         ddlBuilder = new SybaseBuilder(log, this);
         

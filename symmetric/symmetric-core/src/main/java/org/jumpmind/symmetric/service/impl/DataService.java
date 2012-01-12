@@ -44,6 +44,7 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
@@ -80,8 +81,6 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 /**
  * @see IDataService
@@ -106,11 +105,11 @@ public class DataService extends AbstractService implements IDataService {
 
     private IStatisticManager statisticManager;
 
-    public DataService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            DeploymentType deploymentType, ITriggerRouterService triggerRouterService,
-            INodeService nodeService, IPurgeService purgeService,
-            IConfigurationService configurationService, IOutgoingBatchService outgoingBatchService,
-            IStatisticManager statisticManager) {
+    public DataService(Log log, IParameterService parameterService,
+            ISymmetricDialect symmetricDialect, DeploymentType deploymentType,
+            ITriggerRouterService triggerRouterService, INodeService nodeService,
+            IPurgeService purgeService, IConfigurationService configurationService,
+            IOutgoingBatchService outgoingBatchService, IStatisticManager statisticManager) {
         super(log, parameterService, symmetricDialect);
         this.deploymentType = deploymentType;
         this.triggerRouterService = triggerRouterService;
@@ -215,8 +214,9 @@ public class DataService extends AbstractService implements IDataService {
         int numberUpdated = sqlTemplate.update(getSql("checkForAndUpdateMissingChannelIdSql"),
                 Constants.CHANNEL_DEFAULT, firstDataId, lastDataId);
         if (numberUpdated > 0) {
-            log.warn("There were %d data records found between %d and %d that an invalid channel_id.  Updating them to be on the '%s' channel.", numberUpdated, firstDataId, lastDataId,
-                    Constants.CHANNEL_DEFAULT);
+            log.warn(
+                    "There were %d data records found between %d and %d that an invalid channel_id.  Updating them to be on the '%s' channel.",
+                    numberUpdated, firstDataId, lastDataId, Constants.CHANNEL_DEFAULT);
         }
     }
 
@@ -235,7 +235,7 @@ public class DataService extends AbstractService implements IDataService {
         try {
             insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                     Constants.UNKNOWN_ROUTER_ID, isLoad);
-        } catch (DataIntegrityViolationException e) {
+        } catch (UniqueKeyException e) {
             if (e.getRootCause() != null && e.getRootCause() instanceof DataTruncation) {
                 log.error("Table data definition XML was too large and failed.  The feature to send table creates during the initial load may be limited on your platform.  You may need to set the initial.load.create.first parameter to false.");
             }
@@ -522,10 +522,14 @@ public class DataService extends AbstractService implements IDataService {
                     if (data != null) {
                         insertData(data);
                     } else {
-                        log.warn("Not generating data/data events for table %s because a trigger or trigger hist is not created yet.", tableName);
+                        log.warn(
+                                "Not generating data/data events for table %s because a trigger or trigger hist is not created yet.",
+                                tableName);
                     }
                 } else {
-                    log.warn("Not generating data/data events for table %s because a trigger or trigger hist is not created yet.", tableName);
+                    log.warn(
+                            "Not generating data/data events for table %s because a trigger or trigger hist is not created yet.",
+                            tableName);
                 }
             }
         }
@@ -625,8 +629,9 @@ public class DataService extends AbstractService implements IDataService {
             sqlTemplate.update(getSql("insertDataGapSql"), new Object[] { DataGap.Status.GP.name(),
                     AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
                     Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
-        } catch (DataIntegrityViolationException ex) {
-            log.warn("A gap already existed for %d to %d.  Updating instead.", gap.getStartId(), gap.getEndId());
+        } catch (UniqueKeyException ex) {
+            log.warn("A gap already existed for %d to %d.  Updating instead.", gap.getStartId(),
+                    gap.getEndId());
             updateDataGap(gap, DataGap.Status.GP);
         }
     }
@@ -640,21 +645,13 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public Date findCreateTimeOfEvent(long dataId) {
-        try {
-            return sqlTemplate.queryForObject(getSql("findDataEventCreateTimeSql"), Date.class,
-                    new Object[] { dataId }, new int[] { Types.NUMERIC });
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
-        }
+        return sqlTemplate.queryForObject(getSql("findDataEventCreateTimeSql"), Date.class,
+                new Object[] { dataId }, new int[] { Types.NUMERIC });
     }
 
     public Date findCreateTimeOfData(long dataId) {
-        try {
-            return sqlTemplate.queryForObject(getSql("findDataCreateTimeSql"), Date.class,
-                    new Object[] { dataId }, new int[] { Types.NUMERIC });
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
-        }
+        return sqlTemplate.queryForObject(getSql("findDataCreateTimeSql"), Date.class,
+                new Object[] { dataId }, new int[] { Types.NUMERIC });
     }
 
     public Map<String, String> getRowDataAsMap(Data data) {

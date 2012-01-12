@@ -98,44 +98,24 @@ public class TestSetupUtil {
     }
 
     protected static void removeEmbededdedDatabases() {
-        File derby = new File("target/derby");
-        if (derby.exists()) {
+        File clientDbDir = new File("target/clientdbs");
+        if (clientDbDir.exists()) {
             try {
-                TestUtils.getLog().info("Removing derby database files.");
-                FileUtils.deleteDirectory(derby);
+                TestUtils.getLog().info("Removing client database files.");
+                FileUtils.deleteDirectory(clientDbDir);
             } catch (IOException e) {
                 TestUtils.getLog().error(e);
             }
         }
-        File h2 = new File("target/h2");
-        if (h2.exists()) {
+        File rootDbDir = new File("target/rootdbs");
+        if (rootDbDir.exists()) {
             try {
-                TestUtils.getLog().info("Removing h2 database files");
-                FileUtils.deleteDirectory(h2);
+                TestUtils.getLog().info("Removing root database files");
+                FileUtils.deleteDirectory(rootDbDir);
             } catch (IOException e) {
                 TestUtils.getLog().error(e);
             }
         }
-        File hsqldb = new File("target/hsqldb");
-        if (hsqldb.exists()) {
-            try {
-                TestUtils.getLog().info("Removing hsqldb database files");
-                FileUtils.deleteDirectory(hsqldb);
-            } catch (IOException e) {
-                TestUtils.getLog().error(e);
-            }
-        }
-        File sqlitedb = new File("target/sqlite");
-        if (sqlitedb.exists() && FileUtils.listFiles(sqlitedb, null, true).size() > 0) {
-            try {
-                TestUtils.getLog().info("Removing sqlite database files");
-                FileUtils.deleteDirectory(sqlitedb);
-
-            } catch (IOException e) {
-                TestUtils.getLog().error(e);
-            }
-        }
-        sqlitedb.mkdirs();
     }
 
     protected static URL getResource(String resource) {

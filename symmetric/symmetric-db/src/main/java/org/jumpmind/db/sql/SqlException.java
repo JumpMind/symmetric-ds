@@ -20,4 +20,14 @@ public class SqlException extends RuntimeException {
         super(cause);
     }
 
+    public Throwable getRootCause() {
+        Throwable rootCause = null;
+        Throwable cause = getCause();
+        while (cause != null && cause != rootCause) {
+            rootCause = cause;
+            cause = cause.getCause();
+        }
+        return rootCause;
+    }
+
 }

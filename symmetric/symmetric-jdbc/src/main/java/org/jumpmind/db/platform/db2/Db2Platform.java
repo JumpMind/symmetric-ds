@@ -80,8 +80,6 @@ public class Db2Platform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
         
-        primaryKeyViolationCodes = new int[] {-803};
-        
         ddlReader = new Db2DdlReader(log, this);
         ddlBuilder = new Db2Builder(log, this);
     }

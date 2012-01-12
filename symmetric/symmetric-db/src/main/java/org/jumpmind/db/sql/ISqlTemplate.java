@@ -72,6 +72,8 @@ public interface ISqlTemplate {
     public void testConnection();
 
     public SqlException translate(Exception ex);
+    
+    public boolean isUniqueKeyViolation(Exception ex);
 
     public ISqlTransaction startSqlTransaction();
 

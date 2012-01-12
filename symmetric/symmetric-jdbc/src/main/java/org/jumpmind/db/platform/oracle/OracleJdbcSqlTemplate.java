@@ -10,7 +10,8 @@ public class OracleJdbcSqlTemplate extends JdbcSqlTemplate {
 
     public OracleJdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
-        super(dataSource, settings, lobHandler);
+        super(dataSource, settings, lobHandler);        
+        primaryKeyViolationCodes = new int[] {1};
     }
     
     @Override

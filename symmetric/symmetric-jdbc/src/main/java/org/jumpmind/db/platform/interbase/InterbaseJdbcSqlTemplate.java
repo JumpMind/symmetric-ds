@@ -11,6 +11,7 @@ public class InterbaseJdbcSqlTemplate extends JdbcSqlTemplate {
     public InterbaseJdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
+        primaryKeyViolationCodes = new int [] {335544665};
     }
     
     @Override

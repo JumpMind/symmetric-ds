@@ -331,7 +331,7 @@ public class DatabaseWriter implements IDataWriter {
                 statistics.get(batch).increment(DatabaseWriterStatistics.INSERTCOUNT, count);
                 return count > 0;
             } catch (SqlException ex) {
-                if (platform.isPrimaryKeyViolation(ex)) {
+                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
                     return false;
                 } else {
                     throw ex;

@@ -10,7 +10,8 @@ public class InformixJdbcSqlTemplate extends JdbcSqlTemplate {
 
     public InformixJdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
-        super(dataSource, settings, lobHandler);
+        super(dataSource, settings, lobHandler);        
+        primaryKeyViolationCodes = new int[] {-268};
     }
     
     @Override

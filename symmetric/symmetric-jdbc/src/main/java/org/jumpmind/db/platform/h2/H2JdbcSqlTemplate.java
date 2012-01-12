@@ -11,6 +11,7 @@ public class H2JdbcSqlTemplate extends JdbcSqlTemplate {
     public H2JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
+        primaryKeyViolationSqlStates = new String[] {"23001"};
     }
     
     @Override

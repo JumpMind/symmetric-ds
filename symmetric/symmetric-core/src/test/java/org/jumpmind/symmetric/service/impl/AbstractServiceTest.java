@@ -53,20 +53,21 @@ public abstract class AbstractServiceTest {
         }
     }
 
-    protected Level setLoggingLevelForTest(Level level) {
-        Level old = Logger.getLogger(getClass()).getLevel();
-        Logger.getLogger("org.jumpmind").setLevel(level);
+    protected Level setLoggingLevelForTest(Level level) {        
+        Logger logger = Logger.getLogger(getSymmetricEngine().getLog().getCategory());
+        Level old = logger.getLevel();
+        logger.setLevel(level);
         return old;
     }
 
     protected void logTestRunning() {
-        Logger.getLogger(getClass()).info(
+        TestUtils.getLog().info(
                 "Running " + new Exception().getStackTrace()[1].getMethodName() + ". "
                         + getSymmetricEngine().getSymmetricDialect().getPlatform().getName());
     }
 
     protected void logTestComplete() {
-        Logger.getLogger(getClass()).info(
+        TestUtils.getLog().info(
                 "Completed running " + new Exception().getStackTrace()[1].getMethodName() + ". "
                         + getSymmetricEngine().getSymmetricDialect().getPlatform().getName());
     }

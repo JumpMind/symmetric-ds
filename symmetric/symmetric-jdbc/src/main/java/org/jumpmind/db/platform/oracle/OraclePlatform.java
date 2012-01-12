@@ -103,8 +103,6 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(true);
 
-        primaryKeyViolationCodes = new int[] {1};
-
         ddlReader = new OracleDdlReader(log, this);
         ddlBuilder = new OracleBuilder(log, this);
     }

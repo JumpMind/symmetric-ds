@@ -82,8 +82,6 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
         
-        primaryKeyViolationSqlStates = new String[] {"23505"};
-        
         ddlReader = new DerbyDdlReader(this, log);
         ddlBuilder = new DerbyBuilder(log, this);
     }

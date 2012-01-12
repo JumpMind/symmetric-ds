@@ -73,6 +73,7 @@ public class FileCsvDataWriter extends AbstractCsvDataWriter {
     @Override
     protected void endBatch(Batch batch) {
         closeFile(batch);
+        flushNodeId = true;
     }
 
     protected void closeFile(Batch batch) {

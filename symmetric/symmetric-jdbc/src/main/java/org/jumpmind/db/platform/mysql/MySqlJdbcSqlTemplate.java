@@ -11,6 +11,7 @@ public class MySqlJdbcSqlTemplate extends JdbcSqlTemplate {
     public MySqlJdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
+        primaryKeyViolationCodes = new int[] {1062};
     }
     
     @Override

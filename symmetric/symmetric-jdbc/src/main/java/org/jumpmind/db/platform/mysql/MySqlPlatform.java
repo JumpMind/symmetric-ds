@@ -106,8 +106,6 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
         // MySql 5.0 returns an empty string for default values for pk columns
         // which is different from the MySql 4 behaviour
         info.setSyntheticDefaultValueForRequiredReturned(false);
-
-        primaryKeyViolationCodes = new int[] {1062};
         
         ddlReader = new MySqlDdlReader(log, this);
         ddlBuilder = new MySqlBuilder(log, this);

@@ -10,7 +10,8 @@ public class HsqlDb2JdbcSqlTemplate extends JdbcSqlTemplate {
 
     public HsqlDb2JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
-        super(dataSource, settings, lobHandler);
+        super(dataSource, settings, lobHandler);        
+        primaryKeyViolationSqlStates = new String[] {"23505"};
     }
     
     @Override
