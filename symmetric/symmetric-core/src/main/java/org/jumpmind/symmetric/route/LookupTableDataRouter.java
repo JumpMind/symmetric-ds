@@ -28,8 +28,8 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.mapper.StringMapper;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -40,7 +40,7 @@ import org.jumpmind.symmetric.model.Router;
  */
 public class LookupTableDataRouter extends AbstractDataRouter implements IDataRouter {
 
-    final static ILog log = LogFactory.getLog(LookupTableDataRouter.class);
+    final static Log log = LogFactory.getLog(LookupTableDataRouter.class);
 
     public final static String PARAM_TABLE = "LOOKUP_TABLE";
     public final static String PARAM_KEY_COLUMN = "KEY_COLUMN";

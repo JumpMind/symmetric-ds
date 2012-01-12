@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -38,7 +38,7 @@ import org.springframework.scripting.ScriptCompilationException;
 
 public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements IDatabaseWriterFilter, INodeGroupExtensionPoint {
 
-    final ILog log = LogFactory.getLog(getClass());
+    final Log log = LogFactory.getLog(getClass());
 
     private boolean autoRegister = true;
 

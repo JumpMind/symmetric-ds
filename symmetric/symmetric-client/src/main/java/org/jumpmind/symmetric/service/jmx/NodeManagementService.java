@@ -32,11 +32,11 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -50,7 +50,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 @ManagedResource(description = "The management interface for a node")
 public class NodeManagementService {
 
-    final ILog log = LogFactory.getLog(getClass());
+    final Log log = LogFactory.getLog(getClass());
 
     protected ClientSymmetricEngine engine;
 

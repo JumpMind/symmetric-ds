@@ -180,10 +180,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         TypedProperties properties = this.propertiesFactory.reload();
         log = LogFactory.getLog("org.jumpmind."
                 + properties.get(ParameterConstants.ENGINE_NAME, "default"));
+        this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
                 ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"), log);
 
-        this.platform = createDatabasePlatform(properties);
         this.platform.setDelimitedIdentifierModeOn(parameterService
                 .is(ParameterConstants.DB_FORCE_DELIMITED_IDENTIFIER_ON));
         this.platform.setDelimitedIdentifierModeOn(!parameterService

@@ -76,7 +76,7 @@ public class ExtensionPointManager implements IExtensionPointManager {
     public void register() throws BeansException {
 
         ApplicationContext cfgBeanFactory = new ClassPathXmlApplicationContext(
-                "classpath://symmetric-extensions.xml");
+                "classpath:/symmetric-extensions.xml");
         if (!initialized) {
             extensions = new TreeMap<String, IExtensionPoint>();
             extensions.putAll(cfgBeanFactory.getBeansOfType(IExtensionPoint.class));

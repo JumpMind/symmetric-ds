@@ -69,7 +69,7 @@ public class ParameterService implements IParameterService {
 
     private ParameterServiceSqlMap sql;
 
-    private ISqlTemplate jdbcTemplate;
+    private ISqlTemplate sqlTemplate;
 
     public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory,
             String tablePrefix, Log log) {
@@ -79,7 +79,7 @@ public class ParameterService implements IParameterService {
         this.factory = factory;
         this.sql = new ParameterServiceSqlMap(null,
                 AbstractService.createSqlReplacementTokens(tablePrefix));
-        this.jdbcTemplate = platform.getSqlTemplate();
+        this.sqlTemplate = platform.getSqlTemplate();
 
     }
 
@@ -166,11 +166,11 @@ public class ParameterService implements IParameterService {
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
         paramValue = paramValue != null ? paramValue.toString() : null;
 
-        int count = jdbcTemplate.update(sql.getSql("updateParameterSql"), new Object[] {
+        int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] {
                 paramValue, externalId, nodeGroupId, key });
 
         if (count == 0) {
-            jdbcTemplate.update(sql.getSql("insertParameterSql"), new Object[] { externalId,
+            sqlTemplate.update(sql.getSql("insertParameterSql"), new Object[] { externalId,
                     nodeGroupId, key, paramValue });
         }
 
@@ -178,7 +178,7 @@ public class ParameterService implements IParameterService {
     }
 
     public void deleteParameter(String externalId, String nodeGroupId, String key) {
-        jdbcTemplate.update(sql.getSql("deleteParameterSql"), externalId, nodeGroupId, key);
+        sqlTemplate.update(sql.getSql("deleteParameterSql"), externalId, nodeGroupId, key);
         rereadParameters();
 
     }
@@ -215,7 +215,7 @@ public class ParameterService implements IParameterService {
 
     private TypedProperties rereadDatabaseParameters(String externalId, String nodeGroupId) {
         final TypedProperties properties = new TypedProperties();
-        jdbcTemplate.query(sql.getSql("selectParametersSql"), new ISqlRowMapper<Object>() {
+        sqlTemplate.query(sql.getSql("selectParametersSql"), new ISqlRowMapper<Object>() {
             public Object mapRow(Row row) {
                 properties.setProperty(row.getString("param_key"), row.getString("param_value"));
                 return null;
@@ -265,7 +265,7 @@ public class ParameterService implements IParameterService {
     }
 
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {
-        return jdbcTemplate.query(sql.getSql("selectParametersByKeySql"),
+        return sqlTemplate.query(sql.getSql("selectParametersByKeySql"),
                 new DatabaseParameterMapper(), paramKey);
     }
 

@@ -1,8 +1,9 @@
 package org.jumpmind.symmetric.service.impl;
 
+import java.util.Map;
+
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.AbstractSqlMap;
-import java.util.Map;
 
 public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 

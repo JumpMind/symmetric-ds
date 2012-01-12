@@ -30,10 +30,6 @@ import java.util.Map;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.transport.IIncomingTransport;
-import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
-import org.jumpmind.symmetric.transport.ISyncUrlExtension;
-import org.jumpmind.symmetric.transport.ITransportManager;
 
 public class MockTransportManager implements ITransportManager {
 

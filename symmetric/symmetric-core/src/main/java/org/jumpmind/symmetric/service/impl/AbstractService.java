@@ -53,6 +53,7 @@ abstract public class AbstractService implements IService {
     public AbstractService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
        this.symmetricDialect = symmetricDialect;
        this.parameterService = parameterService;
+       this.tablePrefix = parameterService.getTablePrefix();
        this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
     }
     

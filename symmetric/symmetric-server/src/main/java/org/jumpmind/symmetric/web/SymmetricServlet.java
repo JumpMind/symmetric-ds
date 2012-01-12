@@ -31,9 +31,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
  * This servlet handles web requests to SymmetricDS.
@@ -60,7 +60,7 @@ public class SymmetricServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    protected final ILog log = LogFactory.getLog(getClass());
+    protected final Log log = LogFactory.getLog(getClass());
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res)
@@ -189,10 +189,10 @@ public class SymmetricServlet extends HttpServlet {
         String hostName = req.getRemoteHost();
         String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
                 : "";
-        if (log.isErrorEnabled() && isError) {
+        if (isError) {
             log.error("ServletProcessingFailedError", ex, method, externalId, nodeId, address,
                     hostName, ServletUtils.normalizeRequestUri(req));
-        } else if (log.isWarnEnabled()) {
+        } else {
             log.warn("ServletProcessingFailedWarning", method, externalId, nodeId, address,
                     hostName, ex.getMessage());
         }

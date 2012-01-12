@@ -1,7 +1,8 @@
 package org.jumpmind.symmetric.db.informix;
 
-import org.jumpmind.symmetric.db.TriggerText;
 import java.util.HashMap;
+
+import org.jumpmind.symmetric.db.TriggerText;
 
 public class InformixTriggerText extends TriggerText {
 

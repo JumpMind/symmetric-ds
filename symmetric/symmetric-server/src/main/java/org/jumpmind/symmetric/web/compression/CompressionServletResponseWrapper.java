@@ -29,8 +29,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 
 /**
  * Implementation of <b>HttpServletResponseWrapper</b> that works with the
@@ -48,7 +48,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 
 public class CompressionServletResponseWrapper extends HttpServletResponseWrapper {
 
-    static final ILog log = LogFactory.getLog(CompressionServletResponseWrapper.class);
+    static final Log log = LogFactory.getLog(CompressionServletResponseWrapper.class);
 
     int compressionLevel = Deflater.DEFAULT_COMPRESSION;
 
