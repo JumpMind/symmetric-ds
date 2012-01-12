@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric;
 
@@ -38,21 +39,16 @@ public class SymmetricException extends RuntimeException {
         super(cause);
     }
 
-    public SymmetricException(String messageKey) {
-        super(Message.get(messageKey));
+    public SymmetricException(String message, Object... args) {
+        super(String.format(message, args));
     }
 
-    public SymmetricException(String messageKey, Object... args) {
-        super(Message.get(messageKey, args));
+    public SymmetricException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public SymmetricException(String messageKey, Throwable cause) {
-        super(Message.get(messageKey), cause);
-    }
-
-    public SymmetricException(String messageKey, Throwable cause,
-            Object... args) {
-        super(Message.get(messageKey, args), cause);
+    public SymmetricException(String message, Throwable cause, Object... args) {
+        super(String.format(message, args), cause);
     }
 
 }

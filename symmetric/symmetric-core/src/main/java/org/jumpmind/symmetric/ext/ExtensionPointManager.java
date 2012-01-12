@@ -131,9 +131,9 @@ public class ExtensionPointManager implements IExtensionPointManager {
     protected boolean registerExtension(String beanName, IExtensionPoint ext) {
         boolean installed = false;
         if (ext instanceof IBuiltInExtensionPoint) {
-            log.debug("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
+            log.debug("Registering an extension point named %s of type '%s' with SymmetricDS", beanName, ext.getClass().getSimpleName());
         } else {
-            log.info("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
+            log.info("Registering an extension point named %s of type '%s' with SymmetricDS", beanName, ext.getClass().getSimpleName());
         }
 
         if (ext instanceof ISyncUrlExtension) {

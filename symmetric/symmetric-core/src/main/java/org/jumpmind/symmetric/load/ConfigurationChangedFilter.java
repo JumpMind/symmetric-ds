@@ -137,12 +137,12 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
         if (context.get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)
                 && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.info("ConfigurationChanged");
+            log.info(".");
             triggerRouterService.syncTriggers();
         }
         if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-            log.info("ConfigurationChanged");
+            log.info(".");
             transformService.resetCache();
         }
     }

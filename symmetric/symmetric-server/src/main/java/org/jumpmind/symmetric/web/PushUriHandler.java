@@ -55,7 +55,7 @@ public class PushUriHandler extends AbstractUriHandler {
             ServletException {
 
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
-        log.debug("DataPushing", nodeId);
+        log.debug("Push requested for %s", nodeId);
         InputStream inputStream = createInputStream(req);
         OutputStream outputStream = res.getOutputStream();
 
@@ -64,7 +64,7 @@ public class PushUriHandler extends AbstractUriHandler {
         // Not sure if this is necessary, but it's been here and it hasn't hurt
         // anything ...
         res.flushBuffer();
-        log.debug("DataPushingCompleted", nodeId);
+        log.debug("Push completed for %s", nodeId);
 
     }
 

@@ -63,7 +63,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
         this.compressionLevel = compressionLevel;
         this.compressionStrategy = compressionStrategy;
         origResponse = response;
-        log.debug("CompressionServletStarting");
+        log.debug("CompressionServletResponseWrapper constructor gets called");
     }
 
     /**
@@ -103,7 +103,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
      * Set content type
      */
     public void setContentType(String contentType) {
-        log.debug("CompressionServletSettingType", contentType);
+        log.debug("setContentType to %s", contentType);
         this.contentType = contentType;
         origResponse.setContentType(contentType);
     }
@@ -116,7 +116,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
      *                if an input/output error occurs
      */
     public ServletOutputStream createOutputStream() throws IOException {
-        log.debug("CompressionServletCreatingStream");
+        log.debug("createOutputStream gets called");
         CompressionResponseStream stream = new CompressionResponseStream(origResponse, compressionLevel,
                 compressionStrategy);
         return stream;
@@ -147,7 +147,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
      *                if an input/output error occurs
      */
     public void flushBuffer() throws IOException {
-        log.debug("CompressionServletFlushingBuffer");
+        log.debug("flush buffer @ CompressionServletResponseWrapper");
         ((CompressionResponseStream) stream).flush();
     }
 
@@ -167,7 +167,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
 
         if (stream == null)
             stream = createOutputStream();
-        log.debug("CompressionServletStreamSettingOutput", stream);
+        log.debug("stream is set to %s in getOutputStream", stream);
         return (stream);
     }
 
@@ -189,10 +189,10 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
             throw new IllegalStateException("getOutputStream() has already been called for this response");
 
         stream = createOutputStream();
-        log.debug("CompressionServletStreamSettingWriter", stream);
+        log.debug("stream is set to %s in getWriter", stream);
         // String charset = getCharsetFromContentType(contentType);
         String charEnc = origResponse.getCharacterEncoding();
-        log.debug("CompressionServletCharacterEncoding", charEnc);
+        log.debug("character encoding is %s", charEnc);
         // HttpServletResponse.getCharacterEncoding() shouldn't return null
         // according the spec, so feel free to remove that "if"
         if (charEnc != null) {

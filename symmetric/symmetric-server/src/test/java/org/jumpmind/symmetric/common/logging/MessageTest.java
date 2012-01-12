@@ -31,9 +31,9 @@ public class MessageTest {
     public void getBasicMessages() {
         Message.setLocale(new Locale("en_US"));
         long l = 4l;
-        String s = Message.get("BatchCompleting");
+        String s = Message.get("Completing batch %d");
         Assert.assertEquals("Completing batch null", s);
-        s = Message.get("BatchCompleting", l);
+        s = Message.get("Completing batch %d", l);
         Assert.assertEquals("Completing batch 4", s);
 
     }
@@ -42,10 +42,10 @@ public class MessageTest {
     public void getSpanishMessages() {
         Message.setLocale(new Locale("es"));
         long l = 4l;
-        String s = Message.get("BatchCompleting");
-        Assert.assertEquals("Realizaci—n de la hornada null", s);
-        s = Message.get("BatchCompleting", l);
-        Assert.assertEquals("Realizaci—n de la hornada 4", s);
+        String s = Message.get("Completing batch %d");
+        Assert.assertEquals("Realizaciï¿½n de la hornada null", s);
+        s = Message.get("Completing batch %d", l);
+        Assert.assertEquals("Realizaciï¿½n de la hornada 4", s);
     }
 
     @Test
@@ -53,9 +53,9 @@ public class MessageTest {
         Locale.setDefault(new Locale("en_US"));
         Message.setLocale(new Locale("zz"));
         long l = 4l;
-        String s = Message.get("BatchCompleting");
+        String s = Message.get("Completing batch %d");
         Assert.assertEquals("Completing batch null", s);
-        s = Message.get("BatchCompleting", l);
+        s = Message.get("Completing batch %d", l);
         Assert.assertEquals("Completing batch 4", s);
 
     }

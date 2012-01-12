@@ -80,7 +80,7 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
                         data.getParsedData(CsvData.PK_DATA));
             }
         } else if (log.isDebugEnabled()) {
-            log.debug("XmlPublisherTableNotFound", table.getName());
+            log.debug("'%s' not in list to publish", table.getName());
         }
         return loadDataInTargetDatabase;
     }

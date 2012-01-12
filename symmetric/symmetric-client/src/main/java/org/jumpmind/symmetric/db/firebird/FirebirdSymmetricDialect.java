@@ -49,9 +49,9 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
             platform.getSqlTemplate().queryForInt("select char_length(sym_escape('')) from rdb$database");
         } catch (UncategorizedSQLException e) {
             if (e.getSQLException().getErrorCode() == -804) {
-                log.error("FirebirdSymUdfMissing");
+                log.error("Please install the sym_udf.so/dll to your {firebird_home}/UDF folder");
             }
-            throw new RuntimeException("FirebirdSymEscapeMissing", e);
+            throw new RuntimeException("Function SYM_ESCAPE is not installed", e);
         }
     }
 

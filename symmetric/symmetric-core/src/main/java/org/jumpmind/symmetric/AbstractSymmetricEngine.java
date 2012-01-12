@@ -337,7 +337,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized void stop() {
-        log.info("SymmetricDSClosing", getParameterService().getExternalId(), Version.version(),
+        log.info("Closing SymmetricDS externalId=%s version=%s database=%s", getParameterService().getExternalId(), Version.version(),
                 symmetricDialect.getName());
         if (jobManager != null) {
             jobManager.stopJobs();

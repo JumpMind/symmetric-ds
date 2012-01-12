@@ -71,7 +71,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         // request has the "other" nodes info
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
         
-        log.debug("ServletPulling", nodeId);
+        log.debug("Pull request received from %s", nodeId);
 
         if (StringUtils.isBlank(nodeId)) {
             ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST, "Node must be specified");
@@ -86,7 +86,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
 
         pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), map);
 
-        log.debug("ServletPulled", nodeId);
+        log.debug("Done with Pull request from %s", nodeId);
 
     }
     
@@ -113,7 +113,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                     outgoingTransport.close();
                 }
             } else {
-                log.warn("NodeMissing", nodeId);
+                log.warn("Node %s does not exist.", nodeId);
             }
         } finally {
             statisticManager.incrementNodesPulled(1);

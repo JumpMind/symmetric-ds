@@ -214,11 +214,11 @@ public class NodeService extends AbstractService implements INodeService {
                 }
                 return security;
             } else {
-                log.debug("FindNodeSecurityNodeNull");
+                log.debug("A 'null' node id was passed into findNodeSecurity.");
                 return null;
             }
         } catch (DataIntegrityViolationException ex) {
-            log.error("NodeSecurityMissing", nodeId);
+            log.error("Could not find a node security row for %s.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.", nodeId);
             throw ex;
         }
     }
@@ -475,7 +475,7 @@ public class NodeService extends AbstractService implements INodeService {
             }
             return NodeStatus.DATA_LOAD_NOT_STARTED;
         } catch (CannotAcquireLockException ex) {
-            log.error("LockAcquiringFailed", (System.currentTimeMillis() - ts));
+            log.error("Could not acquire lock on the table after %s ms.  The status is unknown.", (System.currentTimeMillis() - ts));
             return NodeStatus.STATUS_UNKNOWN;
         }
     }

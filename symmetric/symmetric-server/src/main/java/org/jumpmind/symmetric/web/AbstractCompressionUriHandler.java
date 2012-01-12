@@ -28,15 +28,15 @@ abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
                     .getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL);
             int compressionStrategy = parameterService
                     .getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY);
-            log.debug("CompressionFilterStarting");
+            log.debug("@doFilter");
 
             boolean supportCompression = false;
-            log.debug("CompressionFilterURI", req.getRequestURI());
+            log.debug("requestURI= %s", req.getRequestURI());
 
             // Are we allowed to compress ?
             String s = (String) req.getParameter("gzip");
             if ("false".equals(s)) {
-                log.debug("CompressionFilterNotCompressing");
+                log.debug("Got parameter of gzip=false.  Don't compress, just chain filter.");
                 handleWithCompression(req, res);
                 return;
             }
@@ -46,21 +46,21 @@ abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
             while (e.hasMoreElements()) {
                 String name = (String) e.nextElement();
                 if (name.indexOf("gzip") != -1) {
-                    log.debug("CompressionFilterSupportsCompression");
+                    log.debug("Supports compression.");
                     supportCompression = true;
                 } else {
-                    log.debug("CompressionFilterDoesNotSupportsCompression");
+                    log.debug("Does not support compression.");
                 }
             }
 
             if (!supportCompression) {
-                log.debug("CompressionFilterCalledNotCompressing");
+                log.debug("doFilter gets called without compression");
                 handleWithCompression(req, res);
                 return;
             } else {
                 CompressionServletResponseWrapper wrappedResponse = new CompressionServletResponseWrapper(
                         res, compressionLevel, compressionStrategy);
-                log.debug("CompressionFilterCalledCompressing");
+                log.debug("doFilter gets called with compression");
                 try {
                     handleWithCompression(req, wrappedResponse);
                 } finally {

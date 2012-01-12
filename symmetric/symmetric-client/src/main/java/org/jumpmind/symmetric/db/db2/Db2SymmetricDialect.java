@@ -46,17 +46,17 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
                     + parameterService.getTablePrefix() + "_trigger_hist") + 1;
             platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
                     + "_trigger_hist alter column trigger_hist_id restart with " + triggerHistId);
-            log.info("DB2ResettingAutoIncrementColumns", parameterService.getTablePrefix() + "_trigger_hist");
+            log.info("Resetting auto increment columns for %s", parameterService.getTablePrefix() + "_trigger_hist");
             long outgoingBatchId = platform.getSqlTemplate().queryForLong("select max(batch_id) from "
                     + parameterService.getTablePrefix() + "_outgoing_batch") + 1;
             platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
                     + "_outgoing_batch alter column batch_id restart with " + outgoingBatchId);
-            log.info("DB2ResettingAutoIncrementColumns", parameterService.getTablePrefix() + "_outgoing_batch");
+            log.info("Resetting auto increment columns for %s", parameterService.getTablePrefix() + "_outgoing_batch");
             long dataId = platform.getSqlTemplate().queryForLong("select max(data_id) from " + parameterService.getTablePrefix()
                     + "_data") + 1;
             platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
                     + "_data alter column data_id restart with " + dataId);
-            log.info("DB2ResettingAutoIncrementColumns", parameterService.getTablePrefix() + "_data");
+            log.info("Resetting auto increment columns for %s", parameterService.getTablePrefix() + "_data");
         }
         return tablesCreated;
     }

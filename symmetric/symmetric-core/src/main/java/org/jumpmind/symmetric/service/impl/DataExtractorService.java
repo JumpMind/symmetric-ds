@@ -237,7 +237,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         for (OutgoingBatch batch : ignoredBatches) {
             batch.setStatus(OutgoingBatch.Status.IG);
             if (log.isDebugEnabled()) {
-                log.debug("BatchIgnored", batch.getBatchId());
+                log.debug("Batch %s is being ignored", batch.getBatchId());
             }
         }
 
@@ -320,7 +320,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     IoResource previouslyExtracted = extractedBatchesHandle
                                             .get(currentBatch.getBatchId());
                                     if (previouslyExtracted != null && previouslyExtracted.exists()) {
-                                        log.info("DataExtractorUsingAlreadyExtractedBatch",
+                                        log.info("We have already extracted batch %d.  Using the existing extraction.  To force re-extraction, please restart this instance of SymmetricDS.",
                                                 currentBatch.getBatchId());
                                     } else {
                                         outgoingBatch.setStatus(OutgoingBatch.Status.QY);
@@ -421,7 +421,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 currentBatch.setErrorFlag(true);
                                 outgoingBatchService.updateOutgoingBatch(currentBatch);
                             } else {
-                                log.error("BatchStatusLoggingFailed", e);
+                                log.error("Could not log the outgoing batch status because the batch was null.", e);
                             }
 
                             if (e instanceof RuntimeException) {

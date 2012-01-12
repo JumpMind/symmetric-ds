@@ -57,7 +57,7 @@ public class BandwidthSamplerUriHandler extends AbstractUriHandler {
         try {
             sampleSize = Long.parseLong(req.getParameter("sampleSize"));
         } catch (Exception ex) {
-            log.warn("BandwidthSampleSizeParsingFailed", req.getParameter("sampleSize"));
+            log.warn("Unable to parse sampleSize of %s", req.getParameter("sampleSize"));
         }
 
         ServletOutputStream os = res.getOutputStream();

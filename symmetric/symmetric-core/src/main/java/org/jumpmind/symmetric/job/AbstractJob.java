@@ -94,7 +94,7 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     public void start() {
         if (this.scheduledJob == null) {
-            log.info("JobStarting", jobName);
+            log.info("Starting %s", jobName);
             if (!StringUtils.isBlank(cronExpression)) {
                 this.scheduledJob = taskScheduler.schedule(this, new CronTrigger(cronExpression));
                 started = true;
@@ -107,7 +107,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                             this.timeBetweenRunsInMs);
                     started = true;
                 } else {
-                    log.error("JobFailedToSchedule", jobName);
+                    log.error("Failed to schedule this job, %s", jobName);
                 }
             }
         }
@@ -119,10 +119,10 @@ abstract public class AbstractJob implements Runnable, IJob {
             success = this.scheduledJob.cancel(true);
             this.scheduledJob = null;
             if (success) {
-                log.info("JobCancelled", jobName);
+                log.info("The %s job has been cancelled.", jobName);
                 started = false;
             } else {
-                log.warn("JobFailedToCancel", jobName);
+                log.warn("Failed to cancel this job, %s", jobName);
             }
         }
         return success;
@@ -141,7 +141,7 @@ abstract public class AbstractJob implements Runnable, IJob {
         boolean ran = false;
         try {
             if (engine == null) {
-                log.info("SymmetricEngineMissing", jobName);
+                log.info("Could not find a reference to the SymmetricEngine from %s", jobName);
             } else if (engine.isStarted()) {
                 if (!paused || force) {
                     if (!running) {
@@ -158,7 +158,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                                     processCount = doJob();
                                 } else {
                                     if (!hasNotRegisteredMessageBeenLogged) {
-                                        log.warn("SymmetricEngineNotRegistered", getName());
+                                        log.warn("Did not run the %s job because the engine is not registered.", getName());
                                         hasNotRegisteredMessageBeenLogged = true;
                                     }
                                 }
@@ -180,7 +180,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                     }
                 }
             } else {
-                log.info("SymmetricEngineNotStarted");
+                log.info("The engine is not currently started.");
             }
         } catch (final Throwable ex) {
             log.error(ex);

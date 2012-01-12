@@ -83,7 +83,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     platform.getSqlTemplate().update(
                             triggerText.getFunctionSql(functions[i], funcName,
                                     platform.getDefaultSchema()));
-                    log.info("FunctionInstalled", funcName);
+                    log.info("Just installed %s", funcName);
                 }
             }
         }
@@ -114,7 +114,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
             try {
                 platform.getSqlTemplate().update(sql);
             } catch (Exception e) {
-                log.warn("TriggerDoesNotExist");
+                log.warn("Trigger does not exist");
             }
         }
     }

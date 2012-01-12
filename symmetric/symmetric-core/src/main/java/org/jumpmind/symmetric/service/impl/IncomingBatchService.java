@@ -159,12 +159,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                                 .is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED)) {
                     okayToProcess = true;
                     existingBatch.setStatus(Status.LD);
-                    log.warn("BatchRetrying", batch.getNodeBatchId());
+                    log.warn("Retrying batch %s", batch.getNodeBatchId());
                 } else {
                     okayToProcess = false;
                     existingBatch.setStatus(existingBatch.getStatus());
                     existingBatch.setSkipCount(existingBatch.getSkipCount() + 1);
-                    log.warn("BatchSkipping", batch.getNodeBatchId());
+                    log.warn("Skipping batch %s", batch.getNodeBatchId());
                 }
                 updateIncomingBatch(existingBatch);
             }

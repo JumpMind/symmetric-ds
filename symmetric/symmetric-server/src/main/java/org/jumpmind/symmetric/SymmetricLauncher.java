@@ -162,7 +162,7 @@ public class SymmetricLauncher {
 
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {
-                    LogFactory.getLog(SymmetricLauncher.class).info("Option", option.getLongOpt(),
+                    LogFactory.getLog(SymmetricLauncher.class).info("Option: name=%s, value=%s", option.getLongOpt(),
                             ArrayUtils.toString(option.getValues()));
                 }
             }
@@ -180,7 +180,7 @@ public class SymmetricLauncher {
             exception = ex;
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
-            System.err.println(Message.get("ExceptionGeneral"));
+            System.err.println(Message.get("An exception occurred.  Please see the following for details:"));
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
 
@@ -282,7 +282,7 @@ public class SymmetricLauncher {
                     fileAppender.activateOptions();
                 }
 
-                System.out.println(Message.get("LauncherLogLocation", fileAppender.getFile()));
+                System.out.println(Message.get("Log output will be written to %s", fileAppender.getFile()));
 
             }
         }
@@ -386,7 +386,7 @@ public class SymmetricLauncher {
             propertiesFile = "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE);
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);
             if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
-                throw new SymmetricException("FilePropertiesNotFound",
+                throw new SymmetricException("Could not find the properties file specified: %s",
                         line.getOptionValue(OPTION_PROPERTIES_FILE));
             }
         } else {
@@ -421,7 +421,7 @@ public class SymmetricLauncher {
             testConnection(line, propertiesFile);
             String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
             openRegistration(createEngine(propertiesFile), arg);
-            System.out.println(Message.get("RegistrationOpened", arg));
+            System.out.println(Message.get("Opened Registration for %s", arg));
             System.exit(0);
             return true;
         }
@@ -574,7 +574,7 @@ public class SymmetricLauncher {
         argument = argument.replace('\"', ' ');
         int index = argument.trim().indexOf(",");
         if (index < 0) {
-            throw new SymmetricException("LauncherMissingFilenameTriggerSQL",
+            throw new SymmetricException("Please provide a file name to write the trigger SQL to",
                     OPTION_OPEN_REGISTRATION);
         }
         String nodeGroupId = argument.substring(0, index).trim();
@@ -645,7 +645,7 @@ public class SymmetricLauncher {
             Database db = new DatabaseIO().read(new File(fileName));
             pf.createDatabase(db, false, true);
         } else {
-            throw new SymmetricException("FileNotFound", fileName);
+            throw new SymmetricException("Could not find file %s", fileName);
         }
     }
 
@@ -659,7 +659,7 @@ public class SymmetricLauncher {
                     .getSqlScriptReplacementTokens());
             script.execute();
         } else {
-            throw new SymmetricException("FileNotFound", fileName);
+            throw new SymmetricException("Could not find file %s", fileName);
         }
     }
 

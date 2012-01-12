@@ -90,25 +90,25 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     if (nodes != null && nodes.size() > 0) {
                         if (identitySecurity != null) {
                             for (Node node : nodes) {
-                                log.debug("DataPushing", node);
+                                log.debug("Push requested for %s", node);
                                 RemoteNodeStatus status = pushToNode(node, identity, identitySecurity);
                                 statuses.add(status);
                                 if (status.getBatchesProcessed() > 0) {
-                                    log.info("DataPushed", node);
+                                    log.info("Pushed data to %s", node);
                                 } else if (status.failed()) {
-                                    log.warn("DataPushingFailed");
+                                    log.warn("There was an error while pushing data to the server");
                                 }
-                                log.debug("DataPushingCompleted", node);
+                                log.debug("Push completed for %s", node);
                             }
                         } else {
-                            log.error("NodeSecurityMissing", identity.getNodeId());
+                            log.error("Could not find a node security row for %s.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.", identity.getNodeId());
                         }
                     }
                 } finally {
                     clusterService.unlock(ClusterConstants.PUSH);
                 }
             } else {
-                log.info("DataPushingFailedLock");
+                log.info("Did not run the push process because the cluster service has it locked.");
             }
         }
         return statuses;
@@ -123,23 +123,23 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
             List<OutgoingBatch> extractedBatches = dataExtractorService.extract(remote, transport);
             if (extractedBatches.size() > 0) {
-                log.info("DataSent", remote);
+                log.info("Push data sent to %s", remote);
                 BufferedReader reader = transport.readResponse();
                 String ackString = reader.readLine();
                 String ackExtendedString = reader.readLine();
 
-                log.debug("DataAckReading", ackString);
-                log.debug("DataAckExtendedReading", ackExtendedString);
+                log.debug("Reading ack: %s", ackString);
+                log.debug("Reading extend ack: %s", ackExtendedString);
 
                 if (StringUtils.isBlank(ackString)) {
-                    log.error("DataAckReadingFailed");
+                    log.error("Did not receive an acknowledgement for the batches sent.");
                 }
 
                 List<BatchInfo> batches = transportManager.readAcknowledgement(ackString,
                         ackExtendedString);
 
                 for (BatchInfo batchInfo : batches) {
-                    log.debug("DataAckSaving", batchInfo.getBatchId(), (batchInfo.isOk() ? "OK"
+                    log.debug("Saving ack: %s, %s", batchInfo.getBatchId(), (batchInfo.isOk() ? "OK"
                             : "error"));
                     acknowledgeService.ack(batchInfo);
                 }
@@ -147,27 +147,27 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 status.updateOutgoingStatus(extractedBatches, batches);
             } 
         } catch (ConnectException ex) {
-            log.warn("TransportFailedConnectionUnavailable",
+            log.warn("",
                     (remote.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remote
                             .getSyncUrl()));
             fireOffline(ex, remote, status);
         } catch (ConnectionRejectedException ex) {
-            log.warn("TransportFailedConnectionBusy");
+            log.warn(".");
             fireOffline(ex, remote, status);
         } catch (SocketException ex) {
-            log.warn("Message", ex.getMessage());
+            log.warn("%s", ex.getMessage());
             fireOffline(ex, remote, status);
         } catch (TransportException ex) {
-            log.warn("Message", ex.getMessage());
+            log.warn("%s", ex.getMessage());
             fireOffline(ex, remote, status);
         } catch (AuthenticationException ex) {
-            log.warn("AuthenticationFailed");
+            log.warn(".");
             fireOffline(ex, remote, status);
         } catch (SyncDisabledException ex) {
-            log.warn("SyncDisabled");
+            log.warn(".");
             fireOffline(ex, remote, status);
         } catch (RegistrationRequiredException ex) {
-            log.warn("RegistrationRequired");
+            log.warn(".");
             fireOffline(ex, remote, status);
         } catch (Exception ex) {
             // just report the error because we want to push to other nodes

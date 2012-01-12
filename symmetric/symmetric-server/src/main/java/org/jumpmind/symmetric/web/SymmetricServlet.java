@@ -93,7 +93,7 @@ public class SymmetricServlet extends HttpServlet {
                 }
             }
         } else {
-            log.error("HandlerNotFound", ServletUtils.normalizeRequestUri(req),
+            log.error("No handlers were found to handle the request %s from the host %s with an ip address of %s.  The query string was: %s", ServletUtils.normalizeRequestUri(req),
                     req.getRemoteHost(), req.getRemoteAddr(), req.getQueryString());            
             if (method.equals(WebConstants.METHOD_GET)) {
                 res.sendRedirect("/");
@@ -190,10 +190,10 @@ public class SymmetricServlet extends HttpServlet {
         String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
                 : "";
         if (isError) {
-            log.error("ServletProcessingFailedError", ex, method, externalId, nodeId, address,
+            log.error("Error while processing %s request for externalId: %s, node: %s at %s (%s) with path: %s", ex, method, externalId, nodeId, address,
                     hostName, ServletUtils.normalizeRequestUri(req));
         } else {
-            log.warn("ServletProcessingFailedWarning", method, externalId, nodeId, address,
+            log.warn("Error while processing %s request for externalId: %s, node: %s at %s (%s).  The message is: %s", method, externalId, nodeId, address,
                     hostName, ex.getMessage());
         }
     }
