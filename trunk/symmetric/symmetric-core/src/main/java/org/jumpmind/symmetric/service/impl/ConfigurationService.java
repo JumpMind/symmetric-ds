@@ -445,8 +445,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
 
             if (fileUrl != null) {
-                new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(), true)
-                        .execute();
+                new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(), true,
+                        SqlScript.QUERY_ENDS, getSymmetricDialect().getPlatform()
+                                .getSqlScriptReplacementTokens()).execute();
                 loaded = true;
             }
         }

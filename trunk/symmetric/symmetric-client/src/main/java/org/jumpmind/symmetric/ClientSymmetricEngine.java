@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -35,11 +36,18 @@ import org.springframework.core.io.Resource;
 public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     protected File propertiesFile;
+    
+    protected Properties properties;
 
     protected BasicDataSource dataSource;
 
     public ClientSymmetricEngine(File propertiesFile) {
         this.propertiesFile = propertiesFile;
+        this.init();
+    }
+    
+    public ClientSymmetricEngine(Properties properties) {
+        this.properties = properties;
         this.init();
     }
 
@@ -49,7 +57,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static BasicDataSource createBasicDataSource(File propsFile) {
         return createBasicDataSource(LogFactory.getLog(ClientSymmetricEngine.class),
-                createTypedPropertiesFactory(propsFile).reload(), createSecurityService());
+                createTypedPropertiesFactory(propsFile, null).reload(), createSecurityService());
     }
 
     public static BasicDataSource createBasicDataSource(Log log, TypedProperties properties,
@@ -150,15 +158,17 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ITypedPropertiesFactory createTypedPropertiesFactory() {
-        return createTypedPropertiesFactory(propertiesFile);
+        return createTypedPropertiesFactory(propertiesFile, properties);
     }
 
-    protected static ITypedPropertiesFactory createTypedPropertiesFactory(final File propertiesFile) {
+    protected static ITypedPropertiesFactory createTypedPropertiesFactory(final File propertiesFile, final Properties properties) {
         return new ITypedPropertiesFactory() {
             public TypedProperties reload() {
                 PropertiesFactoryBean factoryBean = new PropertiesFactoryBean();
                 factoryBean.setIgnoreResourceNotFound(true);
+                factoryBean.setLocalOverride(true);
                 factoryBean.setSingleton(false);
+                factoryBean.setProperties(properties);
                 factoryBean.setLocations(buildLocations(propertiesFile));
                 try {
                     return new TypedProperties(factoryBean.getObject());

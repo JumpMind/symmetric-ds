@@ -29,9 +29,6 @@ import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
-/**
- * 
- */
 public class MockOutgoingTransport implements IOutgoingTransport {
 
     private StringWriter writer = new StringWriter();
