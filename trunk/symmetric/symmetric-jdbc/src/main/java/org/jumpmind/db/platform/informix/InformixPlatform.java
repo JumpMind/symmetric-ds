@@ -54,8 +54,6 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
         if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
             info.setIdentifierQuoteString("\"");
         }
-        
-        primaryKeyViolationCodes = new int[] {-268};
 
         ddlReader = new InformixDdlReader(log, this);
         ddlBuilder = new InformixBuilder(log, this);

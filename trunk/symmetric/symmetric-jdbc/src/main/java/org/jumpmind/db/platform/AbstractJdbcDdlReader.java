@@ -1144,7 +1144,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     msg.append(col.toString());
                 }
             }
-            log.warn(ex, msg.toString());
+            log.warn(msg.toString(), ex);
         }
     }
 

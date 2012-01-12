@@ -95,8 +95,6 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
 
-        primaryKeyViolationSqlStates = new String[] {"23505"};
-
         ddlReader = new PostgreSqlDdlReader(log, this);
         ddlBuilder = new PostgreSqlBuilder(log, this);
     }

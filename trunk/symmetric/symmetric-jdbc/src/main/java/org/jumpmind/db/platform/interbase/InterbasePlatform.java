@@ -92,9 +92,7 @@ public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
         info.setNonBlankCharColumnSpacePadded(true);
         info.setBlankCharColumnSpacePadded(true);
         info.setCharColumnSpaceTrimmed(false);
-        info.setEmptyStringNulled(false);
-        
-        primaryKeyViolationCodes = new int [] {335544665};
+        info.setEmptyStringNulled(false);        
 
         ddlReader = new InterbaseDdlReader(log, this);
         ddlBuilder = new InterbaseBuilder(log, this);

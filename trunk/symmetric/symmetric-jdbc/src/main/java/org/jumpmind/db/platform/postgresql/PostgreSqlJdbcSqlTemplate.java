@@ -12,6 +12,7 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
             LobHandler lobHandler) {
         super(dataSource, settings, lobHandler);
         this.requiresAutoCommitFalseToSetFetchSize = true;
+        primaryKeyViolationSqlStates = new String[] {"23505"};
     }
     
     @Override

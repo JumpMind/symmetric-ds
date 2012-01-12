@@ -2,7 +2,7 @@ package org.jumpmind.log;
 
 abstract public class Log {
 
-    protected String clazz;
+    protected String category;
 
     public abstract void log(LogLevel level, Throwable error, String msg, Object... params);
 
@@ -30,7 +30,7 @@ abstract public class Log {
         log(LogLevel.WARN, ex);
     }
     
-    public void warn(Throwable ex, String msg, Object... params) {
+    public void warn(String msg, Throwable ex, Object... params) {
         log(LogLevel.WARN, ex, msg, params);
     }
     
@@ -38,18 +38,22 @@ abstract public class Log {
         log(LogLevel.ERROR, msg, params);
     }
     
-    public void error(Throwable ex, String msg, Object... params) {
+    public void error(String msg, Throwable ex, Object... params) {
         log(LogLevel.ERROR, ex, msg, params);
     }
 
     public void error(Throwable ex) {
         log(LogLevel.ERROR, ex);
     }
+    
+    public String getCategory() {
+        return category;
+    }
 
     public abstract boolean isDebugEnabled();
 
-    protected void initialize(String clazz) {
-        this.clazz = clazz;
+    protected void initialize(String category) {
+        this.category = category;
     }
 
 }

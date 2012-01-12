@@ -77,8 +77,6 @@ public class HsqlDb2Platform extends AbstractJdbcDatabasePlatform {
         info.setBlankCharColumnSpacePadded(true);
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
-        
-        primaryKeyViolationSqlStates = new String[] {"23505"};
 
         ddlReader = new HsqlDb2DdlReader(log, this);
         ddlBuilder = new HsqlDb2Builder(log, this);

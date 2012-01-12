@@ -204,8 +204,6 @@ public interface IDatabasePlatform {
     
     public List<Column> getLobColumns(Table table);
 
-    public boolean isPrimaryKeyViolation(Exception ex);
-    
     public Map<String, String> getSqlScriptReplacementTokens();
     
     public String scrubSql(String sql);

@@ -39,6 +39,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -46,7 +47,6 @@ import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * @see IClusterService
@@ -76,7 +76,7 @@ public class ClusterService extends AbstractService implements IClusterService {
             sqlTemplate.update(getSql("insertLockSql"), new Object[] { action });
             log.debug("Inserted into the NODE_LOCK table for %s", action);
 
-        } catch (final DataIntegrityViolationException ex) {
+        } catch (UniqueKeyException ex) {
             log.debug("Failed to insert to the NODE_LOCK table for %s.  Must be initialized already.", action);
         }
     }

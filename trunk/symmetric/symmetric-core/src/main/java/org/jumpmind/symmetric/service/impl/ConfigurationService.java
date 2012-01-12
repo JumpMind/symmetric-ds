@@ -39,6 +39,7 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlScript;
+import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -55,7 +56,6 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * @see IConfigurationService
@@ -365,7 +365,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             String nodeId = parameterService.getExternalId();
             try {
                 nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
-            } catch (DataIntegrityViolationException ex) {
+            } catch (UniqueKeyException ex) {
                 log.warn("Not inserting node row for %s because it already exists", nodeId);
             }
             nodeService.insertNodeIdentity(nodeId);

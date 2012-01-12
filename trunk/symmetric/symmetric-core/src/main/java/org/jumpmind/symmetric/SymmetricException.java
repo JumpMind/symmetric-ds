@@ -50,5 +50,16 @@ public class SymmetricException extends RuntimeException {
     public SymmetricException(String message, Throwable cause, Object... args) {
         super(String.format(message, args), cause);
     }
+    
+    public Throwable getRootCause() {
+        Throwable rootCause = null;
+        Throwable cause = getCause();
+        while (cause != null && cause != rootCause) {
+            rootCause = cause;
+            cause = cause.getCause();
+        }
+        return rootCause;
+    }
+
 
 }

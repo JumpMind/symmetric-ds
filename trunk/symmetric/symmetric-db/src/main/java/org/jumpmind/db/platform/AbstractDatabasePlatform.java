@@ -94,10 +94,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected String defaultCatalog;
 
-    protected int[] primaryKeyViolationCodes;
-
-    protected String[] primaryKeyViolationSqlStates;
-
     public AbstractDatabasePlatform(Log log) {
         this.log = log;
     }
