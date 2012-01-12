@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.service.impl;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 
@@ -8,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.log.Log4jLog;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.TestUtils;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -36,8 +38,17 @@ public abstract class AbstractServiceTest {
                 Class<?> clazz = Class.forName("org.jumpmind.symmetric.test.TestSetupUtil");
                 Method method = clazz.getMethod("prepareForServiceTests");
                 engine = (ISymmetricEngine) method.invoke(clazz);
+            } catch (InvocationTargetException ex) {
+                Throwable cause = ex.getCause();
+                TestUtils.getLog().error(cause);
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                } else {
+                    throw new IllegalStateException(cause);
+                }
             } catch (Exception ex) {
-                throw new IllegalStateException(ex);
+                TestUtils.getLog().error(ex);
+                Assert.fail(ex.getMessage());
             }
         }
     }

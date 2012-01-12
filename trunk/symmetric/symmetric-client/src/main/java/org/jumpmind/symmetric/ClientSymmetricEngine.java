@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -36,7 +38,7 @@ import org.springframework.core.io.Resource;
 public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     protected File propertiesFile;
-    
+
     protected Properties properties;
 
     protected BasicDataSource dataSource;
@@ -45,7 +47,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         this.propertiesFile = propertiesFile;
         this.init();
     }
-    
+
     public ClientSymmetricEngine(Properties properties) {
         this.properties = properties;
         this.init();
@@ -102,11 +104,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return dataSource;
 
     }
-    
+
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
-        return new JdbcSymmetricDialectFactory(parameterService, platform, log)
-        .create();
+        return new JdbcSymmetricDialectFactory(parameterService, platform, log).create();
     }
 
     @Override
@@ -145,6 +146,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             Connection c = null;
             try {
                 c = this.dataSource.getConnection();
+                success = true;
             } catch (Exception ex) {
                 log.error(
                         "Could not get a connection to the database: %s.  Waiting for 10 seconds before trying to connect to the database again.",
@@ -161,7 +163,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return createTypedPropertiesFactory(propertiesFile, properties);
     }
 
-    protected static ITypedPropertiesFactory createTypedPropertiesFactory(final File propertiesFile, final Properties properties) {
+    protected static ITypedPropertiesFactory createTypedPropertiesFactory(
+            final File propertiesFile, final Properties properties) {
         return new ITypedPropertiesFactory() {
             public TypedProperties reload() {
                 PropertiesFactoryBean factoryBean = new PropertiesFactoryBean();
@@ -177,13 +180,17 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 }
             }
 
-            protected Resource[] buildLocations(File properties) {
-                return new Resource[] { new ClassPathResource("/symmetric-default.properties"),
-                        new ClassPathResource("/symmetric-console-default.properties"),
-                        new FileSystemResource("../conf/symmetric.properties"),
-                        new ClassPathResource("/symmetric.properties"),
-                        new ClassPathResource("/symmetric-override.properties"),
-                        new FileSystemResource(properties.getAbsolutePath()), };
+            protected Resource[] buildLocations(File propertiesFile) {
+                List<Resource> resources = new ArrayList<Resource>();
+                resources.add(new ClassPathResource("/symmetric-default.properties"));
+                resources.add(new ClassPathResource("/symmetric-console-default.properties"));
+                resources.add(new FileSystemResource("../conf/symmetric.properties"));
+                resources.add(new ClassPathResource("/symmetric.properties"));
+                resources.add(new ClassPathResource("/symmetric-override.properties"));
+                if (propertiesFile != null && propertiesFile.exists()) {
+                    resources.add(new FileSystemResource(propertiesFile.getAbsolutePath()));
+                }
+                return resources.toArray(new Resource[resources.size()]);
 
             }
         };

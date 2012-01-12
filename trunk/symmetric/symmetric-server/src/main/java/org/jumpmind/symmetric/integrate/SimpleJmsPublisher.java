@@ -21,8 +21,8 @@
 
 package org.jumpmind.symmetric.integrate;
 
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.util.Context;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -31,7 +31,7 @@ import org.springframework.jms.core.JmsTemplate;
 
 public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
 
-    static final ILog log = LogFactory.getLog(SimpleJmsPublisher.class);
+    static final Log log = LogFactory.getLog(SimpleJmsPublisher.class);
 
     private BeanFactory beanFactory;
 

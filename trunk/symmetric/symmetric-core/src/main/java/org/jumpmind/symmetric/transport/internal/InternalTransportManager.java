@@ -33,11 +33,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -53,7 +53,7 @@ import org.jumpmind.symmetric.transport.ITransportManager;
  */
 public class InternalTransportManager extends AbstractTransportManager implements ITransportManager {
 
-    static final ILog log = LogFactory.getLog(InternalTransportManager.class);
+    static final Log log = LogFactory.getLog(InternalTransportManager.class);
 
     protected ISymmetricEngine symmetricEngine;
     

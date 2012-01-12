@@ -36,8 +36,8 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 
 import bsh.EvalError;
 import bsh.Interpreter;
@@ -51,7 +51,7 @@ public class AppUtils {
 
     private static String UNKNOWN = "unknown";
 
-    private static ILog log = LogFactory.getLog(AppUtils.class);
+    private static Log log = LogFactory.getLog(AppUtils.class);
 
     private static final String SYM_TEMP_SUFFIX = "sym.tmp";
 

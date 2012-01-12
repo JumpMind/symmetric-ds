@@ -5,10 +5,5 @@
     <import resource="classpath*:META-INF/services/symmetric-*-ext.xml" />
     <import resource="classpath*:/conf/*-extensions.xml" />
     <import resource="file:../conf/*-extensions.xml" />
-    
-    <bean id="offlineClientListener" class="org.jumpmind.symmetric.io.DefaultOfflineClientListener">
-        <property name="nodeService" ref="nodeService" />
-        <property name="parameterService" ref="parameterService" />
-    </bean>
 
 </beans>

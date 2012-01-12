@@ -19,6 +19,8 @@
  * under the License.  */
 package org.jumpmind.symmetric.common;
 
+import org.jumpmind.symmetric.model.DataEvent;
+
 /**
  * 
  */

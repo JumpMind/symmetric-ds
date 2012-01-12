@@ -22,8 +22,8 @@
 package org.jumpmind.symmetric.integrate;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -40,7 +40,7 @@ import org.springframework.beans.factory.BeanNameAware;
 abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWriterFilterAdapter
         implements IPublisherFilter, INodeGroupExtensionPoint, BeanNameAware {
 
-    private final ILog log = LogFactory.getLog(getClass());
+    private final Log log = LogFactory.getLog(getClass());
 
     private final String MSG_CACHE = "msg_CACHE" + hashCode();
 

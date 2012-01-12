@@ -1,7 +1,8 @@
 package org.jumpmind.symmetric.db.oracle;
 
-import org.jumpmind.symmetric.db.TriggerText;
 import java.util.HashMap;
+
+import org.jumpmind.symmetric.db.TriggerText;
 
 public class OracleTriggerText extends TriggerText {
 

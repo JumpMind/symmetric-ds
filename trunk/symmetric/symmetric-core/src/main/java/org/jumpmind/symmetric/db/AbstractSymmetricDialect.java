@@ -47,10 +47,10 @@ import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.log.Log;
+import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
@@ -69,7 +69,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
  */
 abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
-    protected ILog log = LogFactory.getLog(getClass());
+    protected Log log = LogFactory.getLog(getClass());
 
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
