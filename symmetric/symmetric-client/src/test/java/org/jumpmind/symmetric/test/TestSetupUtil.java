@@ -29,7 +29,7 @@ public class TestSetupUtil {
     public static ISymmetricEngine prepareForServiceTests() {
         if (engine == null) {
             removeEmbededdedDatabases();
-            EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
+            EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(new URL[] {getResource("/test-db.properties"), getResource("/symmetric-test.properties")},
                     "test.root", new String[] { "root" });
             properties.setProperty(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT,
                     "/test-services-setup.sql");

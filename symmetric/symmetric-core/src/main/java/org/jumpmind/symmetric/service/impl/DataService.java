@@ -45,6 +45,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.DeploymentType;
@@ -105,12 +106,12 @@ public class DataService extends AbstractService implements IDataService {
 
     private IStatisticManager statisticManager;
 
-    public DataService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+    public DataService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect,
             DeploymentType deploymentType, ITriggerRouterService triggerRouterService,
             INodeService nodeService, IPurgeService purgeService,
             IConfigurationService configurationService, IOutgoingBatchService outgoingBatchService,
             IStatisticManager statisticManager) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.deploymentType = deploymentType;
         this.triggerRouterService = triggerRouterService;
         this.nodeService = nodeService;

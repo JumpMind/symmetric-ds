@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.Node;
@@ -47,9 +48,9 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
 
     private List<IOfflineClientListener> offlineListeners;
     
-    public AbstractOfflineDetectorService(IParameterService parameterService,
+    public AbstractOfflineDetectorService(Log log, IParameterService parameterService,
             ISymmetricDialect symmetricDialect) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
     }
 
     public void setOfflineListeners(List<IOfflineClientListener> listeners) {

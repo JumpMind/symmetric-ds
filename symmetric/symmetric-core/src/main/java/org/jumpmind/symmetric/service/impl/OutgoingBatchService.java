@@ -34,6 +34,7 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlList;
 import org.jumpmind.db.sql.SqlToken;
 import org.jumpmind.db.sql.mapper.StringMapper;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -61,10 +62,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     private IConfigurationService configurationService;
 
-    public OutgoingBatchService(IParameterService parameterService,
+    public OutgoingBatchService(Log log, IParameterService parameterService,
             ISymmetricDialect symmetricDialect, INodeService nodeService,
             IConfigurationService configurationService) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
     }

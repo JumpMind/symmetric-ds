@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.postgresql;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
@@ -46,8 +47,8 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
 
     private String transactionIdExpression = "null";
         
-    public PostgreSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);
+    public PostgreSqlSymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
+        super(log, parameterService, platform);
         this.triggerText = new PostgreSqlTriggerText();
     }
     

@@ -27,6 +27,7 @@ import java.net.SocketException;
 import java.util.List;
 
 import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
@@ -56,10 +57,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
     private IClusterService clusterService;
     
-    public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+    public PullService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect,
             INodeService nodeService, IDataLoaderService dataLoaderService,
             IRegistrationService registrationService, IClusterService clusterService) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.dataLoaderService = dataLoaderService;
         this.registrationService = registrationService;

@@ -184,54 +184,57 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
                 ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"), log);
 
-        this.platform.setDelimitedIdentifierModeOn(parameterService
-                .is(ParameterConstants.DB_FORCE_DELIMITED_IDENTIFIER_ON));
-        this.platform.setDelimitedIdentifierModeOn(!parameterService
-                .is(ParameterConstants.DB_FORCE_DELIMITED_IDENTIFIER_OFF));
+        if (parameterService
+                .is(ParameterConstants.DB_FORCE_DELIMITED_IDENTIFIER_ON)) {
+            this.platform.setDelimitedIdentifierModeOn(true);
+        } else if (parameterService
+                .is(ParameterConstants.DB_FORCE_DELIMITED_IDENTIFIER_OFF)) {
+            this.platform.setDelimitedIdentifierModeOn(false);
+        }
         this.platform.setClearCacheModelTimeoutInMs(parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TABLES_IN_MS));
 
         this.bandwidthService = new BandwidthService(parameterService, log);
         this.symmetricDialect = createSymmetricDialect();
-        this.nodeService = new NodeService(parameterService, symmetricDialect);
-        this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
+        this.nodeService = new NodeService(log, parameterService, symmetricDialect);
+        this.configurationService = new ConfigurationService(log, parameterService, symmetricDialect,
                 nodeService);
-        this.statisticService = new StatisticService(parameterService, symmetricDialect);
+        this.statisticService = new StatisticService(log, parameterService, symmetricDialect);
         this.statisticManager = new StatisticManager(parameterService, nodeService,
                 configurationService, statisticService);
         this.concurrentConnectionManager = new ConcurrentConnectionManager(parameterService,
                 statisticManager);
-        this.clusterService = new ClusterService(parameterService, symmetricDialect);
-        this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
+        this.clusterService = new ClusterService(log, parameterService, symmetricDialect);
+        this.purgeService = new PurgeService(log, parameterService, symmetricDialect, clusterService,
                 statisticManager);
-        this.transformService = new TransformService(parameterService, symmetricDialect);
-        this.triggerRouterService = new TriggerRouterService(parameterService, symmetricDialect,
+        this.transformService = new TransformService(log, parameterService, symmetricDialect);
+        this.triggerRouterService = new TriggerRouterService(log, parameterService, symmetricDialect,
                 clusterService, configurationService, statisticManager);
-        this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
+        this.outgoingBatchService = new OutgoingBatchService(log, parameterService, symmetricDialect,
                 nodeService, configurationService);
-        this.dataService = new DataService(parameterService, symmetricDialect, deploymentType,
+        this.dataService = new DataService(log, parameterService, symmetricDialect, deploymentType,
                 triggerRouterService, nodeService, purgeService, configurationService,
                 outgoingBatchService, statisticManager);
-        this.routerService = new RouterService(parameterService, symmetricDialect, clusterService,
+        this.routerService = new RouterService(log, parameterService, symmetricDialect, clusterService,
                 dataService, configurationService, triggerRouterService, outgoingBatchService,
                 nodeService, statisticManager, transformService);
-        this.dataExtractorService = new DataExtractorService(parameterService, symmetricDialect,
+        this.dataExtractorService = new DataExtractorService(log, parameterService, symmetricDialect,
                 outgoingBatchService, routerService, configurationService, triggerRouterService,
                 nodeService, statisticManager);
-        this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect);
+        this.incomingBatchService = new IncomingBatchService(log, parameterService, symmetricDialect);
         this.transportManager = new TransportManagerFactory(this).create();
-        this.dataLoaderService = new DataLoaderService(parameterService, symmetricDialect,
+        this.dataLoaderService = new DataLoaderService(log, parameterService, symmetricDialect,
                 incomingBatchService, configurationService, transportManager, statisticManager,
                 nodeService, transformService, triggerRouterService);
-        this.registrationService = new RegistrationService(parameterService, symmetricDialect,
+        this.registrationService = new RegistrationService(log, parameterService, symmetricDialect,
                 nodeService, dataExtractorService, dataService, dataLoaderService,
                 transportManager, statisticManager);
-        this.acknowledgeService = new AcknowledgeService(parameterService, symmetricDialect,
+        this.acknowledgeService = new AcknowledgeService(log, parameterService, symmetricDialect,
                 outgoingBatchService, registrationService);
-        this.pushService = new PushService(parameterService, symmetricDialect,
+        this.pushService = new PushService(log, parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
                 clusterService);
-        this.pullService = new PullService(parameterService, symmetricDialect, nodeService,
+        this.pullService = new PullService(log, parameterService, symmetricDialect, nodeService,
                 dataLoaderService, registrationService, clusterService);
         this.jobManager = createJobManager();
 

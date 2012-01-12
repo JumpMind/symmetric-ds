@@ -135,11 +135,11 @@ public class NodeChannel implements Serializable {
         nodeChannelControl.setNodeId(nodeId);
     }
 
-    public void setLastExtractedTime(Date lastExtractedTime) {
+    public void setLastExtractTime(Date lastExtractedTime) {
         nodeChannelControl.setLastExtractTime(lastExtractedTime);
     }
 
-    public Date getLastExtractedTime() {
+    public Date getLastExtractTime() {
         return nodeChannelControl.getLastExtractTime();
     }
 

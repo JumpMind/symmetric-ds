@@ -39,6 +39,7 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -102,12 +103,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private Set<String> extractingNodes = new HashSet<String>();
 
-    public DataExtractorService(IParameterService parameterService,
+    public DataExtractorService(Log log, IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
             IRouterService routingService, IConfigurationService configurationService,
             ITriggerRouterService triggerRouterService, INodeService nodeService,
             IStatisticManager statisticManager) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
         this.outgoingBatchService = outgoingBatchService;
         this.routerService = routingService;
         this.configurationService = configurationService;
@@ -439,7 +440,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         Calendar now = Calendar.getInstance();
 
                         for (NodeChannel nodeChannel : batches.getActiveChannels()) {
-                            nodeChannel.setLastExtractedTime(now.getTime());
+                            nodeChannel.setLastExtractTime(now.getTime());
                             configurationService.saveNodeChannelControl(nodeChannel, false);
                         }
 

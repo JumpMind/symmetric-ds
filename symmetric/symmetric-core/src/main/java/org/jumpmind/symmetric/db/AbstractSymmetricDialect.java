@@ -101,11 +101,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
 
-    public AbstractSymmetricDialect(IParameterService parameterService,
-            IDatabasePlatform platform) {
-        log.info("The DbDialect being used is %s", this.getClass().getName());
+    public AbstractSymmetricDialect(Log log,
+            IParameterService parameterService, IDatabasePlatform platform) {
+        this.log = log;      
         this.parameterService = parameterService;
         this.platform = platform;
+        
+        log.info("The DbDialect being used is %s", this.getClass().getName());
+        
         ISqlTemplate sqlTemplate = this.platform.getSqlTemplate();
         this.databaseMajorVersion = sqlTemplate.getDatabaseMajorVersion();
         this.databaseMinorVersion = sqlTemplate.getDatabaseMinorVersion();

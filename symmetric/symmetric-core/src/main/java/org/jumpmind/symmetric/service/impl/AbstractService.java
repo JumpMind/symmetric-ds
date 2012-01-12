@@ -50,7 +50,8 @@ abstract public class AbstractService implements IService {
     
     private ISqlMap sqlMap;
     
-    public AbstractService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
+    public AbstractService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect) {
+       this.log = log;
        this.symmetricDialect = symmetricDialect;
        this.parameterService = parameterService;
        this.tablePrefix = parameterService.getTablePrefix();

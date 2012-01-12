@@ -29,6 +29,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
@@ -47,8 +48,8 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     private String functionTemplateKeySuffix = null;
 
-    public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);
+    public MySqlSymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
+        super(log, parameterService, platform);
         this.triggerText = new MySqlTriggerText();
         this.parameterService = parameterService;
     }

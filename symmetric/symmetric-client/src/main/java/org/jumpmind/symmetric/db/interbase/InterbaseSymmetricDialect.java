@@ -26,6 +26,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
@@ -48,8 +49,8 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
-    public InterbaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);
+    public InterbaseSymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
+        super(log, parameterService, platform);
         this.triggerText = new InterbaseTriggerText();
     }
     

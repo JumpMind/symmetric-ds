@@ -31,6 +31,7 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.DateMapper;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -46,9 +47,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
 
-    public IncomingBatchService(IParameterService parameterService,
+    public IncomingBatchService(Log log, IParameterService parameterService,
             ISymmetricDialect symmetricDialect) {
-        super(parameterService, symmetricDialect);
+        super(log, parameterService, symmetricDialect);
     }
 
     public IncomingBatch findIncomingBatch(long batchId, String nodeId) {
@@ -237,7 +238,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setSqlState(rs.getString("sql_state"));
             batch.setSqlCode(rs.getInt("sql_code"));
             batch.setSqlMessage(rs.getString("sql_message"));
-            batch.setLastUpdatedHostName(rs.getString("last_update_host_name"));
+            batch.setLastUpdatedHostName(rs.getString("last_update_hostname"));
             batch.setLastUpdatedTime(rs.getDateTime("last_update_time"));
             batch.setCreateTime(rs.getDateTime("create_time"));
             batch.setErrorFlag(rs.getBoolean("error_flag"));

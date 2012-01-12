@@ -266,7 +266,7 @@ public class OutgoingBatches implements Serializable {
 
         for (NodeChannel nodeChannel : channels) {
             long extractPeriodMillis = nodeChannel.getExtractPeriodMillis();
-            Date lastExtractedTime = nodeChannel.getLastExtractedTime();
+            Date lastExtractedTime = nodeChannel.getLastExtractTime();
 
             if ((extractPeriodMillis < 1) || (lastExtractedTime == null)
                     || (Calendar.getInstance().getTimeInMillis() - lastExtractedTime.getTime() >= extractPeriodMillis)) {

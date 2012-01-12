@@ -30,6 +30,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -55,8 +56,8 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     String selectTransactionsSql = "select min(start_time) from gv$transaction";
 
-    public OracleSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);
+    public OracleSymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
+        super(log, parameterService, platform);
         this.triggerText = new OracleTriggerText();
         try {
             areDatabaseTransactionsPendingSince(System.currentTimeMillis());
