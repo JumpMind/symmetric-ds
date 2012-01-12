@@ -105,7 +105,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         Collection<Element> buffers = contextCache.values();
         for (Iterator<Element> iterator = buffers.iterator(); iterator.hasNext();) {
             String xml = new XMLOutputter(xmlFormat).outputString(new Document(iterator.next()));
-            log.debug("XMLSending", xml);
+            log.debug("Sending XML to IPublisher: %s", xml);
             iterator.remove();
             publisher.publish(context, xml.toString());
         }

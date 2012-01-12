@@ -85,14 +85,14 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         for (Node node : nodes) {
                             RemoteNodeStatus status = statuses.add(node);
                             try {
-                                log.debug("DataPulling", node.toString());
+                                log.debug("Pull requested for %s", node.toString());
                                 dataLoaderService.loadDataFromPull(node, status);
                                 if (status.getDataProcessed() > 0
                                         || status.getBatchesProcessed() > 0) {
-                                    log.info("DataPulled", node.toString(), status.getDataProcessed(),
+                                    log.info("Pull data received from %s.  %d rows and %d batches were processed.", node.toString(), status.getDataProcessed(),
                                             status.getBatchesProcessed());
                                 } else {
-                                    log.debug("DataPulled", node.toString(), status.getDataProcessed(),
+                                    log.debug("Pull data received from %s.  %d rows and %d batches were processed.", node.toString(), status.getDataProcessed(),
                                             status.getBatchesProcessed());
                                 }
                             } catch (ConnectException ex) {
@@ -102,19 +102,19 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                                 .getRegistrationUrl() : node.getSyncUrl()));
                                 fireOffline(ex, node, status);
                             } catch (ConnectionRejectedException ex) {
-                                log.warn("TransportFailedConnectionBusy");
+                                log.warn(".");
                                 fireOffline(ex, node, status);
                             } catch (AuthenticationException ex) {
-                                log.warn("AuthenticationFailed");
+                                log.warn(".");
                                 fireOffline(ex, node, status);
                             } catch (SyncDisabledException ex) {
-                                log.warn("SyncDisabled");
+                                log.warn(".");
                                 fireOffline(ex, node, status);
                             } catch (SocketException ex) {
-                                log.warn("Message", ex.getMessage());
+                                log.warn("%s", ex.getMessage());
                                 fireOffline(ex, node, status);
                             } catch (TransportException ex) {
-                                log.warn("Message", ex.getMessage());
+                                log.warn("%s", ex.getMessage());
                                 fireOffline(ex, node, status);
                             } catch (IOException ex) {
                                 log.error(ex);
@@ -127,7 +127,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
                 }
             } else {
-                log.info("DataPullingFailedLock");
+                log.info("Did not run the pull process because the cluster service has it locked");
             }
         }
 

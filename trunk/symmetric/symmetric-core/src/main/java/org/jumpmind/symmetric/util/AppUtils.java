@@ -149,11 +149,11 @@ public class AppUtils {
                         FileUtils.forceDelete(it.next());
                         deletedCount++;
                     } catch (Exception ex) {
-                        log.error("Message", ex.getMessage());
+                        log.error("%s", ex.getMessage());
                     }
                 }
                 if (deletedCount > 1) {
-                    log.warn("CleanStrandedTempFiles", deletedCount);
+                    log.warn("Cleaned %d stranded temporary files.", deletedCount);
                 }
             } catch (Exception ex) {
                 log.error(ex);
@@ -185,7 +185,7 @@ public class AppUtils {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
-            log.warn("Message", e.getMessage());
+            log.warn("%s", e.getMessage());
         }
     }
 
@@ -218,7 +218,7 @@ public class AppUtils {
                     interpreter.set(variableName, variables.get(variableName));
                 }
             }
-            log.info("Message", "About to run: \n" + script);
+            log.info("%s", "About to run: \n" + script);
             interpreter.eval(script);
         } catch (EvalError e) {
             throw new RuntimeException(e);

@@ -320,14 +320,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void autoConfigDatabase(boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
-            log.info("SymmetricDSDatabaseInitializing");
+            log.info("Initializing SymmetricDS database.");
             symmetricDialect.initTablesAndFunctions();
             autoConfigChannels();
             autoConfigRegistrationServer();
             parameterService.rereadParameters();
-            log.info("SymmetricDSDatabaseInitialized");
+            log.info("Done initializing SymmetricDS database.");
         } else {
-            log.info("SymmetricDSDatabaseNotAutoConfig");
+            log.info("SymmetricDS is not configured to auto-create the database.");
         }
     }
 
@@ -337,10 +337,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             List<NodeChannel> channels = getNodeChannels(false);
             for (Channel defaultChannel : defaultChannels) {
                 if (!defaultChannel.isInList(channels)) {
-                    log.info("ChannelAutoConfiguring", defaultChannel.getChannelId());
+                    log.info("Auto-configuring %s channel.", defaultChannel.getChannelId());
                     saveChannel(defaultChannel, true);
                 } else {
-                    log.debug("ChannelExists", defaultChannel.getChannelId());
+                    log.debug("No need to create channel %s.  It already exists.", defaultChannel.getChannelId());
                 }
             }
             reloadChannels();
@@ -359,13 +359,13 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
         if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())
                 && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
-            log.info("AutoConfigRegistrationService");
+            log.info("Inserting rows for node, security, identity and group for registration server");
             String nodeGroupId = parameterService.getNodeGroupId();
             String nodeId = parameterService.getExternalId();
             try {
                 nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
             } catch (DataIntegrityViolationException ex) {
-                log.warn("AutoConfigNodeIdAlreadyExists", nodeId);
+                log.warn("Not inserting node row for %s because it already exists", nodeId);
             }
             nodeService.insertNodeIdentity(nodeId);
             node = nodeService.findIdentity();
@@ -402,7 +402,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
             if (fileUrl != null) {
                 try {
-                    log.info("DatabaseSchemaBuilding", xml);
+                    log.info("Building database schema from: %s", xml);
                     Database database = new DatabaseIO().read(new InputStreamReader(fileUrl
                             .openStream()));
                     IDatabasePlatform platform = symmetricDialect.getPlatform();

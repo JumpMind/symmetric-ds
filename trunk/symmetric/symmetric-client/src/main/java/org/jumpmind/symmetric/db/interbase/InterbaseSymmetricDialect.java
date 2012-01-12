@@ -60,10 +60,10 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
             platform.getSqlTemplate().queryForInt("select count(*) from " + contextTableName);
         } catch (Exception e) {
             try {
-                log.info("GlobalTempTableCreating", contextTableName);
+                log.info("Creating global temporary table %s", contextTableName);
                 platform.getSqlTemplate().update(String.format(CONTEXT_TABLE_CREATE, contextTableName));
             } catch (Exception ex) {
-                log.error("InterbaseDialectInitializingError", ex);
+                log.error("Error while initializing Interbase dialect", ex);
             }
         }
     }
@@ -75,9 +75,9 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
             platform.getSqlTemplate().queryForObject("select sym_escape('') from rdb$database", String.class);
         } catch (UncategorizedSQLException e) {
             if (e.getSQLException().getErrorCode() == -804) {
-                log.error("InterbaseSymUdfMissing");
+                log.error("Please install the sym_udf.so/dll to your {interbase_home}/UDF folder");
             }
-            throw new RuntimeException("InterbaseSymEscapeMissing", e);
+            throw new RuntimeException("Function SYM_ESCAPE is not installed", e);
         }
     }
 
@@ -171,6 +171,6 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
         for (String name : names) {
             count += platform.getSqlTemplate().update("drop trigger " + name);
         }
-        log.info("RemovedTriggers", count);
+        log.info("Remove %d triggers", count);
     }
 }

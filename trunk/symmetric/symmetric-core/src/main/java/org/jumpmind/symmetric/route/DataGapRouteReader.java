@@ -194,7 +194,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
 
         if (data == null) {
-            throw new SymmetricException("RouterDataReaderNotResponding");
+            throw new SymmetricException("The read of the data to route queue has timed out.");
         } else if (data instanceof EOD) {
             data = null;
         }
@@ -323,10 +323,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
         long executeTimeInMs = System.currentTimeMillis() - ts;
         context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
         if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-            log.warn("RoutedDataSelectedInTime", executeTimeInMs, context.getChannel()
+            log.warn("Selected data to route in %d ms for %s", executeTimeInMs, context.getChannel()
                     .getChannelId());
         } else if (log.isDebugEnabled()) {
-            log.debug("RoutedDataSelectedInTime", executeTimeInMs, context.getChannel()
+            log.debug("Selected data to route in %d ms for %s", executeTimeInMs, context.getChannel()
                     .getChannelId());
         }
         return rs;

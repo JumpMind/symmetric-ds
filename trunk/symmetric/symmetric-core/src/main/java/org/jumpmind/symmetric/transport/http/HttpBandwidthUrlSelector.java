@@ -107,7 +107,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             try {
                 sampleSize = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                log.error("BandwidthSampleSizeParsingFailed", val);
+                log.error("Unable to parse sampleSize of %s", val);
             }
         }
         return sampleSize;
@@ -120,7 +120,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             try {
                 maxSampleDuration = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                log.error("BandwidthSampleSizeParsingFailed",val);
+                log.error("Unable to parse sampleSize of %s",val);
             }
         }
         return maxSampleDuration;
@@ -133,7 +133,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             try {
                 sampleTTL = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                log.error("BandwidthSampleTTLParsingFailed",val);
+                log.error("Unable to parse sampleTTL of %s",val);
             }
         }
         return sampleTTL;

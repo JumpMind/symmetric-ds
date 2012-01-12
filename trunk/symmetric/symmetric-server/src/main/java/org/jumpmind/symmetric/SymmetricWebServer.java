@@ -199,7 +199,7 @@ public class SymmetricWebServer {
         }
 
         if (join) {
-            log.info("WebServerAboutToJoin");
+            log.info("Joining the web server main thread");
             server.join();
         }
 
@@ -272,7 +272,7 @@ public class SymmetricWebServer {
             connector.setHost(host);
             connector.setMaxIdleTime(maxIdleTime);
             connectors.add(connector);
-            log.info("WebServerStarting", name, port);
+            log.info("About to start %s web server on port %d", name, port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
@@ -290,14 +290,14 @@ public class SymmetricWebServer {
             connector.setPort(securePort);
             connector.setHost(host);
             connectors.add(connector);
-            log.info("WebServerSecureStarting", securePort);
+            log.info("About to start SymmetricDS web server on secure port %d", securePort);
         }
         return connectors.toArray(new Connector[connectors.size()]);
     }
 
     protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
         if (AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_ENABLED, true)) {
-            log.info("JMXConsoleStarting", jmxPort);
+            log.info("Starting JMX HTTP console on port %d", jmxPort);
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             ObjectName name = getHttpJmxAdaptorName();
             mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
@@ -328,7 +328,7 @@ public class SymmetricWebServer {
                 mbeanServer.unregisterMBean(getHttpJmxAdaptorName());
                 mbeanServer.unregisterMBean(getXslJmxAdaptorName());
             } catch (Exception e) {
-                log.warn("JMXAdaptorUnregisterFailed");
+                log.warn("Could not unregister the JMX HTTP Adaptor");
             }
         }
     }

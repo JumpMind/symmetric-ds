@@ -120,13 +120,13 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                                         .getTime() + transactionViewClockSyncThresholdInMs)) {
                             if (dataService.countDataInRange(dataGap.getStartId() - 1,
                                     dataGap.getEndId() + 1) == 0) {
-                                log.info("RouterSkippingDataIdsNoTransactions",
+                                log.info("Found a gap in data_id from %d to %d.  Skipping it because there are no pending transactions in the database.",
                                         dataGap.getStartId(), dataGap.getEndId());
                                 dataService.updateDataGap(dataGap, DataGap.Status.SK);
                             }
                         }
                     } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
-                        log.info("RouterSkippingDataIdsGapExpired", dataGap.getStartId(),
+                        log.info("Found a gap in data_id from %d to %d.  Skipping it because the gap expired.", dataGap.getStartId(),
                                 dataGap.getEndId());
                         dataService.updateDataGap(dataGap, DataGap.Status.SK);
                     }
@@ -143,7 +143,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
 
         long updateTimeInMs = System.currentTimeMillis() - ts;
         if (updateTimeInMs > 10000) {
-            log.info("RoutedGapDetectionTime", updateTimeInMs);
+            log.info("Detecting gaps took %d ms", updateTimeInMs);
         }
 
     }

@@ -40,12 +40,12 @@ public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
     public boolean enabled = true;
 
     public void publish(Context context, String text) {
-        log.debug("TextPublishing", text);
+        log.debug("Publishing %s", text);
         JmsTemplate jmsTemplate = (JmsTemplate) beanFactory.getBean(jmsTemplateBeanName);
         if (enabled) {
             jmsTemplate.convertAndSend(text);
         } else {
-            log.warn("TextPublishingFailed");
+            log.warn("Message was not published because the publisher is not enabled.");
         }
     }
 

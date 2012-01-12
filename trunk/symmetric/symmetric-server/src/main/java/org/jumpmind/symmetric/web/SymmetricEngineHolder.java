@@ -108,7 +108,7 @@ public class SymmetricEngineHolder {
                 if (!engines.containsKey(engine.getEngineName())) {
                     engines.put(engine.getEngineName(), engine);
                 } else {
-                    log.error("SymmetricEngineDuplicateName", engine.getEngineName());
+                    log.error("An engine with the name of %s was not started because an engine of the same name has already been started.  Please set the engine.name property in the properties file to a unique name.", engine.getEngineName());
                 }
             }
             return engine;

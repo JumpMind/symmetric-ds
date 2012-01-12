@@ -84,7 +84,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
             }
 
         } else {
-            log.warn("RouterIllegalLookupTableExpression", router.getRouterExpression());
+            log.warn("The provided table mapped router expression was invalid: %s.", router.getRouterExpression());
         }
 
         return nodeIds;

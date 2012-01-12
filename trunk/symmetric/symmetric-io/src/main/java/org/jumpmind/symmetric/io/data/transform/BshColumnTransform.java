@@ -94,7 +94,7 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             } else if (ex instanceof IgnoreRowException) {
                 throw (IgnoreRowException) ex;
             } else {
-                log.error("BshColumnTransform.exception", column.getTargetColumnName(),
+                log.error("Beanshell script error for target column %s on transform %s", column.getTargetColumnName(),
                         column.getTransformId());
                 throw new TransformColumnException(ex);
             }

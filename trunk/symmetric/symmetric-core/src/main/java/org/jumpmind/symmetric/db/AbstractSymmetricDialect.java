@@ -167,7 +167,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         try {
             return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
         } catch (Exception ex) {
-            log.warn("TriggerMayExist", ex);
+            log.warn("Could not figure out if the trigger exists.  Assuming that is does not", ex);
             return false;
         }
     }
@@ -181,7 +181,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 this.platform.getSqlTemplate().update(
                         triggerText.getFunctionSql(functions[i], funcName,
                                 platform.getDefaultSchema()));
-                log.info("FunctionInstalled", funcName);
+                log.info("Just installed %s", funcName);
             }
         }
     }
@@ -248,7 +248,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             try {
                 this.platform.getSqlTemplate().update(sql);
             } catch (Exception e) {
-                log.warn("TriggerDoesNotExist");
+                log.warn("Trigger does not exist");
             }
         }
     }
@@ -495,7 +495,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     readDatabaseFromXml("/console-schema.xml"));
 
             if (prefixConfigDatabase(database)) {
-                log.info("TablesMissing");
+                log.info("There are SymmetricDS tables missing.  They will be auto created.");
             }
             return database;
         } catch (RuntimeException ex) {

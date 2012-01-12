@@ -54,7 +54,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
         if (getMajorVersion() > 8 || (getMajorVersion() == 8 && getMinorVersion() >= 3)) {
-            log.info("TransactionIDSupportEnabling");
+            log.info("Enabling transaction ID support");
             supportsTransactionId = true;
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;
         }
@@ -63,8 +63,9 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
             transaction = platform.getSqlTemplate().startSqlTransaction();
             enableSyncTriggers(transaction);
         } catch (Exception e) {
-            log.error("PostgreSqlCustomVariableMissing");
-            throw new SymmetricException("PostgreSqlCustomVariableMissing", e);
+            String message = "Please add \"custom_variable_classes = 'symmetric'\" to your postgresql.conf file"; 
+            log.error(message);
+            throw new SymmetricException(message, e);
         } finally {
             if (transaction != null) {
                 transaction.close();
@@ -98,7 +99,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
                 platform.getSqlTemplate().update(dropSql);
                 platform.getSqlTemplate().update(dropFunction);
             } catch (Exception e) {
-                log.warn("TriggerDoesNotExist");
+                log.warn("Trigger does not exist");
             }
         }
     }

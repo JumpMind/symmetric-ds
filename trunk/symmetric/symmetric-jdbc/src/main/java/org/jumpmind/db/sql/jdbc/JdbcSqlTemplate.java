@@ -239,7 +239,18 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     int statementCount = 0;
                     for (String statement : sql) {
                         try {
-                            updateCount += stmt.executeUpdate(statement);
+                            boolean hasResults = stmt.execute(statement);
+                            updateCount += stmt.getUpdateCount();
+                            if (hasResults) {
+                                ResultSet rs = null;
+                                try {
+                                    rs = stmt.getResultSet();
+                                    while (rs.next())
+                                        ;
+                                } finally {
+                                    close(rs);
+                                }
+                            }
                             statementCount++;
                             if (statementCount % commitRate == 0 && !autoCommit) {
                                 con.commit();

@@ -63,7 +63,7 @@ abstract public class AbstractTransportManager {
             extensionSyncUrlHandlers = new HashMap<String, ISyncUrlExtension>();
         }
         if (extensionSyncUrlHandlers.containsKey(name)) {
-            log.warn("TransportSyncURLOverriding", name);
+            log.warn("Overriding an existing '%s' extension sync url handler with a second one.", name);
         }
         extensionSyncUrlHandlers.put(name, handler);
     }
@@ -74,14 +74,14 @@ abstract public class AbstractTransportManager {
      */
     public String resolveURL(String syncUrl, String registrationUrl) {
         if (StringUtils.isBlank(syncUrl) || syncUrl.startsWith(Constants.PROTOCOL_NONE)) {
-            log.debug("TransportSyncURLBlank");
+            log.debug("Using the registration URL to contact the remote node because the syncURL for the node is blank.");
             return registrationUrl;
         } else if (syncUrl.startsWith(Constants.PROTOCOL_EXT)) {
             try {
                 URI uri = new URI(syncUrl);
                 ISyncUrlExtension handler = extensionSyncUrlHandlers.get(uri.getHost());
                 if (handler == null) {
-                    log.error("TransportSyncURLMissing", uri.getHost(), syncUrl);
+                    log.error("Could not find a registered extension sync url handler with the name of %s using the url %s", uri.getHost(), syncUrl);
                     return syncUrl;
                 } else {
                     return handler.resolveUrl(uri);

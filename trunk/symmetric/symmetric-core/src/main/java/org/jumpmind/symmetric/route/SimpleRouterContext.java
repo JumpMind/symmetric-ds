@@ -102,9 +102,9 @@ public class SimpleRouterContext extends Context {
         }
         
         if (infoLevel) {
-            log.info("RouterStats", statsPrintout);
+            log.info("Routing %s", statsPrintout);
         } else {
-            log.debug("RouterStats", statsPrintout);
+            log.debug("Routing %s", statsPrintout);
         }
 
     }

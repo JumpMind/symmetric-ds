@@ -214,7 +214,7 @@ public class DataService extends AbstractService implements IDataService {
         int numberUpdated = sqlTemplate.update(getSql("checkForAndUpdateMissingChannelIdSql"),
                 Constants.CHANNEL_DEFAULT, firstDataId, lastDataId);
         if (numberUpdated > 0) {
-            log.warn("DataFoundWithWrongChannelIds", numberUpdated, firstDataId, lastDataId,
+            log.warn("There were %d data records found between %d and %d that an invalid channel_id.  Updating them to be on the '%s' channel.", numberUpdated, firstDataId, lastDataId,
                     Constants.CHANNEL_DEFAULT);
         }
     }
@@ -236,7 +236,7 @@ public class DataService extends AbstractService implements IDataService {
                     Constants.UNKNOWN_ROUTER_ID, isLoad);
         } catch (DataIntegrityViolationException e) {
             if (e.getRootCause() != null && e.getRootCause() instanceof DataTruncation) {
-                log.error("InitialLoadCreateDataTruncation");
+                log.error("Table data definition XML was too large and failed.  The feature to send table creates during the initial load may be limited on your platform.  You may need to set the initial.load.create.first parameter to false.");
             }
             throw e;
         }
@@ -338,12 +338,12 @@ public class DataService extends AbstractService implements IDataService {
     public String reloadNode(String nodeId) {
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
-            return Message.get("NodeUnknown", nodeId);
+            return Message.get("Unknown node %s", nodeId);
         }
         if (nodeService.setInitialLoadEnabled(nodeId, true)) {
-            return Message.get("NodeInitialLoadOpened", nodeId);
+            return Message.get("Successfully opened initial load for node %s", nodeId);
         } else {
-            return Message.get("NodeInitialLoadFailed", nodeId);
+            return Message.get("Could not open initial load for %s", nodeId);
         }
     }
 
@@ -378,7 +378,7 @@ public class DataService extends AbstractService implements IDataService {
                         trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                         trigger.getSourceTableName(), true);
                 if (table == null) {
-                    log.warn("TriggerTableMissing", trigger.qualifiedSourceTableName());
+                    log.warn("", trigger.qualifiedSourceTableName());
                     iterator.remove();
                 }
             }
@@ -521,10 +521,10 @@ public class DataService extends AbstractService implements IDataService {
                     if (data != null) {
                         insertData(data);
                     } else {
-                        log.warn("TableGeneratingEventsFailure", tableName);
+                        log.warn("Not generating data/data events for table %s because a trigger or trigger hist is not created yet.", tableName);
                     }
                 } else {
-                    log.warn("TableGeneratingEventsFailure", tableName);
+                    log.warn("Not generating data/data events for table %s because a trigger or trigger hist is not created yet.", tableName);
                 }
             }
         }
@@ -625,7 +625,7 @@ public class DataService extends AbstractService implements IDataService {
                     AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
                     Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
         } catch (DataIntegrityViolationException ex) {
-            log.warn("GapAlreadyExisted", gap.getStartId(), gap.getEndId());
+            log.warn("A gap already existed for %d to %d.  Updating instead.", gap.getStartId(), gap.getEndId());
             updateDataGap(gap, DataGap.Status.GP);
         }
     }
@@ -727,7 +727,7 @@ public class DataService extends AbstractService implements IDataService {
         if (listeners.size() > 0) {
             Node me = nodeService.findIdentity();
             if (me != null) {
-                log.info("NodeVersionUpdating");
+                log.info("Updating time and version node info");
                 Calendar now = Calendar.getInstance();
                 now.set(Calendar.MILLISECOND, 0);
                 me.setDeploymentType(deploymentType.getDeploymentType());
@@ -738,7 +738,7 @@ public class DataService extends AbstractService implements IDataService {
                 me.setDatabaseVersion(symmetricDialect.getVersion());
                 me.setBatchInErrorCount(outgoingBatchService.countOutgoingBatchesInError());
                 if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
-                    log.info("NodeConfigurationUpdating");
+                    log.info("Updating my node configuration info according to the symmetric properties");
                     me.setSchemaVersion(parameterService
                             .getString(ParameterConstants.SCHEMA_VERSION));
                     me.setExternalId(parameterService.getExternalId());
@@ -750,7 +750,7 @@ public class DataService extends AbstractService implements IDataService {
 
                 nodeService.updateNode(me);
                 nodeService.updateNodeHostForCurrentNode();
-                log.info("NodeVersionUpdated");
+                log.info("Done updating my node info.");
 
                 Set<Node> children = nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId());
                 for (IHeartbeatListener l : listeners) {
@@ -760,7 +760,7 @@ public class DataService extends AbstractService implements IDataService {
                 updateLastHeartbeatTime(listeners);
 
             } else {
-                log.debug("HeartbeatUpdatingFailureNodeNotConfigured");
+                log.debug("Did not run the heartbeat process because the node has not been configured");
             }
         }
     }

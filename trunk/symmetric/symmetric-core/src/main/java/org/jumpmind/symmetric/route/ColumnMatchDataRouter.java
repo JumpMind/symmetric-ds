@@ -145,7 +145,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
             }
         } else {
-            log.warn("RouterNoColumnsToMatch", dataMetaData.getData().getDataId());
+            log.warn("There were no columns to match for the data_id of %d", dataMetaData.getData().getDataId());
         }
 
         return nodeIds;
@@ -185,14 +185,14 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                         if (tokens.length == 2) {
                             expressions.add(new Expression(equals, tokens));
                         } else {
-                            log.warn("RouterIllegalColumnMatchExpression", t, routerExpression);
+                            log.warn("The provided column match expression was invalid: %s.  The full expression is %s.", t, routerExpression);
                         }
 
                     }
                 }
             }
         } else {
-            log.warn("RouterIllegalColumnMatchExpression", routerExpression, routerExpression);
+            log.warn("The provided column match expression was invalid: %s.  The full expression is %s.", routerExpression, routerExpression);
         }
         return expressions;
     }
