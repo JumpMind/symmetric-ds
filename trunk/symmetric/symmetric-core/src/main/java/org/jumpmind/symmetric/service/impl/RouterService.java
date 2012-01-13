@@ -571,6 +571,6 @@ public class RouterService extends AbstractService implements IRouterService {
     @Override
     protected AbstractSqlMap createSqlMap() {
         return new RouterServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
-    }
+    }    
 
 }

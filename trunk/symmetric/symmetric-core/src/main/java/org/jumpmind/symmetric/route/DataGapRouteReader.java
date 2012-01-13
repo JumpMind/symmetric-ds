@@ -41,8 +41,6 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
@@ -214,7 +212,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
         ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
 
-        int numberOfArgs = 1 + (numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify
+        int numberOfArgs = 1 + 2*(numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify
                 : dataGaps.size());
         Object[] args = new Object[numberOfArgs];
         int[] types = new int[numberOfArgs];
@@ -239,19 +237,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
         return sqlTemplate.queryForCursor(sql, new ISqlRowMapper<Data>() {
             public Data mapRow(Row row) {
-                Data data = new Data();
-                data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA"));
-                data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA"));
-                data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA"));
-                data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
-                data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID"));
-                data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));
-                data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, row.getInt("TRIGGER_HIST_ID"));
-                data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, row.getString("SOURCE_NODE_ID"));
-                data.putAttribute(CsvData.ATTRIBUTE_ROUTER_ID, row.getString("ROUTER_ID"));
-                data.putAttribute(CsvData.ATTRIBUTE_EXTERNAL_DATA, row.getString("EXTERNAL_DATA"));
-                data.putAttribute(CsvData.ATTRIBUTE_DATA_ID, row.getLong("DATA_ID"));
-                return data;
+                return dataService.mapData(row);
             }
         }, args, types);
 

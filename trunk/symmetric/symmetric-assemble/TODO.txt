@@ -1,3 +1,5 @@
+TODO = *
+DONE = +
 
 * Go through every class and fix javadoc, remove unused methods, follow conventions, and fix generics/warnings
 
@@ -30,16 +32,17 @@
 * Hook up JMX
 
 * Clean up logging  
+  * Use SLF4J and MDC (for capturing the engine & node name)
 * Use HttpClient?
 * Add table copy utility
 * Clean up service tests    
-* Use data processor for streaming to file  
++ Use data processor for streaming to file  
 * Purge OK records instead of purging them at a later date
 * Test batch inserts for router service
 * Remove all references to data_ref
 + What to do with SqlTemplate? Move sqltemplate into dbdialect
 * Change the default server mode to multiserver
-* Clean up symmetric.messages
++ Clean up symmetric.messages
 * SqlMap create constants for columns and table names  
 
 Documentation

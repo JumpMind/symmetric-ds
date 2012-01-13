@@ -55,7 +55,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -180,7 +179,7 @@ public class SymmetricLauncher {
             exception = ex;
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
-            System.err.println(Message.get("An exception occurred.  Please see the following for details:"));
+            System.err.println(String.format("An exception occurred.  Please see the following for details:"));
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
 
@@ -282,7 +281,7 @@ public class SymmetricLauncher {
                     fileAppender.activateOptions();
                 }
 
-                System.out.println(Message.get("Log output will be written to %s", fileAppender.getFile()));
+                System.out.println(String.format("Log output will be written to %s", fileAppender.getFile()));
 
             }
         }
@@ -421,7 +420,7 @@ public class SymmetricLauncher {
             testConnection(line, propertiesFile);
             String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
             openRegistration(createEngine(propertiesFile), arg);
-            System.out.println(Message.get("Opened Registration for %s", arg));
+            System.out.println(String.format("Opened Registration for %s", arg));
             System.exit(0);
             return true;
         }
@@ -534,7 +533,7 @@ public class SymmetricLauncher {
     }
 
     protected void addOption(Options options, String opt, String longOpt, boolean hasArg) {
-        options.addOption(opt, longOpt, hasArg, Message.get(MESSAGE_BUNDLE + longOpt));
+        options.addOption(opt, longOpt, hasArg, String.format(MESSAGE_BUNDLE + longOpt));
     }
 
     private void dumpBatch(ISymmetricEngine engine, String batchId) throws Exception {

@@ -166,17 +166,19 @@ public class CsvData {
             values = parsedCsvData.get(key);
         } else if (csvData != null && csvData.containsKey(key)) {
             String data = csvData.get(key);
-            try {
-                CsvReader csvReader = CsvUtils.getCsvReader(new StringReader(data));
-                if (csvReader.readRecord()) {
-                    values = csvReader.getValues();
-                    putParsedData(key, values);
-                } else {
-                    throw new IllegalStateException(String.format(
-                            "Could not parse the data passed in: %s", data));
+            if (data != null) {
+                try {
+                    CsvReader csvReader = CsvUtils.getCsvReader(new StringReader(data));
+                    if (csvReader.readRecord()) {
+                        values = csvReader.getValues();
+                        putParsedData(key, values);
+                    } else {
+                        throw new IllegalStateException(String.format(
+                                "Could not parse the data passed in: %s", data));
+                    }
+                } catch (IOException e) {
+                    throw new IoException(e);
                 }
-            } catch (IOException e) {
-                throw new IoException(e);
             }
         }
         return values;

@@ -155,7 +155,7 @@ public class Data extends CsvData implements Serializable {
     }
 
     public String getExternalData() {
-        return getAttribute(ATTRIBUTE_SOURCE_NODE_ID);
+        return getAttribute(ATTRIBUTE_EXTERNAL_DATA);
     }
 
     public void setExternalData(String externalData) {

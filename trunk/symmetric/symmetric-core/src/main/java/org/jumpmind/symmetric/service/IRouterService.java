@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.db.sql.ISqlMap;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
@@ -59,4 +60,6 @@ public interface IRouterService {
     public void stop ();
     
     public void destroy();
+    
+    public ISqlMap getSqlMap();
 }
