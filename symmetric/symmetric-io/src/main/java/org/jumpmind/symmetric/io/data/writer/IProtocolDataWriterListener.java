@@ -3,7 +3,7 @@ package org.jumpmind.symmetric.io.data.writer;
 import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.data.Batch;
 
-public interface ICsvDataWriterListener {
+public interface IProtocolDataWriterListener {
     
     public void start(Batch batch);
     

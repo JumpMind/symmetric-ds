@@ -52,12 +52,12 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.reader.IBatchCsvDataSource;
-import org.jumpmind.symmetric.io.data.reader.SourcedCsvDataReader;
-import org.jumpmind.symmetric.io.data.reader.TextualCsvDataReader;
-import org.jumpmind.symmetric.io.data.writer.CsvDataWriter;
-import org.jumpmind.symmetric.io.data.writer.FileCsvDataWriter;
-import org.jumpmind.symmetric.io.data.writer.ICsvDataWriterListener;
+import org.jumpmind.symmetric.io.data.reader.IExtractBatchSource;
+import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
+import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
+import org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter;
+import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
+import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Data;
@@ -193,10 +193,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         InitialLoadSource source = new InitialLoadSource(batch, initialLoadEvents);
-        SourcedCsvDataReader dataReader = new SourcedCsvDataReader(
+        ExtractDataReader dataReader = new ExtractDataReader(
                 this.symmetricDialect.getPlatform(), source);
-        CsvDataWriter dataWriter = new CsvDataWriter(writer);
-        DataProcessor<SourcedCsvDataReader, CsvDataWriter> processor = new DataProcessor<SourcedCsvDataReader, CsvDataWriter>(
+        ProtocolDataWriter dataWriter = new ProtocolDataWriter(writer);
+        DataProcessor<ExtractDataReader, ProtocolDataWriter> processor = new DataProcessor<ExtractDataReader, ProtocolDataWriter>(
                 dataReader, dataWriter);
         processor.process();
 
@@ -289,9 +289,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (streamToFileEnabled) {
                             long memoryThresholdInBytes = parameterService
                                     .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
-                            extractWriter = new FileCsvDataWriter(new File(
+                            extractWriter = new StagingDataWriter(new File(
                                     System.getProperty("java.io.tmpdir")), memoryThresholdInBytes,
-                                    new ICsvDataWriterListener() {
+                                    new IProtocolDataWriterListener() {
                                         public void start(Batch batch) {
                                         }
 
@@ -300,7 +300,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         }
                                     });
                         } else {
-                            extractWriter = new CsvDataWriter(targetTransport.open());
+                            extractWriter = new ProtocolDataWriter(targetTransport.open());
                         }
 
                         OutgoingBatch currentBatch = null;
@@ -329,7 +329,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                                 .getExtractCount() + 1);
                                         outgoingBatchService.updateOutgoingBatch(outgoingBatch);
 
-                                        IDataReader dataReader = new SourcedCsvDataReader(
+                                        IDataReader dataReader = new ExtractDataReader(
                                                 symmetricDialect.getPlatform(),
                                                 new SelectBatchSource(outgoingBatch));
 
@@ -355,9 +355,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         IoResource extractedBatch = extractedBatchesHandle
                                                 .get(outgoingBatch.getBatchId());
                                         if (extractedBatch != null) {
-                                            IDataReader dataReader = new TextualCsvDataReader(
+                                            IDataReader dataReader = new ProtocolDataReader(
                                                     extractedBatch.open());
-                                            IDataWriter dataWriter = new CsvDataWriter(
+                                            IDataWriter dataWriter = new ProtocolDataWriter(
                                                     targetTransport.open());
                                             new DataProcessor<IDataReader, IDataWriter>(dataReader,
                                                     dataWriter).process();
@@ -505,7 +505,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    class SelectBatchSource implements IBatchCsvDataSource {
+    class SelectBatchSource implements IExtractBatchSource {
 
         public SelectBatchSource(OutgoingBatch outgoingBatch) {
             // TODO Auto-generated constructor stub
@@ -560,7 +560,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    class InitialLoadSource implements IBatchCsvDataSource {
+    class InitialLoadSource implements IExtractBatchSource {
 
         private Batch batch;
 

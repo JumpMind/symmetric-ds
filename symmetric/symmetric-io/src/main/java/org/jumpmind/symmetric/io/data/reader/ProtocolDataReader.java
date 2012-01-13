@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 
-public class TextualCsvDataReader implements IDataReader {
+public class ProtocolDataReader implements IDataReader {
 
     protected Log log = LogFactory.getLog(getClass());
 
@@ -50,15 +50,15 @@ public class TextualCsvDataReader implements IDataReader {
     protected String sourceNodeId;
     protected BinaryEncoding binaryEncoding;
 
-    public TextualCsvDataReader(StringBuilder input) {
+    public ProtocolDataReader(StringBuilder input) {
         this(new BufferedReader(new StringReader(input.toString())));
     }
 
-    public TextualCsvDataReader(InputStream is) {
+    public ProtocolDataReader(InputStream is) {
         this(toReader(is));
     }
 
-    public TextualCsvDataReader(IoResource ioResource) {
+    public ProtocolDataReader(IoResource ioResource) {
         this.ioResource = ioResource;
     }
 
@@ -70,15 +70,15 @@ public class TextualCsvDataReader implements IDataReader {
         }
     }
 
-    public TextualCsvDataReader(String input) {
+    public ProtocolDataReader(String input) {
         this(new BufferedReader(new StringReader(input)));
     }
 
-    public TextualCsvDataReader(Reader reader) {
+    public ProtocolDataReader(Reader reader) {
         this.reader = reader;
     }
 
-    public TextualCsvDataReader(File file) {
+    public ProtocolDataReader(File file) {
         try {
             FileInputStream fis = new FileInputStream(file);
             InputStreamReader in = new InputStreamReader(fis, "UTF-8");
@@ -112,14 +112,14 @@ public class TextualCsvDataReader implements IDataReader {
                 if (batch == null) {
                     bytesRead += csvReader.getRawRecord().length();
                 } else {
-                    statistics.get(batch).increment(CsvReaderStatistics.READ_BYTE_COUNT,
+                    statistics.get(batch).increment(DataReaderStatistics.READ_BYTE_COUNT,
                             csvReader.getRawRecord().length() + bytesRead);
                     bytesRead = 0;
                 }
                 if (tokens[0].equals(CsvConstants.BATCH)) {
                     Batch batch = new Batch(Long.parseLong(tokens[1]), channelId, binaryEncoding,
                             sourceNodeId);
-                    statistics.put(batch, new CsvReaderStatistics());
+                    statistics.put(batch, new DataReaderStatistics());
                     return batch;
                 } else if (tokens[0].equals(CsvConstants.NODEID)) {
                     this.sourceNodeId = tokens[1];

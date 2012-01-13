@@ -48,12 +48,12 @@ import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.reader.TextualCsvDataReader;
+import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
-import org.jumpmind.symmetric.io.data.writer.FileCsvDataWriter;
-import org.jumpmind.symmetric.io.data.writer.ICsvDataWriterListener;
+import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
+import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.TransformDatabaseWriter;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
@@ -244,23 +244,23 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             final List<IDataReader> readersForDatabaseLoader = new ArrayList<IDataReader>();
             long totalNetworkMillis = System.currentTimeMillis();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                IDataReader dataReader = new TextualCsvDataReader(transport.open());
+                IDataReader dataReader = new ProtocolDataReader(transport.open());
                 long memoryThresholdInBytes = parameterService
                         .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
-                IDataWriter dataWriter = new FileCsvDataWriter(new File(
+                IDataWriter dataWriter = new StagingDataWriter(new File(
                         System.getProperty("java.io.tmpdir")), memoryThresholdInBytes,
-                        new ICsvDataWriterListener() {
+                        new IProtocolDataWriterListener() {
                             public void start(Batch batch) {
                             }
 
                             public void end(Batch batch, IoResource resource) {
-                                readersForDatabaseLoader.add(new TextualCsvDataReader(resource));
+                                readersForDatabaseLoader.add(new ProtocolDataReader(resource));
                             }
                         });
                 new DataProcessor<IDataReader, IDataWriter>(dataReader, dataWriter).process();
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
-                readersForDatabaseLoader.add(new TextualCsvDataReader(transport.open()));
+                readersForDatabaseLoader.add(new ProtocolDataReader(transport.open()));
             }
 
             DatabaseWriterSettings settings = buildDatabaseWriterSettings();

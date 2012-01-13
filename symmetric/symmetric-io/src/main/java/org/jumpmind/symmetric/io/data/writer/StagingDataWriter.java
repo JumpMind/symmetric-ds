@@ -14,7 +14,7 @@ import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.MemoryIoResource;
 import org.jumpmind.symmetric.io.data.Batch;
 
-public class FileCsvDataWriter extends AbstractCsvDataWriter {
+public class StagingDataWriter extends AbstractProtocolDataWriter {
 
     protected FileChannel channel = null;
 
@@ -29,22 +29,22 @@ public class FileCsvDataWriter extends AbstractCsvDataWriter {
 
     protected IoResource lastBatch;
 
-    public FileCsvDataWriter(File dir, long memoryThresholdInBytes,
-            ICsvDataWriterListener... listeners) {
+    public StagingDataWriter(File dir, long memoryThresholdInBytes,
+            IProtocolDataWriterListener... listeners) {
         this(dir, memoryThresholdInBytes, toList(listeners));
     }
 
-    public FileCsvDataWriter(File dir, long memoryThresholdInBytes,
-            List<ICsvDataWriterListener> listeners) {
+    public StagingDataWriter(File dir, long memoryThresholdInBytes,
+            List<IProtocolDataWriterListener> listeners) {
         super(listeners);
         this.dir = dir;
         this.memoryThresholdInBytes = memoryThresholdInBytes;
     }
 
-    public static List<ICsvDataWriterListener> toList(ICsvDataWriterListener... listeners) {
-        ArrayList<ICsvDataWriterListener> list = new ArrayList<ICsvDataWriterListener>(
+    public static List<IProtocolDataWriterListener> toList(IProtocolDataWriterListener... listeners) {
+        ArrayList<IProtocolDataWriterListener> list = new ArrayList<IProtocolDataWriterListener>(
                 listeners.length);
-        for (ICsvDataWriterListener l : listeners) {
+        for (IProtocolDataWriterListener l : listeners) {
             list.add(l);
         }
         return list;
@@ -66,7 +66,7 @@ public class FileCsvDataWriter extends AbstractCsvDataWriter {
     }
 
     @Override
-    protected void notifyEndBatch(Batch batch, ICsvDataWriterListener listener) {
+    protected void notifyEndBatch(Batch batch, IProtocolDataWriterListener listener) {
         listener.end(batch, this.lastBatch);
     }
 

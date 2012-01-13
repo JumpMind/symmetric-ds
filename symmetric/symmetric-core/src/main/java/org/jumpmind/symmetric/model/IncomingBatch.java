@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.jumpmind.symmetric.io.data.Batch;
-import org.jumpmind.symmetric.io.data.reader.CsvReaderStatistics;
+import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterStatistics;
 import org.jumpmind.util.Statistics;
 
@@ -103,7 +103,7 @@ public class IncomingBatch implements Serializable {
 
     public void setValues(Statistics readerStatistics, Statistics writerStatistics,
             boolean isSuccess) {
-        byteCount = readerStatistics.get(CsvReaderStatistics.READ_BYTE_COUNT);
+        byteCount = readerStatistics.get(DataReaderStatistics.READ_BYTE_COUNT);
         filterMillis = writerStatistics.get(DatabaseWriterStatistics.FILTERMILLIS);
         databaseMillis = writerStatistics.get(DatabaseWriterStatistics.DATABASEMILLIS);
         statementCount = writerStatistics.get(DatabaseWriterStatistics.STATEMENTCOUNT);

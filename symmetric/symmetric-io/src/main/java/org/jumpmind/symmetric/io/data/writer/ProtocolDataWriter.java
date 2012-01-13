@@ -8,15 +8,15 @@ import java.util.List;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
 
-public class CsvDataWriter extends AbstractCsvDataWriter {
+public class ProtocolDataWriter extends AbstractProtocolDataWriter {
 
     private BufferedWriter writer;
 
-    public CsvDataWriter(Writer writer) {
+    public ProtocolDataWriter(Writer writer) {
         this(null, writer);
     }
 
-    public CsvDataWriter(List<ICsvDataWriterListener> listeners, Writer writer) {
+    public ProtocolDataWriter(List<IProtocolDataWriterListener> listeners, Writer writer) {
         super(listeners);
         if (writer instanceof BufferedWriter) {
             this.writer = (BufferedWriter) writer;
@@ -35,7 +35,7 @@ public class CsvDataWriter extends AbstractCsvDataWriter {
     }
 
     @Override
-    protected void notifyEndBatch(Batch batch, ICsvDataWriterListener listener) {
+    protected void notifyEndBatch(Batch batch, IProtocolDataWriterListener listener) {
     }
 
     @Override
