@@ -22,15 +22,15 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
 
-public class SourcedCsvDataReader implements IDataReader {
+public class ExtractDataReader implements IDataReader {
 
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
     protected IDatabasePlatform platform;
 
-    protected List<IBatchCsvDataSource> sourcesToUse;
+    protected List<IExtractBatchSource> sourcesToUse;
 
-    protected IBatchCsvDataSource currentSource;
+    protected IExtractBatchSource currentSource;
 
     protected Batch batch;
 
@@ -38,14 +38,14 @@ public class SourcedCsvDataReader implements IDataReader {
 
     protected CsvData data;
     
-    public SourcedCsvDataReader(IDatabasePlatform platform, IBatchCsvDataSource source) {        
-        this.sourcesToUse = new ArrayList<IBatchCsvDataSource>();
+    public ExtractDataReader(IDatabasePlatform platform, IExtractBatchSource source) {        
+        this.sourcesToUse = new ArrayList<IExtractBatchSource>();
         this.sourcesToUse.add(source);
         this.platform = platform;
     }
 
-    public SourcedCsvDataReader(IDatabasePlatform platform, List<IBatchCsvDataSource> sources) {
-        this.sourcesToUse = new ArrayList<IBatchCsvDataSource>(sources);
+    public ExtractDataReader(IDatabasePlatform platform, List<IExtractBatchSource> sources) {
+        this.sourcesToUse = new ArrayList<IExtractBatchSource>(sources);
         this.platform = platform;
     }
 

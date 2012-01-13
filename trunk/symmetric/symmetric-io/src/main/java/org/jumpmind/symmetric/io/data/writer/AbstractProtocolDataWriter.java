@@ -18,7 +18,7 @@ import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 
-abstract public class AbstractCsvDataWriter implements IDataWriter {
+abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
     protected DataContext<? extends IDataReader, ? extends IDataWriter> context;
 
@@ -34,9 +34,9 @@ abstract public class AbstractCsvDataWriter implements IDataWriter {
 
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
-    protected List<ICsvDataWriterListener> listeners;
+    protected List<IProtocolDataWriterListener> listeners;
 
-    public AbstractCsvDataWriter(List<ICsvDataWriterListener> listeners) {
+    public AbstractProtocolDataWriter(List<IProtocolDataWriterListener> listeners) {
         this.listeners = listeners;
     }
 
@@ -52,7 +52,7 @@ abstract public class AbstractCsvDataWriter implements IDataWriter {
         this.batch = batch;
 
         if (listeners != null) {
-            for (ICsvDataWriterListener listener : listeners) {
+            for (IProtocolDataWriterListener listener : listeners) {
                 listener.start(batch);
             }
         }
@@ -127,7 +127,7 @@ abstract public class AbstractCsvDataWriter implements IDataWriter {
         endBatch(batch);
 
         if (listeners != null) {
-            for (ICsvDataWriterListener listener : listeners) {
+            for (IProtocolDataWriterListener listener : listeners) {
                 notifyEndBatch(batch, listener);
             }
         }
@@ -135,7 +135,7 @@ abstract public class AbstractCsvDataWriter implements IDataWriter {
 
     abstract protected void endBatch(Batch batch);
 
-    abstract protected void notifyEndBatch(Batch batch, ICsvDataWriterListener listener);
+    abstract protected void notifyEndBatch(Batch batch, IProtocolDataWriterListener listener);
 
     protected int println(String key, List<Column> columns) {
         return println(key, columns.toArray(new Column[columns.size()]));
