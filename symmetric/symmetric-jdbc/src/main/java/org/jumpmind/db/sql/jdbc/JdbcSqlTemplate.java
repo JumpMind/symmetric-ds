@@ -176,7 +176,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 try {
                     ps = con.prepareStatement(sql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
-                    JdbcUtils.setValues(ps, args);
+                    if (args != null && args.length > 0) {
+                        JdbcUtils.setValues(ps, args);
+                    }
                     rs = ps.executeQuery();
                     if (rs.next()) {
                         ResultSetMetaData meta = rs.getMetaData();

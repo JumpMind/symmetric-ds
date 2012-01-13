@@ -6,7 +6,9 @@ import java.util.Date;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.log.Log;
 import org.jumpmind.log.Log4jLog;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestUtils;
@@ -26,6 +28,8 @@ import org.junit.BeforeClass;
 public abstract class AbstractServiceTest {
 
     static private ISymmetricEngine engine;
+    
+    protected Log logger = TestUtils.getLog();
 
     static {
         org.jumpmind.log.LogFactory.setLogClass(Log4jLog.class);
@@ -99,9 +103,17 @@ public abstract class AbstractServiceTest {
     protected INodeService getNodeService() {
         return getSymmetricEngine().getNodeService();
     }
+    
+    protected IDatabasePlatform getPlatform() {
+        return getSymmetricEngine().getSymmetricDialect().getPlatform();
+    }
 
     protected IRouterService getRouterService() {
         return getSymmetricEngine().getRouterService();
+    }
+    
+    protected ISqlTemplate getJdbcTemplate() {
+        return getSymmetricEngine().getSymmetricDialect().getPlatform().getSqlTemplate();
     }
 
     protected ITriggerRouterService getTriggerRouterService() {

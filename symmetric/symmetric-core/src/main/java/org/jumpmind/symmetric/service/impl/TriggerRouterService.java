@@ -41,7 +41,6 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
@@ -312,7 +311,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setInitialLoadOrder(initialLoadOrder++);
             if (tableName.equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
                     TableConstants.SYM_TRIGGER))) {
-                trigger.getRouter().setRouterType("trigger");
+                trigger.getRouter().setRouterType("configurationChanged");
             }
             triggers.add(trigger);
         }
@@ -873,8 +872,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 String errorMessage = null;
                 Channel channel = configurationService.getChannel(trigger.getChannelId());
                 if (channel == null) {
-                    errorMessage = Message
-                            .get("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
+                    errorMessage = String.format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
                                     trigger.getTriggerId(), trigger.getChannelId(),
                                     Constants.CHANNEL_DEFAULT);
                     log.error(errorMessage);

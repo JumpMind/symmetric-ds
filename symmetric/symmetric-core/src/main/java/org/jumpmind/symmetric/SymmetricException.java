@@ -21,8 +21,6 @@
 
 package org.jumpmind.symmetric;
 
-import org.jumpmind.symmetric.common.Message;
-
 /**
  * This is a {@link RuntimeException} that supports using the SymmetricDS
  * {@link Message} infrastructure

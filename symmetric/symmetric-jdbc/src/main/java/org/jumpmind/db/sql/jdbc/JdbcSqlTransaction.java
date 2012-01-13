@@ -151,6 +151,28 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             }
         });
     }
+    
+    public int execute(final String sql, final Object[] args, final int[] types) {
+        return execute(new IConnectionCallback<Integer>() {
+            public Integer execute(Connection con) throws SQLException {
+                PreparedStatement stmt = null;
+                ResultSet rs = null;
+                try {
+                    stmt = con.prepareStatement(sql);
+                    JdbcUtils.setValues(stmt, args, types, jdbcSqlTemplate.getLobHandler());
+                    if (stmt.execute()) {
+                        rs = stmt.getResultSet();
+                        while (rs.next()) {
+                        }
+                    }
+                    return stmt.getUpdateCount();
+                } finally {
+                    JdbcSqlTemplate.close(rs);
+                }
+
+            }
+        });
+    }    
 
     public int execute(final String sql, final Object... args) {
         return execute(new IConnectionCallback<Integer>() {

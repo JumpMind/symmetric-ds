@@ -19,13 +19,12 @@
  * under the License.  */
 package org.jumpmind.symmetric.service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
@@ -120,7 +119,7 @@ public interface IDataService {
 
     public boolean removeReloadListener(IReloadListener listener);
 
-    public Data readData(ResultSet results) throws SQLException;
+    public Data mapData(Row row);
     
     public List<Number> listDataIds(long batchId, boolean descending);
     

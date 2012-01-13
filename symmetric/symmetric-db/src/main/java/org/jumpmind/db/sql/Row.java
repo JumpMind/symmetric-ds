@@ -34,7 +34,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
             return null;
         }
     }
-    
+
     public Date dateValue() {
         Object obj = this.values().iterator().next();
         if (obj != null) {
@@ -58,11 +58,17 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     }
 
     public String getString(String columnName) {
+        return getString(columnName, true);
+    }
+
+    public String getString(String columnName, boolean checkForColumn) {
         Object obj = this.get(columnName);
         if (obj != null) {
             return obj.toString();
         } else {
-            checkForColumn(columnName);
+            if (checkForColumn) {
+                checkForColumn(columnName);
+            }
             return null;
         }
     }

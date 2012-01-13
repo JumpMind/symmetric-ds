@@ -10,11 +10,13 @@ public interface ISqlTransaction {
 
     public void setInBatchMode(boolean batchMode);
 
-    public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args);
+    public <T> T queryForObject(String sql, Class<T> clazz, Object... args);
 
-    public int queryForInt(final String sql, final Object... args);
+    public int queryForInt(String sql, Object... args);
 
-    public int execute(final String sql, Object... args);
+    public int execute(String sql, Object[] args, int[] types);
+    
+    public int execute(String sql, Object... args);
 
     public void commit();
 

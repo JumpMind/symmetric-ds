@@ -22,12 +22,14 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.mapper.StringMapper;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.log.Log;
 import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -122,7 +124,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, Set<String>> getLookupTable(Map<String, String> params, Router router,
+    protected Map<String, Set<String>> getLookupTable(final Map<String, String> params, Router router,
             SimpleRouterContext routingContext) {
         final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get("TABLENAME");
         Map<String, Set<String>> lookupMap = (Map<String, Set<String>>) routingContext
@@ -130,10 +132,21 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         if (lookupMap == null) {
             ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
             final Map<String, Set<String>> fillMap = new HashMap<String, Set<String>>();
-            template.queryForMap(String.format("select %s, %s from %s",
+            template.query(String.format("select %s, %s from %s",
                     params.get(PARAM_MAPPED_KEY_COLUMN), params.get(PARAM_EXTERNAL_ID_COLUMN),
-                    params.get(PARAM_TABLE)), new StringMapper(), params
-                    .get(PARAM_MAPPED_KEY_COLUMN));
+                    params.get(PARAM_TABLE)), new ISqlRowMapper<Object>() {
+                public Object mapRow(Row rs) {
+                    String key = rs.getString(params.get(PARAM_MAPPED_KEY_COLUMN));
+                    String value = rs.getString(params.get(PARAM_EXTERNAL_ID_COLUMN));
+                    Set<String> ids = fillMap.get(key);
+                    if (ids == null) {
+                        ids = new HashSet<String>();
+                        fillMap.put(key, ids);
+                    }
+                    ids.add(value);
+                    return value;
+                }
+            });
             lookupMap = fillMap;
             routingContext.getContextCache().put(CTX_CACHE_KEY, lookupMap);
         }

@@ -52,7 +52,7 @@ public class Log4jLog extends Log {
         }
 
         if (logger.isEnabledFor(loggerLevel)) {
-            if (error != null && params == null) {
+            if (error != null && msg == null ) {
                 logger.log(loggerLevel, msg, error);
             } else if (error != null && msg != null && params != null) {
                 logger.log(loggerLevel, String.format(msg, params));

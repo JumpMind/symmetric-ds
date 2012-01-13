@@ -25,8 +25,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.sql.DataTruncation;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -50,13 +48,13 @@ import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.DeploymentType;
-import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
+import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.job.PushHeartbeatListener;
@@ -339,12 +337,12 @@ public class DataService extends AbstractService implements IDataService {
     public String reloadNode(String nodeId) {
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
-            return Message.get("Unknown node %s", nodeId);
+            return String.format("Unknown node %s", nodeId);
         }
         if (nodeService.setInitialLoadEnabled(nodeId, true)) {
-            return Message.get("Successfully opened initial load for node %s", nodeId);
+            return String.format("Successfully opened initial load for node %s", nodeId);
         } else {
-            return Message.get("Could not open initial load for %s", nodeId);
+            return String.format("Could not open initial load for %s", nodeId);
         }
     }
 
@@ -645,13 +643,11 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public Date findCreateTimeOfEvent(long dataId) {
-        return sqlTemplate.queryForObject(getSql("findDataEventCreateTimeSql"), Date.class,
-                new Object[] { dataId }, new int[] { Types.NUMERIC });
+        return sqlTemplate.queryForObject(getSql("findDataEventCreateTimeSql"), Date.class, dataId);
     }
 
     public Date findCreateTimeOfData(long dataId) {
-        return sqlTemplate.queryForObject(getSql("findDataCreateTimeSql"), Date.class,
-                new Object[] { dataId }, new int[] { Types.NUMERIC });
+        return sqlTemplate.queryForObject(getSql("findDataCreateTimeSql"), Date.class, dataId);
     }
 
     public Map<String, String> getRowDataAsMap(Data data) {
@@ -825,25 +821,23 @@ public class DataService extends AbstractService implements IDataService {
         return list;
     }
 
-    public Data readData(ResultSet results) throws SQLException {
+    public Data mapData(Row row) {
         Data data = new Data();
-        data.setDataId(results.getLong(1));
-        data.setTableName(results.getString(2));
-        data.setDataEventType(DataEventType.getEventType(results.getString(3)));
-        data.setRowData(results.getString(4));
-        data.setPkData(results.getString(5));
-        data.setOldData(results.getString(6));
-        data.setCreateTime(results.getDate(7));
-        int histId = results.getInt(8);
-        data.setTriggerHistory(triggerRouterService.getTriggerHistory(histId));
+        data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA", false));
+        data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA", false));
+        data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA", false));
+        data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
+        data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID"));
+        data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));
+        data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, row.getString("SOURCE_NODE_ID"));
+        data.putAttribute(CsvData.ATTRIBUTE_EXTERNAL_DATA, row.getString("EXTERNAL_DATA"));
+        data.putAttribute(CsvData.ATTRIBUTE_DATA_ID, row.getLong("DATA_ID"));
+        int triggerHistId = row.getInt("TRIGGER_HIST_ID");
+        data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, triggerHistId);
+        data.setTriggerHistory(triggerRouterService.getTriggerHistory(triggerHistId));
         if (data.getTriggerHistory() == null) {
-            data.setTriggerHistory(new TriggerHistory(histId));
+            data.setTriggerHistory(new TriggerHistory(triggerHistId));
         }
-        data.setChannelId(results.getString(9));
-        data.setTransactionId(results.getString(10));
-        data.setSourceNodeId(results.getString(11));
-        data.setExternalData(results.getString(12));
-        // Be careful adding more columns. Callers might not be expecting them!
         return data;
     }
 

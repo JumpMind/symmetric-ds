@@ -371,7 +371,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             batch.setSqlCode(rs.getInt("sql_code"));
             batch.setSqlMessage(rs.getString("sql_message"));
             batch.setFailedDataId(rs.getLong("failed_data_id"));
-            batch.setLastUpdatedHostName(rs.getString("last_update_host_name"));
+            batch.setLastUpdatedHostName(rs.getString("last_update_hostname"));
             batch.setLastUpdatedTime(rs.getDateTime("last_update_time"));
             batch.setCreateTime(rs.getDateTime("create_time"));
             batch.setBatchId(rs.getLong("batch_id"));

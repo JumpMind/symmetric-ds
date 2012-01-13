@@ -85,7 +85,7 @@ abstract public class AbstractService implements IService {
         return null;
     }
     
-    final protected ISqlMap getSqlMap() {
+    public ISqlMap getSqlMap() {
         if (sqlMap == null) {
             sqlMap = createSqlMap();
         }
