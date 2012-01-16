@@ -29,11 +29,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This {@link ISyncUrlExtension} is capable of measuring the bandwidth of a
@@ -47,7 +47,7 @@ import org.jumpmind.symmetric.transport.ISyncUrlExtension;
  */
 public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExtensionPoint {
     
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     public static String PARAM_PRELOAD_ONLY = "initialLoadOnly";
     public static String PARAM_SAMPLE_SIZE = "sampleSize";
@@ -64,9 +64,8 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
     private INodeService nodeService;
     private IBandwidthService bandwidthService;
     
-    public HttpBandwidthUrlSelector(Log log, INodeService nodeService,
+    public HttpBandwidthUrlSelector(INodeService nodeService,
             IBandwidthService bandwidthService) {
-        this.log = log;
         this.nodeService = nodeService;
         this.bandwidthService = bandwidthService;
     }

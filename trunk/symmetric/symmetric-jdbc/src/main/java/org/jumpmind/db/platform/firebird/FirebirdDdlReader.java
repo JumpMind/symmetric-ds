@@ -41,15 +41,14 @@ import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
-import org.jumpmind.log.Log;
 
 /*
  * The Jdbc Model Reader for Firebird.
  */
 public class FirebirdDdlReader extends AbstractJdbcDdlReader {
 
-    public FirebirdDdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public FirebirdDdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");

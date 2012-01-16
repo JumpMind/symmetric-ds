@@ -28,7 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.InfoConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
@@ -49,10 +48,10 @@ public class InfoUriHandler extends AbstractUriHandler {
 
     private IConfigurationService configurationService;
        
-    public InfoUriHandler(Log log, IParameterService parameterService,
+    public InfoUriHandler(IParameterService parameterService,
             INodeService nodeService,
             IConfigurationService configurationService) {
-        super(log, "/info/*", parameterService);
+        super("/info/*", parameterService);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
     }

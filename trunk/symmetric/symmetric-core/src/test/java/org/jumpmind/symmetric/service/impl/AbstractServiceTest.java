@@ -5,13 +5,9 @@ import java.lang.reflect.Method;
 import java.util.Date;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.Log4jLog;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.TestUtils;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -24,16 +20,14 @@ import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractServiceTest {
 
     static private ISymmetricEngine engine;
     
-    protected Log logger = TestUtils.getLog();
-
-    static {
-        org.jumpmind.log.LogFactory.setLogClass(Log4jLog.class);
-    }
+    protected final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
 
     @BeforeClass
     public static void setup() {
@@ -44,34 +38,34 @@ public abstract class AbstractServiceTest {
                 engine = (ISymmetricEngine) method.invoke(clazz);
             } catch (InvocationTargetException ex) {
                 Throwable cause = ex.getCause();
-                TestUtils.getLog().error(cause);
+                logger.error(cause.getMessage(), cause);
                 if (cause instanceof RuntimeException) {
                     throw (RuntimeException) cause;
                 } else {
                     throw new IllegalStateException(cause);
                 }
             } catch (Exception ex) {
-                TestUtils.getLog().error(ex);
+                logger.error(ex.getMessage(), ex);
                 Assert.fail(ex.getMessage());
             }
         }
     }
 
-    protected Level setLoggingLevelForTest(Level level) {        
-        Logger logger = Logger.getLogger(getSymmetricEngine().getLog().getCategory());
+    protected Level setLoggingLevelForTest(Level level) {    
+        org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(DataService.class);
         Level old = logger.getLevel();
         logger.setLevel(level);
         return old;
     }
 
     protected void logTestRunning() {
-        TestUtils.getLog().info(
+        logger.info(
                 "Running " + new Exception().getStackTrace()[1].getMethodName() + ". "
                         + getSymmetricEngine().getSymmetricDialect().getPlatform().getName());
     }
 
     protected void logTestComplete() {
-        TestUtils.getLog().info(
+        logger.info(
                 "Completed running " + new Exception().getStackTrace()[1].getMethodName() + ". "
                         + getSymmetricEngine().getSymmetricDialect().getPlatform().getName());
     }

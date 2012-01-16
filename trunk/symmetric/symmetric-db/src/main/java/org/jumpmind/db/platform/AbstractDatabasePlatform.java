@@ -41,8 +41,8 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jumpmind.util.FormatUtils;
 
 /*
@@ -59,7 +59,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected static final String MODEL_DEFAULT_NAME = "default";
 
     /* The log for this platform. */
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /* The platform info. */
     protected DatabasePlatformInfo info = new DatabasePlatformInfo();
@@ -94,8 +94,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected String defaultCatalog;
 
-    public AbstractDatabasePlatform(Log log) {
-        this.log = log;
+    public AbstractDatabasePlatform() {
     }
 
     abstract public ISqlTemplate getSqlTemplate();
@@ -110,10 +109,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                 getPlatformInfo().isDateOverridesToTimestamp(), getPlatformInfo()
                         .getIdentifierQuoteString());
-    }
-
-    public void setLog(Log log) {
-        this.log = log;
     }
 
     public IDdlReader getDdlReader() {
@@ -361,8 +356,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     list.add(objectValue);
                 }
             } catch (Exception ex) {
-                log.error("Could not convert a value of %s for column %s of type %s", value,
-                        column.getName(), column.getType(), ex);
+                log.error("Could not convert a value of %s for column %s of type %s", new Object[] {value,
+                        column.getName(), column.getType()});
+                log.error(ex.getMessage(), ex);
                 throw new RuntimeException(ex);
             }
         }

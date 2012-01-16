@@ -32,16 +32,16 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SymmetricEngineHolder {
 
-    final Log log = LogFactory.getLog(getClass());
+    final Logger log = LoggerFactory.getLogger(getClass());
 
     private Map<String, ServerSymmetricEngine> engines = new HashMap<String, ServerSymmetricEngine>();
 
@@ -113,7 +113,7 @@ public class SymmetricEngineHolder {
             }
             return engine;
         } catch (Exception e) {
-            log.error(e);
+            log.error(e.getMessage(),e);
             return null;
         }
     }
@@ -124,7 +124,7 @@ public class SymmetricEngineHolder {
             try {
                 engines.get(engineName).stop();
             } catch (Exception e) {
-                log.error(e);
+                log.error(e.getMessage(),e);
             }
             engines.remove(engineName);
         }

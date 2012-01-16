@@ -7,16 +7,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.web.compression.CompressionServletResponseWrapper;
 
 abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
 
-    public AbstractCompressionUriHandler(Log log, String uriPattern,
+    public AbstractCompressionUriHandler(String uriPattern,
             IParameterService parameterService, IInterceptor... interceptors) {
-        super(log, uriPattern, parameterService, interceptors);
+        super(uriPattern, parameterService, interceptors);
     }
 
     final public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,

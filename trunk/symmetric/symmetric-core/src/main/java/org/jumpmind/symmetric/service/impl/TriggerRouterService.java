@@ -38,7 +38,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -98,10 +97,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      */
     private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
 
-    public TriggerRouterService(Log log, IParameterService parameterService,
+    public TriggerRouterService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IClusterService clusterService,
             IConfigurationService configurationService, IStatisticManager statisticManager) {
-        super(log, parameterService, symmetricDialect);
+        super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.configurationService = configurationService;
         this.statisticManager = statisticManager;
@@ -872,7 +871,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 String errorMessage = null;
                 Channel channel = configurationService.getChannel(trigger.getChannelId());
                 if (channel == null) {
-                    errorMessage = String.format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
+                    errorMessage = String
+                            .format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
                                     trigger.getTriggerId(), trigger.getChannelId(),
                                     Constants.CHANNEL_DEFAULT);
                     log.error(errorMessage);
@@ -1110,7 +1110,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
             log.debug(
                     "We just truncated the trigger name for the %s trigger id=%s.  You might want to consider manually providing a name for the trigger that is less than %d characters long",
-                    dml.name().toLowerCase(), trigger.getTriggerId(), maxTriggerNameLength);
+                    new Object[] { dml.name().toLowerCase(), trigger.getTriggerId(),
+                            maxTriggerNameLength });
         }
 
         int duplicateCount = 0;

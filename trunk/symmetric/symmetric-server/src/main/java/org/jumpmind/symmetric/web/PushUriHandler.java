@@ -29,7 +29,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -43,10 +42,10 @@ public class PushUriHandler extends AbstractUriHandler {
 
     private IStatisticManager statisticManager;
     
-    public PushUriHandler(Log log, IParameterService parameterService, IDataLoaderService dataLoaderService,
+    public PushUriHandler(IParameterService parameterService, IDataLoaderService dataLoaderService,
             IStatisticManager statisticManager,
             IInterceptor... interceptors) {
-        super(log, "/push/*", parameterService, interceptors);
+        super("/push/*", parameterService, interceptors);
         this.dataLoaderService = dataLoaderService;
         this.statisticManager = statisticManager;
     }

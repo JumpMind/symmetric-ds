@@ -46,8 +46,6 @@ import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.db.platform.sybase.SybasePlatform;
 import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 
 /*
  * A factory of {@link IDatabasePlatform} instances based on a case
@@ -106,12 +104,7 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(SybasePlatform.JDBC_SUBPROTOCOL, SybasePlatform.DATABASENAME);
         jdbcSubProtocolToPlatform.put(FirebirdPlatform.JDBC_SUBPROTOCOL,
                 FirebirdPlatform.DATABASENAME);
-    }
-    
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, DatabasePlatformSettings settings)
-    throws DdlException {
-        return createNewPlatformInstance(dataSource, settings, null);
-    }
+    }   
     
     /*
      * Creates a new platform for the specified database.  Note that this method installs 
@@ -123,12 +116,8 @@ public class JdbcDatabasePlatformFactory {
      * @return The platform or <code>null</code> if the database is not
      * supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, DatabasePlatformSettings settings, Log log)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, DatabasePlatformSettings settings)
             throws DdlException {
-        
-        if (log == null) {
-            log = LogFactory.getLog("org.jumpmind");
-        }
         
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform
@@ -137,8 +126,8 @@ public class JdbcDatabasePlatformFactory {
         Class<? extends IDatabasePlatform> clazz =  findPlatformClass(nameVersion);
         
         try {
-            Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, DatabasePlatformSettings.class, Log.class);
-            return construtor.newInstance(dataSource, settings, log);
+            Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, DatabasePlatformSettings.class);
+            return construtor.newInstance(dataSource, settings);
         } catch (Exception e) {
             throw new DdlException("Could not create a platform of type " + nameVersion[0], e);
         }

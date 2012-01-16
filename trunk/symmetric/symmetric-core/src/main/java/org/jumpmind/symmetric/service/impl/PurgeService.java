@@ -31,7 +31,6 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -53,9 +52,9 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IStatisticManager statisticManager;
 
-    public PurgeService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect,
+    public PurgeService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IClusterService clusterService, IStatisticManager statisticManager) {
-        super(log, parameterService, symmetricDialect);
+        super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.statisticManager = statisticManager;
     }
@@ -110,7 +109,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 log.warn("Did not run the data gap purge process because the cluster service has it locked");
             }
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(), ex);
         }
         return rowsPurged;
     }
@@ -134,7 +133,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 log.info("Could not get a lock to run an outgoing purge");
             }
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(), ex);
         }
         return rowsPurged;
     }
@@ -244,8 +243,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
             if (totalCount > 0
                     && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                log.info("Purged %d of %s rows so far using %d statements", totalCount, identifier
-                        .toString().toLowerCase(), totalDeleteStmts);
+                log.info("Purged %d of %s rows so far using %d statements", new Object[] {
+                        totalCount, identifier.toString().toLowerCase(), totalDeleteStmts });
                 ts = System.currentTimeMillis();
             }
             minId = maxId + 1;
@@ -269,7 +268,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 log.info("Could not get a lock to run an incoming purge");
             }
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(), ex);
         }
         return purgedRowCount;
     }
@@ -315,8 +314,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
             if (totalCount > 0
                     && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                log.info("Purged %d of %s rows so far using %d statements", totalCount, tableName,
-                        totalDeleteStmts);
+                log.info("Purged %d of %s rows so far using %d statements", new Object[] {totalCount, tableName,
+                        totalDeleteStmts});
                 ts = System.currentTimeMillis();
             }
         }

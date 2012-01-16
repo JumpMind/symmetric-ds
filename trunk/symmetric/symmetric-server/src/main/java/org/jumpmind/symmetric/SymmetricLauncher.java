@@ -46,14 +46,12 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
-import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.SqlScript;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -67,12 +65,16 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.jumpmind.symmetric.util.JarBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Run SymmetricDS utilities and/or launch an embedded version of SymmetricDS.
  * If you run this program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
+
+    static final Logger log = LoggerFactory.getLogger(SymmetricLauncher.class);
 
     private static final String OPTION_DUMP_BATCH = "dump-batch";
 
@@ -161,8 +163,8 @@ public class SymmetricLauncher {
 
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {
-                    LogFactory.getLog(SymmetricLauncher.class).info("Option: name=%s, value=%s", option.getLongOpt(),
-                            ArrayUtils.toString(option.getValues()));
+                    log.info("Option: name=%s, value=%s", new Object[] { option.getLongOpt(),
+                            ArrayUtils.toString(option.getValues()) });
                 }
             }
 
@@ -179,7 +181,8 @@ public class SymmetricLauncher {
             exception = ex;
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
-            System.err.println(String.format("An exception occurred.  Please see the following for details:"));
+            System.err.println(String
+                    .format("An exception occurred.  Please see the following for details:"));
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
 
@@ -249,7 +252,7 @@ public class SymmetricLauncher {
         }
 
         if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
-            Appender consoleAppender = Logger.getRootLogger().getAppender("CONSOLE");
+            Appender consoleAppender = org.apache.log4j.Logger.getRootLogger().getAppender("CONSOLE");
             if (consoleAppender != null) {
                 Layout layout = consoleAppender.getLayout();
                 if (layout instanceof PatternLayout) {
@@ -259,13 +262,13 @@ public class SymmetricLauncher {
         }
 
         if (line.hasOption(OPTION_NOCONSOLE)) {
-            Logger.getRootLogger().removeAppender("CONSOLE");
+            org.apache.log4j.Logger.getRootLogger().removeAppender("CONSOLE");
         }
 
         if (line.hasOption(OPTION_NOLOGFILE)) {
-            Logger.getRootLogger().removeAppender("ROLLING");
+            org.apache.log4j.Logger.getRootLogger().removeAppender("ROLLING");
         } else {
-            Appender appender = Logger.getRootLogger().getAppender("ROLLING");
+            Appender appender = org.apache.log4j.Logger.getRootLogger().getAppender("ROLLING");
             if (appender instanceof FileAppender) {
                 FileAppender fileAppender = (FileAppender) appender;
 
@@ -281,7 +284,8 @@ public class SymmetricLauncher {
                     fileAppender.activateOptions();
                 }
 
-                System.out.println(String.format("Log output will be written to %s", fileAppender.getFile()));
+                System.out.println(String.format("Log output will be written to %s",
+                        fileAppender.getFile()));
 
             }
         }

@@ -43,7 +43,6 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DdlException;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
-import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for Oracle.
@@ -62,8 +61,8 @@ public class OracleBuilder extends AbstractDdlBuilder {
      */
     private Pattern isoTimestampPattern;
 
-    public OracleBuilder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public OracleBuilder(IDatabasePlatform platform) {
+        super(platform);
 
         addEscapedCharSequence("'", "''");
 

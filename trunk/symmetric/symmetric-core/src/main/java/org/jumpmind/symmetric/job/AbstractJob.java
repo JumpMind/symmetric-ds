@@ -24,11 +24,11 @@ import java.util.Date;
 import java.util.concurrent.ScheduledFuture;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -39,7 +39,7 @@ import org.springframework.scheduling.support.CronTrigger;
 @ManagedResource(description = "The management interface for a job")
 abstract public class AbstractJob implements Runnable, IJob {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private String jobName;
 
@@ -183,7 +183,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                 log.info("The engine is not currently started.");
             }
         } catch (final Throwable ex) {
-            log.error(ex);
+            log.error(ex.getMessage(),ex);
         }
 
         return ran;

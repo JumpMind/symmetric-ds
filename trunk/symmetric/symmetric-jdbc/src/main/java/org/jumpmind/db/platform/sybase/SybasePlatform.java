@@ -28,7 +28,6 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for Sybase.
@@ -52,8 +51,8 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
     
     private Map<String, String> sqlScriptReplacementTokens;
 
-    public SybasePlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+    public SybasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, settings);
 
         info.setMaxIdentifierLength(128);
         info.setNullAsDefaultValueRequired(true);
@@ -100,8 +99,8 @@ public class SybasePlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
         info.setAutoIncrementUpdateAllowed(false);
         
-        ddlReader = new SybaseDdlReader(log, this);
-        ddlBuilder = new SybaseBuilder(log, this);
+        ddlReader = new SybaseDdlReader(this);
+        ddlBuilder = new SybaseBuilder(this);
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");

@@ -27,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for Derby.
@@ -49,8 +48,8 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new Derby platform instance.
      */
-    public DerbyPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+    public DerbyPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, settings);
 
         info.setMaxIdentifierLength(128);
         info.setSystemForeignKeyIndicesAlwaysNonUnique(true);
@@ -83,8 +82,8 @@ public class DerbyPlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
         
-        ddlReader = new DerbyDdlReader(this, log);
-        ddlBuilder = new DerbyBuilder(log, this);
+        ddlReader = new DerbyDdlReader(this);
+        ddlBuilder = new DerbyBuilder(this);
     }
 
     @Override

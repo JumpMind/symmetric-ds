@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.db;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -32,9 +31,9 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 abstract public class AbstractEmbeddedSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     
-    public AbstractEmbeddedSymmetricDialect(Log log,
-            IParameterService parameterService, IDatabasePlatform platform) {
-        super(log, parameterService, platform);
+    public AbstractEmbeddedSymmetricDialect(IParameterService parameterService,
+            IDatabasePlatform platform) {
+        super(parameterService, platform);
     }
 
     /**

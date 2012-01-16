@@ -60,9 +60,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
     
     public HttpTransportManager(ISymmetricEngine engine) {
-        super(engine.getLog());
         this.parameterService = engine.getParameterService();
-        this.addExtensionSyncUrlHandler("httpBandwidthUrlSelector", new HttpBandwidthUrlSelector(log, engine.getNodeService(), engine.getBandwidthService()));
+        this.addExtensionSyncUrlHandler("httpBandwidthUrlSelector", new HttpBandwidthUrlSelector(engine.getNodeService(), engine.getBandwidthService()));
     }
     
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException {

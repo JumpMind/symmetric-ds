@@ -26,7 +26,6 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for MySQL.
@@ -48,8 +47,8 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MySqlPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, overrideSettings(settings), log);
+    public MySqlPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, overrideSettings(settings));
 
         info.setMaxIdentifierLength(64);
         info.setNullAsDefaultValueRequired(true);
@@ -107,8 +106,8 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
         // which is different from the MySql 4 behaviour
         info.setSyntheticDefaultValueForRequiredReturned(false);
         
-        ddlReader = new MySqlDdlReader(log, this);
-        ddlBuilder = new MySqlBuilder(log, this);
+        ddlReader = new MySqlDdlReader(this);
+        ddlBuilder = new MySqlBuilder(this);
     }
     
     @Override

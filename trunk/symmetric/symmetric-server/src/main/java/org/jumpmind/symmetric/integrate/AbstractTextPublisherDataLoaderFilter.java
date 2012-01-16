@@ -22,8 +22,6 @@
 package org.jumpmind.symmetric.integrate;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -31,6 +29,8 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -40,7 +40,7 @@ import org.springframework.beans.factory.BeanNameAware;
 abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWriterFilterAdapter
         implements IPublisherFilter, INodeGroupExtensionPoint, BeanNameAware {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final String MSG_CACHE = "msg_CACHE" + hashCode();
 
@@ -64,7 +64,8 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
             DataContext<? extends IDataReader, ? extends IDataWriter> context);
 
     protected abstract String addTextElement(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context, Table table, CsvData data);
+            DataContext<? extends IDataReader, ? extends IDataWriter> context, Table table,
+            CsvData data);
 
     protected abstract String addTextFooter(
             DataContext<? extends IDataReader, ? extends IDataWriter> context);
@@ -126,8 +127,8 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
         messagesSinceLastLogOutput++;
         long timeInMsSinceLastLogOutput = System.currentTimeMillis() - lastTimeInMsOutputLogged;
         if (timeInMsSinceLastLogOutput > minTimeInMsBetweenLogOutput) {
-            log.info("%s published %d messages in the last %d ms.", beanName, messagesSinceLastLogOutput,
-                    timeInMsSinceLastLogOutput);
+            log.info("%s published %d messages in the last %d ms.", new Object[] { beanName,
+                    messagesSinceLastLogOutput, timeInMsSinceLastLogOutput });
             lastTimeInMsOutputLogged = System.currentTimeMillis();
             messagesSinceLastLogOutput = 0;
         }

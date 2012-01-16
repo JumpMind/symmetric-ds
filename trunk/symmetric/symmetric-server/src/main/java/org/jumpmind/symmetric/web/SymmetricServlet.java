@@ -31,9 +31,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This servlet handles web requests to SymmetricDS.
@@ -60,7 +60,7 @@ public class SymmetricServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    protected final Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res)
@@ -93,12 +93,14 @@ public class SymmetricServlet extends HttpServlet {
                 }
             }
         } else {
-            log.error("No handlers were found to handle the request %s from the host %s with an ip address of %s.  The query string was: %s", ServletUtils.normalizeRequestUri(req),
-                    req.getRemoteHost(), req.getRemoteAddr(), req.getQueryString());            
+            log.error(
+                    "No handlers were found to handle the request %s from the host %s with an ip address of %s.  The query string was: %s",
+                    new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
+                            req.getRemoteAddr(), req.getQueryString() });
             if (method.equals(WebConstants.METHOD_GET)) {
                 res.sendRedirect("/");
             } else {
-                ServletUtils.sendError(res, HttpServletResponse.SC_FORBIDDEN);                
+                ServletUtils.sendError(res, HttpServletResponse.SC_FORBIDDEN);
             }
         }
     }
@@ -190,11 +192,15 @@ public class SymmetricServlet extends HttpServlet {
         String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
                 : "";
         if (isError) {
-            log.error("Error while processing %s request for externalId: %s, node: %s at %s (%s) with path: %s", ex, method, externalId, nodeId, address,
-                    hostName, ServletUtils.normalizeRequestUri(req));
+            log.error(
+                    "Error while processing %s request for externalId: %s, node: %s at %s (%s) with path: %s",
+                    new Object[] { method, externalId, nodeId, address, hostName,
+                            ServletUtils.normalizeRequestUri(req) });
+            log.error(ex.getMessage(), ex);
         } else {
-            log.warn("Error while processing %s request for externalId: %s, node: %s at %s (%s).  The message is: %s", method, externalId, nodeId, address,
-                    hostName, ex.getMessage());
+            log.warn(
+                    "Error while processing %s request for externalId: %s, node: %s at %s (%s).  The message is: %s",
+                    new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
         }
     }
 

@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.mapper.NumberMapper;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -47,10 +46,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     private IRegistrationService registrationService;
 
-    public AcknowledgeService(Log log, IParameterService parameterService,
+    public AcknowledgeService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
             IRegistrationService registrationService) {
-        super(log, parameterService, symmetricDialect);
+        super(parameterService, symmetricDialect);
         this.outgoingBatchService = outgoingBatchService;
         this.registrationService = registrationService;
     }

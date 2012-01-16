@@ -37,15 +37,14 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
-import org.jumpmind.log.Log;
 
 /*
  * The DDL Builder for DB2.
  */
 public class Db2Builder extends AbstractDdlBuilder {
     
-    public Db2Builder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public Db2Builder(IDatabasePlatform platform) {
+        super(platform);
         addEscapedCharSequence("'", "''");
     }
 

@@ -200,12 +200,6 @@
             <artifactId>jetty-jmx</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- Include so log4j works w/ jetty -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jcl</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>mx4j</groupId>
             <artifactId>mx4j-tools</artifactId>

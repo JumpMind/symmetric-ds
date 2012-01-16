@@ -25,7 +25,6 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the HsqlDb database.
@@ -44,8 +43,8 @@ public class HsqlDb2Platform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new instance of the Hsqldb platform.
      */
-    public HsqlDb2Platform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+    public HsqlDb2Platform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, settings);
 
         info.setNonPKIdentityColumnsSupported(false);
         info.setIdentityOverrideAllowed(false);
@@ -78,8 +77,8 @@ public class HsqlDb2Platform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
 
-        ddlReader = new HsqlDb2DdlReader(log, this);
-        ddlBuilder = new HsqlDb2Builder(log, this);
+        ddlReader = new HsqlDb2DdlReader(this);
+        ddlBuilder = new HsqlDb2Builder(this);
     }
     
     @Override

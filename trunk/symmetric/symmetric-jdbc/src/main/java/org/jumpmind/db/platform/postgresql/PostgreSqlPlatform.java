@@ -35,7 +35,6 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for PostgresSql.
@@ -51,8 +50,8 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public PostgreSqlPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, overrideSettings(settings), log);
+    public PostgreSqlPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, overrideSettings(settings));
 
         // this is the default length though it might be changed when building
         // PostgreSQL
@@ -95,8 +94,8 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
 
-        ddlReader = new PostgreSqlDdlReader(log, this);
-        ddlBuilder = new PostgreSqlBuilder(log, this);
+        ddlReader = new PostgreSqlDdlReader(this);
+        ddlBuilder = new PostgreSqlBuilder(this);
     }
     
     protected static DatabasePlatformSettings overrideSettings(DatabasePlatformSettings settings) {        

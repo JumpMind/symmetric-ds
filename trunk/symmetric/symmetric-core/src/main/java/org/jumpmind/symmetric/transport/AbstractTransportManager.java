@@ -33,30 +33,22 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * 
- */
 abstract public class AbstractTransportManager {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers  = new HashMap<String, ISyncUrlExtension>();
 
     public AbstractTransportManager() {
     }
-    
-    public AbstractTransportManager(Log log) {
-        this.log = log;
-    }
-
     
     public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler) {
         if (extensionSyncUrlHandlers == null) {
@@ -87,7 +79,7 @@ abstract public class AbstractTransportManager {
                     return handler.resolveUrl(uri);
                 }
             } catch (URISyntaxException e) {
-                log.error(e);
+                log.error(e.getMessage(),e);
                 return syncUrl;
             }
         } else {

@@ -35,14 +35,14 @@ import javax.crypto.spec.PBEParameterSpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.math.random.RandomDataImpl;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.service.ISecurityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SecurityService implements ISecurityService {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected Logger log = LoggerFactory.getLogger(getClass());
     
     private SecretKey secretKey;
     

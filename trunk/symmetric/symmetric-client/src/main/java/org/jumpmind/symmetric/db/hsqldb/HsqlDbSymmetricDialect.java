@@ -24,7 +24,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -38,8 +37,8 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
 
     private boolean enforceStrictSize = true;    
 
-    public HsqlDbSymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
-        super(log, parameterService, platform);
+    public HsqlDbSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new HsqlDbTriggerText();
 
         platform.getSqlTemplate().update("SET WRITE_DELAY 100 MILLIS");

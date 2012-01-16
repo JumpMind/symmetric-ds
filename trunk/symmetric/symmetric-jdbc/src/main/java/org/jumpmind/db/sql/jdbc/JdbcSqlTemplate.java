@@ -26,16 +26,15 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
-import org.jumpmind.log.LogLevel;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
 
-    static final Log log = LogFactory.getLog(JdbcSqlTemplate.class);
+    static final Logger log = LoggerFactory.getLogger(JdbcSqlTemplate.class);
 
     protected DataSource dataSource;
 
@@ -264,12 +263,13 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             }
                         } catch (SQLException ex) {
                             if (!failOnError) {
-                                LogLevel level = LogLevel.WARN;
                                 if (statement.toLowerCase().startsWith("drop")) {
-                                    level = LogLevel.DEBUG;
+                                    log.debug("%s.  Failed to execute: %s.", ex.getMessage(),
+                                            statement);
+                                } else {
+                                    log.warn("%s.  Failed to execute: %s.", ex.getMessage(),
+                                            statement);
                                 }
-                                log.log(level, "%s.  Failed to execute: %s.", ex.getMessage(),
-                                        statement);
                             } else {
                                 throw translate(statement, ex);
                             }

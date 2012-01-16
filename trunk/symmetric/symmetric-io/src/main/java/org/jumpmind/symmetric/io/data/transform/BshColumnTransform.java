@@ -25,8 +25,8 @@ import java.util.Map;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
@@ -37,7 +37,7 @@ import bsh.TargetError;
 
 public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
-    protected final Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 

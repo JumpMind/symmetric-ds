@@ -21,11 +21,11 @@
 package org.jumpmind.symmetric.io;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation of an {@link IOfflineClientListener}.  When the listener detects
@@ -33,13 +33,12 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class DefaultOfflineClientListener implements IOfflineClientListener, IBuiltInExtensionPoint {
     
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     protected IParameterService parameterService;
     protected INodeService nodeService;
     
-    public DefaultOfflineClientListener(Log log, IParameterService parameterService,
+    public DefaultOfflineClientListener(IParameterService parameterService,
             INodeService nodeService) {
-        this.log = log;
         this.parameterService = parameterService;
         this.nodeService = nodeService;
     }

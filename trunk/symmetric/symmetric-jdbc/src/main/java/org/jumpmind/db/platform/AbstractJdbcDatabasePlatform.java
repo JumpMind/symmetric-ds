@@ -4,7 +4,6 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
-import org.jumpmind.log.Log;
 
 abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatform {
 
@@ -14,8 +13,7 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
     
     protected DatabasePlatformSettings settings;
     
-    public AbstractJdbcDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(log);
+    public AbstractJdbcDatabasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         this.dataSource = dataSource;
         this.settings = settings;
         createSqlTemplate();

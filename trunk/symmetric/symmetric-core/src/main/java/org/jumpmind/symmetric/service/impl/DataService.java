@@ -44,7 +44,6 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.DeploymentType;
@@ -103,12 +102,12 @@ public class DataService extends AbstractService implements IDataService {
 
     private IStatisticManager statisticManager;
 
-    public DataService(Log log, IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, DeploymentType deploymentType,
-            ITriggerRouterService triggerRouterService, INodeService nodeService,
-            IPurgeService purgeService, IConfigurationService configurationService,
-            IOutgoingBatchService outgoingBatchService, IStatisticManager statisticManager) {
-        super(log, parameterService, symmetricDialect);
+    public DataService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
+            DeploymentType deploymentType, ITriggerRouterService triggerRouterService,
+            INodeService nodeService, IPurgeService purgeService,
+            IConfigurationService configurationService, IOutgoingBatchService outgoingBatchService,
+            IStatisticManager statisticManager) {
+        super(parameterService, symmetricDialect);
         this.deploymentType = deploymentType;
         this.triggerRouterService = triggerRouterService;
         this.nodeService = nodeService;
@@ -214,7 +213,8 @@ public class DataService extends AbstractService implements IDataService {
         if (numberUpdated > 0) {
             log.warn(
                     "There were %d data records found between %d and %d that an invalid channel_id.  Updating them to be on the '%s' channel.",
-                    numberUpdated, firstDataId, lastDataId, Constants.CHANNEL_DEFAULT);
+                    new Object[] { numberUpdated, firstDataId, lastDataId,
+                            Constants.CHANNEL_DEFAULT });
         }
     }
 
@@ -277,8 +277,9 @@ public class DataService extends AbstractService implements IDataService {
                     StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId },
                     new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR });
         } catch (RuntimeException ex) {
-            log.error("Could not insert a data event: data_id=%d batch_id=%d router_id=%s", ex,
-                    dataId, batchId, routerId);
+            log.error("Could not insert a data event: data_id=%d batch_id=%d router_id=%s",
+                    new Object[] { dataId, batchId, routerId });
+            log.error(ex.getMessage(), ex);
             throw ex;
         }
     }

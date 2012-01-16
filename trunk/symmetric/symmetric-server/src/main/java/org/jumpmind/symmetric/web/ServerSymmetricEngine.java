@@ -24,21 +24,21 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
                 concurrentConnectionManager, configurationService, statisticManager);
 
         this.uriHandlers = new ArrayList<IUriHandler>();
-        this.uriHandlers.add(new AckUriHandler(log, parameterService, acknowledgeService,
+        this.uriHandlers.add(new AckUriHandler(parameterService, acknowledgeService,
                 authInterceptor));
-        this.uriHandlers.add(new PingUriHandler(log, parameterService));
-        this.uriHandlers.add(new InfoUriHandler(log, parameterService, nodeService,
-                configurationService));
-        this.uriHandlers.add(new BandwidthSamplerUriHandler(log, parameterService));
-        this.uriHandlers.add(new PullUriHandler(log, parameterService, nodeService,
+        this.uriHandlers.add(new PingUriHandler(parameterService));
+        this.uriHandlers
+                .add(new InfoUriHandler(parameterService, nodeService, configurationService));
+        this.uriHandlers.add(new BandwidthSamplerUriHandler(parameterService));
+        this.uriHandlers.add(new PullUriHandler(parameterService, nodeService,
                 configurationService, dataExtractorService, registrationService, statisticManager,
                 concurrencyInterceptor, authInterceptor));
-        this.uriHandlers.add(new PushUriHandler(log, parameterService, dataLoaderService,
+        this.uriHandlers.add(new PushUriHandler(parameterService, dataLoaderService,
                 statisticManager, concurrencyInterceptor, authInterceptor));
-        this.uriHandlers.add(new RegistrationUriHandler(log, parameterService, registrationService,
+        this.uriHandlers.add(new RegistrationUriHandler(parameterService, registrationService,
                 concurrencyInterceptor));
         if (parameterService.is(ParameterConstants.WEB_BATCH_URI_HANDLER_ENABLE)) {
-            this.uriHandlers.add(new BatchUriHandler(log, parameterService, dataExtractorService));
+            this.uriHandlers.add(new BatchUriHandler(parameterService, dataExtractorService));
         }
     }
 

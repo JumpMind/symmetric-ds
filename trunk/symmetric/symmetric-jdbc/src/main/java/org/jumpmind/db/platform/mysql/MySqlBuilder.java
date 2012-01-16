@@ -37,15 +37,14 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for MySQL.
  */
 public class MySqlBuilder extends AbstractDdlBuilder {
 
-    public MySqlBuilder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public MySqlBuilder(IDatabasePlatform platform) {
+        super(platform);
 
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected

@@ -36,8 +36,8 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bsh.EvalError;
 import bsh.Interpreter;
@@ -51,7 +51,7 @@ public class AppUtils {
 
     private static String UNKNOWN = "unknown";
 
-    private static Log log = LogFactory.getLog(AppUtils.class);
+    private static Logger log = LoggerFactory.getLogger(AppUtils.class);
 
     private static final String SYM_TEMP_SUFFIX = "sym.tmp";
 
@@ -88,7 +88,7 @@ public class AppUtils {
             try {
                 hostName = InetAddress.getLocalHost().getHostName();
             } catch (Exception ex) {
-                log.warn(ex);
+                log.warn(ex.getMessage(),ex);
             }
         }
         return hostName;
@@ -100,7 +100,7 @@ public class AppUtils {
             try {
                 ipAddress = InetAddress.getLocalHost().getHostAddress();
             } catch (Exception ex) {
-                log.warn(ex);
+                log.warn(ex.getMessage(),ex);
             }
         }
         return ipAddress;
@@ -156,7 +156,7 @@ public class AppUtils {
                     log.warn("Cleaned %d stranded temporary files.", deletedCount);
                 }
             } catch (Exception ex) {
-                log.error(ex);
+                log.error(ex.getMessage(),ex);
             }
         }
     }
@@ -200,7 +200,7 @@ public class AppUtils {
             try {
                 bds.close();
             } catch (Exception ex) {
-                log.warn(ex);
+                log.warn(ex.getMessage(),ex);
             }
         }
     }

@@ -28,26 +28,25 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see IBandwidthService
  */
 public class BandwidthService implements IBandwidthService {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private IParameterService parameterService;
 
-    public BandwidthService(IParameterService parameterService, Log log) {
+    public BandwidthService(IParameterService parameterService) {
         this.parameterService = parameterService;
-        this.log = log;
     }
 
     public double getDownloadKbpsFor(String syncUrl, long sampleSize, long maxTestDuration) {
@@ -58,7 +57,7 @@ public class BandwidthService implements IBandwidthService {
         } catch (SocketTimeoutException e) {
             log.warn("Socket timeout while attempting to contact %s", syncUrl);
         } catch (Exception e) {
-            log.error(e);
+            log.error(e.getMessage(), e);
         }
         return downloadSpeed;
 

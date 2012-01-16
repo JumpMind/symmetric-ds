@@ -32,7 +32,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.DateMapper;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -47,9 +46,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
 
-    public IncomingBatchService(Log log, IParameterService parameterService,
+    public IncomingBatchService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect) {
-        super(log, parameterService, symmetricDialect);
+        super(parameterService, symmetricDialect);
     }
 
     public IncomingBatch findIncomingBatch(long batchId, String nodeId) {

@@ -17,8 +17,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
@@ -31,6 +29,7 @@ import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -58,11 +57,11 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     public static BasicDataSource createBasicDataSource(File propsFile) {
-        return createBasicDataSource(LogFactory.getLog(ClientSymmetricEngine.class),
+        return createBasicDataSource(
                 createTypedPropertiesFactory(propsFile, null).reload(), createSecurityService());
     }
 
-    public static BasicDataSource createBasicDataSource(Log log, TypedProperties properties,
+    public static BasicDataSource createBasicDataSource(TypedProperties properties,
             ISecurityService securityService) {
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName(properties.get(ParameterConstants.DBPOOL_DRIVER, null));
@@ -96,7 +95,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             for (String property : tokens) {
                 String[] keyValue = property.split("=");
                 if (keyValue != null && keyValue.length > 1) {
-                    log.info("Setting database connection property %s=%s", keyValue[0], keyValue[1]);
+                    LoggerFactory.getLogger(ClientSymmetricEngine.class).info("Setting database connection property %s=%s", keyValue[0], keyValue[1]);
                     dataSource.addConnectionProperty(keyValue[0], keyValue[1]);
                 }
             }
@@ -107,7 +106,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
-        return new JdbcSymmetricDialectFactory(parameterService, platform, log).create();
+        return new JdbcSymmetricDialectFactory(parameterService, platform).create();
     }
 
     @Override
@@ -115,7 +114,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         createDataSource(properties);
         waitForAvailableDatabase();
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(this.dataSource,
-                createDatabasePlatformSettings(properties), log);
+                createDatabasePlatformSettings(properties));
     }
 
     protected DatabasePlatformSettings createDatabasePlatformSettings(TypedProperties properties) {
@@ -127,17 +126,17 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     protected void createDataSource(TypedProperties properties) {
-        this.dataSource = createBasicDataSource(log, properties, securityService);
+        this.dataSource = createBasicDataSource(properties, securityService);
     }
 
     @Override
     protected IExtensionPointManager createExtensionPointManager() {
-        return new ExtensionPointManager(log, this);
+        return new ExtensionPointManager(this);
     }
 
     @Override
     protected IJobManager createJobManager() {
-        return new JobManager(log, this);
+        return new JobManager(this);
     }
 
     protected void waitForAvailableDatabase() {

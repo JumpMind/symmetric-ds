@@ -39,7 +39,6 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -52,12 +51,12 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.reader.IExtractBatchSource;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
+import org.jumpmind.symmetric.io.data.reader.IExtractBatchSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
+import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
-import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Data;
@@ -103,12 +102,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private Set<String> extractingNodes = new HashSet<String>();
 
-    public DataExtractorService(Log log, IParameterService parameterService,
+    public DataExtractorService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
             IRouterService routingService, IConfigurationService configurationService,
             ITriggerRouterService triggerRouterService, INodeService nodeService,
             IStatisticManager statisticManager) {
-        super(log, parameterService, symmetricDialect);
+        super(parameterService, symmetricDialect);
         this.outgoingBatchService = outgoingBatchService;
         this.routerService = routingService;
         this.configurationService = configurationService;

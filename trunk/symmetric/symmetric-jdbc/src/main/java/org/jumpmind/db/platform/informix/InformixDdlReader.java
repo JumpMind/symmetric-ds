@@ -15,12 +15,11 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 public class InformixDdlReader extends AbstractJdbcDdlReader {
 
-    public InformixDdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public InformixDdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }

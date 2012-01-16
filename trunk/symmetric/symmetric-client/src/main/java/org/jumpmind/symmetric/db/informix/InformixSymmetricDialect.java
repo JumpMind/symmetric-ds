@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.db.informix;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -30,8 +29,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class InformixSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     
-    public InformixSymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
-        super(log, parameterService, platform);       
+    public InformixSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);       
         this.triggerText = new InformixTriggerText();
     }    
 

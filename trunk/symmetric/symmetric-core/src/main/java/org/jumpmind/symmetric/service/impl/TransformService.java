@@ -9,7 +9,6 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
@@ -27,8 +26,8 @@ public class TransformService extends AbstractService implements ITransformServi
 
     private long lastCacheTimeInMs;
 
-    public TransformService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect) {
-        super(log, parameterService, symmetricDialect);
+    public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
+        super(parameterService, symmetricDialect);
     }
 
     @Override

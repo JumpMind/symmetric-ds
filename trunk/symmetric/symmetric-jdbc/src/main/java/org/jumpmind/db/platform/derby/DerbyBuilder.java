@@ -33,15 +33,14 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
-import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for Derby.
  */
 public class DerbyBuilder extends AbstractDdlBuilder {
 
-    public DerbyBuilder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public DerbyBuilder(IDatabasePlatform platform) {
+        super(platform);
         addEscapedCharSequence("'", "''");
     }
 

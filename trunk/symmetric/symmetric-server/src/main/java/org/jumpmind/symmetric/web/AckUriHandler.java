@@ -29,7 +29,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -47,9 +46,9 @@ public class AckUriHandler extends AbstractUriHandler {
 
     private IAcknowledgeService acknowledgeService;
     
-    public AckUriHandler(Log log,
+    public AckUriHandler(
             IParameterService parameterService, IAcknowledgeService acknowledgeService, IInterceptor...interceptors) {
-        super(log, "/ack/*", parameterService, interceptors);
+        super("/ack/*", parameterService, interceptors);
         this.acknowledgeService = acknowledgeService;
     }
 

@@ -30,15 +30,15 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.sql.ISqlMap;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract public class AbstractService implements IService {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected IParameterService parameterService;
 
@@ -50,8 +50,7 @@ abstract public class AbstractService implements IService {
     
     private ISqlMap sqlMap;
     
-    public AbstractService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect) {
-       this.log = log;
+    public AbstractService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
        this.symmetricDialect = symmetricDialect;
        this.parameterService = parameterService;
        this.tablePrefix = parameterService.getTablePrefix();

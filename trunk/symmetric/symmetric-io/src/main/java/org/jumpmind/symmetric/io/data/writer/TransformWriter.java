@@ -8,8 +8,8 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -38,7 +38,7 @@ import org.jumpmind.util.Statistics;
 
 public class TransformWriter implements IDataWriter {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected static final Logger log = LoggerFactory.getLogger(TransformWriter.class);
 
     protected IDataWriter targetWriter;
     protected TransformPoint transformPoint;
@@ -142,8 +142,8 @@ public class TransformWriter implements IDataWriter {
             if (log.isDebugEnabled()) {
                 log.debug(
                         "%d transformation(s) started because of %s on %s.  The original row data was: %s",
-                        activeTransforms.size(), eventType.toString(),
-                        this.sourceTable.getFullyQualifiedTableName(), sourceValues);
+                        new Object[] { activeTransforms.size(), eventType.toString(),
+                                this.sourceTable.getFullyQualifiedTableName(), sourceValues });
             }
 
             List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
@@ -177,8 +177,8 @@ public class TransformWriter implements IDataWriter {
             if (log.isDebugEnabled()) {
                 log.debug(
                         "%d target data was created for the %s transformation.  The target table is %s",
-                        dataToTransform.size(), transformation.getTransformId(),
-                        transformation.getFullyQualifiedTargetTableName());
+                        new Object[] { dataToTransform.size(), transformation.getTransformId(),
+                                transformation.getFullyQualifiedTargetTableName() });
             }
             int transformNumber = 0;
             for (TransformedData targetData : dataToTransform) {
@@ -187,9 +187,10 @@ public class TransformWriter implements IDataWriter {
                     if (log.isDebugEnabled()) {
                         log.debug(
                                 "Data has been transformed to a %s for the #%d transform.  The mapped target columns are: %s. The mapped target values are: %s",
-                                targetData.getTargetDmlType().toString(), transformNumber,
-                                ArrayUtils.toString(targetData.getColumnNames()),
-                                ArrayUtils.toString(targetData.getColumnValues()));
+                                new Object[] { targetData.getTargetDmlType().toString(),
+                                        transformNumber,
+                                        ArrayUtils.toString(targetData.getColumnNames()),
+                                        ArrayUtils.toString(targetData.getColumnValues()) });
                     }
                     dataThatHasBeenTransformed.add(targetData);
                 } else {

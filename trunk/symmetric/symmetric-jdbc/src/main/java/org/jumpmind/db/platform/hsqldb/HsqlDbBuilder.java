@@ -31,15 +31,14 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for the HsqlDb database.
  */
 public class HsqlDbBuilder extends AbstractDdlBuilder {
 
-    public HsqlDbBuilder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public HsqlDbBuilder(IDatabasePlatform platform) {
+        super(platform);
         addEscapedCharSequence("'", "''");
     }
 

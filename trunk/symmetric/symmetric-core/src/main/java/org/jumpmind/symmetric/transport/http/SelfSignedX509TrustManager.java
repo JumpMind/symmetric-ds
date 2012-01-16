@@ -30,8 +30,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A X509TrustManager that accepts self-signed certificates. 
@@ -51,7 +51,7 @@ public class SelfSignedX509TrustManager implements X509TrustManager
     private X509TrustManager standardTrustManager = null;
 
     /** Log object for this class. */    
-    protected Log log = LogFactory.getLog(getClass());
+    protected Logger log = LoggerFactory.getLogger(getClass());
 
     /**
      * Constructor for SelfSignedX509TrustManager.

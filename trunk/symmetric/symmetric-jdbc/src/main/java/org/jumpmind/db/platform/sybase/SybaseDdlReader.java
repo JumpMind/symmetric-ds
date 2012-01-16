@@ -48,7 +48,6 @@ import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.DdlException;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from a Sybase database.
@@ -60,8 +59,8 @@ public class SybaseDdlReader extends AbstractJdbcDdlReader {
     /* The regular expression pattern for the ISO times. */
     private Pattern _isoTimePattern;
 
-    public SybaseDdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public SybaseDdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");

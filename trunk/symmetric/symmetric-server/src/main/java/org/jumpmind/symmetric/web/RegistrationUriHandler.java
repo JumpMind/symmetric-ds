@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
@@ -44,9 +43,9 @@ public class RegistrationUriHandler extends AbstractUriHandler {
     
     
     
-    public RegistrationUriHandler(Log log,  IParameterService parameterService,
+    public RegistrationUriHandler( IParameterService parameterService,
             IRegistrationService registrationService, IInterceptor... interceptors) {
-        super(log, "/registration/*", parameterService, interceptors);
+        super("/registration/*", parameterService, interceptors);
         this.registrationService = registrationService;
     }
 

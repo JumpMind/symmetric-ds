@@ -36,8 +36,6 @@ import org.jumpmind.db.platform.mysql.MySqlPlatform;
 import org.jumpmind.db.platform.oracle.OraclePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.db.platform.sybase.SybasePlatform;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.db.db2.Db2SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2v9SymmetricDialect;
 import org.jumpmind.symmetric.db.derby.DerbySymmetricDialect;
@@ -54,6 +52,8 @@ import org.jumpmind.symmetric.db.postgresql.GreenplumSymmetricDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
 import org.jumpmind.symmetric.db.sybase.SybaseSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory class that is responsible for creating the appropriate
@@ -61,17 +61,15 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class JdbcSymmetricDialectFactory {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private IParameterService parameterService;
 
     private IDatabasePlatform platform;
 
-    public JdbcSymmetricDialectFactory(IParameterService parameterService, IDatabasePlatform platform,
-            Log log) {
+    public JdbcSymmetricDialectFactory(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
         this.platform = platform;
-        this.log = log;
     }
 
     public ISymmetricDialect create() {
@@ -79,39 +77,39 @@ public class JdbcSymmetricDialectFactory {
         AbstractSymmetricDialect dialect = null;
 
         if (platform instanceof MySqlPlatform) {
-            dialect = new MySqlSymmetricDialect(log, parameterService, platform);
+            dialect = new MySqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof OraclePlatform) {
-            dialect = new OracleSymmetricDialect(log, parameterService, platform);
+            dialect = new OracleSymmetricDialect(parameterService, platform);
         } else if (platform instanceof MsSqlPlatform) {
-            dialect = new MsSqlSymmetricDialect(log, parameterService, platform);
+            dialect = new MsSqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof GreenplumPlatform) {
-            dialect = new GreenplumSymmetricDialect(log, parameterService, platform);
+            dialect = new GreenplumSymmetricDialect(parameterService, platform);
         } else if (platform instanceof PostgreSqlPlatform) {
-            dialect = new PostgreSqlSymmetricDialect(log, parameterService, platform);
+            dialect = new PostgreSqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof DerbyPlatform) {
-            dialect = new DerbySymmetricDialect(log, parameterService, platform);
+            dialect = new DerbySymmetricDialect(parameterService, platform);
         } else if (platform instanceof H2Platform) {
-            dialect = new H2SymmetricDialect(log, parameterService, platform);
+            dialect = new H2SymmetricDialect(parameterService, platform);
         } else if (platform instanceof HsqlDbPlatform) {
-            dialect = new HsqlDbSymmetricDialect(log, parameterService, platform);
+            dialect = new HsqlDbSymmetricDialect(parameterService, platform);
         } else if (platform instanceof HsqlDb2Platform) {
-            dialect = new HsqlDb2SymmetricDialect(log, parameterService, platform);
+            dialect = new HsqlDb2SymmetricDialect(parameterService, platform);
         } else if (platform instanceof InformixPlatform) {
-            dialect = new InformixSymmetricDialect(log, parameterService, platform);
+            dialect = new InformixSymmetricDialect(parameterService, platform);
         } else if (platform instanceof Db2Platform) {
             int dbMajorVersion = platform.getSqlTemplate().getDatabaseMajorVersion();
             int dbMinorVersion = platform.getSqlTemplate().getDatabaseMinorVersion();
             if (dbMajorVersion < 9 || (dbMajorVersion == 9 && dbMinorVersion < 5)) {
-                dialect = new Db2SymmetricDialect(log, parameterService, platform);
+                dialect = new Db2SymmetricDialect(parameterService, platform);
             } else {
-                dialect = new Db2v9SymmetricDialect(log, parameterService, platform);
+                dialect = new Db2v9SymmetricDialect(parameterService, platform);
             }
         } else if (platform instanceof FirebirdPlatform) {
-            dialect = new FirebirdSymmetricDialect(log, parameterService, platform);
+            dialect = new FirebirdSymmetricDialect(parameterService, platform);
         } else if (platform instanceof SybasePlatform) {
-            dialect = new SybaseSymmetricDialect(log, parameterService, platform);
+            dialect = new SybaseSymmetricDialect(parameterService, platform);
         } else if (platform instanceof InterbasePlatform) {
-            dialect = new InterbaseSymmetricDialect(log, parameterService, platform);
+            dialect = new InterbaseSymmetricDialect(parameterService, platform);
         } else {
             throw new DbNotSupportedException();
         }

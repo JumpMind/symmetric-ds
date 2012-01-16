@@ -11,12 +11,11 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDdlReader;
-import org.jumpmind.log.Log;
 
 public class GreenplumDdlReader extends PostgreSqlDdlReader {
 
-    public GreenplumDdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public GreenplumDdlReader(IDatabasePlatform platform) {
+        super(platform);
     }
 
     protected void setDistributionKeys(Connection connection, Table table, String schema)

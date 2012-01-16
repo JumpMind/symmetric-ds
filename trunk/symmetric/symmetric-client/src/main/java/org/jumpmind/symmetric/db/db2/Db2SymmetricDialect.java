@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.db.db2;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -35,8 +34,8 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    public Db2SymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
-        super(log, parameterService, platform);
+    public Db2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new Db2TriggerText();
     }
 

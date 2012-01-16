@@ -31,15 +31,14 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from a Derby database.
  */
 public class DerbyDdlReader extends AbstractJdbcDdlReader {
 
-    public DerbyDdlReader(IDatabasePlatform platform, Log log) {
-        super(log, platform);
+    public DerbyDdlReader(IDatabasePlatform platform) {
+        super(platform);
     }
 
     @Override

@@ -31,15 +31,14 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for PostgresSql.
  */
 public class PostgreSqlBuilder extends AbstractDdlBuilder {
     
-    public PostgreSqlBuilder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public PostgreSqlBuilder(IDatabasePlatform platform) {
+        super(platform);
 
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected

@@ -66,7 +66,8 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.util.CallbackClosure;
 import org.jumpmind.db.util.MultiInstanceofPredicate;
-import org.jumpmind.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is a collection of Strategy methods for creating the DDL required
@@ -90,7 +91,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected static final String SIZE_PLACEHOLDER = "{0}";
 
     /** The Log to which logging calls will be made. */
-    protected Log log;
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /** The platform that this builder belongs to. */
     protected IDatabasePlatform platform;
@@ -122,8 +123,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @param platform
      *            The platform this builder belongs to
      */
-    public AbstractDdlBuilder(Log log, IDatabasePlatform platform) {
-        this.log = log;
+    public AbstractDdlBuilder(IDatabasePlatform platform) {
         this.platform = platform;
     }
 
