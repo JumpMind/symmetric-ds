@@ -6,7 +6,7 @@
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
 
-    <bean id="securityService" class="org.jumpmind.symmetric.service.impl.SecurityService" scope="singleton" />
+    <bean id="securityService" class="$[sym.security.service.class.name]" init-method="init" scope="singleton" />
 
     <tx:annotation-driven transaction-manager="txManager" />
 

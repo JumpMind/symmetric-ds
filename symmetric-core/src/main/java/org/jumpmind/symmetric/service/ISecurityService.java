@@ -26,6 +26,8 @@ package org.jumpmind.symmetric.service;
  */
 public interface ISecurityService {
 
+    public void init();
+
     public String encrypt(String plainText);
     
     public String decrypt(String encText);

@@ -43,7 +43,10 @@ import org.jumpmind.symmetric.service.ISecurityService;
  */
 public class SecurityService extends AbstractService implements ISecurityService {
 
-    private SecretKey secretKey;
+    protected SecretKey secretKey;
+
+    public void init() {
+    }
 
     public String encrypt(String plainText) {
         try {
@@ -65,45 +68,51 @@ public class SecurityService extends AbstractService implements ISecurityService
         }
     }
 
-    private Cipher getCipher(int mode) throws Exception {
+    protected Cipher getCipher(int mode) throws Exception {
         if (secretKey == null) {
             secretKey = getSecretKey();
         }
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
-        AlgorithmParameterSpec paramSpec = Cipher.getMaxAllowedParameterSpec(cipher.getAlgorithm());
-        
-        if (paramSpec instanceof PBEParameterSpec) {
-	        paramSpec = new PBEParameterSpec(SecurityConstants.SALT, SecurityConstants.ITERATION_COUNT);
-	        cipher.init(mode, secretKey, paramSpec);
-        } else if (paramSpec instanceof IvParameterSpec) {
-        	paramSpec = new IvParameterSpec(SecurityConstants.SALT);
-	        cipher.init(mode, secretKey, paramSpec);
-        } else {
-        	cipher.init(mode, secretKey, (AlgorithmParameterSpec) null);
-        }
+        initializeCipher(cipher, mode);
+        log.info("SecretKeyUsing", cipher.getAlgorithm(), cipher.getProvider().getName());
         return cipher;
     }
 
-    private SecretKey getSecretKey() throws Exception {
+    protected void initializeCipher(Cipher cipher, int mode) throws Exception {
+        AlgorithmParameterSpec paramSpec = Cipher.getMaxAllowedParameterSpec(cipher.getAlgorithm());
+        
+        if (paramSpec instanceof PBEParameterSpec) {
+            paramSpec = new PBEParameterSpec(SecurityConstants.SALT, SecurityConstants.ITERATION_COUNT);
+            cipher.init(mode, secretKey, paramSpec);
+        } else if (paramSpec instanceof IvParameterSpec) {
+            paramSpec = new IvParameterSpec(SecurityConstants.SALT);
+            cipher.init(mode, secretKey, paramSpec);
+        } else {
+            cipher.init(mode, secretKey, (AlgorithmParameterSpec) null);
+        }
+    }
+
+    protected SecretKey getSecretKey() throws Exception {
         String password = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
         KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(password.toCharArray());
         KeyStore ks = getKeyStore(password);
-        KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY,
-                param);
+        KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, param);
         if (entry == null) {
             log.debug("SecretKeyGenerating");
-            String keyPassword = new RandomDataImpl().nextSecureHexString(16);
-            KeySpec keySpec = new PBEKeySpec(keyPassword.toCharArray(), SecurityConstants.SALT,
-                    SecurityConstants.ITERATION_COUNT);
-            SecretKey key = SecretKeyFactory.getInstance(SecurityConstants.ALGORITHM).generateSecret(keySpec);
-            entry = new KeyStore.SecretKeyEntry(key);
+            entry = new KeyStore.SecretKeyEntry(getDefaultSecretKey());
             ks.setEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, entry, param);
             saveKeyStore(ks, password);
         } else {
             log.debug("SecretKeyRetrieving");
         }
         return entry.getSecretKey();
+    }
+
+    protected SecretKey getDefaultSecretKey() throws Exception {
+        String keyPassword = new RandomDataImpl().nextSecureHexString(16);
+        KeySpec keySpec = new PBEKeySpec(keyPassword.toCharArray(), SecurityConstants.SALT, SecurityConstants.ITERATION_COUNT);
+        return SecretKeyFactory.getInstance(SecurityConstants.ALGORITHM).generateSecret(keySpec);
     }
 
     protected KeyStore getKeyStore(String password) throws Exception {
