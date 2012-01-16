@@ -94,7 +94,7 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     public void start() {
         if (this.scheduledJob == null) {
-            log.info("Starting %s", jobName);
+            log.info("Starting {}", jobName);
             if (!StringUtils.isBlank(cronExpression)) {
                 this.scheduledJob = taskScheduler.schedule(this, new CronTrigger(cronExpression));
                 started = true;
@@ -107,7 +107,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                             this.timeBetweenRunsInMs);
                     started = true;
                 } else {
-                    log.error("Failed to schedule this job, %s", jobName);
+                    log.error("Failed to schedule this job, {}", jobName);
                 }
             }
         }
@@ -119,10 +119,10 @@ abstract public class AbstractJob implements Runnable, IJob {
             success = this.scheduledJob.cancel(true);
             this.scheduledJob = null;
             if (success) {
-                log.info("The %s job has been cancelled.", jobName);
+                log.info("The {} job has been cancelled.", jobName);
                 started = false;
             } else {
-                log.warn("Failed to cancel this job, %s", jobName);
+                log.warn("Failed to cancel this job, {}", jobName);
             }
         }
         return success;
@@ -141,7 +141,7 @@ abstract public class AbstractJob implements Runnable, IJob {
         boolean ran = false;
         try {
             if (engine == null) {
-                log.info("Could not find a reference to the SymmetricEngine from %s", jobName);
+                log.info("Could not find a reference to the SymmetricEngine from {}", jobName);
             } else if (engine.isStarted()) {
                 if (!paused || force) {
                     if (!running) {
@@ -158,7 +158,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                                     processCount = doJob();
                                 } else {
                                     if (!hasNotRegisteredMessageBeenLogged) {
-                                        log.warn("Did not run the %s job because the engine is not registered.", getName());
+                                        log.warn("Did not run the {} job because the engine is not registered.", getName());
                                         hasNotRegisteredMessageBeenLogged = true;
                                     }
                                 }

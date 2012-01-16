@@ -58,10 +58,10 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
             try {
                 int count = platform.getSqlTemplate().update(dropSql);
                 if (count > 0) {
-                    log.info("Just dropped trigger %s", triggerName);
+                    log.info("Just dropped trigger {}", triggerName);
                 }
             } catch (Exception e) {
-                log.warn("Error removing %s: %s", triggerName, e.getMessage());
+                log.warn("Error removing {}: {}", triggerName, e.getMessage());
             }
         }
     }

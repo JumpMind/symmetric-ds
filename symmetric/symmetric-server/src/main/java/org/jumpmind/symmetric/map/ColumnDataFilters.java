@@ -91,7 +91,7 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
                                 do {
                                     causedBy = ExceptionUtils.getCause(causedBy);
                                     if (causedBy instanceof ScriptCompilationException) {
-                                        log.error("%s", causedBy.getMessage());
+                                        log.error("{}", causedBy.getMessage());
                                         throw new RuntimeException(causedBy.getMessage());
                                     }
                                 } while (causedBy != null);
@@ -100,7 +100,7 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
                         }
                     }
                 } catch (RuntimeException ex) {
-                    log.error("Failed to transform value for column %s on table %s", filteredColumn.getColumnName(),
+                    log.error("Failed to transform value for column {} on table {}", filteredColumn.getColumnName(),
                             filteredColumn.getTableName());
                     throw ex;
                 }

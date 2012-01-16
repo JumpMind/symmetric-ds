@@ -272,7 +272,7 @@ public class SymmetricWebServer {
             connector.setHost(host);
             connector.setMaxIdleTime(maxIdleTime);
             connectors.add(connector);
-            log.info("About to start %s web server on port %d", name, port);
+            log.info("About to start {} web server on port {}", name, port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
@@ -290,14 +290,14 @@ public class SymmetricWebServer {
             connector.setPort(securePort);
             connector.setHost(host);
             connectors.add(connector);
-            log.info("About to start SymmetricDS web server on secure port %d", securePort);
+            log.info("About to start SymmetricDS web server on secure port {}", securePort);
         }
         return connectors.toArray(new Connector[connectors.size()]);
     }
 
     protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
         if (AppUtils.isSystemPropertySet(SystemConstants.JMX_HTTP_CONSOLE_ENABLED, true)) {
-            log.info("Starting JMX HTTP console on port %d", jmxPort);
+            log.info("Starting JMX HTTP console on port {}", jmxPort);
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             ObjectName name = getHttpJmxAdaptorName();
             mbeanServer.createMBean(HttpAdaptor.class.getName(), name);

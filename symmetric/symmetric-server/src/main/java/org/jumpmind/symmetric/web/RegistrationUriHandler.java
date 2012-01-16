@@ -55,7 +55,7 @@ public class RegistrationUriHandler extends AbstractUriHandler {
         try {
             OutputStream outputStream = res.getOutputStream();
             if (!registerNode(node, req.getRemoteHost(), req.getRemoteAddr(), outputStream)) {
-                log.warn("%s was not allowed to register.", node);
+                log.warn("{} was not allowed to register.", node);
                 ServletUtils.sendError(res, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.",
                         node));
             }

@@ -30,7 +30,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                     CsvData newData = newlyTransformedData.buildTargetCsvData();
                     if (newlyTransformedData.isGeneratedIdentityNeeded()) {
                         if (log.isDebugEnabled()) {
-                            log.debug("Enabling generation of identity for %s",
+                            log.debug("Enabling generation of identity for {}",
                                     newlyTransformedData.getTableName());
                         }
                         writer.getTransaction().allowInsertIntoAutoIncrementColumns(false, table);

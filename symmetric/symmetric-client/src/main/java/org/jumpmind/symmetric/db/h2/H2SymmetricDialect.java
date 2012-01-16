@@ -68,14 +68,14 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
             try {
                 int count = platform.getSqlTemplate().update(dropSql);
                 if (count > 0) {
-                    log.info("Just dropped trigger %s", triggerName);
+                    log.info("Just dropped trigger {}", triggerName);
                 }
                 count = platform.getSqlTemplate().update(dropTable);
                 if (count > 0) {
-                    log.info("Just dropped table %s_CONFIG", triggerName);
+                    log.info("Just dropped table {}_CONFIG", triggerName);
                 }
             } catch (Exception e) {
-                log.warn("Error removing %s: %s", triggerName, e.getMessage());
+                log.warn("Error removing {}: {}", triggerName, e.getMessage());
             }
         }
     }

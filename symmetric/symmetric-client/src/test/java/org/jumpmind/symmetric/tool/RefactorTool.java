@@ -22,6 +22,7 @@ public class RefactorTool {
     }
 
     protected static boolean refactor(StringBuilder contents) {
+        boolean refactored = false;
         String[] lines = contents.toString().split("\n");
         contents.setLength(0);
         int logmode = 0;
@@ -31,14 +32,19 @@ public class RefactorTool {
             }
 
             if (!line.contains("String.format") && logmode > 0) {
+                refactored = true;
                 line = line.replace("%s", "{}");
                 line = line.replace("%d", "{}");
+                logmode--;
+            } else {
+                logmode =0;
             }
 
             contents.append(line);
             contents.append("\n");
 
         }
-        return true;
+        contents.substring(0, contents.length()-1);
+        return refactored;
     }
 }

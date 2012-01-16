@@ -55,7 +55,7 @@ public class AckUriHandler extends AbstractUriHandler {
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
         if (log.isDebugEnabled()) {
-            log.debug("Reading ack: %s", req.getParameterMap());
+            log.debug("Reading ack: {}", req.getParameterMap());
         }
         @SuppressWarnings("unchecked")
         List<BatchInfo> batches = AbstractTransportManager.readAcknowledgement(req

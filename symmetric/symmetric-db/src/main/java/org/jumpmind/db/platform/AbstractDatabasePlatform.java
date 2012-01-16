@@ -356,7 +356,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     list.add(objectValue);
                 }
             } catch (Exception ex) {
-                log.error("Could not convert a value of %s for column %s of type %s", new Object[] {value,
+                log.error("Could not convert a value of {} for column {} of type {}", new Object[] {value,
                         column.getName(), column.getType()});
                 log.error(ex.getMessage(), ex);
                 throw new RuntimeException(ex);

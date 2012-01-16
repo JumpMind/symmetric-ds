@@ -239,7 +239,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             }
             JdbcSqlTemplate.close(pstmt);
             if (log.isDebugEnabled()) {
-                log.debug("Preparing: %s", sql);
+                log.debug("Preparing: {}", sql);
             }
             pstmt = connection.prepareStatement(sql);
             psql = sql;
@@ -252,7 +252,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         int rowsUpdated = 0;
         try {
             if (log.isDebugEnabled()) {
-                log.debug("Adding %s %s", ArrayUtils.toString(args), inBatchMode ? " in batch mode"
+                log.debug("Adding {} {}", ArrayUtils.toString(args), inBatchMode ? " in batch mode"
                         : "");
             }
             if (args != null) {

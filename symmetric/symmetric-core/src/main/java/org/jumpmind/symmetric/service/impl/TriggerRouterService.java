@@ -271,7 +271,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (tables == null) {
             String newestVersion = getNewestVersionOfRootConfigChannelTableNames();
             log.warn(
-                    "Defaulting to major version %s because %s version was not valid while retrieving trigger configuration tables",
+                    "Defaulting to major version {} because {} version was not valid while retrieving trigger configuration tables",
                     newestVersion, majorVersion);
             majorVersion = newestVersion;
         }
@@ -429,7 +429,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 triggers.add(buildRegistrationTriggerRouter(Version.version(),
                         TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST),
                         true, nodeGroupLink));
-                log.debug("Creating trigger hist entry for %s",
+                log.debug("Creating trigger hist entry for {}",
                         TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
 
             }
@@ -784,7 +784,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             }
         } else {
-            log.info("Failed to synchronize trigger for %s");
+            log.info("Failed to synchronize trigger for {}");
         }
     }
 
@@ -802,7 +802,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         Set<String> triggerIdsThatShouldBeActive = getTriggerIdsFrom(triggersThatShouldBeActive);
         for (TriggerHistory history : activeHistories) {
             if (!triggerIdsThatShouldBeActive.contains(history.getTriggerId())) {
-                log.info("About to remove triggers for inactivated table: %s",
+                log.info("About to remove triggers for inactivated table: {}",
                         history.getSourceTableName());
                 symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
                         history.getSourceSchemaName(), history.getNameForInsertTrigger(),
@@ -833,7 +833,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         history.getNameForDeleteTrigger());
                 if (triggerExists) {
                     log.warn(
-                            "There are triggers that have been marked as inactive.  Please remove triggers represented by trigger_id=%s and trigger_hist_id=%s",
+                            "There are triggers that have been marked as inactive.  Please remove triggers represented by trigger_id={} and trigger_hist_id={}",
                             history.getTriggerId(), history.getTriggerHistoryId());
                 } else {
                     inactivateTriggerHistory(history);
@@ -936,7 +936,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                 } else {
                     log.error(
-                            "The configured table does not exist in the datasource that is configured: %s",
+                            "The configured table does not exist in the datasource that is configured: {}",
                             trigger.qualifiedSourceTableName());
 
                     if (this.triggerCreationListeners != null) {
@@ -946,7 +946,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
             } catch (Exception ex) {
-                log.error("Failed to create triggers for %s", ex,
+                log.error("Failed to create triggers for {}", ex,
                         trigger.qualifiedSourceTableName());
 
                 if (newestHistory != null) {
@@ -1049,7 +1049,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     hist.getSourceSchemaName(), hist.getSourceTableName(),
                     hist.getTriggerNameForDmlType(dmlType))) {
                 log.warn(
-                        "Cleaning up trigger hist row of %d after failing to create the associated trigger",
+                        "Cleaning up trigger hist row of {} after failing to create the associated trigger",
                         hist.getTriggerHistoryId());
                 hist.setErrorMessage(ex.getMessage());
                 inactivateTriggerHistory(hist);
@@ -1109,7 +1109,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
             triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
             log.debug(
-                    "We just truncated the trigger name for the %s trigger id=%s.  You might want to consider manually providing a name for the trigger that is less than %d characters long",
+                    "We just truncated the trigger name for the {} trigger id={}.  You might want to consider manually providing a name for the trigger that is less than {} characters long",
                     new Object[] { dml.name().toLowerCase(), trigger.getTriggerId(),
                             maxTriggerNameLength });
         }

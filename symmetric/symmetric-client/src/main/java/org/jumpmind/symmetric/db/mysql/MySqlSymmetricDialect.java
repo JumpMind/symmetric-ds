@@ -83,7 +83,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     platform.getSqlTemplate().update(
                             triggerText.getFunctionSql(functions[i], funcName,
                                     platform.getDefaultSchema()));
-                    log.info("Just installed %s", funcName);
+                    log.info("Just installed {}", funcName);
                 }
             }
         }

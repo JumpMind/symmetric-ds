@@ -75,7 +75,7 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
                         stmt = con.createStatement();
                         stmt.execute(sql);
                     } catch (Exception e) {
-                        log.warn("Error removing %s: %s", triggerName, e.getMessage());
+                        log.warn("Error removing {}: {}", triggerName, e.getMessage());
                     } finally {
                         if (catalogName != null) {
                             con.setCatalog(previousCatalog);

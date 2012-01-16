@@ -30,7 +30,7 @@ abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
             log.debug("@doFilter");
 
             boolean supportCompression = false;
-            log.debug("requestURI= %s", req.getRequestURI());
+            log.debug("requestURI= {}", req.getRequestURI());
 
             // Are we allowed to compress ?
             String s = (String) req.getParameter("gzip");

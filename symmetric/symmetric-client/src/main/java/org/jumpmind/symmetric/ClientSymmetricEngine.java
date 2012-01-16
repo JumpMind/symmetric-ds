@@ -148,7 +148,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 success = true;
             } catch (Exception ex) {
                 log.error(
-                        "Could not get a connection to the database: %s.  Waiting for 10 seconds before trying to connect to the database again.",
+                        "Could not get a connection to the database: {}.  Waiting for 10 seconds before trying to connect to the database again.",
                         ex.getMessage());
                 AppUtils.sleep(10000);
             } finally {

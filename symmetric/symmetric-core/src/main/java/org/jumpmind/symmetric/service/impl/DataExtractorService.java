@@ -200,7 +200,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         processor.process();
 
         if (triggerRouters.size() == 0) {
-            log.error("%s attempted registration, but was sent an empty configuration", node);
+            log.error("{} attempted registration, but was sent an empty configuration", node);
         }
 
     }
@@ -237,7 +237,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         for (OutgoingBatch batch : ignoredBatches) {
             batch.setStatus(OutgoingBatch.Status.IG);
             if (log.isDebugEnabled()) {
-                log.debug("Batch %s is being ignored", batch.getBatchId());
+                log.debug("Batch {} is being ignored", batch.getBatchId());
             }
         }
 
@@ -320,7 +320,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     IoResource previouslyExtracted = extractedBatchesHandle
                                             .get(currentBatch.getBatchId());
                                     if (previouslyExtracted != null && previouslyExtracted.exists()) {
-                                        log.info("We have already extracted batch %d.  Using the existing extraction.  To force re-extraction, please restart this instance of SymmetricDS.",
+                                        log.info("We have already extracted batch {}.  Using the existing extraction.  To force re-extraction, please restart this instance of SymmetricDS.",
                                                 currentBatch.getBatchId());
                                     } else {
                                         outgoingBatch.setStatus(OutgoingBatch.Status.QY);

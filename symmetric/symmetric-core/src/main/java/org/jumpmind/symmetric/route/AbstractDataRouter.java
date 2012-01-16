@@ -240,6 +240,6 @@ public abstract class AbstractDataRouter implements IDataRouter {
      * Override if needed.
      */
     public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
-        log.debug("Completing batch %d", batch.getBatchId());
+        log.debug("Completing batch {}", batch.getBatchId());
     }
 }

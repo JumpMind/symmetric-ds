@@ -77,7 +77,7 @@ public class JobManager implements IJobManager {
             if (job.isAutoStartConfigured()) {
                 job.start();
             } else {
-                log.info("Job %s not configured for auto start", job.getName());
+                log.info("Job {} not configured for auto start", job.getName());
             }
         }
     }

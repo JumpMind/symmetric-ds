@@ -109,7 +109,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
         StringBuilder msg = getFromCache(context);
         if (msg.length() > 0) {
             msg.append(addTextFooter(context));
-            log.debug("Publishing text message %s", msg);
+            log.debug("Publishing text message {}", msg);
             context.remove(MSG_CACHE);
             publisher.publish(context, msg.toString());
         }
@@ -127,7 +127,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
         messagesSinceLastLogOutput++;
         long timeInMsSinceLastLogOutput = System.currentTimeMillis() - lastTimeInMsOutputLogged;
         if (timeInMsSinceLastLogOutput > minTimeInMsBetweenLogOutput) {
-            log.info("%s published %d messages in the last %d ms.", new Object[] { beanName,
+            log.info("{} published {} messages in the last {} ms.", new Object[] { beanName,
                     messagesSinceLastLogOutput, timeInMsSinceLastLogOutput });
             lastTimeInMsOutputLogged = System.currentTimeMillis();
             messagesSinceLastLogOutput = 0;

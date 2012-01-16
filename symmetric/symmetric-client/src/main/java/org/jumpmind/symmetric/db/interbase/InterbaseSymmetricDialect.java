@@ -60,7 +60,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
             platform.getSqlTemplate().queryForInt("select count(*) from " + contextTableName);
         } catch (Exception e) {
             try {
-                log.info("Creating global temporary table %s", contextTableName);
+                log.info("Creating global temporary table {}", contextTableName);
                 platform.getSqlTemplate().update(String.format(CONTEXT_TABLE_CREATE, contextTableName));
             } catch (Exception ex) {
                 log.error("Error while initializing Interbase dialect", ex);
@@ -171,6 +171,6 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
         for (String name : names) {
             count += platform.getSqlTemplate().update("drop trigger " + name);
         }
-        log.info("Remove %d triggers", count);
+        log.info("Remove {} triggers", count);
     }
 }

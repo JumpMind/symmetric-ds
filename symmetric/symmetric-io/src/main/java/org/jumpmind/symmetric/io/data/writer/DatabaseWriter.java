@@ -127,7 +127,7 @@ public class DatabaseWriter implements IDataWriter {
         if (this.targetTable != null || hasFilterThatHandlesMissingTable(table)) {
             return true;
         } else {
-            log.warn("Did not find the %s table in the target database",
+            log.warn("Did not find the {} table in the target database",
                     sourceTable.getFullyQualifiedTableName());
             return false;
         }
@@ -415,7 +415,7 @@ public class DatabaseWriter implements IDataWriter {
                 }
             }
 
-            log.info("About to run: %s", script);
+            log.info("About to run: {}", script);
             interpreter.eval(script);
             statistics.get(batch).increment(DatabaseWriterStatistics.SCRIPTCOUNT);
         } catch (EvalError e) {
@@ -448,9 +448,9 @@ public class DatabaseWriter implements IDataWriter {
             statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
             String sql = data.getCsvData(CsvData.ROW_DATA);
             transaction.prepare(sql);
-            log.info("About to run: %s", sql);
+            log.info("About to run: {}", sql);
             long count = transaction.execute(sql);
-            log.info("%d rows updated when running: %s", count, sql);
+            log.info("{} rows updated when running: {}", count, sql);
             statistics.get(batch).increment(DatabaseWriterStatistics.SQLCOUNT);
             statistics.get(batch).increment(DatabaseWriterStatistics.SQLROWSAFFECTEDCOUNT, count);
             return true;

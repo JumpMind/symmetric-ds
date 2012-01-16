@@ -141,7 +141,7 @@ public class TransformWriter implements IDataWriter {
 
             if (log.isDebugEnabled()) {
                 log.debug(
-                        "%d transformation(s) started because of %s on %s.  The original row data was: %s",
+                        "{} transformation(s) started because of {} on {}.  The original row data was: {}",
                         new Object[] { activeTransforms.size(), eventType.toString(),
                                 this.sourceTable.getFullyQualifiedTableName(), sourceValues });
             }
@@ -176,7 +176,7 @@ public class TransformWriter implements IDataWriter {
                     dataToTransform.size());
             if (log.isDebugEnabled()) {
                 log.debug(
-                        "%d target data was created for the %s transformation.  The target table is %s",
+                        "{} target data was created for the {} transformation.  The target table is {}",
                         new Object[] { dataToTransform.size(), transformation.getTransformId(),
                                 transformation.getFullyQualifiedTargetTableName() });
             }
@@ -186,7 +186,7 @@ public class TransformWriter implements IDataWriter {
                 if (perform(context, targetData, transformation, sourceValues, oldSourceValues)) {
                     if (log.isDebugEnabled()) {
                         log.debug(
-                                "Data has been transformed to a %s for the #%d transform.  The mapped target columns are: %s. The mapped target values are: %s",
+                                "Data has been transformed to a {} for the #{} transform.  The mapped target columns are: {}. The mapped target values are: {}",
                                 new Object[] { targetData.getTargetDmlType().toString(),
                                         transformNumber,
                                         ArrayUtils.toString(targetData.getColumnNames()),
@@ -194,7 +194,7 @@ public class TransformWriter implements IDataWriter {
                     }
                     dataThatHasBeenTransformed.add(targetData);
                 } else {
-                    log.debug("Data has not been transformed for the #%d transform",
+                    log.debug("Data has not been transformed for the #{} transform",
                             transformNumber);
                 }
             }
@@ -203,7 +203,7 @@ public class TransformWriter implements IDataWriter {
             // ignore this row
             if (log.isDebugEnabled()) {
                 log.debug(
-                        "Transform indicated that the target row should be ignored with a target key of: %s",
+                        "Transform indicated that the target row should be ignored with a target key of: {}",
                         "unknown.  Transformation aborted during tranformation of key");
             }
             return new ArrayList<TransformedData>(0);
@@ -231,7 +231,7 @@ public class TransformWriter implements IDataWriter {
                         }
                     }
                 } else {
-                    log.warn("Could not find a source column of %s for the transformation: %s",
+                    log.warn("Could not find a source column of {} for the transformation: {}",
                             transformColumn.getSourceColumnName(), transformation.getTransformId());
                 }
             }
@@ -258,7 +258,7 @@ public class TransformWriter implements IDataWriter {
                 default:
                     if (log.isDebugEnabled()) {
                         log.debug(
-                                "The %s transformation is not configured to delete row.  Not sending the delete through.",
+                                "The {} transformation is not configured to delete row.  Not sending the delete through.",
                                 transformation.getTransformId());
                     }
                 }
@@ -267,7 +267,7 @@ public class TransformWriter implements IDataWriter {
             // ignore this row
             if (log.isDebugEnabled()) {
                 log.debug(
-                        "Transform indicated that the target row should be ignored with a target key of: %s",
+                        "Transform indicated that the target row should be ignored with a target key of: {}",
                         ArrayUtils.toString(data.getKeyValues()));
             }
         }
@@ -284,7 +284,7 @@ public class TransformWriter implements IDataWriter {
                 oldSourceValues, sourceValues));
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
         if (columns == null || columns.size() == 0) {
-            log.error("No primary key defined for the transformation: %s",
+            log.error("No primary key defined for the transformation: {}",
                     transformation.getTransformId());
         } else {
             for (TransformColumn transformColumn : columns) {

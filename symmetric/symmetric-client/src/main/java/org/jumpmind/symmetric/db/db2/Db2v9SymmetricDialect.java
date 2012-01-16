@@ -47,7 +47,7 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
             transaction.commit();
         } catch (Exception e) {
             try {
-                log.info("Creating environment variables %s and %s", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
+                log.info("Creating environment variables {} and {}", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
                         SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
                 new SqlScript(getSqlScriptUrl(), getPlatform().getSqlTemplate(), ";").execute();
             } catch (Exception ex) {

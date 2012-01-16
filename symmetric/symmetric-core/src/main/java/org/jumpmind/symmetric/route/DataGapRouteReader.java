@@ -309,10 +309,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
         long executeTimeInMs = System.currentTimeMillis() - ts;
         context.incrementStat(executeTimeInMs, ChannelRouterContext.STAT_QUERY_TIME_MS);
         if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-            log.warn("Selected data to route in %d ms for %s", executeTimeInMs, context.getChannel()
+            log.warn("Selected data to route in {} ms for {}", executeTimeInMs, context.getChannel()
                     .getChannelId());
         } else if (log.isDebugEnabled()) {
-            log.debug("Selected data to route in %d ms for %s", executeTimeInMs, context.getChannel()
+            log.debug("Selected data to route in {} ms for {}", executeTimeInMs, context.getChannel()
                     .getChannelId());
         }
         return rs;

@@ -337,10 +337,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             List<NodeChannel> channels = getNodeChannels(false);
             for (Channel defaultChannel : defaultChannels) {
                 if (!defaultChannel.isInList(channels)) {
-                    log.info("Auto-configuring %s channel.", defaultChannel.getChannelId());
+                    log.info("Auto-configuring {} channel.", defaultChannel.getChannelId());
                     saveChannel(defaultChannel, true);
                 } else {
-                    log.debug("No need to create channel %s.  It already exists.", defaultChannel.getChannelId());
+                    log.debug("No need to create channel {}.  It already exists.", defaultChannel.getChannelId());
                 }
             }
             reloadChannels();
@@ -365,7 +365,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             try {
                 nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
             } catch (UniqueKeyException ex) {
-                log.warn("Not inserting node row for %s because it already exists", nodeId);
+                log.warn("Not inserting node row for {} because it already exists", nodeId);
             }
             nodeService.insertNodeIdentity(nodeId);
             node = nodeService.findIdentity();
@@ -402,7 +402,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
             if (fileUrl != null) {
                 try {
-                    log.info("Building database schema from: %s", xml);
+                    log.info("Building database schema from: {}", xml);
                     Database database = new DatabaseIO().read(new InputStreamReader(fileUrl
                             .openStream()));
                     IDatabasePlatform platform = symmetricDialect.getPlatform();
