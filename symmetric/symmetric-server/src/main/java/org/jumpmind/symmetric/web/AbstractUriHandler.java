@@ -25,16 +25,16 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract public class AbstractUriHandler implements IUriHandler {
     
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     
     private String uriPattern;
     
@@ -44,9 +44,8 @@ abstract public class AbstractUriHandler implements IUriHandler {
     
     private boolean enabled = true;
     
-    public AbstractUriHandler(Log log, String uriPattern, 
-            IParameterService parameterService, IInterceptor... interceptors) {
-        this.log = log;
+    public AbstractUriHandler(String uriPattern, IParameterService parameterService, 
+            IInterceptor... interceptors) {
         this.uriPattern = uriPattern;
         this.interceptors = new ArrayList<IInterceptor>(interceptors.length);
         for (IInterceptor i : interceptors) {

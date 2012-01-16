@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
-import org.jumpmind.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TypedProperties extends Properties {
 
     private static final long serialVersionUID = 1L;
 
-    protected static Log log = LogFactory.getLog(TypedProperties.class);
+    protected static Logger log = LoggerFactory.getLogger(TypedProperties.class);
 
     public TypedProperties() {
     }
@@ -92,7 +91,7 @@ public class TypedProperties extends Properties {
             }
             return objects;
         } catch (Exception ex) {
-            log.log(LogLevel.WARN, ex);
+            log.warn(ex.getMessage(), ex);
             return objects;
         }
     }

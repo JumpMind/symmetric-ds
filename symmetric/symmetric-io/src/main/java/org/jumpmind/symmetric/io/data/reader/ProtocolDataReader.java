@@ -19,8 +19,8 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -35,7 +35,7 @@ import org.jumpmind.util.Statistics;
 
 public class ProtocolDataReader implements IDataReader {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected IoResource ioResource;
     protected Reader reader;

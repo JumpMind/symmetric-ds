@@ -28,12 +28,13 @@ import java.util.List;
 import org.jumpmind.db.sql.ISqlMap;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.mapper.NumberMapper;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Responsible for managing gaps in data ids to ensure that all captured data is
@@ -41,7 +42,7 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class DataGapDetector implements IDataToRouteGapDetector {
 
-    private Log log;
+    private static final Logger log = LoggerFactory.getLogger(DataGapDetector.class);
 
     private IDataService dataService;
 
@@ -54,9 +55,8 @@ public class DataGapDetector implements IDataToRouteGapDetector {
     public DataGapDetector() {
     }
 
-    public DataGapDetector(Log log, IDataService dataService, IParameterService parameterService,
+    public DataGapDetector(IDataService dataService, IParameterService parameterService,
             ISymmetricDialect symmetricDialect, ISqlMap sqlMap) {
-        this.log = log;
         this.dataService = dataService;
         this.parameterService = parameterService;
         this.sqlMap = sqlMap;

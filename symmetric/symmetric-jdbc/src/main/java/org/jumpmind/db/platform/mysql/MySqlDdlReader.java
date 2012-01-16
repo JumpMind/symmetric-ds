@@ -31,15 +31,14 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from a MySql database.
  */
 public class MySqlDdlReader extends AbstractJdbcDdlReader {
 
-    public MySqlDdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public MySqlDdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);

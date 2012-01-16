@@ -40,7 +40,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.sql.UniqueKeyException;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -70,9 +69,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private List<Channel> defaultChannels;
 
-    public ConfigurationService(Log log, IParameterService parameterService, ISymmetricDialect dialect,
+    public ConfigurationService(IParameterService parameterService, ISymmetricDialect dialect,
             INodeService nodeService) {
-        super(log, parameterService, dialect);
+        super(parameterService, dialect);
         this.nodeService = nodeService;
         this.defaultChannels = new ArrayList<Channel>();
         this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 100, 100, true, 0));
@@ -410,7 +409,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     platform.createDatabase(database, true, true);
                     loaded = true;
                 } catch (Exception e) {
-                    log.error(e);
+                    log.error(e.getMessage(),e);
                 }
             }
         }

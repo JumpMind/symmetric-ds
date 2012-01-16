@@ -26,7 +26,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.impl.MockNodeService;
 import org.junit.Test;
@@ -71,7 +70,7 @@ public class HttpBandwidthBalancerTest {
     }
 
     protected HttpBandwidthUrlSelector getMockBandwidthBalancer(final boolean dataLoadCompleted) {
-        HttpBandwidthUrlSelector ext = new HttpBandwidthUrlSelector(LogFactory.getLog(getClass()),
+        HttpBandwidthUrlSelector ext = new HttpBandwidthUrlSelector(
                 new MockNodeService() {
                     @Override
                     public boolean isDataLoadCompleted() {

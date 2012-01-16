@@ -45,14 +45,14 @@ import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
@@ -61,7 +61,7 @@ import org.jumpmind.symmetric.web.SymmetricEngineHolder;
  */
 public class SymmetricWebServer {
 
-    protected static final Log log = LogFactory.getLog(SymmetricWebServer.class);
+    protected static final Logger log = LoggerFactory.getLogger(SymmetricWebServer.class);
 
     protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(
             Constants.SYS_PROP_WEB_DIR, "../web");

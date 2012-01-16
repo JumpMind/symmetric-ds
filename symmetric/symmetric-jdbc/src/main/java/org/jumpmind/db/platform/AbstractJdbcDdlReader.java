@@ -50,8 +50,8 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.sql.jdbc.IConnectionCallback;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * An utility class to create a Database model from a live database.
@@ -59,7 +59,7 @@ import org.jumpmind.log.LogFactory;
 public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
     /* The Log to which logging calls will be made. */
-    protected Log log = LogFactory.getLog(getClass());
+    protected Logger log = LoggerFactory.getLogger(getClass());
 
     /* The descriptors for the relevant columns in the table meta data. */
     private final List<MetaDataColumnDescriptor> _columnsForTable;
@@ -99,7 +99,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     /* The table types to recognize per default. */
     private String[] _defaultTableTypes = { "TABLE" };
 
-    public AbstractJdbcDdlReader(Log log, IDatabasePlatform platform) {
+    public AbstractJdbcDdlReader(IDatabasePlatform platform) {
         this.platform = platform;
 
         _defaultSizes.put(new Integer(Types.CHAR), "254");

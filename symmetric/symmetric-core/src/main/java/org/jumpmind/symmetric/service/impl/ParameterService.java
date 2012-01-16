@@ -33,8 +33,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -43,13 +41,15 @@ import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see IParameterService
  */
 public class ParameterService implements IParameterService {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private TypedProperties parameters;
 
@@ -72,8 +72,7 @@ public class ParameterService implements IParameterService {
     private ISqlTemplate sqlTemplate;
 
     public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory,
-            String tablePrefix, Log log) {
-        this.log = log;
+            String tablePrefix) {
         this.systemProperties = (Properties) System.getProperties().clone();
         this.tablePrefix = tablePrefix;
         this.factory = factory;

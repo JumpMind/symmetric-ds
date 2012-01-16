@@ -23,8 +23,6 @@ package org.jumpmind.symmetric.load;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -36,6 +34,8 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An out of the box filter that checks to see if the SymmetricDS configuration
@@ -45,7 +45,7 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter implements
         IBuiltInExtensionPoint {
 
-    static final Log log = LogFactory.getLog(ConfigurationChangedFilter.class);
+    static final Logger log = LoggerFactory.getLogger(ConfigurationChangedFilter.class);
 
     final String CTX_KEY_RESYNC_NEEDED = "Resync."
             + ConfigurationChangedFilter.class.getSimpleName() + hashCode();

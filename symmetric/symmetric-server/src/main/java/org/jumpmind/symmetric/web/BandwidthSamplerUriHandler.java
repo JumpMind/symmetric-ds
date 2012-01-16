@@ -27,7 +27,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -44,8 +43,8 @@ public class BandwidthSamplerUriHandler extends AbstractUriHandler {
 
     protected long defaultTestSlowBandwidthDelay = 0;
 
-    public BandwidthSamplerUriHandler(Log log, IParameterService parameterService) {
-        super(log, "/bandwidth/*", parameterService);
+    public BandwidthSamplerUriHandler(IParameterService parameterService) {
+        super("/bandwidth/*", parameterService);
     }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,

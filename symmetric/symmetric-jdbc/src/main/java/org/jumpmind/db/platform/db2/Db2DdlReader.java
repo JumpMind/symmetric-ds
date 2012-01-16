@@ -40,7 +40,6 @@ import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.DdlException;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from a Db2 UDB database.
@@ -56,8 +55,8 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
     /* The regular expression pattern for the timestamp values that Db2 returns. */
     private Pattern _db2TimestampPattern;
 
-    public Db2DdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public Db2DdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
 

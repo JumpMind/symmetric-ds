@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -47,13 +45,15 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Coordinates interaction between two symmetric engines in the same JVM.
  */
 public class InternalTransportManager extends AbstractTransportManager implements ITransportManager {
 
-    static final Log log = LogFactory.getLog(InternalTransportManager.class);
+    static final Logger log = LoggerFactory.getLogger(InternalTransportManager.class);
 
     protected ISymmetricEngine symmetricEngine;
     
@@ -124,7 +124,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             }
             return HttpURLConnection.HTTP_OK;
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(),ex);
             return -1;
         }
     }
@@ -145,7 +145,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                     ISymmetricEngine engine = getTargetEngine(url);
                     runnable.run(engine, is, os);
                 } catch (Exception e) {
-                    log.error(e);
+                    log.error(e.getMessage(),e);
                 } finally {
                     IOUtils.closeQuietly(is);
                     IOUtils.closeQuietly(os);

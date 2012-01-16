@@ -26,7 +26,6 @@ import javax.sql.DataSource;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the Firebird database.
@@ -45,8 +44,8 @@ public class FirebirdPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new Firebird platform instance.
      */
-    public FirebirdPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+    public FirebirdPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, settings);
 
         DatabasePlatformInfo info = getPlatformInfo();
 
@@ -87,8 +86,8 @@ public class FirebirdPlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);
 
-        ddlReader = new FirebirdDdlReader(log, this);
-        ddlBuilder = new FirebirdBuilder(log, this);
+        ddlReader = new FirebirdDdlReader(this);
+        ddlBuilder = new FirebirdBuilder(this);
     }
     
     @Override

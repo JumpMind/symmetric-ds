@@ -30,19 +30,19 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A data router that uses a lookup table to map data to nodes
  */
 public class LookupTableDataRouter extends AbstractDataRouter implements IDataRouter {
 
-    final static Log log = LogFactory.getLog(LookupTableDataRouter.class);
+    final static Logger log = LoggerFactory.getLogger(LookupTableDataRouter.class);
 
     public final static String PARAM_TABLE = "LOOKUP_TABLE";
     public final static String PARAM_KEY_COLUMN = "KEY_COLUMN";

@@ -44,15 +44,14 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
-import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for Sybase.
  */
 public class SybaseBuilder extends AbstractDdlBuilder {
 
-    public SybaseBuilder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public SybaseBuilder(IDatabasePlatform platform) {
+        super(platform);
         addEscapedCharSequence("'", "''");
     }
 

@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
@@ -66,11 +65,11 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     private IClusterService clusterService;
     
-    public PushService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect,
+    public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
             IClusterService clusterService) {
-        super(log, parameterService, symmetricDialect);
+        super(parameterService, symmetricDialect);
         this.dataExtractorService = dataExtractorService;
         this.acknowledgeService = acknowledgeService;
         this.transportManager = transportManager;
@@ -173,7 +172,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         } catch (Exception ex) {
             // just report the error because we want to push to other nodes
             // in our list
-            log.error(ex);
+            log.error(ex.getMessage(),ex);
             fireOffline(ex, remote, status);
         } finally {
             try {

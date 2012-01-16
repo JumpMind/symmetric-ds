@@ -48,7 +48,6 @@ import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.DdlException;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
-import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from an Oracle 8 database.
@@ -67,8 +66,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
      */
     private Pattern oracleIsoTimestampPattern;
 
-    public OracleDdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public OracleDdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");

@@ -21,7 +21,6 @@ package org.jumpmind.symmetric;
 
 import java.util.Properties;
 
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
@@ -55,6 +54,7 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.slf4j.Logger;
 
 public interface ISymmetricEngine {
 
@@ -252,7 +252,7 @@ public interface ISymmetricEngine {
     
     public String getTablePrefix();
     
-    public Log getLog();
+    public Logger getLog();
     
     public IExtensionPointManager getExtensionPointManager();
     

@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -53,11 +52,11 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
     
     private IStatisticManager statisticManager;
     
-    public PullUriHandler(Log log, IParameterService parameterService,
+    public PullUriHandler(IParameterService parameterService,
             INodeService nodeService,
             IConfigurationService configurationService, IDataExtractorService dataExtractorService,
             IRegistrationService registrationService, IStatisticManager statisticManager,  IInterceptor... interceptors) {
-        super(log, "/pull/*", parameterService, interceptors);
+        super("/pull/*", parameterService, interceptors);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
         this.dataExtractorService = dataExtractorService;

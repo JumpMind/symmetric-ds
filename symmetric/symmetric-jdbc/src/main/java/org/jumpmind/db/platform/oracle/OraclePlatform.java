@@ -26,7 +26,6 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.log.Log;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
 
 /*
@@ -55,8 +54,8 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public OraclePlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+    public OraclePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, settings);
         
         info.setMaxIdentifierLength(30);
         info.setIdentityStatusReadingSupported(false);
@@ -103,8 +102,8 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(true);
 
-        ddlReader = new OracleDdlReader(log, this);
-        ddlBuilder = new OracleBuilder(log, this);
+        ddlReader = new OracleDdlReader(this);
+        ddlBuilder = new OracleBuilder(this);
     }
         
     

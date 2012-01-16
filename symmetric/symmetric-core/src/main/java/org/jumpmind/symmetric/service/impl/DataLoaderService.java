@@ -37,7 +37,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -52,9 +51,9 @@ import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
-import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
-import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
+import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformDatabaseWriter;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.model.BatchInfo;
@@ -108,12 +107,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private ITransformService transformService;
 
-    public DataLoaderService(Log log, IParameterService parameterService,
+    public DataLoaderService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IIncomingBatchService incomingBatchService,
             IConfigurationService configurationService, ITransportManager transportManager,
             IStatisticManager statisticManager, INodeService nodeService,
             ITransformService transformService, ITriggerRouterService triggerRouterService) {
-        super(log, parameterService, symmetricDialect);
+        super(parameterService, symmetricDialect);
         this.incomingBatchService = incomingBatchService;
         this.configurationService = configurationService;
         this.transportManager = transportManager;
@@ -472,7 +471,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     symmetricDialect.enableSyncTriggers(transaction);
                 }
             } catch (Exception ex) {
-                log.error(ex);
+                log.error(ex.getMessage(),ex);
             }
         }
 
@@ -489,8 +488,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             this.currentBatch.getNodeBatchId(), ex.getMessage());
                     this.currentBatch.setSqlMessage(ex.getMessage());
                 } else {
-                    log.error("Failed to load batch %s because: %s", ex,
-                            this.currentBatch.getNodeBatchId(), ex.getMessage());
+                    log.error("Failed to load batch %s because: %s", new Object[] { 
+                            this.currentBatch.getNodeBatchId(), ex.getMessage() });
+                    log.error(ex.getMessage(), ex);
                     SQLException se = unwrapSqlException(ex);
                     if (se != null) {
                         this.currentBatch.setSqlState(se.getSQLState());

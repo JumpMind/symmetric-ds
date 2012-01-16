@@ -26,13 +26,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A common superclass for data routers
@@ -41,7 +41,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
     private static final String OLD_ = "OLD_";
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected Logger log = LoggerFactory.getLogger(getClass());
 
     private boolean autoRegister = true;
 

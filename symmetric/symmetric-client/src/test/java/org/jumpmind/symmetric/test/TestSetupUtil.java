@@ -18,11 +18,14 @@ import org.jumpmind.properties.EnvironmentSpecificProperties;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestConstants;
-import org.jumpmind.symmetric.TestUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestSetupUtil {
+    
+    private static final Logger logger = LoggerFactory.getLogger(TestSetupUtil.class);
 
     static private ISymmetricEngine engine;
 
@@ -89,7 +92,7 @@ public class TestSetupUtil {
             c.close();
             return true;
         } catch (Exception ex) {
-            TestUtils.getLog().error(
+            logger.error(
                     "Could not connect to the test database using the url: "
                             + properties.getProperty("db.url") + " and classpath: "
                             + System.getProperty("java.class.path"), ex);
@@ -101,19 +104,19 @@ public class TestSetupUtil {
         File clientDbDir = new File("target/clientdbs");
         if (clientDbDir.exists()) {
             try {
-                TestUtils.getLog().info("Removing client database files.");
+                logger.info("Removing client database files.");
                 FileUtils.deleteDirectory(clientDbDir);
             } catch (IOException e) {
-                TestUtils.getLog().error(e);
+                logger.error(e.getMessage(), e);
             }
         }
         File rootDbDir = new File("target/rootdbs");
         if (rootDbDir.exists()) {
             try {
-                TestUtils.getLog().info("Removing root database files");
+                logger.info("Removing root database files");
                 FileUtils.deleteDirectory(rootDbDir);
             } catch (IOException e) {
-                TestUtils.getLog().error(e);
+                logger.error(e.getMessage(),e);
             }
         }
     }

@@ -22,9 +22,9 @@ package org.jumpmind.symmetric.job;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -32,14 +32,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  */
 public class JobManager implements IJobManager {
 
-    Log log = LogFactory.getLog(JobManager.class);
+    static final Logger log = LoggerFactory.getLogger(JobManager.class);
 
     private List<IJob> jobs;
     
     private ThreadPoolTaskScheduler taskScheduler;
     
-    public JobManager(Log log, ISymmetricEngine engine) {
-        this.log = log;
+    public JobManager(ISymmetricEngine engine) {
         
         this.taskScheduler = new ThreadPoolTaskScheduler();
         this.taskScheduler.setThreadNamePrefix(String.format("%s-job-", engine.getParameterService().getEngineName()));

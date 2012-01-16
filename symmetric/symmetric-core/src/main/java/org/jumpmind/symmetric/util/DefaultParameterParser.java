@@ -29,8 +29,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultParameterParser {
 
@@ -39,7 +39,7 @@ public class DefaultParameterParser {
     private static final String DATABASE_OVERRIDABLE = "DatabaseOverridable:";
     private static final String TAGS = "Tags:";
     private static final String TYPE = "Type:";
-    final Log log = LogFactory.getLog(getClass());
+    final Logger log = LoggerFactory.getLogger(getClass());
 
     public DefaultParameterParser() {
     }
@@ -82,7 +82,7 @@ public class DefaultParameterParser {
                 }
             }
         } catch (IOException e) {
-            log.error(e);
+            log.error(e.getMessage(),e);
         }
         return metaData;
     }

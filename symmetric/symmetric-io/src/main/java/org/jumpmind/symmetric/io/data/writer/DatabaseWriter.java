@@ -20,8 +20,8 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.ConflictException;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -36,7 +36,7 @@ import bsh.Interpreter;
 
 public class DatabaseWriter implements IDataWriter {
 
-    protected Log log;
+    protected final static Logger log = LoggerFactory.getLogger(DatabaseWriter.class);
 
     protected IDatabasePlatform platform;
 
@@ -76,29 +76,20 @@ public class DatabaseWriter implements IDataWriter {
 
     public DatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings defaultSettings,
             IDatabaseWriterFilter... filters) {
-        this(platform, null, defaultSettings, null, null, filters);
+        this(platform, null, defaultSettings, null, filters);
     }
 
     public DatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings defaultSettings,
             Map<String, DatabaseWriterSettings> channelSpecificSettings,
             IDatabaseWriterFilter... filters) {
-        this(platform, null, defaultSettings, channelSpecificSettings, null, filters);
+        this(platform, null, defaultSettings, channelSpecificSettings, filters);
     }
 
     public DatabaseWriter(IDatabasePlatform platform,
             IDatabaseWriterConflictResolver conflictResolver,
             DatabaseWriterSettings defaultSettings,
-            Map<String, DatabaseWriterSettings> channelSpecificSettings,
+            Map<String, DatabaseWriterSettings> channelSpecificSettings, 
             IDatabaseWriterFilter... filters) {
-        this(platform, conflictResolver, defaultSettings, channelSpecificSettings, null, filters);
-    }
-
-    public DatabaseWriter(IDatabasePlatform platform,
-            IDatabaseWriterConflictResolver conflictResolver,
-            DatabaseWriterSettings defaultSettings,
-            Map<String, DatabaseWriterSettings> channelSpecificSettings, Log log,
-            IDatabaseWriterFilter... filters) {
-        this.log = log == null ? LogFactory.getLog(getClass()) : log;
         this.platform = platform;
         this.conflictResolver = conflictResolver == null ? new DefaultDatabaseWriterConflictResolver()
                 : conflictResolver;

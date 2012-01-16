@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.db.h2;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -36,8 +35,8 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
     
-    public H2SymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
-        super(log, parameterService, platform);
+    public H2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new H2TriggerText();
     }
     

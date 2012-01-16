@@ -10,7 +10,6 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.TestConstants;
-import org.jumpmind.symmetric.TestUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -945,7 +944,7 @@ public class AbstractRouterServiceTest extends AbstractServiceTest {
                 Assert.assertEquals(0, gap.getEndId() - gap.getStartId());
             }
         } catch (Exception ex) {
-            TestUtils.getLog().error(ex);
+            logger.error(ex.getMessage(), ex);
             throw ex;
         }
     }
@@ -1134,7 +1133,7 @@ public class AbstractRouterServiceTest extends AbstractServiceTest {
         ChannelRouterContext context = new ChannelRouterContext(
                 TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getSqlTemplate()
                         .startSqlTransaction());
-        DataGapRouteReader reader = new DataGapRouteReader(logger, getRouterService().getSqlMap(),
+        DataGapRouteReader reader = new DataGapRouteReader(getRouterService().getSqlMap(),
                 context, getDataService(), getDbDialect(), getParameterService());
         reader.run();
 

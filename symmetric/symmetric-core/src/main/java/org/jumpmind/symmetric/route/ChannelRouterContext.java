@@ -31,8 +31,6 @@ import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.Node;
@@ -41,8 +39,6 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
 public class ChannelRouterContext extends SimpleRouterContext {
-
-    static final Log log = LogFactory.getLog(ChannelRouterContext.class);
 
     public static final String STAT_INSERT_DATA_EVENTS_MS = "data.events.insert.time.ms";
     public static final String STAT_DATA_ROUTER_MS = "data.router.time.ms";
@@ -112,7 +108,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
         try {
             sqlTransaction.rollback();
         } catch (SqlException e) {
-            log.warn(e);
+            log.warn(e.getMessage(),e);
         } finally {
             clearState();
         }
@@ -122,7 +118,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
         try {
             this.sqlTransaction.commit();
         } catch (Exception ex) {
-            log.warn(ex);
+            log.warn(ex.getMessage(),ex);
         } finally {
             this.sqlTransaction.close();
         }

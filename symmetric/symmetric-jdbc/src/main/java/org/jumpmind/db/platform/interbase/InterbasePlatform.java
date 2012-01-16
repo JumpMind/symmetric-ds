@@ -25,7 +25,6 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the Interbase database.
@@ -46,8 +45,8 @@ public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public InterbasePlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+    public InterbasePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, settings);
 
         info.setMaxIdentifierLength(31);
         info.setCommentPrefix("/*");
@@ -94,8 +93,8 @@ public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(false);
         info.setEmptyStringNulled(false);        
 
-        ddlReader = new InterbaseDdlReader(log, this);
-        ddlBuilder = new InterbaseBuilder(log, this);
+        ddlReader = new InterbaseDdlReader(this);
+        ddlBuilder = new InterbaseBuilder(this);
     }
     
     @Override

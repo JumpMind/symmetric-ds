@@ -37,15 +37,14 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for the H2 database. 
  */
 public class H2Builder extends AbstractDdlBuilder {
 
-    public H2Builder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public H2Builder(IDatabasePlatform platform) {
+        super(platform);
         addEscapedCharSequence("'", "''");
     }
 

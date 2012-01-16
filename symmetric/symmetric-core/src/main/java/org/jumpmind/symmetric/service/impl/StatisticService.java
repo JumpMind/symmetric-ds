@@ -30,7 +30,6 @@ import java.util.TreeMap;
 import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IStatisticService;
@@ -45,8 +44,8 @@ import org.jumpmind.symmetric.statistic.JobStats;
  */
 public class StatisticService extends AbstractService implements IStatisticService {
         
-    public StatisticService(Log log, IParameterService parameterService, ISymmetricDialect dialect) {
-        super(log, parameterService, dialect);
+    public StatisticService(IParameterService parameterService, ISymmetricDialect dialect) {
+        super(parameterService, dialect);
     }
 
     public void save(ChannelStats stats) {

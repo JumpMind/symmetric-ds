@@ -31,15 +31,14 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from a HsqlDb database.
  */
 public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
 
-    public HsqlDb2DdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public HsqlDb2DdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }

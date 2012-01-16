@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.db.derby;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -32,8 +31,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class DerbySymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    public DerbySymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
-        super(log, parameterService, platform);
+    public DerbySymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new DerbyTriggerText();
     }
 

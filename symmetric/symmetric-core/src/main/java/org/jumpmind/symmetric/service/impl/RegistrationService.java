@@ -35,7 +35,6 @@ import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.StringMapper;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -77,12 +76,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     private IStatisticManager statisticManager;
 
-    public RegistrationService(Log log, IParameterService parameterService,
+    public RegistrationService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, INodeService nodeService,
             IDataExtractorService dataExtractorService, IDataService dataService,
             IDataLoaderService dataLoaderService, ITransportManager transportManager,
             IStatisticManager statisticManager) {
-        super(log, parameterService, symmetricDialect);
+        super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.dataExtractorService = dataExtractorService;
         this.dataService = dataService;
@@ -238,7 +237,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
         try {
             long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                     * randomTimeSlot.getRandomValueSeededByExternalId();
-            log.warn("Could not register.  Sleeping for %d ms before attempting again.", sleepTimeInMs);
+            log.warn("Could not register.  Sleeping for %d ms before attempting again.",
+                    sleepTimeInMs);
             Thread.sleep(sleepTimeInMs);
         } catch (InterruptedException e) {
         }
@@ -265,7 +265,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } catch (UnknownHostException e) {
                 log.warn("Connection failed while registering.");
             } catch (Exception e) {
-                log.error(e);
+                log.error(e.getMessage(), e);
             }
 
             maxNumberOfAttempts--;
@@ -349,8 +349,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, me.getNodeId() });
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
-                log.info("Just opened registration for external id of %s and a node group of %s and a node id of %s", node.getExternalId(), node.getNodeGroupId(),
-                        nodeId);
+                log.info(
+                        "Just opened registration for external id of %s and a node group of %s and a node id of %s",
+                        new Object[] { node.getExternalId(), node.getNodeGroupId(), nodeId });
             } else {
                 reOpenRegistration(nodeId);
             }

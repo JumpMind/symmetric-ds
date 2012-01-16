@@ -33,15 +33,14 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from a PostgreSql database.
  */
 public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
 
-    public PostgreSqlDdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public PostgreSqlDdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);

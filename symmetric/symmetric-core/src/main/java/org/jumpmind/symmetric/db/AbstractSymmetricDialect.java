@@ -47,8 +47,6 @@ import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
@@ -61,6 +59,8 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.lob.LobHandler;
 
@@ -69,7 +69,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
  */
 abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
-    protected Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
@@ -101,9 +101,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
 
-    public AbstractSymmetricDialect(Log log,
-            IParameterService parameterService, IDatabasePlatform platform) {
-        this.log = log;      
+    public AbstractSymmetricDialect(IParameterService parameterService,
+            IDatabasePlatform platform) {
         this.parameterService = parameterService;
         this.platform = platform;
         
@@ -435,7 +434,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             try {
                 modelFromXml = merge(modelFromXml, readDatabaseFromXml(extraTablesXml));
             } catch (Exception ex) {
-                log.error(ex);
+                log.error(ex.getMessage(),ex);
             }
         }
 
@@ -678,7 +677,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 platform.getSqlTemplate().update("truncate table " + quote + tableName + quote);
                 success = true;
             } catch (DataAccessException ex) {
-                log.warn(ex);
+                log.warn(ex.getMessage(),ex);
                 AppUtils.sleep(5000);
                 tryCount--;
             }
@@ -711,7 +710,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             return this.platform.getSqlTemplate().queryForObject(sql, java.util.Date.class)
                     .getTime();
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(),ex);
             return System.currentTimeMillis();
         }
     }

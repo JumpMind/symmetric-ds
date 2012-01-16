@@ -27,7 +27,6 @@ import java.net.SocketException;
 import java.util.List;
 
 import org.jumpmind.db.sql.AbstractSqlMap;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
@@ -57,10 +56,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
     private IClusterService clusterService;
     
-    public PullService(Log log, IParameterService parameterService, ISymmetricDialect symmetricDialect,
+    public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             INodeService nodeService, IDataLoaderService dataLoaderService,
             IRegistrationService registrationService, IClusterService clusterService) {
-        super(log, parameterService, symmetricDialect);
+        super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.dataLoaderService = dataLoaderService;
         this.registrationService = registrationService;
@@ -90,11 +89,11 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                 dataLoaderService.loadDataFromPull(node, status);
                                 if (status.getDataProcessed() > 0
                                         || status.getBatchesProcessed() > 0) {
-                                    log.info("Pull data received from %s.  %d rows and %d batches were processed.", node.toString(), status.getDataProcessed(),
-                                            status.getBatchesProcessed());
+                                    log.info("Pull data received from %s.  %d rows and %d batches were processed.", new Object[] { node.toString(), status.getDataProcessed(),
+                                            status.getBatchesProcessed() });
                                 } else {
-                                    log.debug("Pull data received from %s.  %d rows and %d batches were processed.", node.toString(), status.getDataProcessed(),
-                                            status.getBatchesProcessed());
+                                    log.debug("Pull data received from %s.  %d rows and %d batches were processed.", new Object[] {node.toString(), status.getDataProcessed(),
+                                            status.getBatchesProcessed()});
                                 }
                             } catch (ConnectException ex) {
                                 log.warn(
@@ -118,7 +117,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                 log.warn("%s", ex.getMessage());
                                 fireOffline(ex, node, status);
                             } catch (IOException ex) {
-                                log.error(ex);
+                                log.error(ex.getMessage(),ex);
                                 fireOffline(ex, node, status);
                             }
                         }

@@ -27,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the H2 database.
@@ -46,8 +45,8 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
     /*
      * Creates a new instance of the H2 platform.
      */
-    public H2Platform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+    public H2Platform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, settings);
 
         info.setNonPKIdentityColumnsSupported(false);
         info.setIdentityOverrideAllowed(false);
@@ -79,8 +78,8 @@ public class H2Platform extends AbstractJdbcDatabasePlatform implements IDatabas
         info.setCharColumnSpaceTrimmed(true);
         info.setEmptyStringNulled(false);
 
-        ddlReader = new H2DdlReader(log, this);
-        ddlBuilder = new H2Builder(log, this);
+        ddlReader = new H2DdlReader(this);
+        ddlBuilder = new H2Builder(this);
     }
     
     @Override

@@ -36,14 +36,14 @@ import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jumpmind.extension.IExtensionPoint;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An abstract class that accumulates data to publish.
@@ -51,7 +51,7 @@ import org.jumpmind.util.Context;
 abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint,
         INodeGroupExtensionPoint {
 
-    protected final Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected final String XML_CACHE = "XML_CACHE_" + this.hashCode();
 

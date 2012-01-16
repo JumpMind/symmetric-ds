@@ -10,7 +10,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 public class InformixPlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
@@ -22,8 +21,8 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
     
     private Map<String, String> sqlScriptReplacementTokens;
 
-    public InformixPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+    public InformixPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, settings);
 
         info.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
         info.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);
@@ -55,8 +54,8 @@ public class InformixPlatform extends AbstractJdbcDatabasePlatform implements ID
             info.setIdentifierQuoteString("\"");
         }
 
-        ddlReader = new InformixDdlReader(log, this);
-        ddlBuilder = new InformixBuilder(log, this);
+        ddlReader = new InformixDdlReader(this);
+        ddlBuilder = new InformixBuilder(this);
         
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");

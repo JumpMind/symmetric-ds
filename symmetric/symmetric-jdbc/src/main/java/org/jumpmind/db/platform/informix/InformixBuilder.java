@@ -8,12 +8,11 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 public class InformixBuilder extends AbstractDdlBuilder {
 
-    public InformixBuilder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public InformixBuilder(IDatabasePlatform platform) {
+        super(platform);
     }
 
     @Override

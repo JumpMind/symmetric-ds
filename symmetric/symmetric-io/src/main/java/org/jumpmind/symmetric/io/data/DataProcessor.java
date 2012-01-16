@@ -1,15 +1,15 @@
 package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataProcessor<R extends IDataReader, W extends IDataWriter> {
 
     private static final String STAT_WRITE_DATA = "statWriteData";
     private static final String STAT_READ_DATA = "statReadData";
 
-    static final Log log = LogFactory.getLog(DataProcessor.class);
+    static final Logger log = LoggerFactory.getLogger(DataProcessor.class);
 
     protected R dataReader;
     protected W dataWriter;
@@ -145,7 +145,7 @@ public class DataProcessor<R extends IDataReader, W extends IDataWriter> {
         try {
             dataResource.close();
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(),ex);
         }
     }
 

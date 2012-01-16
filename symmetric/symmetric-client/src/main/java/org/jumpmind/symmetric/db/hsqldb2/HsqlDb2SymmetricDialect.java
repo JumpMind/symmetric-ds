@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.db.hsqldb2;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -34,8 +33,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    public HsqlDb2SymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
-        super(log, parameterService, platform);
+    public HsqlDb2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new HsqlDb2TriggerText();
         platform.getSqlTemplate().update("SET DATABASE DEFAULT TABLE TYPE CACHED");
     }

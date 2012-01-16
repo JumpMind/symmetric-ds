@@ -27,8 +27,6 @@ import java.util.TreeMap;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.extension.IExtensionPoint;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
@@ -43,6 +41,8 @@ import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -58,7 +58,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class ExtensionPointManager implements IExtensionPointManager {
 
-    private Log log = LogFactory.getLog(getClass());
+    private final static Logger log = LoggerFactory.getLogger(ExtensionPointManager.class);
 
     private boolean initialized = false;
 
@@ -68,8 +68,7 @@ public class ExtensionPointManager implements IExtensionPointManager {
 
     private List<ExtensionPointMetaData> extensionPoints = new ArrayList<ExtensionPointMetaData>();
 
-    public ExtensionPointManager(Log log, ISymmetricEngine engine) {
-        this.log = log;
+    public ExtensionPointManager(ISymmetricEngine engine) {
         this.engine = engine;
     }
 

@@ -24,7 +24,6 @@ import java.net.URL;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlScript;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,8 +34,8 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
-    public Db2v9SymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
-        super(log, parameterService, platform);
+    public Db2v9SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
     }
 
     @Override

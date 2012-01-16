@@ -40,15 +40,14 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.log.Log;
 
 /*
  * The Jdbc Model Reader for Interbase.
  */
 public class InterbaseDdlReader extends AbstractJdbcDdlReader {
 
-    public InterbaseDdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public InterbaseDdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");

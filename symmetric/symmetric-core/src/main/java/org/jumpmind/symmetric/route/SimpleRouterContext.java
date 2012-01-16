@@ -28,12 +28,15 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.util.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SimpleRouterContext extends Context {
+    
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected NodeChannel channel;
     protected boolean encountedTransactionBoundary = false;
@@ -93,7 +96,7 @@ public class SimpleRouterContext extends Context {
         return val;
     }
 
-    synchronized public void logStats(Log log, long totalTimeInMs) {
+    synchronized public void logStats(Logger log, long totalTimeInMs) {
         boolean infoLevel = totalTimeInMs > Constants.LONG_OPERATION_THRESHOLD;
         Set<String> keys = new TreeSet<String>(stats.keySet());
         StringBuilder statsPrintout = new StringBuilder(channel.getChannelId());

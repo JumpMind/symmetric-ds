@@ -26,7 +26,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
@@ -35,8 +34,8 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class PingUriHandler extends AbstractUriHandler {
 
-    public PingUriHandler(Log log, IParameterService parameterService) {
-        super(log, "/ping/*", parameterService);
+    public PingUriHandler(IParameterService parameterService) {
+        super("/ping/*", parameterService);
     }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,

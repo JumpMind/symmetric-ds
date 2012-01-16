@@ -28,15 +28,15 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.csv.CsvWriter;
 
 
 public class CsvUtils {
 
-    static final Log log = LogFactory.getLog(CsvUtils.class);
+    static final Logger log = LoggerFactory.getLogger(CsvUtils.class);
 
     public static final String DELIMITER = ", ";
     

@@ -26,15 +26,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * Contains information about the database platform such as supported features and native type mappings.
  */
 public class DatabasePlatformInfo {
+    
     /* The Log to which logging calls will be made. */
-    private final Log log = LogFactory.getLog(DatabasePlatformInfo.class);
+    private final Logger log = LoggerFactory.getLogger(DatabasePlatformInfo.class);
 
     // properties influencing the definition of columns
 

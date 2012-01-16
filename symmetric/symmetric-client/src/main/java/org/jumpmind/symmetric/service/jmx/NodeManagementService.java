@@ -32,8 +32,6 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
@@ -41,6 +39,8 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedOperationParameter;
@@ -50,7 +50,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 @ManagedResource(description = "The management interface for a node")
 public class NodeManagementService {
 
-    final Log log = LogFactory.getLog(getClass());
+    final Logger log = LoggerFactory.getLogger(getClass());
 
     protected ClientSymmetricEngine engine;
 
@@ -76,7 +76,7 @@ public class NodeManagementService {
                 return false;
             }
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(),ex);
             return false;
         }
     }
@@ -88,7 +88,7 @@ public class NodeManagementService {
                 engine.stop();
             }
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(),ex);
         }
     }
 

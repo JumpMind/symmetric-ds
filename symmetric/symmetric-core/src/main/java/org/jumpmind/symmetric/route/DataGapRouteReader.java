@@ -36,7 +36,6 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -48,6 +47,8 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for reading data for the purpose of routing. It
@@ -56,13 +57,13 @@ import org.jumpmind.util.FormatUtils;
  */
 public class DataGapRouteReader implements IDataToRouteReader {
 
+    protected final static Logger log = LoggerFactory.getLogger(DataGapRouteReader.class);
+    
     private static final String SELECT_DATA_USING_GAPS_SQL = "selectDataUsingGapsSql";
 
     protected List<DataGap> dataGaps;
 
     protected DataGap currentGap;
-
-    protected Log log;
 
     protected BlockingQueue<Data> dataQueue;
 
@@ -78,10 +79,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     protected boolean reading = true;
 
-    public DataGapRouteReader(Log log, ISqlMap sqlMap, ChannelRouterContext context,
+    public DataGapRouteReader(ISqlMap sqlMap, ChannelRouterContext context,
             IDataService dataService, ISymmetricDialect symmetricDialect,
             IParameterService parameterService) {
-        this.log = log;
         this.sqlMap = sqlMap;
         this.symmetricDialect = symmetricDialect;
         this.dataQueue = new LinkedBlockingQueue<Data>(
@@ -95,7 +95,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         try {
             execute();
         } catch (Throwable ex) {
-            log.error(ex);
+            log.error(ex.getMessage(), ex);
         }
     }
 
@@ -149,7 +149,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             }
 
         } catch (Throwable ex) {
-            log.error(ex);
+            log.error(ex.getMessage(), ex);
         } finally {
             copyToQueue(new EOD());
             reading = false;
@@ -188,7 +188,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
             data = dataQueue.poll(timeout, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            log.warn(e);
+            log.warn(e.getMessage(), e);
         }
 
         if (data == null) {

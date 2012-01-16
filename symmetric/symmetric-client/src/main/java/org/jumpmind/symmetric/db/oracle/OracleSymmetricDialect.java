@@ -30,7 +30,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.log.Log;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -56,15 +55,15 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     String selectTransactionsSql = "select min(start_time) from gv$transaction";
 
-    public OracleSymmetricDialect(Log log, IParameterService parameterService, IDatabasePlatform platform) {
-        super(log, parameterService, platform);
+    public OracleSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
         this.triggerText = new OracleTriggerText();
         try {
             areDatabaseTransactionsPendingSince(System.currentTimeMillis());
             supportsTransactionViews = true;
         } catch (Exception ex) {
             if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
-                log.warn(ex);
+                log.warn(ex.getMessage(),ex);
             }
         }
     }
@@ -177,7 +176,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                 date = DateUtils.parseDate(returnValue, new String[] { "MM/dd/yy HH:mm:ss" });
                 return date.getTime() < time;
             } catch (ParseException e) {
-                log.error(e);
+                log.error(e.getMessage(),e);
                 return true;
             }
         } else {

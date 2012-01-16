@@ -33,7 +33,6 @@ import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.MetaDataColumnDescriptor;
-import org.jumpmind.log.Log;
 
 /*
  * Reads a database model from a H2 database. From patch <a
@@ -42,8 +41,8 @@ import org.jumpmind.log.Log;
  */
 public class H2DdlReader extends AbstractJdbcDdlReader {
 
-    public H2DdlReader(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public H2DdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }

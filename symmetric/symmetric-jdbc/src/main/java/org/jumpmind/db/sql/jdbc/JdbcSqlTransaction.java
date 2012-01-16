@@ -13,15 +13,15 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.log.Log;
-import org.jumpmind.log.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TODO Support Oracle's non-standard way of batching
  */
 public class JdbcSqlTransaction implements ISqlTransaction {
 
-    protected final static Log log = LogFactory.getLog(JdbcSqlTransaction.class);
+    protected final static Logger log = LoggerFactory.getLogger(JdbcSqlTransaction.class);
 
     protected boolean inBatchMode = false;
 

@@ -34,14 +34,13 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PlatformUtils;
-import org.jumpmind.log.Log;
 
 /*
  * The SQL Builder for the FireBird database.
  */
 public class FirebirdBuilder extends AbstractDdlBuilder {
-    public FirebirdBuilder(Log log, IDatabasePlatform platform) {
-        super(log, platform);
+    public FirebirdBuilder(IDatabasePlatform platform) {
+        super(platform);
         addEscapedCharSequence("'", "''");
     }
 

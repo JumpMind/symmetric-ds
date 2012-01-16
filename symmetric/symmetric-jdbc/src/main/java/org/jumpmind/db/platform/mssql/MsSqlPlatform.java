@@ -27,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.log.Log;
 
 /*
  * The platform implementation for the Microsoft SQL Server database.
@@ -46,8 +45,8 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
     /*
      * Creates a new platform instance.
      */
-    public MsSqlPlatform(DataSource dataSource, DatabasePlatformSettings settings, Log log) {
-        super(dataSource, settings, log);
+    public MsSqlPlatform(DataSource dataSource, DatabasePlatformSettings settings) {
+        super(dataSource, settings);
 
         info.setMaxIdentifierLength(128);
 
@@ -86,8 +85,8 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setEmptyStringNulled(false);
         info.setAutoIncrementUpdateAllowed(false);
         
-        ddlReader = new MsSqlDdlReader(log, this);
-        ddlBuilder = new MsSqlBuilder(log, this);
+        ddlReader = new MsSqlDdlReader(this);
+        ddlBuilder = new MsSqlBuilder(this);
 
         setDelimitedIdentifierModeOn(true);
     }
