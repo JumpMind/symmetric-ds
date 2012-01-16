@@ -31,6 +31,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.Provider;
+import java.security.Security;
 import java.sql.Connection;
 
 import org.apache.commons.cli.CommandLine;
@@ -141,6 +143,8 @@ public class SymmetricLauncher {
     private static final String OPTION_KEYSTORE_PASSWORD = "keystore-password";
 
     private static final String OPTION_KEYSTORE_TYPE = "keystore-type";
+
+    private static final String OPTION_JCE_PROVIDER = "jce-provider";
 
     protected SymmetricWebServer webServer;
 
@@ -335,7 +339,7 @@ public class SymmetricLauncher {
         addOption(options, "ksp", OPTION_KEYSTORE_PASSWORD, true);
 
         addOption(options, "kst", OPTION_KEYSTORE_TYPE, true);
-
+        addOption(options, "jcep", OPTION_JCE_PROVIDER, true);
     }
 
     protected boolean executeOptions(CommandLine line) throws Exception {
@@ -364,6 +368,11 @@ public class SymmetricLauncher {
         if (line.hasOption(OPTION_KEYSTORE_TYPE)) {
             System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
                     line.getOptionValue(OPTION_KEYSTORE_TYPE));
+        }
+
+        if (line.hasOption(OPTION_JCE_PROVIDER)) {
+            Provider provider = (Provider) Class.forName(line.getOptionValue(OPTION_JCE_PROVIDER)).newInstance();
+            Security.addProvider(provider);
         }
 
         if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
