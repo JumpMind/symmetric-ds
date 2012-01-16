@@ -211,7 +211,7 @@ public class NodeService extends AbstractService implements INodeService {
             }
         } catch (UniqueKeyException ex) {
             log.error(
-                    "Could not find a node security row for %s.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.",
+                    "Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.",
                     nodeId);
             throw ex;
         }
@@ -469,7 +469,7 @@ public class NodeService extends AbstractService implements INodeService {
             }
             return NodeStatus.DATA_LOAD_NOT_STARTED;
         } catch (CannotAcquireLockException ex) {
-            log.error("Could not acquire lock on the table after %s ms.  The status is unknown.",
+            log.error("Could not acquire lock on the table after {} ms.  The status is unknown.",
                     (System.currentTimeMillis() - ts));
             return NodeStatus.STATUS_UNKNOWN;
         }

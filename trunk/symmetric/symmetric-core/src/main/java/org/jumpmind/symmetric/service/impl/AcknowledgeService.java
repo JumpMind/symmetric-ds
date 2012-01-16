@@ -86,7 +86,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     // clearing the error flag in case the user set the batch
                     // status to OK
                     outgoingBatch.setErrorFlag(false);
-                    log.warn("Batch %d was already set to OK.  Not updating to %s.", batch.getBatchId(), status.name());
+                    log.warn("Batch {} was already set to OK.  Not updating to {}.", batch.getBatchId(), status.name());
                 }
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());
@@ -105,13 +105,13 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 }
 
                 if (status == Status.ER) {
-                    log.error("Received an error from node %s for batch %d.  Check the outgoing_batch table for more info.", outgoingBatch.getNodeId(),
+                    log.error("Received an error from node {} for batch {}.  Check the outgoing_batch table for more info.", outgoingBatch.getNodeId(),
                             outgoingBatch.getBatchId());
                 }
 
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
             } else {
-                log.error("Could not find batch %d to acknowledge as %s", batch.getBatchId(), status.name());
+                log.error("Could not find batch {} to acknowledge as {}", batch.getBatchId(), status.name());
             }
         }
     }

@@ -68,7 +68,7 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
                                 .getParsedPkColumnNames(), dataMetaData.getData().toParsedPkData());
             }
         } else if (log.isDebugEnabled()) {
-            log.debug("'%s' not in list to publish", dataMetaData.getData().getTableName());
+            log.debug("'{}' not in list to publish", dataMetaData.getData().getTableName());
         }
         return Collections.emptySet();
     }

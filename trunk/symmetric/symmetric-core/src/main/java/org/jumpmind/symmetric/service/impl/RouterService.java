@@ -202,7 +202,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 gapDetector.afterRouting();
                 ts = System.currentTimeMillis() - ts;
                 if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
-                    log.info("Routed %d data events in %d ms", dataCount, ts);
+                    log.info("Routed {} data events in {} ms", dataCount, ts);
                 }
             } finally {
                 clusterService.unlock(ClusterConstants.ROUTE);
@@ -227,10 +227,10 @@ public class RouterService extends AbstractService implements IRouterService {
                                     .getNodeId()));
                             ts = System.currentTimeMillis() - ts;
                             if (ts > Constants.LONG_OPERATION_THRESHOLD) {
-                                log.warn("Inserted reload events for node %s in %d ms",
+                                log.warn("Inserted reload events for node {} in {} ms",
                                         security.getNodeId(), ts);
                             } else {
-                                log.info("Inserted reload events for node %s in %d ms",
+                                log.info("Inserted reload events for node {} in {} ms",
                                         security.getNodeId(), ts);
                             }
                         }
@@ -257,7 +257,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 dataCount += routeDataForChannel(nodeChannel, sourceNode);
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Not routing the %s channel.  It is either disabled or suspended.",
+                    log.debug("Not routing the {} channel.  It is either disabled or suspended.",
                             nodeChannel.getChannelId());
                 }
             }
@@ -275,7 +275,7 @@ public class RouterService extends AbstractService implements IRouterService {
             dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (Exception ex) {
-            log.error("Failed to route and batch data on '%s' channel", ex,
+            log.error("Failed to route and batch data on '{}' channel", ex,
                     nodeChannel.getChannelId());
             if (context != null) {
                 context.rollback();
@@ -299,7 +299,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                 context.getLastDataIdProcessed());
                         queryTs = System.currentTimeMillis() - queryTs;
                         if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
-                            log.warn("Unrouted query for channel %s took %d ms", channelId, queryTs);
+                            log.warn("Unrouted query for channel {} took {} ms", channelId, queryTs);
                         }
                         statisticManager.setDataUnRouted(channelId, dataLeftToRoute);
                     }
@@ -354,7 +354,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 nodes.addAll(nodeService.findEnabledNodesFromNodeGroup(router.getNodeGroupLink()
                         .getTargetNodeGroupId()));
             } else {
-                log.error("The router %s has no node group link configured from %s to %s",
+                log.error("The router {} has no node group link configured from {} to {}",
                         new Object[] { router.getRouterId(),
                                 router.getNodeGroupLink().getSourceNodeGroupId(),
                                 router.getNodeGroupLink().getTargetNodeGroupId() });
@@ -471,7 +471,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
         } else {
             log.warn(
-                    "Could not find trigger for trigger id of %s.  Not processing data with the id of %s",
+                    "Could not find trigger for trigger id of {}.  Not processing data with the id of {}",
                     data.getTriggerHistory().getTriggerId(), data.getDataId());
         }
 
@@ -519,7 +519,7 @@ public class RouterService extends AbstractService implements IRouterService {
             router = routers.get(trigger.getRouter().getRouterType());
             if (router == null) {
                 log.warn(
-                        "Could not find configured router '%s' for trigger with the id of %s. Defaulting the router",
+                        "Could not find configured router '{}' for trigger with the id of {}. Defaulting the router",
                         trigger.getRouter().getRouterType(), trigger.getTrigger().getTriggerId());
             }
         }
@@ -542,7 +542,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
             } else {
                 log.warn(
-                        "Could not find a trigger hist record for recorded data %d.  Was the trigger hist record deleted manually?",
+                        "Could not find a trigger hist record for recorded data {}.  Was the trigger hist record deleted manually?",
                         data.getDataId());
             }
         }

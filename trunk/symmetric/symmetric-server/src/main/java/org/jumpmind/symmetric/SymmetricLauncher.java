@@ -163,7 +163,7 @@ public class SymmetricLauncher {
 
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {
-                    log.info("Option: name=%s, value=%s", new Object[] { option.getLongOpt(),
+                    log.info("Option: name={}, value={}", new Object[] { option.getLongOpt(),
                             ArrayUtils.toString(option.getValues()) });
                 }
             }

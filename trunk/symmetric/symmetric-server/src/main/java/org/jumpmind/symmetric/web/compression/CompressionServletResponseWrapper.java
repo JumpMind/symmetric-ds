@@ -103,7 +103,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
      * Set content type
      */
     public void setContentType(String contentType) {
-        log.debug("setContentType to %s", contentType);
+        log.debug("setContentType to {}", contentType);
         this.contentType = contentType;
         origResponse.setContentType(contentType);
     }
@@ -167,7 +167,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
 
         if (stream == null)
             stream = createOutputStream();
-        log.debug("stream is set to %s in getOutputStream", stream);
+        log.debug("stream is set to {} in getOutputStream", stream);
         return (stream);
     }
 
@@ -189,10 +189,10 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
             throw new IllegalStateException("getOutputStream() has already been called for this response");
 
         stream = createOutputStream();
-        log.debug("stream is set to %s in getWriter", stream);
+        log.debug("stream is set to {} in getWriter", stream);
         // String charset = getCharsetFromContentType(contentType);
         String charEnc = origResponse.getCharacterEncoding();
-        log.debug("character encoding is %s", charEnc);
+        log.debug("character encoding is {}", charEnc);
         // HttpServletResponse.getCharacterEncoding() shouldn't return null
         // according the spec, so feel free to remove that "if"
         if (charEnc != null) {

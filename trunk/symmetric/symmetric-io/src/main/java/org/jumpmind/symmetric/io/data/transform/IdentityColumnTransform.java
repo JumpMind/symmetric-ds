@@ -37,7 +37,7 @@ public class IdentityColumnTransform implements ISingleValueColumnTransform, IBu
             TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
             throws IgnoreColumnException, IgnoreRowException {  
         if (log.isDebugEnabled()) {
-            log.debug("The %s transform requires a generated identity column.  This was configured using the %s target column.", data.getTransformation().getTransformId(), column.getTargetColumnName());
+            log.debug("The {} transform requires a generated identity column.  This was configured using the {} target column.", data.getTransformation().getTransformId(), column.getTargetColumnName());
         }
         data.setGeneratedIdentityNeeded(true);
         throw new IgnoreColumnException();

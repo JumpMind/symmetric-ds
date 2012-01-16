@@ -99,7 +99,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     log.info("The data gap purge process is about to run");
                     rowsPurged = sqlTemplate.update(getSql("deleteFromDataGapsSql"),
                             new Object[] { retentionCutoff.getTime() });
-                    log.info("Purged %d data gap rows", rowsPurged);
+                    log.info("Purged {} data gap rows", rowsPurged);
                 } finally {
                     clusterService.unlock(ClusterConstants.PURGE_DATA_GAPS);
                     log.info("The data gap purge process has completed");
@@ -119,7 +119,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         try {
             if (clusterService.lock(ClusterConstants.PURGE_OUTGOING)) {
                 try {
-                    log.info("The outgoing purge process is about to run for data older than %s",
+                    log.info("The outgoing purge process is about to run for data older than {}",
                             SimpleDateFormat.getDateTimeInstance()
                                     .format(retentionCutoff.getTime()));
                     rowsPurged += purgeStrandedBatches();
@@ -160,7 +160,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int updateStrandedBatchesCount = sqlTemplate.update(getSql("updateStrandedBatches"));
         if (updateStrandedBatchesCount > 0) {
             log.info(
-                    "Set the status to OK for %d batches that no longer are associated with valid nodes",
+                    "Set the status to OK for {} batches that no longer are associated with valid nodes",
                     updateStrandedBatchesCount);
             statisticManager.incrementPurgedBatchOutgoingRows(updateStrandedBatchesCount);
         }
@@ -172,7 +172,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 new Timestamp(time.getTime()));
         if (unroutedDataEventCount > 0) {
             statisticManager.incrementPurgedDataEventRows(unroutedDataEventCount);
-            log.info("Done purging %d of %s rows", unroutedDataEventCount, "unrouted data_event");
+            log.info("Done purging {} of {} rows", unroutedDataEventCount, "unrouted data_event");
         }
         return unroutedDataEventCount;
     }
@@ -209,7 +209,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int totalCount = 0;
         int totalDeleteStmts = 0;
         Timestamp cutoffTime = new Timestamp(retentionTime.getTime());
-        log.info("About to purge %s", identifier.toString().toLowerCase());
+        log.info("About to purge {}", identifier.toString().toLowerCase());
         while (minId <= purgeUpToId) {
             totalDeleteStmts++;
             long maxId = minId + maxNumtoPurgeinTx;
@@ -243,13 +243,13 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
             if (totalCount > 0
                     && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                log.info("Purged %d of %s rows so far using %d statements", new Object[] {
+                log.info("Purged {} of {} rows so far using {} statements", new Object[] {
                         totalCount, identifier.toString().toLowerCase(), totalDeleteStmts });
                 ts = System.currentTimeMillis();
             }
             minId = maxId + 1;
         }
-        log.info("Done purging %d of %s rows", totalCount, identifier.toString().toLowerCase());
+        log.info("Done purging {} of {} rows", totalCount, identifier.toString().toLowerCase());
         return totalCount;
     }
 
@@ -293,7 +293,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int totalCount = 0;
         int totalDeleteStmts = 0;
         String tableName = deleteSql.trim().split("\\s")[2];
-        log.info("About to purge %s", tableName);
+        log.info("About to purge {}", tableName);
 
         for (NodeBatchRange nodeBatchRange : nodeBatchRangeList) {
             int maxNumOfDataIdsToPurgeInTx = parameterService
@@ -314,12 +314,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
             if (totalCount > 0
                     && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                log.info("Purged %d of %s rows so far using %d statements", new Object[] {totalCount, tableName,
+                log.info("Purged {} of {} rows so far using {} statements", new Object[] {totalCount, tableName,
                         totalDeleteStmts});
                 ts = System.currentTimeMillis();
             }
         }
-        log.info("Done purging %d of %s rows", totalCount, tableName);
+        log.info("Done purging {} of {} rows", totalCount, tableName);
         return totalCount;
     }
 
@@ -352,7 +352,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     public void purgeAllIncomingEventsForNode(String nodeId) {
         int count = sqlTemplate.update(getSql("deleteIncomingBatchByNodeSql"),
                 new Object[] { nodeId });
-        log.info("Purged all %d incoming batch for node %s", count, nodeId);
+        log.info("Purged all {} incoming batch for node {}", count, nodeId);
     }
 
 }

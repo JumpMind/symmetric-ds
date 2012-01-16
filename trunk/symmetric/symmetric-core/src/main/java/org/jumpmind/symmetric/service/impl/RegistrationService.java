@@ -116,7 +116,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
         String redirectUrl = getRedirectionUrlFor(node.getExternalId());
         if (redirectUrl != null) {
-            log.info("Redirecting %s to %s for registration.", node.getExternalId(), redirectUrl);
+            log.info("Redirecting {} to {} for registration.", node.getExternalId(), redirectUrl);
             saveRegisgtrationRequest(new RegistrationRequest(node, RegistrationStatus.RR,
                     remoteHost, remoteAddress));
             throw new RegistrationRedirectException(redirectUrl);
@@ -237,7 +237,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         try {
             long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                     * randomTimeSlot.getRandomValueSeededByExternalId();
-            log.warn("Could not register.  Sleeping for %d ms before attempting again.",
+            log.warn("Could not register.  Sleeping for {} ms before attempting again.",
                     sleepTimeInMs);
             Thread.sleep(sleepTimeInMs);
         } catch (InterruptedException e) {
@@ -275,7 +275,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } else {
                 Node node = nodeService.findIdentity();
                 if (node != null) {
-                    log.info("Successfully registered node [id=%s]", node.getNodeId());
+                    log.info("Successfully registered node [id={}]", node.getNodeId());
                 } else if (!errorOccurred) {
                     log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error.");
                     registered = false;
@@ -315,7 +315,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         nodeId, password, nodeService.findNode(nodeId).getNodeId() });
             }
         } else {
-            log.warn("There was no row with a node id of %s to 'reopen' registration for.", nodeId);
+            log.warn("There was no row with a node id of {} to 'reopen' registration for.", nodeId);
         }
     }
 
@@ -350,7 +350,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         nodeId, password, me.getNodeId() });
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
                 log.info(
-                        "Just opened registration for external id of %s and a node group of %s and a node id of %s",
+                        "Just opened registration for external id of {} and a node group of {} and a node id of {}",
                         new Object[] { node.getExternalId(), node.getNodeGroupId(), nodeId });
             } else {
                 reOpenRegistration(nodeId);

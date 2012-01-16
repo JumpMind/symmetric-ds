@@ -305,11 +305,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     Node node = nodeService.findIdentity();
                     if (node != null) {
                         log.info(
-                                "Starting registered node [group=%s, id=%s, externalId=%s]",
+                                "Starting registered node [group={}, id={}, externalId={}]",
                                 new Object[] { node.getNodeGroupId(), node.getNodeId(),
                                         node.getExternalId() });
                     } else {
-                        log.info("Starting unregistered node [group=%s, externalId=%s]",
+                        log.info("Starting unregistered node [group={}, externalId={}]",
                                 parameterService.getNodeGroupId(), parameterService.getExternalId());
                     }
                     triggerRouterService.syncTriggers();
@@ -329,7 +329,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         }
 
         log.info(
-                "SymmetricDS: type=%s, name=%s, version=%s, groupId=%s, externalId=%s, databaseName=%s, databaseVersion=%s, driverName=%s, driverVersion=%s",
+                "SymmetricDS: type={}, name={}, version={}, groupId={}, externalId={}, databaseName={}, databaseVersion={}, driverName={}, driverVersion={}",
                 new Object[] { getDeploymentType().getDeploymentType(), getEngineName(),
                         Version.version(), getParameterService().getNodeGroupId(),
                         getParameterService().getExternalId(), symmetricDialect.getName(),
@@ -339,7 +339,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized void stop() {
-        log.info("Closing SymmetricDS externalId=%s version=%s database=%s",
+        log.info("Closing SymmetricDS externalId={} version={} database={}",
                 new Object[] { getParameterService().getExternalId(), Version.version(),
                         symmetricDialect.getName() });
         if (jobManager != null) {
@@ -425,7 +425,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         } else if (!isSelfConfigurable && node == null
                 && StringUtils.isBlank(getParameterService().getRegistrationUrl())) {
             log.warn(
-                    "Please set the property %s so this node may pull registration or manually insert configuration into the configuration tables",
+                    "Please set the property {} so this node may pull registration or manually insert configuration into the configuration tables",
                     ParameterConstants.REGISTRATION_URL);
         } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())
                 || Constants.PLEASE_SET_ME.equals(registrationUrl)
@@ -435,7 +435,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node
                         .getNodeGroupId().equals(getParameterService().getNodeGroupId()))) {
             log.warn(
-                    "The configured state does not match recorded database state.  The recorded external id is %s while the configured external id is %s. The recorded node group id is %s while the configured node group id is %s",
+                    "The configured state does not match recorded database state.  The recorded external id is {} while the configured external id is {}. The recorded node group id is {} while the configured node group id is {}",
                     new Object[] { node.getExternalId(), getParameterService().getExternalId(),
                             node.getNodeGroupId(), getParameterService().getNodeGroupId() });
 
@@ -448,7 +448,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             // Offline node detection is not disabled (-1) and the value is too
             // small (less than the heartbeat)
             log.warn(
-                    "The %s property must be a longer period of time than the %s property.  Otherwise, nodes will be taken offline before the heartbeat job has a chance to run",
+                    "The {} property must be a longer period of time than the {} property.  Otherwise, nodes will be taken offline before the heartbeat job has a chance to run",
                     ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES,
                     ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
 

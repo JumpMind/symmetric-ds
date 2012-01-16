@@ -74,14 +74,14 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
                 lookupValue = values.get(0);
             } else if (rowCount > 1) {
                 lookupValue = values.get(0);
-                log.warn("Expected a single row, but returned multiple rows from lookup for target column %s on transform %s ", column.getTargetColumnName(),
+                log.warn("Expected a single row, but returned multiple rows from lookup for target column {} on transform {} ", column.getTargetColumnName(),
                         column.getTransformId());
             } else if (values.size() == 0) {
-                log.warn("Expected a single row, but returned no rows from lookup for target column %s on transform %s", column.getTargetColumnName(),
+                log.warn("Expected a single row, but returned no rows from lookup for target column {} on transform {}", column.getTargetColumnName(),
                         column.getTransformId());
             }
         } else {
-            log.warn("Expected SQL expression for lookup transform, but no expression was found for target column %s on transform %s", column.getTargetColumnName(),
+            log.warn("Expected SQL expression for lookup transform, but no expression was found for target column {} on transform {}", column.getTargetColumnName(),
                     column.getTransformId());
         }
         return lookupValue;

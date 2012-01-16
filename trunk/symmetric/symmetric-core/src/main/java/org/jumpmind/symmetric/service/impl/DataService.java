@@ -212,7 +212,7 @@ public class DataService extends AbstractService implements IDataService {
                 Constants.CHANNEL_DEFAULT, firstDataId, lastDataId);
         if (numberUpdated > 0) {
             log.warn(
-                    "There were %d data records found between %d and %d that an invalid channel_id.  Updating them to be on the '%s' channel.",
+                    "There were {} data records found between {} and {} that an invalid channel_id.  Updating them to be on the '{}' channel.",
                     new Object[] { numberUpdated, firstDataId, lastDataId,
                             Constants.CHANNEL_DEFAULT });
         }
@@ -277,7 +277,7 @@ public class DataService extends AbstractService implements IDataService {
                     StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId },
                     new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR });
         } catch (RuntimeException ex) {
-            log.error("Could not insert a data event: data_id=%d batch_id=%d router_id=%s",
+            log.error("Could not insert a data event: data_id={} batch_id={} router_id={}",
                     new Object[] { dataId, batchId, routerId });
             log.error(ex.getMessage(), ex);
             throw ex;
@@ -522,12 +522,12 @@ public class DataService extends AbstractService implements IDataService {
                         insertData(data);
                     } else {
                         log.warn(
-                                "Not generating data/data events for table %s because a trigger or trigger hist is not created yet.",
+                                "Not generating data/data events for table {} because a trigger or trigger hist is not created yet.",
                                 tableName);
                     }
                 } else {
                     log.warn(
-                            "Not generating data/data events for table %s because a trigger or trigger hist is not created yet.",
+                            "Not generating data/data events for table {} because a trigger or trigger hist is not created yet.",
                             tableName);
                 }
             }
@@ -629,7 +629,7 @@ public class DataService extends AbstractService implements IDataService {
                     AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
                     Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
         } catch (UniqueKeyException ex) {
-            log.warn("A gap already existed for %d to %d.  Updating instead.", gap.getStartId(),
+            log.warn("A gap already existed for {} to {}.  Updating instead.", gap.getStartId(),
                     gap.getEndId());
             updateDataGap(gap, DataGap.Status.GP);
         }

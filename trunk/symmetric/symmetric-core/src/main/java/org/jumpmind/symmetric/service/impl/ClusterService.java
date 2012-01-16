@@ -73,10 +73,10 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void initLockTable(final String action) {
         try {
             sqlTemplate.update(getSql("insertLockSql"), new Object[] { action });
-            log.debug("Inserted into the NODE_LOCK table for %s", action);
+            log.debug("Inserted into the NODE_LOCK table for {}", action);
 
         } catch (UniqueKeyException ex) {
-            log.debug("Failed to insert to the NODE_LOCK table for %s.  Must be initialized already.", action);
+            log.debug("Failed to insert to the NODE_LOCK table for {}.  Must be initialized already.", action);
         }
     }
 
@@ -126,7 +126,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void unlock(final String action) {
         if (isClusteringEnabled()) {
             if (!unlock(action, serverId)) {
-                log.warn("Failed to release lock for action:%s server:%s", action, serverId);
+                log.warn("Failed to release lock for action:{} server:{}", action, serverId);
             }
         }
     }

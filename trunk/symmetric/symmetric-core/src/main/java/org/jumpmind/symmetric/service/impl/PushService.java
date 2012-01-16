@@ -90,18 +90,18 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     if (nodes != null && nodes.size() > 0) {
                         if (identitySecurity != null) {
                             for (Node node : nodes) {
-                                log.debug("Push requested for %s", node);
+                                log.debug("Push requested for {}", node);
                                 RemoteNodeStatus status = pushToNode(node, identity, identitySecurity);
                                 statuses.add(status);
                                 if (status.getBatchesProcessed() > 0) {
-                                    log.info("Pushed data to %s", node);
+                                    log.info("Pushed data to {}", node);
                                 } else if (status.failed()) {
                                     log.warn("There was an error while pushing data to the server");
                                 }
-                                log.debug("Push completed for %s", node);
+                                log.debug("Push completed for {}", node);
                             }
                         } else {
-                            log.error("Could not find a node security row for %s.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.", identity.getNodeId());
+                            log.error("Could not find a node security row for {}.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data.", identity.getNodeId());
                         }
                     }
                 } finally {
@@ -123,13 +123,13 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
             List<OutgoingBatch> extractedBatches = dataExtractorService.extract(remote, transport);
             if (extractedBatches.size() > 0) {
-                log.info("Push data sent to %s", remote);
+                log.info("Push data sent to {}", remote);
                 BufferedReader reader = transport.readResponse();
                 String ackString = reader.readLine();
                 String ackExtendedString = reader.readLine();
 
-                log.debug("Reading ack: %s", ackString);
-                log.debug("Reading extend ack: %s", ackExtendedString);
+                log.debug("Reading ack: {}", ackString);
+                log.debug("Reading extend ack: {}", ackExtendedString);
 
                 if (StringUtils.isBlank(ackString)) {
                     log.error("Did not receive an acknowledgement for the batches sent.");
@@ -139,7 +139,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         ackExtendedString);
 
                 for (BatchInfo batchInfo : batches) {
-                    log.debug("Saving ack: %s, %s", batchInfo.getBatchId(), (batchInfo.isOk() ? "OK"
+                    log.debug("Saving ack: {}, {}", batchInfo.getBatchId(), (batchInfo.isOk() ? "OK"
                             : "error"));
                     acknowledgeService.ack(batchInfo);
                 }
@@ -155,10 +155,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             log.warn(".");
             fireOffline(ex, remote, status);
         } catch (SocketException ex) {
-            log.warn("%s", ex.getMessage());
+            log.warn("{}", ex.getMessage());
             fireOffline(ex, remote, status);
         } catch (TransportException ex) {
-            log.warn("%s", ex.getMessage());
+            log.warn("{}", ex.getMessage());
             fireOffline(ex, remote, status);
         } catch (AuthenticationException ex) {
             log.warn(".");

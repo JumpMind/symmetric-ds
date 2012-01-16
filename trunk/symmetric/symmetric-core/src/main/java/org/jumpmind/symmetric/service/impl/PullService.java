@@ -85,14 +85,14 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         for (Node node : nodes) {
                             RemoteNodeStatus status = statuses.add(node);
                             try {
-                                log.debug("Pull requested for %s", node.toString());
+                                log.debug("Pull requested for {}", node.toString());
                                 dataLoaderService.loadDataFromPull(node, status);
                                 if (status.getDataProcessed() > 0
                                         || status.getBatchesProcessed() > 0) {
-                                    log.info("Pull data received from %s.  %d rows and %d batches were processed.", new Object[] { node.toString(), status.getDataProcessed(),
+                                    log.info("Pull data received from {}.  {} rows and {} batches were processed.", new Object[] { node.toString(), status.getDataProcessed(),
                                             status.getBatchesProcessed() });
                                 } else {
-                                    log.debug("Pull data received from %s.  %d rows and %d batches were processed.", new Object[] {node.toString(), status.getDataProcessed(),
+                                    log.debug("Pull data received from {}.  {} rows and {} batches were processed.", new Object[] {node.toString(), status.getDataProcessed(),
                                             status.getBatchesProcessed()});
                                 }
                             } catch (ConnectException ex) {
@@ -111,10 +111,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                 log.warn(".");
                                 fireOffline(ex, node, status);
                             } catch (SocketException ex) {
-                                log.warn("%s", ex.getMessage());
+                                log.warn("{}", ex.getMessage());
                                 fireOffline(ex, node, status);
                             } catch (TransportException ex) {
-                                log.warn("%s", ex.getMessage());
+                                log.warn("{}", ex.getMessage());
                                 fireOffline(ex, node, status);
                             } catch (IOException ex) {
                                 log.error(ex.getMessage(),ex);

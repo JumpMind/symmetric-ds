@@ -55,7 +55,7 @@ public class BandwidthService implements IBandwidthService {
             BandwidthTestResults bw = getDownloadResultsFor(syncUrl, sampleSize, maxTestDuration);
             downloadSpeed = (int) bw.getKbps();
         } catch (SocketTimeoutException e) {
-            log.warn("Socket timeout while attempting to contact %s", syncUrl);
+            log.warn("Socket timeout while attempting to contact {}", syncUrl);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -82,7 +82,7 @@ public class BandwidthService implements IBandwidthService {
             }
             is.close();
             bw.stop();
-            log.info("%s was calculated to have a download bandwidth of %s kbps", syncUrl, bw.getKbps());
+            log.info("{} was calculated to have a download bandwidth of {} kbps", syncUrl, bw.getKbps());
             return bw;
         } finally {
             IOUtils.closeQuietly(is);

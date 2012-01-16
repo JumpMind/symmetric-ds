@@ -106,7 +106,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.parameterService = parameterService;
         this.platform = platform;
         
-        log.info("The DbDialect being used is %s", this.getClass().getName());
+        log.info("The DbDialect being used is {}", this.getClass().getName());
         
         ISqlTemplate sqlTemplate = this.platform.getSqlTemplate();
         this.databaseMajorVersion = sqlTemplate.getDatabaseMajorVersion();
@@ -183,7 +183,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 this.platform.getSqlTemplate().update(
                         triggerText.getFunctionSql(functions[i], funcName,
                                 platform.getDefaultSchema()));
-                log.info("Just installed %s", funcName);
+                log.info("Just installed {}", funcName);
             }
         }
     }
@@ -270,7 +270,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml,
             final Trigger trigger, final TriggerHistory hist, final Channel channel,
             final String tablePrefix, final Table table) {
-        log.info("Creating %s trigger for %s", hist.getTriggerNameForDmlType(dml),
+        log.info("Creating {} trigger for {}", hist.getTriggerNameForDmlType(dml),
                 trigger.getSourceTableName());
 
         String previousCatalog = null;
@@ -291,10 +291,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, transaction);
 
                 try {
-                    log.debug("Running: %s", triggerSql);
+                    log.debug("Running: {}", triggerSql);
                     transaction.execute(triggerSql);
                 } catch (SqlException ex) {
-                    log.error("Failed to create trigger: %s", triggerSql);
+                    log.error("Failed to create trigger: {}", triggerSql);
                     throw ex;
                 }
 
@@ -302,7 +302,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     try {
                         transaction.execute(postTriggerDml);
                     } catch (SqlException ex) {
-                        log.error("Failed to create post trigger: %s", postTriggerDml);
+                        log.error("Failed to create post trigger: {}", postTriggerDml);
                         throw ex;
                     }
                 }
@@ -468,7 +468,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
 
                 if (log.isDebugEnabled()) {
-                    log.debug("Alter SQL Generated: %s", alterSql);
+                    log.debug("Alter SQL Generated: {}", alterSql);
                 }
                 new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, delimiter, null)
                         .execute();

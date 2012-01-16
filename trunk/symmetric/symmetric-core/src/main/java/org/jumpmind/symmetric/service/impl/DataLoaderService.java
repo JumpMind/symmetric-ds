@@ -161,7 +161,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             } else {
                 transport = transportManager.getRegisterTransport(local,
                         parameterService.getRegistrationUrl());
-                log.info("Using registration URL of %s", transport.getUrl());
+                log.info("Using registration URL of {}", transport.getUrl());
                 remote = new Node();
                 remote.setSyncUrl(parameterService.getRegistrationUrl());
             }
@@ -188,7 +188,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             loadDataFromPull(null, status);
             nodeService.findIdentity(false);
         } catch (MalformedURLException e) {
-            log.error("Could not connect to the %s node's transport because of a bad URL: %s",
+            log.error("Could not connect to the {} node's transport because of a bad URL: {}",
                     remote.getNodeId(), remote.getSyncUrl());
             throw e;
         }
@@ -208,11 +208,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 sendAck = transportManager.sendAcknowledgement(remote, list, local,
                         localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
             } catch (IOException ex) {
-                log.warn("Ack was not sent successfully on try number %d.  %s", (i + 1),
+                log.warn("Ack was not sent successfully on try number {}.  {}", (i + 1),
                         ex.getMessage());
                 error = ex;
             } catch (RuntimeException ex) {
-                log.warn("Ack was not sent successfully on try number %d.  %s", (i + 1),
+                log.warn("Ack was not sent successfully on try number {}.  {}", (i + 1),
                         ex.getMessage());
                 error = ex;
             }
@@ -293,7 +293,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             for (IncomingBatch incomingBatch : batchesProcessed) {
                 if (incomingBatch.getBatchId() != BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION
                         && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
-                    log.error("Failed to update batch %d.  Zero rows returned.",
+                    log.error("Failed to update batch {}.  Zero rows returned.",
                             incomingBatch.getBatchId());
                 }
             }
@@ -303,7 +303,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (ConnectException ex) {
             throw ex;
         } catch (UnknownHostException ex) {
-            log.warn("Could not connect to the transport because the host was unknown: %s",
+            log.warn("Could not connect to the transport because the host was unknown: {}",
                     ex.getMessage());
             throw ex;
         } catch (RegistrationNotOpenException ex) {
@@ -318,9 +318,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw ex;
         } catch (IOException ex) {
             if (ex.getMessage() != null && !ex.getMessage().startsWith("http")) {
-                log.error("Failed while reading batch because: %s", ex.getMessage());
+                log.error("Failed while reading batch because: {}", ex.getMessage());
             } else {
-                log.error("Failed while reading batch because: %s", ex.getMessage(), ex);
+                log.error("Failed while reading batch because: {}", ex.getMessage(), ex);
             }
             throw ex;
         } catch (Exception ex) {
@@ -484,11 +484,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 enableSyncTriggers(context);
                 statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
                 if (ex instanceof IOException || ex instanceof TransportException) {
-                    log.warn("Failed to load batch %s because: %s",
+                    log.warn("Failed to load batch {} because: {}",
                             this.currentBatch.getNodeBatchId(), ex.getMessage());
                     this.currentBatch.setSqlMessage(ex.getMessage());
                 } else {
-                    log.error("Failed to load batch %s because: %s", new Object[] { 
+                    log.error("Failed to load batch {} because: {}", new Object[] { 
                             this.currentBatch.getNodeBatchId(), ex.getMessage() });
                     log.error(ex.getMessage(), ex);
                     SQLException se = unwrapSqlException(ex);
@@ -509,7 +509,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
                 incomingBatchService.updateIncomingBatch(this.currentBatch);
             } catch (Exception e) {
-                log.error("Failed to record status of batch %s",
+                log.error("Failed to record status of batch {}",
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
                                 .getBatch().getNodeBatchId());
             }
