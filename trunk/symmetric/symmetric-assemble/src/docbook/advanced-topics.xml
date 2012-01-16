@@ -754,19 +754,54 @@ net stop symmetric</programlisting>
       <section id="encrypted-passwords">
         <title>Encrypted Passwords</title>
         <para>
-            The <literal>db.user</literal> and <literal>db.password properties</literal> will accept encrypted text, which protects
+            The <literal>db.user</literal> and <literal>db.password</literal> properties will accept encrypted text, which protects
             against casual observation.  The text is prefixed with <literal>enc:</literal> to indicate
             that it is encrypted.  To encrypt text, use the following command:
+
+            <programlisting>sym -e secret</programlisting>
+
+            The text is encrypted using a secret key named "sym.secret" that is retrieved from a keystore file. 
+            By default, the keystore is located in <filename class="filename">security/keystore</filename>.
+            The location and filename of the keystore can be overridden by setting the "sym.keystore.file" system property.
+            If the secret key is not found, the system will generate and install a secret key for use with Triple DES cipher.
         </para>
         <para>
-            <command>sym -e secret</command>
-        </para>
-        <para>
-            The text is encrypted by the cipher defined as alias "sym.secret" in the 
-            Java keystore.  The keystore is specified by the "sym.keystore.file" system property, which
-            defaults to <filename class="filename">security/keystore</filename>.
-            If a cipher is not found, a default cipher using Triple DES with a random password
-            is generated.
+            Generate a new secret key for encryption using the <literal>keytool</literal>
+            command that comes with the JRE.  If there is an existing key in the keystore, first remove it:
+
+            <programlisting>keytool -keystore keystore -storepass changeit -storetype jceks \
+   -alias sym.secret -delete</programlisting>
+
+            Then generate a secret key, specifying a cipher algorithm and key size.
+            Commonly used algorithms that are supported include aes, blowfish, desede, and rc4.
+
+            <programlisting>keytool -keystore keystore -storepass changeit -storetype jceks \
+   -alias sym.secret -genseckey -keyalg aes -keysize 128</programlisting>
+
+            If using an alternative provider, place the provider JAR file in the SymmetricDS <filename class="directory">lib</filename> folder. 
+            The provider class name should be installed in the JRE security properties or specified on the command line.
+            To install in the JRE, edit the JRE <filename class="filename">lib/security/java.security</filename> file
+            and set a <literal>security.provider.i</literal> property for the provider class name.
+            Or, the provider can be specified on the command line instead.
+            Both <literal>keytool</literal> and <literal>sym</literal> accept command line arguments for the provider class name.
+            For example, using the Bouncy Castle provider, the command line options would look like:
+
+            <programlisting>keytool -keystore keystore -storepass changeit -storetype jceks \
+   -alias sym.secret -genseckey -keyalg idea -keysize 56 \
+   -providerClass org.bouncycastle.jce.provider.BouncyCastleProvider \
+   -providerPath ..\lib\bcprov-ext.jar</programlisting>
+            <programlisting>sym -jcep org.bouncycastle.jce.provider.BouncyCastleProvider -e secret</programlisting>
+
+            To customize the encryption, write a Java class that implements the ISecurityService or extends the default SecurityService, and place
+            the class on the classpath in either <filename class="directory">lib</filename> or
+            <filename class="directory">web/WEB-INF/lib</filename> folders.
+            Then, in the <filename class="filename">symmetric.properties</filename> specify your class name for the security service.
+
+            <programlisting>security.service.class.name=org.jumpmind.symmetric.service.impl.SecurityService</programlisting>
+
+            Remember to specify your properties file when encrypting passwords, so it will use your custom ISecurityService.
+
+            <programlisting>sym -p symmetric.properties -e secret</programlisting>
         </para>
     </section>
     <section id="secure-transport">
