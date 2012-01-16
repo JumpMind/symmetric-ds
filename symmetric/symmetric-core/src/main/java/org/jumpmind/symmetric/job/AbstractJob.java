@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -74,17 +75,19 @@ abstract public class AbstractJob implements Runnable, IJob {
     private RandomTimeSlot randomTimeSlot;
 
     private boolean autoStartConfigured;
-    
+
     protected ISymmetricEngine engine;
 
-    protected AbstractJob(String jobName, boolean requiresRegistration, boolean autoStartRequired, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+    protected AbstractJob(String jobName, boolean requiresRegistration, boolean autoStartRequired,
+            ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         this.engine = engine;
         this.taskScheduler = taskScheduler;
         this.jobName = jobName;
         this.requiresRegistration = requiresRegistration;
-        this.autoStartConfigured = autoStartRequired;        
+        this.autoStartConfigured = autoStartRequired;
         this.cronExpression = engine.getParameterService().getString(jobName + ".cron", null);
-        this.timeBetweenRunsInMs = engine.getParameterService().getInt(jobName + ".period.time.ms", -1);
+        this.timeBetweenRunsInMs = engine.getParameterService().getInt(jobName + ".period.time.ms",
+                -1);
         this.randomTimeSlot = new RandomTimeSlot(engine.getParameterService());
     }
 
@@ -142,48 +145,54 @@ abstract public class AbstractJob implements Runnable, IJob {
         try {
             if (engine == null) {
                 log.info("Could not find a reference to the SymmetricEngine from {}", jobName);
-            } else if (engine.isStarted()) {
-                if (!paused || force) {
-                    if (!running) {
-                        running = true;
-                        synchronized (this) {
-                            ran = true;
-                            long startTime = System.currentTimeMillis();
-                            long processCount = 0;
-                            try {
-                                if (!requiresRegistration
-                                        || (requiresRegistration && engine.getRegistrationService()
-                                                .isRegisteredWithServer())) {
-                                    hasNotRegisteredMessageBeenLogged = false;
-                                    processCount = doJob();
-                                } else {
-                                    if (!hasNotRegisteredMessageBeenLogged) {
-                                        log.warn("Did not run the {} job because the engine is not registered.", getName());
-                                        hasNotRegisteredMessageBeenLogged = true;
+            } else {
+                MDC.put("engineName", engine.getEngineName());
+                if (engine.isStarted()) {
+                    if (!paused || force) {
+                        if (!running) {
+                            running = true;
+                            synchronized (this) {
+                                ran = true;
+                                long startTime = System.currentTimeMillis();
+                                long processCount = 0;
+                                try {
+                                    if (!requiresRegistration
+                                            || (requiresRegistration && engine
+                                                    .getRegistrationService()
+                                                    .isRegisteredWithServer())) {
+                                        hasNotRegisteredMessageBeenLogged = false;
+                                        processCount = doJob();
+                                    } else {
+                                        if (!hasNotRegisteredMessageBeenLogged) {
+                                            log.warn(
+                                                    "Did not run the {} job because the engine is not registered.",
+                                                    getName());
+                                            hasNotRegisteredMessageBeenLogged = true;
+                                        }
                                     }
+                                } finally {
+                                    lastFinishTime = new Date();
+                                    lastExecutionProcessCount = processCount;
+                                    long endTime = System.currentTimeMillis();
+                                    lastExecutionTimeInMs = endTime - startTime;
+                                    totalExecutionTimeInMs += lastExecutionTimeInMs;
+                                    if (lastExecutionProcessCount > 0
+                                            || lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+                                        engine.getStatisticManager().addJobStats(jobName,
+                                                startTime, endTime, lastExecutionProcessCount);
+                                    }
+                                    numberOfRuns++;
+                                    running = false;
                                 }
-                            } finally {
-                                lastFinishTime = new Date();
-                                lastExecutionProcessCount = processCount;
-                                long endTime = System.currentTimeMillis();
-                                lastExecutionTimeInMs = endTime - startTime;
-                                totalExecutionTimeInMs += lastExecutionTimeInMs;
-                                if (lastExecutionProcessCount > 0
-                                        || lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-                                    engine.getStatisticManager().addJobStats(jobName, startTime, endTime,
-                                            lastExecutionProcessCount);
-                                }
-                                numberOfRuns++;
-                                running = false;
                             }
                         }
                     }
+                } else {
+                    log.info("The engine is not currently started.");
                 }
-            } else {
-                log.info("The engine is not currently started.");
             }
         } catch (final Throwable ex) {
-            log.error(ex.getMessage(),ex);
+            log.error(ex.getMessage(), ex);
         }
 
         return ran;
