@@ -72,6 +72,7 @@ import org.jumpmind.symmetric.transport.TransportManagerFactory;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
@@ -181,6 +182,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
                 ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
+        
+        MDC.put("engineName", this.parameterService.getEngineName());
 
         if (parameterService.is(ParameterConstants.DB_FORCE_DELIMITED_IDENTIFIER_ON)) {
             this.platform.setDelimitedIdentifierModeOn(true);

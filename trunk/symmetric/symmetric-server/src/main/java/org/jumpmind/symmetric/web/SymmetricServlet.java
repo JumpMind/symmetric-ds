@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * This servlet handles web requests to SymmetricDS.
@@ -69,6 +70,7 @@ public class SymmetricServlet extends HttpServlet {
         ServerSymmetricEngine engine = findEngine(req);
         IUriHandler handler = findMatchingHandler(engine, req);
         if (handler != null) {
+            MDC.put("engineName", engine.getEngineName());
             List<IInterceptor> interceptors = handler.getInterceptors();
             try {
                 if (interceptors != null) {
