@@ -4,35 +4,35 @@ import org.jumpmind.db.model.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DataProcessor<R extends IDataReader, W extends IDataWriter> {
+public class DataProcessor {
 
     private static final String STAT_WRITE_DATA = "statWriteData";
     private static final String STAT_READ_DATA = "statReadData";
 
     static final Logger log = LoggerFactory.getLogger(DataProcessor.class);
 
-    protected R dataReader;
-    protected W dataWriter;
-    protected IDataProcessorListener<R, W> listener;
+    protected IDataReader dataReader;
+    protected IDataWriter dataWriter;
+    protected IDataProcessorListener listener;
 
     public DataProcessor() {
     }
 
-    public DataProcessor(R dataReader, W dataWriter) {
+    public DataProcessor(IDataReader dataReader, IDataWriter dataWriter) {
         this(dataReader, dataWriter, null);
     }
 
-    public DataProcessor(R dataReader, W dataWriter, IDataProcessorListener<R, W> listener) {
+    public DataProcessor(IDataReader dataReader, IDataWriter dataWriter, IDataProcessorListener listener) {
         this.dataReader = dataReader;
         this.dataWriter = dataWriter;
         this.listener = listener;
     }
 
     public void process() {
-        process(new DataContext<R, W>(this.dataReader, this.dataWriter));
+        process(new DataContext(this.dataReader, this.dataWriter));
     }
 
-    public void process(DataContext<R, W> context) {
+    public void process(DataContext context) {
         try {
             dataReader.open(context);
             boolean dataWriterOpened = false;
@@ -91,7 +91,7 @@ public class DataProcessor<R extends IDataReader, W extends IDataWriter> {
         }
     }
 
-    protected int forEachTableInBatch(DataContext<R, W> context, boolean processBatch, Batch batch) {
+    protected int forEachTableInBatch(DataContext context, boolean processBatch, Batch batch) {
         int dataRow = 0;
         Table table = null;
         do {
@@ -113,7 +113,7 @@ public class DataProcessor<R extends IDataReader, W extends IDataWriter> {
         return dataRow;
     }
 
-    protected int forEachDataInTable(DataContext<R, W> context, boolean processTable, Batch batch) {
+    protected int forEachDataInTable(DataContext context, boolean processTable, Batch batch) {
         int dataRow = 0;
         CsvData data = null;
         do {
@@ -149,15 +149,15 @@ public class DataProcessor<R extends IDataReader, W extends IDataWriter> {
         }
     }
 
-    public void setListener(IDataProcessorListener<R, W> listener) {
+    public void setListener(IDataProcessorListener listener) {
         this.listener = listener;
     }
 
-    public void setDataReader(R dataReader) {
+    public void setDataReader(IDataReader dataReader) {
         this.dataReader = dataReader;
     }
 
-    public void setDataWriter(W dataWriter) {
+    public void setDataWriter(IDataWriter dataWriter) {
         this.dataWriter = dataWriter;
     }
 

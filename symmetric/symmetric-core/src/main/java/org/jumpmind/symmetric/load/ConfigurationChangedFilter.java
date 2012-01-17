@@ -74,29 +74,29 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
     }
 
     @Override
-    public <R extends IDataReader, W extends IDataWriter> void afterWrite(
-            DataContext<R, W> context, Table table, CsvData data) {
+    public void afterWrite(
+            DataContext context, Table table, CsvData data) {
         recordSyncNeeded(context, table);
         recordChannelFlushNeeded(context, table);
         recordTransformFlushNeeded(context, table);
     }
 
-    private <R extends IDataReader, W extends IDataWriter> void recordSyncNeeded(
-            DataContext<R, W> context, Table table) {
+    private void recordSyncNeeded(
+            DataContext context, Table table) {
         if (isSyncTriggersNeeded(table)) {
             context.put(CTX_KEY_RESYNC_NEEDED, true);
         }
     }
 
-    private <R extends IDataReader, W extends IDataWriter> void recordChannelFlushNeeded(
-            DataContext<R, W> context, Table table) {
+    private void recordChannelFlushNeeded(
+            DataContext context, Table table) {
         if (isChannelFlushNeeded(table)) {
             context.put(CTX_KEY_FLUSH_CHANNELS_NEEDED, true);
         }
     }
 
     private <R extends IDataReader, W extends IDataWriter> void recordTransformFlushNeeded(
-            DataContext<R, W> context, Table table) {
+            DataContext context, Table table) {
         if (isTransformFlushNeeded(table)) {
             context.put(CTX_KEY_FLUSH_TRANSFORMS_NEEDED, true);
         }
@@ -129,7 +129,7 @@ public class ConfigurationChangedFilter extends DatabaseWriterFilterAdapter impl
 
     @Override
     public <R extends IDataReader, W extends IDataWriter> void batchCommitted(
-            DataContext<R, W> context) {
+            DataContext context) {
         if (context.get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             log.info("ChannelFlushed");
             configurationService.reloadChannels();

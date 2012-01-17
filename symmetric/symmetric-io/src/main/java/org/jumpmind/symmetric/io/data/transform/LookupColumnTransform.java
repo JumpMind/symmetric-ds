@@ -28,11 +28,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.io.data.DataContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 
 public class LookupColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
@@ -59,7 +57,7 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
     }
 
     public String transform(IDatabasePlatform platform,
-            DataContext<? extends IDataReader, ? extends IDataWriter> context,
+            DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         String sql = column.getTransformExpression();

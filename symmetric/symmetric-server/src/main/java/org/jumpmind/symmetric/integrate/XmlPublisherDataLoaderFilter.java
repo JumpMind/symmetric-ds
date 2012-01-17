@@ -68,7 +68,7 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
     protected boolean loadDataInTargetDatabase = true;
 
     public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
-            DataContext<R, W> context, Table table, CsvData data) {
+            DataContext context, Table table, CsvData data) {
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(table.getName())) {
             Element xml = getXmlFromCache(context, table.getColumnNames(),
@@ -86,7 +86,7 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
     }
 
     public <R extends IDataReader, W extends IDataWriter> void batchComplete(
-            DataContext<R, W> context) {
+            DataContext context) {
         if (doesXmlExistToPublish(context)) {
             finalizeXmlAndPublish(context);
         }
@@ -97,24 +97,24 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
     }
 
     public <R extends IDataReader, W extends IDataWriter> void afterWrite(
-            DataContext<R, W> context, Table table, CsvData data) {
+            DataContext context, Table table, CsvData data) {
     }
 
     public <R extends IDataReader, W extends IDataWriter> boolean handlesMissingTable(
-            DataContext<R, W> context, Table table) {
+            DataContext context, Table table) {
         return false;
     }
 
     public <R extends IDataReader, W extends IDataWriter> void earlyCommit(
-            DataContext<R, W> context) {
+            DataContext context) {
     }
 
     public <R extends IDataReader, W extends IDataWriter> void batchCommitted(
-            DataContext<R, W> context) {
+            DataContext context) {
     }
 
     public <R extends IDataReader, W extends IDataWriter> void batchRolledback(
-            DataContext<R, W> context) {
+            DataContext context) {
     }
 
 }

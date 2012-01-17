@@ -41,7 +41,7 @@ public class SchemaPerNodeDataLoaderFilter extends DatabaseWriterFilterAdapter {
 
     @Override
     public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
-            DataContext<R, W> context, Table table, CsvData data) {
+            DataContext context, Table table, CsvData data) {
         if (!table.getName().startsWith(tablePrefix)) {
             Batch batch = context.getBatch();
             String sourceNodeId = batch.getSourceNodeId();

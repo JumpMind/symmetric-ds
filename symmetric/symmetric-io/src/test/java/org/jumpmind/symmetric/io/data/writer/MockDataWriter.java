@@ -9,7 +9,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 
@@ -23,7 +22,7 @@ public class MockDataWriter implements IDataWriter {
     
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
-    public <R extends IDataReader, W extends IDataWriter> void open(DataContext<R, W> context) {
+    public void open(DataContext context) {
     }
 
     public void close() {

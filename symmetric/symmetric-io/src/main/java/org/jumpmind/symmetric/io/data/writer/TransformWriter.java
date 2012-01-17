@@ -8,13 +8,10 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.BshColumnTransform;
@@ -35,6 +32,8 @@ import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.util.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TransformWriter implements IDataWriter {
 
@@ -65,7 +64,7 @@ public class TransformWriter implements IDataWriter {
 
     protected Table sourceTable;
     protected List<TransformTable> activeTransforms;
-    protected DataContext<? extends IDataReader, ? extends IDataWriter> context;
+    protected DataContext context;
 
     public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
             IDataWriter targetWriter, TransformTable... transforms) {
@@ -93,7 +92,7 @@ public class TransformWriter implements IDataWriter {
         return transformsByTable;
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void open(DataContext<R, W> context) {
+    public void open(DataContext context) {
         this.context = context;
         this.targetWriter.open(context);
     }
@@ -166,7 +165,7 @@ public class TransformWriter implements IDataWriter {
     }
 
     protected List<TransformedData> transform(DataEventType eventType,
-            DataContext<? extends IDataReader, ? extends IDataWriter> context,
+            DataContext context,
             TransformTable transformation, Map<String, String> sourceKeyValues,
             Map<String, String> oldSourceValues, Map<String, String> sourceValues) {
         try {
@@ -211,7 +210,7 @@ public class TransformWriter implements IDataWriter {
 
     }
 
-    protected boolean perform(DataContext<? extends IDataReader, ? extends IDataWriter> context,
+    protected boolean perform(DataContext context,
             TransformedData data, TransformTable transformation, Map<String, String> sourceValues,
             Map<String, String> oldSourceValues) throws IgnoreRowException {
         boolean persistData = false;
@@ -275,7 +274,7 @@ public class TransformWriter implements IDataWriter {
     }
 
     protected List<TransformedData> create(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context,
+            DataContext context,
             DataEventType dataEventType, TransformTable transformation,
             Map<String, String> sourceKeyValues, Map<String, String> oldSourceValues,
             Map<String, String> sourceValues) throws IgnoreRowException {
@@ -328,7 +327,7 @@ public class TransformWriter implements IDataWriter {
     }
 
     protected Object transformColumn(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context,
+            DataContext context,
             TransformedData data, TransformColumn transformColumn,
             Map<String, String> sourceValues, Map<String, String> oldSourceValues)
             throws IgnoreRowException, IgnoreColumnException {
@@ -361,6 +360,10 @@ public class TransformWriter implements IDataWriter {
 
     public Map<Batch, Statistics> getStatistics() {
         return this.targetWriter.getStatistics();
+    }
+    
+    public IDataWriter getTargetWriter() {
+        return targetWriter;
     }
 
 }

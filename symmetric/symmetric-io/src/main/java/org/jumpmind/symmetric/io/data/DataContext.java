@@ -2,11 +2,11 @@ package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.util.Context;
 
-public class DataContext<R extends IDataReader, W extends IDataWriter> extends Context {
+public class DataContext extends Context {
 
-    protected W writer;
+    protected IDataWriter writer;
 
-    protected R reader;
+    protected IDataReader reader;
 
     protected Batch batch;
 
@@ -17,16 +17,16 @@ public class DataContext<R extends IDataReader, W extends IDataWriter> extends C
     public DataContext() {
     }
 
-    public DataContext(R reader, W writer) {
+    public DataContext(IDataReader reader, IDataWriter writer) {
         this.writer = writer;
         this.reader = reader;
     }
 
-    public R getReader() {
+    public IDataReader getReader() {
         return reader;
     }
 
-    public W getWriter() {
+    public IDataWriter getWriter() {
         return writer;
     }
 

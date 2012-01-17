@@ -54,9 +54,12 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
 import org.jumpmind.symmetric.io.data.reader.IExtractBatchSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
+import org.jumpmind.symmetric.io.data.transform.TransformPoint;
+import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
+import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Data;
@@ -70,11 +73,14 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
@@ -94,6 +100,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private ITriggerRouterService triggerRouterService;
 
+    private ITransformService transformService;
+
+    private IDataService dataService;
+
     private INodeService nodeService;
 
     private IStatisticManager statisticManager;
@@ -106,13 +116,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
             IRouterService routingService, IConfigurationService configurationService,
             ITriggerRouterService triggerRouterService, INodeService nodeService,
+            IDataService dataService, ITransformService transformService,
             IStatisticManager statisticManager) {
         super(parameterService, symmetricDialect);
         this.outgoingBatchService = outgoingBatchService;
         this.routerService = routingService;
+        this.dataService = dataService;
         this.configurationService = configurationService;
         this.triggerRouterService = triggerRouterService;
         this.nodeService = nodeService;
+        this.transformService = transformService;
         this.statisticManager = statisticManager;
     }
 
@@ -192,11 +205,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         InitialLoadSource source = new InitialLoadSource(batch, initialLoadEvents);
-        ExtractDataReader dataReader = new ExtractDataReader(
-                this.symmetricDialect.getPlatform(), source);
-        ProtocolDataWriter dataWriter = new ProtocolDataWriter(writer);
-        DataProcessor<ExtractDataReader, ProtocolDataWriter> processor = new DataProcessor<ExtractDataReader, ProtocolDataWriter>(
-                dataReader, dataWriter);
+        ExtractDataReader dataReader = new ExtractDataReader(this.symmetricDialect.getPlatform(),
+                source);
+
+        List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
+                nodeGroupLink, TransformPoint.EXTRACT, true);
+        TransformTable[] transforms = transformsList != null ? transformsList
+                .toArray(new TransformTable[transformsList.size()]) : null;
+        TransformWriter dataWriter = new TransformWriter(symmetricDialect.getPlatform(),
+                TransformPoint.EXTRACT, new ProtocolDataWriter(writer), transforms);
+        DataProcessor processor = new DataProcessor(dataReader, dataWriter);
         processor.process();
 
         if (triggerRouters.size() == 0) {
@@ -254,23 +272,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return batches.getBatches();
     }
 
-    public List<OutgoingBatch> extract(Node node, IOutgoingTransport targetTransport)
+    public List<OutgoingBatch> extract(Node targetNode, IOutgoingTransport targetTransport)
             throws IOException {
 
+        Node identity = nodeService.findIdentity();
         List<OutgoingBatch> activeBatches = null;
 
-        if (!extractingNodes.contains(node.getNodeId())) {
+        if (!extractingNodes.contains(targetNode.getNodeId())) {
             try {
-                extractingNodes.add(node.getNodeId());
+                extractingNodes.add(targetNode.getNodeId());
 
                 // make sure that data is routed before extracting if the route
-                // job
-                // is not configured to start automatically
+                // job is not configured to start automatically
                 if (!parameterService.is(ParameterConstants.START_ROUTE_JOB)) {
                     routerService.routeData();
                 }
 
-                OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node);
+                OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode);
                 long batchesSelectedAtMs = System.currentTimeMillis();
 
                 if (batches.containsBatches()) {
@@ -302,6 +320,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             extractWriter = new ProtocolDataWriter(targetTransport.open());
                         }
 
+                        List<TransformTableNodeGroupLink> transformsList = transformService
+                                .findTransformsFor(new NodeGroupLink(identity.getNodeGroupId(),
+                                        targetNode.getNodeGroupId()), TransformPoint.EXTRACT, true);
+                        TransformTable[] transforms = transformsList != null ? transformsList
+                                .toArray(new TransformTable[transformsList.size()]) : null;
+                        TransformWriter transformExtractWriter = new TransformWriter(
+                                symmetricDialect.getPlatform(), TransformPoint.EXTRACT,
+                                extractWriter, transforms);
+
                         OutgoingBatch currentBatch = null;
                         try {
                             final long maxBytesToSync = parameterService
@@ -320,7 +347,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     IoResource previouslyExtracted = extractedBatchesHandle
                                             .get(currentBatch.getBatchId());
                                     if (previouslyExtracted != null && previouslyExtracted.exists()) {
-                                        log.info("We have already extracted batch {}.  Using the existing extraction.  To force re-extraction, please restart this instance of SymmetricDS.",
+                                        log.info(
+                                                "We have already extracted batch {}.  Using the existing extraction.  To force re-extraction, please restart this instance of SymmetricDS.",
                                                 currentBatch.getBatchId());
                                     } else {
                                         outgoingBatch.setStatus(OutgoingBatch.Status.QY);
@@ -332,8 +360,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                                 symmetricDialect.getPlatform(),
                                                 new SelectBatchSource(outgoingBatch));
 
-                                        new DataProcessor<IDataReader, IDataWriter>(dataReader,
-                                                extractWriter).process();
+                                        new DataProcessor(dataReader, transformExtractWriter)
+                                                .process();
                                     }
 
                                     if (System.currentTimeMillis()
@@ -358,8 +386,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                                     extractedBatch.open());
                                             IDataWriter dataWriter = new ProtocolDataWriter(
                                                     targetTransport.open());
-                                            new DataProcessor<IDataReader, IDataWriter>(dataReader,
-                                                    dataWriter).process();
+                                            new DataProcessor(dataReader, dataWriter).process();
                                         }
 
                                         if (System.currentTimeMillis()
@@ -421,7 +448,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 currentBatch.setErrorFlag(true);
                                 outgoingBatchService.updateOutgoingBatch(currentBatch);
                             } else {
-                                log.error("Could not log the outgoing batch status because the batch was null.", e);
+                                log.error(
+                                        "Could not log the outgoing batch status because the batch was null.",
+                                        e);
                             }
 
                             if (e instanceof RuntimeException) {
@@ -447,7 +476,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
 
             } finally {
-                extractingNodes.remove(node.getNodeId());
+                extractingNodes.remove(targetNode.getNodeId());
             }
 
         }
@@ -506,55 +535,35 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     class SelectBatchSource implements IExtractBatchSource {
 
+        private Batch batch;
+
+        private boolean requiresLobSelectedFromSource;
+
+        private ISqlReadCursor<Data> cursor;
+
         public SelectBatchSource(OutgoingBatch outgoingBatch) {
-            // TODO Auto-generated constructor stub
+            this.batch = new Batch(outgoingBatch.getBatchId(), outgoingBatch.getChannelId(),
+                    symmetricDialect.getBinaryEncoding(), outgoingBatch.getNodeId());
         }
 
         public Batch getBatch() {
-            // TODO Auto-generated method stub
-            return null;
+            return batch;
         }
 
         public Table getTable() {
-            // TODO Auto-generated method stub
             return null;
         }
 
         public CsvData next() {
-            // TODO symmetricDialect.massageDataExtractionSql
-            // TODO Auto-generated method stub
             return null;
         }
 
         public boolean requiresLobsSelectedFromSource() {
-            // TODO Auto-generated method stub
-            return false;
+            return requiresLobSelectedFromSource;
         }
 
         public void close() {
 
-        }
-        
-        class CsvDataRowMapper implements ISqlRowMapper<CsvData> {
-            public CsvData mapRow(Row row) {
-                CsvData data = new CsvData();
-                data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA"));
-                data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA"));
-                //if (extractOldData) 
-                {
-                    data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA"));
-                }
-
-                data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
-                data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID"));
-                data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));
-                data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, row.getInt("TRIGGER_HIST_ID"));
-                data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, row.getString("SOURCE_NODE_ID"));
-                data.putAttribute(CsvData.ATTRIBUTE_ROUTER_ID, row.getString("ROUTER_ID"));
-                data.putAttribute(CsvData.ATTRIBUTE_EXTERNAL_DATA, row.getString("EXTERNAL_DATA"));
-                data.putAttribute(CsvData.ATTRIBUTE_DATA_ID, row.getLong("DATA_ID"));
-                return data;
-            }
         }
 
     }

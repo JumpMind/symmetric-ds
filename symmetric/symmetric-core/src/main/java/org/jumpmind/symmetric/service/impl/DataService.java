@@ -128,6 +128,16 @@ public class DataService extends AbstractService implements IDataService {
         return new DataServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
     }
 
+    public String getDataSelectSql(long batchId, long startDataId, String channelId,
+            boolean descending) {
+        String orderBy = getOrderByDataId(descending);
+        String startAtDataIdSql = startDataId >= 0l ? (descending ? " and d.data_id <= ? "
+                : " and d.data_id >= ? ") : "";
+        return symmetricDialect.massageDataExtractionSql(
+                getSql("selectEventDataToExtractSql", startAtDataIdSql, orderBy),
+                configurationService.getNodeChannel(channelId, false).getChannel());
+    }
+
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter) {
         insertReloadEvent(targetNode, triggerRouter, null);
     }

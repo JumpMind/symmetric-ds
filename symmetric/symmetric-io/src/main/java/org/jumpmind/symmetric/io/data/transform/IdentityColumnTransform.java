@@ -4,11 +4,9 @@ import java.util.Map;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.io.data.DataContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 
 public class IdentityColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
@@ -33,7 +31,7 @@ public class IdentityColumnTransform implements ISingleValueColumnTransform, IBu
         return true;
     }
 
-    public String transform(IDatabasePlatform platform, DataContext<? extends IDataReader, ? extends IDataWriter> context, TransformColumn column,
+    public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
             throws IgnoreColumnException, IgnoreRowException {  
         if (log.isDebugEnabled()) {

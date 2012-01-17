@@ -52,7 +52,7 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
     
     @Override
     public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
-            DataContext<R, W> context, Table table, CsvData data) {
+            DataContext context, Table table, CsvData data) {
         filterColumnValues(context, table, data);
         return true;
     }

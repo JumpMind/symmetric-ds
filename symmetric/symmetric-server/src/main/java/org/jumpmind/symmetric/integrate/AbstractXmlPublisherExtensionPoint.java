@@ -152,7 +152,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     @SuppressWarnings("unchecked")
     protected void addFormattedExtraGroupAttributes(Context context, Element xml) {
         if (context instanceof DataContext) {
-            DataContext<? extends IDataReader, ? extends IDataWriter> dataContext = (DataContext<? extends IDataReader, ? extends IDataWriter>) context;
+            DataContext dataContext = (DataContext) context;
             xml.setAttribute("nodeid", dataContext.getBatch().getSourceNodeId());
             xml.setAttribute("batchid", Long.toString(dataContext.getBatch().getBatchId()));
         }

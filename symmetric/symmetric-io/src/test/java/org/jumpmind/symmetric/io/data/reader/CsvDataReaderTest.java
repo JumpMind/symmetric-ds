@@ -9,7 +9,6 @@ import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.junit.Test;
 
 public class CsvDataReaderTest {
@@ -26,7 +25,7 @@ public class CsvDataReaderTest {
         endCsv(builder);
         
         ProtocolDataReader reader = new ProtocolDataReader(builder);
-        DataContext<ProtocolDataReader, IDataWriter> ctx = new DataContext<ProtocolDataReader, IDataWriter>(reader, null);
+        DataContext ctx = new DataContext(reader, null);
         reader.open(ctx);
         
         Batch batch = reader.nextBatch();
@@ -95,7 +94,7 @@ public class CsvDataReaderTest {
         endCsv(builder);
         
         ProtocolDataReader reader = new ProtocolDataReader(builder);
-        DataContext<ProtocolDataReader, IDataWriter> ctx = new DataContext<ProtocolDataReader, IDataWriter>(reader, null);
+        DataContext ctx = new DataContext(reader, null);
         reader.open(ctx);
         
         Batch batch = reader.nextBatch();

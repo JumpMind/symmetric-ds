@@ -61,21 +61,21 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
     private String beanName;
 
     protected abstract String addTextHeader(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context);
+            DataContext context);
 
     protected abstract String addTextElement(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context, Table table,
+            DataContext context, Table table,
             CsvData data);
 
     protected abstract String addTextFooter(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context);
+            DataContext context);
 
     public void setBeanName(String name) {
         this.beanName = name;
     }
 
     public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
-            DataContext<R, W> context, Table table, CsvData data) {
+            DataContext context, Table table, CsvData data) {
         if (tableName != null && tableName.equals(table.getName())) {
             DataEventType eventType = data.getDataEventType();
             if (eventType.isDml()) {
@@ -89,7 +89,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
     }
 
     protected StringBuilder getFromCache(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context) {
+            DataContext context) {
         StringBuilder msgCache = (StringBuilder) context.get(MSG_CACHE);
         if (msgCache == null) {
             msgCache = new StringBuilder(addTextHeader(context));
@@ -99,13 +99,13 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
     }
 
     protected boolean doesTextExistToPublish(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context) {
+            DataContext context) {
         StringBuilder msgCache = (StringBuilder) context.get(MSG_CACHE);
         return msgCache != null && msgCache.length() > 0;
     }
 
     private void finalizeAndPublish(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context) {
+            DataContext context) {
         StringBuilder msg = getFromCache(context);
         if (msg.length() > 0) {
             msg.append(addTextFooter(context));
@@ -116,7 +116,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
     }
 
     public <R extends IDataReader, W extends IDataWriter> void batchComplete(
-            DataContext<R, W> context) {
+            DataContext context) {
         if (doesTextExistToPublish(context)) {
             finalizeAndPublish(context);
             logCount();

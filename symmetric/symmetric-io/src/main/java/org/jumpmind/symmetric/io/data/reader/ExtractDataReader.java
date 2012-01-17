@@ -18,7 +18,6 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
 
@@ -49,7 +48,7 @@ public class ExtractDataReader implements IDataReader {
         this.platform = platform;
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void open(DataContext<R, W> context) {
+    public void open(DataContext context) {
     }
 
     public Batch nextBatch() {

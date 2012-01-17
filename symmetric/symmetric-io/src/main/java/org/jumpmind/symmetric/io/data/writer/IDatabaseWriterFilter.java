@@ -17,14 +17,14 @@ public interface IDatabaseWriterFilter extends IExtensionPoint {
      *         the row and it should be ignored.
      */
     public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
-            DataContext<R, W> context, Table table, CsvData data);
+            DataContext context, Table table, CsvData data);
 
     /**
      * Called right after a DML statement has been successfully executed against
      * the database for the data.
      */
     public <R extends IDataReader, W extends IDataWriter> void afterWrite(
-            DataContext<R, W> context, Table table, CsvData data);
+            DataContext context, Table table, CsvData data);
 
     /**
      * Give the filter a chance to indicate that is can handle a table that is
@@ -32,7 +32,7 @@ public interface IDatabaseWriterFilter extends IExtensionPoint {
      * transformations on the data and inserting the data itself.
      */
     public <R extends IDataReader, W extends IDataWriter> boolean handlesMissingTable(
-            DataContext<R, W> context, Table table);
+            DataContext context, Table table);
 
     /**
      * If the {@link ParameterConstants#DATA_LOADER_MAX_ROWS_BEFORE_COMMIT}
@@ -40,27 +40,27 @@ public interface IDatabaseWriterFilter extends IExtensionPoint {
      * about to happen, then this method is called.
      */
     public <R extends IDataReader, W extends IDataWriter> void earlyCommit(
-            DataContext<R, W> context);
+            DataContext context);
 
     /**
      * This method is called after a batch has been successfully processed. It
      * is called in the scope of the transaction that controls the batch commit.
      */
     public <R extends IDataReader, W extends IDataWriter> void batchComplete(
-            DataContext<R, W> context);
+            DataContext context);
 
     /**
      * This method is called after the database transaction for the batch has
      * been committed.
      */
     public <R extends IDataReader, W extends IDataWriter> void batchCommitted(
-            DataContext<R, W> context);
+            DataContext context);
 
     /**
      * This method is called after the database transaction for the batch has
      * been rolled back.
      */
     public <R extends IDataReader, W extends IDataWriter> void batchRolledback(
-            DataContext<R, W> context);
+            DataContext context);
 
 }
