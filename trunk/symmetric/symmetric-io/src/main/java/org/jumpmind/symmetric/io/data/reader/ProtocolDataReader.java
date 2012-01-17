@@ -19,8 +19,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -30,8 +28,9 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProtocolDataReader implements IDataReader {
 
@@ -41,7 +40,7 @@ public class ProtocolDataReader implements IDataReader {
     protected Reader reader;
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected CsvReader csvReader;
-    protected DataContext<? extends IDataReader, ? extends IDataWriter> context;
+    protected DataContext context;
     protected Map<String, Table> tables = new HashMap<String, Table>();
     protected Object next;
     protected Batch batch;
@@ -88,7 +87,7 @@ public class ProtocolDataReader implements IDataReader {
         }
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void open(DataContext<R, W> context) {
+    public void open(DataContext context) {
         if (this.ioResource != null && this.reader == null) {
             this.reader = toReader(this.ioResource.open());
         }

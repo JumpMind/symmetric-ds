@@ -44,7 +44,7 @@ public class TestDataWriterFilter extends DatabaseWriterFilterAdapter implements
 
     @Override
     public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
-            DataContext<R, W> context, Table table, CsvData data) {
+            DataContext context, Table table, CsvData data) {
         numberOfTimesCalled++;
         return true;
     }

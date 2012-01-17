@@ -14,13 +14,12 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 
 abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
-    protected DataContext<? extends IDataReader, ? extends IDataWriter> context;
+    protected DataContext context;
 
     protected Batch batch;
 
@@ -40,7 +39,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
         this.listeners = listeners;
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void open(DataContext<R, W> context) {
+    public void open(DataContext context) {
         this.context = context;
     }
 

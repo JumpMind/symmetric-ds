@@ -130,5 +130,8 @@ public interface IDataService {
     public void updateDataGap(DataGap gap, DataGap.Status status);
     
     public long findMaxDataId();
+    
+    public String getDataSelectSql(long batchId, long startDataId, String channelId,
+            boolean descending);
         
 }

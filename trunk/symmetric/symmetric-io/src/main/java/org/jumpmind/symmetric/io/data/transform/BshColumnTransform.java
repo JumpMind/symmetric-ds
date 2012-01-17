@@ -25,12 +25,10 @@ import java.util.Map;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.util.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.util.Context;
 
 import bsh.Interpreter;
 import bsh.TargetError;
@@ -60,7 +58,7 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
     }
 
     public String transform(IDatabasePlatform platform,
-            DataContext<? extends IDataReader, ? extends IDataWriter> context,
+            DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         try {

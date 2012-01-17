@@ -1,19 +1,19 @@
 package org.jumpmind.symmetric.io.data;
 
 
-public interface IDataProcessorListener<R extends IDataReader, W extends IDataWriter> {
+public interface IDataProcessorListener {
 
     /**
      * @return true if this batch should be processed
      */
-    public boolean beforeBatchStarted(DataContext<R, W> context);
+    public boolean beforeBatchStarted(DataContext context);
     
-    public void afterBatchStarted(DataContext<R, W> context);
+    public void afterBatchStarted(DataContext context);
 
-    public void beforeBatchEnd(DataContext<R, W> context);
+    public void beforeBatchEnd(DataContext context);
 
-    public void batchSuccessful(DataContext<R, W> context);
+    public void batchSuccessful(DataContext context);
 
-    public void batchInError(DataContext<R, W> context, Exception ex);
+    public void batchInError(DataContext context, Exception ex);
 
 }

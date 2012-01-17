@@ -56,7 +56,7 @@ public class FileCsvDataWriterTest {
 
         ProtocolDataReader reader = new ProtocolDataReader(origCsv);
         StagingDataWriter writer = new StagingDataWriter(DIR, threshold, new BatchListener());
-        DataProcessor<ProtocolDataReader, StagingDataWriter> processor = new DataProcessor<ProtocolDataReader, StagingDataWriter>(
+        DataProcessor processor = new DataProcessor(
                 reader, writer);
         processor.process();
         

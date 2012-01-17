@@ -20,16 +20,15 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.ConflictException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bsh.EvalError;
 import bsh.Interpreter;
@@ -54,7 +53,7 @@ public class DatabaseWriter implements IDataWriter {
 
     protected Batch batch;
 
-    protected DataContext<? extends IDataReader, ? extends IDataWriter> context;
+    protected DataContext context;
 
     protected long uncommittedCount = 0;
 
@@ -105,7 +104,7 @@ public class DatabaseWriter implements IDataWriter {
         }
     }
 
-    public <R extends IDataReader, W extends IDataWriter> void open(DataContext<R, W> context) {
+    public void open(DataContext context) {
         this.context = context;
         this.transaction = platform.getSqlTemplate().startSqlTransaction();
     }
@@ -602,7 +601,7 @@ public class DatabaseWriter implements IDataWriter {
         return batch;
     }
 
-    public DataContext<? extends IDataReader, ? extends IDataWriter> getContext() {
+    public DataContext getContext() {
         return context;
     }
 

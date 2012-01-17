@@ -28,8 +28,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 
 public class MultiplierColumnTransform implements IMultipleValueColumnTransform,
         IBuiltInExtensionPoint {
@@ -55,7 +53,7 @@ public class MultiplierColumnTransform implements IMultipleValueColumnTransform,
     }
 
     public List<String> transform(IDatabasePlatform platform,
-            DataContext<? extends IDataReader, ? extends IDataWriter> context,
+            DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         return platform.getSqlTemplate().query(column.getTransformExpression(), rowMapper,

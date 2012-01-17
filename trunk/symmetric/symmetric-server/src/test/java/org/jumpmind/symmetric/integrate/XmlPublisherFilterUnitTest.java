@@ -43,7 +43,7 @@ public class XmlPublisherFilterUnitTest {
 
     private static final String TEST_SIMPLE_TRANSFORM_RESULTS = "<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"12\" nodeid=\"54321\" batchid=\"1111\" time=\"test\"><row entity=\"TEST_XML_PUBLISHER\" dml=\"I\"><data key=\"ID1\">1</data><data key=\"ID2\">2</data><data key=\"DATA1\">test embedding an &amp;</data><data key=\"DATA2\">3</data><data key=\"DATA3\" xsi:nil=\"true\" /></row></batch>";
 
-    private DataContext<IDataReader, IDataWriter> context;
+    private DataContext context;
 
     private Table table;
 
@@ -53,7 +53,7 @@ public class XmlPublisherFilterUnitTest {
 
     @Before
     public void setUp() {
-        context = new DataContext<IDataReader, IDataWriter>(new Batch(1111, "default", BinaryEncoding.BASE64, "54321"));
+        context = new DataContext(new Batch(1111, "default", BinaryEncoding.BASE64, "54321"));
         table = Table.buildTable(TABLE_TEST, new String[] { "ID1", "ID2" }, new String[] { "ID1", "ID2", "DATA1", "DATA2", "DATA3" });
     }
 

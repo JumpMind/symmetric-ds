@@ -1,10 +1,10 @@
 package org.jumpmind.symmetric.io.data.writer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jumpmind.symmetric.io.data.ConflictException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterConflictResolver {
     

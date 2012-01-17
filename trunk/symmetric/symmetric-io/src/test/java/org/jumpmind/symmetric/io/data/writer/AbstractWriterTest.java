@@ -18,7 +18,6 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 import org.junit.Assert;
@@ -84,7 +83,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     }
 
     protected long writeData(IDataWriter writer, TableCsvData... datas) {
-        DataContext<IDataReader, IDataWriter> context = new DataContext<IDataReader, IDataWriter>(
+        DataContext context = new DataContext(
                 null, writer);
         writer.open(context);
         try {

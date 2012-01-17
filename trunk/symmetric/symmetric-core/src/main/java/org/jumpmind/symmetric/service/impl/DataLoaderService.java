@@ -50,11 +50,13 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformDatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -256,7 +258,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 readersForDatabaseLoader.add(new ProtocolDataReader(resource));
                             }
                         });
-                new DataProcessor<IDataReader, IDataWriter>(dataReader, dataWriter).process();
+                new DataProcessor(dataReader, dataWriter).process();
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
                 readersForDatabaseLoader.add(new ProtocolDataReader(transport.open()));
@@ -279,7 +281,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     filters.toArray(new IDatabaseWriterFilter[filters.size()]));
 
             for (IDataReader reader : readersForDatabaseLoader) {
-                DataProcessor<IDataReader, TransformDatabaseWriter> processor = new DataProcessor<IDataReader, TransformDatabaseWriter>(
+                DataProcessor processor = new DataProcessor(
                         reader, writer, listener);
                 processor.process();
             }
@@ -417,17 +419,17 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     class ManageIncomingBatchListener implements
-            IDataProcessorListener<IDataReader, TransformDatabaseWriter> {
+            IDataProcessorListener {
 
         private List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
 
         private IncomingBatch currentBatch;
 
-        public void beforeBatchEnd(DataContext<IDataReader, TransformDatabaseWriter> context) {
+        public void beforeBatchEnd(DataContext context) {
             enableSyncTriggers(context);
         }
 
-        public boolean beforeBatchStarted(DataContext<IDataReader, TransformDatabaseWriter> context) {
+        public boolean beforeBatchStarted(DataContext context) {
             this.currentBatch = null;
             Batch batch = context.getBatch();
             if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED)
@@ -443,13 +445,22 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             return false;
         }
 
-        public void afterBatchStarted(DataContext<IDataReader, TransformDatabaseWriter> context) {
+        public void afterBatchStarted(DataContext context) {
             Batch batch = context.getBatch();
-            symmetricDialect.disableSyncTriggers(context.getWriter().getDatabaseWriter()
-                    .getTransaction(), batch.getSourceNodeId());
+            symmetricDialect.disableSyncTriggers(findTransaction(context), batch.getSourceNodeId());
+        }
+        
+        protected ISqlTransaction findTransaction(DataContext context) {
+            if (context.getWriter() instanceof TransformWriter) {
+                IDataWriter targetWriter = ((TransformWriter)context.getWriter()).getTargetWriter();
+                if (targetWriter instanceof DatabaseWriter) {
+                    return ((DatabaseWriter)targetWriter).getTransaction();
+                }                
+            }
+            return null;
         }
 
-        public void batchSuccessful(DataContext<IDataReader, TransformDatabaseWriter> context) {
+        public void batchSuccessful(DataContext context) {
             Batch batch = context.getBatch();
             this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
                     .getWriter().getStatistics().get(batch), true);
@@ -463,10 +474,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
 
-        protected void enableSyncTriggers(DataContext<IDataReader, TransformDatabaseWriter> context) {
+        protected void enableSyncTriggers(DataContext context) {
             try {
-                ISqlTransaction transaction = context.getWriter().getDatabaseWriter()
-                        .getTransaction();
+                ISqlTransaction transaction = findTransaction(context);
                 if (transaction != null) {
                     symmetricDialect.enableSyncTriggers(transaction);
                 }
@@ -475,7 +485,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
 
-        public void batchInError(DataContext<IDataReader, TransformDatabaseWriter> context,
+        public void batchInError(DataContext context,
                 Exception ex) {
             try {
                 Batch batch = context.getBatch();

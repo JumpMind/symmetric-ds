@@ -6,8 +6,6 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 
 public class VariableColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
@@ -49,7 +47,7 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
     }
 
     public String transform(IDatabasePlatform platform,
-            DataContext<? extends IDataReader, ? extends IDataWriter> context,
+            DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         String varName = column.getTransformExpression();

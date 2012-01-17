@@ -182,7 +182,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
                 ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
-        
+
         MDC.put("engineName", this.parameterService.getEngineName());
 
         if (parameterService.is(ParameterConstants.DB_FORCE_DELIMITED_IDENTIFIER_ON)) {
@@ -219,7 +219,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, statisticManager, transformService);
         this.dataExtractorService = new DataExtractorService(parameterService, symmetricDialect,
                 outgoingBatchService, routerService, configurationService, triggerRouterService,
-                nodeService, statisticManager);
+                nodeService, dataService, transformService, statisticManager);
         this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect);
         this.transportManager = new TransportManagerFactory(this).create();
         this.dataLoaderService = new DataLoaderService(parameterService, symmetricDialect,

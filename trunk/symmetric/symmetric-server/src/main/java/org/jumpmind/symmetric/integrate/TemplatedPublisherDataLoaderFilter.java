@@ -63,7 +63,7 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
 
     @Override
     protected String addTextElement(
-            DataContext<? extends IDataReader, ? extends IDataWriter> context, Table table,
+            DataContext context, Table table,
             CsvData data) {
         if (this.dataFilter == null
                 || this.dataFilter.beforeWrite(context, table, data)) {
@@ -84,17 +84,17 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
     }
 
     @Override
-    protected String addTextFooter(DataContext<? extends IDataReader, ? extends IDataWriter> context) {
+    protected String addTextFooter(DataContext context) {
         return footerTableTemplate;
     }
 
     @Override
-    protected String addTextHeader(DataContext<? extends IDataReader, ? extends IDataWriter> context) {
+    protected String addTextHeader(DataContext context) {
         return headerTableTemplate;
     }
 
     protected String fillOutTemplate(Table table, CsvData data, String template,
-            DataContext<? extends IDataReader, ? extends IDataWriter> context) {
+            DataContext context) {
         DataEventType eventType = data.getDataEventType();
         String[] colNames = null;
         String[] colValues = null;
