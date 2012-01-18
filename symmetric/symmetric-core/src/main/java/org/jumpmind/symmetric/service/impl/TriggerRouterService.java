@@ -110,41 +110,28 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         rootConfigChannelTableNames = new HashMap<String, List<String>>(2);
 
-        List<String> versionOne = new ArrayList<String>();
-        versionOne.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP));
-        versionOne
+        List<String> configTables = new ArrayList<String>();
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP));
+        configTables
                 .add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_LINK));
-        versionOne.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
-        versionOne.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
-        versionOne.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
-        versionOne.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_CHANNEL));
-        versionOne.add(TableConstants
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_CHANNEL));
+        configTables.add(TableConstants
                 .getTableName(tablePrefix, TableConstants.SYM_NODE_CHANNEL_CTL));
-        versionOne.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER));
-        versionOne.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
-        rootConfigChannelTableNames.put("1", versionOne);
-
-        List<String> versionTwo = new ArrayList<String>();
-        versionTwo.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP));
-        versionTwo
-                .add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_LINK));
-        versionTwo.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
-        versionTwo.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
-        versionTwo.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
-        versionTwo.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_CHANNEL));
-        versionTwo.add(TableConstants
-                .getTableName(tablePrefix, TableConstants.SYM_NODE_CHANNEL_CTL));
-        versionTwo.add(TableConstants.getTableName(tablePrefix,
+        configTables.add(TableConstants.getTableName(tablePrefix,
                 TableConstants.SYM_NODE_GROUP_CHANNEL_WINDOW));
-        versionTwo.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER));
-        versionTwo.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_ROUTER));
-        versionTwo.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER));
-        versionTwo
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER));
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_ROUTER));
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER));
+        configTables
                 .add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_TABLE));
-        versionTwo.add(TableConstants
+        configTables.add(TableConstants
                 .getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_COLUMN));
-        versionTwo.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
-        rootConfigChannelTableNames.put("2", versionOne);
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
+        rootConfigChannelTableNames.put("2", configTables);
+        rootConfigChannelTableNames.put("3", configTables);
 
     }
 

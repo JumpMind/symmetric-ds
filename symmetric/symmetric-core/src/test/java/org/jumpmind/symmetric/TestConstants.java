@@ -2,7 +2,7 @@ package org.jumpmind.symmetric;
 
 import org.jumpmind.symmetric.model.Node;
 
-public class TestConstants {
+abstract public class TestConstants {
     
     public final static String TEST_CLIENT_EXTERNAL_ID = "00001";
     public static final String TEST_CLIENT_NODE_GROUP = "test-node-group";

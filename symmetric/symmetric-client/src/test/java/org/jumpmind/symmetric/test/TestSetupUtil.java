@@ -23,7 +23,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TestSetupUtil {
+abstract public class TestSetupUtil {
     
     private static final Logger logger = LoggerFactory.getLogger(TestSetupUtil.class);
 
