@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+  default-lazy-init="true">
+
+  <util:map id="nodeServiceSql">
+  
+    <entry key="findSymmetricVersionSql">
+      <value>
+        select symmetric_version from $[sym.sync.table.prefix]_node where node_id in (select node_id from $[sym.sync.table.prefix]_node_identity)
+      </value>
+    </entry>  
+    <entry key="insertNodeIdentitySql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node_identity values(?)
+      </value>
+    </entry> 
+    <entry key="doesNodeGroupExistSql">
+      <value>
+        select count(*) from $[sym.sync.table.prefix]_node_group where node_group_id=?
+      </value>
+    </entry>            
+    <entry key="insertNodeGroupSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node_group (description, node_group_id) values(?, ?)
+      </value>
+    </entry>      
+    <entry key="nodeChannelControlIgnoreSql">
+      <value>
+        update $[sym.sync.table.prefix]_node_channel_ctl set ignore_enabled=? where node_id=? and
+        channel_id=?
+      </value>
+    </entry>
+    <entry key="insertNodeChannelControlSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node_channel_ctl
+        (node_id,channel_id,ignore_enabled,suspend_enabled) values(?,?,?,?)
+      </value>
+    </entry>
+    <entry key="insertNodeSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node (node_id, node_group_id, external_id, created_at_node_id, timezone_offset, heartbeat_time) values (?, ?, ?, ?, ?, current_timestamp)
+      </value>
+    </entry>    
+    <entry key="updateNodeSql">
+      <value>
+        update $[sym.sync.table.prefix]_node set node_group_id=?, external_id=?, database_type=?,
+        database_version=?, schema_version=?, symmetric_version=?, sync_url=?, heartbeat_time=?,
+        sync_enabled=?, timezone_offset=?, batch_to_send_count=?, batch_in_error_count=?, created_at_node_id=?, deployment_type=? where node_id = ?
+      </value>
+    </entry>
+    <entry key="findNodeSql">
+      <value>
+        where node_id = ?
+      </value>
+    </entry>
+    <entry key="findNodeByExternalIdSql">
+      <value>
+        where node_group_id = ? and external_id = ? order by node_id
+      </value>      
+    </entry>
+    <entry key="findEnabledNodesFromNodeGroupSql">
+      <value>
+        where node_group_id = ? and sync_enabled=1 order by node_id
+      </value>      
+    </entry>    
+    <entry key="findNodesWithOpenRegistrationSql">
+      <value>
+        where node_id in (select node_id from $[sym.sync.table.prefix]_node_security where registration_enabled=1)
+      </value>      
+    </entry>     
+    <entry key="findNodesCreatedByMeSql">
+      <value>
+        where created_at_node_id=? and created_at_node_id != node_id
+      </value>
+    </entry>    
+    <entry key="findNodeSecuritySql">
+      <value>
+        select node_id, node_password, registration_enabled, registration_time,
+        initial_load_enabled, initial_load_time, created_at_node_id from $[sym.sync.table.prefix]_node_security where
+        node_id = ?
+      </value>
+    </entry>    
+    <entry key="selectExternalIdsSql">
+      <value>
+        select distinct(external_id) from $[sym.sync.table.prefix]_node where sync_enabled=1 order by external_id asc
+      </value>
+    </entry>    
+    <entry key="findAllNodeSecuritySql">
+      <value>
+        select node_id, node_password, registration_enabled, registration_time,
+        initial_load_enabled, initial_load_time, created_at_node_id from $[sym.sync.table.prefix]_node_security
+      </value>
+    </entry>
+    <entry key="deleteNodeSecuritySql">
+      <value>
+        delete from $[sym.sync.table.prefix]_node_security where node_id = ?
+      </value>
+    </entry>
+    <entry key="deleteNodeSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_node where node_id = ?
+      </value>
+    </entry>    
+    <entry key="findNodeIdentitySql">
+      <value>
+        inner join $[sym.sync.table.prefix]_node_identity i on c.node_id =
+        i.node_id
+      </value>
+    </entry>
+    <entry key="deleteNodeIdentitySql">
+      <value>
+        delete from $[sym.sync.table.prefix]_node_identity
+      </value>
+    </entry>
+    <entry key="isNodeRegisteredSql">
+      <value>
+        select count(*) from $[sym.sync.table.prefix]_node_security s inner join
+        $[sym.sync.table.prefix]_node n on n.node_id=s.node_id where n.node_group_id=? and
+        n.external_id=? and s.registration_time is not null and s.registration_enabled=0
+      </value>
+    </entry>
+    <entry key="findNodesWhoTargetMeSql">
+      <value>
+        inner join $[sym.sync.table.prefix]_node_group_link d on
+        c.node_group_id = d.source_node_group_id where d.target_node_group_id = ? and
+        d.data_event_action = ?
+      </value>
+    </entry>
+    <entry key="findNodesWhoITargetSql">
+      <value>
+        inner join $[sym.sync.table.prefix]_node_group_link d on
+        c.node_group_id = d.target_node_group_id where d.source_node_group_id = ? and
+        d.data_event_action = ?
+      </value>
+    </entry>
+    <entry key="selectNodeHostPrefixSql">
+      <value>
+        select node_id, host_name, ip_address, os_user, os_name, os_arch, os_version, available_processors,
+               free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, symmetric_version,
+               timezone_offset, heartbeat_time, last_restart_time, create_time from $[sym.sync.table.prefix]_node_host 
+      </value>  
+    </entry>
+    <entry key="selectNodeHostByNodeIdSql">
+      <value>
+        where node_id=? 
+      </value>  
+    </entry>  
+    <entry key="selectNodePrefixSql">
+      <value>
+        select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
+        c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id, c.heartbeat_time, c.timezone_offset, c.batch_to_send_count, c.batch_in_error_count, c.deployment_type from
+        $[sym.sync.table.prefix]_node c
+      </value>
+    </entry>
+    <entry key="updateNodeSecuritySql">
+      <value>
+        update $[sym.sync.table.prefix]_node_security set node_password = ?, registration_enabled = ?,
+        registration_time = ?, initial_load_enabled = ?, initial_load_time = ?, created_at_node_id = ? where node_id = ?
+      </value>
+    </entry>
+    <entry key="insertNodeSecuritySql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node_security (node_id, node_password, created_at_node_id) values (?, ?, ?)
+      </value>
+    </entry>
+    <entry key="getDataLoadStatusSql">
+      <value>
+        select initial_load_enabled, initial_load_time from $[sym.sync.table.prefix]_node_security ns,
+        $[sym.sync.table.prefix]_node_identity ni where ns.node_id=ni.node_id
+      </value>
+    </entry>   
+    <entry key="insertNodeHostSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node_host 
+        (ip_address, os_user, os_name, os_arch, os_version, available_processors, free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, symmetric_version, timezone_offset, heartbeat_time, last_restart_time, create_time, node_id, host_name)
+        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, current_timestamp,?,?)
+      </value>
+    </entry>
+    <entry key="updateNodeHostSql">
+      <value>
+        update $[sym.sync.table.prefix]_node_host set 
+        ip_address=?, os_user=?, os_name=?, os_arch=?, os_version=?, available_processors=?, free_memory_bytes=?, 
+        total_memory_bytes=?, max_memory_bytes=?, java_version=?, java_vendor=?, symmetric_version=?, timezone_offset=?, heartbeat_time=?, 
+        last_restart_time=? where node_id=? and host_name=?
+      </value>
+    </entry>      
+    <entry key="findOfflineNodesSql">
+      <value>
+        where sync_enabled = 1 and node_id != ? and created_at_node_id = ?
+      </value>
+    </entry>        
+  </util:map>
+
+</beans>
