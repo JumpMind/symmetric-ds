@@ -25,11 +25,11 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Defines the trigger via which a table will be synchronized.
@@ -38,7 +38,7 @@ public class TriggerRouter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    static final Log logger = LogFactory.getLog(TriggerRouter.class);
+    static final Logger logger = LoggerFactory.getLogger(TriggerRouter.class);
 
     /**
      * This is the order in which the definitions will be processed.

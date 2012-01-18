@@ -39,8 +39,6 @@ import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

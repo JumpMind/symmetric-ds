@@ -27,8 +27,9 @@ import java.util.zip.GZIPOutputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Implementation of <b>ServletOutputStream</b> that works with the
@@ -40,13 +41,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Amy Roh
  * @author Dmitri Valdin
- * @version $Revision: 496190 $, $Date: 2007-01-14 16:21:45 -0700 (Sun, 14 Jan
- *          2007) $
  */
-
 public class CompressionResponseStream extends ServletOutputStream {
 
-    static final Log logger = LogFactory.getLog(CompressionResponseStream.class);
+    static final Logger logger = LoggerFactory.getLogger(CompressionResponseStream.class);
 
     /**
      * The underlying gzip output stream to which we should write data.
