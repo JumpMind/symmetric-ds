@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Defines the trigger via which a table will be synchronized.
@@ -41,7 +41,7 @@ public class Trigger implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    static final Log logger = LogFactory.getLog(Trigger.class);
+    static final Logger logger = LoggerFactory.getLogger(Trigger.class);
 
     private static int maxTriggerId;
 

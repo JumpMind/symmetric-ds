@@ -24,14 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabasePlatformInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Compares two database models and creates change objects that express how to
@@ -42,8 +42,9 @@ import org.jumpmind.db.platform.DatabasePlatformInfo;
  * TODO: Add support and tests for the change of the column order
  */
 public class ModelComparator {
+    
     /** The log for this comparator. */
-    private final Log _log = LogFactory.getLog(ModelComparator.class);
+    private final Logger _log = LoggerFactory.getLogger(ModelComparator.class);
 
     /** The platform information. */
     private DatabasePlatformInfo _platformInfo;

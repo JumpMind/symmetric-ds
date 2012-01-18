@@ -24,15 +24,13 @@ package org.jumpmind.symmetric.integrate;
 import java.text.ParseException;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.IDataReader;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A convenience class that allows the end user to template a message using
@@ -49,7 +47,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
  */
 public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDataLoaderFilter {
 
-    static final Log logger = LogFactory.getLog(TemplatedPublisherDataLoaderFilter.class);
+    static final Logger logger = LoggerFactory.getLogger(TemplatedPublisherDataLoaderFilter.class);
 
     private String headerTableTemplate;
     private String footerTableTemplate;

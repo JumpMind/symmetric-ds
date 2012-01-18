@@ -25,8 +25,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Metadata about how and when to route data to a node group or a specific node
@@ -35,7 +35,7 @@ public class Router implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    static final Log logger = LogFactory.getLog(Router.class);
+    static final Logger logger = LoggerFactory.getLogger(Router.class);
 
     private static int maxRouterId;
 
