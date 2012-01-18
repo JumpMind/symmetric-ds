@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class AbstractRouterServiceTest extends AbstractServiceTest {
+abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     private static final String SELECT_COUNT_FROM_SYM_OUTGOING_BATCH_WHERE_NOT = "select count(*) from sym_outgoing_batch where status = 'NE' and node_id!=?";
     private static final String SELECT_COUNT_FROM_SYM_OUTGOING_BATCH = "select count(*) from sym_outgoing_batch where status = 'NE' and node_id=?";

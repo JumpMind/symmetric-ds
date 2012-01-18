@@ -10,7 +10,7 @@ public class EnvironmentSpecificPropertiesTest {
     @Test
     public void testEnvironmentSpecificProperties() throws Exception {
         EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(getClass().getResource("/test.env.specifc.properties"), "environment");
-        Assert.assertEquals(2, properties.size());
+        Assert.assertEquals(4, properties.size());
         Assert.assertEquals("one", properties.get("name1"));
         Assert.assertEquals("two", properties.get("name2"));
     }

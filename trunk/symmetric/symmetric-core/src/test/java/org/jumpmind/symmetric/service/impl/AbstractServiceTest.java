@@ -52,7 +52,7 @@ public abstract class AbstractServiceTest {
     }
 
     protected Level setLoggingLevelForTest(Level level) {    
-        org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(DataService.class);
+        org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger("org.jumpmind");
         Level old = logger.getLevel();
         logger.setLevel(level);
         return old;
