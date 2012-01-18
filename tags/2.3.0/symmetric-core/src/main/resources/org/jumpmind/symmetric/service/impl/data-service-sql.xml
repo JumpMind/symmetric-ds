@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+  default-lazy-init="true">
+
+  <util:map id="dataServiceSql">  
+    <entry key="selectEventDataToExtractSql">
+      <value>
+        select d.data_id, d.table_name, d.event_type, d.row_data, d.pk_data, d.old_data,
+        d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, e.router_id from $[sym.sync.table.prefix]_data d inner join
+        $[sym.sync.table.prefix]_data_event e on d.data_id = e.data_id inner join $[sym.sync.table.prefix]_outgoing_batch o on o.batch_id=e.batch_id 
+        where o.batch_id = ?
+      </value>
+    </entry> 
+    <entry key="selectEventDataIdsSql">
+      <value>
+        select d.data_id from $[sym.sync.table.prefix]_data d inner join
+        $[sym.sync.table.prefix]_data_event e on d.data_id = e.data_id inner join $[sym.sync.table.prefix]_outgoing_batch o on o.batch_id=e.batch_id 
+        where o.batch_id = ?
+      </value>
+    </entry>  
+    <entry key="selectMaxDataEventDataIdSql">
+      <value>
+        select max(data_id) from $[sym.sync.table.prefix]_data_event
+      </value>
+    </entry>     
+    <entry key="countDataInRangeSql">
+      <value><![CDATA[
+        select count(*) from $[sym.sync.table.prefix]_data where data_id > ? and data_id < ?
+      ]]></value>
+    </entry>  
+    <entry key="insertIntoDataSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_data (data_id, table_name, event_type, row_data, pk_data,
+        old_data, trigger_hist_id, channel_id, create_time) values(null, ?, ?, ?, ?, ?, ?, ?, current_timestamp)
+      </value>
+    </entry>
+    <entry key="insertIntoDataEventSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_data_event (data_id, batch_id, router_id, create_time) values(?, ?, ?, current_timestamp)
+      </value>
+    </entry>  
+    <entry key="findDataEventCreateTimeSql">
+      <value>
+        select max(create_time) from $[sym.sync.table.prefix]_data_event where data_id=?
+      </value>
+    </entry>    
+    <entry key="findDataCreateTimeSql">
+      <value>
+        select create_time from $[sym.sync.table.prefix]_data where data_id=?
+      </value>
+    </entry>     
+    <entry key="updateDataRefSql">
+      <value>
+       update $[sym.sync.table.prefix]_data_ref set ref_data_id=?, ref_time=?
+      </value>
+    </entry>
+    <entry key="insertDataRefSql">
+      <value>
+       insert into $[sym.sync.table.prefix]_data_ref (ref_data_id, ref_time) values(?,?)
+      </value>
+    </entry> 
+    <entry key="findDataRefSql">
+      <value>
+       select ref_data_id, ref_time from $[sym.sync.table.prefix]_data_ref
+      </value>
+    </entry>
+    <entry key="findDataGapsByStatusSql">
+      <value>
+       select start_id, end_id, create_time from $[sym.sync.table.prefix]_data_gap where status=? order by start_id asc
+      </value>
+    </entry>
+    <entry key="insertDataGapSql">
+      <value>
+       insert into $[sym.sync.table.prefix]_data_gap (status, last_update_hostname, start_id, end_id, last_update_time, create_time) values(?, ?, ?, ?, current_timestamp, current_timestamp)
+      </value>
+    </entry>          
+    <entry key="updateDataGapSql">
+      <value>
+       update $[sym.sync.table.prefix]_data_gap set status=?, last_update_hostname=?, last_update_time=current_timestamp where start_id=? and end_id=?
+      </value>
+    </entry>
+    <entry key="selectMaxDataIdSql">
+      <value>
+       select max(data_id) from $[sym.sync.table.prefix]_data 
+      </value>
+    </entry>
+                            
+  </util:map>
+
+</beans>

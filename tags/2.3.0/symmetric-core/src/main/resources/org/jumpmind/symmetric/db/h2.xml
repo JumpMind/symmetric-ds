@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
+
+    <bean id="h2StringTemplate" class="java.lang.String">
+        <constructor-arg>
+            <value>
+                <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($(tableAlias)"$(columnName)",''\'',''\\''),''"'',''\"'')||''"'' end]]>
+            </value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="h2Dialect" class="org.jumpmind.symmetric.db.h2.H2DbDialect"
+        scope="prototype">
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
+        <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
+        <property name="sqlTemplate">
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+                
+                <property name="functionInstalledSql" value="select count(*) from INFORMATION_SCHEMA.FUNCTION_ALIASES where ALIAS_NAME='$(functionName)'"/>
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="BASE64_ENCODE">
+                            <value>
+                                <![CDATA[CREATE ALIAS IF NOT EXISTS $(functionName) for "org.jumpmind.symmetric.db.EmbeddedDbFunctions.encodeBase64";]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+                <property name="stringColumnTemplate" ref="h2StringTemplate" />
+                <property name="clobColumnTemplate" ref="h2StringTemplate" />
+                <property name="blobColumnTemplate">
+                    <value>
+                         <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($[sym.sync.table.prefix]_BASE64_ENCODE($(tableAlias)"$(columnName)"),''\'',''\\''),''"'',''\"'')||''"'' end]]>
+                    </value>
+                </property>
+                <property name="numberColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||cast($(tableAlias)"$(columnName)" as varchar(50))||''"'' end]]>
+                    </value>
+                </property>
+                <property name="datetimeColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||formatdatetime($(tableAlias)"$(columnName)", ''yyyy-MM-dd HH:mm:ss.S'')||''"'' end]]>
+                    </value>
+                </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)"$(columnName)" is null then '''' when $(tableAlias)"$(columnName)" then ''"1"'' else ''"0"'' end]]>
+                    </value>
+                </property>
+                <property name="oldColumnPrefix" value="OLD_" />
+                <property name="newColumnPrefix" value="NEW_" />                
+                <property name="oldTriggerValue" value="" />
+                <property name="newTriggerValue" value="" />
+                <property name="triggerConcatCharacter" value="||" />
+                <property name="sqlTemplates">
+                    <map>
+                        <entry key="insertTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                CREATE TABLE $(triggerName)_CONFIG (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB);
+                                INSERT INTO $(triggerName)_CONFIG values(    
+                                'select count(*) from $(virtualOldNewTable) where $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)', 
+                                'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                  (select ''$(targetTableName)'',''I'',$(triggerHistoryId),$(columns), ''$(channelName)'', $(txIdExpression), @node_value, $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))' 
+                                );
+                                CREATE TRIGGER $(triggerName) AFTER INSERT ON $(tableName) FOR EACH ROW CALL "org.jumpmind.symmetric.db.h2.H2Trigger";
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="updateTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                CREATE TABLE $(triggerName)_CONFIG (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB);
+                                INSERT INTO $(triggerName)_CONFIG values(    
+                                  'select count(*) from $(virtualOldNewTable) where $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)', 
+                                  'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    (select ''$(targetTableName)'',''U'',$(triggerHistoryId),$(oldKeys),$(columns),$(oldColumns), ''$(channelName)'', $(txIdExpression), @node_value, $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))'
+                                );
+                                CREATE TRIGGER $(triggerName) AFTER UPDATE ON $(tableName) FOR EACH ROW CALL "org.jumpmind.symmetric.db.h2.H2Trigger";
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="deleteTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                CREATE TABLE $(triggerName)_CONFIG (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB);
+                                INSERT INTO $(triggerName)_CONFIG values(    
+                                  'select count(*) from $(virtualOldNewTable) where $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)', 
+                                  'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    (select ''$(targetTableName)'',''D'',$(triggerHistoryId),$(oldKeys),$(oldColumns),''$(channelName)'', $(txIdExpression), @node_value, $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))'
+                                );
+                                CREATE TRIGGER $(triggerName) AFTER DELETE ON $(tableName) FOR EACH ROW CALL "org.jumpmind.symmetric.db.h2.H2Trigger";
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="initialLoadSqlTemplate">
+                            <value>
+                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+</beans>
