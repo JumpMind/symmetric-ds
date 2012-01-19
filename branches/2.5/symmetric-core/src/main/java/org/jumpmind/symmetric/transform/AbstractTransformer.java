@@ -168,52 +168,61 @@ public abstract class AbstractTransformer {
 
     protected List<TransformedData> create(ICacheContext context, DmlType dmlType,
             TransformTable transformation, Map<String, String> sourceKeyValues,
-            Map<String, String> oldSourceValues, Map<String, String> sourceValues) throws IgnoreRowException {
-        List<TransformedData> datas = new ArrayList<TransformedData>();
-        datas.add(new TransformedData(transformation, dmlType, sourceKeyValues, oldSourceValues, sourceValues));
+            Map<String, String> oldSourceValues, Map<String, String> sourceValues)
+            throws IgnoreRowException {
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
         if (columns == null || columns.size() == 0) {
             log.error("TransformNoPrimaryKeyDefined", transformation.getTransformId());
+            return new ArrayList<TransformedData>(0);
         } else {
+            ArrayList<TransformedData> datas = new ArrayList<TransformedData>();
+            TransformedData data = new TransformedData(transformation, dmlType, sourceKeyValues,
+                    oldSourceValues, sourceValues);
             for (TransformColumn transformColumn : columns) {
                 List<TransformedData> newDatas = null;
-                for (TransformedData data : datas) {
-                    try {
-                        Object columnValue = transformColumn(context, data, transformColumn,
-                        		sourceValues, oldSourceValues);
-                        if (columnValue instanceof String) {
-                            data.put(transformColumn, (String) columnValue, true);
-                        } else if (columnValue instanceof List) {
-                            @SuppressWarnings("unchecked")
-                            List<String> values = (List<String>) columnValue;
-                            if (values.size() > 0) {
-                                data.put(transformColumn, values.get(0), true);
-                                if (values.size() > 1) {
-                                    if (newDatas == null) {
-                                        newDatas = new ArrayList<TransformedData>(values.size() - 1);
-                                    }
-                                    for (int i = 1; i < values.size(); i++) {
-                                        TransformedData newData = data.copy();
-                                        newData.put(transformColumn, values.get(i), true);
-                                        newDatas.add(newData);
-                                    }
+                try {
+                    Object columnValue = transformColumn(context, data, transformColumn,
+                            sourceValues, oldSourceValues);
+                    if (columnValue instanceof String) {
+                        data.put(transformColumn, (String) columnValue, true);
+                    } else if (columnValue instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<String> values = (List<String>) columnValue;
+                        if (values.size() > 0) {
+                            data.put(transformColumn, values.get(0), true);
+                            if (values.size() > 1) {
+                                if (newDatas == null) {
+                                    newDatas = new ArrayList<TransformedData>(values.size() - 1);
                                 }
-                            } else {
-                                throw new IgnoreRowException();
+                                for (int i = 1; i < values.size(); i++) {
+                                    TransformedData newData = data.copy();
+                                    newData.put(transformColumn, values.get(i), true);
+                                    newDatas.add(newData);
+                                }
                             }
+                        } else {
+                            throw new IgnoreRowException();
                         }
-                    } catch (IgnoreColumnException e) {
-                        // Do nothing. We are suppose to ignore the column.
                     }
+                } catch (IgnoreColumnException e) {
+                    // Do nothing. We are suppose to ignore the column.
                 }
-                if (newDatas != null) {
+
+                if (newDatas != null && newDatas.size() > 0) {
                     datas.addAll(newDatas);
                     newDatas = null;
                 }
             }
+
+            if (data.getColumnValues() != null && data.getColumnValues().length > 0) {
+                datas.add(0, data);
+            }
+
+            return datas;
+
         }
-        return datas;
     }
+
 
     protected Object transformColumn(ICacheContext context, TransformedData data,
             TransformColumn transformColumn, Map<String, String> sourceValues,
