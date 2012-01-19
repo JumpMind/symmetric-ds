@@ -278,17 +278,18 @@ public class TransformWriter implements IDataWriter {
             DataEventType dataEventType, TransformTable transformation,
             Map<String, String> sourceKeyValues, Map<String, String> oldSourceValues,
             Map<String, String> sourceValues) throws IgnoreRowException {
-        List<TransformedData> datas = new ArrayList<TransformedData>();
-        datas.add(new TransformedData(transformation, dataEventType, sourceKeyValues,
-                oldSourceValues, sourceValues));
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
         if (columns == null || columns.size() == 0) {
             log.error("No primary key defined for the transformation: {}",
                     transformation.getTransformId());
+            return new ArrayList<TransformedData>(0);
         } else {
+            List<TransformedData> datas = new ArrayList<TransformedData>();
+            TransformedData data = new TransformedData(transformation, dataEventType, sourceKeyValues,
+                    oldSourceValues, sourceValues);
+
             for (TransformColumn transformColumn : columns) {
                 List<TransformedData> newDatas = null;
-                for (TransformedData data : datas) {
                     try {
                         Object columnValue = transformColumn(context, data, transformColumn,
                                 sourceValues, oldSourceValues);
@@ -316,14 +317,20 @@ public class TransformWriter implements IDataWriter {
                     } catch (IgnoreColumnException e) {
                         // Do nothing. We are suppose to ignore the column.
                     }
-                }
+                
                 if (newDatas != null) {
                     datas.addAll(newDatas);
                     newDatas = null;
                 }
             }
+            
+            // add the original data if we have transformed at least one column
+            if (data.getColumnValues() != null && data.getColumnValues().length > 0) {
+                datas.add(0, data);
+            }
+            
+            return datas;
         }
-        return datas;
     }
 
     protected Object transformColumn(
