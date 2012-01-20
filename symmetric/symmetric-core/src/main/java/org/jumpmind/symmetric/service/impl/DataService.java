@@ -38,7 +38,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.AbstractSqlMap;
+import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -53,6 +53,7 @@ import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
+import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -101,6 +102,8 @@ public class DataService extends AbstractService implements IDataService {
     private List<IHeartbeatListener> heartbeatListeners;
 
     private IStatisticManager statisticManager;
+    
+    private DataMapper dataMapper;
 
     public DataService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             DeploymentType deploymentType, ITriggerRouterService triggerRouterService,
@@ -114,29 +117,17 @@ public class DataService extends AbstractService implements IDataService {
         this.purgeService = purgeService;
         this.configurationService = configurationService;
         this.outgoingBatchService = outgoingBatchService;
-        this.statisticManager = statisticManager;
+        this.statisticManager = statisticManager;        
         this.reloadListeners = new ArrayList<IReloadListener>();
         this.heartbeatListeners = new ArrayList<IHeartbeatListener>();
         this.heartbeatListeners.add(new PushHeartbeatListener(parameterService, this, nodeService,
                 symmetricDialect));
+        this.dataMapper = new DataMapper();
+        
+        setSqlMap(new DataServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new DataServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
-    }
-
-    public String getDataSelectSql(long batchId, long startDataId, String channelId,
-            boolean descending) {
-        String orderBy = getOrderByDataId(descending);
-        String startAtDataIdSql = startDataId >= 0l ? (descending ? " and d.data_id <= ? "
-                : " and d.data_id >= ? ") : "";
-        return symmetricDialect.massageDataExtractionSql(
-                getSql("selectEventDataToExtractSql", startAtDataIdSql, orderBy),
-                configurationService.getNodeChannel(channelId, false).getChannel());
-    }
 
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter) {
         insertReloadEvent(targetNode, triggerRouter, null);
@@ -833,27 +824,50 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public Data mapData(Row row) {
-        Data data = new Data();
-        data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA", false));
-        data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA", false));
-        data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA", false));
-        data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
-        data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID"));
-        data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));
-        data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, row.getString("SOURCE_NODE_ID"));
-        data.putAttribute(CsvData.ATTRIBUTE_EXTERNAL_DATA, row.getString("EXTERNAL_DATA"));
-        data.putAttribute(CsvData.ATTRIBUTE_DATA_ID, row.getLong("DATA_ID"));
-        int triggerHistId = row.getInt("TRIGGER_HIST_ID");
-        data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, triggerHistId);
-        data.setTriggerHistory(triggerRouterService.getTriggerHistory(triggerHistId));
-        if (data.getTriggerHistory() == null) {
-            data.setTriggerHistory(new TriggerHistory(triggerHistId));
-        }
-        return data;
+        return dataMapper.mapRow(row);
     }
+
+    public ISqlReadCursor<Data> selectDataFor(Batch batch) {
+        return sqlTemplate.queryForCursor(getDataSelectSql(batch.getBatchId(), 0l, batch.getChannelId(), false), dataMapper);
+    }
+    
+    protected String getDataSelectSql(long batchId, long startDataId, String channelId,
+            boolean descending) {
+        String orderBy = getOrderByDataId(descending);
+        String startAtDataIdSql = startDataId >= 0l ? (descending ? " and d.data_id <= ? "
+                : " and d.data_id >= ? ") : "";
+        return symmetricDialect.massageDataExtractionSql(
+                getSql("selectEventDataToExtractSql", startAtDataIdSql, orderBy),
+                configurationService.getNodeChannel(channelId, false).getChannel());
+    }
+
 
     public long findMaxDataId() {
         return sqlTemplate.queryForLong(getSql("selectMaxDataIdSql"));
+    }
+    
+    public class DataMapper implements ISqlRowMapper<Data> {
+        public Data mapRow(Row row) {
+            Data data = new Data();
+            data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA", false));
+            data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA", false));
+            data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA", false));
+            data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
+            data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID"));
+            data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));
+            data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, row.getString("SOURCE_NODE_ID"));
+            data.putAttribute(CsvData.ATTRIBUTE_EXTERNAL_DATA, row.getString("EXTERNAL_DATA"));
+            data.putAttribute(CsvData.ATTRIBUTE_DATA_ID, row.getLong("DATA_ID"));
+            data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, row.getDateTime("CREATE_TIME"));
+            data.putAttribute(CsvData.ATTRIBUTE_ROUTER_ID, row.getString("ROUTER_ID"));
+            int triggerHistId = row.getInt("TRIGGER_HIST_ID");
+            data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, triggerHistId);
+            data.setTriggerHistory(triggerRouterService.getTriggerHistory(triggerHistId));
+            if (data.getTriggerHistory() == null) {
+                data.setTriggerHistory(new TriggerHistory(triggerHistId));
+            }
+            return data;
+        }
     }
 
 }

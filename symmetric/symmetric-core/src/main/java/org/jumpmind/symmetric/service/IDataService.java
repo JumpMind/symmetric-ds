@@ -23,9 +23,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
+import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
@@ -131,7 +133,6 @@ public interface IDataService {
     
     public long findMaxDataId();
     
-    public String getDataSelectSql(long batchId, long startDataId, String channelId,
-            boolean descending);
+    public ISqlReadCursor<Data> selectDataFor(Batch batch);
         
 }

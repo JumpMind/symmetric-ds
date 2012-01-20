@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service.impl;
 
@@ -43,20 +43,24 @@ abstract public class AbstractService implements IService {
     protected IParameterService parameterService;
 
     protected ISymmetricDialect symmetricDialect;
-    
+
     protected ISqlTemplate sqlTemplate;
 
     protected String tablePrefix;
-    
+
     private ISqlMap sqlMap;
-    
+
     public AbstractService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
-       this.symmetricDialect = symmetricDialect;
-       this.parameterService = parameterService;
-       this.tablePrefix = parameterService.getTablePrefix();
-       this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
+        this.symmetricDialect = symmetricDialect;
+        this.parameterService = parameterService;
+        this.tablePrefix = parameterService.getTablePrefix();
+        this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
     }
     
+    protected void setSqlMap(ISqlMap sqlMap) {
+        this.sqlMap = sqlMap;
+    }
+
     public ISqlTemplate getJdbcTemplate() {
         return symmetricDialect.getPlatform().getSqlTemplate();
     }
@@ -64,7 +68,7 @@ abstract public class AbstractService implements IService {
     synchronized public void synchronize(Runnable runnable) {
         runnable.run();
     }
-    
+
     protected boolean isSet(Object value) {
         if (value != null && value.toString().equals("1")) {
             return true;
@@ -83,42 +87,37 @@ abstract public class AbstractService implements IService {
         }
         return null;
     }
-    
-    public ISqlMap getSqlMap() {
-        if (sqlMap == null) {
-            sqlMap = createSqlMap();
-        }
-        return sqlMap;
-    }
-    
-    abstract protected ISqlMap createSqlMap();
-    
-    protected Map<String,String> createSqlReplacementTokens() {
+
+    protected Map<String, String> createSqlReplacementTokens() {
         return createSqlReplacementTokens(this.tablePrefix);
-    }    
-    
-    protected static Map<String,String> createSqlReplacementTokens(String tablePrefix) {
-        Map<String,String> map = new HashMap<String, String>();
+    }
+
+    protected static Map<String, String> createSqlReplacementTokens(String tablePrefix) {
+        Map<String, String> map = new HashMap<String, String>();
         map.put("prefixName", tablePrefix);
         return map;
-    } 
+    }
 
     public String getSql(String... keys) {
-        return getSqlMap().getSql(keys);
+        if (sqlMap != null) {
+            return sqlMap.getSql(keys);
+        } else {
+            return null;
+        }
     }
 
     public IParameterService getParameterService() {
         return parameterService;
     }
-    
+
     public ISymmetricDialect getSymmetricDialect() {
         return symmetricDialect;
     }
-    
+
     public String getTablePrefix() {
         return tablePrefix;
     }
-    
+
     protected void close(ISqlTransaction transaction) {
         if (transaction != null) {
             transaction.close();

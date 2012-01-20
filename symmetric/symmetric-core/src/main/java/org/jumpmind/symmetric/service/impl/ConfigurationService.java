@@ -35,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlScript;
@@ -77,6 +76,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         this.defaultChannels.add(new Channel(Constants.CHANNEL_CONFIG, 0, 100, 100, true, 0));
         this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0));
         this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0));
+        setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public void saveNodeGroupLink(NodeGroupLink link) {
@@ -490,12 +491,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public ChannelMap getSuspendIgnoreChannelLists() {
         return getSuspendIgnoreChannelLists(nodeService.findIdentityNodeId());
 
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens());
     }
 
     class NodeGroupChannelWindowMapper implements ISqlRowMapper<NodeGroupChannelWindow> {

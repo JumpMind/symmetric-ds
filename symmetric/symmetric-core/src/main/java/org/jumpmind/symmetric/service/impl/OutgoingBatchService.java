@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -67,12 +66,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens());
+        setSqlMap(new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     @Transactional

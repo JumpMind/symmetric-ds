@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.StringMapper;
@@ -88,6 +87,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.dataLoaderService = dataLoaderService;
         this.transportManager = transportManager;
         this.statisticManager = statisticManager;
+        
+        setSqlMap(new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration)
@@ -360,12 +362,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
             throw new IllegalStateException(
                     "This node has not been configured.  Could not find a row in the identity table.");
         }
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens());
     }
 
     public void setNodeService(INodeService nodeService) {

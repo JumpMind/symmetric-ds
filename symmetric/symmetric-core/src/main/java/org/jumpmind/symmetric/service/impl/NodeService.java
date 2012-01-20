@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
@@ -76,11 +75,8 @@ public class NodeService extends AbstractService implements INodeService {
 
     public NodeService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new NodeServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
+        setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public String findSymmetricVersion() {

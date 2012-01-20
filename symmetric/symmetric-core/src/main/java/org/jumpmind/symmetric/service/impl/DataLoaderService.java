@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -124,11 +123,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.filters = new ArrayList<IDatabaseWriterFilter>();
         this.filters.add(new ConfigurationChangedFilter(parameterService, configurationService,
                 triggerRouterService, transformService));
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return null;
     }
 
     /**

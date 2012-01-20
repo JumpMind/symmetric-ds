@@ -31,7 +31,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.hsqldb.types.Types;
-import org.jumpmind.db.sql.ISqlMap;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -45,6 +44,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -75,14 +75,14 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     protected ISymmetricDialect symmetricDialect;
 
-    protected ISqlMap sqlMap;
+    protected IRouterService routerService;
 
     protected boolean reading = true;
 
-    public DataGapRouteReader(ISqlMap sqlMap, ChannelRouterContext context,
+    public DataGapRouteReader(IRouterService routerService, ChannelRouterContext context,
             IDataService dataService, ISymmetricDialect symmetricDialect,
             IParameterService parameterService) {
-        this.sqlMap = sqlMap;
+        this.routerService = routerService;
         this.symmetricDialect = symmetricDialect;
         this.dataQueue = new LinkedBlockingQueue<Data>(
                 symmetricDialect != null ? symmetricDialect.getRouterDataPeekAheadCount() : 1000);
@@ -259,7 +259,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
     }
 
     protected String getSql(String sqlName, Channel channel) {
-        String select = sqlMap.getSql(sqlName);
+        String select = routerService.getSql(sqlName);
         if (!channel.isUseOldDataToRoute()) {
             select = select.replace("d.old_data", "''");
         }

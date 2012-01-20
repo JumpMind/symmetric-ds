@@ -35,7 +35,6 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.Version;
@@ -105,6 +104,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         this.configurationService = configurationService;
         this.statisticManager = statisticManager;
         this.addTriggerCreationListeners(this.failureListener);
+        setSqlMap(new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
 
         String tablePrefix = parameterService.getTablePrefix();
 
@@ -134,13 +135,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         rootConfigChannelTableNames.put("3", configTables);
 
     }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens());
-    }
-
+    
     public List<Trigger> getTriggers() {
         return sqlTemplate.query("select "
                 + getSql("selectTriggersColumnList", "selectTriggersSql"), new TriggerMapper());

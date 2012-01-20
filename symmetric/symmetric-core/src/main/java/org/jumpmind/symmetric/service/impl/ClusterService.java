@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
@@ -56,6 +55,8 @@ public class ClusterService extends AbstractService implements IClusterService {
         
     public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
+        setSqlMap(new ClusterServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public void initLockTable() {
@@ -155,9 +156,4 @@ public class ClusterService extends AbstractService implements IClusterService {
         }
     }
 
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new ClusterServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens());
-    }
 }

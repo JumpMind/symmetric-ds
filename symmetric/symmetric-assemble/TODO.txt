@@ -43,7 +43,16 @@ DONE = +
 + What to do with SqlTemplate? Move sqltemplate into dbdialect
 * Change the default server mode to multiserver
 + Clean up symmetric.messages
-* SqlMap create constants for columns and table names  
+* SqlMap create constants for columns and table names
+
+Performance Improvement Opportunities
+* Pluggable data loaders.
+* Sync based on updated column values (timestamp or flag)
+* Transaction Log Parsing (vs. triggers)  
+* Optimize triggers (don't capture old data.  option to capture only primary keys)
+* Routing optimizations - allow a channel to always sync to everybody.  Update sym_outgoing_batch to have a PK of batch_id, node_id.
+* Web Sockets protocol
+* HttpClient (pool connections)
 
 Documentation
 * Change getting started to instruct user to update properties in the engines directory (for multiserver mode)
