@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -117,7 +116,7 @@ public class RouterService extends AbstractService implements IRouterService {
         this.outgoingBatchService = outgoingBatchService;
         this.nodeService = nodeService;
         this.statisticManager = statisticManager;
-
+        
         this.batchAlgorithms = new HashMap<String, IBatchAlgorithm>();
         this.batchAlgorithms.put("default", new DefaultBatchAlgorithm());
         this.batchAlgorithms.put("nontransactional", new NonTransactionalBatchAlgorithm());
@@ -132,8 +131,10 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
         this.routers.put("default", new DefaultDataRouter());
         this.routers.put("column", new ColumnMatchDataRouter(configurationService));
+        
+        setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
-
+    
     /**
      * For use in data load events
      */
@@ -196,7 +197,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 insertInitialLoadEvents();
                 long ts = System.currentTimeMillis();
                 IDataToRouteGapDetector gapDetector = new DataGapDetector(dataService,
-                        parameterService, symmetricDialect, getSqlMap());
+                        parameterService, symmetricDialect, this);
                 gapDetector.beforeRouting();
                 dataCount = routeDataForEachChannel();
                 gapDetector.afterRouting();
@@ -376,7 +377,7 @@ public class RouterService extends AbstractService implements IRouterService {
      *            The current context of the routing process
      */
     protected int selectDataAndRoute(ChannelRouterContext context) throws SQLException {
-        IDataToRouteReader reader = new DataGapRouteReader(getSqlMap(), context, dataService,
+        IDataToRouteReader reader = new DataGapRouteReader(this, context, dataService,
                 symmetricDialect, parameterService);
         getReadService().execute(reader);
         Data data = null;
@@ -574,11 +575,6 @@ public class RouterService extends AbstractService implements IRouterService {
 
     public Map<String, IDataRouter> getRouters() {
         return routers;
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new RouterServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
     }
 
 }

@@ -32,4 +32,6 @@ public interface IService {
      */
     public void synchronize(Runnable runnable);
     
+    public String getSql(String... keys);
+    
 }

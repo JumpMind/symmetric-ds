@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -28,12 +27,8 @@ public class TransformService extends AbstractService implements ITransformServi
 
     public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
         super(parameterService, symmetricDialect);
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new TransformServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens());
+        setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink nodeGroupLink,

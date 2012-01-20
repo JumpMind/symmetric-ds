@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.jumpmind.db.sql.ISqlMap;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -33,6 +32,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IRouterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,16 +50,16 @@ public class DataGapDetector implements IDataToRouteGapDetector {
 
     private ISymmetricDialect symmetricDialect;
 
-    private ISqlMap sqlMap;
+    private IRouterService routerService;
 
     public DataGapDetector() {
     }
 
     public DataGapDetector(IDataService dataService, IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, ISqlMap sqlMap) {
+            ISymmetricDialect symmetricDialect, IRouterService routerService) {
         this.dataService = dataService;
         this.parameterService = parameterService;
-        this.sqlMap = sqlMap;
+        this.routerService = routerService;
         this.symmetricDialect = symmetricDialect;
     }
 
@@ -80,7 +80,7 @@ public class DataGapDetector implements IDataToRouteGapDetector {
                 .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         for (final DataGap dataGap : gaps) {
             final boolean lastGap = dataGap.equals(gaps.get(gaps.size() - 1));
-            String sql = sqlMap.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
+            String sql = routerService.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
             ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
             Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
             lastDataId = -1;

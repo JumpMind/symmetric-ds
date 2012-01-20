@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -46,6 +45,8 @@ public class StatisticService extends AbstractService implements IStatisticServi
         
     public StatisticService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
+        setSqlMap(new StatisticServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public void save(ChannelStats stats) {
@@ -119,12 +120,6 @@ public class StatisticService extends AbstractService implements IStatisticServi
         cal.set(Calendar.MILLISECOND, 0);
         cal.set(Calendar.SECOND, 0);
         return cal.getTime();        
-    }
-    
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new StatisticServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens());
     }
     
     class JobStatsMapper implements ISqlRowMapper<JobStats> {

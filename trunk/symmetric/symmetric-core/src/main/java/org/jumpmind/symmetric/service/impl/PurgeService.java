@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -57,11 +56,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.statisticManager = statisticManager;
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new PurgeServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
+        setSqlMap(new PurgeServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
 
     public long purgeOutgoing() {

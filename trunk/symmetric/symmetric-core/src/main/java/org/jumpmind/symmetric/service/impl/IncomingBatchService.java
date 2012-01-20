@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
@@ -49,18 +48,14 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public IncomingBatchService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect) {
         super(parameterService, symmetricDialect);
+        setSqlMap(new IncomingBatchServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public IncomingBatch findIncomingBatch(long batchId, String nodeId) {
         return sqlTemplate.queryForObject(
                 getSql("selectIncomingBatchPrefixSql", "findIncomingBatchSql"),
                 new IncomingBatchMapper(), batchId, nodeId);
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new IncomingBatchServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens());
     }
 
     public int countIncomingBatchesInError() {

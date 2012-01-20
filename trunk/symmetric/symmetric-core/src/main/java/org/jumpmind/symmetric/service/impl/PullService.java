@@ -26,7 +26,6 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.util.List;
 
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
@@ -64,11 +63,6 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         this.dataLoaderService = dataLoaderService;
         this.registrationService = registrationService;
         this.clusterService = clusterService;
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return null;
     }
 
     synchronized public RemoteNodeStatuses pullData() {

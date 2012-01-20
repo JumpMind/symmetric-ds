@@ -35,7 +35,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -129,11 +128,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         this.statisticManager = statisticManager;
     }
 
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return null;
-    }
-
     /**
      * @see DataExtractorService#extractConfigurationStandalone(Node, Writer)
      */
@@ -161,7 +155,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 StringUtils.isBlank(node.getSymmetricVersion()) ? Version.version() : node
                         .getSymmetricVersion(), nodeGroupLink, tablesToExclude);
 
-        List<InitialLoadEvent> initialLoadEvents = new ArrayList<InitialLoadEvent>(
+        List<SelectFromTableEvent> initialLoadEvents = new ArrayList<SelectFromTableEvent>(
                 triggerRouters.size());
 
         for (int i = triggerRouters.size() - 1; i >= 0; i--) {
@@ -180,7 +174,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             String sourceTable = triggerHistory.getSourceTableName();
             Data data = new Data(1, null, sql.toString(), DataEventType.SQL, sourceTable, null,
                     triggerHistory, triggerRouter.getTrigger().getChannelId(), null, null);
-            initialLoadEvents.add(new InitialLoadEvent(data));
+            initialLoadEvents.add(new SelectFromTableEvent(data));
         }
 
         for (int i = 0; i < triggerRouters.size(); i++) {
@@ -195,16 +189,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             if (!triggerRouter.getTrigger().getSourceTableName()
                     .endsWith(TableConstants.SYM_NODE_IDENTITY)) {
-                initialLoadEvents.add(new InitialLoadEvent(node, triggerRouter, triggerHistory));
+                initialLoadEvents
+                        .add(new SelectFromTableEvent(node, triggerRouter, triggerHistory));
             } else {
                 Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT,
                         triggerHistory.getSourceTableName(), null, triggerHistory, triggerRouter
                                 .getTrigger().getChannelId(), null, null);
-                initialLoadEvents.add(new InitialLoadEvent(data));
+                initialLoadEvents.add(new SelectFromTableEvent(data));
             }
         }
 
-        InitialLoadSource source = new InitialLoadSource(batch, initialLoadEvents);
+        SelectFromTableSource source = new SelectFromTableSource(batch, initialLoadEvents);
         ExtractDataReader dataReader = new ExtractDataReader(this.symmetricDialect.getPlatform(),
                 source);
 
@@ -491,55 +486,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return false;
     }
 
-    class InitialLoadEvent {
-
-        private TriggerRouter triggerRouter;
-        private TriggerHistory triggerHistory;
-        private Node node;
-        private Data data;
-
-        public InitialLoadEvent(Node node, TriggerRouter triggerRouter,
-                TriggerHistory triggerHistory) {
-            this.node = node;
-            this.triggerRouter = triggerRouter;
-            this.triggerHistory = triggerHistory != null ? triggerHistory : triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
-        }
-
-        public InitialLoadEvent(Data data) {
-            this.data = data;
-            this.triggerHistory = data.getTriggerHistory();
-        }
-
-        public TriggerHistory getTriggerHistory() {
-            return triggerHistory;
-        }
-
-        public TriggerRouter getTriggerRouter() {
-            return triggerRouter;
-        }
-
-        public Data getData() {
-            return data;
-        }
-
-        public Node getNode() {
-            return node;
-        }
-
-        public boolean containsData() {
-            return data != null;
-        }
-
-    }
-
     class SelectBatchSource implements IExtractBatchSource {
 
         private Batch batch;
+        
+        private Table currentTable;
 
         private boolean requiresLobSelectedFromSource;
 
         private ISqlReadCursor<Data> cursor;
+
+        private SelectFromTableSource reloadSource;
 
         public SelectBatchSource(OutgoingBatch outgoingBatch) {
             this.batch = new Batch(outgoingBatch.getBatchId(), outgoingBatch.getChannelId(),
@@ -551,37 +508,72 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public Table getTable() {
-            return null;
+            return currentTable;
         }
 
         public CsvData next() {
-            return null;
+            if (this.cursor == null) {
+                this.cursor = dataService.selectDataFor(batch);
+            }
+
+            Data data = null;
+            if (reloadSource != null) {
+                data = (Data) reloadSource.next();
+                currentTable = reloadSource.getTable();
+                if (data == null) {
+                    reloadSource.close();
+                    reloadSource = null;
+                }
+            }
+
+            if (data == null) {
+                data = this.cursor.next();
+                if (data != null) {
+                    if (data.getDataEventType() == DataEventType.RELOAD) {
+
+                    }
+                } else {
+                    closeCursor();
+                }
+            }
+            return data;
         }
 
         public boolean requiresLobsSelectedFromSource() {
             return requiresLobSelectedFromSource;
         }
 
-        public void close() {
+        protected void closeCursor() {
+            if (this.cursor != null) {
+                this.cursor.close();
+                this.cursor = null;
+            }
+        }
 
+        public void close() {
+            closeCursor();
+            if (reloadSource != null) {
+                reloadSource.close();
+            }
         }
 
     }
 
-    class InitialLoadSource implements IExtractBatchSource {
+    class SelectFromTableSource implements IExtractBatchSource {
 
         private Batch batch;
 
         private Table currentTable;
 
-        private List<InitialLoadEvent> initialLoadEventsToSend;
+        private List<SelectFromTableEvent> selectFromTableEventsToSend;
 
-        private InitialLoadEvent currentInitialLoadEvent;
+        private SelectFromTableEvent currentInitialLoadEvent;
 
         private ISqlReadCursor<Data> cursor;
 
-        public InitialLoadSource(Batch batch, List<InitialLoadEvent> initialLoadEvents) {
-            this.initialLoadEventsToSend = new ArrayList<InitialLoadEvent>(initialLoadEvents);
+        public SelectFromTableSource(Batch batch, List<SelectFromTableEvent> initialLoadEvents) {
+            this.selectFromTableEventsToSend = new ArrayList<SelectFromTableEvent>(
+                    initialLoadEvents);
             this.batch = batch;
         }
 
@@ -595,8 +587,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public CsvData next() {
             CsvData data = null;
-            if (this.currentInitialLoadEvent == null && initialLoadEventsToSend.size() > 0) {
-                this.currentInitialLoadEvent = initialLoadEventsToSend.remove(0);
+            if (this.currentInitialLoadEvent == null && selectFromTableEventsToSend.size() > 0) {
+                this.currentInitialLoadEvent = selectFromTableEventsToSend.remove(0);
                 TriggerHistory history = this.currentInitialLoadEvent.getTriggerHistory();
                 String catalogName = history.getSourceCatalogName();
                 String schemaName = history.getSourceSchemaName();
@@ -667,6 +659,48 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public void close() {
             closeCursor();
+        }
+
+    }
+
+    class SelectFromTableEvent {
+
+        private TriggerRouter triggerRouter;
+        private TriggerHistory triggerHistory;
+        private Node node;
+        private Data data;
+
+        public SelectFromTableEvent(Node node, TriggerRouter triggerRouter,
+                TriggerHistory triggerHistory) {
+            this.node = node;
+            this.triggerRouter = triggerRouter;
+            this.triggerHistory = triggerHistory != null ? triggerHistory : triggerRouterService
+                    .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
+        }
+
+        public SelectFromTableEvent(Data data) {
+            this.data = data;
+            this.triggerHistory = data.getTriggerHistory();
+        }
+
+        public TriggerHistory getTriggerHistory() {
+            return triggerHistory;
+        }
+
+        public TriggerRouter getTriggerRouter() {
+            return triggerRouter;
+        }
+
+        public Data getData() {
+            return data;
+        }
+
+        public Node getNode() {
+            return node;
+        }
+
+        public boolean containsData() {
+            return data != null;
         }
 
     }

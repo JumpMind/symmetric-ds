@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.db.sql.AbstractSqlMap;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchInfo;
@@ -52,12 +51,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         super(parameterService, symmetricDialect);
         this.outgoingBatchService = outgoingBatchService;
         this.registrationService = registrationService;
-    }
-
-    @Override
-    protected AbstractSqlMap createSqlMap() {
-        return new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens());
+        setSqlMap(new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     public void ack(final BatchInfo batch) {
