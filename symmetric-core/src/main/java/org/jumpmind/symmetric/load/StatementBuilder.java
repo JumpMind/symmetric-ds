@@ -159,14 +159,15 @@ public class StatementBuilder {
     }
 
     public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
-        int existingCount = 0;
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (existingCount++ > 0) {
-                    sql.append(separator);
-                }
+                sql.append(separator);
                 sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");
             }
+        }
+        
+        if (columns.length > 0) {
+            sql.replace(sql.length()-1, sql.length(), "");
         }
     }
 
@@ -181,11 +182,14 @@ public class StatementBuilder {
         int existingCount = 0;
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (existingCount++ > 0) {
-                    sql.append(",");
-                }
+                existingCount++;
+                sql.append(",");
                 sql.append(quote).append(columns[i].getName()).append(quote);
             }
+        }
+        
+        if (columns.length > 0) {
+            sql.replace(sql.length()-1, sql.length(), "");
         }
         return existingCount;
     }
