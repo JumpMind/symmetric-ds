@@ -161,44 +161,37 @@ public class StatementBuilder {
     public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                sql.append(separator);
-                sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");
+                sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?").append(separator);
             }
         }
         
         if (columns.length > 0) {
-            sql.replace(sql.length()-1, sql.length(), "");
+            sql.replace(sql.length()-separator.length(), sql.length(), "");
         }
     }
 
-    public void appendColumns(StringBuilder sql, String[] names) {
-        for (int i = 0; i < names.length; i++) {
-            sql.append(quote).append(names[i]).append(quote)
-                    .append(i + 1 < names.length ? "," : "");
-        }
-    }
-
-    public int appendColumns(StringBuilder sql, Column[] columns) {
-        int existingCount = 0;
+    public void appendColumns(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                existingCount++;
-                sql.append(",");
                 sql.append(quote).append(columns[i].getName()).append(quote);
+                sql.append(",");
             }
         }
         
         if (columns.length > 0) {
             sql.replace(sql.length()-1, sql.length(), "");
         }
-        return existingCount;
     }
 
     public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                sql.append("?").append(i + 1 < columns.length ? "," : "");
+                sql.append("?").append(",");
             }
+        }
+        
+        if (columns.length > 0) {
+            sql.replace(sql.length()-1, sql.length(), "");
         }
     }
 
