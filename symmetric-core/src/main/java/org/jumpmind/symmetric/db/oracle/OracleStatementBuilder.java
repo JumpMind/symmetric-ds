@@ -24,6 +24,10 @@ public class OracleStatementBuilder extends StatementBuilder {
                 }
             }
         }
+        
+        if (columns.length > 0) {
+            sql.replace(sql.length()-1, sql.length(), "");
+        }
     }
     
     @Override
@@ -41,6 +45,10 @@ public class OracleStatementBuilder extends StatementBuilder {
                     sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");
                 }
             }
+        }
+        
+        if (columns.length > 0) {
+            sql.replace(sql.length()-separator.length(), sql.length(), "");
         }
     }
 
