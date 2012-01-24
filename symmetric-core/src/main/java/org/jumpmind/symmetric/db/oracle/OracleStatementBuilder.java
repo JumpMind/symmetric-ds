@@ -17,10 +17,9 @@ public class OracleStatementBuilder extends StatementBuilder {
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
                 if (columns[i].getTypeCode() == -101) {
-                    sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')").append(
-                            i + 1 < columns.length ? "," : "");
+                    sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')").append(",");
                 } else {
-                    sql.append("?").append(i + 1 < columns.length ? "," : "");
+                    sql.append("?").append(",");
                 }
             }
         }
@@ -32,17 +31,13 @@ public class OracleStatementBuilder extends StatementBuilder {
     
     @Override
     public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
-        int existingCount = 0;
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
-                if (existingCount++ > 0) {
-                    sql.append(separator);
-                }
                 if (columns[i].getTypeCode() == -101) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
-                            .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')");
+                            .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')").append(separator);
                 } else {
-                    sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");
+                    sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?").append(separator);
                 }
             }
         }
