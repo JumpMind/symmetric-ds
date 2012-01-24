@@ -75,6 +75,8 @@ public class SqlTemplate {
     private String numberColumnTemplate;
 
     private String datetimeColumnTemplate;
+    
+    private String datetimeWithTimezoneTemplate;
 
     private String timeColumnTemplate;
 
@@ -619,6 +621,11 @@ public class SqlTemplate {
                 case Types.OTHER:
                 	templateToUse = this.otherColumnTemplate;
                 	break;
+                case -101:
+                    if (StringUtils.isNotBlank(this.datetimeWithTimezoneTemplate)) {
+                        templateToUse = this.datetimeWithTimezoneTemplate;
+                        break;
+                    }
                 case Types.JAVA_OBJECT:
                 case Types.DISTINCT:
                 case Types.STRUCT:
@@ -908,6 +915,10 @@ public class SqlTemplate {
 
     public void setDateColumnTemplate(String dateColumnTemplate) {
         this.dateColumnTemplate = dateColumnTemplate;
+    }
+    
+    public void setDatetimeWithTimezoneTemplate(String datetimeWithTimezoneTemplate) {
+        this.datetimeWithTimezoneTemplate = datetimeWithTimezoneTemplate;
     }
 
     private class ColumnString {

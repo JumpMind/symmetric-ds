@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.util;
 
@@ -32,12 +32,11 @@ import org.springframework.jdbc.support.lob.LobHandler;
 /**
  * 
  */
-public class ArgTypePreparedStatementSetter implements PreparedStatementSetter
-{
+public class ArgTypePreparedStatementSetter implements PreparedStatementSetter {
     private final Object[] args;
 
     private final int[] argTypes;
-    
+
     private final LobHandler lobHandler;
 
     public ArgTypePreparedStatementSetter(Object[] args, int[] argTypes, LobHandler lobHandler) {
@@ -48,16 +47,14 @@ public class ArgTypePreparedStatementSetter implements PreparedStatementSetter
 
     public void setValues(PreparedStatement ps) throws SQLException {
         for (int i = 1; i <= args.length; i++) {
-            Object arg = args[i-1];
-            int argType = argTypes[i-1];
+            Object arg = args[i - 1];
+            int argType = argTypes[i - 1];
             if (argType == Types.BLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
-            }
-            else if (argType == Types.CLOB && lobHandler != null) {
+            } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
-            }
-            else {
-                StatementCreatorUtils.setParameterValue(ps, i, argType, arg);
+            } else {
+                StatementCreatorUtils.setParameterValue(ps, i, argType == -101 ? Types.VARCHAR : argType, arg);
             }
         }
     }

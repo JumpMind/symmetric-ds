@@ -39,9 +39,9 @@ public class PostgresSqlStatementBuilder extends StatementBuilder {
             StringBuilder sql = new StringBuilder("insert into ");
             sql.append(tableName);
             sql.append("(");
-            int columnCount = appendColumns(sql, columns);
+            appendColumns(sql, columns);
             sql.append(") (select ");
-            appendColumnQuestions(sql, columnCount);
+            appendColumnQuestions(sql, columns);
             sql.append(" where (select 1 from ");
             sql.append(tableName);
             sql.append(" where  ");

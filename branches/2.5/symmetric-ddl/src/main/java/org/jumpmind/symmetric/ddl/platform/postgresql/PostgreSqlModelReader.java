@@ -97,6 +97,9 @@ public class PostgreSqlModelReader extends JdbcModelReader
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
             return Types.TIMESTAMP;
+        } else if (typeName != null && typeName.equalsIgnoreCase("TIMESTAMPTZ")) {
+            // lets use the same type code that oracle uses
+            return -101;
         } else if (typeName != null && typeName.equalsIgnoreCase("OID")) {
             return Types.BLOB;
         } else {
