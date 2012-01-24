@@ -127,7 +127,12 @@
                     <value>
                         <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as number($[sym.oracle.template.precision]))||'"')]]>
                     </value>
-                </property>                
+                </property>
+                <property name="datetimeWithTimezoneTemplate" >
+                    <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')),'"'))]]>
+                    </value>
+                </property>                                               
                 <property name="datetimeColumnTemplate" >
                     <value>
                         <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.FF3')),'"'))]]>

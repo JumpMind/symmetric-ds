@@ -935,7 +935,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             objectValue = getDate(value, TIMESTAMP_PATTERNS);
                         } else if (type == Types.TIMESTAMP
                                 || (type == Types.DATE && isDateOverrideToTimestamp())) {
-                            objectValue = getTime(value, TIMESTAMP_PATTERNS);
+                            objectValue = getTime(value, TIMESTAMP_PATTERNS);                            
                         } else if (type == Types.CHAR) {
                             String charValue = value.toString();
                             if ((StringUtils.isBlank(charValue) && isBlankCharColumnSpacePadded())
@@ -1438,4 +1438,5 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public JdbcTemplate getJdbcTemplate() {
 		return jdbcTemplate;
 	}
+    
 }

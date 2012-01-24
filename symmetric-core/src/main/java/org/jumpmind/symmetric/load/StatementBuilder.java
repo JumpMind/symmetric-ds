@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.load;
 
@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.ddl.model.Column;
  * Builds a SQL DML statement
  */
 public class StatementBuilder {
-    
+
     public enum DmlType {
         INSERT, UPDATE, DELETE, COUNT
     };
@@ -55,7 +55,8 @@ public class StatementBuilder {
     protected Column[] preFilteredColumns;
 
     public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
-            Column[] preFilteredColumns, boolean isDateOverrideToTimestamp, String identifierQuoteString) {
+            Column[] preFilteredColumns, boolean isDateOverrideToTimestamp,
+            String identifierQuoteString) {
         this.keys = keys;
         this.columns = columns;
         this.preFilteredColumns = preFilteredColumns;
@@ -127,29 +128,12 @@ public class StatementBuilder {
         return types;
     }
 
-    public String buildInsertSql(String tableName, String[] columnNames) {
-        StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
-        appendColumns(sql, columnNames);
-        sql.append(") values (");
-        appendColumnQuestions(sql, columnNames.length);
-        sql.append(")");
-        return sql.toString();
-    }
-
     public String buildInsertSql(String tableName, Column[] keys, Column[] columns) {
         StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
-        int columnCount = appendColumns(sql, columns);
+        appendColumns(sql, columns);
         sql.append(") values (");
-        appendColumnQuestions(sql, columnCount);
+        appendColumnQuestions(sql, columns);
         sql.append(")");
-        return sql.toString();
-    }
-
-    public String buildUpdateSql(String tableName, String[] keyNames, String[] columnNames) {
-        StringBuilder sql = new StringBuilder("update ").append(tableName).append(" set ");
-        appendColumnEquals(sql, columnNames, ", ");
-        sql.append(" where ");
-        appendColumnEquals(sql, keyNames, " and ");
         return sql.toString();
     }
 
@@ -158,12 +142,6 @@ public class StatementBuilder {
         appendColumnEquals(sql, columns, ", ");
         sql.append(" where ");
         appendColumnEquals(sql, keyColumns, " and ");
-        return sql.toString();
-    }
-
-    public String buildDeleteSql(String tableName, String[] keyNames) {
-        StringBuilder sql = new StringBuilder("delete from ").append(tableName).append(" where ");
-        appendColumnEquals(sql, keyNames, " and ");
         return sql.toString();
     }
 
@@ -178,13 +156,6 @@ public class StatementBuilder {
                 " where ");
         appendColumnEquals(sql, keyColumns, " and ");
         return sql.toString();
-    }
-
-    public void appendColumnEquals(StringBuilder sql, String[] names, String separator) {
-        for (int i = 0; i < names.length; i++) {
-            sql.append(quote).append(names[i]).append(quote).append(" = ?").append(
-                    i + 1 < names.length ? separator : "");
-        }
     }
 
     public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
@@ -219,9 +190,11 @@ public class StatementBuilder {
         return existingCount;
     }
 
-    public void appendColumnQuestions(StringBuilder sql, int number) {
-        for (int i = 0; i < number; i++) {
-            sql.append("?").append(i + 1 < number ? "," : "");
+    public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
+        for (int i = 0; i < columns.length; i++) {
+            if (columns[i] != null) {
+                sql.append("?").append(i + 1 < columns.length ? "," : "");
+            }
         }
     }
 
@@ -268,7 +241,7 @@ public class StatementBuilder {
     public Column[] getPreFilteredColumns() {
         return preFilteredColumns;
     }
-    
+
     public String[] getValueArray(String[] columnValues, String[] keyValues) {
         switch (dmlType) {
         case UPDATE:
