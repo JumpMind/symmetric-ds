@@ -22,7 +22,6 @@
 package org.jumpmind.symmetric.transport.internal;
 
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -57,7 +56,7 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
         this.writer = writer;
     }
 
-    public void close() throws IOException {
+    public void close() {
         IOUtils.closeQuietly(writer);
         open = false;
     }
@@ -66,7 +65,7 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
         return open;
     }
 
-    public BufferedWriter open() throws IOException {
+    public BufferedWriter open() {
         return writer;
     }
 

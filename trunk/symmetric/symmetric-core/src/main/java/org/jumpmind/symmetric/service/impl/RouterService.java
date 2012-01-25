@@ -139,15 +139,12 @@ public class RouterService extends AbstractService implements IRouterService {
      * For use in data load events
      */
     public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
-            Set<Node> nodes, boolean initialLoad) {
+            Node node, boolean initialLoad) {
         IDataRouter router = getDataRouter(dataMetaData.getTriggerRouter());
-        Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, nodes, initialLoad);
-        for (Node node : nodes) {
-            if (nodeIds != null && nodeIds.contains(node.getNodeId())) {
-                return true;
-            }
-        }
-        return false;
+        Set<Node> oneNodeSet = new HashSet<Node>(1);
+        oneNodeSet.add(node);
+        Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, oneNodeSet, initialLoad);
+        return nodeIds != null && nodeIds.contains(node.getNodeId());
     }
 
     protected synchronized ExecutorService getReadService() {

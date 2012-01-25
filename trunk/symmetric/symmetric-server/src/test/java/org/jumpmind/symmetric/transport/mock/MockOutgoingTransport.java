@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.transport.mock;
 
@@ -25,6 +25,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -37,11 +38,15 @@ public class MockOutgoingTransport implements IOutgoingTransport {
     public MockOutgoingTransport() {
     }
 
-    public void close() throws IOException {
-        bWriter.flush();
+    public void close() {
+        try {
+            bWriter.flush();
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
     }
 
-    public BufferedWriter open() throws IOException {
+    public BufferedWriter open() {
         bWriter = new BufferedWriter(writer);
         return bWriter;
     }
@@ -59,7 +64,7 @@ public class MockOutgoingTransport implements IOutgoingTransport {
         return writer.getBuffer().toString();
     }
 
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) throws IOException {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) {
         return new ChannelMap();
     }
 

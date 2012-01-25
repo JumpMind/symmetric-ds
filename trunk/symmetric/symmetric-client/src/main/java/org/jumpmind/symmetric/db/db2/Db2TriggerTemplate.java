@@ -2,11 +2,11 @@ package org.jumpmind.symmetric.db.db2;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerText;
+import org.jumpmind.symmetric.db.TriggerTemplate;
 
-public class Db2TriggerText extends TriggerText {
+public class Db2TriggerTemplate extends TriggerTemplate {
 
-    public Db2TriggerText() { 
+    public Db2TriggerTemplate() { 
         functionInstalledSql = "select count(*) from syscat.functions where funcname = '$(functionName)'" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;

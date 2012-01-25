@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -43,7 +42,8 @@ public interface IRouterService extends IService {
  
     public long getUnroutedDataCount();
     
-    public boolean shouldDataBeRouted(SimpleRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
+    public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
+            Node node, boolean initialLoad);
  
     public void addDataRouter(String name, IDataRouter dataRouter);
     

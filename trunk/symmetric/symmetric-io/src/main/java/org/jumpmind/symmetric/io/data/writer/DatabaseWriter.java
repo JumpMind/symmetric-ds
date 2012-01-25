@@ -401,7 +401,7 @@ public class DatabaseWriter implements IDataWriter {
             statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
             String script = data.getCsvData(CsvData.ROW_DATA);
             Map<String, Object> variables = new HashMap<String, Object>();
-            variables.put("SOURCE_NODE_ID", batch.getSourceNodeId());
+            variables.put("SOURCE_NODE_ID", batch.getNodeId());
             if (platform.getSqlTemplate() instanceof JdbcSqlTemplate) {
                 variables.put("DATASOURCE",
                         ((JdbcSqlTemplate) platform.getSqlTemplate()).getDataSource());

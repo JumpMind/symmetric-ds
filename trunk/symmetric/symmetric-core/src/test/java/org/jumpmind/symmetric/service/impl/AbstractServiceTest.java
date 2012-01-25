@@ -10,6 +10,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -88,6 +89,10 @@ public abstract class AbstractServiceTest {
 
     protected IRegistrationService getRegistrationService() {
         return getSymmetricEngine().getRegistrationService();
+    }
+    
+    protected IDataExtractorService getDataExtractorService() {
+        return getSymmetricEngine().getDataExtractorService();
     }
 
     protected IDataService getDataService() {
@@ -187,4 +192,16 @@ public abstract class AbstractServiceTest {
     protected String printDatabase() {
         return getSymmetricEngine().getSymmetricDialect().getPlatform().getName();
     }
+    
+    protected void assertNumberOfLinesThatStartWith(int expected, String startsWith, String text) {
+        int actual = 0;
+        String[] lines = text.split("\n");
+        for (String line : lines) {
+            if (line.startsWith(startsWith)) {
+                actual++;
+            }
+        }
+        Assert.assertEquals("There were not the expected number of occurrences of: " + startsWith, expected, actual);
+    }
+
 }

@@ -11,7 +11,7 @@ public class Batch {
     public static final long UNKNOWN_BATCH_ID = -9999;
 
     protected long batchId = UNKNOWN_BATCH_ID;
-    protected String sourceNodeId;
+    protected String nodeId;
     protected boolean initialLoad;    
     protected String channelId;
     protected BinaryEncoding binaryEncoding;   
@@ -27,10 +27,10 @@ public class Batch {
         this.batchId = batchId;
     }
     
-    public Batch(long batchId, String channelId, BinaryEncoding binaryEncoding, String sourceNodeId) {
+    public Batch(long batchId, String channelId, BinaryEncoding binaryEncoding, String nodeId) {
         this(batchId);
         this.channelId = channelId;
-        this.sourceNodeId = sourceNodeId;
+        this.nodeId = nodeId;
         this.binaryEncoding = binaryEncoding;
     }
     
@@ -87,8 +87,8 @@ public class Batch {
         this.startTime = startTime;
     }
 
-    public String getSourceNodeId() {
-        return sourceNodeId;
+    public String getNodeId() {
+        return nodeId;
     }
 
     public long getBatchId() {
@@ -108,7 +108,7 @@ public class Batch {
     }
 
     public String getNodeBatchId() {
-        return sourceNodeId + "-" + batchId;
+        return nodeId + "-" + batchId;
     }
     
 }

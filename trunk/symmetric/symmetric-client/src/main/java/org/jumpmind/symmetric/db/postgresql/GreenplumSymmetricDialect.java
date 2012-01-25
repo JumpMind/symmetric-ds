@@ -7,7 +7,7 @@ public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
 
     public GreenplumSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new GreenplumTriggerText();
+        this.triggerText = new GreenplumTriggerTemplate();
     }
     
 }

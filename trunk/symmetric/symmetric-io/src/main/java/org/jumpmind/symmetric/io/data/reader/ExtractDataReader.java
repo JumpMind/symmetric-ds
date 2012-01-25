@@ -36,8 +36,8 @@ public class ExtractDataReader implements IDataReader {
     protected Table table;
 
     protected CsvData data;
-    
-    public ExtractDataReader(IDatabasePlatform platform, IExtractBatchSource source) {        
+
+    public ExtractDataReader(IDatabasePlatform platform, IExtractBatchSource source) {
         this.sourcesToUse = new ArrayList<IExtractBatchSource>();
         this.sourcesToUse.add(source);
         this.platform = platform;
@@ -54,7 +54,7 @@ public class ExtractDataReader implements IDataReader {
     public Batch nextBatch() {
         closeCurrentSource();
         if (this.sourcesToUse.size() > 0) {
-            this.currentSource = this.sourcesToUse.get(0);
+            this.currentSource = this.sourcesToUse.remove(0);
             this.batch = this.currentSource.getBatch();
         }
 
@@ -64,30 +64,39 @@ public class ExtractDataReader implements IDataReader {
 
     public Table nextTable() {
         this.table = null;
-        if (this.data == null) {
-            this.data = this.currentSource.next();
-        }
-        if (this.data != null) {
-            this.table = this.currentSource.getTable();
+        if (this.currentSource != null) {
+            if (this.data == null) {
+                this.data = this.currentSource.next();
+            }
+            if (this.data != null) {
+                this.table = this.currentSource.getTable();
+            }
         }
         return this.table;
     }
 
     public CsvData nextData() {
-        if (this.data == null) {
-            this.data = this.currentSource.next();
-        }
+        if (this.table != null) {
+            if (this.data == null) {
+                this.data = this.currentSource.next();
+            }
 
-        if (data == null) {
-            closeCurrentSource();
-        } else {
-            Table sourceTable = this.currentSource.getTable();
-            if (sourceTable != null && sourceTable.equals(this.table)) {
-                return enhanceWithLobsFromSourceIfNeeded(table, data);
+            if (data == null) {
+                closeCurrentSource();
+            } else {
+                Table sourceTable = this.currentSource.getTable();
+                if (sourceTable != null && sourceTable.equals(this.table)) {
+                    data = enhanceWithLobsFromSourceIfNeeded(table, data);                    
+                } else {
+                    // the table has changed
+                    return null;
+                }
             }
         }
 
-        return null;
+        CsvData dataToReturn = this.data;
+        this.data = null;
+        return dataToReturn;
     }
 
     public void close() {

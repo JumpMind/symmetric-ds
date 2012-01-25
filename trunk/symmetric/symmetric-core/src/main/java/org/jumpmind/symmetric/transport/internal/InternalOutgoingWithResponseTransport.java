@@ -54,7 +54,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
         return reader;
     }
 
-    public void close() throws IOException {
+    public void close() {
         IOUtils.closeQuietly(writer);
         IOUtils.closeQuietly(reader);
         open = false;
@@ -64,7 +64,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
         return open;
     }
 
-    public BufferedWriter open() throws IOException {
+    public BufferedWriter open() {
         return writer;
     }
 

@@ -126,6 +126,8 @@ public interface ITriggerRouterService {
     public TriggerHistory findTriggerHistory(String sourceTableName);
     
     public Trigger getTriggerById(String triggerId);
+    
+    public Trigger getTriggerById(String triggerId, boolean refreshCache);
 
     public void insert(TriggerHistory newAuditRecord);
 
@@ -139,7 +141,7 @@ public interface ITriggerRouterService {
         
     public void syncTriggers();
 
-    public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always);
+    public void syncTriggers(StringBuilder sqlBuffer, boolean genAlways);
     
     public void addTriggerCreationListeners(ITriggerCreationListener l);
     

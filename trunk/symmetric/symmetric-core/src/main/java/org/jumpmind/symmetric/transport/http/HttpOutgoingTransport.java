@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.transport.http;
 
@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -41,9 +42,6 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.web.WebConstants;
 
-/**
- * 
- */
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private URL url;
@@ -57,22 +55,22 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     private int httpTimeout;
 
     private boolean useCompression;
-    
-    private int compressionStrategy;
-    
-    private int compressionLevel;
-    
-    private String basicAuthUsername;
-    
-    private String basicAuthPassword;
-    
-    private boolean streamOutputEnabled = false;
-    
-    private int streamOutputChunkSize = 30720;
-    
 
-    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression, int compressionStrategy, int compressionLevel,
-            String basicAuthUsername, String basicAuthPassword, boolean streamOutputEnabled, int streamOutputSize) {
+    private int compressionStrategy;
+
+    private int compressionLevel;
+
+    private String basicAuthUsername;
+
+    private String basicAuthPassword;
+
+    private boolean streamOutputEnabled = false;
+
+    private int streamOutputChunkSize = 30720;
+
+    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression,
+            int compressionStrategy, int compressionLevel, String basicAuthUsername,
+            String basicAuthPassword, boolean streamOutputEnabled, int streamOutputSize) {
         this.url = url;
         this.httpTimeout = httpTimeout;
         this.useCompression = useCompression;
@@ -84,7 +82,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         this.streamOutputEnabled = streamOutputEnabled;
     }
 
-    public void close() throws IOException {
+    public void close() {
         closeWriter(true);
         closeReader();
         if (connection != null) {
@@ -93,22 +91,31 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         }
     }
 
-    private void closeReader() throws IOException {
+    private void closeReader() {
         if (reader != null) {
             IOUtils.closeQuietly(reader);
             reader = null;
         }
     }
 
-    private void closeWriter(boolean closeQuietly) throws IOException {
+    private void closeWriter(boolean closeQuietly) {
         if (writer != null) {
-            writer.flush();
-            if (closeQuietly) {
-                IOUtils.closeQuietly(writer);
-            } else {
-                writer.close();
+            try {
+                writer.flush();
+            } catch (IOException ex) {
+                throw new IoException(ex);
+            } finally {
+                if (closeQuietly) {
+                    IOUtils.closeQuietly(writer);
+                } else {
+                    try {
+                        writer.close();
+                    } catch (IOException ex) {
+                        throw new IoException(ex);
+                    }
+                }
+                writer = null;
             }
-            writer = null;
         }
     }
 
@@ -121,46 +128,55 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * @throws {@link ConnectionRejectedException}
      * @throws {@link AuthenticationException}
      */
-    private HttpURLConnection requestReservation() throws IOException {
-        connection = HttpTransportManager.openConnection(url, basicAuthUsername, basicAuthPassword);
-        connection.setUseCaches(false);
-        connection.setConnectTimeout(httpTimeout);
-        connection.setReadTimeout(httpTimeout);
-        connection.setRequestMethod("HEAD");
-        
-        analyzeResponseCode(connection.getResponseCode());
+    private HttpURLConnection requestReservation() {
+        try {
+            connection = HttpTransportManager.openConnection(url, basicAuthUsername,
+                    basicAuthPassword);
+            connection.setUseCaches(false);
+            connection.setConnectTimeout(httpTimeout);
+            connection.setReadTimeout(httpTimeout);
+            connection.setRequestMethod("HEAD");
+
+            analyzeResponseCode(connection.getResponseCode());
+        } catch (IOException ex) {
+            throw new IoException(ex);
+        }
         return connection;
     }
 
-    public BufferedWriter open() throws IOException {
+    public BufferedWriter open() {
+        try {
+            connection = HttpTransportManager.openConnection(url, basicAuthUsername,
+                    basicAuthPassword);
+            if (streamOutputEnabled) {
+                connection.setChunkedStreamingMode(streamOutputChunkSize);
+            }
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setUseCaches(false);
+            connection.setConnectTimeout(httpTimeout);
+            connection.setReadTimeout(httpTimeout);
+            connection.setRequestMethod("PUT");
+            connection.setRequestProperty("accept-encoding", "gzip");
+            if (useCompression) {
+                connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
+            }
 
-        connection = HttpTransportManager.openConnection(url, basicAuthUsername, basicAuthPassword);
-        if (streamOutputEnabled) {
-            connection.setChunkedStreamingMode(streamOutputChunkSize);
+            OutputStream out = connection.getOutputStream();
+            if (useCompression) {
+                out = new GZIPOutputStream(out) {
+                    {
+                        this.def.setLevel(compressionLevel);
+                        this.def.setStrategy(compressionStrategy);
+                    }
+                };
+            }
+            OutputStreamWriter wout = new OutputStreamWriter(out, Constants.ENCODING);
+            writer = new BufferedWriter(wout);
+            return writer;
+        } catch (IOException ex) {
+            throw new IoException(ex);
         }
-        connection.setDoInput(true);
-        connection.setDoOutput(true);
-        connection.setUseCaches(false);
-        connection.setConnectTimeout(httpTimeout);
-        connection.setReadTimeout(httpTimeout);
-        connection.setRequestMethod("PUT");
-        connection.setRequestProperty("accept-encoding", "gzip");
-        if (useCompression) {
-            connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
-        }
-
-        OutputStream out = connection.getOutputStream();
-        if (useCompression) {
-            out = new GZIPOutputStream(out) {
-                {
-                    this.def.setLevel(compressionLevel);
-                    this.def.setStrategy(compressionStrategy);
-                }
-            };
-        }
-        OutputStreamWriter wout = new OutputStreamWriter(out, Constants.ENCODING);
-        writer = new BufferedWriter(wout);
-        return writer;
     }
 
     /**
@@ -190,7 +206,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         return connection != null;
     }
 
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) throws IOException {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) {
 
         HttpURLConnection connection = requestReservation();
 

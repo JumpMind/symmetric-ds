@@ -2,11 +2,11 @@ package org.jumpmind.symmetric.db.firebird;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerText;
+import org.jumpmind.symmetric.db.TriggerTemplate;
 
-public class FirebirdTriggerText extends TriggerText {
+public class FirebirdTriggerTemplate extends TriggerTemplate {
 
-    public FirebirdTriggerText() { 
+    public FirebirdTriggerTemplate() { 
         functionInstalledSql = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else '\"' || sym_escape(substring($(tableAlias).$(columnName) from 1)) || '\"' end" ;

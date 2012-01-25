@@ -2,11 +2,11 @@ package org.jumpmind.symmetric.db.informix;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerText;
+import org.jumpmind.symmetric.db.TriggerTemplate;
 
-public class InformixTriggerText extends TriggerText {
+public class InformixTriggerTemplate extends TriggerTemplate {
 
-    public InformixTriggerText() { 
+    public InformixTriggerTemplate() { 
         functionInstalledSql = "select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "rtrim(case when $(tableAlias).$(columnName) is null then '' else '\"' || replace(replace($(tableAlias).$(columnName), '\\', '\\\\'), '\"', '\\\"') || '\"' end)" ;
