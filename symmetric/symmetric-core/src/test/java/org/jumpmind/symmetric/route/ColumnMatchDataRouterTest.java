@@ -39,5 +39,13 @@ public class ColumnMatchDataRouterTest {
         Assert.assertEquals(false,expressions.get(2).equals);
     }
     
+    @Test
+    public void testExpressionWithOrInColumnName() {
+        ColumnMatchDataRouter router = new ColumnMatchDataRouter();
+        List<Expression> expressions = router.parse("ORDER_ID=:EXTERNAL_ID");
+        Assert.assertEquals(1, expressions.size());
+        Assert.assertEquals("ORDER_ID",expressions.get(0).tokens[0]);
+        Assert.assertEquals(":EXTERNAL_ID",expressions.get(0).tokens[1]);
+    }
     
 }
