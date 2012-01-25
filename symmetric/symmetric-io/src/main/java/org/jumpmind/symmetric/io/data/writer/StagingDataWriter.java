@@ -105,7 +105,7 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     }
 
     protected String toFileName(Batch batch, boolean extracting) {
-        return (batch.getSourceNodeId() != null ? (batch.getSourceNodeId() + "-") : "")
+        return (batch.getNodeId() != null ? (batch.getNodeId() + "-") : "")
                 + Long.toString(batch.getBatchId()) + ".csv" + (extracting ? ".extracting" : "");
     }
 

@@ -26,6 +26,7 @@ import junit.framework.Assert;
 
 import org.jumpmind.symmetric.statistic.MockStatisticManager;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
+import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 import org.junit.Test;
 
 public class ConcurrentConnectionManagerUnitTest {
@@ -36,11 +37,11 @@ public class ConcurrentConnectionManagerUnitTest {
         Map<String, Reservation> reservations = new HashMap<String, Reservation>();
 
         String nodeId = "1";
-        Reservation current = new ConcurrentConnectionManager.Reservation(nodeId, System.currentTimeMillis()+10000);        
+        Reservation current = new ConcurrentConnectionManager.Reservation(nodeId, System.currentTimeMillis()+10000, ReservationType.HARD);        
         reservations.put(nodeId, current);
         
         nodeId = "2";
-        current = new ConcurrentConnectionManager.Reservation(nodeId,  System.currentTimeMillis()+10000);        
+        current = new ConcurrentConnectionManager.Reservation(nodeId,  System.currentTimeMillis()+10000, ReservationType.HARD);
         reservations.put(nodeId, current);
 
         Assert.assertEquals(2, reservations.size());

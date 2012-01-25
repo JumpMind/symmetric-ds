@@ -44,7 +44,7 @@ import org.jumpmind.util.FormatUtils;
  * Responsible for generating dialect specific SQL such as trigger bodies and
  * functions
  */
-public class TriggerText {
+public class TriggerTemplate {
 
     protected static final String ORIG_TABLE_ALIAS = "orig";
 

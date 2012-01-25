@@ -27,8 +27,15 @@ import java.util.Set;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * @see IConcurrentConnectionManager
+ */
 public class ConcurrentConnectionManager implements IConcurrentConnectionManager {
+    
+    private static final Logger log = LoggerFactory.getLogger(ConcurrentConnectionManager.class);
 
     protected IParameterService parameterService;
 
@@ -98,16 +105,25 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return getReservationMap(poolId).size();
     }
 
-    synchronized public boolean reserveConnection(String nodeId, String poolId, ReservationType reservationRequest) {
+    synchronized public boolean reserveConnection(String nodeId, String poolId,
+            ReservationType reservationRequest) {
         Map<String, Reservation> reservations = getReservationMap(poolId);
         int maxPoolSize = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
         long timeout = parameterService.getLong(ParameterConstants.CONCURRENT_RESERVATION_TIMEOUT);
         removeTimedOutReservations(reservations);
-        if (reservations.size() < maxPoolSize || reservations.containsKey(nodeId) || whiteList.contains(nodeId)) {
-            reservations.put(nodeId, new Reservation(nodeId, reservationRequest == ReservationType.SOFT ? System
-                    .currentTimeMillis()
-                    + timeout : Long.MAX_VALUE));
-            return true;
+        if (reservations.size() < maxPoolSize || reservations.containsKey(nodeId)
+                || whiteList.contains(nodeId)) {
+            Reservation existingReservation = reservations.get(nodeId);
+            if (existingReservation == null
+                    || existingReservation.getType() == ReservationType.SOFT) {
+                reservations.put(nodeId, new Reservation(nodeId,
+                        reservationRequest == ReservationType.SOFT ? System.currentTimeMillis()
+                                + timeout : Long.MAX_VALUE, reservationRequest));
+                return true;
+            } else {
+                log.warn("Node {} requested a {} connection, but was rejected because it already has one", nodeId, poolId);
+                return false;
+            }
         } else {
             return false;
         }
@@ -139,10 +155,12 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         String nodeId;
         long timeToLiveInMs;
         long createTime = System.currentTimeMillis();
+        ReservationType type;
 
-        public Reservation(String nodeId, long timeToLiveInMs) {
+        public Reservation(String nodeId, long timeToLiveInMs, ReservationType type) {
             this.nodeId = nodeId;
             this.timeToLiveInMs = timeToLiveInMs;
+            this.type = type;
         }
 
         @Override
@@ -170,6 +188,10 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
 
         public long getCreateTime() {
             return createTime;
+        }
+        
+        public ReservationType getType() {
+            return type;
         }
     }
 

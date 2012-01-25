@@ -76,11 +76,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     private Map<String, Router> routersCache;
 
+    private Map<String, Trigger> triggersCache;
+
     private Map<String, TriggerRoutersCache> triggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
 
     private long triggerRouterCacheTime;
 
     private long routersCacheTime;
+
+    private long triggersCacheTime;
 
     private List<ITriggerCreationListener> triggerCreationListeners;
 
@@ -113,29 +117,32 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         List<String> configTables = new ArrayList<String>();
         configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP));
-        configTables
-                .add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_LINK));
+        configTables.add(TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_NODE_GROUP_LINK));
         configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
-        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
+        configTables
+                .add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
         configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
         configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_CHANNEL));
-        configTables.add(TableConstants
-                .getTableName(tablePrefix, TableConstants.SYM_NODE_CHANNEL_CTL));
+        configTables.add(TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_NODE_CHANNEL_CTL));
         configTables.add(TableConstants.getTableName(tablePrefix,
                 TableConstants.SYM_NODE_GROUP_CHANNEL_WINDOW));
         configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER));
         configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_ROUTER));
-        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER));
-        configTables
-                .add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_TABLE));
         configTables.add(TableConstants
-                .getTableName(tablePrefix, TableConstants.SYM_TRANSFORM_COLUMN));
-        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
+                .getTableName(tablePrefix, TableConstants.SYM_TRIGGER_ROUTER));
+        configTables.add(TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_TRANSFORM_TABLE));
+        configTables.add(TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_TRANSFORM_COLUMN));
+        configTables
+                .add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         rootConfigChannelTableNames.put("2", configTables);
         rootConfigChannelTableNames.put("3", configTables);
 
     }
-    
+
     public List<Trigger> getTriggers() {
         return sqlTemplate.query("select "
                 + getSql("selectTriggersColumnList", "selectTriggersSql"), new TriggerMapper());
@@ -510,6 +517,30 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 new RouterMapper(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
     }
 
+    public Trigger getTriggerById(String triggerId) {
+        return getTriggerById(triggerId, true);
+    }
+
+    public Trigger getTriggerById(String triggerId, boolean refreshCache) {
+        final long triggerCacheTimeoutInMs = parameterService
+                .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
+        Map<String, Trigger> cache = this.triggersCache;
+        if (cache == null || refreshCache
+                || (System.currentTimeMillis() - this.triggersCacheTime) > triggerCacheTimeoutInMs) {
+            synchronized (this) {
+
+                this.triggersCacheTime = System.currentTimeMillis();
+                List<Trigger> triggers = getTriggers();
+                cache = new HashMap<String, Trigger>(triggers.size());
+                for (Trigger trigger : triggers) {
+                    cache.put(trigger.getTriggerId(), trigger);
+                }
+                this.triggersCache = cache;
+            }
+        }
+        return cache.get(triggerId);
+    }
+
     public Router getRouterById(String routerId) {
         return getRouterById(routerId, true);
     }
@@ -559,16 +590,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 triggerId, routerId);
         if (configs.size() > 0) {
             return configs.get(0);
-        } else {
-            return null;
-        }
-    }
-
-    public Trigger getTriggerById(String triggerId) {
-        List<TriggerRouter> triggers = (List<TriggerRouter>) sqlTemplate.query(
-                getTriggerRouterSql("selectTriggerByIdSql"), new TriggerRouterMapper(), triggerId);
-        if (triggers.size() > 0) {
-            return triggers.get(0).getTrigger();
         } else {
             return null;
         }

@@ -2,19 +2,19 @@ package org.jumpmind.symmetric.db.postgresql;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerText;
+import org.jumpmind.symmetric.db.TriggerTemplate;
 
-public class PostgreSqlTriggerText extends TriggerText {
+public class GreenplumTriggerTemplate extends TriggerTemplate {
 
-    public PostgreSqlTriggerText() { 
+    public GreenplumTriggerTemplate() { 
         functionInstalledSql = "select count(*) from information_schema.routines " + 
 "                        where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
+        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         xmlColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         arrayColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || cast($(tableAlias).\"$(columnName)\" as varchar) || '\"' end" ;
-        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US') || '\"' end" ;
+        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.MS') || '\"' end" ;
         timeColumnTemplate = null;
         dateColumnTemplate = null;
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
@@ -26,7 +26,7 @@ public class PostgreSqlTriggerText extends TriggerText {
         oldTriggerValue = "old" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
-        otherColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || cast($(tableAlias).\"$(columnName)\" as varchar) || '\"' end" ;
+        otherColumnTemplate = null;
 
         functionTemplatesToInstall = new HashMap<String,String>();
         functionTemplatesToInstall.put("triggers_disabled" ,
@@ -146,11 +146,6 @@ public class PostgreSqlTriggerText extends TriggerText {
 "                                for each row execute procedure $(schemaName)f$(triggerName)();                                                                                                         " );
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
-    }
-    
-    @Override
-    protected boolean requiresWrappedBlobTemplateForBlobType() {
-        return true;
     }
 
 }

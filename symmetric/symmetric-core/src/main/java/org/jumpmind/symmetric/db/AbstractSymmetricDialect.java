@@ -75,7 +75,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected IDatabasePlatform platform;
 
-    protected TriggerText triggerText;
+    protected TriggerTemplate triggerText;
 
     protected IParameterService parameterService;
 
@@ -781,7 +781,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected void initLobHandler() {
     }
 
-    public TriggerText getTriggerText() {
+    public TriggerTemplate getTriggerText() {
         return triggerText;
     }
     

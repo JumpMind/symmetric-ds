@@ -44,7 +44,7 @@ public class SchemaPerNodeDataLoaderFilter extends DatabaseWriterFilterAdapter {
             DataContext context, Table table, CsvData data) {
         if (!table.getName().startsWith(tablePrefix)) {
             Batch batch = context.getBatch();
-            String sourceNodeId = batch.getSourceNodeId();
+            String sourceNodeId = batch.getNodeId();
             table.setSchema(schemaPrefix != null ? schemaPrefix + sourceNodeId : sourceNodeId);
         }
         return true;

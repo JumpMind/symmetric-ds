@@ -70,3 +70,4 @@ Documentation
 * db.default.schema is no longer used
 * No longer stop purge from running if there wasn't an initial load
 * Extensions no longer have services injected into them.  If they need acccess to services, they should implement ISymmetricEngineAware
+* Node concurrency manager no longer allows the same node to make a second request while it already has a reservation

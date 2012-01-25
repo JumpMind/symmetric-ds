@@ -2,11 +2,11 @@ package org.jumpmind.symmetric.db.oracle;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerText;
+import org.jumpmind.symmetric.db.TriggerTemplate;
 
-public class OracleTriggerText extends TriggerText {
+public class OracleTriggerTemplate extends TriggerTemplate {
 
-    public OracleTriggerText() { 
+    public OracleTriggerTemplate() { 
         functionInstalledSql = "select count(*) from user_source where line = 1 and ((type = 'FUNCTION' and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, $(oracleToClob)'', '\"'||replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;

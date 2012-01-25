@@ -20,7 +20,6 @@
 
 package org.jumpmind.symmetric.service;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.List;
@@ -34,16 +33,15 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
  */
 public interface IDataExtractorService {
 
-    public void extractConfigurationStandalone(Node node, OutputStream out, String... tablesToExclude) throws IOException;
+    public void extractConfigurationStandalone(Node node, OutputStream out, String... tablesToExclude);
 
-    public void extractConfigurationStandalone(Node node, Writer out, String... tablesToExclude) throws IOException;
+    public void extractConfigurationStandalone(Node node, Writer out, String... tablesToExclude);
     
     /**
      * @return a list of batches that were extracted
      */
-    public List<OutgoingBatch> extract(Node node, IOutgoingTransport transport) throws IOException;
+    public List<OutgoingBatch> extract(Node node, IOutgoingTransport transport);
 
-    public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
-            throws IOException;
+    public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId);
 
 }
