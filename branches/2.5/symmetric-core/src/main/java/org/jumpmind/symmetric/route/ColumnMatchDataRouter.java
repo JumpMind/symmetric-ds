@@ -163,8 +163,8 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     
     protected List<Expression> parse(String routerExpression) {
         List<Expression> expressions = new ArrayList<Expression>();       
-        if (!StringUtils.isBlank(routerExpression)) {           
-            String[] expTokens = routerExpression.split("\r\n|\r|\n|\\s*or\\s*|\\s*OR\\s*");
+        if (!StringUtils.isBlank(routerExpression)) {                                                                                                                    
+            String[] expTokens = routerExpression.split("\r\n|\r|\n|\\s+|or\\s+|\\s+OR\\s+");
             if (expTokens != null) {
                 for (String t : expTokens) {
                     if (!StringUtils.isBlank(t)) {
