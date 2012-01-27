@@ -121,9 +121,11 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     }
 
     final public void end(Batch batch, boolean inError) {
-        println(CsvConstants.COMMIT, Long.toString(batch.getBatchId()));
+        if (!inError) {
+            println(CsvConstants.COMMIT, Long.toString(batch.getBatchId()));
 
-        endBatch(batch);
+            endBatch(batch);
+        }
 
         if (listeners != null) {
             for (IProtocolDataWriterListener listener : listeners) {

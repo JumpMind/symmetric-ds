@@ -20,7 +20,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.csv.CsvReader;
-import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -28,6 +27,7 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class ProtocolDataReader implements IDataReader {
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
-    protected IoResource ioResource;
+    protected IStagedResource stagedResource;
     protected Reader reader;
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected CsvReader csvReader;
@@ -57,8 +57,8 @@ public class ProtocolDataReader implements IDataReader {
         this(toReader(is));
     }
 
-    public ProtocolDataReader(IoResource ioResource) {
-        this.ioResource = ioResource;
+    public ProtocolDataReader(IStagedResource stagedResource) {
+        this.stagedResource = stagedResource;
     }
 
     protected static Reader toReader(InputStream is) {
@@ -86,10 +86,14 @@ public class ProtocolDataReader implements IDataReader {
             throw new IoException(ex);
         }
     }
+    
+    public IStagedResource getStagedResource() {
+        return stagedResource;
+    }
 
     public void open(DataContext context) {
-        if (this.ioResource != null && this.reader == null) {
-            this.reader = toReader(this.ioResource.open());
+        if (this.stagedResource != null && this.reader == null) {
+            this.reader = this.stagedResource.getReader();
         }
         this.context = context;
         this.csvReader = CsvUtils.getCsvReader(reader);
@@ -266,6 +270,10 @@ public class ProtocolDataReader implements IDataReader {
             csvReader.close();
         }
         
+        if (stagedResource != null) {
+            stagedResource.close();
+        }
+                
     }
 
     public Map<Batch, Statistics> getStatistics() {

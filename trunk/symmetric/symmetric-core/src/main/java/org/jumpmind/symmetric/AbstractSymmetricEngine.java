@@ -18,6 +18,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.io.DefaultOfflineClientListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.DefaultOfflineServerListener;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;
@@ -144,6 +145,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IJobManager jobManager;
 
     protected IExtensionPointManager extensionPointManger;
+    
+    protected IStagingManager stagingManager;
 
     abstract protected ITypedPropertiesFactory createTypedPropertiesFactory();
 
@@ -195,6 +198,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         this.bandwidthService = new BandwidthService(parameterService);
         this.symmetricDialect = createSymmetricDialect();
+        this.stagingManager = createStagingManager();
         this.nodeService = new NodeService(parameterService, symmetricDialect);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
                 nodeService);
@@ -219,12 +223,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, statisticManager, transformService);
         this.dataExtractorService = new DataExtractorService(parameterService, symmetricDialect,
                 outgoingBatchService, routerService, configurationService, triggerRouterService,
-                nodeService, dataService, transformService, statisticManager);
+                nodeService, dataService, transformService, statisticManager, stagingManager);
         this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect);
         this.transportManager = new TransportManagerFactory(this).create();
         this.dataLoaderService = new DataLoaderService(parameterService, symmetricDialect,
                 incomingBatchService, configurationService, transportManager, statisticManager,
-                nodeService, transformService, triggerRouterService);
+                nodeService, transformService, triggerRouterService, stagingManager);
         this.registrationService = new RegistrationService(parameterService, symmetricDialect,
                 nodeService, dataExtractorService, dataService, dataLoaderService,
                 transportManager, statisticManager);
@@ -252,12 +256,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         registerHandleToEngine();
 
-    }
+    }   
 
     protected static ISecurityService createSecurityService() {
         // TODO check system property. integrate eric's changes
         return new SecurityService();
     }
+    
+    abstract protected IStagingManager createStagingManager();
 
     abstract protected ISymmetricDialect createSymmetricDialect();
 

@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,7 +38,6 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataProcessor;
@@ -56,6 +54,8 @@ import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -108,11 +108,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private ITransformService transformService;
 
+    private IStagingManager stagingManager;
+
     public DataLoaderService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IIncomingBatchService incomingBatchService,
             IConfigurationService configurationService, ITransportManager transportManager,
             IStatisticManager statisticManager, INodeService nodeService,
-            ITransformService transformService, ITriggerRouterService triggerRouterService) {
+            ITransformService transformService, ITriggerRouterService triggerRouterService,
+            IStagingManager stagingManager) {
         super(parameterService, symmetricDialect);
         this.incomingBatchService = incomingBatchService;
         this.configurationService = configurationService;
@@ -123,6 +126,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.filters = new ArrayList<IDatabaseWriterFilter>();
         this.filters.add(new ConfigurationChangedFilter(parameterService, configurationService,
                 triggerRouterService, transformService));
+        this.stagingManager = stagingManager;
     }
 
     /**
@@ -204,11 +208,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 sendAck = transportManager.sendAcknowledgement(remote, list, local,
                         localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
             } catch (IOException ex) {
-                log.warn("Ack was not sent successfully on try number {}.  {}", (i + 1),
+                log.warn("Ack was not sent successfully on try number {}.  {}", i + 1,
                         ex.getMessage());
                 error = ex;
             } catch (RuntimeException ex) {
-                log.warn("Ack was not sent successfully on try number {}.  {}", (i + 1),
+                log.warn("Ack was not sent successfully on try number {}.  {}", i + 1,
                         ex.getMessage());
                 error = ex;
             }
@@ -227,6 +231,22 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
+    protected IDataWriter prepareDatabaseWriter(String sourceNodeId) {
+        DatabaseWriterSettings settings = buildDatabaseWriterSettings();
+
+        TransformTable[] transforms = null;
+        if (sourceNodeId != null) {
+            List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
+                    new NodeGroupLink(sourceNodeId, nodeService.findIdentityNodeId()),
+                    TransformPoint.LOAD, true);
+            transforms = transformsList != null ? transformsList
+                    .toArray(new TransformTable[transformsList.size()]) : null;
+        }
+
+        return new TransformDatabaseWriter(symmetricDialect.getPlatform(), settings, null,
+                transforms, filters.toArray(new IDatabaseWriterFilter[filters.size()]));
+    }
+
     /**
      * Load database from input stream and return a list of batch statuses. This
      * is used for a pull request that responds with data, and the
@@ -234,49 +254,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      */
     protected List<IncomingBatch> loadDataAndReturnBatches(String sourceNodeId,
             IIncomingTransport transport) throws IOException {
-        ManageIncomingBatchListener listener = new ManageIncomingBatchListener();
+        final ManageIncomingBatchListener listener = new ManageIncomingBatchListener();
         try {
-            final List<IDataReader> readersForDatabaseLoader = new ArrayList<IDataReader>();
+
             long totalNetworkMillis = System.currentTimeMillis();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 IDataReader dataReader = new ProtocolDataReader(transport.open());
-                long memoryThresholdInBytes = parameterService
-                        .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
-                IDataWriter dataWriter = new StagingDataWriter(new File(
-                        System.getProperty("java.io.tmpdir")), memoryThresholdInBytes,
-                        new IProtocolDataWriterListener() {
-                            public void start(Batch batch) {
-                            }
-
-                            public void end(Batch batch, IoResource resource) {
-                                readersForDatabaseLoader.add(new ProtocolDataReader(resource));
-                            }
-                        });
+                IDataWriter dataWriter = new StagingDataWriter("incoming", stagingManager,
+                        new LoadIntoDatabaseOnArrivalListener(sourceNodeId, listener));
                 new DataProcessor(dataReader, dataWriter).process();
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
-                readersForDatabaseLoader.add(new ProtocolDataReader(transport.open()));
-            }
-
-            DatabaseWriterSettings settings = buildDatabaseWriterSettings();
-
-            TransformTable[] transforms = null;
-            if (sourceNodeId != null) {
-                List<TransformTableNodeGroupLink> transformsList = transformService
-                        .findTransformsFor(
-                                new NodeGroupLink(sourceNodeId, nodeService.findIdentityNodeId()),
-                                TransformPoint.LOAD, true);
-                transforms = transformsList != null ? transformsList
-                        .toArray(new TransformTable[transformsList.size()]) : null;
-            }
-            
-            TransformDatabaseWriter writer = new TransformDatabaseWriter(
-                    symmetricDialect.getPlatform(), settings, null, transforms,
-                    filters.toArray(new IDatabaseWriterFilter[filters.size()]));
-
-            for (IDataReader reader : readersForDatabaseLoader) {
                 DataProcessor processor = new DataProcessor(
-                        reader, writer, listener);
+                        new ProtocolDataReader(transport.open()),
+                        prepareDatabaseWriter(sourceNodeId), listener);
                 processor.process();
             }
 
@@ -293,38 +284,43 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             incomingBatch.getBatchId());
                 }
             }
+        } catch (Exception ex) {
+            log(ex);
+        } finally {
+            transport.close();
+        }
+        return listener.getBatchesProcessed();
+    }
 
-        } catch (RegistrationRequiredException ex) {
-            throw ex;
-        } catch (ConnectException ex) {
-            throw ex;
-        } catch (UnknownHostException ex) {
+    private void log(Exception ex) throws IOException {
+        if (ex instanceof RegistrationRequiredException) {
+            throw (RegistrationRequiredException) ex;
+        } else if (ex instanceof ConnectException) {
+            throw (ConnectException) ex;
+        } else if (ex instanceof UnknownHostException) {
             log.warn("Could not connect to the transport because the host was unknown: {}",
                     ex.getMessage());
-            throw ex;
-        } catch (RegistrationNotOpenException ex) {
+            throw (UnknownHostException) ex;
+        } else if (ex instanceof RegistrationNotOpenException) {
             log.warn("Registration attempt failed.  Registration was not open for the node.");
-        } catch (ConnectionRejectedException ex) {
-            log.warn(".");
-            throw ex;
-        } catch (AuthenticationException ex) {
-            log.warn(".");
-        } catch (SyncDisabledException ex) {
-            log.warn(".");
-            throw ex;
-        } catch (IOException ex) {
+        } else if (ex instanceof ConnectionRejectedException) {
+            log.warn("The server was too busy to accept the connection");
+            throw (ConnectionRejectedException) ex;
+        } else if (ex instanceof AuthenticationException) {
+            log.warn("Could not authenticate with node");
+        } else if (ex instanceof SyncDisabledException) {
+            log.warn("Synchronization is disabled on the server node");
+            throw (SyncDisabledException) ex;
+        } else if (ex instanceof IOException) {
             if (ex.getMessage() != null && !ex.getMessage().startsWith("http")) {
                 log.error("Failed while reading batch because: {}", ex.getMessage());
             } else {
                 log.error("Failed while reading batch because: {}", ex.getMessage(), ex);
             }
-            throw ex;
-        } catch (Exception ex) {
-            log.error("Failed while parsing batch.", ex);
-        } finally {
-            transport.close();
+            throw (IOException) ex;
+        } else {
+            log.error("Failed while parsing batch", ex);
         }
-        return listener.getBatchesProcessed();
     }
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings() {
@@ -412,8 +408,33 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.configurationService = configurationService;
     }
 
-    class ManageIncomingBatchListener implements
-            IDataProcessorListener {
+    class LoadIntoDatabaseOnArrivalListener implements IProtocolDataWriterListener {
+
+        private IDataWriter databaseWriter;
+
+        private ManageIncomingBatchListener listener;
+
+        public LoadIntoDatabaseOnArrivalListener(String sourceNodeId,
+                ManageIncomingBatchListener listener) {
+            this.databaseWriter = prepareDatabaseWriter(sourceNodeId);
+            this.listener = listener;
+        }
+
+        public void start(Batch batch) {
+        }
+
+        public void end(Batch batch, IStagedResource resource) {
+            DataProcessor processor = new DataProcessor(new ProtocolDataReader(resource),
+                    databaseWriter, listener);
+            try {
+                processor.process();
+            } finally {
+                resource.delete();
+            }
+        }
+    }
+
+    class ManageIncomingBatchListener implements IDataProcessorListener {
 
         private List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
 
@@ -443,13 +464,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Batch batch = context.getBatch();
             symmetricDialect.disableSyncTriggers(findTransaction(context), batch.getNodeId());
         }
-        
+
         protected ISqlTransaction findTransaction(DataContext context) {
             if (context.getWriter() instanceof TransformWriter) {
-                IDataWriter targetWriter = ((TransformWriter)context.getWriter()).getTargetWriter();
+                IDataWriter targetWriter = ((TransformWriter) context.getWriter())
+                        .getTargetWriter();
                 if (targetWriter instanceof DatabaseWriter) {
-                    return ((DatabaseWriter)targetWriter).getTransaction();
-                }                
+                    return ((DatabaseWriter) targetWriter).getTransaction();
+                }
             }
             return null;
         }
@@ -475,12 +497,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     symmetricDialect.enableSyncTriggers(transaction);
                 }
             } catch (Exception ex) {
-                log.error(ex.getMessage(),ex);
+                log.error(ex.getMessage(), ex);
             }
         }
 
-        public void batchInError(DataContext context,
-                Exception ex) {
+        public void batchInError(DataContext context, Exception ex) {
             try {
                 Batch batch = context.getBatch();
                 this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
@@ -492,7 +513,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             this.currentBatch.getNodeBatchId(), ex.getMessage());
                     this.currentBatch.setSqlMessage(ex.getMessage());
                 } else {
-                    log.error("Failed to load batch {} because: {}", new Object[] { 
+                    log.error("Failed to load batch {} because: {}", new Object[] {
                             this.currentBatch.getNodeBatchId(), ex.getMessage() });
                     log.error(ex.getMessage(), ex);
                     SQLException se = unwrapSqlException(ex);

@@ -1,44 +1,32 @@
 package org.jumpmind.symmetric.io.data.writer;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.io.FileIoResource;
-import org.jumpmind.symmetric.io.IoResource;
-import org.jumpmind.symmetric.io.MemoryIoResource;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.io.stage.IStagedResource.State;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 
 public class StagingDataWriter extends AbstractProtocolDataWriter {
 
-    protected FileChannel channel = null;
+    protected IStagingManager stagingManager;
+    
+    protected String category;
 
-    protected File dir;
-
-    protected long memoryThresholdInBytes;
-
-    protected File currentBatchFile;
-
-    // TODO pool string builders?
-    protected StringBuilder currentBatchBuffer;
-
-    protected IoResource lastBatch;
-
-    public StagingDataWriter(File dir, long memoryThresholdInBytes,
+    public StagingDataWriter(String category, IStagingManager stagingManager,
             IProtocolDataWriterListener... listeners) {
-        this(dir, memoryThresholdInBytes, toList(listeners));
+        this(category, stagingManager, toList(listeners));
     }
 
-    public StagingDataWriter(File dir, long memoryThresholdInBytes,
+    public StagingDataWriter(String category, IStagingManager stagingManager,
             List<IProtocolDataWriterListener> listeners) {
         super(listeners);
-        this.dir = dir;
-        this.memoryThresholdInBytes = memoryThresholdInBytes;
+        this.category = category;
+        this.stagingManager = stagingManager;
     }
 
     public static List<IProtocolDataWriterListener> toList(IProtocolDataWriterListener... listeners) {
@@ -50,96 +38,36 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
         return list;
     }
 
-    protected void initFile(Batch batch) {
-        try {
-            this.currentBatchFile = new File(dir, toFileName(batch, true));
-            if (!this.currentBatchFile.getParentFile().exists()) {
-                this.currentBatchFile.getParentFile().mkdirs();
-            }
-            if (this.currentBatchFile.exists()) {
-                this.currentBatchFile.delete();
-            }
-            this.channel = new FileOutputStream(this.currentBatchFile).getChannel();
-        } catch (IOException ex) {
-            throw new IoException(ex);
-        }
-    }
-
     @Override
     protected void notifyEndBatch(Batch batch, IProtocolDataWriterListener listener) {
-        listener.end(batch, this.lastBatch);
+        listener.end(batch, getStagedResource(batch));
+    }
+
+    protected IStagedResource getStagedResource(Batch batch) {
+        IStagedResource resource = stagingManager.find(category, batch.getNodeId(), batch.getBatchId());
+        if (resource == null) {
+            resource = stagingManager.create(category, batch.getNodeId(), batch.getBatchId());
+        }
+        return resource;
     }
 
     @Override
     protected void endBatch(Batch batch) {
-        closeFile(batch);
+        IStagedResource resource = getStagedResource(batch);
+        resource.close();
+        resource.setState(State.READY);
         flushNodeId = true;
-    }
-
-    protected void closeFile(Batch batch) {
-        if (channel != null) {
-            try {
-                this.channel.close();
-                this.channel = null;
-            } catch (IOException ex) {
-                // do nothing. it doesn't really matter.
-            }
-        }
-
-        if (this.currentBatchFile != null && this.currentBatchFile.exists()) {
-            File targetFile = new File(dir, toFileName(batch, false));
-            targetFile.delete();
-            this.currentBatchFile.renameTo(targetFile);
-            this.lastBatch = new FileIoResource(targetFile);
-            this.currentBatchFile = null;
-
-        } else if (this.currentBatchBuffer != null) {
-            try {
-                this.lastBatch = new MemoryIoResource(this.currentBatchBuffer.toString().getBytes(
-                        "UTF-8"));
-                this.currentBatchBuffer = null;
-            } catch (IOException ex) {
-                throw new IoException(ex);
-            }
-        }
-    }
-
-    protected String toFileName(Batch batch, boolean extracting) {
-        return (batch.getNodeId() != null ? (batch.getNodeId() + "-") : "")
-                + Long.toString(batch.getBatchId()) + ".csv" + (extracting ? ".extracting" : "");
     }
 
     @Override
     protected void print(Batch batch, String data) {
-        int currentSize = (currentBatchBuffer != null ? currentBatchBuffer.length() : 0)
-                + data.length();
-        if (memoryThresholdInBytes > 0 && currentBatchBuffer == null
-                && currentSize < memoryThresholdInBytes) {
-            currentBatchBuffer = new StringBuilder();
+        IStagedResource resource = getStagedResource(batch);
+        BufferedWriter writer = resource.getWriter();
+        try {
+            writer.append(data);
+        } catch (IOException ex) {
+            throw new IoException(ex);
         }
-
-        if (currentBatchBuffer != null) {
-            currentBatchBuffer.append(data);
-        } else {
-            if (currentBatchBuffer != null) {
-                data = currentBatchBuffer.toString();
-                currentBatchBuffer = null;
-            }
-            if (channel == null) {
-                initFile(batch);
-            }
-            try {
-                byte[] bytes = data.getBytes("UTF-8");
-                ByteBuffer byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length);
-                channel.write(byteBuffer);
-            } catch (IOException ex) {
-                throw new IoException(ex);
-            }
-        }
-    }
-    
-    public IoResource getLastBatch() {
-        return lastBatch;
     }
 
 }
