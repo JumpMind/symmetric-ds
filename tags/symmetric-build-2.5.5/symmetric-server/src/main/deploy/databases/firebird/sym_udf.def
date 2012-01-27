@@ -1,0 +1,5 @@
+LIBRARY sym_udf.dll
+
+EXPORTS
+sym_escape
+sym_hex

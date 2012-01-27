@@ -1,0 +1,289 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jumpmind.symmetric</groupId>
+    <artifactId>symmetric-assemble</artifactId>
+    <packaging>pom</packaging>
+    <version>2.5.5</version>
+    <name>assemble</name>
+
+    <licenses>
+        <license>
+            <name>LGPL</name>
+            <url>http://www.gnu.org/licenses/lgpl.txt</url>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <parent>
+        <groupId>org.jumpmind.symmetric</groupId>
+        <artifactId>symmetric-parent</artifactId>
+        <version>2.5.5</version>
+        <relativePath>../symmetric-parent/pom.xml</relativePath>
+    </parent>
+
+    <properties>
+        <docbook.source>${basedir}/src/docbook</docbook.source>
+        <docbook.target>${basedir}/target/site/guide/2.5</docbook.target>
+        <docbook.build>${basedir}/target/docbook</docbook.build>
+    </properties>
+
+    <modules>
+        <module>../symmetric-csv</module>
+        <module>../symmetric-ddl</module>
+        <module>../symmetric-core</module>
+        <module>../symmetric-server</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>server</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/src/assembly/assembly-server.xml</descriptor>
+                            </descriptors>
+                            <finalName>symmetric-ds-${pom.version}</finalName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>client</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/src/assembly/assembly-client.xml</descriptor>
+                            </descriptors>
+                            <finalName>symmetric-client-${pom.version}</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Use this command to deploy the maven site (instead of site:deploy):
+                 mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload -Dwagon.url=dav:https://dav.codehaus.org/symmetricds/  -Dwagon.fromDir=target/site -Dwagon.serverId=dav.codehaus.org
+              -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <url>http://symmetricds.org</url>
+                    <siteDirectory>${basedir}/src/site</siteDirectory>
+                    <templateFile>${basedir}/src/site/site.vm</templateFile>
+                </configuration>
+                <!-- Need to exclude commons-logging due to bug. See: http://jira.codehaus.org/browse/MSITE-459 -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.doxia</groupId>
+                        <artifactId>doxia-module-xhtml</artifactId>
+                        <version>1.1.4</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>commons-logging</groupId>
+                                <artifactId>commons-logging</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </plugin>         
+            <plugin>
+                <groupId>org.apache.db.torque</groupId>
+                <artifactId>torque-maven-plugin</artifactId>
+                <configuration>
+                    <outputFormat>docbook</outputFormat>
+                    <targetDatabase>symmetric</targetDatabase>
+                    <outputDir>${docbook.build}</outputDir>
+                    <schemaDir>${basedir}/../symmetric-core/src/main/resources</schemaDir>
+                    <templatePath>${basedir}/src/torque</templatePath>
+                    <useClasspath>false</useClasspath>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>documentation</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>dependencies</report>
+                            <report>project-team</report>
+                            <report>mailing-list</report>
+                            <report>issue-tracking</report>
+                            <report>license</report>
+                            <report>scm</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <destDir>apidocs-2.5</destDir>
+                    <doctitle>SymmetricDS API ${project.version}</doctitle>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <id>aggregate</id>
+                        <reports>
+                            <report>aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <profiles>
+        <profile>
+            <id>includeDocs</id>
+            <activation>
+                <property>
+                    <name>includeDocs</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.agilejava.docbkx</groupId>
+                        <artifactId>docbkx-maven-plugin</artifactId>
+                        <version>2.0.6</version>
+                        <executions>
+                            <execution>
+                                <id>build-pdf-doc</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate-pdf</goal>
+                                </goals>
+                                <configuration>
+                                    <preProcess>
+                                        <copy todir="${docbook.build}">
+                                            <fileset dir="${docbook.source}">
+                                            </fileset>
+                                        </copy>
+                                    </preProcess>
+                                    <sourceDirectory>${docbook.build}</sourceDirectory>
+                                    <targetDirectory>${docbook.target}/pdf</targetDirectory>
+                                    <xincludeSupported>true</xincludeSupported>
+                                    <includes>user-guide.xml</includes>
+                                    <imgSrcPath>${docbook.build}/images</imgSrcPath>
+                                    <admonGraphicsPath>${docbook.build}/resources/images/admons/
+                                    </admonGraphicsPath>
+                                    <foCustomization>${docbook.build}/resources/xsl/docbook-fopdf.xsl
+                                    </foCustomization>
+                                    <postProcess>
+                                        <delete file="${docbook.target}/pdf/user-guide.fo" />
+                                    </postProcess>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>build-singlehtml-doc</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate-html</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${docbook.build}</sourceDirectory>
+                                    <targetDirectory>${docbook.target}/html-single
+                                    </targetDirectory>
+                                    <xincludeSupported>true</xincludeSupported>
+                                    <includes>user-guide.xml</includes>
+                                    <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
+                                    <htmlCustomization>
+                                        ${docbook.build}/resources/xsl/docbook-html.xsl
+                                    </htmlCustomization>
+                                    <chunkedOutput>false</chunkedOutput>
+                                    <postProcess>
+                                        <copy todir="${docbook.target}/html-single">
+                                            <fileset dir="${docbook.build}/resources">
+                                                <include name="images/*.png" />
+                                                <include name="images/*.gif" />
+                                                <include name="images/*.jpg" />
+                                            </fileset>
+                                            <fileset dir="${docbook.build}/resources">
+                                                <include name="css/*.css" />
+                                            </fileset>
+                                        </copy>
+                                        <copy todir="${docbook.target}/html-single/images" flatten="true">
+                                            <fileset dir="${docbook.build}">
+                                                <include name="**/images/*" />
+                                            </fileset>
+                                        </copy>
+                                    </postProcess>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>build-chunkedhtml-doc</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate-html</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${docbook.build}</sourceDirectory>
+                                    <targetDirectory>${docbook.target}/html</targetDirectory>
+                                    <xincludeSupported>true</xincludeSupported>
+                                    <includes>user-guide.xml</includes>
+                                    <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
+                                    <htmlCustomization>
+                                        ${docbook.build}/resources/xsl/docbook-html-chunk.xsl
+                                    </htmlCustomization>
+                                    <chunkedOutput>true</chunkedOutput>
+                                    <postProcess>
+                                        <copy todir="${docbook.target}/html">
+                                            <fileset dir="${docbook.build}/resources">
+                                                <include name="images/*.png" />
+                                                <include name="images/*.gif" />
+                                                <include name="images/*.jpg" />
+                                            </fileset>
+                                            <fileset dir="${docbook.build}/resources">
+                                                <include name="css/*.css" />
+                                            </fileset>
+                                        </copy>
+                                        <copy todir="${docbook.target}/html/images" flatten="true">
+                                            <fileset dir="${docbook.build}">
+                                                <include name="**/images/*" />
+                                            </fileset>
+                                        </copy>
+                                        <delete file="${docbook.build}/symmetric-schema.xml" />
+                                        <delete file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
+                                        <delete file="${basedir}/target/torque/sqldbmap.properties" />
+                                        <delete file="${basedir}/target/torque/context.doc.properties" />
+                                    </postProcess>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.docbook</groupId>
+                                <artifactId>docbook-xml</artifactId>
+                                <version>4.4</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
