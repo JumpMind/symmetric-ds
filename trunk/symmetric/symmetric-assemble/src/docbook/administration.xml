@@ -385,12 +385,6 @@ insert into sym_data (
             the captured data in order to triage problems and profile the synchronization patterns.  When scaling up to more nodes, it is recomended that the 
             purge parameters be scaled back to 24 hours or less.  
         </para>
-         <important>
-            <para>
-                Note that, currently, the purge job will not purge on a node if the <xref linkend="table_node_security" xrefstyle="table"/> entry for that node
-                has a null entry for the <literal>initial_load_time</literal>.
-            </para>
-        </important>
     </section>
     
     
