@@ -354,7 +354,6 @@
     <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService" parent="abstractService">
         <property name="sql" ref="purgeServiceSql" />
         <property name="clusterService" ref="clusterService" />
-        <property name="nodeService" ref="nodeService" />
         <property name="statisticManager" ref="statisticManager" />
     </bean>
 
