@@ -58,6 +58,9 @@ public class TableCopy {
         } catch (IllegalStateException ex) {
             logger.error(ex.getMessage());
             System.exit(-1);
+        } catch (Exception ex) {
+            logger.error(ex);
+            System.exit(-1);
         }
     }
 
