@@ -26,6 +26,8 @@ import javax.sql.rowset.serial.SerialBlob;
 
 import org.jumpmind.symmetric.core.common.BinaryEncoding;
 import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.db.DmlStatement;
+import org.jumpmind.symmetric.core.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.core.db.postgres.PostgreTableBuilder;
 import org.jumpmind.symmetric.core.db.postgres.PostgresDataCaptureBuilder;
 import org.jumpmind.symmetric.core.model.Column;
@@ -168,4 +170,11 @@ public class PostgresDbDialect extends AbstractJdbcDbDialect {
         return true;
     }
 
+    @Override
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
+            String tableName, Column[] keys, Column[] columns, Column[] preFilteredColumns) {
+        return new PostgresDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
+                preFilteredColumns, dialectInfo.isDateOverridesToTimestamp(),
+                dialectInfo.getIdentifierQuoteString());
+    }
 }

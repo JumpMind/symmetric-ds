@@ -257,7 +257,7 @@ public abstract class StatementCreatorUtil {
     private static void setValue(PreparedStatement ps, int paramIndex, int sqlType,
             String typeName, Integer scale, Object inValue) throws SQLException {
 
-        if (sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR
+        if (sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR || sqlType == -101
                 || (sqlType == Types.CLOB && isStringValue(inValue.getClass()))) {
             ps.setString(paramIndex, inValue.toString());
         } else if (sqlType == Types.DECIMAL || sqlType == Types.NUMERIC) {

@@ -120,22 +120,13 @@ public class DmlStatement {
         return types;
     }
 
-    protected String buildInsertSql(String tableName, String[] columnNames) {
-        StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
-        appendColumns(sql, columnNames);
-        sql.append(") values (");
-        appendColumnQuestions(sql, columnNames.length);
-        sql.append(")");
-        return sql.toString();
-    }
-
     protected String buildInsertSql(String fullQualifiedTableName, Column[] columns) {
         StringBuilder sql = new StringBuilder("insert into ");
         sql.append(fullQualifiedTableName);
         sql.append(" (");
-        int columnCount = appendColumns(sql, columns);
+        appendColumns(sql, columns);
         sql.append(") values (");
-        appendColumnQuestions(sql, columnCount);
+        appendColumnQuestions(sql, columns);
         sql.append(")");
         return sql.toString();
     }
@@ -224,10 +215,14 @@ public class DmlStatement {
         return existingCount;
     }
 
-    protected void appendColumnQuestions(StringBuilder sql, int number) {
-        for (int i = 0; i < number; i++) {
-            sql.append("?").append(i + 1 < number ? "," : "");
+    protected void appendColumnQuestions(StringBuilder sql, Column[] columns) {
+        for (int i = 0; i < columns.length; i++) {
+            if (columns[i] != null) {
+                sql.append("?").append(",");
+            }
         }
+        
+        sql.replace(sql.length()-1, sql.length(), "");
     }
 
     public String getSql() {

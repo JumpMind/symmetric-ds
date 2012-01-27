@@ -132,6 +132,12 @@ public class PostgresDataCaptureBuilder extends AbstractDataCaptureBuilder {
     protected String getDateTimeColumnTemplate() {
         return "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.MS') || '\"' end";
     }
+    
+    @Override
+    protected String getDateTimeWithTimeZoneTemplate() {
+        return "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||lpad(cast(extract(timezone_hour from $(tableAlias).\"$(columnName)\") as varchar),2,'0')||':'||lpad(cast(extract(timezone_minute from $(tableAlias).\"$(columnName)\") as varchar), 2, '0') || '\"' end";
+    }
+    
 
     @Override
     protected String getBooleanColumnTemplate() {

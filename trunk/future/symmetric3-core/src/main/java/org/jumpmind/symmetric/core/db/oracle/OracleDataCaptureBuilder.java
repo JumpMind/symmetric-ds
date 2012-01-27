@@ -20,7 +20,7 @@ public class OracleDataCaptureBuilder extends AbstractDataCaptureBuilder {
     
     @Override
     protected String getClobColumnTemplate() {
-        return "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\','\\'),'\"','\"')||'\"')";
+        return "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\','\\'),'\"','\\\"')||'\"')";
     }
 
     @Override
@@ -116,6 +116,11 @@ public class OracleDataCaptureBuilder extends AbstractDataCaptureBuilder {
     @Override
     protected String getNumberColumnTemplate() {
         return String.format("decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number(%s))||'\"')", dbDialect.getParameters().get(Parameters.TRIGGER_NUMBER_PRECISION, "30,10"));
+    }
+    
+    @Override
+    protected String getDateTimeWithTimeZoneTemplate() {
+        return "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')),'\"'))";
     }
 
     @Override

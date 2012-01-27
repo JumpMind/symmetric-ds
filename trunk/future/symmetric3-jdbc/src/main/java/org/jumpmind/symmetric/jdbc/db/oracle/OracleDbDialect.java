@@ -5,8 +5,11 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.core.common.StringUtils;
+import org.jumpmind.symmetric.core.db.DmlStatement;
+import org.jumpmind.symmetric.core.db.DmlStatement.DmlType;
 import org.jumpmind.symmetric.core.db.oracle.OracleTableBuilder;
 import org.jumpmind.symmetric.core.db.oracle.OracleDataCaptureBuilder;
+import org.jumpmind.symmetric.core.model.Column;
 import org.jumpmind.symmetric.core.model.Parameters;
 import org.jumpmind.symmetric.jdbc.db.AbstractJdbcDbDialect;
 
@@ -81,5 +84,13 @@ public class OracleDbDialect extends AbstractJdbcDbDialect {
     @Override
     protected int[] getDataIntegritySqlErrorCodes() {
         return DATA_INTEGRITY_SQL_ERROR_CODES;
+    }
+    
+    @Override
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
+            String tableName, Column[] keys, Column[] columns, Column[] preFilteredColumns) {
+        return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
+                preFilteredColumns, dialectInfo.isDateOverridesToTimestamp(),
+                dialectInfo.getIdentifierQuoteString());
     }
 }

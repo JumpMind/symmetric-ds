@@ -40,7 +40,7 @@ public class OracleJdbcTableReader extends JdbcTableReader {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.startsWith("DATE")) {
             typeCode = Types.DATE;
-        } else if (typeName != null && typeName.startsWith("TIMESTAMP")) {
+        } else if (typeName != null && typeName.startsWith("TIMESTAMP") && !typeName.endsWith("TIME ZONE")) {
             // This is for Oracle's TIMESTAMP(9)
             typeCode = Types.TIMESTAMP;
         } else if (typeName != null && typeName.startsWith("NVARCHAR")) {

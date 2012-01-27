@@ -112,6 +112,9 @@ public abstract class TypeMap {
      * constant.
      */
     public static final String TIMESTAMP = "TIMESTAMP";
+    
+    public static final String TIMESTAMPTZ     = "TIMESTAMPTZ";
+
     /**
      * The string representation of the {@link java.sql.Types#TINYINT} constant.
      */
@@ -167,6 +170,7 @@ public abstract class TypeMap {
         registerJdbcType(Types.TINYINT, TINYINT, TypeCategory.NUMERIC);
         registerJdbcType(Types.VARBINARY, VARBINARY, TypeCategory.BINARY);
         registerJdbcType(Types.VARCHAR, VARCHAR, TypeCategory.TEXTUAL);
+        registerJdbcType(-101, TIMESTAMPTZ, TypeCategory.DATETIME);
 
         registerJdbcType(determineBooleanTypeCode(), BOOLEAN, TypeCategory.NUMERIC);
         registerJdbcType(determineDatalinkTypeCode(), DATALINK, TypeCategory.SPECIAL);

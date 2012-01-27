@@ -59,6 +59,8 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
     abstract protected String getNumberColumnTemplate();
 
     abstract protected String getDateTimeColumnTemplate();
+    
+    abstract protected String getDateTimeWithTimeZoneTemplate();
 
     abstract protected String getBooleanColumnTemplate();
 
@@ -208,6 +210,11 @@ abstract public class AbstractDataCaptureBuilder implements IDataCaptureBuilder 
                 case Types.BIT:
                     templateToUse = getBooleanColumnTemplate();
                     break;
+                case -101:
+                    if (StringUtils.isNotBlank(this.getDateTimeWithTimeZoneTemplate())) {
+                        templateToUse = this.getDateTimeWithTimeZoneTemplate();
+                        break;
+                    }   
                 case Types.NULL:
                 case Types.OTHER:
                 case Types.JAVA_OBJECT:
