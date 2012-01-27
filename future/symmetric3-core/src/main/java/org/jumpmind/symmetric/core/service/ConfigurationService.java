@@ -58,10 +58,10 @@ public class ConfigurationService extends AbstractParameterizedService {
             List<NodeChannel> channels = findNodeChannels(false);
             for (Channel defaultChannel : defaultChannels) {
                 if (!defaultChannel.isInList(channels)) {
-                    log.info("ChannelAutoConfiguring", defaultChannel.getChannelId());
+                    log.info("Auto-configuring %s channel.", defaultChannel.getChannelId());
                     saveChannel(defaultChannel, true);
                 } else {
-                    log.info("ChannelExists", defaultChannel.getChannelId());
+                    log.info("No need to create channel %s.  It already exists.", defaultChannel.getChannelId());
                 }
             }
             reloadChannels();
@@ -171,7 +171,7 @@ public class ConfigurationService extends AbstractParameterizedService {
         Parameters parameters = getParameters();
         if (node == null && StringUtils.isBlank(parameters.getRegistrationUrl())
                 && parameters.is(Parameters.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
-            log.info("AutoConfigRegistrationService");
+            log.info("Inserting rows for node, security, identity and group for registration server");
             String nodeGroupId = parameters.getNodeGroupId();
             String nodeId = parameters.getExternalId();
             try {

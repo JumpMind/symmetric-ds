@@ -50,6 +50,11 @@ public class H2DataCaptureBuilder extends AbstractDataCaptureBuilder {
     protected String getBlobColumnTemplate() {
         return "case when $(tableAlias)\"$(columnName)\" is null then '''' else ''\"''||replace(replace($[sym.sync.table.prefix]_BASE64_ENCODE($(tableAlias)\"$(columnName)\"),''\\'',''\\\\''),''\"'',''\\\"'')||''\"'' end";
     }
+    
+    @Override
+    protected String getDateTimeWithTimeZoneTemplate() {
+        return null;
+    }
 
     @Override
     protected String getWrappedBlobColumnTemplate() {
