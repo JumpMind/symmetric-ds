@@ -20,30 +20,34 @@ DONE = +
   * Implement a jdbc batch loader
     
 * Use data processor for extract
-  * Add dependency on spring-jdbc from symmetric-db (lob handlers and statement creators)
-  * lob handling for extract
-  * Finish DataExtractorService data selector
-  * map target tables from routers
-  * integrate into data extractor service
-  * verify stats capturing, outgoing batch updates
-  * add transform writer
-  * add batch file management api
+  + Add dependency on spring-jdbc from symmetric-db (lob handlers and statement creators)
+  + lob handling for extract
+  + Finish DataExtractorService data selector
+  + map target tables from routers
+  + integrate into data extractor service
+  + add transform writer
+  + add staging file management api
+  * verify stats capturing, outgoing batch updates  
+  * unit test
+  * purge job for staging manager
 
 * Hook up JMX
 
-* Clean up logging  
-  * Use SLF4J and MDC (for capturing the engine & node name)
++ Use data processor for streaming to file  
++ Clean up logging  
+  + Use SLF4J and MDC (for capturing the engine & node name)
++ What to do with SqlTemplate? Move sqltemplate into dbdialect
++ Clean up symmetric.messages
+  
 * Use HttpClient?
 * Add table copy utility
 * Clean up service tests    
-+ Use data processor for streaming to file  
 * Purge OK records instead of purging them at a later date
 * Test batch inserts for router service
 * Remove all references to data_ref
-+ What to do with SqlTemplate? Move sqltemplate into dbdialect
 * Change the default server mode to multiserver
-+ Clean up symmetric.messages
 * SqlMap create constants for columns and table names
+* SqlMap, TriggerTemplate format better
 
 Performance Improvement Opportunities
 * Pluggable data loaders.
@@ -61,6 +65,7 @@ Documentation
 3.0 Change Notes:
 * The db.metadata.ignore.case property is no long available.  All configured database names will be case sensitive
 * db.spring.bean.name is no longer available
+* dataloader will now load each batch as it arrives.
 * datareload.batch.insert.transactional is no longer available
 * routing.data.reader.type is no longer available.  data_ref has been removed.
 * jdbc datasources are no longer supported

@@ -88,6 +88,8 @@ import org.jumpmind.symmetric.transport.TransportUtils;
  */
 public class DataExtractorService extends AbstractService implements IDataExtractorService {
 
+    private static final String STAGING_CATEGORY = "outgoing";
+
     final static long MS_PASSED_BEFORE_BATCH_REQUERIED = 5000;
 
     private IOutgoingBatchService outgoingBatchService;
@@ -304,7 +306,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         IDataWriter extractWriter = null;
 
         if (streamToFileEnabled) {
-            extractWriter = new StagingDataWriter("outgoing", stagingManager);
+            extractWriter = new StagingDataWriter(STAGING_CATEGORY, stagingManager);
         } else {
             extractWriter = new ProtocolDataWriter(targetTransport.open());
         }
@@ -333,7 +335,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
 
                 if (currentBatch.getStatus() != Status.OK) {
-                    IStagedResource previouslyExtracted = stagingManager.find(
+                    IStagedResource previouslyExtracted = stagingManager.find(STAGING_CATEGORY,
                             currentBatch.getNodeId(), currentBatch.getBatchId());
                     if (previouslyExtracted != null && previouslyExtracted.exists()) {
                         log.info(

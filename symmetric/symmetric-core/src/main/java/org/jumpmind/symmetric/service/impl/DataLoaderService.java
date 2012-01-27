@@ -56,6 +56,7 @@ import org.jumpmind.symmetric.io.data.writer.TransformDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -93,6 +94,8 @@ import org.jumpmind.symmetric.web.WebConstants;
  * @see IDataLoaderService
  */
 public class DataLoaderService extends AbstractService implements IDataLoaderService {
+
+    private static final String STAGING_CATEGORY = "incoming";
 
     private IIncomingBatchService incomingBatchService;
 
@@ -260,7 +263,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             long totalNetworkMillis = System.currentTimeMillis();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 IDataReader dataReader = new ProtocolDataReader(transport.open());
-                IDataWriter dataWriter = new StagingDataWriter("incoming", stagingManager,
+                IDataWriter dataWriter = new StagingDataWriter(STAGING_CATEGORY, stagingManager,
                         new LoadIntoDatabaseOnArrivalListener(sourceNodeId, listener));
                 new DataProcessor(dataReader, dataWriter).process();
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
@@ -429,7 +432,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             try {
                 processor.process();
             } finally {
-                resource.delete();
+                resource.setState(State.DONE);
             }
         }
     }
