@@ -20,15 +20,12 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -41,7 +38,6 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.IoResource;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -53,10 +49,11 @@ import org.jumpmind.symmetric.io.data.reader.IExtractBatchSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
-import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Data;
@@ -109,14 +106,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private IStatisticManager statisticManager;
 
-    private Map<Long, IoResource> extractedBatchesHandle = new HashMap<Long, IoResource>();
+    private IStagingManager stagingManager;
 
     public DataExtractorService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
             IRouterService routingService, IConfigurationService configurationService,
             ITriggerRouterService triggerRouterService, INodeService nodeService,
             IDataService dataService, ITransformService transformService,
-            IStatisticManager statisticManager) {
+            IStatisticManager statisticManager, IStagingManager stagingManager) {
         super(parameterService, symmetricDialect);
         this.outgoingBatchService = outgoingBatchService;
         this.routerService = routingService;
@@ -126,6 +123,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         this.nodeService = nodeService;
         this.transformService = transformService;
         this.statisticManager = statisticManager;
+        this.stagingManager = stagingManager;
     }
 
     /**
@@ -306,17 +304,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         IDataWriter extractWriter = null;
 
         if (streamToFileEnabled) {
-            long memoryThresholdInBytes = parameterService
-                    .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
-            extractWriter = new StagingDataWriter(new File(System.getProperty("java.io.tmpdir")),
-                    memoryThresholdInBytes, new IProtocolDataWriterListener() {
-                        public void start(Batch batch) {
-                        }
-
-                        public void end(Batch batch, IoResource resource) {
-                            extractedBatchesHandle.put(batch.getBatchId(), resource);
-                        }
-                    });
+            extractWriter = new StagingDataWriter("outgoing", stagingManager);
         } else {
             extractWriter = new ProtocolDataWriter(targetTransport.open());
         }
@@ -345,8 +333,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
 
                 if (currentBatch.getStatus() != Status.OK) {
-                    IoResource previouslyExtracted = extractedBatchesHandle.get(currentBatch
-                            .getBatchId());
+                    IStagedResource previouslyExtracted = stagingManager.find(
+                            currentBatch.getNodeId(), currentBatch.getBatchId());
                     if (previouslyExtracted != null && previouslyExtracted.exists()) {
                         log.info(
                                 "We have already extracted batch {}.  Using the existing extraction.  To force re-extraction, please restart this instance of SymmetricDS.",
@@ -374,10 +362,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.setSentCount(currentBatch.getSentCount() + 1);
                         outgoingBatchService.updateOutgoingBatch(currentBatch);
 
-                        IoResource extractedBatch = extractedBatchesHandle.get(currentBatch
-                                .getBatchId());
+                        IStagedResource extractedBatch = stagingManager.find(
+                                currentBatch.getNodeId(), currentBatch.getBatchId());
                         if (extractedBatch != null) {
-                            IDataReader dataReader = new ProtocolDataReader(extractedBatch.open());
+                            IDataReader dataReader = new ProtocolDataReader(
+                                    extractedBatch.getReader());
                             IDataWriter dataWriter = new ProtocolDataWriter(targetTransport.open());
                             new DataProcessor(dataReader, dataWriter).process();
                         }
@@ -405,18 +394,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
             }
-
-            // TODO should be deleting handles here or when the
-            // ack comes back
-            // for (OutgoingBatch outgoingBatch : activeBatches)
-            // {
-            // File file =
-            // extractedBatchesHandle.remove(outgoingBatch
-            // .getBatchId());
-            // if (file != null && file.exists()) {
-            // fileWriter.delete();
-            // }
-            // }
 
         } catch (Exception e) {
             SQLException se = unwrapSqlException(e);

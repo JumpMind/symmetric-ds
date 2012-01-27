@@ -25,6 +25,8 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
 import org.jumpmind.symmetric.ext.ExtensionPointManager;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.service.ISecurityService;
@@ -57,8 +59,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     public static BasicDataSource createBasicDataSource(File propsFile) {
-        return createBasicDataSource(
-                createTypedPropertiesFactory(propsFile, null).reload(), createSecurityService());
+        return createBasicDataSource(createTypedPropertiesFactory(propsFile, null).reload(),
+                createSecurityService());
     }
 
     public static BasicDataSource createBasicDataSource(TypedProperties properties,
@@ -95,7 +97,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             for (String property : tokens) {
                 String[] keyValue = property.split("=");
                 if (keyValue != null && keyValue.length > 1) {
-                    LoggerFactory.getLogger(ClientSymmetricEngine.class).info("Setting database connection property %s=%s", keyValue[0], keyValue[1]);
+                    LoggerFactory.getLogger(ClientSymmetricEngine.class).info(
+                            "Setting database connection property %s=%s", keyValue[0], keyValue[1]);
                     dataSource.addConnectionProperty(keyValue[0], keyValue[1]);
                 }
             }
@@ -137,6 +140,17 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     protected IJobManager createJobManager() {
         return new JobManager(this);
+    }
+
+    @Override
+    protected IStagingManager createStagingManager() {
+        long memoryThresholdInBytes = parameterService
+                .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+        long timeToLiveInMs = parameterService
+                .getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS);
+        String directory = parameterService.getString("java.io.tmpdir",
+                System.getProperty("java.io.tmpdir"));
+        return new StagingManager(memoryThresholdInBytes, timeToLiveInMs, directory);
     }
 
     protected void waitForAvailableDatabase() {
