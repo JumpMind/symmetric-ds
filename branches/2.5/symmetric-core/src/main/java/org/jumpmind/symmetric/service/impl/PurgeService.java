@@ -16,8 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.service.impl;
 
@@ -44,7 +44,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 /**
- * @see IPurgeService 
+ * @see IPurgeService
  */
 public class PurgeService extends AbstractService implements IPurgeService {
 
@@ -56,57 +56,39 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IClusterService clusterService;
 
-    private INodeService nodeService;
-    
     private IStatisticManager statisticManager;
 
     public long purgeOutgoing() {
-        long rowsPurged = 0;
-        if (nodeService.isRegistrationServer() || nodeService.getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED) {
-            Calendar retentionCutoff = Calendar.getInstance();
-            retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
-            rowsPurged += purgeOutgoing(retentionCutoff);
-        } else {
-            log.warn("DataPurgeSkippingNoInitialLoad");
-        }
-        return rowsPurged;
+        Calendar retentionCutoff = Calendar.getInstance();
+        retentionCutoff.add(Calendar.MINUTE,
+                -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
+        return purgeOutgoing(retentionCutoff);
     }
-    
+
     public long purgeIncoming() {
+        Calendar retentionCutoff = Calendar.getInstance();
+        retentionCutoff.add(Calendar.MINUTE,
+                -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
+        return purgeIncoming(retentionCutoff);
+    }
+
+    public long purgeDataGaps() {
         long rowsPurged = 0;
-        if (nodeService.isRegistrationServer() || nodeService.getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED) {
-            Calendar retentionCutoff = Calendar.getInstance();
-            retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
-            rowsPurged += purgeIncoming(retentionCutoff);
-        } else {
-            log.warn("DataPurgeSkippingNoInitialLoad");
-        }
+        Calendar retentionCutoff = Calendar.getInstance();
+        retentionCutoff.add(Calendar.MINUTE, -parameterService
+                .getInt(ParameterConstants.ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES));
+        rowsPurged += purgeDataGaps(retentionCutoff);
         return rowsPurged;
     }
 
-    
-    public long purgeDataGaps() {
-        long rowsPurged = 0;
-        if (nodeService.isRegistrationServer() || nodeService.getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED) {
-            Calendar retentionCutoff = Calendar.getInstance();
-            retentionCutoff.add(Calendar.MINUTE, -parameterService
-                    .getInt(ParameterConstants.ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES));
-            rowsPurged += purgeDataGaps(retentionCutoff);
-            
-        } else {
-            log.warn("DataPurgeSkippingNoInitialLoad");
-        }
-        return rowsPurged;
-    }
-    
     public long purgeDataGaps(Calendar retentionCutoff) {
         long rowsPurged = -1l;
         try {
             if (clusterService.lock(ClusterConstants.PURGE_DATA_GAPS)) {
                 try {
                     log.info("DataPurgeDataGapsRunning");
-                    rowsPurged = jdbcTemplate.update(getSql("deleteFromDataGapsSql"), new Object[] { retentionCutoff
-                            .getTime() });
+                    rowsPurged = jdbcTemplate.update(getSql("deleteFromDataGapsSql"),
+                            new Object[] { retentionCutoff.getTime() });
                     log.info("DataPurgeDataGapsRun", rowsPurged);
                 } finally {
                     clusterService.unlock(ClusterConstants.PURGE_DATA_GAPS);
@@ -118,7 +100,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
             }
         } catch (Exception ex) {
             log.error(ex);
-        } 
+        }
         return rowsPurged;
     }
 
@@ -127,8 +109,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         try {
             if (clusterService.lock(ClusterConstants.PURGE_OUTGOING)) {
                 try {
-                    log.info("DataPurgeOutgoingRunning", SimpleDateFormat.getDateTimeInstance().format(
-                            retentionCutoff.getTime()));
+                    log.info("DataPurgeOutgoingRunning", SimpleDateFormat.getDateTimeInstance()
+                            .format(retentionCutoff.getTime()));
                     rowsPurged += purgeStrandedBatches();
                     rowsPurged += purgeDataRows(retentionCutoff);
                     rowsPurged += purgeOutgoingBatch(retentionCutoff);
@@ -147,31 +129,37 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private long purgeOutgoingBatch(final Calendar time) {
         log.info("DataPurgeOutgoingRange");
-        long[] minMax = queryForMinMax(getSql("selectOutgoingBatchRangeSql"), new Object[] { time.getTime() });
-        int maxNumOfBatchIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
+        long[] minMax = queryForMinMax(getSql("selectOutgoingBatchRangeSql"),
+                new Object[] { time.getTime() });
+        int maxNumOfBatchIdsToPurgeInTx = parameterService
+                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
         int maxNumOfDataEventsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
-        int dataEventsPurgedCount = purgeByMinMax(minMax, getSql("deleteDataEventSql"), time.getTime(), maxNumOfDataEventsToPurgeInTx);
+        int dataEventsPurgedCount = purgeByMinMax(minMax, getSql("deleteDataEventSql"),
+                time.getTime(), maxNumOfDataEventsToPurgeInTx);
         statisticManager.incrementPurgedDataEventRows(dataEventsPurgedCount);
-        int outgoingbatchPurgedCount = purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), time.getTime(), maxNumOfBatchIdsToPurgeInTx);
+        int outgoingbatchPurgedCount = purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"),
+                time.getTime(), maxNumOfBatchIdsToPurgeInTx);
         statisticManager.incrementPurgedBatchOutgoingRows(outgoingbatchPurgedCount);
         long unroutedPurgedCount = purgeUnroutedDataEvents(time.getTime());
         return dataEventsPurgedCount + outgoingbatchPurgedCount + unroutedPurgedCount;
     }
-    
-    private long purgeStrandedBatches() {        
-        int updateStrandedBatchesCount = getSimpleTemplate().update(getSql("updateStrandedBatches"));
+
+    private long purgeStrandedBatches() {
+        int updateStrandedBatchesCount = getSimpleTemplate()
+                .update(getSql("updateStrandedBatches"));
         if (updateStrandedBatchesCount > 0) {
-           log.info("DataPurgeUpdatedStrandedBatches", updateStrandedBatchesCount);
-           statisticManager.incrementPurgedBatchOutgoingRows(updateStrandedBatchesCount);
-        }        
+            log.info("DataPurgeUpdatedStrandedBatches", updateStrandedBatchesCount);
+            statisticManager.incrementPurgedBatchOutgoingRows(updateStrandedBatchesCount);
+        }
         return updateStrandedBatchesCount;
     }
 
     private long purgeUnroutedDataEvents(Date time) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(PARAM_CUTOFF_TIME, new Timestamp(time.getTime()));
-        int unroutedDataEventCount = getSimpleTemplate().update(getSql("deleteUnroutedDataEventSql"), params);
+        int unroutedDataEventCount = getSimpleTemplate().update(
+                getSql("deleteUnroutedDataEventSql"), params);
         if (unroutedDataEventCount > 0) {
             statisticManager.incrementPurgedDataEventRows(unroutedDataEventCount);
             log.info("DataPurgeTableCompleted", unroutedDataEventCount, "unrouted data_event");
@@ -182,13 +170,16 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private long purgeDataRows(final Calendar time) {
         log.info("DataPurgeRowsRange");
         long[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[0]);
-        int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
-        int dataDeletedCount = purgeByMinMax(minMax, getSql("deleteDataSql"), time.getTime(), maxNumOfDataIdsToPurgeInTx);
+        int maxNumOfDataIdsToPurgeInTx = parameterService
+                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
+        int dataDeletedCount = purgeByMinMax(minMax, getSql("deleteDataSql"), time.getTime(),
+                maxNumOfDataIdsToPurgeInTx);
         statisticManager.incrementPurgedDataRows(dataDeletedCount);
-        int strandedDeletedCount = purgeByMinMax(minMax, getSql("deleteStrandedData"), time.getTime(), maxNumOfDataIdsToPurgeInTx);
+        int strandedDeletedCount = purgeByMinMax(minMax, getSql("deleteStrandedData"),
+                time.getTime(), maxNumOfDataIdsToPurgeInTx);
         statisticManager.incrementPurgedDataRows(strandedDeletedCount);
         return dataDeletedCount + strandedDeletedCount;
-        
+
     }
 
     private long[] queryForMinMax(String sql, Object[] params) {
@@ -200,7 +191,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return minMax;
     }
 
-    private int purgeByMinMax(long[] minMax, String deleteSql, Date retentionTime, int maxNumtoPurgeinTx) {
+    private int purgeByMinMax(long[] minMax, String deleteSql, Date retentionTime,
+            int maxNumtoPurgeinTx) {
         long minId = minMax[0];
         long purgeUpToId = minMax[1];
         long ts = System.currentTimeMillis();
@@ -227,7 +219,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
             totalCount += getSimpleTemplate().update(deleteSql, parameterSource);
 
-            if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
+            if (totalCount > 0
+                    && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
                 log.info("DataPurgeTableRunning", totalCount, tableName, totalDeleteStmts);
                 ts = System.currentTimeMillis();
             }
@@ -259,13 +252,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private long purgeIncomingBatch(final Calendar time) {
         log.info("DataPurgeIncomingRange");
-        List<NodeBatchRange> nodeBatchRangeList = jdbcTemplate.query(getSql("selectIncomingBatchRangeSql"),
-                new Object[] { time.getTime() }, new RowMapper<NodeBatchRange>() {
+        List<NodeBatchRange> nodeBatchRangeList = jdbcTemplate.query(
+                getSql("selectIncomingBatchRangeSql"), new Object[] { time.getTime() },
+                new RowMapper<NodeBatchRange>() {
                     public NodeBatchRange mapRow(ResultSet rs, int rowNum) throws SQLException {
                         return new NodeBatchRange(rs.getString(1), rs.getLong(2), rs.getLong(3));
                     }
                 });
-        int incomingBatchesPurgedCount = purgeByNodeBatchRangeList(getSql("deleteIncomingBatchSql"), nodeBatchRangeList);
+        int incomingBatchesPurgedCount = purgeByNodeBatchRangeList(
+                getSql("deleteIncomingBatchSql"), nodeBatchRangeList);
         statisticManager.incrementPurgedBatchIncomingRows(incomingBatchesPurgedCount);
         return incomingBatchesPurgedCount;
     }
@@ -278,7 +273,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         log.info("DataPurgeTableStarting", tableName);
 
         for (NodeBatchRange nodeBatchRange : nodeBatchRangeList) {
-            int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
+            int maxNumOfDataIdsToPurgeInTx = parameterService
+                    .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
             long minBatchId = nodeBatchRange.getMinBatchId();
             long purgeUpToBatchId = nodeBatchRange.getMaxBatchId();
 
@@ -292,8 +288,9 @@ public class PurgeService extends AbstractService implements IPurgeService {
                         nodeBatchRange.getNodeId() });
                 minBatchId = maxBatchId + 1;
             }
-            
-            if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
+
+            if (totalCount > 0
+                    && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
                 log.info("DataPurgeTableRunning", totalCount, tableName, totalDeleteStmts);
                 ts = System.currentTimeMillis();
             }
@@ -329,7 +326,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     public void purgeAllIncomingEventsForNode(String nodeId) {
-        int count = jdbcTemplate.update(getSql("deleteIncomingBatchByNodeSql"), new Object[] { nodeId });
+        int count = jdbcTemplate.update(getSql("deleteIncomingBatchByNodeSql"),
+                new Object[] { nodeId });
         log.info("DataPurgeIncomingAllCompleted", count, nodeId);
     }
 
@@ -337,12 +335,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         this.clusterService = clusterService;
     }
 
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-    
     public void setStatisticManager(IStatisticManager statisticManager) {
         this.statisticManager = statisticManager;
     }
-    
+
 }
