@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.MockTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
+import org.junit.After;
 import org.junit.Test;
 
 abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest {
@@ -647,6 +648,11 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
                 .getDataLoaderService();
         dataLoaderService.setTransportManager(transportManager);
         return dataLoaderService;
+    }
+    
+    @After
+    public void cleanup() {
+        getSymmetricEngine().getStagingManager().clean();
     }
 
 }

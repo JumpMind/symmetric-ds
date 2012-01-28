@@ -77,6 +77,8 @@ public class TriggerTemplate {
     protected String timeColumnTemplate;
 
     protected String dateColumnTemplate;
+    
+    protected String dateTimeWithTimeZoneTemplate;
 
     protected String clobColumnTemplate;
 
@@ -625,6 +627,11 @@ public class TriggerTemplate {
                 case Types.OTHER:
                 	templateToUse = this.otherColumnTemplate;
                 	break;
+                case -101:
+                    if (StringUtils.isNotBlank(this.dateTimeWithTimeZoneTemplate)) {
+                        templateToUse = this.dateTimeWithTimeZoneTemplate;
+                        break;
+                    }                	
                 case Types.JAVA_OBJECT:
                 case Types.DISTINCT:
                 case Types.STRUCT:

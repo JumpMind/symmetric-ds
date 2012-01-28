@@ -9,6 +9,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -129,6 +130,10 @@ public abstract class AbstractServiceTest {
 
     protected ISqlTemplate getSqlTemplate() {
         return getSymmetricEngine().getSymmetricDialect().getPlatform().getSqlTemplate();
+    }
+    
+    protected IStagingManager getStagingManager() {
+        return getSymmetricEngine().getStagingManager();
     }
 
     protected void assertTrue(boolean condition, String message) {

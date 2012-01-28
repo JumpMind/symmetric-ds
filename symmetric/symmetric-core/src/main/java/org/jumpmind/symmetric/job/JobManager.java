@@ -56,6 +56,7 @@ public class JobManager implements IJobManager {
         this.jobs.add(new SyncTriggersJob(engine, taskScheduler));
         this.jobs.add(new HeartbeatJob(engine, taskScheduler));
         this.jobs.add(new WatchdogJob(engine, taskScheduler));
+        this.jobs.add(new StageManagementJob(engine, taskScheduler, engine.getStagingManager()));
         
     }
 

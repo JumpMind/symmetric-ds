@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.OutgoingPurgeJob;
 import org.jumpmind.symmetric.job.PullJob;
@@ -255,5 +256,7 @@ public interface ISymmetricEngine {
     public Logger getLog();
     
     public IExtensionPointManager getExtensionPointManager();
+    
+    public IStagingManager getStagingManager();
     
 }

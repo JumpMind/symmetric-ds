@@ -6,6 +6,6 @@ public interface IStagingManager {
 
     public abstract IStagedResource create(Object... path);
 
-    public abstract void clean();
+    public abstract long clean();
 
 }
