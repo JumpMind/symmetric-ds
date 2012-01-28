@@ -21,10 +21,11 @@
 package org.jumpmind.symmetric.service;
 
 /**
- * 
+ * Names for jobs as locked by the {@link IClusterService} 
  */
 public class ClusterConstants {
     
+    public static final String STAGE_MANAGEMENT = "STAGE_MANAGEMENT";
     public static final String ROUTE = "ROUTE";
     public static final String PUSH = "PUSH";
     public static final String PULL = "PULL";

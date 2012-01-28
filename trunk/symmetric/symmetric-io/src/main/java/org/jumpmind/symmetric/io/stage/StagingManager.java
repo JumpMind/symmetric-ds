@@ -56,22 +56,24 @@ public class StagingManager implements IStagingManager {
      * Clean up files that are older than {@link #timeToLiveInMs} and have been
      * marked as done.
      */
-    public void clean() {
+    public long clean() {
         this.refreshResourceList();
         Set<String> keys = new HashSet<String>(resourceList.keySet());
-        int purgedCount = 0;
+        long purgedCount = 0;
         long purgedSize = 0;
         for (String key : keys) {
             IStagedResource resource = resourceList.get(key);
-            if (resource.getState() == State.DONE
-                    && (System.currentTimeMillis() - resource.getCreateTime()) > timeToLiveInMs) {
+            boolean resourceIsOld = System.currentTimeMillis() - resource.getCreateTime() > timeToLiveInMs;
+            if (resource.getState() == State.DONE && (resourceIsOld || !resource.exists())) {
                 purgedCount++;
                 purgedSize += resource.getSize();
                 resource.delete();
                 resourceList.remove(key);
             }
         }
-        log.info("Purged {} staged files, freeing {} kb of disk space", purgedCount, (int)(purgedSize/1000));
+        log.info("Purged {} staged files, freeing {} kb of disk space", purgedCount,
+                (int) (purgedSize / 1000));
+        return purgedCount;
     }
 
     /**
@@ -83,14 +85,14 @@ public class StagingManager implements IStagingManager {
         this.resourceList.put(filePath, resource);
         return resource;
     }
-    
+
     protected String buildFilePath(Object... path) {
         StringBuilder buffer = new StringBuilder();
-        for(int i = 0; i < path.length; i++) {
+        for (int i = 0; i < path.length; i++) {
             buffer.append(path[i]);
-            if (i < path.length-1) {
+            if (i < path.length - 1) {
                 buffer.append(System.getProperty("file.separator"));
-            } 
+            }
         }
         return buffer.toString();
     }

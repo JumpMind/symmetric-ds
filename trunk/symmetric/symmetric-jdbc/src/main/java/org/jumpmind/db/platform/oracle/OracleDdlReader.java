@@ -132,7 +132,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.startsWith("DATE")) {
             return Types.DATE;
-        } else if (typeName != null && typeName.startsWith("TIMESTAMP")) {
+        } else if (typeName != null && typeName.startsWith("TIMESTAMP") && !typeName.endsWith("TIME ZONE")) {
             // This is for Oracle's TIMESTAMP(9)
             return Types.TIMESTAMP;
         } else if (typeName != null && typeName.startsWith("NVARCHAR")) {

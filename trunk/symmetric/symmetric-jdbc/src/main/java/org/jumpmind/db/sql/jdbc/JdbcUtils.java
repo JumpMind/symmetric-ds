@@ -23,8 +23,16 @@ abstract public class JdbcUtils {
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else {
-                StatementCreatorUtils.setParameterValue(ps, i, argType, arg);
+                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(argType), arg);
             }
+        }
+    }
+    
+    protected static int verifyArgType(int argType) {
+        if (argType == -101) {
+            return SqlTypeValue.TYPE_UNKNOWN;
+        } else {
+            return argType;
         }
     }
 

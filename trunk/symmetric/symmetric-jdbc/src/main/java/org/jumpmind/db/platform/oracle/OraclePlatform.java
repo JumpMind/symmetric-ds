@@ -24,8 +24,11 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
 
 /*
@@ -127,6 +130,14 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
                     "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
         }
         return defaultSchema;
+    }
+
+    @Override
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
+            String tableName, Column[] keys, Column[] columns) {
+        return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
+                getPlatformInfo().isDateOverridesToTimestamp(),
+                getPlatformInfo().getIdentifierQuoteString());
     }
 
 }

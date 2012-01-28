@@ -30,6 +30,7 @@ DONE = +
   * verify stats capturing, outgoing batch updates  
   * unit test
   * purge job for staging manager
+  * make sure memory buffer is cleared when state goes to done
 
 * Hook up JMX
 
@@ -48,6 +49,8 @@ DONE = +
 * Change the default server mode to multiserver
 * SqlMap create constants for columns and table names
 * SqlMap, TriggerTemplate format better
+
+* Test timezone columns.  Do other databases other than oracle and postgres have timezone columns?
 
 Performance Improvement Opportunities
 * Pluggable data loaders.
@@ -76,3 +79,4 @@ Documentation
 * No longer stop purge from running if there wasn't an initial load
 * Extensions no longer have services injected into them.  If they need acccess to services, they should implement ISymmetricEngineAware
 * Node concurrency manager no longer allows the same node to make a second request while it already has a reservation
+* Added stage management job (that purges staged files)
