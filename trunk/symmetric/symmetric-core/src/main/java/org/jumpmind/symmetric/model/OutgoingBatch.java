@@ -39,14 +39,15 @@ public class OutgoingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        RT("Routing"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), ER("Error"), OK("Ok"), IG("Ignored");
-        
+        RT("Routing"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), ER("Error"), OK(
+                "Ok"), IG("Ignored");
+
         private String description;
-        
+
         Status(String description) {
             this.description = description;
         }
-        
+
         @Override
         public String toString() {
             return description;
@@ -108,7 +109,7 @@ public class OutgoingBatch implements Serializable {
     private Date lastUpdatedTime;
 
     private Date createTime;
-        
+
     private long oldDataEventCount = 0;
     private long oldByteCount = 0;
     private long oldFilterMillis = 0;
@@ -127,8 +128,8 @@ public class OutgoingBatch implements Serializable {
     }
 
     public void resetStats() {
-        // save off old stats in case there 
-        // is an error and we want to be able to 
+        // save off old stats in case there
+        // is an error and we want to be able to
         // restore the previous stats
         this.oldByteCount = this.byteCount;
         this.oldDataEventCount = this.dataEventCount;
@@ -136,7 +137,7 @@ public class OutgoingBatch implements Serializable {
         this.oldLoadMillis = this.loadMillis;
         this.oldNetworkMillis = this.networkMillis;
         this.oldFilterMillis = this.filterMillis;
-        
+
         this.dataEventCount = 0;
         this.byteCount = 0;
         this.filterMillis = 0;
@@ -144,7 +145,7 @@ public class OutgoingBatch implements Serializable {
         this.loadMillis = 0;
         this.networkMillis = 0;
     }
-    
+
     public void revertStatsOnError() {
         if (this.oldDataEventCount > 0) {
             this.byteCount = this.oldByteCount;
@@ -423,9 +424,9 @@ public class OutgoingBatch implements Serializable {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-    
+
     public long totalEventCount() {
-        return insertEventCount + updateEventCount + deleteEventCount + otherEventCount; 
+        return insertEventCount + updateEventCount + deleteEventCount + otherEventCount;
     }
 
 }

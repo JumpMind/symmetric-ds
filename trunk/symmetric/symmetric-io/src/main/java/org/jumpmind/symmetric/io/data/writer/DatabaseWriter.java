@@ -115,7 +115,7 @@ public class DatabaseWriter implements IDataWriter {
         if (this.batchSettings == null) {
             this.batchSettings = this.defaultSettings;
         }
-        this.statistics.put(batch, new DatabaseWriterStatistics());
+        this.statistics.put(batch, new Statistics());
     }
 
     public boolean start(Table table) {
@@ -137,15 +137,15 @@ public class DatabaseWriter implements IDataWriter {
             boolean success = false;
             switch (data.getDataEventType()) {
             case UPDATE:
-                statistics.get(batch).increment(DatabaseWriterStatistics.STATEMENTCOUNT);
+                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 success = update(data);
                 break;
             case INSERT:
-                statistics.get(batch).increment(DatabaseWriterStatistics.STATEMENTCOUNT);
+                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 success = insert(data);
                 break;
             case DELETE:
-                statistics.get(batch).increment(DatabaseWriterStatistics.STATEMENTCOUNT);
+                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 success = delete(data);
                 break;
             case BSH:
@@ -188,11 +188,11 @@ public class DatabaseWriter implements IDataWriter {
     protected void commit() {
         if (transaction != null) {
             try {
-                statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 this.transaction.commit();
                 notifyFiltersBatchCommitted();
             } finally {
-                statistics.get(batch).stopTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             }
 
         }
@@ -202,11 +202,11 @@ public class DatabaseWriter implements IDataWriter {
     protected void rollback() {
         if (transaction != null) {
             try {
-                statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 this.transaction.rollback();
                 notifyFiltersBatchRolledback();
             } finally {
-                statistics.get(batch).stopTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             }
 
         }
@@ -229,13 +229,13 @@ public class DatabaseWriter implements IDataWriter {
         boolean process = true;
         if (filters != null) {
             try {
-                statistics.get(batch).startTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
                     process &= filter.beforeWrite(this.context,
                             this.targetTable != null ? this.targetTable : this.sourceTable, data);
                 }
             } finally {
-                statistics.get(batch).stopTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
             }
         }
         return process;
@@ -244,12 +244,12 @@ public class DatabaseWriter implements IDataWriter {
     protected void notifyFiltersEarlyCommit() {
         if (filters != null) {
             try {
-                statistics.get(batch).startTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
                     filter.earlyCommit(context);
                 }
             } finally {
-                statistics.get(batch).stopTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
             }
         }
     }
@@ -257,12 +257,12 @@ public class DatabaseWriter implements IDataWriter {
     protected void notifyFiltersBatchComplete() {
         if (filters != null) {
             try {
-                statistics.get(batch).startTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
                     filter.batchComplete(context);
                 }
             } finally {
-                statistics.get(batch).stopTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
             }
         }
     }
@@ -270,12 +270,12 @@ public class DatabaseWriter implements IDataWriter {
     protected void notifyFiltersBatchCommitted() {
         if (filters != null) {
             try {
-                statistics.get(batch).startTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
                     filter.batchCommitted(context);
                 }
             } finally {
-                statistics.get(batch).stopTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
             }
         }
     }
@@ -283,12 +283,12 @@ public class DatabaseWriter implements IDataWriter {
     protected void notifyFiltersBatchRolledback() {
         if (filters != null) {
             try {
-                statistics.get(batch).startTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
                     filter.batchRolledback(context);
                 }
             } finally {
-                statistics.get(batch).stopTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
             }
         }
     }
@@ -296,20 +296,20 @@ public class DatabaseWriter implements IDataWriter {
     protected void filterAfter(CsvData data) {
         if (filters != null) {
             try {
-                statistics.get(batch).startTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
                 for (IDatabaseWriterFilter filter : filters) {
                     filter.afterWrite(this.context, this.targetTable != null ? this.targetTable
                             : this.sourceTable, data);
                 }
             } finally {
-                statistics.get(batch).stopTimer(DatabaseWriterStatistics.FILTERMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.FILTERMILLIS);
             }
         }
     }
 
     protected boolean insert(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.INSERT, data)) {
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable);
                 transaction.prepare(this.currentDmlStatement.getSql());
@@ -318,7 +318,7 @@ public class DatabaseWriter implements IDataWriter {
                 String[] values = (String[]) ArrayUtils.addAll(
                         data.getParsedData(CsvData.ROW_DATA), getPkData(data));
                 long count = execute(data, values);
-                statistics.get(batch).increment(DatabaseWriterStatistics.INSERTCOUNT, count);
+                statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 return count > 0;
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
@@ -328,30 +328,30 @@ public class DatabaseWriter implements IDataWriter {
                 }
             }
         } finally {
-            statistics.get(batch).stopTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
 
     }
 
     protected boolean delete(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.DELETE, data)) {
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE, targetTable);
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             long count = execute(data, getPkData(data));
-            statistics.get(batch).increment(DatabaseWriterStatistics.DELETECOUNT, count);
+            statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
             return count > 0;
         } finally {
-            statistics.get(batch).stopTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
 
     }
 
     protected boolean update(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             String[] columnValues = data.getParsedData(CsvData.ROW_DATA);
             ArrayList<String> changedColumnNameList = new ArrayList<String>();
             ArrayList<String> changedColumnValueList = new ArrayList<String>();
@@ -385,20 +385,20 @@ public class DatabaseWriter implements IDataWriter {
                         .toArray(new String[changedColumnValueList.size()]);
                 String[] values = (String[]) ArrayUtils.addAll(columnValues, getPkData(data));
                 long count = execute(data, values);
-                statistics.get(batch).increment(DatabaseWriterStatistics.UPDATECOUNT, count);
+                statistics.get(batch).increment(DataWriterStatisticConstants.UPDATECOUNT, count);
                 return count > 0;
             } else {
                 // There was no change to apply
                 return true;
             }
         } finally {
-            statistics.get(batch).stopTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
     }
 
     protected boolean script(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             String script = data.getCsvData(CsvData.ROW_DATA);
             Map<String, Object> variables = new HashMap<String, Object>();
             variables.put("SOURCE_NODE_ID", batch.getNodeId());
@@ -416,7 +416,7 @@ public class DatabaseWriter implements IDataWriter {
 
             log.info("About to run: {}", script);
             interpreter.eval(script);
-            statistics.get(batch).increment(DatabaseWriterStatistics.SCRIPTCOUNT);
+            statistics.get(batch).increment(DataWriterStatisticConstants.SCRIPTCOUNT);
         } catch (EvalError e) {
             throw new RuntimeException(e);
         }
@@ -425,7 +425,7 @@ public class DatabaseWriter implements IDataWriter {
 
     protected boolean create(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             String xml = data.getCsvData(CsvData.ROW_DATA);
             if (log.isDebugEnabled()) {
                 log.debug("About to create table using the following definition: ", xml);
@@ -434,27 +434,27 @@ public class DatabaseWriter implements IDataWriter {
             Database db = new DatabaseIO().read(reader);
             platform.alterTables(false, db.getTables());
             platform.resetCachedTableModel();
-            statistics.get(batch).increment(DatabaseWriterStatistics.CREATECOUNT);
+            statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
             return true;
         } finally {
-            statistics.get(batch).stopTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
 
     }
 
     protected boolean sql(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             String sql = data.getCsvData(CsvData.ROW_DATA);
             transaction.prepare(sql);
             log.info("About to run: {}", sql);
             long count = transaction.execute(sql);
             log.info("{} rows updated when running: {}", count, sql);
-            statistics.get(batch).increment(DatabaseWriterStatistics.SQLCOUNT);
-            statistics.get(batch).increment(DatabaseWriterStatistics.SQLROWSAFFECTEDCOUNT, count);
+            statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
+            statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT, count);
             return true;
         } finally {
-            statistics.get(batch).stopTimer(DatabaseWriterStatistics.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
 
     }

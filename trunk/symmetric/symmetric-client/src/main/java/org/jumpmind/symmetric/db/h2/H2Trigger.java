@@ -25,9 +25,6 @@ import java.sql.SQLException;
 
 import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
 
-/**
- * 
- */
 public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Trigger {
 
     /**

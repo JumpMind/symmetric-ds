@@ -1063,7 +1063,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return hist;
     }
 
-    protected String replaceCharsForTriggerName(String triggerName) {
+    protected static String replaceCharsForTriggerName(String triggerName) {
         return triggerName.replaceAll("[^a-zA-Z0-9_]|[a|e|i|o|u|A|E|I|O|U]", "");
     }
 

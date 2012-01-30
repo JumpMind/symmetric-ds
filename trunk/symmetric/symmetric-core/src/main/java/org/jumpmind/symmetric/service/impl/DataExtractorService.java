@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.io.data.reader.IExtractBatchSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
+import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
@@ -82,13 +83,12 @@ import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGr
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
+import org.jumpmind.util.Statistics;
 
 /**
  * @see IDataExtractorService
  */
 public class DataExtractorService extends AbstractService implements IDataExtractorService {
-
-    private static final String STAGING_CATEGORY = "outgoing";
 
     final static long MS_PASSED_BEFORE_BATCH_REQUERIED = 5000;
 
@@ -303,21 +303,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         boolean streamToFileEnabled = parameterService
                 .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
 
-        IDataWriter extractWriter = null;
+        TransformWriter transformExtractWriter = null;
 
         if (streamToFileEnabled) {
-            extractWriter = new StagingDataWriter(STAGING_CATEGORY, stagingManager);
+            transformExtractWriter = createTransformDataWriter(identity, targetNode, new StagingDataWriter(Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
         } else {
-            extractWriter = new ProtocolDataWriter(targetTransport.open());
+            transformExtractWriter = createTransformDataWriter(identity, targetNode, new ProtocolDataWriter(targetTransport.open()));
         }
-
-        List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
-                new NodeGroupLink(identity.getNodeGroupId(), targetNode.getNodeGroupId()),
-                TransformPoint.EXTRACT, true);
-        TransformTable[] transforms = transformsList != null ? transformsList
-                .toArray(new TransformTable[transformsList.size()]) : null;
-        TransformWriter transformExtractWriter = new TransformWriter(
-                symmetricDialect.getPlatform(), TransformPoint.EXTRACT, extractWriter, transforms);
 
         final long maxBytesToSync = parameterService
                 .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
@@ -329,13 +321,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             for (int i = 0; i < activeBatches.size(); i++) {
                 currentBatch = activeBatches.get(i);
 
+                // If time has passed, then re-query the batch to double check that the status has not changed
                 if (System.currentTimeMillis() - batchesSelectedAtMs > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                     currentBatch = outgoingBatchService
                             .findOutgoingBatch(currentBatch.getBatchId());
                 }
 
                 if (currentBatch.getStatus() != Status.OK) {
-                    IStagedResource previouslyExtracted = stagingManager.find(STAGING_CATEGORY,
+                    long extractTimeInMs = 0l;
+                    long byteCount = 0l;
+                    IStagedResource previouslyExtracted = stagingManager.find(Constants.STAGING_CATEGORY_OUTGOING,
                             currentBatch.getNodeId(), currentBatch.getBatchId());
                     if (previouslyExtracted != null && previouslyExtracted.exists()) {
                         log.info(
@@ -346,17 +341,29 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
                         outgoingBatchService.updateOutgoingBatch(currentBatch);
 
+                        long ts = System.currentTimeMillis();
+                        
                         IDataReader dataReader = new ExtractDataReader(
                                 symmetricDialect.getPlatform(), new SelectFromSymData(currentBatch,
                                         targetNode));
-
                         new DataProcessor(dataReader, transformExtractWriter).process();
+                        extractTimeInMs = System.currentTimeMillis()-ts;
+                        Statistics stats = transformExtractWriter.getTargetWriter().getStatistics().values().iterator().next();
+                        byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                     }
 
+                    // If time has passed, then re-query the batch to double check that the status has not changed
                     if (System.currentTimeMillis() - currentBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                         currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch
                                 .getBatchId());
-                        currentBatch.setExtractMillis(currentBatch.getExtractMillis());
+                    }
+                    
+                    if (extractTimeInMs > 0) {
+                        currentBatch.setExtractMillis(extractTimeInMs);
+                    }
+                    
+                    if (byteCount > 0) {
+                        currentBatch.setByteCount(byteCount);
                     }
 
                     if (currentBatch.getStatus() != Status.OK) {
@@ -373,6 +380,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             new DataProcessor(dataReader, dataWriter).process();
                         }
 
+                        // If time has passed, then re-query the batch to double check that the status has not changed
                         if (System.currentTimeMillis()
                                 - currentBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                             currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch
@@ -388,7 +396,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             batchesSentCount++;
 
                             if (bytesSentCount >= maxBytesToSync) {
-                                log.info("DataExtractorReachedMaxNumberOfBytesToSync",
+                                log.info("Reached byte threshold after {} batches at {} bytes.  Data will continue to be synchronized on the next pull",
                                         batchesSentCount, bytesSentCount);
                                 break;
                             }
@@ -426,10 +434,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId,
-            String endBatchId) {
+    public boolean extractBatchRange(Writer writer, long startBatchId,
+            long endBatchId) {
         // TODO
         return false;
+    }
+    
+    protected TransformWriter createTransformDataWriter(Node identity, Node targetNode, IDataWriter extractWriter) {
+        List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
+                new NodeGroupLink(identity.getNodeGroupId(), targetNode.getNodeGroupId()),
+                TransformPoint.EXTRACT, true);
+        TransformTable[] transforms = transformsList != null ? transformsList
+                .toArray(new TransformTable[transformsList.size()]) : null;
+        TransformWriter transformExtractWriter = new TransformWriter(
+                symmetricDialect.getPlatform(), TransformPoint.EXTRACT, extractWriter, transforms);
+        return transformExtractWriter;
     }
 
     protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId,

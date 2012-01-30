@@ -16,11 +16,13 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class BatchUriHandler extends AbstractCompressionUriHandler {
 
@@ -41,12 +42,12 @@ public class BatchUriHandler extends AbstractCompressionUriHandler {
         this.dataExtractorService = dataExtractorService;
     }
 
-    public void handleWithCompression(HttpServletRequest req, HttpServletResponse res) throws IOException,
-            ServletException {
+    public void handleWithCompression(HttpServletRequest req, HttpServletResponse res)
+            throws IOException, ServletException {
         res.setContentType("text/plain");
         String path = req.getPathInfo();
         if (!StringUtils.isBlank(path)) {
-            int batchIdStartIndex = path.lastIndexOf("/")+1;
+            int batchIdStartIndex = path.lastIndexOf("/") + 1;
             String batchId = path.substring(batchIdStartIndex);
             if (!write(batchId, res.getOutputStream())) {
                 ServletUtils.sendError(res, HttpServletResponse.SC_NOT_FOUND);
@@ -59,10 +60,8 @@ public class BatchUriHandler extends AbstractCompressionUriHandler {
     }
 
     public boolean write(String batchId, OutputStream os) throws IOException {
-        IOutgoingTransport transport = createOutgoingTransport(os);
-        boolean foundBatch = dataExtractorService.extractBatchRange(transport, batchId, batchId);
-        transport.close();
-        return foundBatch;
+        return dataExtractorService.extractBatchRange(new OutputStreamWriter(os, "UTF-8"),
+                Long.valueOf(batchId), Long.valueOf(batchId));
     }
 
     public void setDataExtractorService(IDataExtractorService dataExtractorService) {

@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -64,8 +65,6 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.transport.IOutgoingTransport;
-import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.jumpmind.symmetric.util.JarBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -551,9 +550,9 @@ public class SymmetricLauncher {
 
     private void dumpBatch(ISymmetricEngine engine, String batchId) throws Exception {
         IDataExtractorService dataExtractorService = engine.getDataExtractorService();
-        IOutgoingTransport transport = new InternalOutgoingTransport(System.out);
-        dataExtractorService.extractBatchRange(transport, batchId, batchId);
-        transport.close();
+        OutputStreamWriter writer = new OutputStreamWriter(System.out);
+        dataExtractorService.extractBatchRange(writer, Long.valueOf(batchId), Long.valueOf(batchId));
+        writer.close();
     }
 
     private void loadBatch(ISymmetricEngine engine, String fileName) throws Exception {
