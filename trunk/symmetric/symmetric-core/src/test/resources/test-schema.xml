@@ -7,6 +7,17 @@
 		<column name="id" type="VARCHAR" size="100" required="true"
 			primaryKey="true" />
 	</table>
+	
+	<table name="test_extract_table">
+		<column name="id" type="INTEGER" required="true" primaryKey="true" />
+		<column name="varchar_value" type="VARCHAR" size="255" />
+		<column name="longvarchar_value" type="LONGVARCHAR" />
+		<column name="timestamp_value" type="TIMESTAMP" />
+		<column name="date_value" type="DATE" />
+		<column name="bit_value" type="BIT" size="1" />
+		<column name="bigint_value" type="BIGINT" />
+		<column name="decimal_value" type="DECIMAL" />
+	</table>	
 
 	<table name="test_triggers_table">
 		<column name="id" type="INTEGER" required="true" autoIncrement="true"

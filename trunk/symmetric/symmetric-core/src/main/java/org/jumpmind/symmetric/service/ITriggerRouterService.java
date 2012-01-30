@@ -137,7 +137,7 @@ public interface ITriggerRouterService {
     
     public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly);
     
-    public void saveTriggerRouter(TriggerRouter trigger);
+    public void saveTriggerRouter(TriggerRouter triggerRouter);
         
     public void syncTriggers();
 

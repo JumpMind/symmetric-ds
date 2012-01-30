@@ -31,6 +31,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.common.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,7 @@ public class Trigger implements Serializable {
 
     private String sourceCatalogName;
 
-    private String channelId;
+    private String channelId = Constants.CHANNEL_DEFAULT;
 
     private boolean syncOnUpdate = true;
 
@@ -101,8 +102,10 @@ public class Trigger implements Serializable {
         triggerId = Integer.toString(maxTriggerId++);
     }
 
-    public Trigger(String tableName) {
+    public Trigger(String tableName, String channelId) {
+        this.triggerId = tableName;
         this.sourceTableName = tableName;
+        this.channelId = channelId;
     }
     
     final public String qualifiedSourceTableName() {

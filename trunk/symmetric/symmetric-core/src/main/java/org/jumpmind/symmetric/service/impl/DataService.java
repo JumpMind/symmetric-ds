@@ -102,7 +102,7 @@ public class DataService extends AbstractService implements IDataService {
     private List<IHeartbeatListener> heartbeatListeners;
 
     private IStatisticManager statisticManager;
-    
+
     private DataMapper dataMapper;
 
     public DataService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
@@ -117,14 +117,15 @@ public class DataService extends AbstractService implements IDataService {
         this.purgeService = purgeService;
         this.configurationService = configurationService;
         this.outgoingBatchService = outgoingBatchService;
-        this.statisticManager = statisticManager;        
+        this.statisticManager = statisticManager;
         this.reloadListeners = new ArrayList<IReloadListener>();
         this.heartbeatListeners = new ArrayList<IHeartbeatListener>();
         this.heartbeatListeners.add(new PushHeartbeatListener(parameterService, this, nodeService,
                 symmetricDialect));
         this.dataMapper = new DataMapper();
-        
-        setSqlMap(new DataServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
+
+        setSqlMap(new DataServiceSqlMap(symmetricDialect.getPlatform(),
+                createSqlReplacementTokens()));
     }
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
@@ -828,9 +829,11 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public ISqlReadCursor<Data> selectDataFor(Batch batch) {
-        return sqlTemplate.queryForCursor(getDataSelectSql(batch.getBatchId(), 0l, batch.getChannelId(), false), dataMapper);
+        return sqlTemplate.queryForCursor(
+                getDataSelectSql(batch.getBatchId(), -1l, batch.getChannelId(), false), dataMapper,
+                new Object[] { batch.getBatchId() }, new int[] { Types.NUMERIC });
     }
-    
+
     protected String getDataSelectSql(long batchId, long startDataId, String channelId,
             boolean descending) {
         String orderBy = getOrderByDataId(descending);
@@ -841,11 +844,10 @@ public class DataService extends AbstractService implements IDataService {
                 configurationService.getNodeChannel(channelId, false).getChannel());
     }
 
-
     public long findMaxDataId() {
         return sqlTemplate.queryForLong(getSql("selectMaxDataIdSql"));
     }
-    
+
     public class DataMapper implements ISqlRowMapper<Data> {
         public Data mapRow(Row row) {
             Data data = new Data();
@@ -859,7 +861,7 @@ public class DataService extends AbstractService implements IDataService {
             data.putAttribute(CsvData.ATTRIBUTE_EXTERNAL_DATA, row.getString("EXTERNAL_DATA"));
             data.putAttribute(CsvData.ATTRIBUTE_DATA_ID, row.getLong("DATA_ID"));
             data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, row.getDateTime("CREATE_TIME"));
-            data.putAttribute(CsvData.ATTRIBUTE_ROUTER_ID, row.getString("ROUTER_ID"));
+            data.putAttribute(CsvData.ATTRIBUTE_ROUTER_ID, row.getString("ROUTER_ID", false));
             int triggerHistId = row.getInt("TRIGGER_HIST_ID");
             data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, triggerHistId);
             data.setTriggerHistory(triggerRouterService.getTriggerHistory(triggerHistId));

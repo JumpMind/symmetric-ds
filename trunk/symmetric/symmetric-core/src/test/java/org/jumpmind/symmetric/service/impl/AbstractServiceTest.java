@@ -208,5 +208,26 @@ public abstract class AbstractServiceTest {
         }
         Assert.assertEquals("There were not the expected number of occurrences of: " + startsWith, expected, actual);
     }
+    
+    protected void routeAndCreateGaps() {
+        // one to route unrouted data
+        getRouterService().routeData();
+        // one to create gaps
+        getRouterService().routeData();
+    }
+    
+
+    protected void resetGaps() {
+        getJdbcTemplate().update("delete from sym_data_gap");
+    }
+
+    protected void resetBatches() {
+        routeAndCreateGaps();
+        getJdbcTemplate().update("update sym_outgoing_batch set status='OK' where status != 'OK'");
+        long startId = getJdbcTemplate().queryForLong("select max(start_id) from sym_data_gap");
+        getJdbcTemplate()
+                .update("update sym_data_gap set status='OK' where start_id != ?", startId);
+    }
+
 
 }

@@ -54,6 +54,7 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
 
     public InternalOutgoingTransport(BufferedWriter writer) {
         this.writer = writer;
+        this.map = new ChannelMap();
     }
 
     public void close() {
