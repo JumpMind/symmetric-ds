@@ -371,11 +371,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.setSentCount(currentBatch.getSentCount() + 1);
                         outgoingBatchService.updateOutgoingBatch(currentBatch);
 
-                        IStagedResource extractedBatch = stagingManager.find(
+                        IStagedResource extractedBatch = stagingManager.find(Constants.STAGING_CATEGORY_OUTGOING, 
                                 currentBatch.getNodeId(), currentBatch.getBatchId());
                         if (extractedBatch != null) {
                             IDataReader dataReader = new ProtocolDataReader(
-                                    extractedBatch.getReader());
+                                    extractedBatch);
                             IDataWriter dataWriter = new ProtocolDataWriter(targetTransport.open());
                             new DataProcessor(dataReader, dataWriter).process();
                         }

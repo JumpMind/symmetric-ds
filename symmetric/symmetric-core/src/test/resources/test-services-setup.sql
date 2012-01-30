@@ -1,5 +1,6 @@
 insert into sym_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, contains_big_lob, enabled, description) values('testchannel', 1, 50, 50, 1, 1, null);
 insert into sym_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, contains_big_lob, enabled, description) values('other', 0, 1, 50, 1, 1, null);
+
 insert into sym_node_group values ('symmetric','a group representing symmetric configuration');
 insert into sym_node_group values ('test-root-group','a test config');
 insert into sym_node_group values ('test-node-group','a test config');
@@ -7,6 +8,7 @@ insert into sym_node_group values ('test-node-group2','another test config');
 insert into sym_node_group values ('test-node-group3','another test config');
 insert into sym_node_group values ('test-group-for-root-to-pull','another test config');
 insert into sym_node_group values ('unit-test-only','a group used for unit testing');
+
 insert into sym_node_group_link values ('test-root-group','test-root-group', 'P');
 insert into sym_node_group_link values ('test-root-group','test-node-group2', 'P');
 insert into sym_node_group_link values ('test-root-group','test-node-group', 'W');
@@ -14,6 +16,7 @@ insert into sym_node_group_link values ('test-root-group','test-node-group3', 'W
 insert into sym_node_group_link values ('test-group-for-root-to-pull','test-root-group', 'W');
 insert into sym_node_group_link values ('test-node-group','test-root-group', 'P');
 insert into sym_node_group_link values ('symmetric','test-root-group', 'P');
+
 insert into sym_node values ('00000', 'test-root-group', '00000', 1, 'internal://root', '1', '2.0','H2', '1.1', current_timestamp, null, 0, 0, '00000', 'engine');
 insert into sym_node values ('1', 'test-node-group', '1', 1, 'internal://root', '1', '2.0','H2', '5.0', current_timestamp, null, 0, 0, '00000', 'engine');
 insert into sym_node values ('00001', 'test-node-group', '00001', 1, 'http://localhost:8080/sync', '1', '2.0', 'H2', '5.0', current_timestamp, null, 0, 0, '00000', 'engine');
@@ -52,7 +55,10 @@ insert into sym_router  (router_id,source_node_group_id, target_node_group_id,  
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
                   values(   '3000',   'test-root-group',    'test-node-group2', current_timestamp, current_timestamp);     
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
-                  values(   'test_2_root',   'test-node-group', 'test-root-group', current_timestamp, current_timestamp);     
+                  values(   'test_2_root',   'test-node-group', 'test-root-group', current_timestamp, current_timestamp);
+insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
+                  values(   'root_2_test', 'test-root-group', 'test-node-group', current_timestamp, current_timestamp);     
+                  
                   
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,                   name_for_insert_trigger,  last_update_time,      create_time)
                          values(    '1000',            'test_triggers_table', 'testchannel',                     'insert_test_tbl_trg', current_timestamp,current_timestamp);

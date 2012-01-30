@@ -72,6 +72,14 @@ public class Router implements Serializable {
         routerId = Integer.toString(maxRouterId++);
     }
     
+    public Router(String id, NodeGroupLink link) {
+        this.routerId = id;
+        this.nodeGroupLink = link;
+        this.createTime = new Date();
+        this.lastUpdateBy = "symmetricds";
+        this.lastUpdateTime = this.createTime;
+    }
+    
     public void nullOutBlankFields() {
         if (StringUtils.isBlank(targetCatalogName)) {
             targetCatalogName = null;
