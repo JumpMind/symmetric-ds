@@ -154,7 +154,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
     abstract protected void print(Batch batch, String data);
 
-    protected int println(String... data) {
+    protected long println(String... data) {
         StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < data.length; i++) {
             if (i != 0) {
@@ -164,7 +164,9 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
         }
         buffer.append("\n");
         print(batch, buffer.toString());
-        return buffer.length();
+        long byteCount = buffer.length();
+        statistics.get(batch).increment(DataWriterStatisticConstants.BYTECOUNT, byteCount);
+        return byteCount;
     }
 
     public void setDelimiter(String delimiter) {

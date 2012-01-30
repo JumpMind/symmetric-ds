@@ -21,7 +21,9 @@
 
 package org.jumpmind.symmetric.service.jmx;
 
-import java.io.FileOutputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.Writer;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Date;
@@ -30,6 +32,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
@@ -37,8 +40,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
-import org.jumpmind.symmetric.transport.IOutgoingTransport;
-import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -333,11 +334,9 @@ public class NodeManagementService {
             @ManagedOperationParameter(name = "fileName", description = "File name to write batches") })
     public void writeBatchRangeToFile(String startBatchId, String endBatchId, String fileName)
             throws Exception {
-        FileOutputStream out = new FileOutputStream(fileName);
-        IOutgoingTransport transport = new InternalOutgoingTransport(out);
-        engine.getDataExtractorService().extractBatchRange(transport, startBatchId, endBatchId);
-        transport.close();
-        out.close();
+        Writer writer = new FileWriter(new File(fileName));
+        engine.getDataExtractorService().extractBatchRange(writer, Long.valueOf(startBatchId), Long.valueOf(endBatchId));
+        IOUtils.closeQuietly(writer);
     }
 
     @ManagedOperation(description = "Encrypts plain text for use with db.user and db.password properties")

@@ -24,7 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
@@ -45,12 +49,15 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     private IRegistrationService registrationService;
 
+    private IStagingManager stagingManger;
+
     public AcknowledgeService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
-            IRegistrationService registrationService) {
+            IRegistrationService registrationService, IStagingManager stagingManager) {
         super(parameterService, symmetricDialect);
         this.outgoingBatchService = outgoingBatchService;
         this.registrationService = registrationService;
+        this.stagingManger = stagingManager;
         setSqlMap(new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -81,7 +88,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     // clearing the error flag in case the user set the batch
                     // status to OK
                     outgoingBatch.setErrorFlag(false);
-                    log.warn("Batch {} was already set to OK.  Not updating to {}.", batch.getBatchId(), status.name());
+                    log.warn("Batch {} was already set to OK.  Not updating to {}.",
+                            batch.getBatchId(), status.name());
                 }
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());
@@ -100,13 +108,26 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 }
 
                 if (status == Status.ER) {
-                    log.error("Received an error from node {} for batch {}.  Check the outgoing_batch table for more info.", outgoingBatch.getNodeId(),
+                    log.error(
+                            "Received an error from node {} for batch {}.  Check the outgoing_batch table for more info.",
+                            outgoingBatch.getNodeId(), outgoingBatch.getBatchId());
+                } else {
+                    IStagedResource stagingResource = stagingManger.find(
+                            Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getNodeId(),
                             outgoingBatch.getBatchId());
+                    if (stagingResource != null) {
+                        stagingResource.setState(State.DONE);
+                    } else {
+                        log.warn(
+                                "Could not find the staged resource for node {} and batch {} to mark as done",
+                                outgoingBatch.getNodeId(), outgoingBatch.getBatchId());
+                    }
                 }
 
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
             } else {
-                log.error("Could not find batch {} to acknowledge as {}", batch.getBatchId(), status.name());
+                log.error("Could not find batch {} to acknowledge as {}", batch.getBatchId(),
+                        status.name());
             }
         }
     }

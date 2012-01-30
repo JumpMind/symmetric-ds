@@ -92,7 +92,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         transaction.execute("set @sync_prevented=1");
-        transaction.execute("set @node_value=?", new Object[] { nodeId });
+        transaction.execute("set @node_value=?", nodeId);
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {

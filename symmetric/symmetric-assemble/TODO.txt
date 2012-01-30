@@ -27,10 +27,13 @@ DONE = +
   + integrate into data extractor service
   + add transform writer
   + add staging file management api
-  * verify stats capturing, outgoing batch updates  
+  * verify stats capturing, outgoing batch updates
+    * extract millis
+    * byte count
+  * add database reader filter  
   * unit test
-  * purge job for staging manager
-  * make sure memory buffer is cleared when state goes to done
+  + purge job for staging manager
+  + make sure memory buffer is cleared when state goes to done
 
 * Hook up JMX
 
@@ -39,7 +42,8 @@ DONE = +
   + Use SLF4J and MDC (for capturing the engine & node name)
 + What to do with SqlTemplate? Move sqltemplate into dbdialect
 + Clean up symmetric.messages
-  
+
+* Can BatchInfo go away?  
 * Use HttpClient?
 * Add table copy utility
 * Clean up service tests    

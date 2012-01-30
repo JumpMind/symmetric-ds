@@ -55,8 +55,8 @@ import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
-import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.ConfigurationChangedFilter;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -95,8 +95,6 @@ import org.jumpmind.symmetric.web.WebConstants;
  */
 public class DataLoaderService extends AbstractService implements IDataLoaderService {
 
-    private static final String STAGING_CATEGORY = "incoming";
-
     private IIncomingBatchService incomingBatchService;
 
     private IConfigurationService configurationService;
@@ -126,10 +124,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.statisticManager = statisticManager;
         this.nodeService = nodeService;
         this.transformService = transformService;
+        this.stagingManager = stagingManager;
         this.filters = new ArrayList<IDatabaseWriterFilter>();
         this.filters.add(new ConfigurationChangedFilter(parameterService, configurationService,
                 triggerRouterService, transformService));
-        this.stagingManager = stagingManager;
     }
 
     /**
@@ -169,7 +167,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 remote.setSyncUrl(parameterService.getRegistrationUrl());
             }
 
-            List<IncomingBatch> list = loadDataAndReturnBatches(remote.getNodeId(), transport);
+            List<IncomingBatch> list = loadDataFromTransport(remote.getNodeId(), transport);
             if (list.size() > 0) {
                 status.updateIncomingStatus(list);
                 local = nodeService.findIdentity();
@@ -196,11 +194,37 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw e;
         }
     }
+    
+    /**
+     * Load database from input stream and write acknowledgment to output
+     * stream. This is used for a "push" request with a response of an
+     * acknowledgment.
+     */
+    public void loadDataFromPush(String sourceNodeId, InputStream in, OutputStream out)
+            throws IOException {
+        List<IncomingBatch> list = loadDataFromTransport(sourceNodeId,
+                new InternalIncomingTransport(in));
+        Node local = nodeService.findIdentity();
+        NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
+        transportManager.writeAcknowledgement(out, list, local,
+                security != null ? security.getNodePassword() : null);
+    }
+
+    public void addDatabaseWriterFilter(IDatabaseWriterFilter filter) {
+        if (filters == null) {
+            filters = new ArrayList<IDatabaseWriterFilter>();
+        }
+        filters.add(filter);
+    }
+
+    public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter) {
+        filters.remove(filter);
+    }    
 
     /**
      * Try a configured number of times to get the ACK through.
      */
-    private void sendAck(Node remote, Node local, NodeSecurity localSecurity,
+    protected void sendAck(Node remote, Node local, NodeSecurity localSecurity,
             List<IncomingBatch> list) throws IOException {
         Exception error = null;
         int sendAck = -1;
@@ -255,7 +279,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * is used for a pull request that responds with data, and the
      * acknowledgment is sent later.
      */
-    protected List<IncomingBatch> loadDataAndReturnBatches(String sourceNodeId,
+    protected List<IncomingBatch> loadDataFromTransport(String sourceNodeId,
             IIncomingTransport transport) throws IOException {
         final ManageIncomingBatchListener listener = new ManageIncomingBatchListener();
         try {
@@ -263,8 +287,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             long totalNetworkMillis = System.currentTimeMillis();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 IDataReader dataReader = new ProtocolDataReader(transport.open());
-                IDataWriter dataWriter = new StagingDataWriter(STAGING_CATEGORY, stagingManager,
-                        new LoadIntoDatabaseOnArrivalListener(sourceNodeId, listener));
+                IDataWriter dataWriter = new StagingDataWriter(Constants.STAGING_CATEGORY_INCOMING,
+                        stagingManager, new LoadIntoDatabaseOnArrivalListener(sourceNodeId,
+                                listener));
                 new DataProcessor(dataReader, dataWriter).process();
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
@@ -275,11 +300,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
 
             List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
-
-            if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                estimateNetworkMillis(batchesProcessed, totalNetworkMillis);
-            }
-
             for (IncomingBatch incomingBatch : batchesProcessed) {
                 if (incomingBatch.getBatchId() != BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION
                         && incomingBatchService.updateIncomingBatch(incomingBatch) == 0) {
@@ -295,7 +315,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return listener.getBatchesProcessed();
     }
 
-    private void log(Exception ex) throws IOException {
+    protected void log(Exception ex) throws IOException {
         if (ex instanceof RegistrationRequiredException) {
             throw (RegistrationRequiredException) ex;
         } else if (ex instanceof ConnectException) {
@@ -344,71 +364,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return settings;
     }
 
-    protected void estimateNetworkMillis(List<IncomingBatch> list, long totalNetworkMillis) {
-        long totalNumberOfBytes = 0;
-        for (IncomingBatch incomingBatch : list) {
-            totalNumberOfBytes += incomingBatch.getByteCount();
-        }
-        for (IncomingBatch incomingBatch : list) {
-            if (totalNumberOfBytes > 0) {
-                double ratio = (double) incomingBatch.getByteCount() / (double) totalNumberOfBytes;
-                incomingBatch.setNetworkMillis((long) (totalNetworkMillis * ratio));
-            }
-        }
-    }
-
-    /**
-     * Load database from input stream and write acknowledgment to output
-     * stream. This is used for a "push" request with a response of an
-     * acknowledgment.
-     */
-    public void loadDataFromPush(String sourceNodeId, InputStream in, OutputStream out)
-            throws IOException {
-        List<IncomingBatch> list = loadDataAndReturnBatches(sourceNodeId,
-                new InternalIncomingTransport(in));
-        Node local = nodeService.findIdentity();
-        NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
-        transportManager.writeAcknowledgement(out, list, local,
-                security != null ? security.getNodePassword() : null);
-    }
-
-    public void setDatabaseWriterFilters(List<IDatabaseWriterFilter> filters) {
-        this.filters = filters;
-    }
-
-    public void addDatabaseWriterFilter(IDatabaseWriterFilter filter) {
-        if (filters == null) {
-            filters = new ArrayList<IDatabaseWriterFilter>();
-        }
-        filters.add(filter);
-    }
-
-    public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter) {
-        filters.remove(filter);
-    }
-
-    public void setTransportManager(ITransportManager remoteService) {
-        this.transportManager = remoteService;
-    }
-
-    public void setIncomingBatchService(IIncomingBatchService incomingBatchService) {
-        this.incomingBatchService = incomingBatchService;
-    }
-
-    public void setSymmetricDialect(ISymmetricDialect symmetricDialect) {
-        this.symmetricDialect = symmetricDialect;
-    }
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
+    protected void setTransportManager(ITransportManager transportManager) {
+        this.transportManager = transportManager;
     }
 
     class LoadIntoDatabaseOnArrivalListener implements IProtocolDataWriterListener {
@@ -416,6 +373,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         private IDataWriter databaseWriter;
 
         private ManageIncomingBatchListener listener;
+        
+        private long batchStartsToArriveTimeInMs;
 
         public LoadIntoDatabaseOnArrivalListener(String sourceNodeId,
                 ManageIncomingBatchListener listener) {
@@ -424,9 +383,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
 
         public void start(Batch batch) {
+            batchStartsToArriveTimeInMs = System.currentTimeMillis();
         }
 
         public void end(Batch batch, IStagedResource resource) {
+            if (listener.currentBatch != null) {
+                listener.currentBatch.setNetworkMillis(System.currentTimeMillis()-batchStartsToArriveTimeInMs);
+            }
+            
             DataProcessor processor = new DataProcessor(new ProtocolDataReader(resource),
                     databaseWriter, listener);
             try {
@@ -439,9 +403,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     class ManageIncomingBatchListener implements IDataProcessorListener {
 
-        private List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
+        protected List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
 
-        private IncomingBatch currentBatch;
+        protected IncomingBatch currentBatch;        
 
         public void beforeBatchEnd(DataContext context) {
             enableSyncTriggers(context);
@@ -550,10 +514,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public IncomingBatch getCurrentBatch() {
             return currentBatch;
         }
-    }
-
-    public void setTransformService(ITransformService transformService) {
-        this.transformService = transformService;
     }
 
 }

@@ -25,7 +25,7 @@ import java.util.Date;
 
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
-import org.jumpmind.symmetric.io.data.writer.DatabaseWriterStatistics;
+import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.util.Statistics;
 
 public class IncomingBatch implements Serializable {
@@ -104,12 +104,12 @@ public class IncomingBatch implements Serializable {
     public void setValues(Statistics readerStatistics, Statistics writerStatistics,
             boolean isSuccess) {
         byteCount = readerStatistics.get(DataReaderStatistics.READ_BYTE_COUNT);
-        filterMillis = writerStatistics.get(DatabaseWriterStatistics.FILTERMILLIS);
-        databaseMillis = writerStatistics.get(DatabaseWriterStatistics.DATABASEMILLIS);
-        statementCount = writerStatistics.get(DatabaseWriterStatistics.STATEMENTCOUNT);
-        fallbackInsertCount = writerStatistics.get(DatabaseWriterStatistics.FALLBACKINSERTCOUNT);
-        fallbackUpdateCount = writerStatistics.get(DatabaseWriterStatistics.FALLBACKUPDATECOUNT);
-        missingDeleteCount = writerStatistics.get(DatabaseWriterStatistics.MISSINGDELETECOUNT);
+        filterMillis = writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS);
+        databaseMillis = writerStatistics.get(DataWriterStatisticConstants.DATABASEMILLIS);
+        statementCount = writerStatistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+        fallbackInsertCount = writerStatistics.get(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
+        fallbackUpdateCount = writerStatistics.get(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
+        missingDeleteCount = writerStatistics.get(DataWriterStatisticConstants.MISSINGDELETECOUNT);
         lastUpdatedTime = new Date();
         if (!isSuccess) {
             failedRowNumber = statementCount;

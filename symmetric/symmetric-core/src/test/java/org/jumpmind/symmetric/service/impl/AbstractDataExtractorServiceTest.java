@@ -25,4 +25,9 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         assertNumberOfLinesThatStartWith(1, "batch,-9999", content);
     }
     
+    @Test
+    public void testExtractOneBatch() {
+        
+    }
+    
 }

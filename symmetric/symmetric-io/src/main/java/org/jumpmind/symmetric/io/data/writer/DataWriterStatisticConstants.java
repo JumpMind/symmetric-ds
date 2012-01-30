@@ -1,9 +1,9 @@
 package org.jumpmind.symmetric.io.data.writer;
 
-import org.jumpmind.util.Statistics;
 
-public class DatabaseWriterStatistics extends Statistics {
-
+abstract public class DataWriterStatisticConstants {
+    
+    public static final String BYTECOUNT = "BYTECOUNT";
     public static final String FILTERMILLIS = "FILTERMILLIS";
     public static final String DATABASEMILLIS = "DATABASEMILLIS";
     public static final String STATEMENTCOUNT = "STATEMENTCOUNT";

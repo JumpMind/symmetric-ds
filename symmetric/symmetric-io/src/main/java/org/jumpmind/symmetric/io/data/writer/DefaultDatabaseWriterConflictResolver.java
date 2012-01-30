@@ -47,7 +47,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
                 throw new ConflictException(data, writer.getTargetTable(), false);
             case IGNORE_CONTINUE:
                 writer.getStatistics().get(writer.getBatch())
-                        .increment(DatabaseWriterStatistics.MISSINGDELETECOUNT);
+                        .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
                 break;
             default:
                 break;
@@ -64,7 +64,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             throw new ConflictException(data, writer.getTargetTable(), true);
         } else {
             writer.getStatistics().get(writer.getBatch())
-                    .increment(DatabaseWriterStatistics.FALLBACKUPDATECOUNT);
+                    .increment(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
         }
     }
 
@@ -73,7 +73,7 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
             throw new ConflictException(csvData, writer.getTargetTable(), true);
         } else {
             writer.getStatistics().get(writer.getBatch())
-                    .increment(DatabaseWriterStatistics.FALLBACKINSERTCOUNT);
+                    .increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
         }
     }
 

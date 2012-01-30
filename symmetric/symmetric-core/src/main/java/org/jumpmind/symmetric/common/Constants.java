@@ -26,6 +26,10 @@ import org.jumpmind.symmetric.model.DataEvent;
  */
 final public class Constants {
 
+    public static final String STAGING_CATEGORY_OUTGOING = "outgoing";
+
+    public static final String STAGING_CATEGORY_INCOMING = "incoming";
+
     private Constants() {
     }
         
