@@ -35,7 +35,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class XmlPublisherFilterUnitTest {
+public class XmlPublisherFilterTest {
 
     private static final String TABLE_TEST = "TEST_XML_PUBLISHER";
 
@@ -45,7 +45,7 @@ public class XmlPublisherFilterUnitTest {
 
     private Table table;
 
-    public XmlPublisherFilterUnitTest() throws Exception {
+    public XmlPublisherFilterTest() throws Exception {
         super();
     }
 
