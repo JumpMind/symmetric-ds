@@ -158,11 +158,8 @@ final public class ParameterConstants {
     public final static String DBPOOL_CONNECTION_PROPERTIES = "db.connection.properties";
 
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
-    public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
     public final static String DB_QUERY_TIMEOUT_SECS = "db.sql.query.timeout.seconds";
     public final static String DB_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";
-    public final static String DB_FORCE_DELIMITED_IDENTIFIER_ON = "db.force.delimited.identifier.mode.on";
-    public final static String DB_FORCE_DELIMITED_IDENTIFIER_OFF = "db.force.delimited.identifier.mode.off";
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
 

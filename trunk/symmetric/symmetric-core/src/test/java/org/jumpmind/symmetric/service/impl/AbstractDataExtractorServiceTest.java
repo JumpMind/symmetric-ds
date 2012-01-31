@@ -24,7 +24,7 @@ import org.junit.Test;
 public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTest {
 
     protected static final String TEST_TABLE = "test_extract_table";
-    
+
     private static int id = 0;
 
     @Before
@@ -38,7 +38,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
                             TestConstants.ROUTER_ID_ROOT_2_TEST, TestConstants.ROOT_2_TEST));
             triggerRouterService.saveTriggerRouter(triggerRouter);
             triggerRouterService.syncTriggers();
-            
+
             getDbDialect().truncateTable(TEST_TABLE);
         }
 
@@ -47,22 +47,22 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
 
     @Test
     public void testExtractConfigurationStandalone() throws Exception {
-        IDataExtractorService service = getDataExtractorService();
+        IDataExtractorService dataExtractorService = getDataExtractorService();
         StringWriter writer = new StringWriter();
-        service.extractConfigurationStandalone(TestConstants.TEST_CLIENT_NODE, writer);
+        dataExtractorService.extractConfigurationStandalone(TestConstants.TEST_CLIENT_NODE, writer);
         String content = writer.getBuffer().toString();
-        assertNumberOfLinesThatStartWith(24, "table,", content);
+        assertNumberOfLinesThatStartWith(24, "table,", content, false, true);
         assertNumberOfLinesThatStartWith(14, "columns,", content);
         assertNumberOfLinesThatStartWith(14, "keys,", content);
         assertNumberOfLinesThatStartWith(14, "sql,", content);
         assertNumberOfLinesThatStartWith(0, "update,", content);
-        assertNumberOfLinesThatStartWith(66, "insert,", content);
+        assertNumberOfLinesThatStartWith(66, "insert,", content, false, true);
         assertNumberOfLinesThatStartWith(1, "commit,-9999", content);
         assertNumberOfLinesThatStartWith(1, "batch,-9999", content);
         assertNumberOfLinesThatStartWith(1, "nodeid,", content);
         assertNumberOfLinesThatStartWith(1, "binary,", content);
     }
-    
+
     @Test
     public void testNothingToExtract() {
         ExtractResults results = extract();
@@ -73,21 +73,22 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
 
     @Test
     public void testExtractOneBatchOneRow() {
-        save(new TestExtract(id++, "abc 123", "abcdefghijklmnopqrstuvwxyz", new Timestamp(System.currentTimeMillis()), new Date(System.currentTimeMillis()), true, Integer.MAX_VALUE, new BigDecimal(Math.PI)));
+        save(new TestExtract(id++, "abc 123", "abcdefghijklmnopqrstuvwxyz", new Timestamp(
+                System.currentTimeMillis()), new Date(System.currentTimeMillis()), true,
+                Integer.MAX_VALUE, new BigDecimal(Math.PI)));
         routeAndCreateGaps();
         ExtractResults results = extract();
         Assert.assertNotNull(results.getBatches());
         Assert.assertEquals(1, results.getBatches().size());
         assertNumberOfLinesThatStartWith(1, "insert,", results.getCsv());
         long batchId = results.getBatches().get(0).getBatchId();
-        assertNumberOfLinesThatStartWith(1, "batch," + batchId, results.getCsv());        
+        assertNumberOfLinesThatStartWith(1, "batch," + batchId, results.getCsv());
         assertNumberOfLinesThatStartWith(1, "commit," + batchId, results.getCsv());
-        // TODO should case be the same as the metadata or the same as the configuration?
-        //assertNumberOfLinesThatStartWith(1, "table," + TEST_TABLE, results.getCsv());
-        
+        assertNumberOfLinesThatStartWith(1, "table," + TEST_TABLE, results.getCsv(), true, false);
+
         // same batch should be extracted
         results = extract();
-        assertNumberOfLinesThatStartWith(1, "batch," + batchId, results.getCsv());        
+        assertNumberOfLinesThatStartWith(1, "batch," + batchId, results.getCsv());
         assertNumberOfLinesThatStartWith(1, "commit," + batchId, results.getCsv());
 
     }

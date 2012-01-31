@@ -61,7 +61,6 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 /*
@@ -101,13 +100,12 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
 
-    public AbstractSymmetricDialect(IParameterService parameterService,
-            IDatabasePlatform platform) {
+    public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
         this.platform = platform;
-        
+
         log.info("The DbDialect being used is {}", this.getClass().getName());
-        
+
         ISqlTemplate sqlTemplate = this.platform.getSqlTemplate();
         this.databaseMajorVersion = sqlTemplate.getDatabaseMajorVersion();
         this.databaseMinorVersion = sqlTemplate.getDatabaseMinorVersion();
@@ -280,7 +278,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
         String triggerSql = triggerText.createTriggerDDL(AbstractSymmetricDialect.this, dml,
                 trigger, hist, channel, tablePrefix, table, defaultCatalog, defaultSchema);
-        
+
         String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
                 table);
 
@@ -389,28 +387,23 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         platform.createDatabase(db, true, true);
     }
 
-    public boolean doesDatabaseNeedConfigured() {
-        return prefixConfigDatabase(readSymmetricSchemaFromXml());
-    }
-
-    protected boolean prefixConfigDatabase(Database targetTables) {
+    protected void prefixConfigDatabase(Database targetTables) {
         try {
-            String tblPrefix = parameterService.getTablePrefix() + "_";
+            String prefix = parameterService.getTablePrefix()
+                    + (StringUtils.isNotBlank(parameterService.getTablePrefix()) ? "_" : "");
 
             Table[] tables = targetTables.getTables();
 
-            boolean createTables = false;
+            boolean storesUpperCaseIdentifiers = platform.getSqlTemplate()
+                    .isStoresUpperCaseIdentifiers();
             for (Table table : tables) {
-                table.setName(tblPrefix + table.getName());
-                fixForeignKeys(table, tblPrefix);
-                fixIndexes(table, tblPrefix);
-                if (platform.getTableFromCache(platform.getDefaultCatalog(),
-                        platform.getDefaultSchema(), table.getName(), true) == null) {
-                    createTables = true;
-                }
+                String name = String.format("%s%s", prefix, table.getName());
+                table.setName(storesUpperCaseIdentifiers ? name.toUpperCase() : name.toLowerCase());
+                fixForeignKeys(table, prefix, storesUpperCaseIdentifiers);
+                fixIndexes(table, prefix, storesUpperCaseIdentifiers);
+                fixColumnNames(table, storesUpperCaseIdentifiers);
             }
 
-            return createTables;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
@@ -434,7 +427,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             try {
                 modelFromXml = merge(modelFromXml, readDatabaseFromXml(extraTablesXml));
             } catch (Exception ex) {
-                log.error(ex.getMessage(),ex);
+                log.error(ex.getMessage(), ex);
             }
         }
 
@@ -467,14 +460,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
 
-                if (log.isDebugEnabled()) {
-                    log.debug("Alter SQL Generated: {}", alterSql);
-                }
+                log.info("Alter SQL Generated: {}", alterSql);
+
                 new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, delimiter, null)
                         .execute();
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
-                    String sql = listener.afterUpgrade(this, this.parameterService.getTablePrefix(), modelFromXml);
+                    String sql = listener.afterUpgrade(this,
+                            this.parameterService.getTablePrefix(), modelFromXml);
                     new SqlScript(sql, getPlatform().getSqlTemplate(), true, delimiter, null)
                             .execute();
                 }
@@ -495,10 +488,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         try {
             Database database = merge(readDatabaseFromXml("/symmetric-schema.xml"),
                     readDatabaseFromXml("/console-schema.xml"));
-
-            if (prefixConfigDatabase(database)) {
-                log.info("There are SymmetricDS tables missing.  They will be auto created.");
-            }
+            prefixConfigDatabase(database);
             return database;
         } catch (RuntimeException ex) {
             throw ex;
@@ -531,21 +521,37 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return database;
     }
 
-    protected void fixForeignKeys(Table table, String tablePrefix)
-            throws CloneNotSupportedException {
-        ForeignKey[] keys = table.getForeignKeys();
-        for (ForeignKey key : keys) {
-            String prefixedName = tablePrefix + key.getForeignTableName();
-            key.setForeignTableName(prefixedName);
-            key.setName(tablePrefix + key.getName());
+    protected void fixColumnNames(Table table, boolean storesUpperCaseIdentifiers) {
+        Column[] columns = table.getColumns();
+        for (Column column : columns) {
+            column.setName(storesUpperCaseIdentifiers ? column.getName().toUpperCase() : column
+                    .getName().toLowerCase());
         }
     }
 
-    protected void fixIndexes(Table table, String tablePrefix) throws CloneNotSupportedException {
+    protected void fixForeignKeys(Table table, String tablePrefix,
+            boolean storesUpperCaseIdentifiers) throws CloneNotSupportedException {
+        ForeignKey[] keys = table.getForeignKeys();
+        for (ForeignKey key : keys) {
+            String prefixedName = tablePrefix + key.getForeignTableName();
+            prefixedName = storesUpperCaseIdentifiers ? prefixedName.toUpperCase() : prefixedName
+                    .toLowerCase();
+            key.setForeignTableName(prefixedName);
+
+            String keyName = tablePrefix + key.getName();
+            keyName = storesUpperCaseIdentifiers ? keyName.toUpperCase() : keyName.toLowerCase();
+            key.setName(keyName);
+        }
+    }
+
+    protected void fixIndexes(Table table, String tablePrefix, boolean storesUpperCaseIdentifiers)
+            throws CloneNotSupportedException {
         IIndex[] indexes = table.getIndices();
         if (indexes != null) {
             for (IIndex index : indexes) {
                 String prefixedName = tablePrefix + index.getName();
+                prefixedName = storesUpperCaseIdentifiers ? prefixedName.toUpperCase()
+                        : prefixedName.toLowerCase();
                 index.setName(prefixedName);
             }
         }
@@ -578,35 +584,37 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public boolean supportsTransactionViews() {
         return supportsTransactionViews;
     }
-    
+
     public long insertWithGeneratedKey(String sql, SequenceIdentifier sequenceId) {
         return insertWithGeneratedKey(sql, sequenceId, null, null);
     }
 
-    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier identifier, Object... args) {
-        return platform.getSqlTemplate().insertWithGeneratedKey(sql, getSequenceKeyName(identifier), getSequenceKeyName(identifier), args, null);
+    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier identifier,
+            Object... args) {
+        return platform.getSqlTemplate().insertWithGeneratedKey(sql,
+                getSequenceKeyName(identifier), getSequenceKeyName(identifier), args, null);
     }
 
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
-        case OUTGOING_BATCH:
-            return "sym_outgoing_batch_batch_id";
-        case DATA:
-            return "sym_data_data_id";
-        case TRIGGER_HIST:
-            return "sym_trigger_his_ger_hist_id";
+            case OUTGOING_BATCH:
+                return "sym_outgoing_batch_batch_id";
+            case DATA:
+                return "sym_data_data_id";
+            case TRIGGER_HIST:
+                return "sym_trigger_his_ger_hist_id";
         }
         return null;
     }
 
     public String getSequenceKeyName(SequenceIdentifier identifier) {
         switch (identifier) {
-        case OUTGOING_BATCH:
-            return "batch_id";
-        case DATA:
-            return "data_id";
-        case TRIGGER_HIST:
-            return "trigger_hist_id";
+            case OUTGOING_BATCH:
+                return "batch_id";
+            case DATA:
+                return "data_id";
+            case TRIGGER_HIST:
+                return "trigger_hist_id";
         }
         return null;
     }
@@ -674,10 +682,16 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         int tryCount = 5;
         while (!success && tryCount > 0) {
             try {
-                platform.getSqlTemplate().update("truncate table " + quote + tableName + quote);
-                success = true;
-            } catch (DataAccessException ex) {
-                log.warn(ex.getMessage(),ex);
+                Table table = platform.getTableFromCache(tableName, false);
+                if (table != null) {
+                    platform.getSqlTemplate().update(
+                            String.format("truncate table %s%s%s", quote, table.getName(), quote));
+                    success = true;
+                } else {
+                    throw new RuntimeException(String.format("Could not find %s to trunate", tableName));
+                }
+            } catch (SqlException ex) {
+                log.warn(ex.getMessage(), ex);
                 AppUtils.sleep(5000);
                 tryCount--;
             }
@@ -710,7 +724,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             return this.platform.getSqlTemplate().queryForObject(sql, java.util.Date.class)
                     .getTime();
         } catch (Exception ex) {
-            log.error(ex.getMessage(),ex);
+            log.error(ex.getMessage(), ex);
             return System.currentTimeMillis();
         }
     }
@@ -784,13 +798,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public TriggerTemplate getTriggerText() {
         return triggerText;
     }
-    
+
     protected void close(ISqlTransaction transaction) {
         if (transaction != null) {
             transaction.close();
         }
     }
-    
+
     public String getTablePrefix() {
         return parameterService.getTablePrefix();
     }

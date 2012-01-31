@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric.io.data.writer;
 
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -9,9 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.jumpmind.db.DatabasePlatformTest;
 import org.jumpmind.db.DbTestUtils;
-import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.informix.InformixPlatform;
 import org.jumpmind.db.platform.mssql.MsSqlPlatform;
@@ -29,8 +26,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     @BeforeClass
     public static void setup() throws Exception {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
-        platform.createDatabase(new DatabaseIO().read(new InputStreamReader(
-                DatabasePlatformTest.class.getResourceAsStream("/testDatabaseWriter.xml"))), true,
+        platform.createDatabase(platform.readDatabaseFromXml("/testDatabaseWriter.xml", true), true,
                 false);
     }
     

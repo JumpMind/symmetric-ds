@@ -88,7 +88,6 @@ public class MsSqlPlatform extends AbstractJdbcDatabasePlatform {
         ddlReader = new MsSqlDdlReader(this);
         ddlBuilder = new MsSqlBuilder(this);
 
-        setDelimitedIdentifierModeOn(true);
     }
 
     @Override

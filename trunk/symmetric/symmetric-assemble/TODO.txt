@@ -34,6 +34,12 @@ DONE = +
   * unit test
   + purge job for staging manager
   + make sure memory buffer is cleared when state goes to done
+  
+* Make SymmetricDS case sensitive
+  * Get rid of delimited identifier "force" properties
+  * Add property to platform that identifies the default case used by the database
+  * Pre-process SQL to make sure symmetric tables are quoted and use the default case of the database
+  * Pre-process symmetric tables to default them to the case of the database
 
 * Hook up JMX
 
@@ -57,7 +63,8 @@ DONE = +
 * Test timezone columns.  Do other databases other than oracle and postgres have timezone columns?
 
 Performance Improvement Opportunities
-* Pluggable data loaders.
+* Pluggable data loaders
+* Make push/pull/routing of channels asynchronous
 * Sync based on updated column values (timestamp or flag)
 * Transaction Log Parsing (vs. triggers)  
 * Optimize triggers (don't capture old data.  option to capture only primary keys)
@@ -84,3 +91,6 @@ Documentation
 * Extensions no longer have services injected into them.  If they need acccess to services, they should implement ISymmetricEngineAware
 * Node concurrency manager no longer allows the same node to make a second request while it already has a reservation
 * Added stage management job (that purges staged files)
+* Removed support for db.force.delimited.identifier.mode.on & db.force.delimited.identifier.mode.off
+* Removed support for db.metadata.ignore.case
+

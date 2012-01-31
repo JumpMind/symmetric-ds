@@ -92,6 +92,8 @@ public interface ISqlTemplate {
     public Set<String> getSqlKeywords();
 
     public boolean supportsGetGeneratedKeys();
+    
+    public boolean isStoresUpperCaseIdentifiers();
 
     public long insertWithGeneratedKey(final String sql, String column, final String sequenceName,
             final Object[] args, final int[] types);

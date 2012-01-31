@@ -1,4 +1,4 @@
-package org.jumpmind.db.sql;
+package org.jumpmind.symmetric.service.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,21 +32,20 @@ abstract public class AbstractSqlMap implements ISqlMap {
     }
 
     public String getSql(String... keys) {
+        StringBuilder sqlBuffer = new StringBuilder();
         if (keys != null) {
             if (keys.length > 1) {
-                StringBuilder sqlBuffer = new StringBuilder();
                 for (String key : keys) {
                     if (key != null) {
                         String value = sql.get(key);
                         sqlBuffer.append(value == null ? key : value);
                     }
                 }
-                return sqlBuffer.toString();
             } else if (keys.length == 1) {
-                return sql.get(keys[0]);
+                sqlBuffer.append(sql.get(keys[0]));
             }
         }
-        return null;
+        return sqlBuffer.toString();
     }
 
 }

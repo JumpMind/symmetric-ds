@@ -77,7 +77,7 @@ public class ParameterService implements IParameterService {
         this.tablePrefix = tablePrefix;
         this.factory = factory;
         this.sql = new ParameterServiceSqlMap(null,
-                AbstractService.createSqlReplacementTokens(tablePrefix));
+                AbstractService.createSqlReplacementTokens(tablePrefix, platform.getPlatformInfo().getIdentifierQuoteString()));
         this.sqlTemplate = platform.getSqlTemplate();
 
     }

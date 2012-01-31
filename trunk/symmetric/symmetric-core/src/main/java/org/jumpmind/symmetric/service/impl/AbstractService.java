@@ -25,11 +25,13 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.jumpmind.db.sql.ISqlMap;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
@@ -56,7 +58,7 @@ abstract public class AbstractService implements IService {
         this.tablePrefix = parameterService.getTablePrefix();
         this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
     }
-    
+
     protected void setSqlMap(ISqlMap sqlMap) {
         this.sqlMap = sqlMap;
     }
@@ -89,12 +91,18 @@ abstract public class AbstractService implements IService {
     }
 
     protected Map<String, String> createSqlReplacementTokens() {
-        return createSqlReplacementTokens(this.tablePrefix);
+        return createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
+                .getPlatformInfo().getIdentifierQuoteString());
     }
 
-    protected static Map<String, String> createSqlReplacementTokens(String tablePrefix) {
+    protected static Map<String, String> createSqlReplacementTokens(String tablePrefix,
+            String quotedIdentifier) {
         Map<String, String> map = new HashMap<String, String>();
-        map.put("prefixName", tablePrefix);
+        Set<String> tables = TableConstants.getTablesWithoutPrefix();
+        for (String table : tables) {
+            map.put(table, String.format("%s%s%s", tablePrefix,
+                    StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
+        }
         return map;
     }
 

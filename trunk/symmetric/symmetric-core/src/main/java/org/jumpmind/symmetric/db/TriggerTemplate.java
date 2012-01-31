@@ -324,10 +324,8 @@ public class TriggerTemplate {
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
         
         // some column templates need tableName and schemaName
-        ddl = FormatUtils.replace("tableName", history == null ? quote(trigger.getSourceTableName(), dialect)
-                : quote(history.getSourceTableName(), dialect), ddl);
-        ddl = FormatUtils.replace("schemaName",
-                history == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(history, dialect), ddl);
+        ddl = FormatUtils.replace("tableName", quote(table.getName(), dialect), ddl);
+        ddl = FormatUtils.replace("schemaName", table.getQualifiedTablePrefix(null), ddl);
 
         columns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace(

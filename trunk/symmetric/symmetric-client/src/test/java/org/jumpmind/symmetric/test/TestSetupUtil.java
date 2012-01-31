@@ -2,14 +2,12 @@ package org.jumpmind.symmetric.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
@@ -24,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class TestSetupUtil {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TestSetupUtil.class);
 
     static private ISymmetricEngine engine;
@@ -32,8 +30,10 @@ abstract public class TestSetupUtil {
     public static ISymmetricEngine prepareForServiceTests() {
         if (engine == null) {
             removeEmbededdedDatabases();
-            EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(new URL[] {getResource("/test-db.properties"), getResource("/symmetric-test.properties")},
-                    "test.root", new String[] { "root" });
+            EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
+                    new URL[] { getResource("/test-db.properties"),
+                            getResource("/symmetric-test.properties") }, "test.root",
+                    new String[] { "root" });
             properties.setProperty(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT,
                     "/test-services-setup.sql");
             engine = new ClientSymmetricEngine(properties);
@@ -56,7 +56,7 @@ abstract public class TestSetupUtil {
                 new SqlScript(url, dialect.getPlatform().getSqlTemplate(), false).execute(true);
             }
 
-            Database testDb = getTestDatabase();
+            Database testDb = getTestDatabase(dialect.getPlatform());
             IDdlBuilder builder = platform.getDdlBuilder();
             String sql = builder.dropTables(testDb);
             new SqlScript(sql, dialect.getPlatform().getSqlTemplate(), false).execute(true);
@@ -79,9 +79,8 @@ abstract public class TestSetupUtil {
         }
     }
 
-    protected static Database getTestDatabase() throws IOException {
-        return new DatabaseIO().read(new InputStreamReader(getResource("/test-schema.xml")
-                .openStream()));
+    protected static Database getTestDatabase(IDatabasePlatform platform) throws IOException {
+        return platform.readDatabaseFromXml("/test-schema.xml", true);
     }
 
     protected static boolean isConnectionValid(Properties properties) throws Exception {
@@ -116,7 +115,7 @@ abstract public class TestSetupUtil {
                 logger.info("Removing root database files");
                 FileUtils.deleteDirectory(rootDbDir);
             } catch (IOException e) {
-                logger.error(e.getMessage(),e);
+                logger.error(e.getMessage(), e);
             }
         }
     }

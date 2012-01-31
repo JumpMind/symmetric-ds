@@ -108,7 +108,7 @@ public class TriggerHistory implements Serializable {
     public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason) {
         this();        
         this.lastTriggerBuildReason = reason;
-        this.sourceTableName = table != null ? table.getName() : trigger.getSourceTableName();
+        this.sourceTableName = trigger.getSourceTableName();
         this.columnNames = getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceCatalogName = trigger.getSourceCatalogName();
