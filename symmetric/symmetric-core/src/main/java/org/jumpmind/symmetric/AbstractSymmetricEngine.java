@@ -70,7 +70,6 @@ import org.jumpmind.symmetric.transport.ConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -283,7 +282,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void setup() {
-        AppUtils.cleanupTempFiles();
         getParameterService().rereadParameters();
         if (!setup) {
             setupDatabase(false);

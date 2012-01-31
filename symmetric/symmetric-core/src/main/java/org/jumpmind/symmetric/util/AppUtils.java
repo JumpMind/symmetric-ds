@@ -20,20 +20,17 @@
  */
 package org.jumpmind.symmetric.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TimeZone;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.slf4j.Logger;
@@ -47,13 +44,9 @@ import bsh.Interpreter;
  */
 public class AppUtils {
     
-    private static boolean alreadyCleaned = false;
-
     private static String UNKNOWN = "unknown";
 
     private static Logger log = LoggerFactory.getLogger(AppUtils.class);
-
-    private static final String SYM_TEMP_SUFFIX = "sym.tmp";
 
     private static String serverId;
 
@@ -123,42 +116,6 @@ public class AppUtils {
             return tz.substring(0, 3) + ":" + tz.substring(3, 5);
         }
         return null;
-    }
-
-    /**
-     * Use this method to create any needed temporary files for SymmetricDS.
-     */
-    public static File createTempFile(String token) throws IOException {
-        return File.createTempFile(token + ".", "." + SYM_TEMP_SUFFIX);
-    }
-
-    /**
-     * Clean up files created by {@link #createTempFile(String)}. This only be
-     * called while the engine is not synchronizing!
-     */
-    public synchronized static void cleanupTempFiles() {
-        if (!alreadyCleaned) {
-            alreadyCleaned = true;
-            try {
-                File tmp = File.createTempFile("temp.", "." + SYM_TEMP_SUFFIX);
-                Iterator<File> it = FileUtils.iterateFiles(tmp.getParentFile(),
-                        new String[] { SYM_TEMP_SUFFIX }, true);
-                int deletedCount = 0;
-                while (it.hasNext()) {
-                    try {
-                        FileUtils.forceDelete(it.next());
-                        deletedCount++;
-                    } catch (Exception ex) {
-                        log.error("{}", ex.getMessage());
-                    }
-                }
-                if (deletedCount > 1) {
-                    log.warn("Cleaned {} stranded temporary files.", deletedCount);
-                }
-            } catch (Exception ex) {
-                log.error(ex.getMessage(),ex);
-            }
-        }
     }
 
     /**
