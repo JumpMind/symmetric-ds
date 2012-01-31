@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
@@ -47,31 +48,30 @@ public class DefaultParameterParser {
     public Map<String, ParameterMetaData> parse() {
         Map<String, ParameterMetaData> metaData = new TreeMap<String, DefaultParameterParser.ParameterMetaData>();
         try {
-            @SuppressWarnings("unchecked")
             List<String> lines = IOUtils.readLines(getClass().getResourceAsStream(
                     "/symmetric-default.properties"));
             ParameterMetaData currentMetaData = new ParameterMetaData();
             for (String line : lines) {
-                if (line.trim().startsWith(COMMENT) && line.length() > 1) {
-
-                    line = line.substring(line.indexOf(COMMENT) + 1);
-                    if (line.contains(DATABASE_OVERRIDABLE)) {
-                        currentMetaData.setDatabaseOverridable(Boolean.parseBoolean(line.substring(
-                                line.indexOf(DATABASE_OVERRIDABLE) + DATABASE_OVERRIDABLE.length())
-                                .trim()));
-                    } else if (line.contains(TAGS)) {
-                        String[] tags = line.substring(
-                                line.indexOf(TAGS) + TAGS.length())
-                                .trim().split(",");
-                        for (String tag : tags) {
-                            currentMetaData.addTag(tag.trim());
+                if (line.trim().startsWith(COMMENT)) {
+                    if (line.length() > 1) {
+                        line = line.substring(line.indexOf(COMMENT) + 1);
+                        if (line.contains(DATABASE_OVERRIDABLE)) {
+                            currentMetaData.setDatabaseOverridable(Boolean.parseBoolean(line
+                                    .substring(
+                                            line.indexOf(DATABASE_OVERRIDABLE)
+                                                    + DATABASE_OVERRIDABLE.length()).trim()));
+                        } else if (line.contains(TAGS)) {
+                            String[] tags = line.substring(line.indexOf(TAGS) + TAGS.length())
+                                    .trim().split(",");
+                            for (String tag : tags) {
+                                currentMetaData.addTag(tag.trim());
+                            }
+                        } else if (line.contains(TYPE)) {
+                            String type = line.substring(line.indexOf(TYPE) + TYPE.length());
+                            currentMetaData.setType(type.trim());
+                        } else {
+                            currentMetaData.appendDescription(line);
                         }
-                    } else if (line.contains(TYPE)) {
-                        String type = line.substring(
-                                line.indexOf(TYPE) + TYPE.length());
-                        currentMetaData.setType(type.trim());
-                    } else {
-                        currentMetaData.appendDescription(line);
                     }
                 } else if (!line.trim().startsWith(IGNORE_COMMENT) && line.contains("=")) {
                     String key = line.substring(0, line.indexOf("="));
@@ -79,6 +79,9 @@ public class DefaultParameterParser {
                     currentMetaData.setKey(key);
                     currentMetaData.setDefaultValue(defaultValue);
                     metaData.put(key, currentMetaData);
+                    currentMetaData = new ParameterMetaData();
+                } else if (StringUtils.isBlank(line)) {
+                    // Must be a blank line.  Start new metadata
                     currentMetaData = new ParameterMetaData();
                 }
             }
@@ -92,7 +95,7 @@ public class DefaultParameterParser {
 
         public static final String TYPE_BOOLEAN = "boolean";
         public static final String TYPE_INT = "integer";
-        
+
         private static final long serialVersionUID = 1L;
         private String key;
         private String description;
@@ -100,11 +103,11 @@ public class DefaultParameterParser {
         private boolean databaseOverridable;
         private String defaultValue;
         private String type = "";
-        
+
         public void setType(String type) {
             this.type = type;
         }
-        
+
         public String getType() {
             return type;
         }
@@ -156,16 +159,16 @@ public class DefaultParameterParser {
                 description = description + value;
             }
         }
-        
+
         public boolean isBooleanType() {
             return type != null && type.equals(TYPE_BOOLEAN);
         }
-        
+
         public boolean isIntType() {
             return type != null && type.equals(TYPE_INT);
         }
-        
-        public void addTag (String tag) {
+
+        public void addTag(String tag) {
             tags.add(tag);
         }
     }
