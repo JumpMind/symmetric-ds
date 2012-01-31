@@ -36,10 +36,10 @@ DONE = +
   + make sure memory buffer is cleared when state goes to done
   
 * Make SymmetricDS case sensitive
-  * Get rid of delimited identifier "force" properties
-  * Add property to platform that identifies the default case used by the database
-  * Pre-process SQL to make sure symmetric tables are quoted and use the default case of the database
-  * Pre-process symmetric tables to default them to the case of the database
+  + Get rid of delimited identifier "force" properties
+  + Add property to platform that identifies the default case used by the database
+  + Pre-process SQL to make sure symmetric tables are quoted and use the default case of the database
+  + Pre-process symmetric tables to default them to the case of the database
 
 * Hook up JMX
 
@@ -93,4 +93,5 @@ Documentation
 * Added stage management job (that purges staged files)
 * Removed support for db.force.delimited.identifier.mode.on & db.force.delimited.identifier.mode.off
 * Removed support for db.metadata.ignore.case
+* SymmetricDS tables are now created in the default case of the database
 

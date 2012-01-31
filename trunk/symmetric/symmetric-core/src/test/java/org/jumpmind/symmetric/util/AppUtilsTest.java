@@ -26,10 +26,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * 
- */
-public class AppUtilsUnitTest {
+public class AppUtilsTest {
 
     @Test
     public void testGetLocalDateForOffset() {
