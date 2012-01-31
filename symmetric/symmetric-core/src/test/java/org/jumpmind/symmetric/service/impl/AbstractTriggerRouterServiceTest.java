@@ -23,7 +23,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.junit.Test;
 
-public class AbstractTriggerRouterServiceTest extends AbstractServiceTest {
+abstract    public class AbstractTriggerRouterServiceTest extends AbstractServiceTest {
 
     public static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 

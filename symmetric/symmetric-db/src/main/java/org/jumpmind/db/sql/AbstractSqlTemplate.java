@@ -65,10 +65,6 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         return query(sql, mapper, args, null);
     }
 
-    public <T> List<T> query(Query query, ISqlRowMapper<T> mapper) {
-        return query(query.getSql(), mapper, query.getArgs(), query.getArgTypes());
-    }
-
     @SuppressWarnings("unchecked")
     public <T, W> Map<T, W> query(String sql, String keyCol, String valueCol, Object[] args,
             int[] types) {

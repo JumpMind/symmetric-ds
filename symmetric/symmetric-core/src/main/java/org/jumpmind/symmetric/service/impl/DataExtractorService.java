@@ -45,7 +45,7 @@ import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
-import org.jumpmind.symmetric.io.data.reader.IExtractBatchSource;
+import org.jumpmind.symmetric.io.data.reader.IExtractWriterSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
@@ -344,7 +344,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         long ts = System.currentTimeMillis();
                         
                         IDataReader dataReader = new ExtractDataReader(
-                                symmetricDialect.getPlatform(), new SelectFromSymData(currentBatch,
+                                symmetricDialect.getPlatform(), new SelectFromSymDataSource(currentBatch,
                                         targetNode));
                         new DataProcessor(dataReader, transformExtractWriter).process();
                         extractTimeInMs = System.currentTimeMillis()-ts;
@@ -487,7 +487,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentTable;
     }
 
-    class SelectFromSymData implements IExtractBatchSource {
+    class SelectFromSymDataSource implements IExtractWriterSource {
 
         private Batch batch;
 
@@ -501,7 +501,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         private Node targetNode;
 
-        public SelectFromSymData(OutgoingBatch outgoingBatch, Node targetNode) {
+        public SelectFromSymDataSource(OutgoingBatch outgoingBatch, Node targetNode) {
             this.batch = new Batch(outgoingBatch.getBatchId(), outgoingBatch.getChannelId(),
                     symmetricDialect.getBinaryEncoding(), outgoingBatch.getNodeId());
             this.targetNode = targetNode;
@@ -585,7 +585,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    class SelectFromTableSource implements IExtractBatchSource {
+    class SelectFromTableSource implements IExtractWriterSource {
 
         private Batch batch;
 

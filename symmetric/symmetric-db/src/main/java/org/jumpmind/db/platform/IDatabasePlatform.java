@@ -195,6 +195,8 @@ public interface IDatabasePlatform {
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
             String[] values);
+    
+    public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
 
     public boolean isLob(int type);
 
@@ -208,7 +210,6 @@ public interface IDatabasePlatform {
     
     public String scrubSql(String sql);
     
-    public StringBuilder scrubSql(StringBuilder sql);
-    
+    public boolean isStoresUpperCaseIdentifiers();
 
 }

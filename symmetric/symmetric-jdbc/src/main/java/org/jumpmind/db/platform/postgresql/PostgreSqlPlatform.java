@@ -88,7 +88,6 @@ public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setHasSize(Types.BINARY, false);
         info.setHasSize(Types.VARBINARY, false);
 
-        setDelimitedIdentifierModeOn(true);
         info.setNonBlankCharColumnSpacePadded(true);
         info.setBlankCharColumnSpacePadded(true);
         info.setCharColumnSpaceTrimmed(false);

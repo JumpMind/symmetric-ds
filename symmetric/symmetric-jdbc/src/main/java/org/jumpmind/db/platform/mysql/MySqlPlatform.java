@@ -99,9 +99,6 @@ public class MySqlPlatform extends AbstractJdbcDatabasePlatform {
         info.setCharColumnSpaceTrimmed(true);
         info.setEmptyStringNulled(false);
 
-        setDelimitedIdentifierModeOn(true);
-        
-
         // MySql 5.0 returns an empty string for default values for pk columns
         // which is different from the MySql 4 behaviour
         info.setSyntheticDefaultValueForRequiredReturned(false);

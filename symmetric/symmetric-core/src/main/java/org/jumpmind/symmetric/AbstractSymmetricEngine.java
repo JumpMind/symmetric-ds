@@ -188,11 +188,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         MDC.put("engineName", this.parameterService.getEngineName());
 
-        if (parameterService.is(ParameterConstants.DB_FORCE_DELIMITED_IDENTIFIER_ON)) {
-            this.platform.setDelimitedIdentifierModeOn(true);
-        } else if (parameterService.is(ParameterConstants.DB_FORCE_DELIMITED_IDENTIFIER_OFF)) {
-            this.platform.setDelimitedIdentifierModeOn(false);
-        }
         this.platform.setClearCacheModelTimeoutInMs(parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TABLES_IN_MS));
 

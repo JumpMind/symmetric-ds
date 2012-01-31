@@ -1,11 +1,8 @@
 package org.jumpmind.symmetric.io.data.writer;
 
-import java.io.InputStreamReader;
 import java.util.List;
 
-import org.jumpmind.db.DatabasePlatformTest;
 import org.jumpmind.db.DbTestUtils;
-import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -24,9 +21,8 @@ public class TransformWriterTest extends AbstractWriterTest {
     @BeforeClass
     public static void setup() throws Exception {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
-        platform.createDatabase(new DatabaseIO().read(new InputStreamReader(
-                DatabasePlatformTest.class.getResourceAsStream("/testDatabaseWriter.xml"))), true,
-                false);
+        platform.createDatabase(platform.readDatabaseFromXml("/testDatabaseWriter.xml", true),
+                true, false);
     }
 
     @Test

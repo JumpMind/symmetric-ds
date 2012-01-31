@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractServiceTest {
 
     static private ISymmetricEngine engine;
-    
+
     protected final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
 
     @BeforeClass
@@ -53,7 +53,7 @@ public abstract class AbstractServiceTest {
         }
     }
 
-    protected Level setLoggingLevelForTest(Level level) {    
+    protected Level setLoggingLevelForTest(Level level) {
         org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger("org.jumpmind");
         Level old = logger.getLevel();
         logger.setLevel(level);
@@ -61,15 +61,13 @@ public abstract class AbstractServiceTest {
     }
 
     protected void logTestRunning() {
-        logger.info(
-                "Running " + new Exception().getStackTrace()[1].getMethodName() + ". "
-                        + getSymmetricEngine().getSymmetricDialect().getPlatform().getName());
+        logger.info("Running " + new Exception().getStackTrace()[1].getMethodName() + ". "
+                + getSymmetricEngine().getSymmetricDialect().getPlatform().getName());
     }
 
     protected void logTestComplete() {
-        logger.info(
-                "Completed running " + new Exception().getStackTrace()[1].getMethodName() + ". "
-                        + getSymmetricEngine().getSymmetricDialect().getPlatform().getName());
+        logger.info("Completed running " + new Exception().getStackTrace()[1].getMethodName()
+                + ". " + getSymmetricEngine().getSymmetricDialect().getPlatform().getName());
     }
 
     protected ISymmetricEngine getSymmetricEngine() {
@@ -91,7 +89,7 @@ public abstract class AbstractServiceTest {
     protected IRegistrationService getRegistrationService() {
         return getSymmetricEngine().getRegistrationService();
     }
-    
+
     protected IDataExtractorService getDataExtractorService() {
         return getSymmetricEngine().getDataExtractorService();
     }
@@ -103,7 +101,7 @@ public abstract class AbstractServiceTest {
     protected INodeService getNodeService() {
         return getSymmetricEngine().getNodeService();
     }
-    
+
     protected IDatabasePlatform getPlatform() {
         return getSymmetricEngine().getSymmetricDialect().getPlatform();
     }
@@ -111,7 +109,7 @@ public abstract class AbstractServiceTest {
     protected IRouterService getRouterService() {
         return getSymmetricEngine().getRouterService();
     }
-    
+
     protected ISqlTemplate getJdbcTemplate() {
         return getSymmetricEngine().getSymmetricDialect().getPlatform().getSqlTemplate();
     }
@@ -131,7 +129,7 @@ public abstract class AbstractServiceTest {
     protected ISqlTemplate getSqlTemplate() {
         return getSymmetricEngine().getSymmetricDialect().getPlatform().getSqlTemplate();
     }
-    
+
     protected IStagingManager getStagingManager() {
         return getSymmetricEngine().getStagingManager();
     }
@@ -197,25 +195,39 @@ public abstract class AbstractServiceTest {
     protected String printDatabase() {
         return getSymmetricEngine().getSymmetricDialect().getPlatform().getName();
     }
-    
+
     protected void assertNumberOfLinesThatStartWith(int expected, String startsWith, String text) {
+        assertNumberOfLinesThatStartWith(expected, startsWith, text, false, false);
+    }
+
+    protected void assertNumberOfLinesThatStartWith(int expected, String startsWith, String text,
+            boolean ignoreCase, boolean atLeast) {
         int actual = 0;
         String[] lines = text.split("\n");
         for (String line : lines) {
             if (line.startsWith(startsWith)) {
                 actual++;
+            } else if (ignoreCase && line.toLowerCase().startsWith(startsWith.toLowerCase())) {
+                actual++;
             }
         }
-        Assert.assertEquals("There were not the expected number of occurrences of: " + startsWith, expected, actual);
+
+        if (atLeast) {
+            Assert.assertTrue(String.format(
+                    "There was less than the expected (%d) number of occurrences of: %s", expected,
+                    startsWith), actual >= expected);
+        } else {
+            Assert.assertEquals("There were not the expected number of occurrences of: "
+                    + startsWith, expected, actual);
+        }
     }
-    
+
     protected void routeAndCreateGaps() {
         // one to route unrouted data
         getRouterService().routeData();
         // one to create gaps
         getRouterService().routeData();
     }
-    
 
     protected void resetGaps() {
         getJdbcTemplate().update("delete from sym_data_gap");
@@ -228,6 +240,5 @@ public abstract class AbstractServiceTest {
         getJdbcTemplate()
                 .update("update sym_data_gap set status='OK' where start_id != ?", startId);
     }
-
 
 }

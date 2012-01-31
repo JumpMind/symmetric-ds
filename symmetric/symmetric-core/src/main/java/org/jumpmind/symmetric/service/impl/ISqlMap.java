@@ -1,4 +1,4 @@
-package org.jumpmind.db.sql;
+package org.jumpmind.symmetric.service.impl;
 
 public interface ISqlMap {
 

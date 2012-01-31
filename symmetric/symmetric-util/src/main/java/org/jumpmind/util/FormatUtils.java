@@ -75,5 +75,16 @@ public final class FormatUtils {
             return String.format(format, arg);
         }
     }
+    
+    public static boolean isMixedCase(String text) {
+        char[] chars = text.toCharArray();
+        boolean upper = false;
+        boolean lower = false;
+        for (char ch : chars) {
+            upper |= Character.isUpperCase(ch);
+            lower |= Character.isLowerCase(ch);
+        }
+        return upper && lower;
+    }
 
 }

@@ -19,6 +19,11 @@ package org.jumpmind.db.platform;
  * under the License.
  */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Time;
@@ -31,8 +36,10 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -41,6 +48,7 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.exception.IoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.jumpmind.util.FormatUtils;
@@ -94,7 +102,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected String defaultCatalog;
 
+    protected Boolean storesUpperCaseIdentifiers;
+
     public AbstractDatabasePlatform() {
+        setDelimitedIdentifierModeOn(true);
     }
 
     abstract public ISqlTemplate getSqlTemplate();
@@ -356,8 +367,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     list.add(objectValue);
                 }
             } catch (Exception ex) {
-                log.error("Could not convert a value of {} for column {} of type {}", new Object[] {value,
-                        column.getName(), column.getType()});
+                log.error("Could not convert a value of {} for column {} of type {}", new Object[] {
+                        value, column.getName(), column.getType() });
                 log.error(ex.getMessage(), ex);
                 throw new RuntimeException(ex);
             }
@@ -365,7 +376,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
         return list.toArray();
     }
-    
+
     public Map<String, String> getSqlScriptReplacementTokens() {
         return null;
     }
@@ -374,15 +385,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
         if (replacementTokens != null) {
             return FormatUtils.replaceTokens(sql, replacementTokens, false).trim();
-        } else {
-            return sql;
-        }
-    }
-
-    public StringBuilder scrubSql(StringBuilder sql) {
-        Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
-        if (replacementTokens != null) {
-            return new StringBuilder(scrubSql(sql.toString()));
         } else {
             return sql;
         }
@@ -412,7 +414,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return type == Types.BLOB || type == Types.BINARY || type == Types.VARBINARY
                 || type == Types.LONGVARBINARY || type == -10;
     }
-    
+
     public List<Column> getLobColumns(Table table) {
         List<Column> lobColumns = new ArrayList<Column>(1);
         Column[] allColumns = table.getColumns();
@@ -424,12 +426,60 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return lobColumns;
     }
 
+    public boolean isStoresUpperCaseIdentifiers() {
+        if (storesUpperCaseIdentifiers == null) {
+            storesUpperCaseIdentifiers = getSqlTemplate().isStoresUpperCaseIdentifiers();
+        }
+        return storesUpperCaseIdentifiers;
+    }
+
     public boolean isLob(int type) {
         return type == Types.CLOB || type == Types.BLOB || type == Types.BINARY
                 || type == Types.VARBINARY || type == Types.LONGVARBINARY
                 || type == Types.LONGNVARCHAR ||
                 // SQL-Server ntext binary type
                 type == -10;
+    }
+
+    public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase) {
+        InputStream is = null;
+        File file = new File(filePath);
+        if (file.exists()) {
+            try {
+                is = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                throw new IoException(e);
+            }
+        } else {
+            is = AbstractDatabasePlatform.class.getResourceAsStream(filePath);
+        }
+
+        if (is != null) {
+            InputStreamReader reader = new InputStreamReader(is);
+            Database database = new DatabaseIO().read(reader);
+            IOUtils.closeQuietly(reader);
+            if (alterCaseToMatchDatabaseDefaultCase) {
+                boolean storesUpperCase = getSqlTemplate().isStoresUpperCaseIdentifiers();
+                Table[] tables = database.getTables();
+                for (Table table : tables) {
+                    if (!FormatUtils.isMixedCase(table.getName())) {
+                        table.setName(storesUpperCase ? table.getName().toUpperCase() : table
+                                .getName().toLowerCase());
+                    }
+                    Column[] columns = table.getColumns();
+                    for (Column column : columns) {
+                        if (!FormatUtils.isMixedCase(column.getName())) {
+                            column.setName(storesUpperCase ? column.getName().toUpperCase()
+                                    : column.getName().toLowerCase());
+                        }
+                    }
+                }
+            }
+            return database;
+        } else {
+            throw new IoException("Could not find the file: %s", filePath);
+        }
+
     }
 
 }

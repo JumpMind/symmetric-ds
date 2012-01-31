@@ -56,14 +56,6 @@ public interface ISymmetricDialect {
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 
-    /*
-     * Check to see if the database is configured for symmetric already, or if
-     * it needs configured.
-     * 
-     * @return true if configuration tables need to be created.
-     */
-    public boolean doesDatabaseNeedConfigured();
-
     public void initTablesAndFunctions();
 
     public IDatabasePlatform getPlatform();

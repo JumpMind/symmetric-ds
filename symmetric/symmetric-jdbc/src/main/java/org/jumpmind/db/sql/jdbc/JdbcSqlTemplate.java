@@ -479,6 +479,14 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         });
     }
+    
+    public boolean isStoresUpperCaseIdentifiers() {
+        return execute(new IConnectionCallback<Boolean>() {
+            public Boolean execute(Connection con) throws SQLException {
+                return con.getMetaData().storesUpperCaseIdentifiers();
+            }
+        });
+    }
 
     public String getDatabaseProductVersion() {
         return execute(new IConnectionCallback<String>() {

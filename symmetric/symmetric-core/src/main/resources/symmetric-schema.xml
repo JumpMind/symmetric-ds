@@ -296,11 +296,6 @@
         </index>
     </table>
     
-    <table name="data_ref" description="Used only when routing.data.reader.type is set to 'ref.'  Table that tracks the last known data_id that has been processed.  This table is used so that joins to find unprocessed data can be better optimized.">
-        <column name="ref_data_id" type="INTEGER" required="true" primaryKey="true"  description="The data_id that can be used to limit the search of the data table to rows that are greater than this data_id value." />
-        <column name="ref_time" type="TIMESTAMP"  description="The time when the ref_data_id was recorded. It is used as the base time to calculate timeouts for gaps in the data_ids." />
-    </table>
-    
     <table name="data_gap" description="Used only when routing.data.reader.type is set to 'gap.'  Table that tracks gaps in the data table so that they may be processed efficiently, if data shows up.  Gaps can show up in the data table if a database transaction is rolled back.">
         <column name="start_id" type="INTEGER" required="true" primaryKey="true"  description="The first missing data_id from the data table where a gap is detected.  This could be the last data_id inserted plus one." />
         <column name="end_id" type="INTEGER" required="true" primaryKey="true"  description="The last missing data_id from the data table where a gap is detected.  If the start_id is the last data_id inserted plus one, then this field is filled in with a -1." />
