@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,6 @@ public class DefaultParameterParser {
             ParameterMetaData currentMetaData = new ParameterMetaData();
             for (String line : lines) {
                 if (line.trim().startsWith(COMMENT) && line.length() > 1) {
-
                     line = line.substring(line.indexOf(COMMENT) + 1);
                     if (line.contains(DATABASE_OVERRIDABLE)) {
                         currentMetaData.setDatabaseOverridable(Boolean.parseBoolean(line.substring(
@@ -78,6 +78,9 @@ public class DefaultParameterParser {
                     currentMetaData.setKey(key);
                     currentMetaData.setDefaultValue(defaultValue);
                     metaData.put(key, currentMetaData);
+                    currentMetaData = new ParameterMetaData();
+                } else if (StringUtils.isBlank(line)) {
+                    // reset the metadata
                     currentMetaData = new ParameterMetaData();
                 }
             }
