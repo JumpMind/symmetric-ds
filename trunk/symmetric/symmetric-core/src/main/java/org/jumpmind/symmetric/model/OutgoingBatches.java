@@ -32,10 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
-
 /**
- * 
+ * A container for {@link OutgoingBatch}s.
  */
 public class OutgoingBatches implements Serializable {
 
@@ -99,7 +97,7 @@ public class OutgoingBatches implements Serializable {
         int count = 0;
         if (batches != null) {
             for (OutgoingBatch batch : batches) {
-                if (includeOnlyErrors && batch.getStatus() == OutgoingBatch.Status.ER) {
+                if (includeOnlyErrors && batch.isErrorFlag()) {
                     count++;
                 } else {
                     count++;
@@ -141,7 +139,7 @@ public class OutgoingBatches implements Serializable {
     
     public boolean containsBatchesInError() {
         for (OutgoingBatch b : batches) {
-            if (b.getStatus() == Status.ER) {
+            if (b.isErrorFlag()) {
                 return true;
             }
         }
@@ -243,7 +241,7 @@ public class OutgoingBatches implements Serializable {
 
         final HashMap<String, Date> errorChannels = new HashMap<String, Date>();
         for (OutgoingBatch batch : batches) {
-            if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {
+            if (batch.isErrorFlag()) {
                 errorChannels.put(batch.getChannelId(), batch.getLastUpdatedTime());
             }
         }
