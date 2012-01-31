@@ -187,6 +187,7 @@ public class OutgoingBatchesUnitTest {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
         OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId(), Status.NE);
         batch1.setStatus(OutgoingBatch.Status.ER);
+        batch1.setErrorFlag(true);
         batches.add(batch1);
 
         OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId(), Status.NE);
@@ -223,6 +224,7 @@ public class OutgoingBatchesUnitTest {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
         OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId(), Status.NE);
         batch1.setStatus(OutgoingBatch.Status.ER);
+        batch1.setErrorFlag(true);
         batch1.setLastUpdatedTime(new Date());
         batches.add(batch1);
 
@@ -230,6 +232,7 @@ public class OutgoingBatchesUnitTest {
 
         OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId(), Status.NE);
         batch2.setStatus(OutgoingBatch.Status.ER);
+        batch2.setErrorFlag(true);
         batch2.setLastUpdatedTime(new Date());
         batches.add(batch2);
 
