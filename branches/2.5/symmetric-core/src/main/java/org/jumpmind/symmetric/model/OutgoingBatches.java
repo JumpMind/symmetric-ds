@@ -243,7 +243,7 @@ public class OutgoingBatches implements Serializable {
 
         final HashMap<String, Date> errorChannels = new HashMap<String, Date>();
         for (OutgoingBatch batch : batches) {
-            if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {
+            if (batch.isErrorFlag()) {
                 errorChannels.put(batch.getChannelId(), batch.getLastUpdatedTime());
             }
         }
