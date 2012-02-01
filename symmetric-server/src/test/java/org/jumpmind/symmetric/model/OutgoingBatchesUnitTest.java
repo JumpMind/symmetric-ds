@@ -16,7 +16,8 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
+ * under the License. 
+ */
 package org.jumpmind.symmetric.model;
 
 import java.util.ArrayList;
@@ -187,6 +188,7 @@ public class OutgoingBatchesUnitTest {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
         OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId(), Status.NE);
         batch1.setStatus(OutgoingBatch.Status.ER);
+        batch1.setErrorFlag(true);
         batches.add(batch1);
 
         OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId(), Status.NE);
@@ -223,6 +225,7 @@ public class OutgoingBatchesUnitTest {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
         OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId(), Status.NE);
         batch1.setStatus(OutgoingBatch.Status.ER);
+        batch1.setErrorFlag(true);
         batch1.setLastUpdatedTime(new Date());
         batches.add(batch1);
 
@@ -230,6 +233,7 @@ public class OutgoingBatchesUnitTest {
 
         OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId(), Status.NE);
         batch2.setStatus(OutgoingBatch.Status.ER);
+        batch2.setErrorFlag(true);
         batch2.setLastUpdatedTime(new Date());
         batches.add(batch2);
 
