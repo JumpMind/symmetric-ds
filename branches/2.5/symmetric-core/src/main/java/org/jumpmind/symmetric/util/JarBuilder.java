@@ -33,9 +33,6 @@ import java.util.jar.Manifest;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.Version;
 
-/**
- * 
- */
 public class JarBuilder {
 
     private File baseDir;
@@ -54,7 +51,9 @@ public class JarBuilder {
         this.outputFile.delete();
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, Version.version());
-        outputFile.getParentFile().mkdirs();
+        if (outputFile.getParentFile() != null) {
+            outputFile.getParentFile().mkdirs();
+        }
         JarOutputStream target = new JarOutputStream(new FileOutputStream(outputFile), manifest);
         for (File file : sourceFiles) {
             add(file, target);
