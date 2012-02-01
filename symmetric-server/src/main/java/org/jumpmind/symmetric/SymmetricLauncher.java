@@ -408,7 +408,7 @@ public class SymmetricLauncher {
         }
         
         if (line.hasOption(OPTION_CREATE_WAR)) {
-            generateWar(line.getOptionValue(OPTION_CREATE_WAR), propertiesFile);
+            generateWar(line.getOptionValue(OPTION_CREATE_WAR), line.getOptionValue(OPTION_PROPERTIES_FILE));
             System.exit(0);
             return true;
         }
