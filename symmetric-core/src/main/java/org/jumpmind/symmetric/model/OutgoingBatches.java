@@ -243,7 +243,7 @@ public class OutgoingBatches implements Serializable {
 
         final HashMap<String, Date> errorChannels = new HashMap<String, Date>();
         for (OutgoingBatch batch : batches) {
-            if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {
+            if (batch.isErrorFlag()) {
                 errorChannels.put(batch.getChannelId(), batch.getLastUpdatedTime());
             }
         }
@@ -255,7 +255,7 @@ public class OutgoingBatches implements Serializable {
                 if (!isError1 && !isError2) {
                     return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
                 } else if (isError1 && isError2) {
-                    return errorChannels.get(b1.getChannelId()).compareTo(errorChannels.get(b2.getChannelId()));
+                    return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
                 } else if (!isError1 && isError2) {
                     return -1;
                 } else {
