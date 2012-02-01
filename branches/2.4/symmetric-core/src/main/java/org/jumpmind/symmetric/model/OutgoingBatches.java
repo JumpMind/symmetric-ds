@@ -255,7 +255,8 @@ public class OutgoingBatches implements Serializable {
                 if (!isError1 && !isError2) {
                     return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
                 } else if (isError1 && isError2) {
-                    return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
+                    return errorChannels.get(b1.getChannelId()).compareTo(errorChannels.get(b2.getChannelId()));
+
                 } else if (!isError1 && isError2) {
                     return -1;
                 } else {
