@@ -93,7 +93,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                 RemoteNodeStatus status = pushToNode(node, identity, identitySecurity);
                                 statuses.add(status);
                                 if (status.getBatchesProcessed() > 0) {
-                                    log.info("Pushed data to {}", node);
+                                    log.info("Pushed data to {}. {} data and {} batches were processed.", new Object[] {node, status.getDataProcessed(), status.getBatchesProcessed()});
                                 } else if (status.failed()) {
                                     log.warn("There was an error while pushing data to the server");
                                 }
