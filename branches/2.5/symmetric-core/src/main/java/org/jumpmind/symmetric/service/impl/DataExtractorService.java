@@ -481,7 +481,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     routingService.routeData();
                 }
 
-                OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node);
+                OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node, false);
                 long batchesSelectedAtMs = System.currentTimeMillis();
 
                 if (batches.containsBatches()) {
