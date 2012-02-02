@@ -413,7 +413,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPush();
 
         OutgoingBatches batches = clientOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
+                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE, false);
 
         assertEquals(batches.getBatches().size(), 1, "There should be one outgoing batches.");
         assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "102" })
@@ -426,7 +426,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootConfigurationService.saveNodeChannel(c, true);
         clientPush();
 
-        batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
+        batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE, false);
 
         assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches.");
 
@@ -475,7 +475,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPush();
 
         OutgoingBatches batches = clientOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
+                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE, false);
 
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches since suspended locally.");
@@ -488,7 +488,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientConfigurationService.saveNodeChannel(c, true);
         clientPush();
 
-        batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
+        batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE, false);
 
         assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches.");
 
@@ -518,7 +518,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
         IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "42" })
                 .size(), 1, "The order record wasn't sync'd when it should have.");
         assertEquals(batches.getBatches().size(), 0,
@@ -537,7 +537,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
 
         clientPull();
-        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 1, "There should be 1 outgoing batch.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "43" })
                 .size(), 0, "The order record was sync'd when it shouldn't have.");
@@ -550,7 +550,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // ignore
 
         clientPull();
-        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, but there was one.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "43" })
@@ -564,7 +564,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootConfigurationService.saveNodeChannel(c, true);
 
         clientPull();
-        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, but there was one.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "43" })
@@ -586,7 +586,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
         IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "442" })
                 .size(), 1, "The order record wasn't sync'd when it should have.");
         assertEquals(batches.getBatches().size(), 0,
@@ -614,7 +614,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientPull();
 
-        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 0, "There should be 0 outgoing batch.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "443" })
                 .size(), 0, "The order record was sync'd when it shouldn't have.");
@@ -640,7 +640,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientPull();
 
-        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 0, "There should be 0 outgoing batch.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "444" })
                 .size(), 0, "The order record was sync'd when it shouldn't have.");
@@ -698,7 +698,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
         IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, yet I found some.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "44" })
@@ -717,7 +717,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
 
         clientPull();
-        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 1, "There should be 1 outgoing batch.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "45" })
                 .size(), 0, "The order record was sync'd when it shouldn't have.");
@@ -730,7 +730,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // ignore
 
         clientPull();
-        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, but there was one.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "45" })
@@ -745,7 +745,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientConfigurationService.saveNodeChannel(c, true);
 
         clientPull();
-        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, but there was one.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "45" })
@@ -824,7 +824,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = outgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, yet I found some.");
 
@@ -855,7 +855,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = outgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertEquals(batches.getBatches().size(), 0,
                 "There should be no outgoing batches, yet I found some.");
         turnOnNoKeysInUpdateParameter(oldValue);
@@ -1070,7 +1070,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
         clientPull();
         OutgoingBatches batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         Assert.assertEquals(0, batches.countBatches(true));
         Assert.assertTrue(testFlag);
     }
@@ -1087,7 +1087,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
         clientPull();
         OutgoingBatches batches = rootOutgoingBatchService
-                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         Assert.assertEquals(1, batches.countBatches(true));
         Assert.assertFalse(testFlag);
         rootOutgoingBatchService.markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);

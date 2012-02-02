@@ -90,7 +90,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
                     TestConstants.TEST_CLIENT_EXTERNAL_ID);
         }
 
-        OutgoingBatches list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        OutgoingBatches list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
         assertNotNull(list);
         assertNotNull(list.getBatches());
         assertEquals(list.getBatches().size(), 0);
@@ -164,7 +164,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         batch.setUpdateEventCount(Long.MAX_VALUE);
         batch.setSentCount(Long.MAX_VALUE);
         getOutgoingBatchService().insertOutgoingBatch(batch);
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(new Node("XXXXX", TestConstants.TEST_ROOT_NODE_GROUP));
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(new Node("XXXXX", TestConstants.TEST_ROOT_NODE_GROUP), false);
         Assert.assertEquals(1, batches.getBatches().size());
         batch.setBatchId(batches.getBatches().get(0).getBatchId());
         batch.setStatus(Status.OK);
@@ -222,7 +222,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
         // reload, config, testchannel and other
 
-        OutgoingBatches list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        OutgoingBatches list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
 
         Assert.assertEquals(4, list.getActiveChannels().size(), 4);
         Assert.assertEquals(10, list.getBatches().size());
@@ -236,7 +236,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         nodeChannelOther.setLastExtractedTime(halfHourAgo.getTime());
         getConfigurationService().saveNodeChannel(nodeChannelOther, false);
 
-        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
 
         Assert.assertEquals(4, list.getActiveChannels().size(), 4);
         Assert.assertEquals(5, list.getBatches().size());
@@ -248,7 +248,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         nodeChannelOther.setLastExtractedTime(hourAgo.getTime());
         getConfigurationService().saveNodeChannel(nodeChannelOther, false);
 
-        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
 
         Assert.assertEquals(4, list.getActiveChannels().size(), 4);
         Assert.assertEquals(10, list.getBatches().size());
@@ -265,7 +265,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         nodeChannelOther.setExtractPeriodMillis(0);
         getConfigurationService().saveChannel(nodeChannelOther, false);
 
-        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
 
         // would be 5, but we reset the extract period to 0, meaning every time
 
