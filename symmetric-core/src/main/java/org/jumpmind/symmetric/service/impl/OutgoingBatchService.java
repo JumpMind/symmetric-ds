@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -69,7 +70,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void markAllAsSentForNode(Node node) {
         OutgoingBatches batches = null;
         do {
-            batches = getOutgoingBatches(node);
+            batches = getOutgoingBatches(node, true);
             for (OutgoingBatch outgoingBatch : batches.getBatches()) {
                 outgoingBatch.setStatus(Status.OK);
                 outgoingBatch.setErrorFlag(false);
@@ -233,7 +234,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * been created by {@link #buildOutgoingBatches(String)} in channel priority
      * order.
      */
-    public OutgoingBatches getOutgoingBatches(Node node) {
+    public OutgoingBatches getOutgoingBatches(Node node, final boolean includeDisabledChannels) {
         long ts = System.currentTimeMillis();
         final int maxNumberOfBatchesToSelect = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
@@ -247,10 +248,30 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     public List<OutgoingBatch> extractData(ResultSet rs) throws SQLException {
                         List<OutgoingBatch> results = new ArrayList<OutgoingBatch>();
                         int rowNum = 0;
+                        Map<String, Channel> channels = new HashMap<String, Channel>();
+                        Map<String, Integer> batchCountPerChannel = new HashMap<String, Integer>();
                         while (rs.next()) {
-                            results.add(this.mapper.mapRow(rs, rowNum++));
-                            if (rowNum >= maxNumberOfBatchesToSelect) {
-                                break;
+                            OutgoingBatch batch = this.mapper.mapRow(rs, rowNum);
+                            String channelId = batch.getChannelId();
+                            Channel channel = channels.get(channelId);
+                            if (channel == null) {
+                                channel = configurationService.getChannel(channelId);
+                                channels.put(channelId, channel);
+                            }
+
+                            Integer currentBatchCount = batchCountPerChannel.get(channelId);
+                            if (currentBatchCount == null) {
+                                currentBatchCount = 0;
+                            }
+                            
+                            if (channel != null && channel.getMaxBatchToSend() > currentBatchCount && 
+                                    (channel.isEnabled() || includeDisabledChannels)) {
+                                rowNum++;
+                                batchCountPerChannel.put(channelId, currentBatchCount+1);
+                                results.add(batch);
+                                if (rowNum >= maxNumberOfBatchesToSelect) {
+                                    break;
+                                }
                             }
                         }
                         return results;

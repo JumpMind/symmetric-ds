@@ -39,7 +39,7 @@ public interface IOutgoingBatchService {
 
     public OutgoingBatch findOutgoingBatch(long batchId);
 
-    public OutgoingBatches getOutgoingBatches(Node node);
+    public OutgoingBatches getOutgoingBatches(Node node, boolean includeDisabledChannels);
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId);
 
