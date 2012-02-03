@@ -79,6 +79,8 @@ public interface IConfigurationService {
     public NodeChannel getNodeChannel(String channelId, boolean refreshExtractMillis);
     
     public Channel getChannel (String channelId);
+    
+    public Map<String, Channel> getChannels(boolean refreshCache);
 
     public NodeChannel getNodeChannel(String channelId, String nodeId, boolean refreshExtractMillis);
 
