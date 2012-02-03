@@ -24,7 +24,9 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -37,6 +39,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -74,7 +77,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void markAllAsSentForNode(Node node) {
         OutgoingBatches batches = null;
         do {
-            batches = getOutgoingBatches(node);
+            batches = getOutgoingBatches(node, true);
             for (OutgoingBatch outgoingBatch : batches.getBatches()) {
                 outgoingBatch.setStatus(Status.OK);
                 outgoingBatch.setErrorFlag(false);
@@ -152,7 +155,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public OutgoingBatch findOutgoingBatch(long batchId) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
-                new OutgoingBatchMapper(), new Object[] { batchId }, new int[] { Types.NUMERIC });
+                new OutgoingBatchMapper(true, false), new Object[] { batchId }, new int[] { Types.NUMERIC });
         if (list != null && list.size() > 0) {
             return list.get(0);
         } else {
@@ -197,7 +200,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             : "selectOutgoingBatchByChannelAndStatusSql", startAtBatchIdSql,
                     " order by batch_id desc");
 
-            return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(),
+            return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true, false),
                     args.toArray(new Object[args.size()]), null);
         } else {
             return new ArrayList<OutgoingBatch>(0);
@@ -223,13 +226,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * been created by {@link #buildOutgoingBatches(String)} in channel priority
      * order.
      */
-    public OutgoingBatches getOutgoingBatches(Node node) {
+    public OutgoingBatches getOutgoingBatches(Node node, boolean includeDisabledChannels) {
         long ts = System.currentTimeMillis();
         final int maxNumberOfBatchesToSelect = parameterService.getInt(
                 ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"),
-                maxNumberOfBatchesToSelect, new OutgoingBatchMapper(),
+                maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels, true),
                 new Object[] { node.getNodeId(), OutgoingBatch.Status.NE.name(),
                         OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                         OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name() }, null);
@@ -265,7 +268,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchRangeSql"),
-                new OutgoingBatchMapper(), Long.parseLong(startBatchId), Long.parseLong(endBatchId)));
+                new OutgoingBatchMapper(true, false), Long.parseLong(startBatchId), Long.parseLong(endBatchId)));
         return batches;
     }
 
@@ -273,7 +276,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(sqlTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchErrorsSql"), maxRows,
-                new OutgoingBatchMapper(), null, null));
+                new OutgoingBatchMapper(true, false), null, null));
         return batches;
     }
 
@@ -341,46 +344,64 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     class OutgoingBatchMapper implements ISqlRowMapper<OutgoingBatch> {
-        public OutgoingBatch mapRow(Row rs) {
-            OutgoingBatch batch = new OutgoingBatch();
-            batch.setNodeId(rs.getString("node_id"));
-            batch.setChannelId(rs.getString("channel_id"));
-            batch.setStatus(rs.getString("status"));
-            batch.setByteCount(rs.getLong("byte_count"));
-            batch.setExtractCount(rs.getLong("extract_count"));
-            batch.setSentCount(rs.getLong("sent_count"));
-            batch.setLoadCount(rs.getLong("load_count"));
-            batch.setDataEventCount(rs.getLong("data_event_count"));
-            batch.setReloadEventCount(rs.getLong("reload_event_count"));
-            batch.setInsertEventCount(rs.getLong("insert_event_count"));
-            batch.setUpdateEventCount(rs.getLong("update_event_count"));
-            batch.setDeleteEventCount(rs.getLong("delete_event_count"));
-            batch.setOtherEventCount(rs.getLong("other_event_count"));
-            batch.setRouterMillis(rs.getLong("router_millis"));
-            batch.setNetworkMillis(rs.getLong("network_millis"));
-            batch.setFilterMillis(rs.getLong("filter_millis"));
-            batch.setLoadMillis(rs.getLong("load_millis"));
-            batch.setExtractMillis(rs.getLong("extract_millis"));
-            batch.setSqlState(rs.getString("sql_state"));
-            batch.setSqlCode(rs.getInt("sql_code"));
-            batch.setSqlMessage(rs.getString("sql_message"));
-            batch.setFailedDataId(rs.getLong("failed_data_id"));
-            batch.setLastUpdatedHostName(rs.getString("last_update_hostname"));
-            batch.setLastUpdatedTime(rs.getDateTime("last_update_time"));
-            batch.setCreateTime(rs.getDateTime("create_time"));
-            batch.setBatchId(rs.getLong("batch_id"));
-            batch.setLoadFlag(rs.getBoolean("load_flag"));
-            batch.setErrorFlag(rs.getBoolean("error_flag"));
-            return batch;
+
+        private boolean includeDisabledChannels = false;
+        private boolean limitBasedOnMaxBatchToSend = false;
+        private Map<String, Channel> channels;
+        private Map<String, Integer> countByChannel;
+
+        public OutgoingBatchMapper(boolean includeDisabledChannels,
+                boolean limitBasedOnMaxBatchToSend) {
+            this.includeDisabledChannels = includeDisabledChannels;
+            this.limitBasedOnMaxBatchToSend = limitBasedOnMaxBatchToSend;
+            this.channels = configurationService.getChannels(false);
+            this.countByChannel = new HashMap<String, Integer>();
         }
-    }
 
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
+        public OutgoingBatch mapRow(Row rs) {
+            String channelId = rs.getString("channel_id");
+            Channel channel = channels.get(channelId);
+            Integer count = countByChannel.get(channelId);
+            if (count == null) {
+                count = 0;
+            }
+            if (channel != null && (includeDisabledChannels || channel.isEnabled())
+                    && (!limitBasedOnMaxBatchToSend || count <= channel.getMaxBatchToSend())) {
+                count++;
+                OutgoingBatch batch = new OutgoingBatch();
+                batch.setChannelId(channelId);
+                batch.setNodeId(rs.getString("node_id"));
+                batch.setStatus(rs.getString("status"));
+                batch.setByteCount(rs.getLong("byte_count"));
+                batch.setExtractCount(rs.getLong("extract_count"));
+                batch.setSentCount(rs.getLong("sent_count"));
+                batch.setLoadCount(rs.getLong("load_count"));
+                batch.setDataEventCount(rs.getLong("data_event_count"));
+                batch.setReloadEventCount(rs.getLong("reload_event_count"));
+                batch.setInsertEventCount(rs.getLong("insert_event_count"));
+                batch.setUpdateEventCount(rs.getLong("update_event_count"));
+                batch.setDeleteEventCount(rs.getLong("delete_event_count"));
+                batch.setOtherEventCount(rs.getLong("other_event_count"));
+                batch.setRouterMillis(rs.getLong("router_millis"));
+                batch.setNetworkMillis(rs.getLong("network_millis"));
+                batch.setFilterMillis(rs.getLong("filter_millis"));
+                batch.setLoadMillis(rs.getLong("load_millis"));
+                batch.setExtractMillis(rs.getLong("extract_millis"));
+                batch.setSqlState(rs.getString("sql_state"));
+                batch.setSqlCode(rs.getInt("sql_code"));
+                batch.setSqlMessage(rs.getString("sql_message"));
+                batch.setFailedDataId(rs.getLong("failed_data_id"));
+                batch.setLastUpdatedHostName(rs.getString("last_update_hostname"));
+                batch.setLastUpdatedTime(rs.getDateTime("last_update_time"));
+                batch.setCreateTime(rs.getDateTime("create_time"));
+                batch.setBatchId(rs.getLong("batch_id"));
+                batch.setLoadFlag(rs.getBoolean("load_flag"));
+                batch.setErrorFlag(rs.getBoolean("error_flag"));
+                return batch;
+            } else {
+                return null;
+            }
+        }
     }
 
 }

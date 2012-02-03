@@ -270,7 +270,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             routerService.routeData();
         }
 
-        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode);
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode, false);
 
         if (batches.containsBatches()) {
 
@@ -334,8 +334,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.getNodeId(), currentBatch.getBatchId());
                     if (previouslyExtracted != null && previouslyExtracted.exists()) {
                         log.info(
-                                "We have already extracted batch {}.  Using the existing extraction.  To force re-extraction, please restart this instance of SymmetricDS.",
-                                currentBatch.getBatchId());
+                                "We have already extracted batch {}.  Using the existing extraction: {}",
+                                currentBatch.getBatchId(), previouslyExtracted);
                     } else {
                         currentBatch.setStatus(OutgoingBatch.Status.QY);
                         currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);

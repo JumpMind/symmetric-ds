@@ -42,8 +42,15 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
                         + "  $(node_group_link) where source_node_group_id = ?                   ");
 
         putSql("isChannelInUseSql", "select count(*) from $(trigger) where channel_id = ?   ");
-
+        
         putSql("selectChannelsSql",
+          "select c.channel_id, c.processing_order, c.max_batch_size, c.enabled, " +
+          "  c.max_batch_to_send, c.max_data_to_route, c.use_old_data_to_route, " +
+          "  c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob, " +
+          "  c.batch_algorithm, c.extract_period_millis   "
+        + " from $(channel) c order by c.processing_order asc, c.channel_id                                                                                                                                                                                           ");
+
+        putSql("selectNodeChannelsSql",
                 ""
                         + "select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled, c.processing_order,                                                                                                                                               "
                         + "  c.max_batch_size, c.enabled, c.max_batch_to_send, c.max_data_to_route, c.use_old_data_to_route, c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob, c.batch_algorithm, nc.last_extract_time, c.extract_period_millis   "
