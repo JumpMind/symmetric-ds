@@ -132,29 +132,32 @@ public abstract class AbstractTransformer {
                             transformColumn.getSourceColumnName(), transformation.getTransformId());
                 }
             }
-
-            if (data.getTargetDmlType() != DmlType.DELETE) {
-                if (data.getTargetDmlType() == DmlType.INSERT && transformation.isUpdateFirst()) {
-                    data.setTargetDmlType(DmlType.UPDATE);
-                }
-                persistData = true;
-            } else {
-                // handle the delete action
-                DeleteAction deleteAction = transformation.getDeleteAction();
-                switch (deleteAction) {
-                case DEL_ROW:
-                    data.setTargetDmlType(DmlType.DELETE);
+            
+            if (data.getColumnNames().length > 0) {
+                if (data.getTargetDmlType() != DmlType.DELETE) {
+                    if (data.getTargetDmlType() == DmlType.INSERT && transformation.isUpdateFirst()) {
+                        data.setTargetDmlType(DmlType.UPDATE);
+                    }
                     persistData = true;
-                    break;
-                case UPDATE_COL:
-                    data.setTargetDmlType(DmlType.UPDATE);
-                    persistData = true;
-                    break;
-                case NONE:
-                default:
-                    if (log.isDebugEnabled()) {
-                        log.debug("TransformNoActionNotConfiguredToDelete", transformation.getTransformId());
-                    }                    
+                } else {
+                    // handle the delete action
+                    DeleteAction deleteAction = transformation.getDeleteAction();
+                    switch (deleteAction) {
+                    case DEL_ROW:
+                        data.setTargetDmlType(DmlType.DELETE);
+                        persistData = true;
+                        break;
+                    case UPDATE_COL:
+                        data.setTargetDmlType(DmlType.UPDATE);
+                        persistData = true;
+                        break;
+                    case NONE:
+                    default:
+                        if (log.isDebugEnabled()) {
+                            log.debug("TransformNoActionNotConfiguredToDelete",
+                                    transformation.getTransformId());
+                        }
+                    }
                 }
             }
         } catch (IgnoreRowException ex) {
@@ -178,6 +181,7 @@ public abstract class AbstractTransformer {
             ArrayList<TransformedData> datas = new ArrayList<TransformedData>();
             TransformedData data = new TransformedData(transformation, dmlType, sourceKeyValues,
                     oldSourceValues, sourceValues);
+            datas.add(data);
             for (TransformColumn transformColumn : columns) {
                 List<TransformedData> newDatas = null;
                 try {
@@ -212,10 +216,6 @@ public abstract class AbstractTransformer {
                     datas.addAll(newDatas);
                     newDatas = null;
                 }
-            }
-
-            if (data.getColumnValues() != null && data.getColumnValues().length > 0) {
-                datas.add(0, data);
             }
 
             return datas;
