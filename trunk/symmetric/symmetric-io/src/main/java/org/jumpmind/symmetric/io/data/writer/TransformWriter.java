@@ -164,8 +164,7 @@ public class TransformWriter implements IDataWriter {
 
     }
 
-    protected List<TransformedData> transform(DataEventType eventType,
-            DataContext context,
+    protected List<TransformedData> transform(DataEventType eventType, DataContext context,
             TransformTable transformation, Map<String, String> sourceKeyValues,
             Map<String, String> oldSourceValues, Map<String, String> sourceValues) {
         try {
@@ -210,8 +209,8 @@ public class TransformWriter implements IDataWriter {
 
     }
 
-    protected boolean perform(DataContext context,
-            TransformedData data, TransformTable transformation, Map<String, String> sourceValues,
+    protected boolean perform(DataContext context, TransformedData data,
+            TransformTable transformation, Map<String, String> sourceValues,
             Map<String, String> oldSourceValues) throws IgnoreRowException {
         boolean persistData = false;
         try {
@@ -235,30 +234,33 @@ public class TransformWriter implements IDataWriter {
                 }
             }
 
-            if (data.getTargetDmlType() != DataEventType.DELETE) {
-                if (data.getTargetDmlType() == DataEventType.INSERT
-                        && transformation.isUpdateFirst()) {
-                    data.setTargetDmlType(DataEventType.UPDATE);
-                }
-                persistData = true;
-            } else {
-                // handle the delete action
-                DeleteAction deleteAction = transformation.getDeleteAction();
-                switch (deleteAction) {
-                case DEL_ROW:
-                    data.setTargetDmlType(DataEventType.DELETE);
+            // perform a transformation if there are columns defined for transformation
+            if (data.getColumnNames().length > 0) {
+                if (data.getTargetDmlType() != DataEventType.DELETE) {
+                    if (data.getTargetDmlType() == DataEventType.INSERT
+                            && transformation.isUpdateFirst()) {
+                        data.setTargetDmlType(DataEventType.UPDATE);
+                    }
                     persistData = true;
-                    break;
-                case UPDATE_COL:
-                    data.setTargetDmlType(DataEventType.UPDATE);
-                    persistData = true;
-                    break;
-                case NONE:
-                default:
-                    if (log.isDebugEnabled()) {
-                        log.debug(
-                                "The {} transformation is not configured to delete row.  Not sending the delete through.",
-                                transformation.getTransformId());
+                } else {
+                    // handle the delete action
+                    DeleteAction deleteAction = transformation.getDeleteAction();
+                    switch (deleteAction) {
+                        case DEL_ROW:
+                            data.setTargetDmlType(DataEventType.DELETE);
+                            persistData = true;
+                            break;
+                        case UPDATE_COL:
+                            data.setTargetDmlType(DataEventType.UPDATE);
+                            persistData = true;
+                            break;
+                        case NONE:
+                        default:
+                            if (log.isDebugEnabled()) {
+                                log.debug(
+                                        "The {} transformation is not configured to delete row.  Not sending the delete through.",
+                                        transformation.getTransformId());
+                            }
                     }
                 }
             }
@@ -273,11 +275,10 @@ public class TransformWriter implements IDataWriter {
         return persistData;
     }
 
-    protected List<TransformedData> create(
-            DataContext context,
-            DataEventType dataEventType, TransformTable transformation,
-            Map<String, String> sourceKeyValues, Map<String, String> oldSourceValues,
-            Map<String, String> sourceValues) throws IgnoreRowException {
+    protected List<TransformedData> create(DataContext context, DataEventType dataEventType,
+            TransformTable transformation, Map<String, String> sourceKeyValues,
+            Map<String, String> oldSourceValues, Map<String, String> sourceValues)
+            throws IgnoreRowException {
         List<TransformColumn> columns = transformation.getPrimaryKeyColumns();
         if (columns == null || columns.size() == 0) {
             log.error("No primary key defined for the transformation: {}",
@@ -285,59 +286,52 @@ public class TransformWriter implements IDataWriter {
             return new ArrayList<TransformedData>(0);
         } else {
             List<TransformedData> datas = new ArrayList<TransformedData>();
-            TransformedData data = new TransformedData(transformation, dataEventType, sourceKeyValues,
-                    oldSourceValues, sourceValues);
-
+            TransformedData data = new TransformedData(transformation, dataEventType,
+                    sourceKeyValues, oldSourceValues, sourceValues);
+            datas.add(data);
             for (TransformColumn transformColumn : columns) {
                 List<TransformedData> newDatas = null;
-                    try {
-                        Object columnValue = transformColumn(context, data, transformColumn,
-                                sourceValues, oldSourceValues);
-                        if (columnValue instanceof List) {
-                            @SuppressWarnings("unchecked")
-                            List<String> values = (List<String>) columnValue;
-                            if (values.size() > 0) {
-                                data.put(transformColumn, values.get(0), true);
-                                if (values.size() > 1) {
-                                    if (newDatas == null) {
-                                        newDatas = new ArrayList<TransformedData>(values.size() - 1);
-                                    }
-                                    for (int i = 1; i < values.size(); i++) {
-                                        TransformedData newData = data.copy();
-                                        newData.put(transformColumn, values.get(i), true);
-                                        newDatas.add(newData);
-                                    }
+                try {
+                    Object columnValue = transformColumn(context, data, transformColumn,
+                            sourceValues, oldSourceValues);
+                    if (columnValue instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<String> values = (List<String>) columnValue;
+                        if (values.size() > 0) {
+                            data.put(transformColumn, values.get(0), true);
+                            if (values.size() > 1) {
+                                if (newDatas == null) {
+                                    newDatas = new ArrayList<TransformedData>(values.size() - 1);
                                 }
-                            } else {
-                                throw new IgnoreRowException();
+                                for (int i = 1; i < values.size(); i++) {
+                                    TransformedData newData = data.copy();
+                                    newData.put(transformColumn, values.get(i), true);
+                                    newDatas.add(newData);
+                                }
                             }
                         } else {
-                            data.put(transformColumn, (String) columnValue, true);
+                            throw new IgnoreRowException();
                         }
-                    } catch (IgnoreColumnException e) {
-                        // Do nothing. We are suppose to ignore the column.
+                    } else {
+                        data.put(transformColumn, (String) columnValue, true);
                     }
-                
+                } catch (IgnoreColumnException e) {
+                    // Do nothing. We are suppose to ignore the column.
+                }
+
                 if (newDatas != null) {
                     datas.addAll(newDatas);
                     newDatas = null;
                 }
             }
-            
-            // add the original data if we have transformed at least one column
-            if (data.getColumnValues() != null && data.getColumnValues().length > 0) {
-                datas.add(0, data);
-            }
-            
+
             return datas;
         }
     }
 
-    protected Object transformColumn(
-            DataContext context,
-            TransformedData data, TransformColumn transformColumn,
-            Map<String, String> sourceValues, Map<String, String> oldSourceValues)
-            throws IgnoreRowException, IgnoreColumnException {
+    protected Object transformColumn(DataContext context, TransformedData data,
+            TransformColumn transformColumn, Map<String, String> sourceValues,
+            Map<String, String> oldSourceValues) throws IgnoreRowException, IgnoreColumnException {
         Object returnValue = null;
         String value = transformColumn.getSourceColumnName() != null ? sourceValues
                 .get(transformColumn.getSourceColumnName()) : null;
@@ -368,7 +362,7 @@ public class TransformWriter implements IDataWriter {
     public Map<Batch, Statistics> getStatistics() {
         return this.targetWriter.getStatistics();
     }
-    
+
     public IDataWriter getTargetWriter() {
         return targetWriter;
     }

@@ -50,6 +50,7 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.sql.jdbc.IConnectionCallback;
 import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
+import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -537,8 +538,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 metaData.setSchemaPattern(schema);
                 metaData.setTableTypes(null);
                 String tableName = table;
-                if (getPlatformInfo().isStoresUpperCaseInCatalog()) {
+                if (getPlatformInfo().isStoresUpperCaseInCatalog() && !FormatUtils.isMixedCase(tableName)) {
                     tableName = tableName.toUpperCase();
+                } else if (!FormatUtils.isMixedCase(tableName)){
+                    tableName = tableName.toLowerCase();
                 }
 
                 ResultSet tableData = null;

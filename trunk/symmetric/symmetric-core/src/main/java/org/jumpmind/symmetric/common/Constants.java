@@ -38,7 +38,7 @@ final public class Constants {
     public static final String SERVER_SPRING_XML = "classpath:/symmetric-server.xml";
     
     public static final String SYS_PROP_STANDALONE_WEB = "symmetric.standalone.web";
-    
+        
     public static final String SYS_PROP_ENGINES_DIR = "symmetric.engines.dir";
     
     public static final String SYS_PROP_WEB_DIR = "symmetric.default.web.dir";

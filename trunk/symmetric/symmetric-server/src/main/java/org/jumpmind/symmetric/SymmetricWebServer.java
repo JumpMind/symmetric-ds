@@ -220,11 +220,26 @@ public class SymmetricWebServer {
                 if (engineHolder.getEngines().size() == 1) {
                     return engineHolder.getEngines().values().iterator().next();
                 } else {
-                    throw new IllegalStateException("There are more than "+engineHolder.getEngines().size()+" engines configured.");
+                    throw new IllegalStateException("Could not choose a single engine to return.  There are "+engineHolder.getEngines().size()+" engines configured.");
                 }
             }
         }
         return engine;
+    }
+    
+    public void waitForEnginesToComeOnline(long maxWaitTimeInMs) throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+        ServletContext servletContext = getServletContext();
+        if (servletContext != null) {
+            SymmetricEngineHolder engineHolder = ServletUtils
+                    .getSymmetricEngineHolder(servletContext);
+            while (engineHolder.areEnginesStarting()) {
+                AppUtils.sleep(500);
+                if ((System.currentTimeMillis()-startTime) > maxWaitTimeInMs) {
+                    throw new InterruptedException("Timed out waiting for engines to start");
+                }
+            }
+        }        
     }
 
     protected void setupBasicAuthIfNeeded(Server server) {
