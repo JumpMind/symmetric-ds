@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
@@ -29,17 +30,26 @@ abstract public class TestSetupUtil {
 
     public static ISymmetricEngine prepareForServiceTests() {
         if (engine == null) {
-            removeEmbededdedDatabases();
-            EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
-                    new URL[] { getResource("/test-db.properties"),
-                            getResource("/symmetric-test.properties") }, "test.root",
-                    new String[] { "root" });
-            properties.setProperty(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT,
-                    "/test-services-setup.sql");
-            engine = new ClientSymmetricEngine(properties);
-            dropAndCreateDatabaseTables(properties.getProperty("test.root"), engine);
+            engine = prepareRoot("/test-services-setup.sql");
             engine.start();
         }
+        return engine;
+    }
+
+    protected static ISymmetricEngine prepareRoot() {
+        return prepareRoot(null);
+    }
+    
+    protected static ISymmetricEngine prepareRoot(String sql) {
+        removeEmbededdedDatabases();
+        EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(new URL[] {
+                getResource("/test-db.properties"), getResource("/symmetric-test.properties") },
+                "test.root", new String[] { "root" });
+        if (StringUtils.isNotBlank(sql)) {
+            properties.setProperty(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT, sql);
+        }
+        ISymmetricEngine engine = new ClientSymmetricEngine(properties);
+        dropAndCreateDatabaseTables(properties.getProperty("test.root"), engine);
         return engine;
     }
 
