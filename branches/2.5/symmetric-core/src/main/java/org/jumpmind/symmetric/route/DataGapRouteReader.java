@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jumpmind.symmetric.common.Constants;
@@ -48,50 +49,15 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
 
     private static final String SELECT_DATA_USING_GAPS_SQL = "selectDataUsingGapsSql";
 
+    protected DataGap currentGap;
+
+    protected List<DataGap> dataGaps;
+
     public DataGapRouteReader(ILog log, ISqlProvider sqlProvider, ChannelRouterContext context,
             IDataService dataService) {
         super(log, sqlProvider, context, dataService);
     }
-
-    protected PreparedStatement prepareStatment(List<DataGap> dataGaps, int numberOfGapsToQualify,
-            Connection c) throws SQLException {
-        String channelId = context.getChannel().getChannelId();
-        String sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify,
-                getSql(SELECT_DATA_USING_GAPS_SQL, context.getChannel().getChannel()));
-        PreparedStatement ps = c.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY,
-                ResultSet.CONCUR_READ_ONLY);
-        ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-        ps.setFetchSize(jdbcTemplate.getFetchSize());
-        ps.setString(1, channelId);
-        for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {          
-            DataGap gap = dataGaps.get(i);
-            ps.setLong(i*2 + 2, gap.getStartId());            
-            if ((i+1) == numberOfGapsToQualify && (i+1) < dataGaps.size()) {
-                // there were more gaps than we are going to use in the SQL.  use
-                // the last gap as the end data id for the last range
-                ps.setLong(i*2 + 3, dataGaps.get(dataGaps.size()-1).getEndId());
-            } else {
-                ps.setLong(i*2 + 3, gap.getEndId());
-            }
-        }
-        return ps;
-    }
-
-    protected String qualifyUsingDataGaps(List<DataGap> dataGaps, int numberOfGapsToQualify,
-            String sql) {
-        StringBuilder gapClause = new StringBuilder();
-        for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
-            if (i==0) {
-                gapClause.append(" and (");
-            } else {
-                gapClause.append(" or ");
-            }
-            gapClause.append("(d.data_id between ? and ?)");
-        }
-        gapClause.append(")");
-        return AppUtils.replace("dataRange", gapClause.toString(), sql);
-    }
-
+    
     @Override
     protected void execute() {
         jdbcTemplate.execute(new ConnectionCallback<Integer>() {
@@ -103,7 +69,7 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
                 try {
                     int numberOfGapsToQualify = dataService.getParameterService().getInt(
                             ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
-                    List<DataGap> dataGaps = dataService.findDataGaps();
+                    dataGaps = dataService.findDataGaps();
 
                     if (dbDialect.requiresAutoCommitFalseToSetFetchSize()) {
                         c.setAutoCommit(false);
@@ -121,70 +87,47 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
                         log.debug("RoutedDataSelectedInTime", executeTimeInMs, channelId);
                     }
 
-                    int maxQueueSize = dbDialect.getRouterDataPeekAheadCount();
-                    int toRead = maxQueueSize - dataQueue.size();
-                    List<Data> memQueue = new ArrayList<Data>(toRead);
-                    ts = System.currentTimeMillis();
+                    long maxDataToRoute = context.getChannel().getMaxDataToRoute();
+                    String lastTransactionId = null;
+                    int peekAheadCount = dbDialect.getRouterDataPeekAheadCount();
+                    List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
+                    boolean nontransactional = context.getChannel().getBatchAlgorithm()
+                            .equals("nontransactional");
 
-                    DataGap currentGap = dataGaps.remove(0);
-                    while (rs.next() && reading && currentGap != null) {
-                        boolean process = false;
-                        while (!process) {
-                            long dataId = rs.getLong(1);
-                            if (dataId >= currentGap.getStartId()) {
-                                if (dataId <= currentGap.getEndId()) {
-                                    // in current gap
-                                    process = true;
-                                    break;
-                                } else {
-                                    // past current gap. move to next gap
-                                    if (dataGaps.size() > 0) {
-                                        currentGap = dataGaps.remove(0);
-                                    } else {
-                                        currentGap = null;
-                                        break;
-                                    }
-                                }
-                            } else {
-                                break;
-                            }
+                    boolean moreData = true;
+                    while (dataCount <= maxDataToRoute || lastTransactionId != null) {
+                        if (moreData) {
+                            moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, rs);
                         }
 
-                        if (process) {
-                            Data data = dataService.readData(rs);
-                            context.setLastDataIdForTransactionId(data);
-                            memQueue.add(data);
+                        if ((lastTransactionId == null || nontransactional)
+                                && peekAheadQueue.size() > 0) {
+                            Data data = peekAheadQueue.remove(0);
+                            copyToQueue(data);
                             dataCount++;
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    ChannelRouterContext.STAT_READ_DATA_MS);
-                        } else {
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    ChannelRouterContext.STAT_REREAD_DATA_MS);
+                            lastTransactionId = data.getTransactionId();
+                        } else if (lastTransactionId != null && peekAheadQueue.size() > 0) {
+                            Iterator<Data> datas = peekAheadQueue.iterator();
+                            int dataWithSameTransactionIdCount = 0;
+                            while (datas.hasNext()) {
+                                Data data = datas.next();
+                                if (lastTransactionId.equals(data.getTransactionId())) {
+                                    dataWithSameTransactionIdCount++;
+                                    datas.remove();
+                                    copyToQueue(data);
+                                    dataCount++;
+                                }
+                            }
+
+                            if (dataWithSameTransactionIdCount == 0) {
+                                lastTransactionId = null;
+                            }
+
+                        } else if (peekAheadQueue.size() == 0) {
+                            // we've reached the end of the result set
+                            break;
                         }
-
-                        ts = System.currentTimeMillis();
-
-                        if (toRead == 0) {
-                            copyToQueue(memQueue);
-                            toRead = maxQueueSize - dataQueue.size();
-                            memQueue = new ArrayList<Data>(toRead);
-                        } else {
-                            toRead--;
-                        }
-
-                        context.incrementStat(System.currentTimeMillis() - ts,
-                                ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
-
-                        ts = System.currentTimeMillis();
                     }
-
-                    ts = System.currentTimeMillis();
-
-                    copyToQueue(memQueue);
-
-                    context.incrementStat(System.currentTimeMillis() - ts,
-                            ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
-
                     return dataCount;
 
                 } finally {
@@ -211,6 +154,110 @@ public class DataGapRouteReader extends AbstractDataToRouteReader {
                 }
             }
         });
+    }
+    
+
+    protected PreparedStatement prepareStatment(List<DataGap> dataGaps, int numberOfGapsToQualify,
+            Connection c) throws SQLException {
+        String channelId = context.getChannel().getChannelId();
+        String sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify,
+                getSql(SELECT_DATA_USING_GAPS_SQL, context.getChannel().getChannel()));
+        PreparedStatement ps = c.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY,
+                ResultSet.CONCUR_READ_ONLY);
+        ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+        ps.setFetchSize(jdbcTemplate.getFetchSize());
+        ps.setString(1, channelId);
+        for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
+            DataGap gap = dataGaps.get(i);
+            ps.setLong(i * 2 + 2, gap.getStartId());
+            if ((i + 1) == numberOfGapsToQualify && (i + 1) < dataGaps.size()) {
+                // there were more gaps than we are going to use in the SQL. use
+                // the last gap as the end data id for the last range
+                ps.setLong(i * 2 + 3, dataGaps.get(dataGaps.size() - 1).getEndId());
+            } else {
+                ps.setLong(i * 2 + 3, gap.getEndId());
+            }
+        }
+        
+        if (dataGaps.size() > 0) {
+            currentGap = dataGaps.remove(0);
+        }
+        return ps;
+    }
+
+    protected String qualifyUsingDataGaps(List<DataGap> dataGaps, int numberOfGapsToQualify,
+            String sql) {
+        StringBuilder gapClause = new StringBuilder();
+        for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
+            if (i == 0) {
+                gapClause.append(" and (");
+            } else {
+                gapClause.append(" or ");
+            }
+            gapClause.append("(d.data_id between ? and ?)");
+        }
+        gapClause.append(")");
+        return AppUtils.replace("dataRange", gapClause.toString(), sql);
+    }
+
+
+    protected boolean process(ResultSet rs) throws SQLException {
+        long dataId = rs.getLong(1);
+        if (currentGap != null && dataId >= currentGap.getStartId()) {
+            if (dataId <= currentGap.getEndId()) {
+                return true;
+            } else {
+                // past current gap. move to next gap
+                if (dataGaps.size() > 0) {
+                    currentGap = dataGaps.remove(0);
+                    return process(rs);
+                } else {
+                    currentGap = null;
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+    }
+
+    protected void copyToQueue(Data data) {
+        long ts = System.currentTimeMillis();
+        while (!dataQueue.offer(data) && reading) {
+            AppUtils.sleep(50);
+        }
+        context.incrementStat(System.currentTimeMillis() - ts,
+                ChannelRouterContext.STAT_ENQUEUE_DATA_MS);
+    }
+
+    protected boolean fillPeekAheadQueue(List<Data> peekAheadQueue, int peekAheadCount, ResultSet rs)
+            throws SQLException {
+        boolean moreData = true;
+        int toRead = peekAheadCount - peekAheadQueue.size();
+        int dataCount = 0;
+        long ts = System.currentTimeMillis();
+        while (reading && dataCount < toRead) {
+            if (rs.next()) {
+                if (process(rs)) {
+                    Data data = dataService.readData(rs);
+                    context.setLastDataIdForTransactionId(data);
+                    peekAheadQueue.add(data);
+                    dataCount++;
+                    context.incrementStat(System.currentTimeMillis() - ts,
+                            ChannelRouterContext.STAT_READ_DATA_MS);
+                } else {
+                    context.incrementStat(System.currentTimeMillis() - ts,
+                            ChannelRouterContext.STAT_REREAD_DATA_MS);
+                }
+
+                ts = System.currentTimeMillis();
+            } else {
+                moreData = false;
+                break;
+            }
+
+        }
+        return moreData;
     }
 
 }
