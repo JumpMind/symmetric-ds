@@ -49,6 +49,10 @@ import org.jumpmind.db.platform.PlatformUtils;
  */
 public class OracleBuilder extends AbstractDdlBuilder {
 
+    protected static final String PREFIX_TRIGGER = "TRG";
+
+    protected static final String PREFIX_SEQUENCE = "SEQ";
+
     /* The regular expression pattern for ISO dates, i.e. 'YYYY-MM-DD'. */
     private Pattern isoDatePattern;
 
@@ -118,7 +122,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
      */
     protected void createAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
         ddl.append("CREATE SEQUENCE ");
-        printIdentifier(getConstraintName("seq", table, column.getName(), null), ddl);
+        printIdentifier(getConstraintName(PREFIX_SEQUENCE, table, column.getName(), null), ddl);
         printEndOfStatement(ddl);
     }
 
@@ -127,7 +131,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
      */
     protected void createAutoIncrementTrigger(Table table, Column column, StringBuilder ddl) {
         String columnName = getColumnName(column);
-        String triggerName = getConstraintName("trg", table, column.getName(), null);
+        String triggerName = getConstraintName(PREFIX_TRIGGER, table, column.getName(), null);
 
         if (platform.isScriptModeOn()) {
             // For the script, we output a more nicely formatted version
@@ -140,7 +144,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
             println(" IS NULL)", ddl);
             println("BEGIN", ddl);
             ddl.append("  SELECT ");
-            printIdentifier(getConstraintName("seq", table, column.getName(), null), ddl);
+            printIdentifier(getConstraintName(PREFIX_SEQUENCE, table, column.getName(), null), ddl);
             ddl.append(".nextval INTO :new.");
             printIdentifier(columnName, ddl);
             ddl.append(" FROM dual");
@@ -163,7 +167,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
             printIdentifier(columnName, ddl);
             println(" IS NULL)", ddl);
             ddl.append("BEGIN SELECT ");
-            printIdentifier(getConstraintName("seq", table, column.getName(), null), ddl);
+            printIdentifier(getConstraintName(PREFIX_SEQUENCE, table, column.getName(), null), ddl);
             ddl.append(".nextval INTO :new.");
             printIdentifier(columnName, ddl);
             ddl.append(" FROM dual");
@@ -184,7 +188,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
      */
     protected void dropAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
         ddl.append("DROP SEQUENCE ");
-        printIdentifier(getConstraintName("seq", table, column.getName(), null), ddl);
+        printIdentifier(getConstraintName(PREFIX_SEQUENCE, table, column.getName(), null), ddl);
         printEndOfStatement(ddl);
     }
 
@@ -193,7 +197,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
      */
     protected void dropAutoIncrementTrigger(Table table, Column column, StringBuilder ddl) {
         ddl.append("DROP TRIGGER ");
-        printIdentifier(getConstraintName("trg", table, column.getName(), null), ddl);
+        printIdentifier(getConstraintName(PREFIX_TRIGGER, table, column.getName(), null), ddl);
         printEndOfStatement(ddl);
     }
 
@@ -286,7 +290,7 @@ public class OracleBuilder extends AbstractDdlBuilder {
                 if (idx > 0) {
                     result.append(",");
                 }
-                result.append(getDelimitedIdentifier(getConstraintName("seq", table,
+                result.append(getDelimitedIdentifier(getConstraintName(PREFIX_SEQUENCE, table,
                         columns[idx].getName(), null)));
                 result.append(".currval");
             }

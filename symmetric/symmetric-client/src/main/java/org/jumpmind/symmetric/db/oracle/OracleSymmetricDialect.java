@@ -150,16 +150,16 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.execute(String.format("call %s.setValue(1)", getSymmetricPackageName()));
+        transaction.prepareAndExecute(String.format("call %s.setValue(1)", getSymmetricPackageName()));
         if (nodeId != null) {
-            transaction.execute(String.format("call %s.setNodeValue('" + nodeId + "')",
+            transaction.prepareAndExecute(String.format("call %s.setNodeValue('" + nodeId + "')",
                     getSymmetricPackageName()));
         }
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute(String.format("call %s.setValue(null)", getSymmetricPackageName()));
-        transaction.execute(String.format("call %s.setNodeValue(null)", getSymmetricPackageName()));
+        transaction.prepareAndExecute(String.format("call %s.setValue(null)", getSymmetricPackageName()));
+        transaction.prepareAndExecute(String.format("call %s.setNodeValue(null)", getSymmetricPackageName()));
     }
 
     public String getSyncTriggersExpression() {

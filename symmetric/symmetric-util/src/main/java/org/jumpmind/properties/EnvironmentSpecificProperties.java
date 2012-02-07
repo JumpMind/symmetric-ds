@@ -51,6 +51,7 @@ public class EnvironmentSpecificProperties extends TypedProperties {
             for (URL fileUrl : fileUrls) {
                 this.original.load(fileUrl.openStream());
             }
+            this.original.putAll(System.getProperties());
             activate();
         } catch (IOException e) {
             throw new IoException(e);

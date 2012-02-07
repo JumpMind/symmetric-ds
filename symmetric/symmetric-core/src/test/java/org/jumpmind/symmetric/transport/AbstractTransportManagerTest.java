@@ -26,10 +26,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-/**
- * 
- */
-public class AbstractTransportManagerUnitTest {
+public class AbstractTransportManagerTest {
 
     @Test
     public void testChooseURL() {

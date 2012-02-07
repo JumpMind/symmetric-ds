@@ -271,8 +271,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         // determine whether it fits our auto-increment definition
         PreparedStatement prepStmt = null;
         IDdlBuilder builder = getPlatform().getDdlBuilder();
-        String triggerName = builder.getConstraintName("trg", table, column.getName(), null);
-        String seqName = builder.getConstraintName("seq", table, column.getName(), null);
+        String triggerName = builder.getConstraintName(OracleBuilder.PREFIX_TRIGGER, table, column.getName(), null);
+        String seqName = builder.getConstraintName(OracleBuilder.PREFIX_SEQUENCE, table, column.getName(), null);
 
         if (!getPlatform().isDelimitedIdentifierModeOn()) {
             triggerName = triggerName.toUpperCase();

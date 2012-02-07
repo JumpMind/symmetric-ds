@@ -275,7 +275,7 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertDataEvent(ISqlTransaction transaction, long dataId, long batchId,
             String routerId) {
         try {
-            transaction.execute(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId,
+            transaction.prepareAndExecute(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId,
                     StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId },
                     new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR });
         } catch (RuntimeException ex) {

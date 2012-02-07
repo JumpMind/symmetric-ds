@@ -105,17 +105,17 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.execute("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '1', false)");
+        transaction.prepareAndExecute("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '1', false)");
         if (nodeId == null) {
             nodeId = "";
         }
-        transaction.execute("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '" + nodeId + "', false)");
+        transaction.prepareAndExecute("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '" + nodeId + "', false)");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE
+        transaction.prepareAndExecute("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE
                 + "', '', false)");
-        transaction.execute("select set_config('" + SYNC_NODE_DISABLED_VARIABLE
+        transaction.prepareAndExecute("select set_config('" + SYNC_NODE_DISABLED_VARIABLE
                 + "', '', false)");
     }
 

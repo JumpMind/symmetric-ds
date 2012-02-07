@@ -1256,7 +1256,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             dialect.disableSyncTriggers(transaction, node2disable);
         }
         for (int i = 0; i < count; i++) {
-            transaction.execute(
+            transaction.prepareAndExecute(
                     String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName),
                     routingVarcharFieldValue);
             if (!transactional) {
@@ -1287,7 +1287,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         if (node2disable != null) {
             dialect.disableSyncTriggers(transaction, node2disable);
         }
-        transaction.execute(sql);
+        transaction.prepareAndExecute(sql);
         if (node2disable != null) {
             dialect.enableSyncTriggers(transaction);
         }

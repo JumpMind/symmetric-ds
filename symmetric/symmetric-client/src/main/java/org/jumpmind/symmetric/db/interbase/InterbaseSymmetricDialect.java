@@ -89,17 +89,17 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
-        transaction.execute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
+        transaction.prepareAndExecute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
             SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1" });
         if (nodeId != null) {
-            transaction.execute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
+            transaction.prepareAndExecute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
                 SYNC_TRIGGERS_DISABLED_NODE_VARIABLE, nodeId });
         }
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
         String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
-        transaction.execute("delete from " + contextTableName);
+        transaction.prepareAndExecute("delete from " + contextTableName);
     }
 
     public String getSyncTriggersExpression() {

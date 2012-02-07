@@ -43,13 +43,13 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.execute("select " + parameterService.getTablePrefix() + "_triggers_set_disabled('t'), "
+        transaction.prepareAndExecute("select " + parameterService.getTablePrefix() + "_triggers_set_disabled('t'), "
                 + parameterService.getTablePrefix() + "_node_set_disabled(?) from sysmaster:sysdual",
                 new Object[] { nodeId });
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("select " + parameterService.getTablePrefix() + "_triggers_set_disabled('f'), "
+        transaction.prepareAndExecute("select " + parameterService.getTablePrefix() + "_triggers_set_disabled('f'), "
                 + parameterService.getTablePrefix() + "_node_set_disabled(null) from sysmaster:sysdual");
     }
 

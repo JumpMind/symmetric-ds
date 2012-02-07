@@ -91,13 +91,13 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.execute("set @sync_prevented=1");
-        transaction.execute("set @node_value=?", nodeId);
+        transaction.prepareAndExecute("set @sync_prevented=1");
+        transaction.prepareAndExecute("set @node_value=?", nodeId);
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("set @sync_prevented=null");
-        transaction.execute("set @node_value=null");
+        transaction.prepareAndExecute("set @sync_prevented=null");
+        transaction.prepareAndExecute("set @node_value=null");
     }
 
     public String getSyncTriggersExpression() {

@@ -14,10 +14,10 @@ public class MsSqlJdbcSqlTransaction extends JdbcSqlTransaction {
     public void allowInsertIntoAutoIncrementColumns(boolean allow, Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
             if (allow) {
-                execute(String.format("SET IDENTITY_INSERT %s ON",
+                prepareAndExecute(String.format("SET IDENTITY_INSERT %s ON",
                         table.getFullyQualifiedTableName()));
             } else {
-                execute(String.format("SET IDENTITY_INSERT %s OFF",
+                prepareAndExecute(String.format("SET IDENTITY_INSERT %s OFF",
                         table.getFullyQualifiedTableName()));
             }
         }

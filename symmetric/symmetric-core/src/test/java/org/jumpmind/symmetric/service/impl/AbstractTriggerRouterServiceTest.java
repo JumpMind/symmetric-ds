@@ -361,7 +361,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
     
     public static int insert(Object[] values, ISqlTransaction transaction, ISymmetricDialect dbDialect) {
-        return transaction.execute(INSERT, filterValues(values, dbDialect),
+        return transaction.prepareAndExecute(INSERT, filterValues(values, dbDialect),
                 filterTypes(INSERT_TYPES, dbDialect));
     }    
 

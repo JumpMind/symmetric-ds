@@ -455,7 +455,7 @@ public class DatabaseWriter implements IDataWriter {
             String sql = data.getCsvData(CsvData.ROW_DATA);
             transaction.prepare(sql);
             log.info("About to run: {}", sql);
-            long count = transaction.execute(sql);
+            long count = transaction.prepareAndExecute(sql);
             log.info("{} rows updated when running: {}", count, sql);
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT, count);

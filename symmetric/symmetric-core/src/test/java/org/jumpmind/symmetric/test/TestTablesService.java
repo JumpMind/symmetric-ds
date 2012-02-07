@@ -76,7 +76,7 @@ public class TestTablesService extends AbstractService {
         ISqlTransaction transaction = sqlTemplate.startSqlTransaction();
         try {
             transaction.allowInsertIntoAutoIncrementColumns(true, testTriggerTable);
-            transaction.execute(getSql("insertIntoTestTriggersTableSql"), values);
+            transaction.prepareAndExecute(getSql("insertIntoTestTriggersTableSql"), values);
             transaction.commit();
         } finally {
             transaction.allowInsertIntoAutoIncrementColumns(false, testTriggerTable);

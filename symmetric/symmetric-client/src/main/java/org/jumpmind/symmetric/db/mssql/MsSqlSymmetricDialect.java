@@ -146,12 +146,12 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         if (nodeId == null) {
             nodeId = "";
         }
-        transaction.execute("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId
+        transaction.prepareAndExecute("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId
                 + "' as varbinary(128));" + "SET context_info @CI;");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("set context_info 0x0");
+        transaction.prepareAndExecute("set context_info 0x0");
     }
 
     public String getSyncTriggersExpression() {
