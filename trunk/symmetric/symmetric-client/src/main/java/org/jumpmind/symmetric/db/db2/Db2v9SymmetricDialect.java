@@ -70,8 +70,8 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
-        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
+        transaction.prepareAndExecute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
+        transaction.prepareAndExecute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
 
     public String getSyncTriggersExpression() {

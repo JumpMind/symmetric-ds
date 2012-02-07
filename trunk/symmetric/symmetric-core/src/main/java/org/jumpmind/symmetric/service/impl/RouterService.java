@@ -273,8 +273,7 @@ public class RouterService extends AbstractService implements IRouterService {
             dataCount = selectDataAndRoute(context);
             return dataCount;
         } catch (Exception ex) {
-            log.error("Failed to route and batch data on '{}' channel", ex,
-                    nodeChannel.getChannelId());
+            log.error("Failed to route and batch data on '{}' channel", nodeChannel.getChannelId(), ex);
             if (context != null) {
                 context.rollback();
             }

@@ -147,13 +147,13 @@ public class SybaseSymmetricDialect extends AbstractSymmetricDialect implements 
         if (nodeId == null) {
             nodeId = "";
         }
-        transaction.execute("exec set clientapplname 'SymmetricDS'");
-        transaction.execute("exec set clientname '" + nodeId + "'");
+        transaction.prepareAndExecute("exec set clientapplname 'SymmetricDS'");
+        transaction.prepareAndExecute("exec set clientname '" + nodeId + "'");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("exec set clientapplname null");
-        transaction.execute("exec set clientname null");
+        transaction.prepareAndExecute("exec set clientapplname null");
+        transaction.prepareAndExecute("exec set clientname null");
     }
 
     public String getSyncTriggersExpression() {

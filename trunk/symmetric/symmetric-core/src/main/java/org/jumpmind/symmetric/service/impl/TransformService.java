@@ -140,7 +140,7 @@ public class TransformService extends AbstractService implements ITransformServi
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            if (transaction.execute(getSql("updateTransformTableSql"), transformTable
+            if (transaction.prepareAndExecute(getSql("updateTransformTableSql"), transformTable
                     .getNodeGroupLink().getSourceNodeGroupId(), transformTable.getNodeGroupLink()
                     .getTargetNodeGroupId(), transformTable.getSourceCatalogName(), transformTable
                     .getSourceSchemaName(), transformTable.getSourceTableName(), transformTable
@@ -148,7 +148,7 @@ public class TransformService extends AbstractService implements ITransformServi
                     .getTargetTableName(), transformTable.getTransformPoint().toString(),
                     transformTable.isUpdateFirst(), transformTable.getDeleteAction().toString(),
                     transformTable.getTransformOrder(), transformTable.getTransformId()) == 0) {
-                transaction.execute(getSql("insertTransformTableSql"), transformTable
+                transaction.prepareAndExecute(getSql("insertTransformTableSql"), transformTable
                         .getNodeGroupLink().getSourceNodeGroupId(), transformTable
                         .getNodeGroupLink().getTargetNodeGroupId(), transformTable
                         .getSourceCatalogName(), transformTable.getSourceSchemaName(),
@@ -173,7 +173,7 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     protected void deleteTransformColumns(ISqlTransaction transaction, String transformTableId) {
-        transaction.execute(getSql("deleteTransformColumnsSql"), (Object) transformTableId);
+        transaction.prepareAndExecute(getSql("deleteTransformColumnsSql"), (Object) transformTableId);
     }
 
     public void deleteTransformTable(String transformTableId) {
@@ -181,7 +181,7 @@ public class TransformService extends AbstractService implements ITransformServi
         try {
             transaction = sqlTemplate.startSqlTransaction();
             deleteTransformColumns(transaction, transformTableId);
-            transaction.execute(getSql("deleteTransformTableSql"), (Object) transformTableId);
+            transaction.prepareAndExecute(getSql("deleteTransformTableSql"), (Object) transformTableId);
             refreshCache();
             transaction.commit();
         } finally {
@@ -190,12 +190,12 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     protected void saveTransformColumn(ISqlTransaction transaction, TransformColumn transformColumn) {
-        if (transaction.execute(getSql("updateTransformColumnSql"),
+        if (transaction.prepareAndExecute(getSql("updateTransformColumnSql"),
                 transformColumn.getSourceColumnName(), transformColumn.isPk(),
                 transformColumn.getTransformType(), transformColumn.getTransformExpression(),
                 transformColumn.getTransformOrder(), transformColumn.getTransformId(),
                 transformColumn.getIncludeOn().toDbValue(), transformColumn.getTargetColumnName()) == 0) {
-            transaction.execute(getSql("insertTransformColumnSql"),
+            transaction.prepareAndExecute(getSql("insertTransformColumnSql"),
                     transformColumn.getTransformId(), transformColumn.getIncludeOn().toDbValue(),
                     transformColumn.getTargetColumnName(), transformColumn.getSourceColumnName(),
                     transformColumn.isPk(), transformColumn.getTransformType(),

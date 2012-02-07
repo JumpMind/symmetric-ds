@@ -130,7 +130,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
-        return execute(new IConnectionCallback<T>() {
+        return executeCallback(new IConnectionCallback<T>() {
             @SuppressWarnings("unchecked")
             public T execute(Connection con) throws SQLException {
                 T result = null;
@@ -152,8 +152,29 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         });
     }
     
-    public int execute(final String sql, final Object[] args, final int[] types) {
-        return execute(new IConnectionCallback<Integer>() {
+    public int execute(final String sql) {
+        return executeCallback(new IConnectionCallback<Integer>() {
+            public Integer execute(Connection con) throws SQLException {
+                Statement stmt = null;
+                ResultSet rs = null;
+                try {
+                    stmt = con.createStatement();
+                    if (stmt.execute(sql)) {
+                        rs = stmt.getResultSet();
+                        while (rs.next()) {
+                        }
+                    }
+                    return stmt.getUpdateCount();
+                } finally {
+                    JdbcSqlTemplate.close(rs);
+                }
+
+            }
+        });
+    }    
+
+    public int prepareAndExecute(final String sql, final Object[] args, final int[] types) {
+        return executeCallback(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
                 PreparedStatement stmt = null;
                 ResultSet rs = null;
@@ -172,16 +193,18 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
             }
         });
-    }    
+    }
 
-    public int execute(final String sql, final Object... args) {
-        return execute(new IConnectionCallback<Integer>() {
+    public int prepareAndExecute(final String sql, final Object... args) {
+        return executeCallback(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
                 PreparedStatement stmt = null;
                 ResultSet rs = null;
                 try {
                     stmt = con.prepareStatement(sql);
-                    JdbcUtils.setValues(stmt, args);
+                    if (args != null && args.length > 0) {
+                        JdbcUtils.setValues(stmt, args);
+                    }
                     if (stmt.execute()) {
                         rs = stmt.getResultSet();
                         while (rs.next()) {
@@ -196,7 +219,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         });
     }
 
-    protected <T> T execute(IConnectionCallback<T> callback) {
+    protected <T> T executeCallback(IConnectionCallback<T> callback) {
         try {
             return callback.execute(this.connection);
         } catch (SQLException ex) {
@@ -292,7 +315,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     public long insertWithGeneratedKey(String sql, String column, String sequenceName,
-            Object...args) {
+            Object... args) {
         try {
             return jdbcSqlTemplate.insertWithGeneratedKey(connection, sql, column, sequenceName,
                     args, null);

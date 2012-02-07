@@ -13,10 +13,12 @@ public interface ISqlTransaction {
     public <T> T queryForObject(String sql, Class<T> clazz, Object... args);
 
     public int queryForInt(String sql, Object... args);
-
-    public int execute(String sql, Object[] args, int[] types);
     
-    public int execute(String sql, Object... args);
+    public int execute(final String sql);
+
+    public int prepareAndExecute(String sql, Object[] args, int[] types);
+    
+    public int prepareAndExecute(String sql, Object... args);
 
     public void commit();
 

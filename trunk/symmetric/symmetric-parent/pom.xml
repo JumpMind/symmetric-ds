@@ -279,6 +279,47 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkMode>always</forkMode>
+                    <argLine>-Xms512m -Xmx1024m</argLine>
+                    <systemProperties>
+                        <property>
+                            <name>test.root</name>
+                            <value>${test.root}</value>
+                        </property>
+                        <property>
+                            <name>test.client</name>
+                            <value>${test.client}</value>
+                        </property>
+                    </systemProperties>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>
+                            ${user.home}/.symmetricds/lib/ojdbc6.jar
+                        </additionalClasspathElement>
+                        <additionalClasspathElement>
+                            ${user.home}/.symmetricds/lib/ojdbc5.jar
+                        </additionalClasspathElement>
+                        <additionalClasspathElement>
+                            ${user.home}/.symmetricds/lib/ojdbc14.jar
+                        </additionalClasspathElement>
+                        <additionalClasspathElement>
+                            ${user.home}/.symmetricds/lib/db2jcc.jar
+                        </additionalClasspathElement>
+                        <additionalClasspathElement>
+                            ${user.home}/.symmetricds/lib/ifxjdbc.jar
+                        </additionalClasspathElement>
+                        <additionalClasspathElement>
+                            ${user.home}/.symmetricds/lib/ifxlang.jar
+                        </additionalClasspathElement>
+                        <additionalClasspathElement>
+                            ${user.home}/.symmetricds/lib/interclient.jar
+                        </additionalClasspathElement>
+                    </additionalClasspathElements>
+                </configuration>
+            </plugin>
+			
 		</plugins>
 	</build>
 

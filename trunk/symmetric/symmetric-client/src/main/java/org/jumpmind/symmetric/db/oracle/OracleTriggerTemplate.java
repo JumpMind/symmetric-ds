@@ -6,7 +6,8 @@ import org.jumpmind.symmetric.db.TriggerTemplate;
 
 public class OracleTriggerTemplate extends TriggerTemplate {
 
-    public OracleTriggerTemplate() { 
+    public OracleTriggerTemplate() {
+        // @formatter:off         
         functionInstalledSql = "select count(*) from user_source where line = 1 and ((type = 'FUNCTION' and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, $(oracleToClob)'', '\"'||replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
@@ -84,71 +85,79 @@ public class OracleTriggerTemplate extends TriggerTemplate {
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
-"create or replace trigger $(triggerName) after insert on $(schemaName)$(tableName)                                                                                                                     " + 
-"                                for each row begin                                                                                                                                                     " + 
-"                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " + 
-"                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)" + 
-"                                    values(                                                                                                                                                            " + 
-"                                      '$(targetTableName)',                                                                                                                                            " + 
-"                                      'I',                                                                                                                                                             " + 
-"                                      $(triggerHistoryId),                                                                                                                                             " + 
-"                                      $(oracleToClob)$(columns),                                                                                                                                       " + 
-"                                      '$(channelName)',                                                                                                                                                " + 
-"                                      $(txIdExpression),                                                                                                                                               " + 
-"                                      sym_pkg.disable_node_id,                                                                                                                                         " + 
-"                                      $(externalSelect),                                                                                                                                               " + 
-"                                      CURRENT_TIMESTAMP                                                                                                                                                " + 
-"                                    );                                                                                                                                                                 " + 
-"                                  end if;                                                                                                                                                              " + 
-"                                end;                                                                                                                                                                   " );
+"create or replace trigger $(triggerName)                                         \n" +
+"    after insert on $(schemaName)$(tableName)                                    \n" + 
+"        for each row begin                                                       \n" + 
+"            if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then \n" + 
+"                insert into $(defaultSchema)$(prefixName)_data                   \n" +
+"         (table_name, event_type, trigger_hist_id, row_data, channel_id,         \n" +
+"          transaction_id, source_node_id, external_data, create_time)            \n" + 
+"          values(                                                                \n" + 
+"          '$(targetTableName)',                                                  \n" + 
+"          'I',                                                                   \n" + 
+"          $(triggerHistoryId),                                                   \n" + 
+"          $(oracleToClob)$(columns),                                             \n" + 
+"          '$(channelName)',                                                      \n" + 
+"          $(txIdExpression),                                                     \n" + 
+"          sym_pkg.disable_node_id,                                               \n" + 
+"          $(externalSelect),                                                     \n" + 
+"          CURRENT_TIMESTAMP                                                      \n" + 
+"         );                                                                      \n" + 
+"           end if;                                                               \n" + 
+"        end;                                                                     \n");
+        
         sqlTemplates.put("updateTriggerTemplate" ,
-"create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                     " + 
-"                                for each row begin                                                                                                                                                     " + 
-"                                  declare                                                                                                                                                              " + 
-"                                    var_row_data $(oracleLobType);                                                                                                                                     " + 
-"                                    var_old_data $(oracleLobType);                                                                                                                                     " + 
-"                                  begin                                                                                                                                                                " + 
-"                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " + 
-"                                    select $(oracleToClob)$(columns) into var_row_data from dual;                                                                                                      " + 
-"                                    select $(oracleToClob)$(oldColumns) into var_old_data from dual;                                                                                                   " + 
-"                                    if $(dataHasChangedCondition) then                                                                                                                                 " + 
-"                                      insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)" + 
-"                                      values(                                                                                                                                                          " + 
-"                                        '$(targetTableName)',                                                                                                                                          " + 
-"                                        'U',                                                                                                                                                           " + 
-"                                        $(triggerHistoryId),                                                                                                                                           " + 
-"                                        $(oldKeys),                                                                                                                                                    " + 
-"                                        var_row_data,                                                                                                                                                  " + 
-"                                        var_old_data,                                                                                                                                                  " + 
-"                                        '$(channelName)',                                                                                                                                              " + 
-"                                        $(txIdExpression),                                                                                                                                             " + 
-"                                        sym_pkg.disable_node_id,                                                                                                                                       " + 
-"                                        $(externalSelect),                                                                                                                                             " + 
-"                                        CURRENT_TIMESTAMP                                                                                                                                              " + 
-"                                      );                                                                                                                                                               " + 
-"                                    end if;                                                                                                                                                            " + 
-"                                  end if;                                                                                                                                                              " + 
-"                                end;                                                                                                                                                                   " + 
-"                                end;                                                                                                                                                                   " );
+"create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                     \n" + 
+"                                for each row begin                                                                                                                                                     \n" + 
+"                                  declare                                                                                                                                                              \n" + 
+"                                    var_row_data $(oracleLobType);                                                                                                                                     \n" + 
+"                                    var_old_data $(oracleLobType);                                                                                                                                     \n" + 
+"                                  begin                                                                                                                                                                \n" + 
+"                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" + 
+"                                    select $(oracleToClob)$(columns) into var_row_data from dual;                                                                                                      \n" + 
+"                                    select $(oracleToClob)$(oldColumns) into var_old_data from dual;                                                                                                   \n" + 
+"                                    if $(dataHasChangedCondition) then                                                                                                                                 \n" + 
+"                                      insert into $(defaultSchema)$(prefixName)_data                                                                                                                   \n" +
+"   (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                                      \n" + 
+"                                      values(                                                                                                                                                          \n" + 
+"                                        '$(targetTableName)',                                                                                                                                          \n" + 
+"                                        'U',                                                                                                                                                           \n" + 
+"                                        $(triggerHistoryId),                                                                                                                                           \n" + 
+"                                        $(oldKeys),                                                                                                                                                    \n" + 
+"                                        var_row_data,                                                                                                                                                  \n" + 
+"                                        var_old_data,                                                                                                                                                  \n" + 
+"                                        '$(channelName)',                                                                                                                                              \n" + 
+"                                        $(txIdExpression),                                                                                                                                             \n" + 
+"                                        sym_pkg.disable_node_id,                                                                                                                                       \n" + 
+"                                        $(externalSelect),                                                                                                                                             \n" + 
+"                                        CURRENT_TIMESTAMP                                                                                                                                              \n" + 
+"                                      );                                                                                                                                                               \n" + 
+"                                    end if;                                                                                                                                                            \n" + 
+"                                  end if;                                                                                                                                                              \n" + 
+"                                end;                                                                                                                                                                   \n" + 
+"                                end;                                                                                                                                                                   \n" );
+        
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create or replace trigger  $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                    " + 
-"                                for each row begin                                                                                                                                                     " + 
-"                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " + 
-"                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)" + 
-"                                    values(                                                                                                                                                            " + 
-"                                      '$(targetTableName)',                                                                                                                                            " + 
-"                                      'D',                                                                                                                                                             " + 
-"                                      $(triggerHistoryId),                                                                                                                                             " + 
-"                                      $(oldKeys),                                                                                                                                                      " + 
-"                                      $(oracleToClob)$(oldColumns),                                                                                                                                    " + 
-"                                      '$(channelName)',                                                                                                                                                " + 
-"                                      $(txIdExpression),                                                                                                                                               " + 
-"                                      sym_pkg.disable_node_id,                                                                                                                                         " + 
-"                                      $(externalSelect),                                                                                                                                               " + 
-"                                      CURRENT_TIMESTAMP                                                                                                                                                " + 
-"                                    );                                                                                                                                                                 " + 
-"                                  end if;                                                                                                                                                              " + 
-"                                end;                                                                                                                                                                   " );
+"create or replace trigger  $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                    \n" + 
+"                                for each row begin                                                                                                                                                     \n" + 
+"                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" + 
+"                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
+"   (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                                                \n" + 
+"                                    values(                                                                                                                                                            \n" + 
+"                                      '$(targetTableName)',                                                                                                                                            \n" + 
+"                                      'D',                                                                                                                                                             \n" + 
+"                                      $(triggerHistoryId),                                                                                                                                             \n" + 
+"                                      $(oldKeys),                                                                                                                                                      \n" + 
+"                                      $(oracleToClob)$(oldColumns),                                                                                                                                    \n" + 
+"                                      '$(channelName)',                                                                                                                                                \n" + 
+"                                      $(txIdExpression),                                                                                                                                               \n" + 
+"                                      sym_pkg.disable_node_id,                                                                                                                                         \n" + 
+"                                      $(externalSelect),                                                                                                                                               \n" + 
+"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" + 
+"                                    );                                                                                                                                                                 \n" + 
+"                                  end if;                                                                                                                                                              \n" + 
+"                                end;                                                                                                                                                                   \n" );
+        
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(oracleToClob)$(columns) from $(schemaName)$(tableName) t  where $(whereClause)                                                                                                                " );
     }

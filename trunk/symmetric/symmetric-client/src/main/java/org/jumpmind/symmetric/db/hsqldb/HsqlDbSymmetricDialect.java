@@ -119,13 +119,13 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.execute("CALL " + parameterService.getTablePrefix() + "_set_session('sync_prevented','1')");
-        transaction.execute("CALL " + parameterService.getTablePrefix() + "_set_session('node_value','"+nodeId+"')");
+        transaction.prepareAndExecute("CALL " + parameterService.getTablePrefix() + "_set_session('sync_prevented','1')");
+        transaction.prepareAndExecute("CALL " + parameterService.getTablePrefix() + "_set_session('node_value','"+nodeId+"')");
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("CALL " + parameterService.getTablePrefix() + "_set_session('sync_prevented',null)");
-        transaction.execute("CALL " + parameterService.getTablePrefix() + "_set_session('node_value',null)");
+        transaction.prepareAndExecute("CALL " + parameterService.getTablePrefix() + "_set_session('sync_prevented',null)");
+        transaction.prepareAndExecute("CALL " + parameterService.getTablePrefix() + "_set_session('node_value',null)");
     }
 
     public String getSyncTriggersExpression() {

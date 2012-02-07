@@ -120,16 +120,16 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
+        transaction.prepareAndExecute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
         if (nodeId != null) {
             transaction
-                    .execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
+                    .prepareAndExecute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
         }
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
-        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
+        transaction.prepareAndExecute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
+        transaction.prepareAndExecute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
 
     public String getSyncTriggersExpression() {
