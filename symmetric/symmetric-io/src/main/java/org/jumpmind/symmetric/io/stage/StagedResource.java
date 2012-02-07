@@ -91,7 +91,7 @@ public class StagedResource implements IStagedResource {
         } else if (memoryBuffer != null && state == State.DONE) {
             this.memoryBuffer.setLength(0);
             this.memoryBuffer = null;
-        }
+        } 
         this.state = state;
     }
 
@@ -107,7 +107,7 @@ public class StagedResource implements IStagedResource {
             } else if (memoryBuffer != null && memoryBuffer.length() > 0) {
                 this.reader = new BufferedReader(new StringReader(memoryBuffer.toString()));
             } else {
-                throw new IllegalStateException("There is no content to read");
+                throw new IllegalStateException("There is no content to read.  Memory buffer was empty and " + file.getAbsolutePath() + " was not found.");
             }
         }
         return reader;

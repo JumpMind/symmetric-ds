@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -47,6 +48,8 @@ abstract public class AbstractService implements IService {
     protected ISymmetricDialect symmetricDialect;
 
     protected ISqlTemplate sqlTemplate;
+    
+    protected IDatabasePlatform platform;
 
     protected String tablePrefix;
 
@@ -56,6 +59,7 @@ abstract public class AbstractService implements IService {
         this.symmetricDialect = symmetricDialect;
         this.parameterService = parameterService;
         this.tablePrefix = parameterService.getTablePrefix();
+        this.platform = symmetricDialect.getPlatform();
         this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
     }
 

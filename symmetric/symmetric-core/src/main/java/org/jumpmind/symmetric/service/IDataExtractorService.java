@@ -33,9 +33,9 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
  */
 public interface IDataExtractorService {
 
-    public void extractConfigurationStandalone(Node node, OutputStream out, String... tablesToExclude);
+    public void extractConfigurationStandalone(Node node, OutputStream out);
 
-    public void extractConfigurationStandalone(Node node, Writer out, String... tablesToExclude);
+    public void extractConfigurationStandalone(Node node, Writer out);
     
     /**
      * @return a list of batches that were extracted

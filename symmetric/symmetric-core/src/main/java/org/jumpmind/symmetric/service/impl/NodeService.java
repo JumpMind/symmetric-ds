@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.util.DefaultNodeIdGenerator;
 import org.springframework.dao.CannotAcquireLockException;
 
 /**
@@ -75,6 +76,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public NodeService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
+        nodeIdGenerator = new DefaultNodeIdGenerator();
         setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }

@@ -1,5 +1,6 @@
 package org.jumpmind.db.sql.jdbc;
 
+import java.io.IOException;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -17,6 +18,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.AbstractSqlTemplate;
 import org.jumpmind.db.sql.ISqlReadCursor;
@@ -26,6 +28,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,6 +189,14 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         for (int i = 1; i <= colCount; i++) {
                             String key = meta.getColumnName(i);
                             Object value = rs.getObject(i);
+                            if (value instanceof Blob) {
+                                Blob blob = (Blob)value;
+                                try {
+                                    value = IOUtils.toByteArray(blob.getBinaryStream());
+                                } catch (IOException e) {
+                                    throw new IoException(e);
+                                }
+                            }
                             result.put(key, value);
                         }
                     }

@@ -113,7 +113,7 @@ public class TriggerTemplate {
                 .replace(
                         "whereClause",
                         StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
-                                : triggerRouter.getInitialLoadSelect(), sql);       
+                                : triggerRouter.getInitialLoadSelect(), sql);
         sql = FormatUtils.replace("tableName", quote(table.getName(), dialect), sql);
         sql = FormatUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger(), dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
         sql = FormatUtils.replace(

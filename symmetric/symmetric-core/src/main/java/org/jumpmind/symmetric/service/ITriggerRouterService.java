@@ -48,7 +48,7 @@ public interface ITriggerRouterService {
      * @param sourceGroupId group id of the node being registered with
      * @param targetGroupId group id of the node that is registering
      */
-    public List<TriggerRouter> getTriggerRoutersForRegistration(String version, NodeGroupLink nodeGroupLink, String... tablesToExclude);
+    public List<TriggerRouter> buildTriggerRoutersForSymmetricTables(String version, NodeGroupLink nodeGroupLink);
     
     /**
      * Returns a list of triggers that should be active for the current node.

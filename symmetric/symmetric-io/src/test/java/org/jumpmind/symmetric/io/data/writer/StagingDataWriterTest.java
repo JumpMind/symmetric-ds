@@ -63,7 +63,7 @@ public class StagingDataWriterTest {
         Assert.assertEquals(1, batchesWritten.size());
         Assert.assertEquals(origCsv, batchesWritten.get(0));
 
-        StagedResource resource = (StagedResource) stagingManager.find("test", "aaa", "1");
+        StagedResource resource = (StagedResource) stagingManager.find("test", "aaa", 1);
         Assert.assertNotNull(resource);
         if (threshold > origCsv.length()) {
             Assert.assertFalse(resource.getFile().exists());

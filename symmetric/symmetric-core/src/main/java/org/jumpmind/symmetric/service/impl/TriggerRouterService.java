@@ -266,10 +266,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return majorVersion;
     }
-
-    public List<TriggerRouter> getTriggerRoutersForRegistration(String version,
-            NodeGroupLink nodeGroupLink, String... tablesToExclude) {
-        int initialLoadOrder = 1;
+    
+    protected List<Trigger> buildTriggersForSymmetricTables(String version) {        
+        List<Trigger> triggers = new ArrayList<Trigger>();
         String majorVersion = getMajorVersion(version);
         List<String> tables = new ArrayList<String>(rootConfigChannelTableNames.get(majorVersion));
         if (extraConfigTables != null) {
@@ -277,59 +276,64 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 tables.addAll(extraTables.provideTableNames());
             }
         }
-
-        if (tablesToExclude != null) {
-            for (String tableToExclude : tablesToExclude) {
-                String tablename = TableConstants.getTableName(tablePrefix, tableToExclude);
-                if (!tables.remove(tablename)) {
-                    if (!tables.remove(tablename.toUpperCase())) {
-                        tables.remove(tablename.toLowerCase());
-                    }
-                }
-            }
-        }
-
-        List<TriggerRouter> triggers = new ArrayList<TriggerRouter>(tables.size());
-        for (int j = 0; j < tables.size(); j++) {
-            String tableName = tables.get(j);
-            boolean syncChanges = !TableConstants.getTablesThatDoNotSync(tablePrefix).contains(
-                    tableName);
-            TriggerRouter trigger = buildRegistrationTriggerRouter(version, tableName, syncChanges,
-                    nodeGroupLink);
-            trigger.setInitialLoadOrder(initialLoadOrder++);
-            if (tableName.equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
-                    TableConstants.SYM_TRIGGER))) {
-                trigger.getRouter().setRouterType("configurationChanged");
-            }
+        
+        for (String tableName : tables) {
+            Trigger trigger = createTriggerForSymmetricTable(tableName);
             triggers.add(trigger);
         }
         return triggers;
     }
-
-    protected TriggerRouter buildRegistrationTriggerRouter(String version, String tableName,
-            boolean syncChanges, NodeGroupLink nodeGroupLink) {
-        boolean autoSyncConfig = parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
-
-        TriggerRouter triggerRouter = new TriggerRouter();
-        Trigger trigger = triggerRouter.getTrigger();
+    
+    protected Trigger createTriggerForSymmetricTable(String tableName) {
+        boolean syncChanges = !TableConstants.getTablesThatDoNotSync(tablePrefix).contains(
+                tableName) && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
+        Trigger trigger = new Trigger();
         trigger.setTriggerId(Integer.toString(Math.abs(tableName.hashCode())));
-        trigger.setSyncOnDelete(syncChanges && autoSyncConfig);
-        trigger.setSyncOnInsert(syncChanges && autoSyncConfig);
-        trigger.setSyncOnUpdate(syncChanges && autoSyncConfig);
+        trigger.setSyncOnDelete(syncChanges);
+        trigger.setSyncOnInsert(syncChanges);
+        trigger.setSyncOnUpdate(syncChanges);
         trigger.setSyncOnIncomingBatch(true);
         trigger.setSourceTableName(tableName);
         trigger.setChannelId(Constants.CHANNEL_CONFIG);
+        // little trick to force the rebuild of SymmetricDS triggers every time
+        // there is a new version of SymmetricDS
+        trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
+        return trigger;
+    }
+    
+    public List<TriggerRouter> buildTriggerRoutersForSymmetricTables(String version,
+            NodeGroupLink nodeGroupLink) {
+        int initialLoadOrder = 1;
+
+        List<Trigger> triggers = buildTriggersForSymmetricTables(version);
+        List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(triggers.size());
+        
+        for (int j = 0; j < triggers.size(); j++) {
+            Trigger trigger = triggers.get(j);
+
+            TriggerRouter triggerRouter = buildTriggerRoutersForSymmetricTables(version, trigger,
+                    nodeGroupLink);
+            triggerRouter.setInitialLoadOrder(initialLoadOrder++);
+            triggerRouters.add(triggerRouter);
+        }
+        return triggerRouters;
+    }
+
+    protected TriggerRouter buildTriggerRoutersForSymmetricTables(String version, Trigger trigger, NodeGroupLink nodeGroupLink) {
+        TriggerRouter triggerRouter = new TriggerRouter();
+        triggerRouter.setTrigger(trigger);
 
         Router router = triggerRouter.getRouter();
         router.setRouterType("configurationChanged");
         router.setNodeGroupLink(nodeGroupLink);
-
-        // little trick to force the rebuild of SymmetricDS triggers every time
-        // there is a new version of SymmetricDS
-        trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
         router.setLastUpdateTime(trigger.getLastUpdateTime());
-
+        
         triggerRouter.setLastUpdateTime(trigger.getLastUpdateTime());
+        
+        if (trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_TRIGGER))) {
+           router.setRouterType("configurationChanged");
+        }
 
         return triggerRouter;
     }
@@ -413,14 +417,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<TriggerRouter> triggers = new ArrayList<TriggerRouter>();
         List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(sourceNodeGroupId);
         for (NodeGroupLink nodeGroupLink : links) {
-            triggers.addAll(getTriggerRoutersForRegistration(Version.version(), nodeGroupLink));
-            if (NodeGroupLinkAction.P == nodeGroupLink.getDataEventAction()) {
-                triggers.add(buildRegistrationTriggerRouter(Version.version(),
-                        TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST),
-                        true, nodeGroupLink));
-                log.debug("Creating trigger hist entry for {}",
-                        TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
-
+            triggers.addAll(buildTriggerRoutersForSymmetricTables(Version.version(), nodeGroupLink));
+            if (NodeGroupLinkAction.P == nodeGroupLink.getDataEventAction()) {                
+                triggers.add(buildTriggerRoutersForSymmetricTables(Version.version(), 
+                        createTriggerForSymmetricTable(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)), nodeGroupLink));
             }
         }
         return triggers;
@@ -525,12 +525,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         final long triggerCacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
         Map<String, Trigger> cache = this.triggersCache;
-        if (cache == null || refreshCache
+        if (cache == null || !cache.containsKey(triggerId) || refreshCache
                 || (System.currentTimeMillis() - this.triggersCacheTime) > triggerCacheTimeoutInMs) {
             synchronized (this) {
-
                 this.triggersCacheTime = System.currentTimeMillis();
-                List<Trigger> triggers = getTriggers();
+                List<Trigger> triggers = new ArrayList<Trigger>(getTriggers());
+                triggers.addAll(buildTriggersForSymmetricTables(Version.version()));
                 cache = new HashMap<String, Trigger>(triggers.size());
                 for (Trigger trigger : triggers) {
                     cache.put(trigger.getTriggerId(), trigger);

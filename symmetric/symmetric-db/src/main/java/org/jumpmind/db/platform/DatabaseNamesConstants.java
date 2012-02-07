@@ -7,5 +7,6 @@ abstract public class DatabaseNamesConstants {
     public final static String ORACLE = "Oracle";
     public final static String DB2 = "DB2";
     public final static String POSTGRESQL = "PostgreSql";
+    public final static String INFORMIX = "Informix Dynamic Server11";
     
 }
