@@ -131,9 +131,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     /**
      * @see DataExtractorService#extractConfigurationStandalone(Node, Writer)
      */
-    public void extractConfigurationStandalone(Node node, OutputStream out,
-            String... tablesToExclude) {
-        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out), tablesToExclude);
+    public void extractConfigurationStandalone(Node node, OutputStream out) {
+        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out));
     }
 
     /**
@@ -143,16 +142,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * load for some reason on the client the batch status will NOT reflect the
      * failure.
      */
-    public void extractConfigurationStandalone(Node node, Writer writer, String... tablesToExclude) {
+    public void extractConfigurationStandalone(Node node, Writer writer) {
         Batch batch = new Batch(BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
                 symmetricDialect.getBinaryEncoding(), node.getNodeId());
 
         NodeGroupLink nodeGroupLink = new NodeGroupLink(parameterService.getNodeGroupId(),
                 node.getNodeGroupId());
 
-        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(
+        List<TriggerRouter> triggerRouters = triggerRouterService.buildTriggerRoutersForSymmetricTables(
                 StringUtils.isBlank(node.getSymmetricVersion()) ? Version.version() : node
-                        .getSymmetricVersion(), nodeGroupLink, tablesToExclude);
+                        .getSymmetricVersion(), nodeGroupLink);
 
         List<SelectFromTableEvent> initialLoadEvents = new ArrayList<SelectFromTableEvent>(
                 triggerRouters.size() * 2);
@@ -306,9 +305,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         TransformWriter transformExtractWriter = null;
 
         if (streamToFileEnabled) {
-            transformExtractWriter = createTransformDataWriter(identity, targetNode, new StagingDataWriter(Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
+            transformExtractWriter = createTransformDataWriter(identity, targetNode,
+                    new StagingDataWriter(Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
         } else {
-            transformExtractWriter = createTransformDataWriter(identity, targetNode, new ProtocolDataWriter(targetTransport.open()));
+            transformExtractWriter = createTransformDataWriter(identity, targetNode,
+                    new ProtocolDataWriter(targetTransport.open()));
         }
 
         final long maxBytesToSync = parameterService
@@ -321,7 +322,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             for (int i = 0; i < activeBatches.size(); i++) {
                 currentBatch = activeBatches.get(i);
 
-                // If time has passed, then re-query the batch to double check that the status has not changed
+                // If time has passed, then re-query the batch to double check
+                // that the status has not changed
                 if (System.currentTimeMillis() - batchesSelectedAtMs > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                     currentBatch = outgoingBatchService
                             .findOutgoingBatch(currentBatch.getBatchId());
@@ -330,8 +332,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (currentBatch.getStatus() != Status.OK) {
                     long extractTimeInMs = 0l;
                     long byteCount = 0l;
-                    IStagedResource previouslyExtracted = stagingManager.find(Constants.STAGING_CATEGORY_OUTGOING,
-                            currentBatch.getNodeId(), currentBatch.getBatchId());
+                    IStagedResource previouslyExtracted = stagingManager.find(
+                            Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getNodeId(),
+                            currentBatch.getBatchId());
                     if (previouslyExtracted != null && previouslyExtracted.exists()) {
                         log.info(
                                 "We have already extracted batch {}.  Using the existing extraction: {}",
@@ -342,26 +345,28 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         outgoingBatchService.updateOutgoingBatch(currentBatch);
 
                         long ts = System.currentTimeMillis();
-                        
+
                         IDataReader dataReader = new ExtractDataReader(
-                                symmetricDialect.getPlatform(), new SelectFromSymDataSource(currentBatch,
-                                        targetNode));
+                                symmetricDialect.getPlatform(), new SelectFromSymDataSource(
+                                        currentBatch, targetNode));
                         new DataProcessor(dataReader, transformExtractWriter).process();
-                        extractTimeInMs = System.currentTimeMillis()-ts;
-                        Statistics stats = transformExtractWriter.getTargetWriter().getStatistics().values().iterator().next();
+                        extractTimeInMs = System.currentTimeMillis() - ts;
+                        Statistics stats = transformExtractWriter.getTargetWriter().getStatistics()
+                                .values().iterator().next();
                         byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                     }
 
-                    // If time has passed, then re-query the batch to double check that the status has not changed
+                    // If time has passed, then re-query the batch to double
+                    // check that the status has not changed
                     if (System.currentTimeMillis() - currentBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                         currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch
                                 .getBatchId());
                     }
-                    
+
                     if (extractTimeInMs > 0) {
                         currentBatch.setExtractMillis(extractTimeInMs);
                     }
-                    
+
                     if (byteCount > 0) {
                         currentBatch.setByteCount(byteCount);
                     }
@@ -371,16 +376,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.setSentCount(currentBatch.getSentCount() + 1);
                         outgoingBatchService.updateOutgoingBatch(currentBatch);
 
-                        IStagedResource extractedBatch = stagingManager.find(Constants.STAGING_CATEGORY_OUTGOING, 
-                                currentBatch.getNodeId(), currentBatch.getBatchId());
+                        IStagedResource extractedBatch = stagingManager.find(
+                                Constants.STAGING_CATEGORY_OUTGOING, currentBatch.getNodeId(),
+                                currentBatch.getBatchId());
                         if (extractedBatch != null) {
-                            IDataReader dataReader = new ProtocolDataReader(
-                                    extractedBatch);
+                            IDataReader dataReader = new ProtocolDataReader(extractedBatch);
                             IDataWriter dataWriter = new ProtocolDataWriter(targetTransport.open());
                             new DataProcessor(dataReader, dataWriter).process();
                         }
 
-                        // If time has passed, then re-query the batch to double check that the status has not changed
+                        // If time has passed, then re-query the batch to double
+                        // check that the status has not changed
                         if (System.currentTimeMillis()
                                 - currentBatch.getLastUpdatedTime().getTime() > MS_PASSED_BEFORE_BATCH_REQUERIED) {
                             currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch
@@ -396,7 +402,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             batchesSentCount++;
 
                             if (bytesSentCount >= maxBytesToSync) {
-                                log.info("Reached byte threshold after {} batches at {} bytes.  Data will continue to be synchronized on the next pull",
+                                log.info(
+                                        "Reached byte threshold after {} batches at {} bytes.  Data will continue to be synchronized on the next pull",
                                         batchesSentCount, bytesSentCount);
                                 break;
                             }
@@ -434,13 +441,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    public boolean extractBatchRange(Writer writer, long startBatchId,
-            long endBatchId) {
+    public boolean extractBatchRange(Writer writer, long startBatchId, long endBatchId) {
         // TODO
         return false;
     }
-    
-    protected TransformWriter createTransformDataWriter(Node identity, Node targetNode, IDataWriter extractWriter) {
+
+    protected TransformWriter createTransformDataWriter(Node identity, Node targetNode,
+            IDataWriter extractWriter) {
         List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
                 new NodeGroupLink(identity.getNodeGroupId(), targetNode.getNodeGroupId()),
                 TransformPoint.EXTRACT, true);
@@ -452,7 +459,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId,
-            TriggerHistory triggerHistory, Table currentTable) {
+            TriggerHistory triggerHistory, Table currentTable, boolean setTargetTableName) {
         String catalogName = triggerHistory.getSourceCatalogName();
         String schemaName = triggerHistory.getSourceSchemaName();
         String tableName = triggerHistory.getSourceTableName();
@@ -470,7 +477,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             currentTable.orderColumns(triggerHistory.getParsedColumnNames());
 
             Router router = triggerRouterService.getRouterById(routerId, false);
-            if (router != null) {
+            if (router != null && setTargetTableName) {
                 if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
                     currentTable.setCatalog(router.getTargetCatalogName());
                 }
@@ -554,9 +561,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else {
                         Trigger trigger = triggerRouterService.getTriggerById(
                                 triggerHistory.getTriggerId(), false);
-                        this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                                routerId, triggerHistory, currentTable);
-                        this.requiresLobSelectedFromSource = trigger.isUseStreamLobs();
+                        if (trigger != null) {
+                            this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                                    routerId, triggerHistory, currentTable, true);
+                            this.requiresLobSelectedFromSource = trigger.isUseStreamLobs();
+                        } else {
+                            log.error(
+                                    "Could not locate a trigger with the id of {} for {}.  It was recorded in the hist table with a hist id of {}",
+                                    new Object[] { triggerHistory.getTriggerId(),
+                                            triggerHistory.getSourceTableName(),
+                                            triggerHistory.getTriggerHistoryId() });
+                        }
                     }
                 } else {
                     closeCursor();
@@ -643,7 +658,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     this.currentInitialLoadEvent = null;
                     this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                             (String) data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID), history,
-                            currentTable);
+                            currentTable, true);
                 } else {
                     this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
                     NodeChannel channel = batch != null ? configurationService.getNodeChannel(
@@ -651,8 +666,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             .getTrigger().getChannelId());
                     this.routingContext = new SimpleRouterContext(batch.getNodeId(), channel);
                     this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                            triggerRouter.getRouter().getRouterId(), history, currentTable);
+                            triggerRouter.getRouter().getRouterId(), history, currentTable, false);
                     this.startNewCursor(history, triggerRouter);
+                    this.currentTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                            triggerRouter.getRouter().getRouterId(), history, currentTable, true);
+
                 }
 
             }

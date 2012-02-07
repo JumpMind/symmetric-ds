@@ -22,9 +22,6 @@ package org.jumpmind.symmetric.route;
 
 import org.jumpmind.symmetric.model.Data;
 
-/**
- * 
- */
 public interface IDataToRouteReader extends Runnable {
 
     public abstract Data take();

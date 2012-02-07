@@ -83,7 +83,7 @@ public final class FormatUtils {
         for (char ch : chars) {
             upper |= Character.isUpperCase(ch);
             lower |= Character.isLowerCase(ch);
-        }
+        }        
         return upper && lower;
     }
 

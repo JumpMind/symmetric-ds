@@ -151,6 +151,7 @@ public class ProtocolDataReader implements IDataReader {
                         keys.add(tokens[i]);
                     }
                 } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
+                    table.removeAllColumns();
                     for (int i = 1; i < tokens.length; i++) {
                         Column column = new Column(tokens[i], keys != null
                                 && keys.contains(tokens[i]));

@@ -98,6 +98,10 @@ public class Table implements Serializable, Cloneable {
         }
 
     }
+    
+    public void removeAllColumns() {
+        columns.clear();
+    }
 
     /**
      * Returns the catalog of this table as read from the database.

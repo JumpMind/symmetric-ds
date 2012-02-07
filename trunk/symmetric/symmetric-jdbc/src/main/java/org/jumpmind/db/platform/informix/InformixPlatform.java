@@ -8,12 +8,13 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class InformixPlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
 
-    public static final String DATABASENAME = "Informix Dynamic Server11";
+    public static final String DATABASENAME = DatabaseNamesConstants.INFORMIX;
 
     public static final String JDBC_DRIVER = "com.informix.jdbc.IfxDriver";
 

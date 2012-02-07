@@ -86,7 +86,7 @@ public class ExtractDataReader implements IDataReader {
             } else {
                 Table sourceTable = this.currentSource.getTable();
                 if (sourceTable != null && sourceTable.equals(this.table)) {
-                    data = enhanceWithLobsFromSourceIfNeeded(table, data);                    
+                    data = enhanceWithLobsFromSourceIfNeeded(table, data);
                 } else {
                     // the table has changed
                     return null;
@@ -142,12 +142,14 @@ public class ExtractDataReader implements IDataReader {
                     String valueForCsv = null;
                     if (platform.isBlob(lobColumn.getTypeCode())) {
                         byte[] binaryData = sqlTemplate.queryForBlob(sql, args);
-                        if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
-                            valueForCsv = new String(Base64.encodeBase64(binaryData));
-                        } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
-                            valueForCsv = new String(Hex.encodeHex(binaryData));
-                        } else {
-                            valueForCsv = new String(binaryData);
+                        if (binaryData != null) {
+                            if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
+                                valueForCsv = new String(Base64.encodeBase64(binaryData));
+                            } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
+                                valueForCsv = new String(Hex.encodeHex(binaryData));
+                            } else {
+                                valueForCsv = new String(binaryData);
+                            }
                         }
                     } else {
                         valueForCsv = sqlTemplate.queryForClob(sql, args);

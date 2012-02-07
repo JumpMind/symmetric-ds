@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +90,11 @@ public class StagingManager implements IStagingManager {
     protected String buildFilePath(Object... path) {
         StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < path.length; i++) {
-            buffer.append(path[i]);
+            Object part = path[i];
+            if (part instanceof Number) {
+                part = StringUtils.leftPad(part.toString(), 10, "0");
+            }
+            buffer.append(part);
             if (i < path.length - 1) {
                 buffer.append(System.getProperty("file.separator"));
             }

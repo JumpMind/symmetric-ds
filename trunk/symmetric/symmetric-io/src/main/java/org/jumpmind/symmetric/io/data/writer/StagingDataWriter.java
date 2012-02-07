@@ -57,6 +57,8 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
         resource.close();
         resource.setState(State.READY);
         flushNodeId = true;
+        processedTables.clear();
+        table = null;        
     }
 
     @Override
