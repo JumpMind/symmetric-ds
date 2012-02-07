@@ -92,10 +92,22 @@
             <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-core</artifactId>
         </dependency>
+		<dependency>
+			<groupId>org.jumpmind.symmetric</groupId>
+			<artifactId>symmetric-core</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>	        
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-client</artifactId>
         </dependency>        
+		<dependency>
+			<groupId>org.jumpmind.symmetric</groupId>
+			<artifactId>symmetric-client</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>	        
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

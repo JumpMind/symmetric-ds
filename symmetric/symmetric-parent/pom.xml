@@ -350,7 +350,13 @@
 				<artifactId>symmetric-core</artifactId>
 				<type>test-jar</type>
 				<version>3.0.0-SNAPSHOT</version>
-			</dependency>
+			</dependency>			
+			<dependency>
+				<groupId>org.jumpmind.symmetric</groupId>
+				<artifactId>symmetric-client</artifactId>
+				<type>test-jar</type>
+				<version>3.0.0-SNAPSHOT</version>
+			</dependency>						
 			<dependency>
 				<groupId>org.jumpmind.symmetric</groupId>
 				<artifactId>symmetric-client</artifactId>

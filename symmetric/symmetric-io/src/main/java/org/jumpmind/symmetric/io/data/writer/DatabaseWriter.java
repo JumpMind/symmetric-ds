@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.io.data.writer;
 
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,9 +18,9 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.ConflictException;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -402,9 +403,15 @@ public class DatabaseWriter implements IDataWriter {
             String script = data.getCsvData(CsvData.ROW_DATA);
             Map<String, Object> variables = new HashMap<String, Object>();
             variables.put("SOURCE_NODE_ID", batch.getNodeId());
-            if (platform.getSqlTemplate() instanceof JdbcSqlTemplate) {
-                variables.put("DATASOURCE",
-                        ((JdbcSqlTemplate) platform.getSqlTemplate()).getDataSource());
+            ISqlTemplate template = platform.getSqlTemplate();
+            Class<?> templateClass = template.getClass();
+            if (templateClass.getSimpleName().equals("JdbcSqlTemplate")) {
+                try {
+                    Method method = templateClass.getMethod("getDataSource");
+                    variables.put("DATASOURCE", method.invoke(template));
+                } catch (Exception e) {
+                    log.warn("Had trouble looking up the datasource used by the sql template", e);
+                }
             }
 
             Interpreter interpreter = new Interpreter();
