@@ -11,6 +11,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -85,7 +86,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return new JdbcSqlReadCursor<T>(this, mapper, sql, values, types);
     }
 
-    public <T> T queryForObject(final String sql, Class<T> clazz, final Object... args) {
+    public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
         return execute(new IConnectionCallback<T>() {
             @SuppressWarnings("unchecked")
             public T execute(Connection con) throws SQLException {
@@ -98,7 +99,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     JdbcUtils.setValues(ps, expandArgs(sql, args));
                     rs = ps.executeQuery();
                     if (rs.next()) {
-                        result = (T) rs.getObject(1);
+                        if (clazz.isAssignableFrom(Date.class)) {
+                            result = (T) rs.getTimestamp(1);
+                        } else {
+                            result = (T) rs.getObject(1);
+                        }
                     }
                 } finally {
                     close(rs);

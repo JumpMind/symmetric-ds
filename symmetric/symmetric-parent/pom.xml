@@ -28,6 +28,8 @@
 		<version.h2>1.2.140</version.h2>
 		<version.postgresql>8.4-701.jdbc4</version.postgresql>
 		<version.mysql>5.1.17</version.mysql>
+		<test.root>h2</test.root>
+		<test.client>h2</test.client>
 	</properties>
 
 	<scm>

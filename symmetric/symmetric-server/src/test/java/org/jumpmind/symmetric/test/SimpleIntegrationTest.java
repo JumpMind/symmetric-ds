@@ -67,7 +67,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void createServer() {
         SymmetricWebServer server = getServer();
-        serverTestService = new TestTablesService(server.getEngine());
         Assert.assertNotNull(server);
         checkForFailedTriggers(true, false);
 
@@ -128,7 +127,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         NodeSecurity clientNodeSecurity = clientNodeService
                 .findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        
+
         Assert.assertFalse(clientNodeSecurity.isInitialLoadEnabled());
         Assert.assertNotNull(clientNodeSecurity.getInitialLoadTime());
 
@@ -156,54 +155,51 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 THIS_IS_A_TEST);
     }
 
-    //
-    // @Test(timeout = 120000)
-    // public void syncToClient() {
-    // logTestRunning();
-    // // test pulling no data
-    // clientPull();
-    //
-    // final byte[] BIG_BINARY = new byte[200];
-    // for (int i = 0; i < BIG_BINARY.length; i++) {
-    // BIG_BINARY[i] = 0x01;
-    // }
-    //
-    // final String TEST_CLOB = "This is my test's test";
-    // // now change some data that should be sync'd
-    // rootJdbcTemplate.update(insertCustomerSql, new Object[] { 101,
-    // "Charlie Brown", "1",
-    // "300 Grub Street", "New Yorl", "NY", 90009, new Date(), new Date(),
-    // TEST_CLOB,
-    // BIG_BINARY });
-    //
-    // clientPull();
-    // assertEquals(
-    // clientJdbcTemplate
-    // .queryForInt("select count(*) from test_customer where customer_id=101"),
-    // 1, "The customer was not sync'd to the client." +
-    // printRootAndClientDatabases());
-    //
-    // if (getRootDbDialect().isClobSyncSupported()) {
-    // assertEquals(clientJdbcTemplate.queryForObject(
-    // "select notes from test_customer where customer_id=101", String.class),
-    // rootJdbcTemplate.queryForObject(
-    // "select notes from test_customer where customer_id=101", String.class),
-    // "The CLOB notes field on customer was not sync'd to the client.");
-    // }
-    //
-    // if (getRootDbDialect().isBlobSyncSupported()) {
-    // byte[] data = clientJdbcTemplate.queryForObject(
-    // "select icon from test_customer where customer_id=101",
-    // new RowMapper<byte[]>() {
-    // public byte[] mapRow(ResultSet rs, int rowNum) throws SQLException {
-    // return rs.getBytes(1);
-    // }
-    // });
-    // Assert.assertTrue("The BLOB icon field on customer was not sync'd to the client.",
-    // ArrayUtils.isEquals(data, BIG_BINARY));
-    // }
-    //
-    // }
+//    @Test(timeout = 120000)
+//    public void syncToClient() {
+//        logTestRunning();
+//        
+//        // test pulling no data
+//        clientPull();
+//
+//        final byte[] BIG_BINARY = new byte[200];
+//        for (int i = 0; i < BIG_BINARY.length; i++) {
+//            BIG_BINARY[i] = 0x01;
+//        }
+//
+//        final String TEST_CLOB = "This is my test's test";
+//        // now change some data that should be sync'd
+//        rootJdbcTemplate.update(insertCustomerSql, new Object[] { 101, "Charlie Brown", "1",
+//                "300 Grub Street", "New Yorl", "NY", 90009, new Date(), new Date(), TEST_CLOB,
+//                BIG_BINARY });
+//
+//        clientPull();
+//        assertEquals(
+//                clientJdbcTemplate
+//                        .queryForInt("select count(*) from test_customer where customer_id=101"),
+//                1, "The customer was not sync'd to the client." + printRootAndClientDatabases());
+//
+//        if (getRootDbDialect().isClobSyncSupported()) {
+//            assertEquals(clientJdbcTemplate.queryForObject(
+//                    "select notes from test_customer where customer_id=101", String.class),
+//                    rootJdbcTemplate.queryForObject(
+//                            "select notes from test_customer where customer_id=101", String.class),
+//                    "The CLOB notes field on customer was not sync'd to the client.");
+//        }
+//
+//        if (getRootDbDialect().isBlobSyncSupported()) {
+//            byte[] data = clientJdbcTemplate.queryForObject(
+//                    "select icon from test_customer where customer_id=101",
+//                    new RowMapper<byte[]>() {
+//                        public byte[] mapRow(ResultSet rs, int rowNum) throws SQLException {
+//                            return rs.getBytes(1);
+//                        }
+//                    });
+//            Assert.assertTrue("The BLOB icon field on customer was not sync'd to the client.",
+//                    ArrayUtils.isEquals(data, BIG_BINARY));
+//        }
+//
+//    }
     //
     // @Test(timeout = 120000)
     // public void syncToClientMultipleUpdates() {
