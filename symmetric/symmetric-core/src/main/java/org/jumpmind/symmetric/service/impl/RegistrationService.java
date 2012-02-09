@@ -87,7 +87,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.dataLoaderService = dataLoaderService;
         this.transportManager = transportManager;
         this.statisticManager = statisticManager;
-        
+        this.randomTimeSlot = new RandomTimeSlot(parameterService);
         setSqlMap(new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
