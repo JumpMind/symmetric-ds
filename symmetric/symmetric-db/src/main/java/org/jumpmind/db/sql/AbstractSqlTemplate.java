@@ -22,6 +22,10 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
             return null;
         }
     }
+    
+    public String queryForString(String sql, Object... args) {        
+        return queryForObject(sql, String.class, args);
+    }
 
     public int queryForInt(String sql, Object... args) {
         Number number = queryForObject(sql, Number.class, args);

@@ -1,12 +1,17 @@
 package org.jumpmind.db.sql;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 
 public class Row extends LinkedCaseInsensitiveMap<Object> {
@@ -20,6 +25,35 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     public Row(String columnName, Object value) {
         super(1);
         put(columnName, value);
+    }
+
+    public byte[] bytesValue() {
+        Object obj = this.values().iterator().next();
+        return toBytes(obj);
+    }
+    
+    protected byte[] toBytes(Object obj) {
+        if (obj != null) {
+            if (obj instanceof byte[]) {
+                return (byte[]) obj;
+            } else if (obj instanceof Blob) {
+                Blob blob = (Blob) obj;
+                try {
+                    return IOUtils.toByteArray(blob.getBinaryStream());
+                } catch (IOException e) {
+                    throw new IoException(e);
+                } catch (SQLException e) {
+                    throw new SqlException(e);
+                }
+            } else if (obj instanceof String) {
+                return obj.toString().getBytes();
+            } else {
+                throw new IllegalStateException(String.format(
+                        "Cannot translate a %s into a byte[]", obj.getClass().getName()));
+            }
+        } else {
+            return null;
+        }
     }
 
     public Number numberValue() {
@@ -59,6 +93,11 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
 
     public String getString(String columnName) {
         return getString(columnName, true);
+    }
+    
+    public byte[] getBytes(String columnName) {
+        Object obj = get(columnName);
+        return toBytes(obj);
     }
 
     public String getString(String columnName, boolean checkForColumn) {

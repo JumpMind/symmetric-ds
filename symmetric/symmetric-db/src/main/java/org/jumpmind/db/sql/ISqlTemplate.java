@@ -20,6 +20,8 @@ public interface ISqlTemplate {
     public <T> T queryForObject(String sql, ISqlRowMapper<T> mapper, Object... params);
     
     public int queryForInt(String sql, Object... args);
+    
+    public String queryForString(String sql, Object... args);
 
     public long queryForLong(String sql, Object... args);
 
