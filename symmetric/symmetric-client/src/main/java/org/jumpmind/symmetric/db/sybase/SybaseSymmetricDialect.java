@@ -29,11 +29,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.db.sql.jdbc.IConnectionCallback;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;

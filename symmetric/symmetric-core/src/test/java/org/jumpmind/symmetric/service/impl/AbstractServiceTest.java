@@ -7,6 +7,7 @@ import java.util.Date;
 import org.apache.log4j.Level;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -32,8 +33,9 @@ public abstract class AbstractServiceTest {
     protected final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
 
     @BeforeClass
-    public static void setup() {
+    public static void setup() {        
         if (engine == null) {
+            SqlUtils.setCaptureOwner(true);
             try {
                 Class<?> clazz = Class.forName("org.jumpmind.symmetric.test.TestSetupUtil");
                 Method method = clazz.getMethod("prepareForServiceTests");
@@ -238,7 +240,14 @@ public abstract class AbstractServiceTest {
         getJdbcTemplate().update("update sym_outgoing_batch set status='OK' where status != 'OK'");
         long startId = getJdbcTemplate().queryForLong("select max(start_id) from sym_data_gap");
         getJdbcTemplate()
-                .update("update sym_data_gap set status='OK' where start_id != ?", startId);
+                .update("update sym_data_gap set status='OK' where start_id != ?", startId);        
+        checkForOpenResources();
+    }
+    
+    protected void checkForOpenResources() {
+        SqlUtils.logOpenResources();
+        Assert.assertEquals("There should be no open cursors", 0, SqlUtils.getOpenSqlReadCursors().size());
+        Assert.assertEquals("There should be no open transactions", 0, SqlUtils.getOpenTransactions().size());
     }
 
 }

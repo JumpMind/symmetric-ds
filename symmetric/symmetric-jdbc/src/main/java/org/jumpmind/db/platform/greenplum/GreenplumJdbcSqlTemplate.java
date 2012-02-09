@@ -10,7 +10,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.postgresql.PostgreSqlJdbcSqlTemplate;
-import org.jumpmind.db.sql.jdbc.JdbcUtils;
+import org.jumpmind.db.sql.JdbcUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class GreenplumJdbcSqlTemplate extends PostgreSqlJdbcSqlTemplate {

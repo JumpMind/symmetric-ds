@@ -1,4 +1,4 @@
-package org.jumpmind.db.sql.jdbc;
+package org.jumpmind.db.sql;
 
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.ISqlTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,15 +34,17 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     protected boolean oldAutoCommitValue;
 
-    protected List<Object> markers = new ArrayList<Object>();
-
+    protected List<Object> markers = new ArrayList<Object>();    
+    
     public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate) {
         try {
             this.jdbcSqlTemplate = jdbcSqlTemplate;
             this.connection = jdbcSqlTemplate.getDataSource().getConnection();
             this.oldAutoCommitValue = this.connection.getAutoCommit();
             this.connection.setAutoCommit(false);
+            SqlUtils.addSqlTransaction(this);
         } catch (SQLException ex) {
+            JdbcSqlTemplate.close(connection);
             throw jdbcSqlTemplate.translate(ex);
         }
     }
@@ -96,13 +97,9 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             } catch (SQLException ex) {
                 // do nothing
             }
-            try {
-                connection.close();
-            } catch (SQLException ex) {
-                // do nothing
-            } finally {
-                connection = null;
-            }
+            JdbcSqlTemplate.close(connection);            
+            connection = null;
+            SqlUtils.removeSqlTransaction(this);
         }
     }
 

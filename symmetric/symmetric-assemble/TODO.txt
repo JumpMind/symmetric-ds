@@ -61,6 +61,7 @@ DONE = +
 * SqlMap, TriggerTemplate format better
 
 * Test timezone columns.  Do other databases other than oracle and postgres have timezone columns?
+* Test batch insert performance during routing (esp on oracle)
 
 Performance Improvement Opportunities
 * Pluggable data loaders

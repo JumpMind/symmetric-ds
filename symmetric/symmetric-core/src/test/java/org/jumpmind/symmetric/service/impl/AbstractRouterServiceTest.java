@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.hsqldb.types.Types;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -65,7 +66,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 16 : 17;
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+                false);
         filterForChannels(batches, testChannel, otherChannel);
         Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 2,
@@ -242,7 +244,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 51 : 100;
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+                false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
         Assert.assertEquals(EXPECTED_BATCHES, countBatchesForChannel(batches, testChannel));
@@ -304,7 +307,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         final int EXPECTED_BATCHES = 100;
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+                false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
         Assert.assertEquals(EXPECTED_BATCHES, countBatchesForChannel(batches, testChannel));
@@ -345,7 +349,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         getRouterService().routeData();
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+                false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(
                 "Should have been 0.  We did the insert as if the data had come from node 1.", 0,
@@ -495,7 +500,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         logger.info("Just routed " + count + " rows in " + TEST_TABLE_1 + " in "
                 + (System.currentTimeMillis() - ts) + "ms");
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+                false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 530, batches.getBatches()
                 .size());
@@ -538,7 +544,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         int count = getJdbcTemplate().update(String.format("delete from %s", TEST_TABLE_1));
         getRouterService().routeData();
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3, false);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3,
+                false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(count / MAX_BATCH_SIZE + (count % MAX_BATCH_SIZE > 0 ? 1 : 0), batches
                 .getBatches().size());
@@ -860,7 +867,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         getRouterService().routeData();
 
-        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
+                false);
         filterForChannels(batches, testChannel);
         Assert.assertEquals(
                 "Should have been 0.  We did the insert as if the data had come from node 1.", 0,
@@ -883,15 +891,16 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         getRouterService().routeData();
 
-        Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
-                .getBatches().size());
+        Assert.assertEquals(1,
+                getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false).getBatches()
+                        .size());
 
         Node node2 = getNodeService().findNode("00030");
 
         Assert.assertNotNull(node2);
 
-        Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(node2, false).getBatches()
-                .size());
+        Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(node2, false)
+                .getBatches().size());
 
         resetBatches();
 
@@ -970,8 +979,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
             routeAndCreateGaps();
 
-            Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
-                    .getBatches().size());
+            Assert.assertEquals(1,
+                    getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
+                            .getBatches().size());
 
             gaps = getDataService().findDataGaps();
 
@@ -1014,8 +1024,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
             routeAndCreateGaps();
 
-            Assert.assertEquals(1, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
-                    .getBatches().size());
+            Assert.assertEquals(1,
+                    getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
+                            .getBatches().size());
 
             List<DataGap> gaps = getDataService().findDataGaps();
 
@@ -1065,8 +1076,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
             routeAndCreateGaps();
 
-            Assert.assertEquals(10, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
-                    .getBatches().size());
+            Assert.assertEquals(10,
+                    getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
+                            .getBatches().size());
 
             List<DataGap> gaps = getDataService().findDataGaps();
 
@@ -1088,15 +1100,17 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     public void testNoResend() {
         resetBatches();
 
-        Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
-                .getBatches().size());
+        Assert.assertEquals(0,
+                getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false).getBatches()
+                        .size());
 
         getJdbcTemplate().update("delete from sym_data_gap");
 
         routeAndCreateGaps();
 
-        Assert.assertEquals(0, getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false)
-                .getBatches().size());
+        Assert.assertEquals(0,
+                getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false).getBatches()
+                        .size());
 
     }
 
@@ -1126,8 +1140,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         ChannelRouterContext context = new ChannelRouterContext(
                 TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getSqlTemplate()
                         .startSqlTransaction());
-        DataGapRouteReader reader = new DataGapRouteReader(getRouterService(),
-                context, getDataService(), getDbDialect(), getParameterService());
+        DataGapRouteReader reader = new DataGapRouteReader(getRouterService(), context,
+                getDataService(), getDbDialect(), getParameterService());
         reader.run();
 
         List<Data> list = new ArrayList<Data>();
@@ -1251,28 +1265,35 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             final String node2disable, final String routingVarcharFieldValue, final boolean rollback) {
         ISymmetricDialect dialect = getDbDialect();
         IDatabasePlatform platform = dialect.getPlatform();
-        ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
-        if (node2disable != null) {
-            dialect.disableSyncTriggers(transaction, node2disable);
-        }
-        for (int i = 0; i < count; i++) {
-            transaction.prepareAndExecute(
-                    String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName),
-                    routingVarcharFieldValue);
-            if (!transactional) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = platform.getSqlTemplate().startSqlTransaction();
+            if (node2disable != null) {
+                dialect.disableSyncTriggers(transaction, node2disable);
+            }
+            transaction.prepare(String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName));
+            for (int i = 0; i < count; i++) {
+                transaction.addRow(i, new Object[] {routingVarcharFieldValue}, new int[] {Types.VARCHAR});
+                if (!transactional) {
+                    transaction.flush();
+                    transaction.commit();
+                }
+            }
+            if (node2disable != null) {
+                dialect.enableSyncTriggers(transaction);
+            }
+
+            if (rollback) {
+                transaction.rollback();
+            } else {
+                transaction.flush();
                 transaction.commit();
             }
+        } finally {
+            if (transaction != null) {
+                transaction.close();
+            }
         }
-        if (node2disable != null) {
-            dialect.enableSyncTriggers(transaction);
-        }
-
-        if (rollback) {
-            transaction.rollback();
-        } else {
-            transaction.commit();
-        }
-        transaction.close();
     }
 
     protected void update(String tableName, String value) {
@@ -1283,16 +1304,22 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     protected void execute(final String sql, final String node2disable) {
         ISymmetricDialect dialect = getDbDialect();
         IDatabasePlatform platform = dialect.getPlatform();
-        ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
-        if (node2disable != null) {
-            dialect.disableSyncTriggers(transaction, node2disable);
+        ISqlTransaction transaction = null;
+        try {
+            transaction = platform.getSqlTemplate().startSqlTransaction();
+            if (node2disable != null) {
+                dialect.disableSyncTriggers(transaction, node2disable);
+            }
+            transaction.prepareAndExecute(sql);
+            if (node2disable != null) {
+                dialect.enableSyncTriggers(transaction);
+            }
+            transaction.commit();
+        } finally {
+            if (transaction != null) {
+                transaction.close();
+            }
         }
-        transaction.prepareAndExecute(sql);
-        if (node2disable != null) {
-            dialect.enableSyncTriggers(transaction);
-        }
-        transaction.commit();
-        transaction.close();
     }
 
 }

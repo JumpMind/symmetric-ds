@@ -3,7 +3,7 @@ package org.jumpmind.db.platform.mysql;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class MySqlJdbcSqlTemplate extends JdbcSqlTemplate {

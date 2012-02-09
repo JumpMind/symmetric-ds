@@ -3,7 +3,7 @@ package org.jumpmind.db.platform;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
 
 abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatform {
 
