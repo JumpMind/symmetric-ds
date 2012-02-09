@@ -15,7 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;

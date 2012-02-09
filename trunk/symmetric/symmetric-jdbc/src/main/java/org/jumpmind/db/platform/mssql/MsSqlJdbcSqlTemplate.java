@@ -4,7 +4,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
 
 public class MsSqlJdbcSqlTemplate extends JdbcSqlTemplate {
 

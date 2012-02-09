@@ -26,8 +26,8 @@ import java.sql.SQLException;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;

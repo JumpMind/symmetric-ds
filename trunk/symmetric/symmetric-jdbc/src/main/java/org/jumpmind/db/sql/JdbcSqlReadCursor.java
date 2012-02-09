@@ -1,4 +1,4 @@
-package org.jumpmind.db.sql.jdbc;
+package org.jumpmind.db.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -49,7 +49,9 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
             }
             st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
             rs = st.executeQuery();
+            SqlUtils.addSqlReadCursor(this);
         } catch (SQLException ex) {
+            close();
             throw sqlTemplate.translate(sql, ex);
         }
     }
@@ -83,7 +85,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         JdbcSqlTemplate.close(rs);
         JdbcSqlTemplate.close(st);
         JdbcSqlTemplate.close(autoCommitFlag, c);
-
+        SqlUtils.removeSqlReadCursor(this);
     }
 
 }

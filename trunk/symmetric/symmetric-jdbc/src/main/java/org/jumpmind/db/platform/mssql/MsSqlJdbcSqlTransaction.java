@@ -1,8 +1,8 @@
 package org.jumpmind.db.platform.mssql;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTemplate;
-import org.jumpmind.db.sql.jdbc.JdbcSqlTransaction;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTransaction;
 
 public class MsSqlJdbcSqlTransaction extends JdbcSqlTransaction {
 

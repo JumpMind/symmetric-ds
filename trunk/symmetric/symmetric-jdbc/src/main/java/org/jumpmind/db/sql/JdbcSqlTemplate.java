@@ -1,4 +1,4 @@
-package org.jumpmind.db.sql.jdbc;
+package org.jumpmind.db.sql;
 
 import java.io.IOException;
 import java.sql.Blob;
