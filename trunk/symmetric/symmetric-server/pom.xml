@@ -43,7 +43,13 @@
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-jdbc</artifactId>
-        </dependency>        
+        </dependency> 
+		<dependency>
+			<groupId>org.jumpmind.symmetric</groupId>
+			<artifactId>symmetric-jdbc</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>               
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-core</artifactId>
