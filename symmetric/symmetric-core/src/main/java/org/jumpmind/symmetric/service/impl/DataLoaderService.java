@@ -391,7 +391,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 listener.currentBatch.setNetworkMillis(System.currentTimeMillis()-batchStartsToArriveTimeInMs);
             }
             
-            log.warn("About to process " + batch.getBatchId());
             DataProcessor processor = new DataProcessor(new ProtocolDataReader(resource),
                     databaseWriter, listener);
             try {
