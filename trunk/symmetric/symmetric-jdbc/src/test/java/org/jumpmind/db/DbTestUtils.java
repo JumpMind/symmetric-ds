@@ -7,13 +7,17 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.util.DataSourceProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract public class DbTestUtils {
+    
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String ROOT = "root";
     public static final String CLIENT = "client";
 
-    public static IDatabasePlatform createDatabasePlatform(String name) throws Exception {
+    public static IDatabasePlatform createDatabasePlatform(String name) throws Exception {        
         FileUtils.deleteDirectory(new File(String.format("target/%sdbs", name)));
         DataSourceProperties properties = new DataSourceProperties(String.format("test.%s", name),
                 DatabasePlatformTest.class.getResource("/test-db.properties"), name);

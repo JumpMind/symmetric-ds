@@ -151,12 +151,11 @@ public class DataGapRouteReader implements IDataToRouteReader {
         } catch (Throwable ex) {
             log.error(ex.getMessage(), ex);
         } finally {
-            copyToQueue(new EOD());
-            reading = false;
             if (cursor != null) {
                 cursor.close();
             }
-
+            copyToQueue(new EOD());
+            reading = false;
         }
 
     }
