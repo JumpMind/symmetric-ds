@@ -1,6 +1,7 @@
 package org.jumpmind.db.sql;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -21,14 +22,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
-import org.jumpmind.db.sql.AbstractSqlTemplate;
-import org.jumpmind.db.sql.ISqlReadCursor;
-import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.db.sql.Row;
-import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
@@ -197,11 +190,30 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             String key = meta.getColumnName(i);
                             Object value = rs.getObject(i);
                             if (value instanceof Blob) {
-                                Blob blob = (Blob)value;
+                                Blob blob = (Blob) value;
                                 try {
                                     value = IOUtils.toByteArray(blob.getBinaryStream());
                                 } catch (IOException e) {
                                     throw new IoException(e);
+                                }
+                            } else if (value instanceof Clob) {
+                                Clob clob = (Clob) value;
+                                try {
+                                    value = IOUtils.toByteArray(clob.getCharacterStream());
+                                } catch (IOException e) {
+                                    throw new IoException(e);
+                                }
+                            } else if (value != null) {
+                                Class<?> clazz = value.getClass();
+                                Class<?> superClazz = clazz.getSuperclass();
+                                if (superClazz != null
+                                        && superClazz.getName().equals("oracle.sql.Datum")) {
+                                    try {
+                                        Method method = superClazz.getMethod("toJdbc");
+                                        value = method.invoke(value);
+                                    } catch (Exception e) {
+                                        throw new IllegalStateException(e);
+                                    }
                                 }
                             }
                             result.put(key, value);
@@ -497,7 +509,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         });
     }
-    
+
     public boolean isStoresUpperCaseIdentifiers() {
         return execute(new IConnectionCallback<Boolean>() {
             public Boolean execute(Connection con) throws SQLException {
