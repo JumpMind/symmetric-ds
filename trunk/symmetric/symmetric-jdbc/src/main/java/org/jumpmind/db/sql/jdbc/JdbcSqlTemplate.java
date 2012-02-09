@@ -101,6 +101,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     if (rs.next()) {
                         if (clazz.isAssignableFrom(Date.class)) {
                             result = (T) rs.getTimestamp(1);
+                        } else if (clazz.isAssignableFrom(String.class)) {
+                            result = (T) rs.getString(1);
                         } else {
                             result = (T) rs.getObject(1);
                         }

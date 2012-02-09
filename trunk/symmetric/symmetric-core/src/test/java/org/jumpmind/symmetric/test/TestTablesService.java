@@ -7,6 +7,7 @@ import junit.framework.Assert;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.impl.AbstractService;
@@ -62,12 +63,32 @@ public class TestTablesService extends AbstractService {
     public void insertCustomer(Customer customer) {
         sqlTemplate.update(getSql("insertCustomerSql"), customer.getCustomerId(),
                 customer.getName(), customer.isActive() ? "1" : "0", customer.getAddress(),
-                customer.getCity(), customer.getState(), customer.getZip(), customer.getEntryTimestamp(),
-                customer.getEntryTime(), customer.getNotes(), customer.getIcon());
+                customer.getCity(), customer.getState(), customer.getZip(),
+                customer.getEntryTimestamp(), customer.getEntryTime(), customer.getNotes(),
+                customer.getIcon());
     }
 
     public int countCustomers() {
         return sqlTemplate.queryForInt("select count(*) from test_customer");
+    }
+
+    public boolean doesCustomerExist(int id) {
+        return sqlTemplate
+                .queryForInt("select count(*) from test_customer where customer_id=?", id) > 0;
+    }
+
+    public String getCustomerNotes(int id) {
+        return sqlTemplate
+                .queryForString("select notes from test_customer where customer_id=?", id);
+    }
+
+    public byte[] getCustomerIcon(int id) {
+        return sqlTemplate.queryForObject("select icon from test_customer where customer_id=?",
+                new ISqlRowMapper<byte[]>() {
+                    public byte[] mapRow(org.jumpmind.db.sql.Row rs) {
+                        return rs.bytesValue();
+                    }
+                }, id);
     }
 
     public void insertIntoTestTriggerTable(Object[] values) {
