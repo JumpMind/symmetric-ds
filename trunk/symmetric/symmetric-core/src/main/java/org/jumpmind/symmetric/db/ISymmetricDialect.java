@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.springframework.jdbc.support.lob.LobHandler;
 
 /*
  * A dialect is the interface that insulates SymmetricDS from database implementation specifics. 
@@ -169,14 +168,7 @@ public interface ISymmetricDialect {
     
     public long getDatabaseTime();
     
-    public boolean areDatabaseTransactionsPendingSince(long time);
-    
-    /*
-     * A handler for data loading lobs.  If specified, it will
-     * also be used to stream lobs out of the database if the 
-     * lob streaming feature is turned on.
-     */
-    public LobHandler getLobHandler();
+    public boolean areDatabaseTransactionsPendingSince(long time);   
     
     /*
      * Returns true if the trigger select lob data back from the original table.

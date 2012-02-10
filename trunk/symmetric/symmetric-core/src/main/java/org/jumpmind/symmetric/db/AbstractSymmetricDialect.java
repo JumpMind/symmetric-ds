@@ -61,7 +61,6 @@ import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.support.lob.LobHandler;
 
 /*
  * The abstract class for database dialects.
@@ -94,8 +93,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected Set<String> sqlKeywords;
 
-    protected LobHandler lobHandler;
-
     protected boolean supportsTransactionViews = false;
 
     protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
@@ -113,7 +110,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.databaseProductVersion = sqlTemplate.getDatabaseProductVersion();
         this.driverName = sqlTemplate.getDriverName();
         this.driverVersion = sqlTemplate.getDriverVersion();
-        this.initLobHandler();
     }
 
     public String encodeForCsv(byte[] data) {
@@ -698,20 +694,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
 
-    /*
-     * @return the lobHandler.
-     */
-    public LobHandler getLobHandler() {
-        return lobHandler;
-    }
-
-    /*
-     * @param lobHandler The lobHandler to set.
-     */
-    public void setLobHandler(LobHandler lobHandler) {
-        this.lobHandler = lobHandler;
-    }
-
     public boolean areDatabaseTransactionsPendingSince(long time) {
         throw new UnsupportedOperationException();
     }
@@ -786,13 +768,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener) {
         databaseUpgradeListeners.add(listener);
-    }
-
-    /*
-     * Override this method to configure a database specific LOB handler for
-     * updates
-     */
-    protected void initLobHandler() {
     }
 
     public TriggerTemplate getTriggerText() {
