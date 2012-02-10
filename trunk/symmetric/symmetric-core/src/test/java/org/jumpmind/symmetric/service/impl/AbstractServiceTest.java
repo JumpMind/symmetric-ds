@@ -112,10 +112,6 @@ public abstract class AbstractServiceTest {
         return getSymmetricEngine().getRouterService();
     }
 
-    protected ISqlTemplate getJdbcTemplate() {
-        return getSymmetricEngine().getSymmetricDialect().getPlatform().getSqlTemplate();
-    }
-
     protected ITriggerRouterService getTriggerRouterService() {
         return getSymmetricEngine().getTriggerRouterService();
     }
@@ -232,14 +228,14 @@ public abstract class AbstractServiceTest {
     }
 
     protected void resetGaps() {
-        getJdbcTemplate().update("delete from sym_data_gap");
+        getSqlTemplate().update("delete from sym_data_gap");
     }
 
     protected void resetBatches() {
         routeAndCreateGaps();
-        getJdbcTemplate().update("update sym_outgoing_batch set status='OK' where status != 'OK'");
-        long startId = getJdbcTemplate().queryForLong("select max(start_id) from sym_data_gap");
-        getJdbcTemplate()
+        getSqlTemplate().update("update sym_outgoing_batch set status='OK' where status != 'OK'");
+        long startId = getSqlTemplate().queryForLong("select max(start_id) from sym_data_gap");
+        getSqlTemplate()
                 .update("update sym_data_gap set status='OK' where start_id != ?", startId);        
         checkForOpenResources();
     }
