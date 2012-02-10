@@ -21,6 +21,7 @@ package org.jumpmind.symmetric;
 
 import java.util.Properties;
 
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
@@ -258,5 +259,7 @@ public interface ISymmetricEngine {
     public IExtensionPointManager getExtensionPointManager();
     
     public IStagingManager getStagingManager();
+    
+    public ISqlTemplate getSqlTemplate();
     
 }

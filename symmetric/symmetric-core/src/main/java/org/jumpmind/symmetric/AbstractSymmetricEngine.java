@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.DeploymentType;
@@ -645,6 +646,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                             + getEngineName());
         }
 
+    }
+    
+    public ISqlTemplate getSqlTemplate() {     
+        return getSymmetricDialect().getPlatform().getSqlTemplate();
     }
 
     public Logger getLog() {

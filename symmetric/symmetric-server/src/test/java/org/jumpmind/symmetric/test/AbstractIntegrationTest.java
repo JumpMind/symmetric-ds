@@ -8,6 +8,7 @@ import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
+import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.properties.EnvironmentSpecificProperties;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -38,7 +39,7 @@ public abstract class AbstractIntegrationTest {
     protected ClientSymmetricEngine getClient() {
         if (client == null) {
             EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(new URL[] {
-                    TestSetupUtil.getResource("/test-db.properties"),
+                    TestSetupUtil.getResource(DbTestUtils.DB_TEST_PROPERTIES),
                     TestSetupUtil.getResource("/symmetric-test.properties") }, "test.client",
                     new String[] { "client" });
 
@@ -54,7 +55,7 @@ public abstract class AbstractIntegrationTest {
         try {
             if (server == null) {
                 EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
-                        new URL[] { TestSetupUtil.getResource("/test-db.properties"),
+                        new URL[] { TestSetupUtil.getResource(DbTestUtils.DB_TEST_PROPERTIES),
                                 TestSetupUtil.getResource("/symmetric-test.properties") },
                         "test.root", new String[] { "root" });
                 properties.setProperty(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT,

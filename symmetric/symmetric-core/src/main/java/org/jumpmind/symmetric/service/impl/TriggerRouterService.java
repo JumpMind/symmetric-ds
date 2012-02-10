@@ -278,13 +278,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         
         for (String tableName : tables) {
-            Trigger trigger = createTriggerForSymmetricTable(tableName);
+            Trigger trigger = buildTriggerForSymmetricTable(tableName);
             triggers.add(trigger);
         }
         return triggers;
     }
     
-    protected Trigger createTriggerForSymmetricTable(String tableName) {
+    protected Trigger buildTriggerForSymmetricTable(String tableName) {
         boolean syncChanges = !TableConstants.getTablesThatDoNotSync(tablePrefix).contains(
                 tableName) && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
         Trigger trigger = new Trigger();
@@ -420,7 +420,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggers.addAll(buildTriggerRoutersForSymmetricTables(Version.version(), nodeGroupLink));
             if (NodeGroupLinkAction.P == nodeGroupLink.getDataEventAction()) {                
                 triggers.add(buildTriggerRoutersForSymmetricTables(Version.version(), 
-                        createTriggerForSymmetricTable(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)), nodeGroupLink));
+                        buildTriggerForSymmetricTable(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)), nodeGroupLink));
             }
         }
         return triggers;

@@ -9,6 +9,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.impl.AbstractService;
 import org.junit.Ignore;
@@ -66,6 +67,25 @@ public class TestTablesService extends AbstractService {
                 customer.getCity(), customer.getState(), customer.getZip(),
                 customer.getEntryTimestamp(), customer.getEntryTime(), customer.getNotes(),
                 customer.getIcon());
+    }
+
+    public int updateCustomer(int id, String column, Object value) {
+        return sqlTemplate.update(
+                String.format("update test_customer set %s=? where customer_id=?", column), value,
+                id);
+    }
+
+    public Customer getCustomer(int id) {
+        return sqlTemplate.queryForObject("select * from test_customer where customer_id=?",
+                new ISqlRowMapper<Customer>() {
+                    public Customer mapRow(Row rs) {
+                        return new Customer(rs.getInt("customer_id"), rs.getString("name"), rs
+                                .getBoolean("is_active"), rs.getString("address"), rs
+                                .getString("city"), rs.getString("state"), rs.getInt("zip"), rs
+                                .getDateTime("entry_timestamp"), rs.getDateTime("entry_time"), rs
+                                .getString("notes"), rs.getBytes("icon"));
+                    }
+                }, id);
     }
 
     public int countCustomers() {
