@@ -108,9 +108,9 @@ public class TestTablesService extends AbstractService {
                     }
                 }, id);
     }
-
-    public int countCustomers() {
-        return sqlTemplate.queryForInt("select count(*) from test_customer");
+    
+    public int count(String table) {
+        return sqlTemplate.queryForInt(String.format("select count(*) from %s",table));
     }
 
     public boolean doesCustomerExist(int id) {
