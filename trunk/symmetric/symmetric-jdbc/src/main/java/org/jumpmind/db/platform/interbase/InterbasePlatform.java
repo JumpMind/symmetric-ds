@@ -24,6 +24,7 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 
 /*
@@ -32,7 +33,7 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 public class InterbasePlatform extends AbstractJdbcDatabasePlatform {
     
     /* Database name of this platform. */
-    public static final String DATABASENAME = "Interbase";
+    public static final String DATABASENAME = DatabaseNamesConstants.INTERBASE;
 
     /* The interbase jdbc driver. */
     public static final String JDBC_DRIVER = "interbase.interclient.Driver";

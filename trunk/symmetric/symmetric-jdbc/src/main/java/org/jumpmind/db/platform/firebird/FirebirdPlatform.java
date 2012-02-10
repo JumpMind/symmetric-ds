@@ -24,6 +24,7 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformInfo;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 
@@ -33,7 +34,7 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
  */
 public class FirebirdPlatform extends AbstractJdbcDatabasePlatform {
     /* Database name of this platform. */
-    public static final String DATABASENAME = "Firebird";
+    public static final String DATABASENAME = DatabaseNamesConstants.FIREBIRD;
 
     /* The standard Firebird jdbc driver. */
     public static final String JDBC_DRIVER = "org.firebirdsql.jdbc.FBDriver";
