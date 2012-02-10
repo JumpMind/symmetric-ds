@@ -899,7 +899,7 @@ public class Table implements Serializable, Cloneable {
     }
 
     public String getQualifiedTablePrefix(String quoteString) {
-        return getQualifiedTablePrefix(schema, catalog, quoteString);
+        return getQualifiedTablePrefix(catalog, schema, quoteString);
     }
 
     public Column getColumnWithName(String name) {
