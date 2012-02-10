@@ -1,17 +1,24 @@
 package org.jumpmind.symmetric.test;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.TestConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.model.OutgoingBatches;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,13 +29,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     public static boolean testFlag = false;
 
-    static final String insertOrderHeaderSql = "insert into test_order_header (order_id, customer_id, status, deliver_date) values(?,?,?,?)";
-
     static final String updateOrderHeaderStatusSql = "update test_order_header set status = ? where order_id = ?";
-
-    static final String selectOrderHeaderSql = "select order_id, customer_id, status, deliver_date from test_order_header where order_id = ?";
-
-    static final String insertOrderDetailSql = "insert into test_order_detail (order_id, line_number, item_type, item_id, quantity, price) values(?,?,?,?,?,?)";
 
     static final String updateTestTriggerTableSql = "update test_triggers_table set string_one_value=?";
 
@@ -243,8 +244,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
 
         if (getServer().getEngine().getSymmetricDialect().isClobSyncSupported()) {
-            if (DatabaseNamesConstants.INTERBASE.equals(getClient().getSymmetricDialect()
-                    .getPlatform().getName())) {
+            if (isClientInterbase()) {
                 // Putting an empty string into a CLOB on Interbase results in a
                 // NULL value
                 Assert.assertNull("Expected null CLOB", clientTestService.getCustomerNotes(300));
@@ -274,112 +274,109 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
-    // @Test(timeout = 120000)
-    // public void testLargeLob() {
-    // if (!(getRootDbDialect() instanceof OracleDbDialect)) {
-    // return;
-    // }
-    // int blobType = Types.BINARY;
-    // if (getRootDbDialect() instanceof OracleDbDialect) {
-    // blobType = Types.BLOB;
-    // }
-    // String bigString = StringUtils.rightPad("Feeling tired... ", 6000, "Z");
-    // Object[] args = new Object[] { 400, "Eric", "1", "100 Main Street",
-    // "Columbus", "OH",
-    // 43082, new Date(), new Date(), bigString, bigString.getBytes() };
-    // int[] argTypes = new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR,
-    // Types.VARCHAR,
-    // Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
-    // Types.TIMESTAMP,
-    // Types.CLOB, blobType };
-    //
-    // rootJdbcTemplate.update(insertCustomerSql, new
-    // ArgTypePreparedStatementSetter(args,
-    // argTypes, getRootDbDialect().getLobHandler()));
-    // clientPull();
-    // }
-    //
-    // @Test(timeout = 120000)
-    // public void testSuspendIgnorePushRemoteBatches() throws ParseException {
-    //
-    // // test suspend / ignore with remote database specifying the suspends
-    // // and ignores
-    // logTestRunning();
-    // turnOnNoKeysInUpdateParameter(true);
-    // Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd"
-    // });
-    // clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "101",
-    // 100, null, date },
-    // new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-    // clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "101", 1,
-    // "STK",
-    // "110000065", 3, 3.33 });
-    //
-    // boolean pushedData = clientPush();
-    //
-    // Assert.assertTrue("Client data was not batched and pushed", pushedData);
-    // assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new
-    // Object[] { "101" })
-    // .size(), 1,
-    // "The inserted test_order_header client row was not synchronized.");
-    //
-    // IConfigurationService rootConfigurationService =
-    // findOnRoot(Constants.CONFIG_SERVICE);
-    // IOutgoingBatchService clientOutgoingBatchService =
-    // findOnClient(Constants.OUTGOING_BATCH_SERVICE);
-    //
-    // NodeChannel c =
-    // rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-    // TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
-    // c.setSuspendEnabled(true);
-    // rootConfigurationService.saveNodeChannel(c, true);
-    //
-    // date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
-    // clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "102",
-    // 100, null, date },
-    // new int[] { Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-    // clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "102", 1,
-    // "STK",
-    // "110000065", 3, 3.33 });
-    // clientPush();
-    //
-    // OutgoingBatches batches = clientOutgoingBatchService
-    // .getOutgoingBatches(TestConstants.TEST_ROOT_NODE, false);
-    //
-    // assertEquals(batches.getBatches().size(), 1,
-    // "There should be one outgoing batches.");
-    // assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new
-    // Object[] { "102" })
-    // .size(), 0, "The order record wasn't sync'd when it should have.");
-    //
-    // rootConfigurationService = findOnRoot(Constants.CONFIG_SERVICE);
-    // c =
-    // rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-    // TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
-    // c.setIgnoreEnabled(true);
-    // rootConfigurationService.saveNodeChannel(c, true);
-    // clientPush();
-    //
-    // batches =
-    // clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE,
-    // false);
-    //
-    // assertEquals(batches.getBatches().size(), 0,
-    // "There should be no outgoing batches.");
-    //
-    // assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new
-    // Object[] { "102" })
-    // .size(), 0, "The order record wasn't sync'd when it should have.");
-    //
-    // // Cleanup!
-    // c =
-    // rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-    // TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
-    // c.setSuspendEnabled(false);
-    // c.setIgnoreEnabled(false);
-    // rootConfigurationService.saveNodeChannel(c, true);
-    // clientPush();
-    // }
+    @Test(timeout = 120000)
+    public void testLargeLob() {
+        if (!isServerOracle()) {
+            return;
+        }
+        String bigString = StringUtils.rightPad("Feeling tired... ", 6000, "Z");
+        Customer customer = new Customer(400, "Eric", true, "100 Main Street", "Columbus", "OH",
+                43082, new Date(), new Date(), bigString, bigString.getBytes());
+        serverTestService.insertCustomer(customer);
+        clientPull();
+    }
+
+    @Test(timeout = 120000)
+    public void testSuspendIgnorePushRemoteBatches() throws Exception {
+        // test suspend / ignore with remote database specifying the suspends
+        // and ignores
+        logTestRunning();
+
+        turnOnNoKeysInUpdateParameter(true);
+
+        Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
+        Order order = new Order("101", 100, null, date);
+        order.getOrderDetails().add(
+                new OrderDetail("101", 1, "STK", "110000065", 3, new BigDecimal(3.33)));
+
+        Assert.assertNull(serverTestService.getOrder(order.getOrderId()));
+
+        clientTestService.insertOrder(order);
+
+        boolean pushedData = clientPush();
+
+        Assert.assertTrue("Client data was not batched and pushed", pushedData);
+
+        Assert.assertNotNull(serverTestService.getOrder(order.getOrderId()));
+
+        IConfigurationService rootConfigurationService = getServer().getEngine()
+                .getConfigurationService();
+        IOutgoingBatchService clientOutgoingBatchService = getClient().getOutgoingBatchService();
+
+        NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
+        c.setSuspendEnabled(true);
+        rootConfigurationService.saveNodeChannel(c, true);
+
+        date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
+        order = new Order("102", 100, null, date);
+        order.getOrderDetails().add(
+                new OrderDetail("102", 1, "STK", "110000065", 3, new BigDecimal(3.33)));
+
+        Assert.assertNull(serverTestService.getOrder(order.getOrderId()));
+
+        clientTestService.insertOrder(order);
+
+        clientPush();
+
+        OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(
+                TestConstants.TEST_ROOT_NODE, false);
+
+        Assert.assertEquals("There should be one outgoing batches.", 1, batches.getBatches().size());
+
+        Assert.assertNull("The order record was synchronized when it should not have been",
+                serverTestService.getOrder(order.getOrderId()));
+
+        c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
+        c.setIgnoreEnabled(true);
+        rootConfigurationService.saveNodeChannel(c, true);
+
+        clientPush();
+
+        batches = clientOutgoingBatchService
+                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE, false);
+
+        Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
+
+        Assert.assertNull("The order record was synchronized when it should not have been",
+                serverTestService.getOrder(order.getOrderId()));
+
+        // Cleanup!
+        c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
+        c.setSuspendEnabled(false);
+        c.setIgnoreEnabled(false);
+        rootConfigurationService.saveNodeChannel(c, true);
+
+        clientPush();
+    }
+
+    private boolean turnOnNoKeysInUpdateParameter(boolean newValue) {
+        IParameterService clientParameterService = getClient().getParameterService();
+        IParameterService rootParameterService = getServer().getEngine().getParameterService();
+        Assert.assertEquals(
+                clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE),
+                rootParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
+        boolean oldValue = clientParameterService
+                .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
+                newValue);
+        rootParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
+                newValue);
+        return oldValue;
+    }
+
     //
     // @Test(timeout = 120000)
     // public void testSuspendIgnorePushLocalBatches() throws ParseException {
@@ -805,24 +802,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     // Assert.assertEquals(failureMessage, expected, actual);
     // }
     //
-    // private boolean turnOnNoKeysInUpdateParameter(boolean newValue) {
-    // IParameterService clientParameterService = (IParameterService)
-    // getClient()
-    // .getApplicationContext().getBean(Constants.PARAMETER_SERVICE);
-    // IParameterService rootParameterService = (IParameterService)
-    // AppUtils.find(
-    // Constants.PARAMETER_SERVICE, getRootEngine());
-    // Assert.assertEquals(
-    // clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE),
-    // rootParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
-    // boolean oldValue = clientParameterService
-    // .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
-    // clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
-    // newValue);
-    // rootParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
-    // newValue);
-    // return oldValue;
-    // }
     //
     // @Test(timeout = 120000)
     // public void syncToRoot() throws ParseException {
