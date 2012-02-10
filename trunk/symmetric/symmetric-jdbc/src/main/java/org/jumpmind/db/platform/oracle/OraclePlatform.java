@@ -30,27 +30,28 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
+import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 /*
  * The platform for Oracle 8.
  */
 public class OraclePlatform extends AbstractJdbcDatabasePlatform {
-    
+
     /* Database name of this platform. */
     public static final String DATABASENAME = "Oracle";
-    
+
     /* The standard Oracle jdbc driver. */
     public static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
-    
+
     /* The old Oracle jdbc driver. */
     public static final String JDBC_DRIVER_OLD = "oracle.jdbc.dnlddriver.OracleDriver";
-    
+
     /* The thin subprotocol used by the standard Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_THIN = "oracle:thin";
-    
+
     /* The thin subprotocol used by the standard Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_OCI8 = "oracle:oci8";
-    
+
     /* The old thin subprotocol used by the standard Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_THIN_OLD = "oracle:dnldthin";
 
@@ -59,7 +60,7 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
      */
     public OraclePlatform(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings);
-        
+
         info.setMaxIdentifierLength(30);
         info.setIdentityStatusReadingSupported(false);
 
@@ -108,17 +109,27 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
         ddlReader = new OracleDdlReader(this);
         ddlBuilder = new OracleBuilder(this);
     }
-        
-    
+
     @Override
     protected void createSqlTemplate() {
-        this.sqlTemplate = new OracleJdbcSqlTemplate(dataSource, settings, new OracleLobHandler());
+        OracleLobHandler lobHandler = new OracleLobHandler();
+        try {
+            NativeJdbcExtractor extractor = (NativeJdbcExtractor) Class
+                    .forName(
+                            System.getProperty("db.native.extractor",
+                                    "org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor"))
+                    .newInstance();
+            lobHandler.setNativeJdbcExtractor(extractor);
+        } catch (Exception ex) {
+            log.error("Could not create a native database connection extractor", ex);
+        }
+
+        this.sqlTemplate = new OracleJdbcSqlTemplate(dataSource, settings, lobHandler);
     }
 
     public String getName() {
         return DATABASENAME;
     }
-    
 
     public String getDefaultCatalog() {
         return null;
@@ -136,8 +147,8 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns) {
         return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
-                getPlatformInfo().isDateOverridesToTimestamp(),
-                getPlatformInfo().getIdentifierQuoteString());
+                getPlatformInfo().isDateOverridesToTimestamp(), getPlatformInfo()
+                        .getIdentifierQuoteString());
     }
 
 }
