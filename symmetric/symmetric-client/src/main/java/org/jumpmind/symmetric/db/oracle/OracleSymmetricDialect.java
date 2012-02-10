@@ -69,20 +69,6 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    protected void initLobHandler() {
-        lobHandler = new OracleLobHandler();
-        try {
-            Class<? extends NativeJdbcExtractor> clazz = Class.forName(
-                    parameterService.getString(ParameterConstants.DB_NATIVE_EXTRACTOR)).asSubclass(
-                    NativeJdbcExtractor.class);
-            NativeJdbcExtractor nativeJdbcExtractor = (NativeJdbcExtractor) clazz.newInstance();
-            ((OracleLobHandler) lobHandler).setNativeJdbcExtractor(nativeJdbcExtractor);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table table) {
         try {
