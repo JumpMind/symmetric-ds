@@ -131,7 +131,7 @@ public class TestTablesService extends AbstractService {
                     }
                 }, id);
     }
-
+    
     public void insertIntoTestTriggerTable(Object[] values) {
         Table testTriggerTable = platform
                 .getTableFromCache(null, null, "test_triggers_table", true);
