@@ -108,15 +108,15 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         getDbDialect().truncateTable("test_lookup_table");
 
-        getJdbcTemplate().update("insert into test_lookup_table values ('A',?)",
+        getSqlTemplate().update("insert into test_lookup_table values ('A',?)",
                 NODE_GROUP_NODE_1.getExternalId());
-        getJdbcTemplate().update("insert into test_lookup_table values ('B',?)",
+        getSqlTemplate().update("insert into test_lookup_table values ('B',?)",
                 NODE_GROUP_NODE_1.getExternalId());
-        getJdbcTemplate().update("insert into test_lookup_table values ('C',?)",
+        getSqlTemplate().update("insert into test_lookup_table values ('C',?)",
                 NODE_GROUP_NODE_3.getExternalId());
-        getJdbcTemplate().update("insert into test_lookup_table values ('D',?)",
+        getSqlTemplate().update("insert into test_lookup_table values ('D',?)",
                 NODE_GROUP_NODE_3.getExternalId());
-        getJdbcTemplate().update("insert into test_lookup_table values ('D',?)",
+        getSqlTemplate().update("insert into test_lookup_table values ('D',?)",
                 NODE_GROUP_NODE_1.getExternalId());
 
         TriggerRouter triggerRouter = getTestRoutingTableTrigger(TEST_TABLE_1);
@@ -140,11 +140,11 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         Assert.assertEquals(
                 1,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
                         NODE_GROUP_NODE_1.getNodeId()));
         Assert.assertEquals(
                 0,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH_WHERE_NOT,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH_WHERE_NOT,
                         NODE_GROUP_NODE_1.getNodeId()));
         Assert.assertEquals(unroutedCount, countUnroutedBatches());
 
@@ -156,11 +156,11 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         Assert.assertEquals(
                 1,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
                         NODE_GROUP_NODE_1.getNodeId()));
         Assert.assertEquals(
                 0,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH_WHERE_NOT,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH_WHERE_NOT,
                         NODE_GROUP_NODE_1.getNodeId()));
         Assert.assertEquals(unroutedCount, countUnroutedBatches());
 
@@ -172,11 +172,11 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         Assert.assertEquals(
                 1,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
                         NODE_GROUP_NODE_3.getNodeId()));
         Assert.assertEquals(
                 0,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH_WHERE_NOT,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH_WHERE_NOT,
                         NODE_GROUP_NODE_3.getNodeId()));
         Assert.assertEquals(unroutedCount, countUnroutedBatches());
 
@@ -188,15 +188,15 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         Assert.assertEquals(
                 1,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
                         NODE_GROUP_NODE_1.getNodeId()));
         Assert.assertEquals(
                 1,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
                         NODE_GROUP_NODE_3.getNodeId()));
         Assert.assertEquals(
                 0,
-                getJdbcTemplate()
+                getSqlTemplate()
                         .queryForInt(
                                 "select count(*) from sym_outgoing_batch where status = 'NE' and node_id not in (?,?)",
                                 NODE_GROUP_NODE_1.getNodeId(), NODE_GROUP_NODE_3.getNodeId()));
@@ -210,11 +210,11 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         Assert.assertEquals(
                 0,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
                         NODE_GROUP_NODE_1.getNodeId()));
         Assert.assertEquals(
                 0,
-                getJdbcTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
+                getSqlTemplate().queryForInt(SELECT_COUNT_FROM_SYM_OUTGOING_BATCH,
                         NODE_GROUP_NODE_3.getNodeId()));
         Assert.assertEquals(1, countUnroutedBatches() - unroutedCount);
 
@@ -490,9 +490,19 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         getConfigurationService().saveChannel(testChannel, true);
 
         long ts = System.currentTimeMillis();
-        int count = getJdbcTemplate().update(
-                String.format("update %s set ROUTING_VARCHAR=?", TEST_TABLE_1),
-                NODE_GROUP_NODE_3.getNodeId());
+
+        ISqlTransaction transaction = null;
+        int count = 0;
+        try {
+            transaction = getSqlTemplate().startSqlTransaction();
+            count = transaction.prepareAndExecute(
+                    String.format("update %s set ROUTING_VARCHAR=?", TEST_TABLE_1),
+                    NODE_GROUP_NODE_3.getNodeId());
+            transaction.commit();
+        } finally {
+            transaction.close();
+        }
+
         logger.info("Just recorded a change to " + count + " rows in " + TEST_TABLE_1 + " in "
                 + (System.currentTimeMillis() - ts) + "ms");
         ts = System.currentTimeMillis();
@@ -541,7 +551,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         testChannel.setBatchAlgorithm("nontransactional");
         getConfigurationService().saveChannel(testChannel, true);
 
-        int count = getJdbcTemplate().update(String.format("delete from %s", TEST_TABLE_1));
+        int count = getSqlTemplate().update(String.format("delete from %s", TEST_TABLE_1));
         getRouterService().routeData();
 
         OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3,
@@ -592,10 +602,10 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         getRouterService().routeData();
         resetBatches();
 
-        int pk = getJdbcTemplate().queryForInt(
+        int pk = getSqlTemplate().queryForInt(
                 "select PK from " + TEST_TABLE_1 + " where ROUTING_VARCHAR='"
                         + NODE_GROUP_NODE_1.getNodeId() + "'");
-        getJdbcTemplate().update("insert into " + TEST_SUBTABLE + " (FK) values(?)", pk);
+        getSqlTemplate().update("insert into " + TEST_SUBTABLE + " (FK) values(?)", pk);
 
         Assert.assertEquals(
                 0,
@@ -803,10 +813,10 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         resetBatches();
 
-        int pk = getJdbcTemplate().queryForInt(
+        int pk = getSqlTemplate().queryForInt(
                 "select PK from " + TEST_TABLE_1 + " where ROUTING_VARCHAR='"
                         + NODE_GROUP_NODE_1.getNodeId() + "'");
-        getJdbcTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=1 where PK=?", pk);
+        getSqlTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=1 where PK=?", pk);
 
         getRouterService().routeData();
 
@@ -817,7 +827,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                         testChannel));
 
         resetBatches();
-        getJdbcTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=1 where PK=?",
+        getSqlTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=1 where PK=?",
                 new Object[] { pk });
 
         getRouterService().routeData();
@@ -829,7 +839,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                         testChannel));
 
         resetBatches();
-        getJdbcTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=10 where PK=?",
+        getSqlTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=10 where PK=?",
                 new Object[] { pk });
 
         getRouterService().routeData();
@@ -1010,9 +1020,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
             Assert.assertEquals(1, getDataService().findDataGaps().size());
 
-            long startId = getJdbcTemplate().queryForLong("select max(start_id) from sym_data_gap");
+            long startId = getSqlTemplate().queryForLong("select max(start_id) from sym_data_gap");
 
-            getJdbcTemplate().update("update sym_data_gap set status='OK'");
+            getSqlTemplate().update("update sym_data_gap set status='OK'");
             getDataService().insertDataGap(new DataGap(startId, startId + 10));
             getDataService().insertDataGap(
                     new DataGap(startId + 11, startId
@@ -1053,7 +1063,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
             Calendar time = Calendar.getInstance();
             time.add(Calendar.DATE, -10);
-            getJdbcTemplate().update("update sym_data set create_time=?", time.getTime());
+            getSqlTemplate().update("update sym_data set create_time=?", time.getTime());
 
             routeAndCreateGaps();
             ;
@@ -1104,7 +1114,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1, false).getBatches()
                         .size());
 
-        getJdbcTemplate().update("delete from sym_data_gap");
+        getSqlTemplate().update("delete from sym_data_gap");
 
         routeAndCreateGaps();
 
@@ -1184,7 +1194,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     }
 
     protected int countUnroutedBatches() {
-        return getJdbcTemplate().queryForInt(
+        return getSqlTemplate().queryForInt(
                 "select count(*) from sym_outgoing_batch where node_id=?",
                 Constants.UNROUTED_NODE_ID);
     }
@@ -1244,7 +1254,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     }
 
     protected void deleteAll(final String tableName) {
-        getJdbcTemplate().update("delete from " + tableName);
+        getSqlTemplate().update("delete from " + tableName);
     }
 
     protected void insert(final String tableName, final int count, boolean transactional) {
@@ -1271,9 +1281,11 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             if (node2disable != null) {
                 dialect.disableSyncTriggers(transaction, node2disable);
             }
-            transaction.prepare(String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName));
+            transaction.prepare(String.format("insert into %s (ROUTING_VARCHAR) values(?)",
+                    tableName));
             for (int i = 0; i < count; i++) {
-                transaction.addRow(i, new Object[] {routingVarcharFieldValue}, new int[] {Types.VARCHAR});
+                transaction.addRow(i, new Object[] { routingVarcharFieldValue },
+                        new int[] { Types.VARCHAR });
                 if (!transactional) {
                     transaction.flush();
                     transaction.commit();
@@ -1297,7 +1309,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     }
 
     protected void update(String tableName, String value) {
-        getJdbcTemplate().update(
+        getSqlTemplate().update(
                 String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName), value);
     }
 
