@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.test;
 
 import java.sql.Types;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
@@ -59,6 +60,26 @@ public class TestTablesService extends AbstractService {
                     "The blob column for test_use_stream_lob was not loaded into the client database",
                     expected, new String((byte[]) values.get("TEST_BLOB")));
         }
+    }
+
+    public void insertOrder(Order order) {
+        sqlTemplate.update(getSql("insertOrderSql"), order.getOrderId(), order.getCustomerId(),
+                order.getStatus(), order.getDeliverDate());
+        List<OrderDetail> details = order.getOrderDetails();
+        for (OrderDetail orderDetail : details) {
+            sqlTemplate.update(getSql("insertOrderDetailSql"), orderDetail.getOrderId(),
+                    orderDetail.getLineNumber(), orderDetail.getItemType(),
+                    orderDetail.getItemId(), orderDetail.getQuantity(), orderDetail.getPrice());
+        }
+    }
+
+    public Order getOrder(String id) {
+        return sqlTemplate.queryForObject(getSql("selectOrderSql"), new ISqlRowMapper<Order>() {
+            public Order mapRow(Row rs) {
+                return new Order(rs.getString("order_id"), rs.getInt("customer_id"), rs
+                        .getString("status"), rs.getDateTime("deliver_date"));
+            }
+        }, id);
     }
 
     public void insertCustomer(Customer customer) {
