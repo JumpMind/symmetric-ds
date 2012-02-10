@@ -125,6 +125,7 @@ public class DatabaseWriter implements IDataWriter {
         this.sourceTable = table;
         this.targetTable = lookupTableAtTarget(table);
         if (this.targetTable != null || hasFilterThatHandlesMissingTable(table)) {
+            this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable);
             return true;
         } else {
             log.warn("Did not find the {} table in the target database",
@@ -598,7 +599,6 @@ public class DatabaseWriter implements IDataWriter {
                         column.setPrimaryKey(true);
                     }
                 }
-                this.transaction.allowInsertIntoAutoIncrementColumns(true, this.targetTable);
             }
         }
         return table;

@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.test;
 import java.util.Date;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.TestConstants;
@@ -232,56 +233,47 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "select count(*) from sym_node where schema_version='test'") > 0);
     }
 
-//    @Test(timeout = 120000)
-//    public void testEmptyNullLob() {
-//        // Test empty large object
-//        int blobType = getServer().getEngine().getSymmetricDialect().getPlatform().getTableFromCache("test_customer", false)
-//                .getColumn(11).getTypeCode();
-//        Customer customer = new Customer(300, "Eric", true, "100 Main Street", "Columbus", "OH",
-//                43082, new Date(), new Date(), "", new byte[0]);
-//        
-//        serverTestService.insertCustomer(customer);
-//
-//        clientPull();
-//
-//        if (getRootDbDialect().isClobSyncSupported()) {
-//            if (getClientDbDialect() instanceof InterbaseDbDialect) {
-//                // Putting an empty string into a CLOB on Interbase results in a
-//                // NULL value
-//                assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), null,
-//                        "Expected null CLOB");
-//            } else {
-//                assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), "",
-//                        "Expected empty CLOB");
-//            }
-//        }
-//
-//        if (getRootDbDialect().isBlobSyncSupported()) {
-//            byte[] bytes = (byte[]) clientJdbcTemplate.queryForObject(queryIcon, byte[].class);
-//            Assert.assertTrue("Expected empty BLOB", bytes != null && bytes.length == 0);
-//        }
-//
-//        // Test null large object
-//        args = new Object[] { null, null };
-//        argTypes = new int[] { Types.CLOB, blobType };
-//        rootJdbcTemplate.update(
-//                "update test_customer set notes = ?, icon = ? where customer_id = 300",
-//                new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect()
-//                        .getLobHandler()));
-//        clientPull();
-//
-//        if (getRootDbDialect().isClobSyncSupported()) {
-//            assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), null,
-//                    "Expected null CLOB");
-//        }
-//
-//        if (getRootDbDialect().isBlobSyncSupported()) {
-//            assertEquals(clientJdbcTemplate.queryForObject(queryIcon, byte[].class), null,
-//                    "Expected null BLOB");
-//        }
-//    }
-    
-    
+    @Test(timeout = 120000)
+    public void testEmptyNullLob() {
+        Customer customer = new Customer(300, "Eric", true, "100 Main Street", "Columbus", "OH",
+                43082, new Date(), new Date(), "", new byte[0]);
+
+        serverTestService.insertCustomer(customer);
+
+        clientPull();
+
+        if (getServer().getEngine().getSymmetricDialect().isClobSyncSupported()) {
+            if (DatabaseNamesConstants.INTERBASE.equals(getClient().getSymmetricDialect()
+                    .getPlatform().getName())) {
+                // Putting an empty string into a CLOB on Interbase results in a
+                // NULL value
+                Assert.assertNull("Expected null CLOB", clientTestService.getCustomerNotes(300));
+            } else {
+                Assert.assertEquals("Expected empty CLOB", "",
+                        clientTestService.getCustomerNotes(300));
+            }
+        }
+
+        if (getServer().getEngine().getSymmetricDialect().isBlobSyncSupported()) {
+            byte[] bytes = clientTestService.getCustomerIcon(300);
+            Assert.assertTrue("Expected empty BLOB", bytes != null && bytes.length == 0);
+        }
+
+        // Test null large object
+        serverTestService.updateCustomer(300, "notes", null);
+        serverTestService.updateCustomer(300, "icon", null);
+
+        clientPull();
+
+        if (getServer().getEngine().getSymmetricDialect().isClobSyncSupported()) {
+            Assert.assertNull("Expected null CLOB", clientTestService.getCustomerNotes(300));
+        }
+
+        if (getServer().getEngine().getSymmetricDialect().isBlobSyncSupported()) {
+            Assert.assertNull("Expected null BLOB", clientTestService.getCustomerIcon(300));
+        }
+    }
+
     // @Test(timeout = 120000)
     // public void testLargeLob() {
     // if (!(getRootDbDialect() instanceof OracleDbDialect)) {

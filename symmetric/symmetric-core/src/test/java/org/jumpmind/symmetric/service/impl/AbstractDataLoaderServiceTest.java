@@ -97,7 +97,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
 
     @Test
     public void testStatistics() throws Exception {
-        Level old = setLoggingLevelForTest(Level.OFF);
+        Level old = setLoggingLevelForTest(Level.DEBUG);
         String[] updateValues = new String[TEST_COLUMNS.length + 1];
         updateValues[0] = updateValues[updateValues.length - 1] = getNextId();
         updateValues[2] = updateValues[4] = "required string";
@@ -148,7 +148,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertNotNull(batch);
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
-        assertEquals(batch.getFailedRowNumber(), 8l, "Wrong failed row number. " + printDatabase());
+        assertEquals(batch.getFailedRowNumber(), 8l, "Wrong failed row number. " + batch.getSqlMessage() + ". " + printDatabase());
         assertEquals(batch.getByteCount(), 524l, "Wrong byte count. " + printDatabase());
         assertEquals(batch.getStatementCount(), 8l, "Wrong statement count. " + printDatabase());
         assertEquals(batch.getFallbackInsertCount(), 1l, "Wrong fallback insert count. "

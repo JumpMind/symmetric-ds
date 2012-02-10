@@ -10,7 +10,7 @@ public class MsSqlJdbcSqlTemplate extends JdbcSqlTemplate {
 
     public MsSqlJdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings) {
         super(dataSource, settings, null);
-        primaryKeyViolationSqlStates = new String[] {"2627"};
+        primaryKeyViolationCodes = new int[] {2627};
     }
     
     @Override
