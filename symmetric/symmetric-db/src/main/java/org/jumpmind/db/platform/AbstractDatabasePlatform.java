@@ -60,6 +60,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S",
             "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
+    
+    public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
+        "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
@@ -356,7 +359,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 objectValue = Hex.decodeHex(value.toCharArray());
                             }
                         } else if (type == Types.TIME) {
-                            objectValue = new Time(Timestamp.valueOf(value).getTime());
+                            objectValue = Time.valueOf(value);
                         } else if (type == Types.ARRAY) {
                             objectValue = createArray(column, value);
                         }
@@ -405,7 +408,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             throw new RuntimeException(e);
         }
     }
-
+    
     public boolean isClob(int type) {
         return type == Types.CLOB || type == Types.LONGVARCHAR;
     }
