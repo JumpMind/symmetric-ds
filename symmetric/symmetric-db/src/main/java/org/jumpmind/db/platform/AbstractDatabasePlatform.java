@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.sql.Array;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
@@ -49,9 +48,9 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jumpmind.util.FormatUtils;
 
 /*
  * Base class for platform implementations.
@@ -359,7 +358,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                                 objectValue = Hex.decodeHex(value.toCharArray());
                             }
                         } else if (type == Types.TIME) {
-                            objectValue = Time.valueOf(value);
+                            objectValue = parseTime(value);
                         } else if (type == Types.ARRAY) {
                             objectValue = createArray(column, value);
                         }
@@ -408,6 +407,15 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             throw new RuntimeException(e);
         }
     }
+    
+    protected java.util.Date parseTime(String value) {
+        try {
+            return DateUtils.parseDate(value, TIME_PATTERNS);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     
     public boolean isClob(int type) {
         return type == Types.CLOB || type == Types.LONGVARCHAR;
