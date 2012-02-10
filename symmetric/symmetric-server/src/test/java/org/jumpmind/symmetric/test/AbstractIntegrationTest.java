@@ -9,6 +9,7 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.jumpmind.db.DbTestUtils;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.properties.EnvironmentSpecificProperties;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -27,16 +28,16 @@ public abstract class AbstractIntegrationTest {
     private static ClientSymmetricEngine client;
 
     private static SymmetricWebServer server;
-    
+
     private static String serverDatabase;
-    
+
     private static String clientDatabase;
-        
+
     protected static TestTablesService serverTestService;
-    
+
     protected static TestTablesService clientTestService;
 
-    protected ClientSymmetricEngine getClient() {
+    protected ISymmetricEngine getClient() {
         if (client == null) {
             EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(new URL[] {
                     TestSetupUtil.getResource(DbTestUtils.DB_TEST_PROPERTIES),
@@ -46,12 +47,13 @@ public abstract class AbstractIntegrationTest {
             clientDatabase = properties.getProperty("test.client");
             client = new ClientSymmetricEngine(properties);
             clientTestService = new TestTablesService(client);
-            TestSetupUtil.dropAndCreateDatabaseTables(properties.getProperty("test.client"), client);
+            TestSetupUtil
+                    .dropAndCreateDatabaseTables(properties.getProperty("test.client"), client);
         }
         return client;
     }
 
-    protected SymmetricWebServer getServer() {
+    protected ISymmetricEngine getServer() {
         try {
             if (server == null) {
                 EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
@@ -61,7 +63,7 @@ public abstract class AbstractIntegrationTest {
                 properties.setProperty(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT,
                         "/test-integration-root-setup.sql");
                 serverDatabase = properties.getProperty("test.root");
-                
+
                 File rootDir = new File("target/root");
                 FileUtils.deleteDirectory(rootDir);
                 rootDir.mkdirs();
@@ -77,15 +79,14 @@ public abstract class AbstractIntegrationTest {
 
                 System.setProperty(Constants.SYS_PROP_ENGINES_DIR, engineDir.getAbsolutePath());
                 System.setProperty(Constants.SYS_PROP_WEB_DIR, "src/main/deploy/web");
-                SymmetricWebServer server = new SymmetricWebServer();                
+                SymmetricWebServer server = new SymmetricWebServer();
                 server.setJoin(false);
                 server.start(51413);
-                
+
                 server.waitForEnginesToComeOnline(60000);
-                
-                
+
                 serverTestService = new TestTablesService(server.getEngine());
-                
+
                 AbstractIntegrationTest.server = server;
             }
         } catch (Exception e) {
@@ -93,7 +94,7 @@ public abstract class AbstractIntegrationTest {
             Assert.fail(e.getMessage());
         }
 
-        return server;
+        return server != null ? server.getEngine() : null;
     }
 
     protected boolean clientPush() {
@@ -117,10 +118,10 @@ public abstract class AbstractIntegrationTest {
         }
         return pulled;
     }
-    
+
     protected void checkForFailedTriggers(boolean server, boolean client) {
         if (server) {
-            ITriggerRouterService service = getServer().getEngine().getTriggerRouterService();
+            ITriggerRouterService service = getServer().getTriggerRouterService();
             Assert.assertEquals(0, service.getFailedTriggers().size());
         }
 
@@ -128,7 +129,7 @@ public abstract class AbstractIntegrationTest {
             ITriggerRouterService service = getClient().getTriggerRouterService();
             Assert.assertEquals(0, service.getFailedTriggers().size());
         }
-    }    
+    }
 
     protected Level setLoggingLevelForTest(Level level) {
         org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger("org.jumpmind");
@@ -144,9 +145,19 @@ public abstract class AbstractIntegrationTest {
     protected void logTestComplete() {
         logger.info("Completed running " + new Exception().getStackTrace()[1].getMethodName());
     }
-    
+
     protected String printRootAndClientDatabases() {
         return String.format("{%s,%s}", serverDatabase, clientDatabase);
+    }
+
+    protected boolean isServerOracle() {
+        return DatabaseNamesConstants.ORACLE.equals(getServer().getSymmetricDialect()
+                .getPlatform().getName());
+    }
+    
+    protected boolean isClientInterbase() {
+        return DatabaseNamesConstants.INTERBASE.equals(getClient().getSymmetricDialect()
+                .getPlatform().getName());        
     }
 
 }

@@ -19,6 +19,12 @@ public class TestTablesServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertIntoTestTriggersTableSql",
                 "insert into test_triggers_table (id, string_one_value, string_two_value) values(?,?,?)");
+        
+        putSql("insertOrderSql", "insert into test_order_header (order_id, customer_id, status, deliver_date) values(?,?,?,?)");
+        
+        putSql("insertOrderDetailSql", "insert into test_order_detail (order_id, line_number, item_type, item_id, quantity, price) values(?,?,?,?,?,?)");
+        
+        putSql("selectOrderSql", "select order_id, customer_id, status, deliver_date from test_order_header where order_id = ?");
     }
 
 }
