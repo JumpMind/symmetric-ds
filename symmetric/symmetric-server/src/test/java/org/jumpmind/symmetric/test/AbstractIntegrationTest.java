@@ -16,6 +16,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.slf4j.Logger;
@@ -158,6 +159,16 @@ public abstract class AbstractIntegrationTest {
     protected boolean isClientInterbase() {
         return DatabaseNamesConstants.INTERBASE.equals(getClient().getSymmetricDialect()
                 .getPlatform().getName());        
+    }
+    
+    protected int getIncomingBatchCountForClient() {
+        return getClient().getSqlTemplate()
+        .queryForInt("select count(*) from sym_incoming_batch");
+    }
+    
+    protected int getIncomingBatchNotOkCountForClient() {
+        return getClient().getSqlTemplate()
+        .queryForInt("select count(*) from sym_incoming_batch where status != ?", Status.OK.name());
     }
 
 }
