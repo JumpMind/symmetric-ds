@@ -149,9 +149,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         NodeGroupLink nodeGroupLink = new NodeGroupLink(parameterService.getNodeGroupId(),
                 node.getNodeGroupId());
 
-        List<TriggerRouter> triggerRouters = triggerRouterService.buildTriggerRoutersForSymmetricTables(
-                StringUtils.isBlank(node.getSymmetricVersion()) ? Version.version() : node
-                        .getSymmetricVersion(), nodeGroupLink);
+        List<TriggerRouter> triggerRouters = triggerRouterService
+                .buildTriggerRoutersForSymmetricTables(StringUtils.isBlank(node
+                        .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(),
+                        nodeGroupLink);
 
         List<SelectFromTableEvent> initialLoadEvents = new ArrayList<SelectFromTableEvent>(
                 triggerRouters.size() * 2);
@@ -458,14 +459,41 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return transformExtractWriter;
     }
 
+    protected boolean doesCurrentTableMatch(String routerId, TriggerHistory triggerHistory,
+            Table currentTable, boolean setTargetTableName) {
+        if (currentTable != null) {
+            String catalogName = triggerHistory.getSourceCatalogName();
+            String schemaName = triggerHistory.getSourceSchemaName();
+            String tableName = triggerHistory.getSourceTableName();
+            Router router = triggerRouterService.getRouterById(routerId, false);
+            if (router != null && setTargetTableName) {
+                if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
+                    catalogName = router.getTargetCatalogName();
+                }
+
+                if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
+                    schemaName = router.getTargetSchemaName();
+                }
+
+                if (StringUtils.isNotBlank(router.getTargetTableName())) {
+                    tableName = router.getTargetTableName();
+                }
+            }
+
+            return currentTable.getFullyQualifiedTableName().equals(
+                    Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+
+        } else {
+            return false;
+        }
+    }
+
     protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId,
             TriggerHistory triggerHistory, Table currentTable, boolean setTargetTableName) {
         String catalogName = triggerHistory.getSourceCatalogName();
         String schemaName = triggerHistory.getSourceSchemaName();
         String tableName = triggerHistory.getSourceTableName();
-        if (currentTable == null
-                || !currentTable.getFullyQualifiedTableName().equals(
-                        Table.getFullyQualifiedTableName(catalogName, schemaName, tableName))) {
+        if (!doesCurrentTableMatch(routerId, triggerHistory, currentTable, setTargetTableName)) {
             currentTable = symmetricDialect.getPlatform().getTableFromCache(catalogName,
                     schemaName, tableName, false);
             if (currentTable == null) {
@@ -474,6 +502,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         Table.getFullyQualifiedTableName(catalogName, schemaName, tableName)));
             }
             currentTable = currentTable.copy();
+            currentTable.setCatalog(catalogName);
+            currentTable.setSchema(schemaName);
             currentTable.orderColumns(triggerHistory.getParsedColumnNames());
 
             Router router = triggerRouterService.getRouterById(routerId, false);

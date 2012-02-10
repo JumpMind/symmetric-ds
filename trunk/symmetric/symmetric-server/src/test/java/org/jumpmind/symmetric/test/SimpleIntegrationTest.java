@@ -193,118 +193,95 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
 
     }
-    //
-    // @Test(timeout = 120000)
-    // public void syncToClientMultipleUpdates() {
-    //
-    // logTestRunning();
-    // // test pulling no data
-    // clientPull();
-    //
-    // final int NEW_ZIP = 44444;
-    // final String NEW_NAME = "JoJo Duh Doh";
-    //
-    // // now change some data that should be sync'd
-    // rootJdbcTemplate.update("update test_customer set zip=? where customer_id=?",
-    // new Object[] {
-    // NEW_ZIP, 100 });
-    // rootJdbcTemplate.update("update test_customer set name=? where customer_id=?",
-    // new Object[] { NEW_NAME, 100 });
-    //
-    // boolean didPullData = getClient().pull().wasDataProcessed();
-    //
-    // Assert.assertTrue(didPullData);
-    //
-    // Map<String, Object> results = clientJdbcTemplate.queryForMap(
-    // "select zip, name from test_customer where customer_id=?", new Object[] {
-    // 100 });
-    //
-    // Object zip = results.get("ZIP");
-    // Assert.assertEquals(NEW_ZIP, zip instanceof Number ? ((Number)
-    // zip).intValue() : zip);
-    // Assert.assertEquals(NEW_NAME, results.get("NAME"));
-    //
-    // }
-    //
-    // @Test(timeout = 120000)
-    // public void testInsertSqlEvent() {
-    // Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from sym_node where schema_version='test'")
-    // == 0);
-    // getRootEngine().getDataService().insertSqlEvent(TestConstants.TEST_CLIENT_NODE,
-    // "update sym_node set schema_version='test'", false);
-    // clientPull();
-    // Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from sym_node where schema_version='test'")
-    // > 0);
-    // }
-    //
-    // @Test(timeout = 120000)
-    // public void testEmptyNullLob() {
-    // final String queryNotes =
-    // "select notes from test_customer where customer_id = 300";
-    // final String queryIcon =
-    // "select icon from test_customer where customer_id = 300";
-    //
-    // // Test empty large object
-    // int blobType = getRootDbDialect().getTable(null, null, "test_customer",
-    // false)
-    // .getColumn(11).getTypeCode();
-    // Object[] args = new Object[] { 300, "Eric", "1", "100 Main Street",
-    // "Columbus", "OH",
-    // 43082, new Date(), new Date(), "", new byte[0] };
-    // int[] argTypes = new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR,
-    // Types.VARCHAR,
-    // Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
-    // Types.TIMESTAMP,
-    // Types.CLOB, blobType };
-    //
-    // rootJdbcTemplate.update(insertCustomerSql, new
-    // ArgTypePreparedStatementSetter(args,
-    // argTypes, getRootDbDialect().getLobHandler()));
-    // clientPull();
-    //
-    // if (getRootDbDialect().isClobSyncSupported()) {
-    // if (getClientDbDialect() instanceof InterbaseDbDialect) {
-    // // Putting an empty string into a CLOB on Interbase results in a
-    // // NULL value
-    // assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class),
-    // null,
-    // "Expected null CLOB");
-    // } else {
-    // assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class),
-    // "",
-    // "Expected empty CLOB");
-    // }
-    // }
-    //
-    // if (getRootDbDialect().isBlobSyncSupported()) {
-    // byte[] bytes = (byte[]) clientJdbcTemplate.queryForObject(queryIcon,
-    // byte[].class);
-    // Assert.assertTrue("Expected empty BLOB", bytes != null && bytes.length ==
-    // 0);
-    // }
-    //
-    // // Test null large object
-    // args = new Object[] { null, null };
-    // argTypes = new int[] { Types.CLOB, blobType };
-    // rootJdbcTemplate.update(
-    // "update test_customer set notes = ?, icon = ? where customer_id = 300",
-    // new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect()
-    // .getLobHandler()));
-    // clientPull();
-    //
-    // if (getRootDbDialect().isClobSyncSupported()) {
-    // assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class),
-    // null,
-    // "Expected null CLOB");
-    // }
-    //
-    // if (getRootDbDialect().isBlobSyncSupported()) {
-    // assertEquals(clientJdbcTemplate.queryForObject(queryIcon, byte[].class),
-    // null,
-    // "Expected null BLOB");
-    // }
-    // }
-    //
+
+    @Test(timeout = 120000)
+    public void syncToClientMultipleUpdates() {
+
+        logTestRunning();
+        // test pulling no data
+        clientPull();
+
+        final int NEW_ZIP = 44444;
+        final String NEW_NAME = "JoJo Duh Doh";
+
+        // now change some data that should be sync'd
+        serverTestService.updateCustomer(100, "zip", NEW_ZIP);
+        serverTestService.updateCustomer(100, "name", NEW_NAME);
+
+        boolean didPullData = getClient().pull().wasDataProcessed();
+
+        Assert.assertTrue(didPullData);
+
+        Customer clientCustomer = clientTestService.getCustomer(100);
+        Assert.assertEquals(NEW_ZIP, clientCustomer.getZip());
+        Assert.assertEquals(NEW_NAME, clientCustomer.getName());
+
+    }
+
+    @Test(timeout = 120000)
+    public void testInsertSqlEvent() {
+        Assert.assertTrue(getClient().getSqlTemplate().queryForInt(
+                "select count(*) from sym_node where schema_version='test'") == 0);
+        getServer()
+                .getEngine()
+                .getDataService()
+                .insertSqlEvent(TestConstants.TEST_CLIENT_NODE,
+                        "update sym_node set schema_version='test'", false);
+        clientPull();
+        Assert.assertTrue(getClient().getSqlTemplate().queryForInt(
+                "select count(*) from sym_node where schema_version='test'") > 0);
+    }
+
+//    @Test(timeout = 120000)
+//    public void testEmptyNullLob() {
+//        // Test empty large object
+//        int blobType = getServer().getEngine().getSymmetricDialect().getPlatform().getTableFromCache("test_customer", false)
+//                .getColumn(11).getTypeCode();
+//        Customer customer = new Customer(300, "Eric", true, "100 Main Street", "Columbus", "OH",
+//                43082, new Date(), new Date(), "", new byte[0]);
+//        
+//        serverTestService.insertCustomer(customer);
+//
+//        clientPull();
+//
+//        if (getRootDbDialect().isClobSyncSupported()) {
+//            if (getClientDbDialect() instanceof InterbaseDbDialect) {
+//                // Putting an empty string into a CLOB on Interbase results in a
+//                // NULL value
+//                assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), null,
+//                        "Expected null CLOB");
+//            } else {
+//                assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), "",
+//                        "Expected empty CLOB");
+//            }
+//        }
+//
+//        if (getRootDbDialect().isBlobSyncSupported()) {
+//            byte[] bytes = (byte[]) clientJdbcTemplate.queryForObject(queryIcon, byte[].class);
+//            Assert.assertTrue("Expected empty BLOB", bytes != null && bytes.length == 0);
+//        }
+//
+//        // Test null large object
+//        args = new Object[] { null, null };
+//        argTypes = new int[] { Types.CLOB, blobType };
+//        rootJdbcTemplate.update(
+//                "update test_customer set notes = ?, icon = ? where customer_id = 300",
+//                new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect()
+//                        .getLobHandler()));
+//        clientPull();
+//
+//        if (getRootDbDialect().isClobSyncSupported()) {
+//            assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), null,
+//                    "Expected null CLOB");
+//        }
+//
+//        if (getRootDbDialect().isBlobSyncSupported()) {
+//            assertEquals(clientJdbcTemplate.queryForObject(queryIcon, byte[].class), null,
+//                    "Expected null BLOB");
+//        }
+//    }
+    
+    
     // @Test(timeout = 120000)
     // public void testLargeLob() {
     // if (!(getRootDbDialect() instanceof OracleDbDialect)) {

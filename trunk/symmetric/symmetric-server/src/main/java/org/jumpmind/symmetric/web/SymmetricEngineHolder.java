@@ -232,7 +232,7 @@ public class SymmetricEngineHolder {
         String propertiesFile;
 
         public EngineStarter(String propertiesFile) {
-            super("symmetric-startup (" + propertiesFile + ")");
+            super("symmetric-startup");
             this.propertiesFile = propertiesFile;
         }
 
