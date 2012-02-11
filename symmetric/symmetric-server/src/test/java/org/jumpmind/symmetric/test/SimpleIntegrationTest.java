@@ -250,7 +250,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
 
         if (getServer().getSymmetricDialect().isBlobSyncSupported()) {
-            Assert.assertEquals("Expected empty BLOB", serverTestService.getCustomerIcon(300),
+            Assert.assertArrayEquals("Expected empty BLOB", serverTestService.getCustomerIcon(300),
                     clientTestService.getCustomerIcon(300));
         }
 
