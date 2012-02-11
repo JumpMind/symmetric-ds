@@ -36,7 +36,6 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.springframework.jdbc.support.lob.DefaultLobHandler;
 
 /*
  * The platform implementation for PostgresSql.
