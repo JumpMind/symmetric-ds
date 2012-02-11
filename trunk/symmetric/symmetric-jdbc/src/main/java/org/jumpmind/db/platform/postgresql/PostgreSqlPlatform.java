@@ -31,17 +31,19 @@ import javax.sql.rowset.serial.SerialBlob;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
 
 /*
  * The platform implementation for PostgresSql.
  */
 public class PostgreSqlPlatform extends AbstractJdbcDatabasePlatform {
     /* Database name of this platform. */
-    public static final String DATABASENAME = "PostgreSql";
+    public static final String DATABASENAME = DatabaseNamesConstants.POSTGRESQL;
     /* The standard PostgreSQL jdbc driver. */
     public static final String JDBC_DRIVER = "org.postgresql.Driver";
     /* The subprotocol used by the standard PostgreSQL driver. */

@@ -25,13 +25,21 @@ public class TestTablesService extends AbstractService {
 
     // TODO support insert of blob test for postgres and informix
     public boolean insertIntoTestUseStreamLob(int id, String tableName, String lobValue) {
-        if (!DatabaseNamesConstants.POSTGRESQL.equals(platform.getName())
-                && !DatabaseNamesConstants.INFORMIX.equals(platform.getName())) {
-            sqlTemplate.update(
-                    String.format("insert into %s (test_id, test_blob) values(?, ?)", tableName),
-                    new Object[] { id, lobValue.getBytes() },
-                    new int[] { Types.INTEGER, Types.BLOB });
-            return true;
+        if (!DatabaseNamesConstants.INFORMIX.equals(platform.getName())) {
+            ISqlTransaction transaction = null;
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                boolean updated = transaction.prepareAndExecute(String.format(
+                        "insert into %s (test_id, test_blob) values(?, ?)", tableName),
+                        new Object[] { id, lobValue.getBytes() }, new int[] { Types.INTEGER,
+                                Types.BLOB }) > 0;
+                transaction.commit();
+                return updated;
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                }
+            }
         } else {
             return false;
         }
@@ -39,26 +47,34 @@ public class TestTablesService extends AbstractService {
 
     // TODO support insert of blob test for postgres and informix
     public boolean updateTestUseStreamLob(int id, String tableName, String lobValue) {
-        if (!DatabaseNamesConstants.POSTGRESQL.equals(platform.getName())
-                && !DatabaseNamesConstants.INFORMIX.equals(platform.getName())) {
-            sqlTemplate.update(
-                    String.format("update %s set test_blob=? where test_id=?", tableName),
-                    new Object[] { lobValue.getBytes(), id },
-                    new int[] { Types.BLOB, Types.INTEGER });
-            return true;
+        if (!DatabaseNamesConstants.INFORMIX.equals(platform.getName())) {
+            ISqlTransaction transaction = null;
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                boolean updated = transaction.prepareAndExecute(
+                        String.format("update %s set test_blob=? where test_id=?", tableName),
+                        new Object[] { lobValue.getBytes(), id }, new int[] { Types.BLOB,
+                                Types.INTEGER }) > 0;
+                transaction.commit();
+                return updated;
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                }
+            }
         } else {
             return false;
         }
     }
 
-    public void assertTestUseStreamBlobInDatabase(int id, String tableName, String expected) {
-        if (!DatabaseNamesConstants.POSTGRESQL.equals(platform.getName())
-                && !DatabaseNamesConstants.INFORMIX.equals(platform.getName())) {
+    public void assertTestUseStreamBlobInDatabase(int id, String tableName, String expected,
+            String serverDatabaseName) {
+        if (!DatabaseNamesConstants.INFORMIX.equals(serverDatabaseName)) {
             Map<String, Object> values = sqlTemplate.queryForMap("select test_blob from "
                     + tableName + " where test_id=?", id);
             Assert.assertEquals(
                     "The blob column for test_use_stream_lob was not loaded into the client database",
-                    expected, new String((byte[]) values.get("TEST_BLOB")));
+                    expected, values != null ? new String((byte[]) values.get("TEST_BLOB")) : null);
         }
     }
 

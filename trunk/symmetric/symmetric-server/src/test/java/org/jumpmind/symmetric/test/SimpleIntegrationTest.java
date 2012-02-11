@@ -149,9 +149,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                         .isInitialLoadEnabled());
 
         clientTestService.assertTestUseStreamBlobInDatabase(100, "test_use_stream_lob",
-                THIS_IS_A_TEST);
+                THIS_IS_A_TEST, getServer().getSymmetricDialect().getPlatform().getName());
         clientTestService.assertTestUseStreamBlobInDatabase(100, "test_use_capture_lob",
-                THIS_IS_A_TEST);
+                THIS_IS_A_TEST, getServer().getSymmetricDialect().getPlatform().getName());
     }
 
     @Test(timeout = 120000)

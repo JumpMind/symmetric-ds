@@ -17,7 +17,7 @@ abstract public class JdbcUtils {
             LobHandler lobHandler) throws SQLException {
         for (int i = 1; i <= args.length; i++) {
             Object arg = args[i - 1];
-            int argType = argTypes != null && argTypes.length > i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
+            int argType = argTypes != null && argTypes.length >= i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
             if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
             } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
@@ -28,6 +28,10 @@ abstract public class JdbcUtils {
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(argType), arg);
             }
         }
+    }
+    
+    public static void main(String[] args) {
+        System.out.println(new byte[] {'0'}.getClass().equals(byte[].class));
     }
     
     protected static int verifyArgType(int argType) {
