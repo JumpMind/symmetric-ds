@@ -41,8 +41,6 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.BadSqlGrammarException;
-import org.springframework.jdbc.support.lob.OracleLobHandler;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 /*
  * A dialect that is specific to Oracle databases

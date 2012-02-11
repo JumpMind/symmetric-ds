@@ -83,11 +83,16 @@ public class TestTablesService extends AbstractService {
     }
 
     public void insertCustomer(Customer customer) {
-        sqlTemplate.update(getSql("insertCustomerSql"), customer.getCustomerId(),
-                customer.getName(), customer.isActive() ? "1" : "0", customer.getAddress(),
-                customer.getCity(), customer.getState(), customer.getZip(),
-                customer.getEntryTimestamp(), customer.getEntryTime(), customer.getNotes(),
-                customer.getIcon());
+        int blobType = symmetricDialect.getPlatform().getTableFromCache("test_customer", false)
+                .getColumn(11).getTypeCode();
+        sqlTemplate.update(getSql("insertCustomerSql"),
+                new Object[] { customer.getCustomerId(), customer.getName(),
+                        customer.isActive() ? "1" : "0", customer.getAddress(), customer.getCity(),
+                        customer.getState(), customer.getZip(), customer.getEntryTimestamp(),
+                        customer.getEntryTime(), customer.getNotes(), customer.getIcon() },
+                new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
+                        Types.TIMESTAMP, Types.CLOB, blobType });
     }
 
     public int updateCustomer(int id, String column, Object value) {
@@ -108,9 +113,9 @@ public class TestTablesService extends AbstractService {
                     }
                 }, id);
     }
-    
+
     public int count(String table) {
-        return sqlTemplate.queryForInt(String.format("select count(*) from %s",table));
+        return sqlTemplate.queryForInt(String.format("select count(*) from %s", table));
     }
 
     public boolean doesCustomerExist(int id) {
@@ -131,7 +136,7 @@ public class TestTablesService extends AbstractService {
                     }
                 }, id);
     }
-    
+
     public void insertIntoTestTriggerTable(Object[] values) {
         Table testTriggerTable = platform
                 .getTableFromCache(null, null, "test_triggers_table", true);

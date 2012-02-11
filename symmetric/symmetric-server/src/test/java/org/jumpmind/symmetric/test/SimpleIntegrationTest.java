@@ -244,14 +244,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 // NULL value
                 Assert.assertNull("Expected null CLOB", clientTestService.getCustomerNotes(300));
             } else {
-                Assert.assertEquals("Expected empty CLOB", "",
+                Assert.assertEquals("Expected empty CLOB", serverTestService.getCustomerNotes(300),
                         clientTestService.getCustomerNotes(300));
             }
         }
 
         if (getServer().getSymmetricDialect().isBlobSyncSupported()) {
-            byte[] bytes = clientTestService.getCustomerIcon(300);
-            Assert.assertTrue("Expected empty BLOB", bytes != null && bytes.length == 0);
+            Assert.assertEquals("Expected empty BLOB", serverTestService.getCustomerIcon(300),
+                    clientTestService.getCustomerIcon(300));
         }
 
         // Test null large object
