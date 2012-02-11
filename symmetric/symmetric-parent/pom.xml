@@ -26,7 +26,7 @@
 		<version.derby>10.5.3.0_1</version.derby>
 		<version.hsqldb>2.2.4</version.hsqldb>
 		<version.h2>1.2.140</version.h2>
-		<version.postgresql>8.4-701.jdbc4</version.postgresql>
+		<version.postgresql>9.1-901-1.jdbc4	</version.postgresql>
 		<version.mysql>5.1.17</version.mysql>
 		<test.root>h2</test.root>
 		<test.client>h2</test.client>
