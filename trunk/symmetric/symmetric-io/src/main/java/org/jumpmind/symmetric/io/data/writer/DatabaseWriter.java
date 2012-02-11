@@ -318,7 +318,7 @@ public class DatabaseWriter implements IDataWriter {
             }
             try {
                 String[] values = (String[]) ArrayUtils.addAll(
-                        data.getParsedData(CsvData.ROW_DATA), getPkData(data));
+                        getRowData(data), getPkData(data));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 return count > 0;
@@ -332,7 +332,20 @@ public class DatabaseWriter implements IDataWriter {
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
-
+    }
+    
+    protected String[] getRowData(CsvData data) {
+        String[] targetValues = new String[targetTable.getColumnCount()];
+        String[] originalValues = data.getParsedData(CsvData.ROW_DATA);
+        String[] sourceColumnNames = sourceTable.getColumnNames();
+        String[] targetColumnNames = targetTable.getColumnNames();
+        for (int i = 0, t = 0; i < sourceColumnNames.length; i++) {
+            if (sourceColumnNames[i].equalsIgnoreCase(targetColumnNames[t])) {
+                targetValues[t] = originalValues[i];
+                t++;
+            }
+        }
+        return targetValues;
     }
 
     protected boolean delete(CsvData data) {

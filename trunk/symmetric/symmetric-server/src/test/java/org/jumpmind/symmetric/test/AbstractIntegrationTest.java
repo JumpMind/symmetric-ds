@@ -14,9 +14,12 @@ import org.jumpmind.properties.EnvironmentSpecificProperties;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
+import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.slf4j.Logger;
@@ -169,6 +172,20 @@ public abstract class AbstractIntegrationTest {
     protected int getIncomingBatchNotOkCountForClient() {
         return getClient().getSqlTemplate()
         .queryForInt("select count(*) from sym_incoming_batch where status != ?", Status.OK.name());
+    }
+    
+    protected void assertNoPendingBatchesOnServer() {
+        IOutgoingBatchService outgoingBatchService = getServer().getOutgoingBatchService();
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(
+                TestConstants.TEST_CLIENT_NODE, false);        
+        Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
+    }
+    
+    protected void assertNoPendingBatchesOnClient() {
+        IOutgoingBatchService outgoingBatchService = getClient().getOutgoingBatchService();
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(
+                TestConstants.TEST_ROOT_NODE, false);        
+        Assert.assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
     }
 
 }

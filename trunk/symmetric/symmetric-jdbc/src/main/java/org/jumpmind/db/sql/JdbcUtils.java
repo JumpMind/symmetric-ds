@@ -18,8 +18,10 @@ abstract public class JdbcUtils {
         for (int i = 1; i <= args.length; i++) {
             Object arg = args[i - 1];
             int argType = argTypes != null && argTypes.length > i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
-            if (argType == Types.BLOB && lobHandler != null) {
+            if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
+            } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
+                lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else {
