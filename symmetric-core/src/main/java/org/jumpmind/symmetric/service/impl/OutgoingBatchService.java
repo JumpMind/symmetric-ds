@@ -175,7 +175,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, long startAtBatchId, final int maxRowsToRetrieve) {
+            List<OutgoingBatch.Status> statuses, long startAtBatchId, final int maxRowsToRetrieve,
+            final boolean ascending) {
         if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("NODES", nodeIds);
@@ -184,7 +185,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             String startAtBatchIdSql = null;
             if (startAtBatchId > 0) {
                 params.put("BATCH_ID", startAtBatchId);
-                startAtBatchIdSql = " and batch_id < :BATCH_ID ";
+                if (ascending) {
+                    startAtBatchIdSql = " and batch_id > :BATCH_ID ";
+                } else {
+                    startAtBatchIdSql = " and batch_id < :BATCH_ID ";
+                }
             }
 
             NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(dataSource);
@@ -207,7 +212,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             "selectOutgoingBatchPrefixSql",
                             containsOnlyErrorStatus(statuses) ? "selectOutgoingBatchByChannelWithErrorSql"
                                     : "selectOutgoingBatchByChannelAndStatusSql",
-                            startAtBatchIdSql, " order by batch_id desc"),
+                            startAtBatchIdSql, ascending ? "order by batch_id asc" : " order by batch_id desc"),
                             new MapSqlParameterSource(params), extractor);
             return list;
         } else {
@@ -236,7 +241,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      */
     public OutgoingBatches getOutgoingBatches(Node node, final boolean includeDisabledChannels) {
         long ts = System.currentTimeMillis();
-        final int maxNumberOfBatchesToSelect = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
+        final int maxNumberOfBatchesToSelect = parameterService.getInt(
+                ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"),
                 new Object[] { node.getNodeId(), OutgoingBatch.Status.NE.name(),
@@ -263,11 +269,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             if (currentBatchCount == null) {
                                 currentBatchCount = 0;
                             }
-                            
-                            if (channel != null && channel.getMaxBatchToSend() > currentBatchCount && 
-                                    (channel.isEnabled() || includeDisabledChannels)) {
+
+                            if (channel != null && channel.getMaxBatchToSend() > currentBatchCount
+                                    && (channel.isEnabled() || includeDisabledChannels)) {
                                 rowNum++;
-                                batchCountPerChannel.put(channelId, currentBatchCount+1);
+                                batchCountPerChannel.put(channelId, currentBatchCount + 1);
                                 results.add(batch);
                                 if (rowNum >= maxNumberOfBatchesToSelect) {
                                     break;
@@ -309,7 +315,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(jdbcTemplate.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchRangeSql"),
-                new Object[] { Long.parseLong(startBatchId), Long.parseLong(endBatchId) }, new OutgoingBatchMapper()));
+                new Object[] { Long.parseLong(startBatchId), Long.parseLong(endBatchId) },
+                new OutgoingBatchMapper()));
         return batches;
     }
 
