@@ -27,12 +27,12 @@
     </entry>
     <entry key="listIncomingBatchesSql">
       <value>
-        where node_id in (:NODES) and channel_id in (:CHANNELS) and status in (:STATUSES) and create_time &lt;= :CREATE_TIME order by create_time desc
+        where node_id in (:NODES) and channel_id in (:CHANNELS) and status in (:STATUSES)
       </value>
     </entry>
     <entry key="listIncomingBatchesInErrorSql">
       <value>
-        where node_id in (:NODES) and channel_id in (:CHANNELS) and error_flag=1 and create_time &lt;= :CREATE_TIME order by create_time desc
+        where node_id in (:NODES) and channel_id in (:CHANNELS) and error_flag=1
       </value>
     </entry>    
     <entry key="listIncomingBatchesInErrorForNodeSql">

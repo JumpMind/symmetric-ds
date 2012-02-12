@@ -69,7 +69,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
     
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, Date startAtCreateTime) {
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime, boolean ascending) {
         if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
                 && statuses != null && statuses.size() > 0) {
             Map<String, Object> params = new HashMap<String, Object>();
@@ -79,7 +79,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             params.put("CREATE_TIME", startAtCreateTime);
             NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
             return template.query(getSql("selectCreateTimePrefixSql", containsOnlyErrorStatus(statuses) ? 
-                    "listIncomingBatchesInErrorSql" : "listIncomingBatchesSql"),
+                    "listIncomingBatchesInErrorSql" : "listIncomingBatchesSql", ascending ? " order by create_time" : " order by create_time desc"),
                     params, new SingleColumnRowMapper<Date>());
         } else {
             return new ArrayList<Date>(0);
@@ -101,7 +101,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
     
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve) {
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve, 
+            boolean ascending) {
         if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
                 && statuses != null && statuses.size() > 0) {
             Map<String, Object> params = new HashMap<String, Object>();
@@ -124,10 +125,15 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     return list;
                 }
             };
+            
+            String createTimeLimiter = "";
+            if (startAtCreateTime != null) {
+                createTimeLimiter = " and create_time " + (ascending ? ">=" : "<=") + " :CREATE_TIME";
+            }
 
             List<IncomingBatch> list = template.query(
                     getSql("selectIncomingBatchPrefixSql", containsOnlyErrorStatus(statuses) ? 
-                            "listIncomingBatchesInErrorSql" : "listIncomingBatchesSql"),
+                            "listIncomingBatchesInErrorSql" : "listIncomingBatchesSql", createTimeLimiter, ascending ? " order by create_time" : " order by create_time desc"),
                     new MapSqlParameterSource(params), extractor);
             return list;
         } else {
