@@ -1,11 +1,13 @@
 package org.jumpmind.symmetric.test;
 
 import java.math.BigDecimal;
+import java.sql.Types;
 import java.util.Date;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -203,8 +205,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         final String NEW_NAME = "JoJo Duh Doh";
 
         // now change some data that should be sync'd
-        serverTestService.updateCustomer(100, "zip", NEW_ZIP);
-        serverTestService.updateCustomer(100, "name", NEW_NAME);
+        serverTestService.updateCustomer(100, "zip", NEW_ZIP, Types.NUMERIC);
+        serverTestService.updateCustomer(100, "name", NEW_NAME, Types.VARCHAR);
 
         boolean didPullData = getClient().pull().wasDataProcessed();
 
@@ -254,9 +256,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                     clientTestService.getCustomerIcon(300));
         }
 
+        Table table =  getServer().getSymmetricDialect().getPlatform().getTableFromCache("test_customer", false);
         // Test null large object
-        serverTestService.updateCustomer(300, "notes", null);
-        serverTestService.updateCustomer(300, "icon", null);
+        serverTestService.updateCustomer(300, "notes", null, table.getColumnWithName("notes").getTypeCode());
+        serverTestService.updateCustomer(300, "icon", null, table.getColumnWithName("icon").getTypeCode());
 
         clientPull();
 
