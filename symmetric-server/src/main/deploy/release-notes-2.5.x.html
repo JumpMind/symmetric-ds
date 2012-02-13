@@ -2,6 +2,30 @@
 <body>                
 
 <h1>
+Version 2.5.6
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-558'>SYMMETRICDS-558</a>] -         Transaction boundaries can be broken when max_batch_size is set to a small number and batch algorithm is set to &#39;transactional&#39; or &#39;default&#39;
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-577'>SYMMETRICDS-577</a>] -         When more than one channel is in error, channels that are not in error have the possibility of being held up
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-579'>SYMMETRICDS-579</a>] -         The feature to pass a properties file to the sym command when creating a war file does not work
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-582'>SYMMETRICDS-582</a>] -         Identity column transform not working
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-578'>SYMMETRICDS-578</a>] -         The outgoing.batches.max.to.select property should not have to take into account that a channel might be disabled
+</li>
+</ul>
+
+<h1>
 Version 2.5.5
 </h1>
             
