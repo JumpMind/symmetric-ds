@@ -595,7 +595,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 if (supportsGetGeneratedKeys) {
                     ps = conn.prepareStatement(sql, new int[] { 1 });
                 } else if (supportsReturningKeys) {
-                    ps = conn.prepareStatement(sql + " returning " + sequenceName);
+                    ps = conn.prepareStatement(sql + " returning " + column);
                 } else {
                     ps = conn.prepareStatement(sql);
                 }

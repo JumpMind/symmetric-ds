@@ -161,7 +161,7 @@ public class InterbaseBuilder extends AbstractDdlBuilder {
         if (table.getName().endsWith("_")) {
             secondPart += "_";
         }
-        return getConstraintName("gen", table, secondPart, null);
+        return getConstraintName("GEN", table, secondPart, null);
     }
 
     @Override

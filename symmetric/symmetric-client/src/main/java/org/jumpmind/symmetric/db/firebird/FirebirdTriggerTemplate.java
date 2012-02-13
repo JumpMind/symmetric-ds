@@ -42,7 +42,7 @@ public class FirebirdTriggerTemplate extends TriggerTemplate {
 "                                begin                                                                                                                                                                  " + 
 "                                  if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " + 
 "                                  begin                                                                                                                                                                " + 
-"                                    select gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 1) from rdb$database into :id;                                                                       " + 
+"                                    select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :id;                                                                       " + 
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " + 
 "                                    (data_id, table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               " + 
 "                                    values(                                                                                                                                                            " + 
@@ -65,7 +65,7 @@ public class FirebirdTriggerTemplate extends TriggerTemplate {
 "                                begin                                                                                                                                                                  " + 
 "                                  if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " + 
 "                                  begin                                                                                                                                                                " + 
-"                                    select gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 1) from rdb$database into :id;                                                                       " + 
+"                                    select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :id;                                                                       " + 
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " + 
 "                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)            " + 
 "                                    values(                                                                                                                                                            " + 
@@ -90,7 +90,7 @@ public class FirebirdTriggerTemplate extends TriggerTemplate {
 "                                begin                                                                                                                                                                  " + 
 "                                  if ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " + 
 "                                  begin                                                                                                                                                                " + 
-"                                    select gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 1) from rdb$database into :id;                                                                       " + 
+"                                    select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :id;                                                                       " + 
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " + 
 "                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                      " + 
 "                                    values(                                                                                                                                                            " + 

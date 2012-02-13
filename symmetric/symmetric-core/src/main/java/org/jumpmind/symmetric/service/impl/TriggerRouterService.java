@@ -770,7 +770,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         syncTriggers(null, false);
     }
 
-    public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always) {
+    public void syncTriggers(StringBuilder sqlBuffer, boolean genAlways) {
         if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
             synchronized (this) {
                 try {
@@ -779,7 +779,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     configurationService.reloadChannels();
                     List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
                     inactivateTriggers(triggersForCurrentNode, sqlBuffer);
-                    updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, gen_always);
+                    updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, genAlways);
                     resetTriggerRouterCacheByNodeGroupId();
                 } finally {
                     clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
@@ -860,7 +860,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void updateOrCreateDatabaseTriggers(List<Trigger> triggers, StringBuilder sqlBuffer,
-            boolean gen_always) {
+            boolean genAlways) {
 
         for (Trigger trigger : triggers) {
             TriggerHistory newestHistory = null;
@@ -902,7 +902,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                     .getTriggerRowHash()) {
                         reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
                         forceRebuildOfTriggers = true;
-                    } else if (gen_always) {
+                    } else if (genAlways) {
                         reason = TriggerReBuildReason.FORCED;
                         forceRebuildOfTriggers = true;
                     }
