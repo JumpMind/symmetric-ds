@@ -9,3 +9,4 @@ drop sequence seq_sym_trigger_rigger_hist_id;
 drop table test_oracle_dates;
 drop table test_oracle_binary_types;
 drop table TEST_MIXED_CASE;
+drop table "Test_Mixed_Case";
