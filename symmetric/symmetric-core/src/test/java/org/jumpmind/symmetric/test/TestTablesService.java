@@ -111,10 +111,10 @@ public class TestTablesService extends AbstractService {
                         Types.TIMESTAMP, Types.CLOB, blobType });
     }
 
-    public int updateCustomer(int id, String column, Object value) {
+    public int updateCustomer(int id, String column, Object value, int type) {
         return sqlTemplate.update(
-                String.format("update test_customer set %s=? where customer_id=?", column), value,
-                id);
+                String.format("update test_customer set %s=? where customer_id=?", column), new Object[] {value,
+                id}, new int[] {type, Types.NUMERIC});
     }
 
     public Customer getCustomer(int id) {
