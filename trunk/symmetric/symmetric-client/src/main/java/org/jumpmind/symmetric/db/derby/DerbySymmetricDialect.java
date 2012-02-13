@@ -81,7 +81,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
         transaction.queryForObject(
                 String.format("values %s_sync_triggers_set_disabled(0)", parameterService.getTablePrefix()),
                 Integer.class);
-        platform.getSqlTemplate().queryForObject(
+        transaction.queryForObject(
                 String.format("values %s_sync_node_set_disabled(null)", parameterService.getTablePrefix()), String.class);
     }
 
