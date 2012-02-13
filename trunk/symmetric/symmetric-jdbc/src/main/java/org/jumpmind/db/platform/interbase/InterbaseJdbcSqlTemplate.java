@@ -16,7 +16,7 @@ public class InterbaseJdbcSqlTemplate extends JdbcSqlTemplate {
     
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select gen_id(gen_" + sequenceName + ", 0) from rdb$database";
+        return "select gen_id(GEN_" + sequenceName + ", 0) from rdb$database";
     }
     
     @Override
