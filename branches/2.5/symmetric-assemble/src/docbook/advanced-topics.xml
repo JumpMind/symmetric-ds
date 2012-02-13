@@ -592,7 +592,7 @@
         <section id="deployment-options-embedded">
             <title>Embedded</title>
             <para>
-                A Java application with the SymmetricDS Java Archive (JAR) library on its
+                A Java application with the SymmetricDS Java Archive (JAR) libraries in its
                 classpath can use the <literal>SymmetricWebServer</literal> to start the server.
             </para>
             <programlisting><![CDATA[
@@ -608,9 +608,13 @@ public class StartSymmetricEngine {
      * properties.
      */
     public static void main(String[] args) throws Exception {
-    
+        
+        // Specify the properties file and the web directory
         SymmetricWebServer node = new SymmetricWebServer(
-                                   "classpath://my-application.properties");
+                                   "classpath://my-application.properties", "web");
+                             
+        // indicates that the start() method should return      
+        node.setJoin(false);
 
         // this will create the database, sync triggers, start jobs running
         node.start(8080);
@@ -621,10 +625,15 @@ public class StartSymmetricEngine {
 
 }]]></programlisting>
             <para>
-                This example starts the SymmetricDS server on port 8080 with startup properies found
-                in two locations.  The first file, <filename>my-application.properties</filename>,
-                is packaged in the application to provide properties that override the SymmetricDS 
-                default values.
+                This example starts the SymmetricDS server on port 8080 with a startup properties
+                file that is found on the application's classpath to provide properties that 
+                override the default values.  Note if the properties file should be found on the
+                file system the property file name would be prepended with file://.
+            </para>
+            <para>
+                The second parameter to the web server is the name of the directory where the web.xml
+                for the application can be found.  You may use the web.xml from the standalone 
+                deployment.  In this example you would place the web.xml in the web/WEB-INF/ directory.
             </para>
         </section>
     </section> 
