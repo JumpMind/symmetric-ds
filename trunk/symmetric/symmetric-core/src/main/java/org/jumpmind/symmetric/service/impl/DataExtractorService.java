@@ -319,7 +319,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         int batchesSentCount = 0;
 
         OutgoingBatch currentBatch = null;
+        
         try {
+            IDataWriter dataWriter = null;
+
             for (int i = 0; i < activeBatches.size(); i++) {
                 currentBatch = activeBatches.get(i);
 
@@ -382,7 +385,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 currentBatch.getBatchId());
                         if (extractedBatch != null) {
                             IDataReader dataReader = new ProtocolDataReader(extractedBatch);
-                            IDataWriter dataWriter = new ProtocolDataWriter(targetTransport.open());
+                            if (dataWriter == null) {
+                                dataWriter = new ProtocolDataWriter(targetTransport.open());
+                            }
                             new DataProcessor(dataReader, dataWriter).process();
                         }
 

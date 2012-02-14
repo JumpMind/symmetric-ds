@@ -120,6 +120,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         configTables.add(TableConstants.getTableName(tablePrefix,
                 TableConstants.SYM_NODE_GROUP_LINK));
         configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+        configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
         configTables
                 .add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
         configTables.add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_PARAMETER));
@@ -414,16 +415,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      */
     protected List<TriggerRouter> getConfigurationTablesTriggerRoutersForCurrentNode(
             String sourceNodeGroupId) {
-        List<TriggerRouter> triggers = new ArrayList<TriggerRouter>();
+        List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
         List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(sourceNodeGroupId);
         for (NodeGroupLink nodeGroupLink : links) {
-            triggers.addAll(buildTriggerRoutersForSymmetricTables(Version.version(), nodeGroupLink));
-            if (NodeGroupLinkAction.P == nodeGroupLink.getDataEventAction()) {                
-                triggers.add(buildTriggerRoutersForSymmetricTables(Version.version(), 
-                        buildTriggerForSymmetricTable(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)), nodeGroupLink));
-            }
+            triggerRouters.addAll(buildTriggerRoutersForSymmetricTables(Version.version(), nodeGroupLink));
         }
-        return triggers;
+        return triggerRouters;
     }
 
     protected void mergeInConfigurationTablesTriggerRoutersForCurrentNode(String sourceNodeGroupId,

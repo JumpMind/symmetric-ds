@@ -230,7 +230,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 break;
             case STRANDED_DATA:
                 deleteSql = getSql("deleteStrandedData");
-                args = new Object[] { minId, maxId, cutoffTime, minId, maxId, minId, maxId };
+                args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
                 break;
             }
 
@@ -274,7 +274,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 getSql("selectIncomingBatchRangeSql"), new ISqlRowMapper<NodeBatchRange>() {
                     public NodeBatchRange mapRow(Row rs) {
                         return new NodeBatchRange(rs.getString("node_id"), rs
-                                .getLong("min_batch_id"), rs.getLong("max_batch_id"));
+                                .getLong("min_id"), rs.getLong("max_id"));
                     }
                 }, time.getTime());
         int incomingBatchesPurgedCount = purgeByNodeBatchRangeList(

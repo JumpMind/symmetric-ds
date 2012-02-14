@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.test;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
 
@@ -256,10 +257,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                     clientTestService.getCustomerIcon(300));
         }
 
-        Table table =  getServer().getSymmetricDialect().getPlatform().getTableFromCache("test_customer", false);
+        Table table = getServer().getSymmetricDialect().getPlatform()
+                .getTableFromCache("test_customer", false);
         // Test null large object
-        serverTestService.updateCustomer(300, "notes", null, table.getColumnWithName("notes").getTypeCode());
-        serverTestService.updateCustomer(300, "icon", null, table.getColumnWithName("icon").getTypeCode());
+        serverTestService.updateCustomer(300, "notes", null, table.getColumnWithName("notes")
+                .getTypeCode());
+        serverTestService.updateCustomer(300, "icon", null, table.getColumnWithName("icon")
+                .getTypeCode());
 
         clientPull();
 
@@ -781,179 +785,155 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     }
 
-    //
-    // @Test(timeout = 120000)
-    // public void ignoreNodeChannel() {
-    // logTestRunning();
-    // INodeService rootNodeService = (INodeService)
-    // AppUtils.find(Constants.NODE_SERVICE,
-    // getRootEngine());
-    // IConfigurationService rootConfigService = (IConfigurationService)
-    // getRootEngine()
-    // .getConfigurationService();
-    // rootNodeService.ignoreNodeChannelForExternalId(true,
-    // TestConstants.TEST_CHANNEL_ID,
-    // TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
-    // rootConfigService.reloadChannels();
-    //
-    // NodeChannel channel =
-    // rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-    // TestConstants.TEST_ROOT_EXTERNAL_ID, false);
-    // Assert.assertNotNull(channel);
-    // Assert.assertTrue(channel.isIgnoreEnabled());
-    // Assert.assertFalse(channel.isSuspendEnabled());
-    //
-    // getServer().getSqlTemplate().update(insertCustomerSql, new Object[] {
-    // 201,
-    // "Charlie Dude", "1",
-    // "300 Grub Street", "New Yorl", "NY", 90009, new Date(), new Date(),
-    // THIS_IS_A_TEST,
-    // BINARY_DATA });
-    // clientPull();
-    // assertEquals(
-    // getClient().getSqlTemplate()
-    // .queryForInt("select count(*) from test_customer where customer_id=201"),
-    // 0, "The customer was sync'd to the client.");
-    // rootNodeService.ignoreNodeChannelForExternalId(false,
-    // TestConstants.TEST_CHANNEL_ID,
-    // TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
-    // rootConfigService.reloadChannels();
-    //
-    // clientPull();
-    // getClient().getConfigurationService().reloadChannels();
-    // }
-    //
-    // @Test(timeout = 120000)
-    // public void syncUpdateWithEmptyKey() {
-    // logTestRunning();
-    // try {
-    // if (getClientDbDialect().isEmptyStringNulled()) {
-    // return;
-    // }
-    //
-    // getClient().getSqlTemplate().update(insertStoreStatusSql, new Object[] {
-    // "00001",
-    // "", 1 });
-    // clientPush();
-    //
-    // getClient().getSqlTemplate().update(updateStoreStatusSql, new Object[] {
-    // 2,
-    // "00001", "" });
-    // clientPush();
-    //
-    // int status =
-    // getServer().getSqlTemplate().queryForInt(selectStoreStatusSql, new
-    // Object[] { "00001",
-    // "   " });
-    // assertEquals(status, 2, "Wrong store status");
-    // } finally {
-    // logTestComplete();
-    // }
-    // }
-    //
-    // @Test(timeout = 120000)
-    // public void testPurge() throws Exception {
-    // logTestRunning();
-    //
-    // // do an extra push & pull to make sure we have events cleared out
-    // clientPull();
-    // clientPush();
-    //
-    // Thread.sleep(2000);
-    //
-    // IParameterService parameterService =
-    // AppUtils.find(Constants.PARAMETER_SERVICE,
-    // getRootEngine());
-    // int purgeRetentionMinues = parameterService
-    // .getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
-    // // set purge in the future just in case the database time is different
-    // // than the current time
-    // parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
-    // -60 * 24);
-    //
-    // int beforePurge =
-    // getServer().getSqlTemplate().queryForInt("select count(*) from sym_data");
-    // getRootEngine().purge();
-    // int afterPurge =
-    // getServer().getSqlTemplate().queryForInt("select count(*) from sym_data");
-    // Timestamp maxCreateTime = (Timestamp)
-    // getServer().getSqlTemplate().queryForObject(
-    // "select max(create_time) from sym_data", Timestamp.class);
-    // Timestamp minCreateTime = (Timestamp)
-    // getServer().getSqlTemplate().queryForObject(
-    // "select min(create_time) from sym_data", Timestamp.class);
-    // Assert.assertTrue("Expected data rows to have been purged at the root.  There were "
-    // + beforePurge + " row before anf " + afterPurge
-    // + " rows after. The max create_time in sym_data was " + maxCreateTime
-    // + " and the min create_time in sym_data was " + minCreateTime
-    // + " and the current time of the server is " + new Date(),
-    // (beforePurge - afterPurge) > 0);
-    //
-    // parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
-    // purgeRetentionMinues);
-    //
-    // parameterService = AppUtils.find(Constants.PARAMETER_SERVICE,
-    // getClient());
-    // purgeRetentionMinues =
-    // parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
-    // // set purge in the future just in case the database time is different
-    // // than the current time
-    // parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
-    // -60 * 24);
-    //
-    // beforePurge =
-    // getClient().getSqlTemplate().queryForInt("select count(*) from sym_data");
-    // getClient().purge();
-    // afterPurge =
-    // getClient().getSqlTemplate().queryForInt("select count(*) from sym_data");
-    // maxCreateTime = (Timestamp) getClient().getSqlTemplate().queryForObject(
-    // "select max(create_time) from sym_data", Timestamp.class);
-    // minCreateTime = (Timestamp) getClient().getSqlTemplate().queryForObject(
-    // "select min(create_time) from sym_data", Timestamp.class);
-    // Assert.assertTrue("Expected data rows to have been purged at the client.  There were "
-    // + beforePurge + " row before anf " + afterPurge
-    // + " rows after. . The max create_time in sym_data was " + maxCreateTime
-    // + " and the min create_time in sym_data was " + minCreateTime
-    // + " and the current time of the server is " + new Date(),
-    // (beforePurge - afterPurge) > 0);
-    //
-    // parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
-    // purgeRetentionMinues);
-    // }
-    //
-    // @Test(timeout = 120000)
-    // public void testHeartbeat() throws Exception {
-    // logTestRunning();
-    // final String checkHeartbeatSql =
-    // "select heartbeat_time from sym_node where external_id='"
-    // + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
-    // Date clientHeartbeatTimeBefore =
-    // getClient().getSqlTemplate().queryForObject(checkHeartbeatSql,
-    // Timestamp.class);
-    // Thread.sleep(1000);
-    // getClient().heartbeat(true);
-    // Date clientHeartbeatTimeAfter =
-    // getClient().getSqlTemplate().queryForObject(checkHeartbeatSql,
-    // Timestamp.class);
-    // Assert.assertNotSame("The heartbeat time was not updated at the client",
-    // clientHeartbeatTimeAfter, clientHeartbeatTimeBefore);
-    // Date rootHeartbeatTimeBefore =
-    // getServer().getSqlTemplate().queryForObject(checkHeartbeatSql,
-    // Timestamp.class);
-    // Assert.assertNotSame(
-    // "The root heartbeat time should not be the same as the updated client heartbeat time",
-    // clientHeartbeatTimeAfter, rootHeartbeatTimeBefore);
-    // while (clientPush()) {
-    // // continue to push while there data to push
-    // }
-    // Date rootHeartbeatTimeAfter =
-    // getServer().getSqlTemplate().queryForObject(checkHeartbeatSql,
-    // Timestamp.class);
-    // Assert.assertEquals(
-    // "The client heartbeat time should have been the same as the root heartbeat time.",
-    // clientHeartbeatTimeAfter, rootHeartbeatTimeAfter);
-    // }
-    //
+    @Test(timeout = 120000)
+    public void ignoreNodeChannel() {
+        logTestRunning();
+        INodeService rootNodeService = getServer().getNodeService();
+        IConfigurationService rootConfigService = getServer().getConfigurationService();
+        rootNodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
+        rootConfigService.reloadChannels();
+
+        NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_ROOT_EXTERNAL_ID, false);
+        Assert.assertNotNull(channel);
+        Assert.assertTrue(channel.isIgnoreEnabled());
+        Assert.assertFalse(channel.isSuspendEnabled());
+
+        Customer customer = new Customer(201, "Charlie Dude", true, "300 Grub Street", "New York",
+                "NY", 90009, new Date(), new Date(), THIS_IS_A_TEST, BINARY_DATA);
+        serverTestService.insertCustomer(customer);
+        clientPull();
+
+        Assert.assertNull(clientTestService.getCustomer(customer.getCustomerId()));
+
+        rootNodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
+
+        rootConfigService.reloadChannels();
+
+        clientPull();
+
+        Assert.assertNull(clientTestService.getCustomer(customer.getCustomerId()));
+
+        getClient().getConfigurationService().reloadChannels();
+
+    }
+
+    @Test(timeout = 120000)
+    public void syncUpdateWithEmptyKey() {
+        logTestRunning();
+        try {
+            if (getClient().getSymmetricDialect().getPlatform().getPlatformInfo()
+                    .isEmptyStringNulled()) {
+                return;
+            }
+
+            getClient().getSqlTemplate().update(insertStoreStatusSql,
+                    new Object[] { "00001", "", 1 });
+            clientPush();
+
+            getClient().getSqlTemplate().update(updateStoreStatusSql,
+                    new Object[] { 2, "00001", "" });
+            clientPush();
+
+            int status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
+                    new Object[] { "00001", "   " });
+
+            Assert.assertEquals("Wrong store status", 2, status);
+        } finally {
+            logTestComplete();
+        }
+    }
+
+    //@Test(timeout = 120000)
+    public void testPurge() throws Exception {
+        logTestRunning();
+
+        // do an extra push & pull to make sure we have events cleared out
+        clientPull();
+        clientPush();
+
+        Thread.sleep(2000);
+
+        IParameterService parameterService = getServer().getParameterService();
+        int purgeRetentionMinues = parameterService
+                .getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
+
+        // set purge in the future just in case the database time is different
+        // than the current time
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24);
+
+        int beforePurge = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data");
+        getServer().purge();
+        int afterPurge = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data");
+        Timestamp maxCreateTime = (Timestamp) getServer().getSqlTemplate().queryForObject(
+                "select max(create_time) from sym_data", Timestamp.class);
+        Timestamp minCreateTime = (Timestamp) getServer().getSqlTemplate().queryForObject(
+                "select min(create_time) from sym_data", Timestamp.class);
+        Assert.assertTrue("Expected data rows to have been purged at the root.  There were "
+                + beforePurge + " row before and " + afterPurge
+                + " rows after. The max create_time in sym_data was " + maxCreateTime
+                + " and the min create_time in sym_data was " + minCreateTime
+                + " and the current time of the server is " + new Date(),
+                (beforePurge - afterPurge) > 0);
+
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
+                purgeRetentionMinues);
+
+        parameterService = getClient().getParameterService();
+        purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
+        // set purge in the future just in case the database time is different
+        // than the current time
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24);
+
+        beforePurge = getClient().getSqlTemplate().queryForInt("select count(*) from sym_data");
+        getClient().purge();
+        afterPurge = getClient().getSqlTemplate().queryForInt("select count(*) from sym_data");
+        maxCreateTime = (Timestamp) getClient().getSqlTemplate().queryForObject(
+                "select max(create_time) from sym_data", Timestamp.class);
+        minCreateTime = (Timestamp) getClient().getSqlTemplate().queryForObject(
+                "select min(create_time) from sym_data", Timestamp.class);
+        Assert.assertTrue("Expected data rows to have been purged at the client.  There were "
+                + beforePurge + " row before anf " + afterPurge
+                + " rows after. . The max create_time in sym_data was " + maxCreateTime
+                + " and the min create_time in sym_data was " + minCreateTime
+                + " and the current time of the server is " + new Date(),
+                (beforePurge - afterPurge) > 0);
+
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
+                purgeRetentionMinues);
+    }
+
+    @Test//(timeout = 120000)
+    public void testHeartbeat() throws Exception {
+        logTestRunning();
+        final String checkHeartbeatSql = "select heartbeat_time from sym_node where external_id='"
+                + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
+        Date clientHeartbeatTimeBefore = getClient().getSqlTemplate().queryForObject(
+                checkHeartbeatSql, Timestamp.class);
+        Thread.sleep(1000);
+        getClient().heartbeat(true);
+        Date clientHeartbeatTimeAfter = getClient().getSqlTemplate().queryForObject(
+                checkHeartbeatSql, Timestamp.class);
+        Assert.assertNotSame("The heartbeat time was not updated at the client",
+                clientHeartbeatTimeAfter, clientHeartbeatTimeBefore);
+        Date rootHeartbeatTimeBefore = getServer().getSqlTemplate().queryForObject(
+                checkHeartbeatSql, Timestamp.class);
+        Assert.assertNotSame(
+                "The root heartbeat time should not be the same as the updated client heartbeat time",
+                clientHeartbeatTimeAfter, rootHeartbeatTimeBefore);
+        while (clientPush()) {
+            // continue to push while there data to push
+            Thread.sleep(1000);
+        }
+        Date rootHeartbeatTimeAfter = getServer().getSqlTemplate().queryForObject(
+                checkHeartbeatSql, Timestamp.class);
+        Assert.assertEquals(
+                "The client heartbeat time should have been the same as the root heartbeat time.",
+                clientHeartbeatTimeAfter, rootHeartbeatTimeAfter);
+    }
+
     // @Test(timeout = 120000)
     // public void testVirtualTransactionId() {
     // logTestRunning();

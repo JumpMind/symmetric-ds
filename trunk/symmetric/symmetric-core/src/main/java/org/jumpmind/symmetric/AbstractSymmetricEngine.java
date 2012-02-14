@@ -373,10 +373,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public RemoteNodeStatuses push() {
+        MDC.put("engineName", getEngineName());
         return pushService.pushData();
     }
 
     public void syncTriggers() {
+        MDC.put("engineName", getEngineName());        
         triggerRouterService.syncTriggers();
     }
 
@@ -385,14 +387,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public RemoteNodeStatuses pull() {
+        MDC.put("engineName", getEngineName());        
         return pullService.pullData();
     }
 
     public void route() {
+        MDC.put("engineName", getEngineName());        
         routerService.routeData();
     }
 
     public void purge() {
+        MDC.put("engineName", getEngineName());        
         purgeService.purgeOutgoing();
         purgeService.purgeIncoming();
         purgeService.purgeDataGaps();
@@ -470,14 +475,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void heartbeat(boolean force) {
+        MDC.put("engineName", getEngineName());        
         dataService.heartbeat(force);
     }
 
     public void openRegistration(String nodeGroupId, String externalId) {
+        MDC.put("engineName", getEngineName());        
         registrationService.openRegistration(nodeGroupId, externalId);
     }
 
     public void reOpenRegistration(String nodeId) {
+        MDC.put("engineName", getEngineName());        
         registrationService.reOpenRegistration(nodeId);
     }
 

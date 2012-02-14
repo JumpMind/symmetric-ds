@@ -12,6 +12,10 @@
     <category name="org.jumpmind">
         <priority value="INFO" />
     </category>
+    
+    <category name="org.junit">
+        <priority value="DEBUG" />
+    </category>    
         
     <!-- 
     <category name="org.jumpmind.symmetric.io.data.writer">
