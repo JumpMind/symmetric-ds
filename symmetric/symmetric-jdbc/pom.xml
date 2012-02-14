@@ -94,5 +94,16 @@
 			<artifactId>h2</artifactId>
 			<optional>true</optional>
 		</dependency>
+        <dependency>
+            <groupId>org.firebirdsql.jdbc</groupId>
+            <artifactId>jaybird</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Required for jaybird -->
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-j2ee-connector_1.6_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>		
 	</dependencies>
 </project>
