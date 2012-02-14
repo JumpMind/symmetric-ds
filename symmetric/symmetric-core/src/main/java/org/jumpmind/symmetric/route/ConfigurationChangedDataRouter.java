@@ -93,7 +93,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         // if this is sym_node or sym_node_security determine which nodes it
         // goes to.
         if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
-                || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
+                || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY) 
+                || tableMatches(dataMetaData, TableConstants.SYM_NODE_HOST)) {
 
             if (didNodeSecurityChangeForNodeInitialization(dataMetaData)) {
                 return null;
@@ -251,17 +252,17 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     @Override
     public void contextCommitted(SimpleRouterContext routingContext) {
         if (routingContext.getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
-            log.info("Channels flushed because new channels came through the dataloader");
+            log.info("Channels flushed because new channels came through the data router");
             configurationService.reloadChannels();
         }
         if (routingContext.getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.info("About to syncTriggers because new configuration came through the dataloader");
+            log.info("About to syncTriggers because new configuration came through the data router");
             triggerRouterService.syncTriggers();
         }
         if (routingContext.getContextCache().get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-            log.info("About to refresh the cache of transformation because new configuration come through the dataloader");
+            log.info("About to refresh the cache of transformation because new configuration come through the data router");
             transformService.resetCache();
         }
     }

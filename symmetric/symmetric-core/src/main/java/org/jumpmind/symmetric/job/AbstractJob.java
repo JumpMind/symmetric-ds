@@ -202,6 +202,7 @@ abstract public class AbstractJob implements Runnable, IJob {
      * This method is called from the job
      */
     public void run() {
+        MDC.put("engineName", engine != null ? engine.getEngineName() : "unknown");
         invoke(false);
     }
 
