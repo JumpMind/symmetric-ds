@@ -10,8 +10,10 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
             Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
 
-        putSql("countTriggerRoutersByRouterIdSql", ""
-                + "select count(*) from $(trigger_router) where router_id=?   ");
+        // @formatter:off
+        
+        putSql("countTriggerRoutersByRouterIdSql",
+           "select count(*) from $(trigger_router) where router_id=?   ");
 
         putSql("countTriggerRoutersByTriggerIdSql", ""
                 + "select count(*) from $(trigger_router) where trigger_id=?   ");
