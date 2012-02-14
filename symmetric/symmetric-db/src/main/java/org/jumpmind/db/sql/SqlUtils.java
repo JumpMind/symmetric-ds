@@ -64,7 +64,7 @@ abstract public class SqlUtils {
         for (ISqlReadCursor<?> cursor : cursors) {
             Exception ex = sqlReadCursorsOwnerMap.get(cursor);
             if (ex != null) {
-                log.warn("The following stack contains the owner of an open read cursor", ex);
+                log.error("The following stack contains the owner of an open read cursor", ex);
             }
         }
         
@@ -72,7 +72,7 @@ abstract public class SqlUtils {
         for (ISqlTransaction transaction : transactions) {
             Exception ex = sqlTransactionsOwnerMap.get(transaction);
             if (ex != null) {
-                log.warn("The following stack contains the owner of an open database transaction", ex);
+                log.error("The following stack contains the owner of an open database transaction", ex);
             }
         }
     }
