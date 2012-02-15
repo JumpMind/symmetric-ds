@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,6 +79,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             Object[] values, int[] types) {
         return new JdbcSqlReadCursor<T>(this, mapper, sql, values, types);
     }
+    
+    public static void main(String[] args) {
+        System.out.println(Timestamp.class.isAssignableFrom(Date.class));
+    }
 
     public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
         return execute(new IConnectionCallback<T>() {
@@ -92,9 +97,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     JdbcUtils.setValues(ps, expandArgs(sql, args));
                     rs = ps.executeQuery();
                     if (rs.next()) {
-                        if (clazz.isAssignableFrom(Date.class)) {
+                        if (Date.class.isAssignableFrom(clazz)) {
                             result = (T) rs.getTimestamp(1);
-                        } else if (clazz.isAssignableFrom(String.class)) {
+                        } else if (String.class.isAssignableFrom(clazz)) {
                             result = (T) rs.getString(1);
                         } else {
                             result = (T) rs.getObject(1);

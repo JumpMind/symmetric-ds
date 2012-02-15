@@ -22,6 +22,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -846,7 +847,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
-    //@Test(timeout = 120000)
+    @Test(timeout = 120000)
     public void testPurge() throws Exception {
         logTestRunning();
 
@@ -905,7 +906,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 purgeRetentionMinues);
     }
 
-    @Test//(timeout = 120000)
+    @Test(timeout = 120000)
     public void testHeartbeat() throws Exception {
         logTestRunning();
         final String checkHeartbeatSql = "select heartbeat_time from sym_node where external_id='"
@@ -934,61 +935,55 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 clientHeartbeatTimeAfter, rootHeartbeatTimeAfter);
     }
 
-    // @Test(timeout = 120000)
-    // public void testVirtualTransactionId() {
-    // logTestRunning();
-    // getServer().getSqlTemplate().update("insert into test_very_long_table_name_1234 values('42')");
-    // if (getRootDbDialect().isTransactionIdOverrideSupported()) {
-    // assertEquals(
-    // getServer().getSqlTemplate().queryForObject(
-    // "select transaction_id from sym_data where data_id in (select max(data_id) from sym_data)",
-    // String.class), "42", "The hardcoded transaction id was not found.");
-    // Assert.assertEquals(getServer().getSqlTemplate()
-    // .update("delete from test_very_long_table_name_1234 where id='42'"), 1);
-    // assertEquals(
-    // getServer().getSqlTemplate().queryForObject(
-    // "select transaction_id from sym_data where data_id in (select max(data_id) from sym_data)",
-    // String.class), "42", "The hardcoded transaction id was not found.");
-    // }
-    // }
-    //
-    // @Test(timeout = 120000)
-    // public void testCaseSensitiveTableNames() {
-    // logTestRunning();
-    // String rquote =
-    // getRootDbDialect().getPlatform().isDelimitedIdentifierModeOn() ?
-    // getRootDbDialect()
-    // .getPlatform().getPlatformInfo().getDelimiterToken()
-    // : "";
-    // String cquote =
-    // getClientDbDialect().getPlatform().isDelimitedIdentifierModeOn() ?
-    // getClientDbDialect()
-    // .getPlatform().getPlatformInfo().getDelimiterToken()
-    // : "";
-    // getServer().getSqlTemplate().update("insert into " + rquote +
-    // "TEST_ALL_CAPS" +
-    // rquote
-    // + " values(1, 'HELLO')");
-    // clientPull();
-    // assertEquals(
-    // getClient().getSqlTemplate().queryForInt("select count(*) from " + cquote
-    // +
-    // "TEST_ALL_CAPS"
-    // + cquote + " where " + cquote + "ALL_CAPS_ID" + cquote + " = 1"), 1,
-    // "Table name in all caps was not synced");
-    // getServer().getSqlTemplate().update("insert into " + rquote +
-    // "Test_Mixed_Case" +
-    // rquote
-    // + " values(1, 'Hello')");
-    // clientPull();
-    // assertEquals(
-    // getClient().getSqlTemplate().queryForInt("select count(*) from " + cquote
-    // +
-    // "Test_Mixed_Case"
-    // + cquote + " where " + cquote + "Mixed_Case_Id" + cquote + " = 1"), 1,
-    // "Table name in mixed case was not synced");
-    // }
-    //
+    @Test(timeout = 120000)
+    public void testVirtualTransactionId() {
+        logTestRunning();
+        getServer().getSqlTemplate().update(
+                "insert into test_very_long_table_name_1234 values('42')");
+        if (getServer().getSymmetricDialect().isTransactionIdOverrideSupported()) {
+            Assert.assertEquals(
+                    "The hardcoded transaction id was not found.",
+                    "42",
+                    getServer()
+                            .getSqlTemplate()
+                            .queryForObject(
+                                    "select transaction_id from sym_data where data_id in (select max(data_id) from sym_data)",
+                                    String.class));
+            Assert.assertEquals(
+                    1,
+                    getServer().getSqlTemplate().update(
+                            "delete from test_very_long_table_name_1234 where id='42'"));
+            Assert.assertEquals(
+                    "The hardcoded transaction id was not found.",
+                    "42",
+                    getServer()
+                            .getSqlTemplate()
+                            .queryForObject(
+                                    "select transaction_id from sym_data where data_id in (select max(data_id) from sym_data)",
+                                    String.class));
+        }
+    }
+
+    @Test(timeout = 120000)
+    public void testCaseSensitiveTableNames() {
+        logTestRunning();
+        String rquote = getServer().getSymmetricDialect().getPlatform().getPlatformInfo()
+                .getDelimiterToken();
+        String cquote = getClient().getSymmetricDialect().getPlatform().getPlatformInfo()
+                .getDelimiterToken();
+        getServer().getSqlTemplate().update(
+                "insert into " + rquote + "Test_Mixed_Case" + rquote + " values(?,?)", 1, "Hello");
+        while (clientPull()) {
+            AppUtils.sleep(1000);
+        }
+        Assert.assertEquals(
+                "Table name in mixed case was not synced",
+                1,
+                getClient().getSqlTemplate().queryForInt(
+                        "select count(*) from " + cquote + "Test_Mixed_Case" + cquote + " where "
+                                + cquote + "Mixed_Case_Id" + cquote + " = 1"));
+    }
+
     // @Test(timeout = 120000)
     // public void testSyncShellCommand() throws Exception {
     // logTestRunning();
