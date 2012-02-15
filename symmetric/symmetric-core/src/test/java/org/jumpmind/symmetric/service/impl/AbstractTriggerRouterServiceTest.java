@@ -371,8 +371,8 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     protected static boolean isBooleanSupported(ISymmetricDialect dbDialect) {
-        return !(DatabaseNamesConstants.ORACLE.equals(dbDialect.getName()) || DatabaseNamesConstants.DB2
-                .equals(dbDialect.getName()));
+        return !(DatabaseNamesConstants.ORACLE.equals(dbDialect.getPlatform().getName()) || DatabaseNamesConstants.DB2
+                .equals(dbDialect.getPlatform().getName()));
     }
 
     protected static Object[] filterValues(Object[] values, ISymmetricDialect dbDialect) {
