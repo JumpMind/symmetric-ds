@@ -96,4 +96,5 @@ Documentation
 * Removed support for db.force.delimited.identifier.mode.on & db.force.delimited.identifier.mode.off
 * Removed support for db.metadata.ignore.case
 * SymmetricDS tables are now created in the default case of the database
+* Now supports mixed case tables on Firebird.
 

@@ -233,16 +233,17 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         getTriggerRouterService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
-        testChannel.setMaxBatchToSend(100);
+        testChannel.setMaxBatchToSend(100);        
         testChannel.setBatchAlgorithm("transactional");
         getConfigurationService().saveChannel(testChannel, true);
 
+        
         // should be 51 batches for table 1
         insert(TEST_TABLE_1, 500, true);
         insert(TEST_TABLE_1, 50, false);
         getRouterService().routeData();
 
-        final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 51 : 100;
+        final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 51 : 550;
 
         OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
                 false);
@@ -513,7 +514,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1,
                 false);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 530, batches.getBatches()
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 1235, batches.getBatches()
                 .size());
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches
                 .getBatches().get(0).getDataEventCount());
