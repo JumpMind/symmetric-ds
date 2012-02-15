@@ -390,7 +390,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
             Table[] tables = targetTables.getTables();
 
-            boolean storesUpperCaseIdentifiers = platform.getSqlTemplate()
+            boolean storesUpperCaseIdentifiers = platform
                     .isStoresUpperCaseIdentifiers();
             for (Table table : tables) {
                 String name = String.format("%s%s", prefix, table.getName());

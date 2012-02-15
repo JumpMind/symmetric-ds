@@ -105,6 +105,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected String defaultCatalog;
 
     protected Boolean storesUpperCaseIdentifiers;
+    
+    protected Boolean storesMixedCaseIdentifiers;
 
     public AbstractDatabasePlatform() {
         setDelimitedIdentifierModeOn(true);
@@ -436,6 +438,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return lobColumns;
     }
+    
+    public boolean isStoresMixedCaseQuotedIdentifiers() {
+        if (storesMixedCaseIdentifiers == null) {
+            storesMixedCaseIdentifiers = getSqlTemplate().isStoresMixedCaseQuotedIdentifiers();
+        }
+        return storesMixedCaseIdentifiers;
+    }
 
     public boolean isStoresUpperCaseIdentifiers() {
         if (storesUpperCaseIdentifiers == null) {
@@ -470,7 +479,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             Database database = new DatabaseIO().read(reader);
             IOUtils.closeQuietly(reader);
             if (alterCaseToMatchDatabaseDefaultCase) {
-                boolean storesUpperCase = getSqlTemplate().isStoresUpperCaseIdentifiers();
+                boolean storesUpperCase = isStoresUpperCaseIdentifiers();
                 Table[] tables = database.getTables();
                 for (Table table : tables) {
                     if (!FormatUtils.isMixedCase(table.getName())) {
