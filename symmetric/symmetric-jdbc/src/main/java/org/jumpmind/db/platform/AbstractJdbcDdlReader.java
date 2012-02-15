@@ -1271,5 +1271,5 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             close(columnData);
             close(tableData);
         }
-    }
+    }   
 }

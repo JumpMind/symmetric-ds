@@ -211,5 +211,7 @@ public interface IDatabasePlatform {
     public String scrubSql(String sql);
     
     public boolean isStoresUpperCaseIdentifiers();
+    
+    public boolean isStoresMixedCaseQuotedIdentifiers();
 
 }

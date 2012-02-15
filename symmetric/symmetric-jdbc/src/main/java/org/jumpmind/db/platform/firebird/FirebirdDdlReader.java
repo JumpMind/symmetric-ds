@@ -41,6 +41,7 @@ import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.util.FormatUtils;
 
 /*
  * The Jdbc Model Reader for Firebird.
@@ -424,6 +425,9 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
          * get back column names for more than one table. Example:
          * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
          */
+        if (FormatUtils.isMixedCase(tableName)) {
+            tableName = String.format("\"%s\"", tableName);
+        }
         return tableName.replaceAll("\\_", "\\\\_");
     }
 
