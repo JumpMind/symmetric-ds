@@ -17,6 +17,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -984,25 +985,21 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                                 + cquote + "Mixed_Case_Id" + cquote + " = 1"));
     }
 
-    // @Test(timeout = 120000)
-    // public void testSyncShellCommand() throws Exception {
-    // logTestRunning();
-    // IDataService rootDataService = AppUtils.find(Constants.DATA_SERVICE,
-    // getRootEngine());
-    // IOutgoingBatchService rootOutgoingBatchService = AppUtils.find(
-    // Constants.OUTGOING_BATCH_SERVICE, getRootEngine());
-    // testFlag = false;
-    // String scriptData =
-    // "org.jumpmind.symmetric.test.SimpleIntegrationTest.testFlag=true;";
-    // rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID,
-    // scriptData, false);
-    // clientPull();
-    // OutgoingBatches batches = rootOutgoingBatchService
-    // .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE, false);
-    // Assert.assertEquals(0, batches.countBatches(true));
-    // Assert.assertTrue(testFlag);
-    // }
-    //
+    @Test//(timeout = 120000)
+    public void testSyncShellCommand() throws Exception {
+        logTestRunning();
+        IDataService rootDataService = getServer().getDataService();
+        IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
+        testFlag = false;
+        String scriptData = "org.jumpmind.symmetric.test.SimpleIntegrationTest.testFlag=true;";
+        rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
+        clientPull();
+        OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(
+                TestConstants.TEST_CLIENT_NODE, false);
+        Assert.assertEquals(0, batches.countBatches(true));
+        Assert.assertTrue("Expected the testFlag static variable to have been set to true", testFlag);
+    }
+
     // @Test(timeout = 120000)
     // public void testSyncShellCommandError() throws Exception {
     // logTestRunning();

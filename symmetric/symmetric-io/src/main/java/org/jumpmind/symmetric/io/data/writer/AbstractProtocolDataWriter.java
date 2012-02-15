@@ -90,30 +90,34 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
     public void write(CsvData data) {
         switch (data.getDataEventType()) {
-        case INSERT:
-            println(CsvConstants.INSERT, data.getCsvData(CsvData.ROW_DATA));
-            break;
+            case INSERT:
+                println(CsvConstants.INSERT, data.getCsvData(CsvData.ROW_DATA));
+                break;
 
-        case UPDATE:
-            String oldData = data.getCsvData(CsvData.OLD_DATA);
-            if (StringUtils.isNotBlank(oldData)) {
-                println(CsvConstants.OLD, oldData);
-            }
-            println(CsvConstants.UPDATE, data.getCsvData(CsvData.ROW_DATA),
-                    data.getCsvData(CsvData.PK_DATA));
-            break;
+            case UPDATE:
+                String oldData = data.getCsvData(CsvData.OLD_DATA);
+                if (StringUtils.isNotBlank(oldData)) {
+                    println(CsvConstants.OLD, oldData);
+                }
+                println(CsvConstants.UPDATE, data.getCsvData(CsvData.ROW_DATA),
+                        data.getCsvData(CsvData.PK_DATA));
+                break;
 
-        case DELETE:
-            oldData = data.getCsvData(CsvData.OLD_DATA);
-            if (StringUtils.isNotBlank(oldData)) {
-                println(CsvConstants.OLD, oldData);
-            }
-            println(CsvConstants.DELETE, data.getCsvData(CsvData.PK_DATA));
-            break;
+            case DELETE:
+                oldData = data.getCsvData(CsvData.OLD_DATA);
+                if (StringUtils.isNotBlank(oldData)) {
+                    println(CsvConstants.OLD, oldData);
+                }
+                println(CsvConstants.DELETE, data.getCsvData(CsvData.PK_DATA));
+                break;
 
-        case SQL:
-            println(CsvConstants.SQL, data.getCsvData(CsvData.ROW_DATA));
-            break;
+            case BSH:
+                println(CsvConstants.BSH, data.getCsvData(CsvData.ROW_DATA));
+                break;
+
+            case SQL:
+                println(CsvConstants.SQL, data.getCsvData(CsvData.ROW_DATA));
+                break;
         }
     }
 
