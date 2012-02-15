@@ -62,6 +62,7 @@ DONE = +
 
 * Test timezone columns.  Do other databases other than oracle and postgres have timezone columns?
 * Test batch insert performance during routing (esp on oracle)
+* Test to make sure that autocreate for all databases doesn't recreate symmetricds artifacts every time it is run (DB2 might be having an issue right now)
 
 Performance Improvement Opportunities
 * Pluggable data loaders

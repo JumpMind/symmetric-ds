@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 
 /*
@@ -33,7 +34,7 @@ import org.jumpmind.db.platform.DatabasePlatformSettings;
 public class Db2Platform extends AbstractJdbcDatabasePlatform {
 
     /* Database name of this platform. */
-    public static final String DATABASENAME = "DB2";
+    public static final String DATABASENAME = DatabaseNamesConstants.DB2;
 
     /* The standard DB2 jdbc driver. */
     public static final String JDBC_DRIVER = "com.ibm.db2.jcc.DB2Driver";
