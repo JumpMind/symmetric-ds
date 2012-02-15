@@ -21,12 +21,12 @@ package org.jumpmind.symmetric.db.db2;
 
 import java.net.URL;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymmetricDialect {
 
@@ -61,17 +61,19 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
     private URL getSqlScriptUrl() {
         return getClass().getResource("/org/jumpmind/symmetric/db/db2.sql");
     }
-
-    public void disableSyncTriggers(JdbcTemplate jdbcTemplate, String nodeId) {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
-        if (nodeId != null) {
-            jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
-        }
+    
+    @Override
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+       transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
+       if (StringUtils.isNotBlank(nodeId)) {
+           transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
+       }
     }
 
+    @Override
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
-        transaction.prepareAndExecute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
+        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
 
     public String getSyncTriggersExpression() {
