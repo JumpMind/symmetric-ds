@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -38,7 +39,7 @@ import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 public class OraclePlatform extends AbstractJdbcDatabasePlatform {
 
     /* Database name of this platform. */
-    public static final String DATABASENAME = "Oracle";
+    public static final String DATABASENAME = DatabaseNamesConstants.ORACLE;
 
     /* The standard Oracle jdbc driver. */
     public static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";

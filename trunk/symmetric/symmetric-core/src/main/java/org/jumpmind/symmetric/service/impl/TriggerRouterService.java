@@ -888,7 +888,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         reason = TriggerReBuildReason.NEW_TRIGGERS;
                         forceRebuildOfTriggers = true;
 
-                    } else if (TriggerHistory.calculateTableHashFor(table) != latestHistoryBeforeRebuild
+                    } else if (table.calculateTableHashcode() != latestHistoryBeforeRebuild
                             .getTableHash()) {
                         reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
                         forceRebuildOfTriggers = true;

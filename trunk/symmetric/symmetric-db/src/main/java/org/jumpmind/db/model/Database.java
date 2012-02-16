@@ -246,10 +246,6 @@ public class Database implements Serializable, Cloneable {
         HashSet<String> namesOfProcessedIndices = new HashSet<String>();
         int tableIdx = 0;
 
-        if ((getName() == null) || (getName().length() == 0)) {
-            throw new ModelException("The database model has no name");
-        }
-
         for (Iterator<Table> tableIt = tables.iterator(); tableIt.hasNext(); tableIdx++) {
             Table curTable = tableIt.next();
 

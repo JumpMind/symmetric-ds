@@ -142,6 +142,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             return Types.LONGVARCHAR;
         } else if (typeName != null && typeName.startsWith("NCHAR")) {
             return Types.CHAR;
+        } else if (typeName != null && typeName.startsWith("XML")) {
+            return Types.CLOB;
         } else if (typeName != null && typeName.startsWith("NCLOB")) {
             return Types.CLOB;
         } else if (typeName != null && typeName.startsWith("BINARY_FLOAT")) {

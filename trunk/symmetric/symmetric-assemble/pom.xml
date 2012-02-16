@@ -31,7 +31,7 @@
         <module>../symmetric-util</module>    
         <module>../symmetric-csv</module>
         <module>../symmetric-db</module>
-        <module>../symmetric-jdbc</module>                
+        <module>../symmetric-jdbc</module>
         <module>../symmetric-io</module>
         <module>../symmetric-core</module>
         <module>../symmetric-client</module>
