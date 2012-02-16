@@ -26,7 +26,7 @@ import org.junit.Assert;
 abstract public class AbstractWriterTest extends AbstractDbTest {
 
     protected static IDatabasePlatform platform;
-    
+
     protected boolean errorExpected = true;
 
     protected final static String TEST_TABLE = "test_dataloader_table";
@@ -65,13 +65,12 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
         writeData(data, expectedValues, TEST_COLUMNS);
     }
 
-    protected void writeData(CsvData data, String[] expectedValues, String[] columnNames)
-             {
+    protected void writeData(CsvData data, String[] expectedValues, String[] columnNames) {
         writeData(data, expectedValues, TEST_TABLE, TEST_KEYS, columnNames);
     }
 
     protected void writeData(CsvData data, String[] expectedValues, String tableName,
-            String[] keyNames, String[] columnNames)  {
+            String[] keyNames, String[] columnNames) {
         Table table = buildSourceTable(tableName, keyNames, columnNames);
         writeData(new TableCsvData(table, data));
         String[] pkData = data.getParsedData(CsvData.ROW_DATA);
@@ -86,8 +85,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     }
 
     protected long writeData(IDataWriter writer, TableCsvData... datas) {
-        DataContext context = new DataContext(
-                null, writer);
+        DataContext context = new DataContext(null, writer);
         writer.open(context);
         try {
             for (TableCsvData tableCsvData : datas) {
@@ -105,7 +103,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
                     writer.end(batch, true);
                     if (!isErrorExpected()) {
                         if (ex instanceof RuntimeException) {
-                            throw (RuntimeException)ex;
+                            throw (RuntimeException) ex;
                         } else {
                             throw new RuntimeException(ex);
                         }
@@ -216,20 +214,20 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     protected String printDatabase() {
         return " The database we are testing against is " + platform.getName() + ".";
     }
-    
+
     protected boolean isOracle() {
         return DatabaseNamesConstants.ORACLE.equals(platform.getName());
     }
-    
+
     public void setErrorExpected(boolean errorExpected) {
         this.errorExpected = errorExpected;
     }
-    
+
     public boolean isErrorExpected() {
         return errorExpected;
     }
 
-    class TableCsvData {
+    protected class TableCsvData {
         Table table;
         List<CsvData> data;
 
