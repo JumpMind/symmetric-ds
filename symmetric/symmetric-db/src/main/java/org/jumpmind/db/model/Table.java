@@ -1029,6 +1029,29 @@ public class Table implements Serializable, Cloneable {
         }
         return columnNames;
     }
+    
+    public int calculateTableHashcode() {
+        final int PRIME = 31;
+        int result = 1;
+        result = PRIME * result + name.hashCode();
+        result = PRIME * result + calculateHashcodeForColumns(PRIME, getColumns());
+        result = PRIME * result + calculateHashcodeForColumns(PRIME, getPrimaryKeyColumns());
+        return result;
+    }
+    
+    private static int calculateHashcodeForColumns(final int PRIME, Column[] cols) {
+        int result = 1;
+        if (cols != null && cols.length > 0) {
+            for (Column column : cols) {
+                result = PRIME * result + column.getName().hashCode();
+                result = PRIME * result + column.getType().hashCode();
+                result = PRIME * result + column.getSizeAsInt();
+            }
+        }
+        return result;
+    }
+
+    
 
     public static Table buildTable(String tableName, String[] keyNames, String[] columnNames) {
         Table table = new Table();

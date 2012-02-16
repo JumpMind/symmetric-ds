@@ -115,7 +115,7 @@ public class TriggerHistory implements Serializable {
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
         this.triggerRowHash = trigger.toHashedValue();
-        tableHash = calculateTableHashFor(table);
+        tableHash = table.calculateTableHashcode();
     }
     
     public TriggerHistory(Trigger trigger) {
@@ -123,27 +123,6 @@ public class TriggerHistory implements Serializable {
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceTableName = trigger.getSourceTableName();
         this.triggerId = trigger.getTriggerId();
-    }
-
-    public static int calculateTableHashFor(Table table) {
-        final int PRIME = 31;
-        int result = 1;
-        result = PRIME * result + table.getName().hashCode();
-        result = PRIME * result + calculateHashForColumns(PRIME, table.getColumns());
-        result = PRIME * result + calculateHashForColumns(PRIME, table.getPrimaryKeyColumns());
-        return result;
-    }
-
-    private static int calculateHashForColumns(final int PRIME, Column[] cols) {
-        int result = 1;
-        if (cols != null && cols.length > 0) {
-            for (Column column : cols) {
-                result = PRIME * result + column.getName().hashCode();
-                result = PRIME * result + column.getType().hashCode();
-                result = PRIME * result + column.getSizeAsInt();
-            }
-        }
-        return result;
     }
 
     private String getCommaDeliminatedColumns(Column[] cols) {
