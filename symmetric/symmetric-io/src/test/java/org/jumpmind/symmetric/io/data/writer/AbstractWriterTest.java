@@ -64,9 +64,13 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     protected void writeData(CsvData data, String[] expectedValues) {
         writeData(data, expectedValues, TEST_COLUMNS);
     }
+    
+    protected String getTestTable() {
+        return TEST_TABLE;
+    }
 
     protected void writeData(CsvData data, String[] expectedValues, String[] columnNames) {
-        writeData(data, expectedValues, TEST_TABLE, TEST_KEYS, columnNames);
+        writeData(data, expectedValues, getTestTable(), TEST_KEYS, columnNames);
     }
 
     protected void writeData(CsvData data, String[] expectedValues, String tableName,
@@ -125,7 +129,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     }
 
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
-        String sql = "select " + getSelect(TEST_COLUMNS) + " from " + TEST_TABLE + " where "
+        String sql = "select " + getSelect(TEST_COLUMNS) + " from " + getTestTable() + " where "
                 + getWhere(TEST_KEYS);
         Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql,
                 new Object[] { new Long(testTableId) });
@@ -244,6 +248,10 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
             this.data = data;
         }
 
+    }
+    
+    protected long countRows(String tableName) {
+        return platform.getSqlTemplate().queryForInt(String.format("select count(*) from %s", tableName));
     }
 
 }
