@@ -29,7 +29,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
@@ -81,10 +80,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         // goes to.
         if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
                 || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
-        	
-        	if (didNodeSecurityChangeForNodeInitialization(dataMetaData)) {        		
-        			return null;
-        	}
 
             String nodeIdInQuestion = columnValues.get("NODE_ID");
             List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
@@ -95,9 +90,15 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                                 rootNetworkedNode, me)) {
                     if (nodeIds == null) {
                         nodeIds = new HashSet<String>();
-                    }
+                    }                   
                     nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                 }
+            }
+            
+            // don't route node security to it's own node.  that node will get node security
+            // via registration and it will be updated by initial load
+            if (!initialLoad && nodeIds != null && tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
+                nodeIds.remove(nodeIdInQuestion);
             }
         } else {
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
@@ -131,25 +132,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         }
 
         return nodeIds;
-    }
-    
-    /**
-     * Check to see if the change was due to registration or initial load is being enabled or disabled.  If 
-     * so, then don't propagate the change.
-     */
-    protected boolean didNodeSecurityChangeForNodeInitialization(DataMetaData dataMetaData) {
-    	if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY) && dataMetaData.getData().getEventType() == DataEventType.UPDATE) {
-    		Map<String,String> oldData = getOldDataAsString("", dataMetaData);
-    		Map<String,String> newData = getNewDataAsString("", dataMetaData);
-    		if (newData.get("REGISTRATION_ENABLED") != null && 
-    				!newData.get("REGISTRATION_ENABLED").equals(oldData.get("REGISTRATION_ENABLED"))) {
-    			return true;
-    		} else if (newData.get("INITIAL_LOAD_ENABLED") != null && 
-    				!newData.get("INITIAL_LOAD_ENABLED").equals(oldData.get("INITIAL_LOAD_ENABLED"))) {
-    			return true;
-    		}
-    	}
-    	return false;
     }
 
     protected Node findIdentity() {
