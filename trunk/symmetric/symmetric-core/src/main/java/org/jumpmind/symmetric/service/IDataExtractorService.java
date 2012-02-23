@@ -35,7 +35,7 @@ public interface IDataExtractorService {
 
     public void extractConfigurationStandalone(Node node, OutputStream out);
 
-    public void extractConfigurationStandalone(Node node, Writer out);
+    public void extractConfigurationStandalone(Node node, Writer out, String... tablesToIgnore);
     
     /**
      * @return a list of batches that were extracted

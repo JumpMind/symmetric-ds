@@ -1,5 +1,7 @@
 package org.jumpmind.db.sql;
 
+import java.sql.SQLException;
+
 public class SqlException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
@@ -18,6 +20,15 @@ public class SqlException extends RuntimeException {
 
     public SqlException(Throwable cause) {
         super(cause);
+    }
+    
+    public int getErrorCode() {
+        Throwable rootCause = getRootCause();
+        if (rootCause instanceof SQLException) {
+            return ((SQLException)rootCause).getErrorCode();
+        } else {
+            return -1;
+        }
     }
 
     public Throwable getRootCause() {

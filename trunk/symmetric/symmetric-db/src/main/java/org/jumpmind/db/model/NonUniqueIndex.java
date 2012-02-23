@@ -55,9 +55,7 @@ public class NonUniqueIndex extends IndexImpBase
         return result;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public boolean equals(Object obj)
     {
         if (obj instanceof NonUniqueIndex)

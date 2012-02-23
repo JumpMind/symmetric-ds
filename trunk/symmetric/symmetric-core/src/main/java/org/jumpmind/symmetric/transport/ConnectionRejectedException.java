@@ -19,9 +19,9 @@
  * under the License.  */
 package org.jumpmind.symmetric.transport;
 
-import java.io.IOException;
+import org.jumpmind.exception.IoException;
 
-public class ConnectionRejectedException extends IOException {
+public class ConnectionRejectedException extends IoException {
 
     private static final long serialVersionUID = 3770259092569043530L;
 

@@ -21,17 +21,12 @@
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
@@ -47,6 +42,7 @@ import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
@@ -110,21 +106,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.databaseProductVersion = sqlTemplate.getDatabaseProductVersion();
         this.driverName = sqlTemplate.getDriverName();
         this.driverVersion = sqlTemplate.getDriverVersion();
-    }
-
-    public String encodeForCsv(byte[] data) {
-        if (data != null) {
-            BinaryEncoding encoding = getBinaryEncoding();
-            if (BinaryEncoding.BASE64.equals(encoding)) {
-                return new String(Base64.encodeBase64(data));
-            } else if (BinaryEncoding.HEX.equals(encoding)) {
-                return new String(Hex.encodeHex(data));
-            } else {
-                throw new NotImplementedException();
-            }
-        } else {
-            return null;
-        }
     }
 
     public String toFormattedTimestamp(java.util.Date time) {
@@ -390,8 +371,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
             Table[] tables = targetTables.getTables();
 
-            boolean storesUpperCaseIdentifiers = platform
-                    .isStoresUpperCaseIdentifiers();
+            boolean storesUpperCaseIdentifiers = platform.isStoresUpperCaseIdentifiers();
             for (Table table : tables) {
                 String name = String.format("%s%s", prefix, table.getName());
                 table.setName(storesUpperCaseIdentifiers ? name.toUpperCase() : name.toLowerCase());
@@ -494,12 +474,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     protected Database readDatabaseFromXml(String resourceName) throws IOException {
-        URL url = AbstractSymmetricDialect.class.getResource(resourceName);
-        if (url != null) {
-            DatabaseIO io = new DatabaseIO();
-            io.setValidateXml(false);
-            return io.read(new InputStreamReader(url.openStream()));
-        } else {
+        try {
+            return platform.readDatabaseFromXml(resourceName, true);
+        } catch (IoException ex) {
             return new Database();
         }
     }
@@ -684,7 +661,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                             String.format("truncate table %s%s%s", quote, table.getName(), quote));
                     success = true;
                 } else {
-                    throw new RuntimeException(String.format("Could not find %s to trunate", tableName));
+                    throw new RuntimeException(String.format("Could not find %s to trunate",
+                            tableName));
                 }
             } catch (SqlException ex) {
                 log.warn(ex.getMessage(), ex);

@@ -44,12 +44,13 @@ import org.slf4j.LoggerFactory;
 public class ModelComparator {
     
     /** The log for this comparator. */
-    private final Logger _log = LoggerFactory.getLogger(ModelComparator.class);
+    private final Logger log = LoggerFactory.getLogger(ModelComparator.class);
 
     /** The platform information. */
-    private DatabasePlatformInfo _platformInfo;
+    private DatabasePlatformInfo platformInfo;
+    
     /** Whether comparison is case sensitive. */
-    private boolean _caseSensitive;
+    private boolean caseSensitive;
 
     /**
      * Creates a new model comparator object.
@@ -60,8 +61,8 @@ public class ModelComparator {
      *            Whether comparison is case sensitive
      */
     public ModelComparator(DatabasePlatformInfo platformInfo, boolean caseSensitive) {
-        _platformInfo = platformInfo;
-        _caseSensitive = caseSensitive;
+        this.platformInfo = platformInfo;
+        this.caseSensitive = caseSensitive;
     }
 
     /**
@@ -79,11 +80,11 @@ public class ModelComparator {
 
         for (int tableIdx = 0; tableIdx < targetModel.getTableCount(); tableIdx++) {
             Table targetTable = targetModel.getTable(tableIdx);
-            Table sourceTable = sourceModel.findTable(targetTable.getName(), _caseSensitive);
+            Table sourceTable = sourceModel.findTable(targetTable.getName(), caseSensitive);
 
             if (sourceTable == null) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("Table " + targetTable.getName() + " needs to be added");
+                if (log.isDebugEnabled()) {
+                    log.debug("Table " + targetTable.getName() + " needs to be added");
                 }
                 changes.add(new AddTableChange(targetTable));
                 for (int fkIdx = 0; fkIdx < targetTable.getForeignKeyCount(); fkIdx++) {
@@ -99,12 +100,12 @@ public class ModelComparator {
 
         for (int tableIdx = 0; tableIdx < sourceModel.getTableCount(); tableIdx++) {
             Table sourceTable = sourceModel.getTable(tableIdx);
-            Table targetTable = targetModel.findTable(sourceTable.getName(), _caseSensitive);
+            Table targetTable = targetModel.findTable(sourceTable.getName(), caseSensitive);
 
             if ((targetTable == null) && (sourceTable.getName() != null)
                     && (sourceTable.getName().length() > 0)) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("Table " + sourceTable.getName() + " needs to be removed");
+                if (log.isDebugEnabled()) {
+                    log.debug("Table " + sourceTable.getName() + " needs to be removed");
                 }
                 changes.add(new RemoveTableChange(sourceTable));
                 // we assume that the target model is sound, ie. that there are
@@ -146,8 +147,8 @@ public class ModelComparator {
             ForeignKey targetFk = findCorrespondingForeignKey(targetTable, sourceFk);
 
             if (targetFk == null) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("Foreign key " + sourceFk + " needs to be removed from table "
+                if (log.isDebugEnabled()) {
+                    log.debug("Foreign key " + sourceFk + " needs to be removed from table "
                             + sourceTable.getName());
                 }
                 changes.add(new RemoveForeignKeyChange(sourceTable, sourceFk));
@@ -159,8 +160,8 @@ public class ModelComparator {
             ForeignKey sourceFk = findCorrespondingForeignKey(sourceTable, targetFk);
 
             if (sourceFk == null) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("Foreign key " + targetFk + " needs to be created for table "
+                if (log.isDebugEnabled()) {
+                    log.debug("Foreign key " + targetFk + " needs to be created for table "
                             + sourceTable.getName());
                 }
                 // we have to use the target table here because the foreign key
@@ -175,8 +176,8 @@ public class ModelComparator {
             IIndex targetIndex = findCorrespondingIndex(targetTable, sourceIndex);
 
             if (targetIndex == null) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("Index " + sourceIndex.getName()
+                if (log.isDebugEnabled()) {
+                    log.debug("Index " + sourceIndex.getName()
                             + " needs to be removed from table " + sourceTable.getName());
                 }
                 changes.add(new RemoveIndexChange(sourceTable, sourceIndex));
@@ -187,8 +188,8 @@ public class ModelComparator {
             IIndex sourceIndex = findCorrespondingIndex(sourceTable, targetIndex);
 
             if (sourceIndex == null) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("Index " + targetIndex.getName() + " needs to be created for table "
+                if (log.isDebugEnabled()) {
+                    log.debug("Index " + targetIndex.getName() + " needs to be created for table "
                             + sourceTable.getName());
                 }
                 // we have to use the target table here because the index might
@@ -201,11 +202,11 @@ public class ModelComparator {
 
         for (int columnIdx = 0; columnIdx < targetTable.getColumnCount(); columnIdx++) {
             Column targetColumn = targetTable.getColumn(columnIdx);
-            Column sourceColumn = sourceTable.findColumn(targetColumn.getName(), _caseSensitive);
+            Column sourceColumn = sourceTable.findColumn(targetColumn.getName(), caseSensitive);
 
             if (sourceColumn == null) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("Column " + targetColumn.getName()
+                if (log.isDebugEnabled()) {
+                    log.debug("Column " + targetColumn.getName()
                             + " needs to be created for table " + sourceTable.getName());
                 }
 
@@ -239,16 +240,16 @@ public class ModelComparator {
         Column[] targetPK = targetTable.getPrimaryKeyColumns();
 
         if ((sourcePK.length == 0) && (targetPK.length > 0)) {
-            if (_log.isDebugEnabled()) {
-                _log.debug("A primary key needs to be added to the table " + sourceTable.getName());
+            if (log.isDebugEnabled()) {
+                log.debug("A primary key needs to be added to the table " + sourceTable.getName());
             }
             // we have to use the target table here because the primary key
             // might
             // reference a new column
             changes.add(new AddPrimaryKeyChange(targetTable, targetPK));
         } else if ((targetPK.length == 0) && (sourcePK.length > 0)) {
-            if (_log.isDebugEnabled()) {
-                _log.debug("The primary key needs to be removed from the table "
+            if (log.isDebugEnabled()) {
+                log.debug("The primary key needs to be removed from the table "
                         + sourceTable.getName());
             }
             changes.add(new RemovePrimaryKeyChange(sourceTable, sourcePK));
@@ -259,17 +260,17 @@ public class ModelComparator {
                 changePK = true;
             } else {
                 for (int pkColumnIdx = 0; (pkColumnIdx < sourcePK.length) && !changePK; pkColumnIdx++) {
-                    if ((_caseSensitive && !sourcePK[pkColumnIdx].getName().equals(
+                    if ((caseSensitive && !sourcePK[pkColumnIdx].getName().equals(
                             targetPK[pkColumnIdx].getName()))
-                            || (!_caseSensitive && !sourcePK[pkColumnIdx].getName()
+                            || (!caseSensitive && !sourcePK[pkColumnIdx].getName()
                                     .equalsIgnoreCase(targetPK[pkColumnIdx].getName()))) {
                         changePK = true;
                     }
                 }
             }
             if (changePK) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("The primary key of table " + sourceTable.getName()
+                if (log.isDebugEnabled()) {
+                    log.debug("The primary key of table " + sourceTable.getName()
                             + " needs to be changed");
                 }
                 changes.add(new PrimaryKeyChange(sourceTable, sourcePK, targetPK));
@@ -278,11 +279,11 @@ public class ModelComparator {
 
         for (int columnIdx = 0; columnIdx < sourceTable.getColumnCount(); columnIdx++) {
             Column sourceColumn = sourceTable.getColumn(columnIdx);
-            Column targetColumn = targetTable.findColumn(sourceColumn.getName(), _caseSensitive);
+            Column targetColumn = targetTable.findColumn(sourceColumn.getName(), caseSensitive);
 
             if (targetColumn == null) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("Column " + sourceColumn.getName()
+                if (log.isDebugEnabled()) {
+                    log.debug("Column " + sourceColumn.getName()
                             + " needs to be removed from table " + sourceTable.getName());
                 }
                 changes.add(new RemoveColumnChange(sourceTable, sourceColumn));
@@ -311,10 +312,10 @@ public class ModelComparator {
         ArrayList changes = new ArrayList();
 
         if (targetColumn.getTypeCode() != sourceColumn.getTypeCode()
-                && _platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != sourceColumn
+                && platformInfo.getTargetJdbcType(targetColumn.getTypeCode()) != sourceColumn
                         .getTypeCode()) {
-            if (_log.isDebugEnabled()) {
-                _log.debug("The " + sourceColumn.getName() + " column on the "
+            if (log.isDebugEnabled()) {
+                log.debug("The " + sourceColumn.getName() + " column on the "
                         + sourceTable.getName() + " table changed type codes from "
                         + sourceColumn.getTypeCode() + " to " + targetColumn.getTypeCode());
             }
@@ -322,12 +323,12 @@ public class ModelComparator {
                     .getTypeCode()));
         }
 
-        boolean sizeMatters = _platformInfo.hasSize(sourceColumn.getTypeCode());
-        boolean scaleMatters = _platformInfo.hasPrecisionAndScale(sourceColumn.getTypeCode());
+        boolean sizeMatters = platformInfo.hasSize(sourceColumn.getTypeCode());
+        boolean scaleMatters = platformInfo.hasPrecisionAndScale(sourceColumn.getTypeCode());
 
         String targetSize = targetColumn.getSize();
         if (targetSize == null) {
-            Integer defaultSize = _platformInfo.getDefaultSize(_platformInfo
+            Integer defaultSize = platformInfo.getDefaultSize(platformInfo
                     .getTargetJdbcType(targetColumn.getTypeCode()));
             if (defaultSize != null) {
                 targetSize = defaultSize.toString();
@@ -336,8 +337,8 @@ public class ModelComparator {
             }
         }
         if (sizeMatters && !StringUtils.equals(sourceColumn.getSize(), targetSize)) {
-            if (_log.isDebugEnabled()) {
-                _log.debug("The " + sourceColumn.getName() + " column on the "
+            if (log.isDebugEnabled()) {
+                log.debug("The " + sourceColumn.getName() + " column on the "
                         + sourceTable.getName() + " table changed size from ("
                         + sourceColumn.getSizeAsInt() + ") to (" + targetColumn.getSizeAsInt()
                         + ")");
@@ -349,8 +350,8 @@ public class ModelComparator {
         // size or precision
                 (!(sourceColumn.getScale() < 0 && targetColumn.getScale() == 0) && sourceColumn
                         .getScale() != targetColumn.getScale()))) {
-            if (_log.isDebugEnabled()) {
-                _log.debug("The " + sourceColumn.getName() + " column on the "
+            if (log.isDebugEnabled()) {
+                log.debug("The " + sourceColumn.getName() + " column on the "
                         + sourceTable.getName() + " table changed scale from ("
                         + sourceColumn.getSizeAsInt() + "," + sourceColumn.getScale() + ") to ("
                         + targetColumn.getSizeAsInt() + "," + targetColumn.getScale() + ")");
@@ -364,8 +365,8 @@ public class ModelComparator {
 
         if (((sourceDefaultValue == null) && (targetDefaultValue != null))
                 || ((sourceDefaultValue != null) && !sourceDefaultValue.equals(targetDefaultValue))) {
-            if (_log.isDebugEnabled()) {
-                _log.debug("The " + sourceColumn.getName() + " column on the "
+            if (log.isDebugEnabled()) {
+                log.debug("The " + sourceColumn.getName() + " column on the "
                         + sourceTable.getName() + " table changed default value from "
                         + sourceColumn.getDefaultValue() + " to " + targetColumn.getDefaultValue());
             }
@@ -374,8 +375,8 @@ public class ModelComparator {
         }
 
         if (sourceColumn.isRequired() != targetColumn.isRequired()) {
-            if (_log.isDebugEnabled()) {
-                _log.debug("The " + sourceColumn.getName() + " column on the "
+            if (log.isDebugEnabled()) {
+                log.debug("The " + sourceColumn.getName() + " column on the "
                         + sourceTable.getName() + " table changed required status from "
                         + sourceColumn.isRequired() + " to " + targetColumn.isRequired());
             }
@@ -383,8 +384,8 @@ public class ModelComparator {
         }
 
         if (sourceColumn.isAutoIncrement() != targetColumn.isAutoIncrement()) {
-            if (_log.isDebugEnabled()) {
-                _log.debug("The " + sourceColumn.getName() + " column on the "
+            if (log.isDebugEnabled()) {
+                log.debug("The " + sourceColumn.getName() + " column on the "
                         + sourceTable.getName() + " table changed auto increment status from "
                         + sourceColumn.isAutoIncrement() + " to " + targetColumn.isAutoIncrement());
             }
@@ -411,8 +412,8 @@ public class ModelComparator {
         for (int fkIdx = 0; fkIdx < table.getForeignKeyCount(); fkIdx++) {
             ForeignKey curFk = table.getForeignKey(fkIdx);
 
-            if ((_caseSensitive && fk.equals(curFk))
-                    || (!_caseSensitive && fk.equalsIgnoreCase(curFk))) {
+            if ((caseSensitive && fk.equals(curFk))
+                    || (!caseSensitive && fk.equalsIgnoreCase(curFk))) {
                 return curFk;
             }
         }
@@ -436,8 +437,8 @@ public class ModelComparator {
         for (int indexIdx = 0; indexIdx < table.getIndexCount(); indexIdx++) {
             IIndex curIndex = table.getIndex(indexIdx);
 
-            if ((_caseSensitive && index.equals(curIndex))
-                    || (!_caseSensitive && index.equalsIgnoreCase(curIndex))) {
+            if ((caseSensitive && index.equals(curIndex))
+                    || (!caseSensitive && index.equalsIgnoreCase(curIndex))) {
                 return curIndex;
             }
         }

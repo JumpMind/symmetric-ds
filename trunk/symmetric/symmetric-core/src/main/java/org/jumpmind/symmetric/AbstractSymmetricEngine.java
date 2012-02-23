@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,7 +13,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -87,6 +87,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     private boolean starting = false;
 
     private boolean setup = false;
+    
+    protected String deploymentType;
 
     protected ITypedPropertiesFactory propertiesFactory;
 
@@ -103,8 +105,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IConfigurationService configurationService;
 
     protected IBandwidthService bandwidthService;
-
-    protected DeploymentType deploymentType;
 
     protected IStatisticService statisticService;
 
@@ -147,6 +147,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IExtensionPointManager extensionPointManger;
     
     protected IStagingManager stagingManager;
+    
+    protected Date lastRestartTime = null;
 
     abstract protected ITypedPropertiesFactory createTypedPropertiesFactory();
 
@@ -176,9 +178,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             return null;
         }
     }
+    
+    public void setDeploymentType(String deploymentType) {
+        this.deploymentType = deploymentType;
+    }
 
     protected void init() {
-        this.deploymentType = new DeploymentType();
         this.securityService = createSecurityService();
         this.propertiesFactory = createTypedPropertiesFactory();
         TypedProperties properties = this.propertiesFactory.reload();
@@ -321,6 +326,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         jobManager.startJobs();
                     }
                     log.info("Started SymmetricDS");
+                    lastRestartTime = new Date();
                     started = true;
                 } finally {
                     starting = false;
@@ -333,7 +339,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         log.info(
                 "SymmetricDS: type={}, name={}, version={}, groupId={}, externalId={}, databaseName={}, databaseVersion={}, driverName={}, driverVersion={}",
-                new Object[] { getDeploymentType().getDeploymentType(), getEngineName(),
+                new Object[] { getDeploymentType(), getEngineName(),
                         Version.version(), getParameterService().getNodeGroupId(),
                         getParameterService().getExternalId(), symmetricDialect.getName(),
                         symmetricDialect.getVersion(), symmetricDialect.getDriverName(),
@@ -589,7 +595,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return triggerRouterService;
     }
 
-    public DeploymentType getDeploymentType() {
+    public String getDeploymentType() {
         return deploymentType;
     }
 
@@ -656,12 +662,20 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     }
     
+    public Date getLastRestartTime() {
+        return lastRestartTime;
+    }
+    
     public ISqlTemplate getSqlTemplate() {     
         return getSymmetricDialect().getPlatform().getSqlTemplate();
     }
 
     public Logger getLog() {
         return log;
+    }
+    
+    public <T> T getDataSource() {
+        return getSymmetricDialect().getPlatform().getDataSource();
     }
 
 }

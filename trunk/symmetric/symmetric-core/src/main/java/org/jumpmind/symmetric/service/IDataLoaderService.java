@@ -24,8 +24,10 @@ package org.jumpmind.symmetric.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 
@@ -44,5 +46,7 @@ public interface IDataLoaderService {
     public void addDatabaseWriterFilter(IDatabaseWriterFilter filter);    
 
     public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter);
+    
+    public List<IncomingBatch> loadDataBatch(String batchData) throws IOException;
 
 }

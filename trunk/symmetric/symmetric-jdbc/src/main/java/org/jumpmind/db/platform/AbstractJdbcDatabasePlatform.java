@@ -27,5 +27,10 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
     public ISqlTemplate getSqlTemplate() {
         return sqlTemplate;
     }
+    
+    @SuppressWarnings("unchecked")
+    public <T> T getDataSource() {
+        return (T)dataSource;
+    }
 
 }

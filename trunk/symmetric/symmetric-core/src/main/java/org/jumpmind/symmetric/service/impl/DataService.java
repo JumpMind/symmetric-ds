@@ -46,7 +46,6 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
@@ -85,7 +84,7 @@ import org.jumpmind.symmetric.util.AppUtils;
  */
 public class DataService extends AbstractService implements IDataService {
 
-    private DeploymentType deploymentType;
+    private String deploymentType;
 
     private ITriggerRouterService triggerRouterService;
 
@@ -106,7 +105,7 @@ public class DataService extends AbstractService implements IDataService {
     private DataMapper dataMapper;
 
     public DataService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            DeploymentType deploymentType, ITriggerRouterService triggerRouterService,
+            String deploymentType, ITriggerRouterService triggerRouterService,
             INodeService nodeService, IPurgeService purgeService,
             IConfigurationService configurationService, IOutgoingBatchService outgoingBatchService,
             IStatisticManager statisticManager) {
@@ -732,7 +731,7 @@ public class DataService extends AbstractService implements IDataService {
                 log.info("Updating time and version node info");
                 Calendar now = Calendar.getInstance();
                 now.set(Calendar.MILLISECOND, 0);
-                me.setDeploymentType(deploymentType.getDeploymentType());
+                me.setDeploymentType(deploymentType);
                 me.setHeartbeatTime(now.getTime());
                 me.setTimezoneOffset(AppUtils.getTimezoneOffset());
                 me.setSymmetricVersion(Version.version());

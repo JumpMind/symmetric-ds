@@ -16,6 +16,7 @@
 
 package org.jumpmind.db.sql;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -249,7 +250,7 @@ public abstract class NamedParameterUtils {
      * @return the array of values
      */
     public static Object[] buildValueArray(ParsedSql parsedSql, Map<String, Object> paramSource) {
-        Object[] paramArray = new Object[parsedSql.getTotalParameterCount()];
+        List<Object> paramArray = new ArrayList<Object>();
         if (parsedSql.getNamedParameterCount() > 0 && parsedSql.getUnnamedParameterCount() > 0) {
             throw new IllegalStateException(
                     "You can't mix named and traditional ? placeholders. You have "
@@ -260,9 +261,17 @@ public abstract class NamedParameterUtils {
         List<String> paramNames = parsedSql.getParameterNames();
         for (int i = 0; i < paramNames.size(); i++) {
             String paramName = paramNames.get(i);
-            paramArray[i] = paramSource.get(paramName);
+            Object value = paramSource.get(paramName);
+            if (value instanceof Collection<?>) {
+                Collection<?> collection = (Collection<?>)value;
+                for (Object object : collection) {
+                    paramArray.add(object);
+                }
+            } else {
+                paramArray.add(value);
+            }
         }
-        return paramArray;
+        return paramArray.toArray(new Object[paramArray.size()]);
     }
 
     /**

@@ -36,9 +36,13 @@ public class InternalIncomingTransport implements IIncomingTransport {
 
     BufferedReader reader = null;
 
-    public InternalIncomingTransport(InputStream pullIs) throws IOException {
+    public InternalIncomingTransport(InputStream pullIs)  {
         reader = TransportUtils.toReader(pullIs);
     }
+    
+    public InternalIncomingTransport(BufferedReader reader)  {
+        this.reader = reader;
+    }    
 
     public void close() throws IOException {
         IOUtils.closeQuietly(reader);

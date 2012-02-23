@@ -29,6 +29,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
@@ -39,8 +40,6 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.BadSqlGrammarException;
 
 /*
  * A dialect that is specific to Oracle databases
@@ -72,8 +71,8 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         try {
             super.createTrigger(sqlBuffer, dml, trigger, history, channel,
                     parameterService.getTablePrefix(), table);
-        } catch (BadSqlGrammarException ex) {
-            if (ex.getSQLException().getErrorCode() == 4095) {
+        } catch (SqlException ex) {
+            if (ex.getErrorCode() == 4095) {
                 try {
                     // a trigger of the same name must already exist on a table
                     log.warn(
@@ -82,7 +81,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                                     "select * " + selectTriggerSql,
                                     new Object[] { history.getTriggerNameForDmlType(dml),
                                             history.getSourceTableName() }));
-                } catch (DataAccessException e) {
+                } catch (SqlException e) {
                 }
             }
             throw ex;

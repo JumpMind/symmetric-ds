@@ -8,6 +8,8 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 
     public IncomingBatchServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) { 
         super(platform, replacementTokens);
+        
+        // @formatter:off
 
         putSql("selectIncomingBatchPrefixSql" ,"" + 
 "select batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, byte_count,           " + 
@@ -21,10 +23,10 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 "where batch_id = ? and node_id = ?   " );
 
         putSql("listIncomingBatchesSql" ,"" + 
-"where node_id in (:NODES) and channel_id in (:CHANNELS) and status in (:STATUSES) and create_time <= :CREATE_TIME order by create_time desc   " );
+"where node_id in (:NODES) and channel_id in (:CHANNELS) and status in (:STATUSES) " );
 
         putSql("listIncomingBatchesInErrorSql" ,"" + 
-"where node_id in (:NODES) and channel_id in (:CHANNELS) and error_flag=1 and create_time <= :CREATE_TIME order by create_time desc   " );
+"where node_id in (:NODES) and channel_id in (:CHANNELS) and error_flag=1 " );
 
         putSql("listIncomingBatchesInErrorForNodeSql" ,"" + 
 "where node_id=? and error_flag=1   " );

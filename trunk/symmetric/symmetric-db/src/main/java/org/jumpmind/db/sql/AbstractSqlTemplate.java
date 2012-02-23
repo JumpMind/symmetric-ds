@@ -26,7 +26,14 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public String queryForString(String sql, Object... args) {        
         return queryForObject(sql, String.class, args);
     }
-
+    
+    public int queryForInt(String sql, Map<String,Object> params) {
+        ParsedSql parsedSql = NamedParameterUtils.parseSqlStatement(sql);
+        String newSql = NamedParameterUtils.substituteNamedParameters(parsedSql, params);
+        Object[] args = NamedParameterUtils.buildValueArray(parsedSql, params);        
+        return queryForInt(newSql, args);
+    }
+    
     public int queryForInt(String sql, Object... args) {
         Number number = queryForObject(sql, Number.class, args);
         if (number != null) {

@@ -44,10 +44,10 @@ public interface IIncomingBatchService {
     public int updateIncomingBatch(IncomingBatch batch);
     
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, Date startAtCreateTime);
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime, boolean ascending);
     
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve);
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime, int maxRowsToRetrieve, boolean ascending);
 
     public void markIncomingBatchesOk(String nodeId);
     

@@ -9,6 +9,9 @@ public class IoException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    public IoException() {     
+    }
+    
     public IoException(IOException e) {
         super(e);
     }

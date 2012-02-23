@@ -213,5 +213,7 @@ public interface IDatabasePlatform {
     public boolean isStoresUpperCaseIdentifiers();
     
     public boolean isStoresMixedCaseQuotedIdentifiers();
+    
+    public <T> T getDataSource();
 
 }

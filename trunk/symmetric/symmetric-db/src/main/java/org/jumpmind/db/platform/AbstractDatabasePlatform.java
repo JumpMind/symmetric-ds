@@ -41,6 +41,8 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -59,9 +61,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S",
             "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
-    
+
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
-        "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
+            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
@@ -105,7 +107,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected String defaultCatalog;
 
     protected Boolean storesUpperCaseIdentifiers;
-    
+
     protected Boolean storesMixedCaseIdentifiers;
 
     public AbstractDatabasePlatform() {
@@ -409,7 +411,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             throw new RuntimeException(e);
         }
     }
-    
+
     protected java.util.Date parseTime(String value) {
         try {
             return DateUtils.parseDate(value, TIME_PATTERNS);
@@ -417,8 +419,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             throw new RuntimeException(e);
         }
     }
-    
-    
+
     public boolean isClob(int type) {
         return type == Types.CLOB || type == Types.LONGVARCHAR;
     }
@@ -438,7 +439,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return lobColumns;
     }
-    
+
     public boolean isStoresMixedCaseQuotedIdentifiers() {
         if (storesMixedCaseIdentifiers == null) {
             storesMixedCaseIdentifiers = getSqlTemplate().isStoresMixedCaseQuotedIdentifiers();
@@ -486,11 +487,28 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         table.setName(storesUpperCase ? table.getName().toUpperCase() : table
                                 .getName().toLowerCase());
                     }
+
                     Column[] columns = table.getColumns();
                     for (Column column : columns) {
                         if (!FormatUtils.isMixedCase(column.getName())) {
                             column.setName(storesUpperCase ? column.getName().toUpperCase()
                                     : column.getName().toLowerCase());
+                        }
+                    }
+
+                    IIndex[] indexes = table.getIndices();
+                    for (IIndex index : indexes) {
+                        if (!FormatUtils.isMixedCase(index.getName())) {
+                            index.setName(storesUpperCase ? index.getName().toUpperCase() : index
+                                    .getName().toLowerCase());
+                        }
+
+                        IndexColumn[] indexColumns = index.getColumns();
+                        for (IndexColumn indexColumn : indexColumns) {
+                            if (!FormatUtils.isMixedCase(indexColumn.getName())) {
+                                indexColumn.setName(storesUpperCase ? indexColumn.getName()
+                                        .toUpperCase() : indexColumn.getName().toLowerCase());
+                            }
                         }
                     }
                 }
