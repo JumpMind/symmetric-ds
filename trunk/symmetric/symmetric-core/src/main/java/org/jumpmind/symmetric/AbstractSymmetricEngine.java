@@ -674,8 +674,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return log;
     }
     
+    @SuppressWarnings("unchecked")
     public <T> T getDataSource() {
-        return getSymmetricDialect().getPlatform().getDataSource();
+        return (T)getSymmetricDialect().getPlatform().getDataSource();
     }
 
 }
