@@ -16,14 +16,13 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.  */
-
+ * under the License. 
+ */
 
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IPushService;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -31,26 +30,24 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  */
 public class PushJob extends AbstractJob {
 
-    private IPushService pushService;
-
     public PushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.push", true, engine.getParameterService().is("start.push.job"),
-                engine, taskScheduler);
-    }
-
-    public void setPushService(IPushService service) {
-        this.pushService = service;
+        super("job.push", true, engine.getParameterService().is("start.push.job"), engine,
+                taskScheduler);
     }
 
     @Override
     public long doJob() throws Exception {
-        return pushService.pushData().getDataProcessedCount();
+        if (engine != null) {
+            return engine.getPushService().pushData().getDataProcessedCount();
+        } else {
+            return -1;
+        }
     }
-    
+
     public String getClusterLockName() {
         return ClusterConstants.PUSH;
     }
-    
+
     public boolean isClusterable() {
         return true;
     }

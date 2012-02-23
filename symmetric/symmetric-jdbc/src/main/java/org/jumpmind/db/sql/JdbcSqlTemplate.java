@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,10 +77,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
             Object[] values, int[] types) {
         return new JdbcSqlReadCursor<T>(this, mapper, sql, values, types);
-    }
-    
-    public static void main(String[] args) {
-        System.out.println(Timestamp.class.isAssignableFrom(Date.class));
     }
 
     public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
@@ -267,8 +262,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         });
     }
 
+    public int update(boolean autoCommit, boolean failOnError, int commitRate, String... sql) {
+        return update(autoCommit, failOnError, commitRate, null, sql);
+    }
+
     public int update(final boolean autoCommit, final boolean failOnError, final int commitRate,
-            final String... sql) {
+            final ISqlResultsListener resultsListener, final String... sql) {
         return execute(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
                 int updateCount = 0;
@@ -282,21 +281,31 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         try {
                             boolean hasResults = stmt.execute(statement);
                             updateCount += stmt.getUpdateCount();
+                            int rowsRetrieved = 0;
                             if (hasResults) {
                                 ResultSet rs = null;
                                 try {
                                     rs = stmt.getResultSet();
-                                    while (rs.next())
-                                        ;
+                                    while (rs.next()) {
+                                        rowsRetrieved++;
+                                    }
                                 } finally {
                                     close(rs);
                                 }
+                            }
+                            if (resultsListener != null) {
+                                resultsListener.sqlApplied(statement, updateCount, rowsRetrieved,
+                                        statementCount);
                             }
                             statementCount++;
                             if (statementCount % commitRate == 0 && !autoCommit) {
                                 con.commit();
                             }
                         } catch (SQLException ex) {
+                            if (resultsListener != null) {
+                                resultsListener.sqlErrored(statement, translate(statement, ex),
+                                        statementCount);
+                            }
                             if (!failOnError) {
                                 if (statement.toLowerCase().startsWith("drop")) {
                                     log.debug("{}.  Failed to execute: {}.", ex.getMessage(),
@@ -306,7 +315,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                             statement);
                                 }
                             } else {
-                                throw translate(statement, ex);
+                                throw ex;
                             }
                         }
                     }
@@ -514,7 +523,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         });
     }
-    
+
     public boolean isStoresMixedCaseQuotedIdentifiers() {
         return execute(new IConnectionCallback<Boolean>() {
             public Boolean execute(Connection con) throws SQLException {

@@ -68,24 +68,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 new IncomingBatchMapper());
     }
 
-    public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, Date startAtCreateTime) {
-        if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
-                && statuses != null && statuses.size() > 0) {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("NODES", nodeIds);
-            params.put("CHANNELS", channels);
-            params.put("STATUSES", toStringList(statuses));
-            params.put("CREATE_TIME", startAtCreateTime);
-            String sql = getSql("selectCreateTimePrefixSql",
-                    containsOnlyErrorStatus(statuses) ? "listIncomingBatchesInErrorSql"
-                            : "listIncomingBatchesSql");
-            return sqlTemplate.query(sql, new DateMapper(), params);
-        } else {
-            return new ArrayList<Date>(0);
-        }
-    }
-
     @Transactional
     public void markIncomingBatchesOk(String nodeId) {
         List<IncomingBatch> batches = listIncomingBatchesInErrorFor(nodeId);
@@ -101,9 +83,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 getSql("selectIncomingBatchPrefixSql", "listIncomingBatchesInErrorForNodeSql"),
                 new IncomingBatchMapper(), nodeId);
     }
-
-    public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve) {
+    
+    public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime, boolean ascending) {
         if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
                 && statuses != null && statuses.size() > 0) {
             Map<String, Object> params = new HashMap<String, Object>();
@@ -111,10 +93,33 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             params.put("CHANNELS", channels);
             params.put("STATUSES", toStringList(statuses));
             params.put("CREATE_TIME", startAtCreateTime);
+            String sql = getSql("selectCreateTimePrefixSql",
+                    containsOnlyErrorStatus(statuses) ? "listIncomingBatchesInErrorSql"
+                            : "listIncomingBatchesSql",  ascending ? " order by create_time" : " order by create_time desc");
+            return sqlTemplate.query(sql, new DateMapper(), params);
+        } else {
+            return new ArrayList<Date>(0);
+        }
+    }
+
+    public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
+            List<IncomingBatch.Status> statuses, Date startAtCreateTime, final int maxRowsToRetrieve, boolean ascending) {
+        if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
+                && statuses != null && statuses.size() > 0) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("NODES", nodeIds);
+            params.put("CHANNELS", channels);
+            params.put("STATUSES", toStringList(statuses));
+            params.put("CREATE_TIME", startAtCreateTime);
+            
+            String createTimeLimiter = "";
+            if (startAtCreateTime != null) {
+                createTimeLimiter = " and create_time " + (ascending ? ">=" : "<=") + " :CREATE_TIME";
+            }
 
             String sql = getSql("selectIncomingBatchPrefixSql",
                     containsOnlyErrorStatus(statuses) ? "listIncomingBatchesInErrorSql"
-                            : "listIncomingBatchesSql");
+                            : "listIncomingBatchesSql", createTimeLimiter,  ascending ? " order by create_time" : " order by create_time desc");
 
             return sqlTemplate.query(sql, maxRowsToRetrieve, new IncomingBatchMapper(), params);
         } else {

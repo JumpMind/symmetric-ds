@@ -71,8 +71,6 @@ public interface ISymmetricDialect {
 
     public BinaryEncoding getBinaryEncoding();
     
-    public String encodeForCsv(byte[] data);
-
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory, Channel channel);

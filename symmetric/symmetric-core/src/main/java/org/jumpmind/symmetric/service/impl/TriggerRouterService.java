@@ -268,13 +268,24 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return majorVersion;
     }
     
-    protected List<Trigger> buildTriggersForSymmetricTables(String version) {        
+    protected List<Trigger> buildTriggersForSymmetricTables(String version, String... tablesToExclude) {        
         List<Trigger> triggers = new ArrayList<Trigger>();
         String majorVersion = getMajorVersion(version);
         List<String> tables = new ArrayList<String>(rootConfigChannelTableNames.get(majorVersion));
         if (extraConfigTables != null) {
             for (IExtraConfigTables extraTables : extraConfigTables) {
                 tables.addAll(extraTables.provideTableNames());
+            }
+        }
+        
+        if (tablesToExclude != null) {
+            for (String tableToExclude : tablesToExclude) {
+                String tablename = TableConstants.getTableName(tablePrefix, tableToExclude);
+                if (!tables.remove(tablename)) {
+                    if (!tables.remove(tablename.toUpperCase())) {
+                        tables.remove(tablename.toLowerCase());
+                    }
+                }
             }
         }
         
@@ -303,10 +314,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     public List<TriggerRouter> buildTriggerRoutersForSymmetricTables(String version,
-            NodeGroupLink nodeGroupLink) {
+            NodeGroupLink nodeGroupLink, String... tablesToExclude) {
         int initialLoadOrder = 1;
 
-        List<Trigger> triggers = buildTriggersForSymmetricTables(version);
+        List<Trigger> triggers = buildTriggersForSymmetricTables(version, tablesToExclude);
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(triggers.size());
         
         for (int j = 0; j < triggers.size(); j++) {

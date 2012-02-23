@@ -55,6 +55,8 @@ public class SqlScript {
 
     private String lineDeliminator;
 
+    private ISqlResultsListener resultsListener;
+
     public SqlScript(URL url, ISqlTemplate sqlTemplate) {
         this(url, sqlTemplate, true, QUERY_ENDS, null);
     }
@@ -135,7 +137,7 @@ public class SqlScript {
     }
 
     public long execute(final boolean autoCommit) {
-        return sqlTemplate.update(autoCommit, failOnError, commitRate,
+        return sqlTemplate.update(autoCommit, failOnError, commitRate, resultsListener,
                 statements.toArray(new String[statements.size()]));
     }
 
@@ -165,6 +167,10 @@ public class SqlScript {
 
     public void setLineDeliminator(String lineDeliminator) {
         this.lineDeliminator = lineDeliminator;
+    }
+
+    public void setListener(ISqlResultsListener listener) {
+        this.resultsListener = listener;
     }
 
 }

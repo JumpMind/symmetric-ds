@@ -19,10 +19,10 @@
  * under the License.  */
 package org.jumpmind.symmetric;
 
+import java.util.Date;
 import java.util.Properties;
 
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.symmetric.common.DeploymentType;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -244,7 +244,7 @@ public interface ISymmetricEngine {
     
     public IStatisticManager getStatisticManager();
     
-    public DeploymentType getDeploymentType();
+    public String getDeploymentType();
     
     public IConcurrentConnectionManager getConcurrentConnectionManager();
     
@@ -261,5 +261,9 @@ public interface ISymmetricEngine {
     public IStagingManager getStagingManager();
     
     public ISqlTemplate getSqlTemplate();
+    
+    public Date getLastRestartTime();
+    
+    public <T> T getDataSource();
     
 }

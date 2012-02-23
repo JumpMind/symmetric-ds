@@ -10,7 +10,12 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         <param-name>multiServerMode</param-name>
         <param-value>true</param-value>
     </context-param>
-  
+    
+    <context-param>
+        <param-name>deploymentType</param-name>
+        <param-value>server</param-value>
+    </context-param>
+      
     <listener>
         <listener-class>org.jumpmind.symmetric.web.SymmetricContextListener</listener-class>        
     </listener>

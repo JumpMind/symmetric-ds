@@ -19,6 +19,13 @@ public class DefaultExtraConfigTables implements IExtraConfigTables {
         }
         return tables;
     }
+    
+    public void addTable(String table) {
+        if (tables == null) {
+            tables = new ArrayList<String>();
+        }
+        tables.add(table);
+    }
 
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;

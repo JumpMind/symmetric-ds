@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -49,8 +50,16 @@ public class SymmetricEngineHolder {
 
     private boolean multiServerMode = false;
 
+    private static Date createTime = new Date();
+
+    private String deploymentType = "server";
+
     public Map<String, ServerSymmetricEngine> getEngines() {
         return engines;
+    }
+
+    public void setDeploymentType(String deploymentType) {
+        this.deploymentType = deploymentType;
     }
 
     public void setMultiServerMode(boolean multiServerMode) {
@@ -104,16 +113,17 @@ public class SymmetricEngineHolder {
         ServerSymmetricEngine engine = null;
         try {
             engine = new ServerSymmetricEngine(new File(propertiesFile));
-            if (engine != null) {
-                if (!engines.containsKey(engine.getEngineName())) {
-                    engines.put(engine.getEngineName(), engine);
-                } else {
-                    log.error("An engine with the name of {} was not started because an engine of the same name has already been started.  Please set the engine.name property in the properties file to a unique name.", engine.getEngineName());
-                }
+            engine.setDeploymentType(deploymentType);
+            if (!engines.containsKey(engine.getEngineName())) {
+                engines.put(engine.getEngineName(), engine);
+            } else {
+                log.error(
+                        "An engine with the name of {} was not started because an engine of the same name has already been started.  Please set the engine.name property in the properties file to a unique name.",
+                        engine.getEngineName());
             }
             return engine;
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -124,7 +134,7 @@ public class SymmetricEngineHolder {
             try {
                 engines.get(engineName).stop();
             } catch (Exception e) {
-                log.error(e.getMessage(),e);
+                log.error(e.getMessage(), e);
             }
             engines.remove(engineName);
         }
@@ -164,7 +174,7 @@ public class SymmetricEngineHolder {
         return engine;
 
     }
-    
+
     public boolean areEnginesStarting() {
         return enginesStarting.size() > 0;
     }
@@ -225,6 +235,10 @@ public class SymmetricEngineHolder {
             properties.setProperty(ParameterConstants.REGISTRATION_URL, "");
         }
         return engineName;
+    }
+
+    public static Date getCreateTime() {
+        return createTime;
     }
 
     class EngineStarter extends Thread {

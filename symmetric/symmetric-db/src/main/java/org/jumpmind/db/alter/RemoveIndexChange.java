@@ -25,8 +25,6 @@ import org.jumpmind.db.model.Table;
 
 /**
  * Represents the removal of an index from a table.
- * 
- * @version $Revision: $
  */
 public class RemoveIndexChange extends TableChangeImplBase
 {

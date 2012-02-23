@@ -32,8 +32,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.db.sql.SqlList;
-import org.jumpmind.db.sql.SqlToken;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -170,54 +168,60 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses) {
         if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("NODES", nodeIds);
+            params.put("CHANNELS", channels);
+            params.put("STATUSES", toStringList(statuses));
             return sqlTemplate
                     .queryForInt(
                             getSql("selectCountBatchesPrefixSql",
                                     containsOnlyErrorStatus(statuses) ? "selectOutgoingBatchByChannelWithErrorSql"
-                                            : "selectOutgoingBatchByChannelAndStatusSql"),
-                            new SqlList(":NODES", nodeIds), new SqlList(":CHANNELS", channels),
-                            toStringList(":STATUSES", statuses));
+                                            : "selectOutgoingBatchByChannelAndStatusSql"), params);
         } else {
             return 0;
         }
     }
 
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, long startAtBatchId, final int maxRowsToRetrieve) {
+            List<OutgoingBatch.Status> statuses, long startAtBatchId, final int maxRowsToRetrieve, boolean ascending) {
         if (nodeIds.size() > 0 && channels.size() > 0 && statuses.size() > 0) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("NODES", nodeIds);
+            params.put("CHANNELS", channels);
+            params.put("STATUSES", toStringList(statuses));
             String startAtBatchIdSql = null;
-            List<Object> args = new ArrayList<Object>();
-            args.add(new SqlList(":NODES", nodeIds));
-            args.add(new SqlList(":CHANNELS", channels));
-            args.add(toStringList(":STATUSES", statuses));
-
             if (startAtBatchId > 0) {
-                args.add(new SqlToken(":BATCH_ID", startAtBatchId));
-                startAtBatchIdSql = " and batch_id < :BATCH_ID ";
+                params.put("BATCH_ID", startAtBatchId);
+                if (ascending) {
+                    startAtBatchIdSql = " and batch_id > :BATCH_ID ";
+                } else {
+                    startAtBatchIdSql = " and batch_id < :BATCH_ID ";
+                }
             }
+            
             String sql = getSql("selectOutgoingBatchPrefixSql",
                     containsOnlyErrorStatus(statuses) ? "selectOutgoingBatchByChannelWithErrorSql"
                             : "selectOutgoingBatchByChannelAndStatusSql", startAtBatchIdSql,
-                    " order by batch_id desc");
+                            ascending ? "order by batch_id asc" : " order by batch_id desc");
 
             return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true, false),
-                    args.toArray(new Object[args.size()]), null);
+                    params);
         } else {
             return new ArrayList<OutgoingBatch>(0);
         }
     }
-
-    protected boolean containsOnlyErrorStatus(List<OutgoingBatch.Status> statuses) {
-        return statuses.size() == 1 && statuses.get(0) == OutgoingBatch.Status.ER;
-    }
-
-    protected SqlList toStringList(String replacementToken, List<OutgoingBatch.Status> statuses) {
-        SqlList statusStrings = new SqlList(replacementToken, statuses.size());
+    
+    protected List<String> toStringList(List<OutgoingBatch.Status> statuses) {
+        List<String> statusStrings = new ArrayList<String>(statuses.size());
         for (Status status : statuses) {
             statusStrings.add(status.name());
         }
         return statusStrings;
 
+    }
+
+    protected boolean containsOnlyErrorStatus(List<OutgoingBatch.Status> statuses) {
+        return statuses.size() == 1 && statuses.get(0) == OutgoingBatch.Status.ER;
     }
 
     /**

@@ -61,6 +61,10 @@ public class TransformWriter implements IDataWriter {
     public static void addColumnTransform(IColumnTransform<?> columnTransform) {
         columnTransforms.put(columnTransform.getName(), columnTransform);
     }
+    
+    public static Map<String, IColumnTransform<?>> getColumnTransforms() {
+        return columnTransforms;
+    }
 
     protected Table sourceTable;
     protected List<TransformTable> activeTransforms;

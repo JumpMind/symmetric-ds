@@ -20,8 +20,9 @@
 
 package org.jumpmind.symmetric.service;
 
+
 /**
- * 
+ * An interface that indicates that this class provides stateless services methods for the application
  */
 public interface IService {
 

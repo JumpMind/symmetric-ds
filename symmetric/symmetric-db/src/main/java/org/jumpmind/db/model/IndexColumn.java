@@ -26,8 +26,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * Represents a column of an index in the database model.
- * 
- * @version $Revision: 504014 $
  */
 public class IndexColumn implements Cloneable, Serializable
 {
@@ -36,14 +34,15 @@ public class IndexColumn implements Cloneable, Serializable
 
     /** The position within the owning index. */
     private int    _ordinalPosition;
+    
     /** The indexed column. */
     private Column _column;
+    
     /** The name of the column. */
     protected String _name;
+    
     /** The size of the column in the index. */
     protected String _size;
-
-    // TODO: It might be useful if the referenced column is directly acessible here ?
 
     /**
      * Creates a new index column object.

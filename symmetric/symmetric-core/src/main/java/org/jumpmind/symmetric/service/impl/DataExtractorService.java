@@ -142,7 +142,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * load for some reason on the client the batch status will NOT reflect the
      * failure.
      */
-    public void extractConfigurationStandalone(Node node, Writer writer) {
+    public void extractConfigurationStandalone(Node node, Writer writer, String... tablesToExclude) {
         Batch batch = new Batch(BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION, Constants.CHANNEL_CONFIG,
                 symmetricDialect.getBinaryEncoding(), node.getNodeId());
 
@@ -152,7 +152,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         List<TriggerRouter> triggerRouters = triggerRouterService
                 .buildTriggerRoutersForSymmetricTables(StringUtils.isBlank(node
                         .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(),
-                        nodeGroupLink);
+                        nodeGroupLink, tablesToExclude);
 
         List<SelectFromTableEvent> initialLoadEvents = new ArrayList<SelectFromTableEvent>(
                 triggerRouters.size() * 2);
@@ -166,6 +166,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         triggerRouter.getTrigger(), false), triggerRouter.getTrigger());
                 triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
             }
+            
             StringBuilder sql = new StringBuilder(symmetricDialect.createPurgeSqlFor(node,
                     triggerRouter));
             addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger().getSourceTableName(),

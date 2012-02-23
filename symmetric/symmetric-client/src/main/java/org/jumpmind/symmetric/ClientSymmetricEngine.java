@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
@@ -45,17 +43,15 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected BasicDataSource dataSource;
 
     public ClientSymmetricEngine(File propertiesFile) {
+        setDeploymentType("client");
         this.propertiesFile = propertiesFile;
         this.init();
     }
 
     public ClientSymmetricEngine(Properties properties) {
+        setDeploymentType("client");
         this.properties = properties;
         this.init();
-    }
-
-    public DataSource getDataSource() {
-        return ((JdbcSqlTemplate) platform.getSqlTemplate()).getDataSource();
     }
 
     public static BasicDataSource createBasicDataSource(File propsFile) {
@@ -199,6 +195,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 resources.add(new ClassPathResource("/symmetric-console-default.properties"));
                 resources.add(new FileSystemResource("../conf/symmetric.properties"));
                 resources.add(new ClassPathResource("/symmetric.properties"));
+                resources.add(new ClassPathResource("/symmetric-console-default.properties"));
                 resources.add(new ClassPathResource("/symmetric-override.properties"));
                 if (propertiesFile != null && propertiesFile.exists()) {
                     resources.add(new FileSystemResource(propertiesFile.getAbsolutePath()));

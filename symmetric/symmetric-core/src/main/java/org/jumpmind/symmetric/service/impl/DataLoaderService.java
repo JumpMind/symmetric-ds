@@ -20,9 +20,11 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -128,6 +130,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.filters = new ArrayList<IDatabaseWriterFilter>();
         this.filters.add(new ConfigurationChangedFilter(parameterService, configurationService,
                 triggerRouterService, transformService));
+    }
+    
+    public List<IncomingBatch> loadDataBatch(String batchData) throws IOException {
+        InternalIncomingTransport transport = new InternalIncomingTransport(new BufferedReader(new StringReader(batchData)));
+        return loadDataFromTransport(nodeService.findIdentityNodeId(), transport);
     }
 
     /**

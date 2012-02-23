@@ -19,6 +19,8 @@ public interface ISqlTemplate {
     
     public <T> T queryForObject(String sql, ISqlRowMapper<T> mapper, Object... params);
     
+    public int queryForInt(String sql, Map<String,Object> params);
+    
     public int queryForInt(String sql, Object... args);
     
     public String queryForString(String sql, Object... args);
@@ -57,6 +59,8 @@ public interface ISqlTemplate {
     public <T, W> Map<T, W> query(String sql, String keyCol, String valueCol, Object[] params,
             int[] types);
 
+    public int update(boolean autoCommit, boolean failOnError, int commitRate, ISqlResultsListener listener, String... sql);
+    
     public int update(boolean autoCommit, boolean failOnError, int commitRate, String... sql);
 
     public int update(String sql, Object[] values, int[] types);
