@@ -23,9 +23,6 @@ package org.jumpmind.symmetric.util;
 
 import java.util.Random;
 
-import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.IParameterService;
-
 /**
  * Use runtime configuration specific seeding to get a random number for use in
  * time slotting nodes to help stagger load.
@@ -38,14 +35,6 @@ public class RandomTimeSlot {
 
     public RandomTimeSlot() {
         random = new Random();
-    }
-
-    public RandomTimeSlot(IParameterService parameterService) {
-        long seed = fromExternalId(parameterService.getExternalId());
-        random = new Random(seed);
-        if (maxValue < 0) {
-            maxValue = parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS);
-        }
     }
 
     public RandomTimeSlot(String externalId, int maxValue) {
@@ -66,7 +55,4 @@ public class RandomTimeSlot {
         return nextValue == 0 ? 1 : nextValue;
     }
 
-    public void setMaxValue(int maxValue) {
-        this.maxValue = maxValue;
-    }
 }

@@ -294,7 +294,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             long totalNetworkMillis = System.currentTimeMillis();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 IDataReader dataReader = new ProtocolDataReader(transport.open());
-                IDataWriter dataWriter = new StagingDataWriter(Constants.STAGING_CATEGORY_INCOMING,
+                IDataWriter dataWriter = new StagingDataWriter(sourceNodeId, Constants.STAGING_CATEGORY_INCOMING,
                         stagingManager, new LoadIntoDatabaseOnArrivalListener(sourceNodeId,
                                 listener));
                 new DataProcessor(dataReader, dataWriter).process();
@@ -315,14 +315,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             }
         } catch (Exception ex) {
-            log(ex);
+            logAndRethrow(ex);
         } finally {
             transport.close();
         }
         return listener.getBatchesProcessed();
     }
 
-    protected void log(Exception ex) throws IOException {
+    protected void logAndRethrow(Exception ex) throws IOException {
         if (ex instanceof RegistrationRequiredException) {
             throw (RegistrationRequiredException) ex;
         } else if (ex instanceof ConnectException) {

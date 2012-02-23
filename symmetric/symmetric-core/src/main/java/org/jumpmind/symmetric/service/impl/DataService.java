@@ -274,9 +274,14 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertDataEvent(ISqlTransaction transaction, long dataId, long batchId,
             String routerId) {
         try {
-            transaction.prepareAndExecute(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId,
-                    StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId },
-                    new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR });
+            transaction
+                    .prepareAndExecute(getSql("insertIntoDataEventSql"),
+                            new Object[] {
+                                    dataId,
+                                    batchId,
+                                    StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID
+                                            : routerId }, new int[] { Types.NUMERIC, Types.NUMERIC,
+                                    Types.VARCHAR });
         } catch (RuntimeException ex) {
             log.error("Could not insert a data event: data_id={} batch_id={} router_id={}",
                     new Object[] { dataId, batchId, routerId });
@@ -290,9 +295,14 @@ public class DataService extends AbstractService implements IDataService {
             transaction.prepare(getSql("insertIntoDataEventSql"));
             for (DataEvent dataEvent : events) {
                 String routerId = dataEvent.getRouterId();
-                transaction.addRow(dataEvent,new Object[] { dataEvent.getDataId(), dataEvent.getBatchId(),
-                        StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId },
-                        new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR });
+                transaction.addRow(
+                        dataEvent,
+                        new Object[] {
+                                dataEvent.getDataId(),
+                                dataEvent.getBatchId(),
+                                StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID
+                                        : routerId }, new int[] { Types.NUMERIC, Types.NUMERIC,
+                                Types.VARCHAR });
             }
             transaction.flush();
         }
@@ -804,28 +814,15 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    private final String getOrderByDataId(boolean descending) {
-        return descending ? " order by d.data_id desc" : "order by d.data_id asc";
-    }
-
-    public List<Number> listDataIds(long batchId, boolean descending) {
-        return sqlTemplate.query(getSql("selectEventDataIdsSql", getOrderByDataId(descending)),
+    public List<Number> listDataIds(long batchId) {
+        return sqlTemplate.query(getSql("selectEventDataIdsSql", " order by d.data_id asc"),
                 new NumberMapper(), batchId);
     }
 
     public List<Data> listData(long batchId, long startDataId, String channelId,
-            boolean descending, final int maxRowsToRetrieve) {
-        final List<Data> list = new ArrayList<Data>(maxRowsToRetrieve);
-        // TODO
-        // handleDataSelect(batchId, startDataId, channelId, descending,
-        // new IModelRetrievalHandler<Data, String>() {
-        // public boolean retrieved(Data data, String routerId, int count)
-        // throws IOException {
-        // list.add(data);
-        // return count < maxRowsToRetrieve;
-        // }
-        // });
-        return list;
+            final int maxRowsToRetrieve) {
+        return sqlTemplate.query(getDataSelectSql(batchId, startDataId, channelId),
+                maxRowsToRetrieve, this.dataMapper, batchId, startDataId);
     }
 
     public Data mapData(Row row) {
@@ -834,17 +831,14 @@ public class DataService extends AbstractService implements IDataService {
 
     public ISqlReadCursor<Data> selectDataFor(Batch batch) {
         return sqlTemplate.queryForCursor(
-                getDataSelectSql(batch.getBatchId(), -1l, batch.getChannelId(), false), dataMapper,
+                getDataSelectSql(batch.getBatchId(), -1l, batch.getChannelId()), dataMapper,
                 new Object[] { batch.getBatchId() }, new int[] { Types.NUMERIC });
     }
 
-    protected String getDataSelectSql(long batchId, long startDataId, String channelId,
-            boolean descending) {
-        String orderBy = getOrderByDataId(descending);
-        String startAtDataIdSql = startDataId >= 0l ? (descending ? " and d.data_id <= ? "
-                : " and d.data_id >= ? ") : "";
+    protected String getDataSelectSql(long batchId, long startDataId, String channelId) {
+        String startAtDataIdSql = startDataId >= 0l ? " and d.data_id >= ? " : "";
         return symmetricDialect.massageDataExtractionSql(
-                getSql("selectEventDataToExtractSql", startAtDataIdSql, orderBy),
+                getSql("selectEventDataToExtractSql", startAtDataIdSql, " order by d.data_id asc"),
                 configurationService.getNodeChannel(channelId, false).getChannel());
     }
 

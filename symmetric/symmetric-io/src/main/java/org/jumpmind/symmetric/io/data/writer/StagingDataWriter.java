@@ -17,14 +17,14 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     
     protected String category;
 
-    public StagingDataWriter(String category, IStagingManager stagingManager,
+    public StagingDataWriter(String sourceNodeId, String category, IStagingManager stagingManager,
             IProtocolDataWriterListener... listeners) {
-        this(category, stagingManager, toList(listeners));
+        this(sourceNodeId, category, stagingManager, toList(listeners));
     }
 
-    public StagingDataWriter(String category, IStagingManager stagingManager,
+    public StagingDataWriter(String sourceNodeId, String category, IStagingManager stagingManager,
             List<IProtocolDataWriterListener> listeners) {
-        super(listeners);
+        super(sourceNodeId, listeners);
         this.category = category;
         this.stagingManager = stagingManager;
     }

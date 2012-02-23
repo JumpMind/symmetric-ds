@@ -162,11 +162,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             TriggerHistory triggerHistory = triggerRouterService
                     .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger().getTriggerId());
             if (triggerHistory == null) {
-                triggerHistory = new TriggerHistory(symmetricDialect.getTable(
-                        triggerRouter.getTrigger(), false), triggerRouter.getTrigger());
+                Table table = symmetricDialect.getTable(triggerRouter.getTrigger(), false);
+                if (table == null) {
+                    throw new IllegalStateException("Could not find a required table: "
+                            + triggerRouter.getTrigger().getSourceTableName());
+                }
+                triggerHistory = new TriggerHistory(table, triggerRouter.getTrigger());
                 triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
             }
-            
+
             StringBuilder sql = new StringBuilder(symmetricDialect.createPurgeSqlFor(node,
                     triggerRouter));
             addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger().getSourceTableName(),
@@ -204,7 +208,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         ExtractDataReader dataReader = new ExtractDataReader(this.symmetricDialect.getPlatform(),
                 source);
 
-        ProtocolDataWriter dataWriter = new ProtocolDataWriter(writer);
+        ProtocolDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer);
         DataProcessor processor = new DataProcessor(dataReader, dataWriter);
         processor.process();
 
@@ -308,10 +312,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         if (streamToFileEnabled) {
             transformExtractWriter = createTransformDataWriter(identity, targetNode,
-                    new StagingDataWriter(Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
+                    new StagingDataWriter(nodeService.findIdentityNodeId(), Constants.STAGING_CATEGORY_OUTGOING, stagingManager));
         } else {
             transformExtractWriter = createTransformDataWriter(identity, targetNode,
-                    new ProtocolDataWriter(targetTransport.open()));
+                    new ProtocolDataWriter(nodeService.findIdentityNodeId(), targetTransport.open()));
         }
 
         final long maxBytesToSync = parameterService
@@ -320,7 +324,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         int batchesSentCount = 0;
 
         OutgoingBatch currentBatch = null;
-        
+
         try {
             IDataWriter dataWriter = null;
 
@@ -387,7 +391,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (extractedBatch != null) {
                             IDataReader dataReader = new ProtocolDataReader(extractedBatch);
                             if (dataWriter == null) {
-                                dataWriter = new ProtocolDataWriter(targetTransport.open());
+                                dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(), targetTransport.open());
                             }
                             new DataProcessor(dataReader, dataWriter).process();
                         }
@@ -449,8 +453,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public boolean extractBatchRange(Writer writer, long startBatchId, long endBatchId) {
-        // TODO
-        return false;
+        boolean foundBatch = false;
+        for (long batchId = startBatchId; batchId <= endBatchId; batchId++) {
+            OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId);
+            Node targetNode = nodeService.findNode(batch.getNodeId());
+            IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
+                    new SelectFromSymDataSource(batch, targetNode));
+            new DataProcessor(dataReader, createTransformDataWriter(nodeService.findIdentity(),
+                    targetNode, new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer))).process();
+            foundBatch = true;
+
+        }
+        return foundBatch;
     }
 
     protected TransformWriter createTransformDataWriter(Node identity, Node targetNode,

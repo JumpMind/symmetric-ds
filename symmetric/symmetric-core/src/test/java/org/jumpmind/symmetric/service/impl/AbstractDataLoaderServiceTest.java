@@ -97,7 +97,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
 
     @Test
     public void testStatistics() throws Exception {
-        Level old = setLoggingLevelForTest(Level.DEBUG);
+        Level old = setLoggingLevelForTest(Level.FATAL);
         String[] updateValues = new String[TEST_COLUMNS.length + 1];
         updateValues[0] = updateValues[updateValues.length - 1] = getNextId();
         updateValues[2] = updateValues[4] = "required string";
@@ -377,10 +377,10 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
-        writer.write("UnknownTokenOutsideBatch");
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         String nextBatchId = getNextBatchId();
+        writer.write("UnknownTokenOutsideBatch");        
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writer.writeRecord(new String[] { CsvConstants.TABLE, TEST_TABLE });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);

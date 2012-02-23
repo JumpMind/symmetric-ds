@@ -195,7 +195,7 @@ public abstract class NamedParameterUtils {
             Map<String, Object> paramSource) {
         String originalSql = parsedSql.getOriginalSql();
         StringBuilder actualSql = new StringBuilder();
-        List paramNames = parsedSql.getParameterNames();
+        List<String> paramNames = parsedSql.getParameterNames();
         int lastIndex = 0;
         for (int i = 0; i < paramNames.size(); i++) {
             String paramName = (String) paramNames.get(i);
@@ -205,8 +205,8 @@ public abstract class NamedParameterUtils {
             actualSql.append(originalSql.substring(lastIndex, startIndex));
             if (paramSource != null && paramSource.containsKey(paramName)) {
                 Object value = paramSource.get(paramName);
-                if (value instanceof Collection) {
-                    Iterator entryIter = ((Collection) value).iterator();
+                if (value instanceof Collection<?>) {
+                    Iterator<?> entryIter = ((Collection<?>) value).iterator();
                     int k = 0;
                     while (entryIter.hasNext()) {
                         if (k > 0) {
@@ -263,7 +263,7 @@ public abstract class NamedParameterUtils {
             String paramName = paramNames.get(i);
             Object value = paramSource.get(paramName);
             if (value instanceof Collection<?>) {
-                Collection<?> collection = (Collection<?>)value;
+                Collection<?> collection = (Collection<?>) value;
                 for (Object object : collection) {
                     paramArray.add(object);
                 }

@@ -85,14 +85,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
     
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, Date startAtCreateTime, boolean ascending) {
+            List<IncomingBatch.Status> statuses, boolean ascending) {
         if (nodeIds != null && nodeIds.size() > 0 && channels != null && channels.size() > 0
                 && statuses != null && statuses.size() > 0) {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("NODES", nodeIds);
             params.put("CHANNELS", channels);
             params.put("STATUSES", toStringList(statuses));
-            params.put("CREATE_TIME", startAtCreateTime);
             String sql = getSql("selectCreateTimePrefixSql",
                     containsOnlyErrorStatus(statuses) ? "listIncomingBatchesInErrorSql"
                             : "listIncomingBatchesSql",  ascending ? " order by create_time" : " order by create_time desc");

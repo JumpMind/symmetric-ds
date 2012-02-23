@@ -26,6 +26,8 @@ import java.util.concurrent.ScheduledFuture;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +90,9 @@ abstract public class AbstractJob implements Runnable, IJob {
         this.cronExpression = engine.getParameterService().getString(jobName + ".cron", null);
         this.timeBetweenRunsInMs = engine.getParameterService().getInt(jobName + ".period.time.ms",
                 -1);
-        this.randomTimeSlot = new RandomTimeSlot(engine.getParameterService());
+        IParameterService parameterService = engine.getParameterService();
+        this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(),
+                parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));
     }
 
     public boolean isAutoStartConfigured() {
