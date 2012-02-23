@@ -34,9 +34,12 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
     protected List<IProtocolDataWriterListener> listeners;
+    
+    protected String sourceNodeId;
 
-    public AbstractProtocolDataWriter(List<IProtocolDataWriterListener> listeners) {
+    public AbstractProtocolDataWriter(String sourceNodeId, List<IProtocolDataWriterListener> listeners) {
         this.listeners = listeners;
+        this.sourceNodeId = sourceNodeId;
     }
 
     public void open(DataContext context) {
@@ -57,7 +60,6 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
         }
 
         if (flushNodeId) {
-            String sourceNodeId = batch.getNodeId();
             if (StringUtils.isNotBlank(sourceNodeId)) {
                 println(CsvConstants.NODEID, sourceNodeId);
             }

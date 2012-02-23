@@ -56,7 +56,7 @@ public class StagingDataWriterTest {
 
         StagingManager stagingManager = new StagingManager(threshold, 0l, DIR.getAbsolutePath());
         ProtocolDataReader reader = new ProtocolDataReader(origCsv);
-        StagingDataWriter writer = new StagingDataWriter("test", stagingManager, new BatchListener());
+        StagingDataWriter writer = new StagingDataWriter("aaa", "test", stagingManager, new BatchListener());
         DataProcessor processor = new DataProcessor(reader, writer);
         processor.process();
 

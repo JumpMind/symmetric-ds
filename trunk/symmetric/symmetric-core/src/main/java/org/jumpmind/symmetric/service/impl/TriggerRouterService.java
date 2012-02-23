@@ -45,7 +45,6 @@ import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.ext.IExtraConfigTables;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -92,7 +91,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     private IStatisticManager statisticManager;
 
-    private List<IExtraConfigTables> extraConfigTables = new ArrayList<IExtraConfigTables>();
+    private List<String> extraConfigTables = new ArrayList<String>();
 
     /**
      * Cache the history for performance. History never changes and does not
@@ -273,8 +272,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         String majorVersion = getMajorVersion(version);
         List<String> tables = new ArrayList<String>(rootConfigChannelTableNames.get(majorVersion));
         if (extraConfigTables != null) {
-            for (IExtraConfigTables extraTables : extraConfigTables) {
-                tables.addAll(extraTables.provideTableNames());
+            for (String extraTable : extraConfigTables) {
+                tables.add(extraTable);
             }
         }
         
@@ -1310,8 +1309,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         this.triggerCreationListeners.add(l);
     }
 
-    public void addExtraConfigTables(IExtraConfigTables extension) {
-        this.extraConfigTables.add(extension);
+    public void addExtraConfigTable(String table) {
+        if (this.extraConfigTables == null) {
+            this.extraConfigTables = new ArrayList<String>();
+        }
+        this.extraConfigTables.add(table);
     }
 
     public Map<Trigger, Exception> getFailedTriggers() {

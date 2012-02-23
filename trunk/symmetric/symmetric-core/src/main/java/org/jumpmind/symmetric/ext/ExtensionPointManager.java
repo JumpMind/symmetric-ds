@@ -230,10 +230,6 @@ public class ExtensionPointManager implements IExtensionPointManager {
             engine.getNodeService().addOfflineServerListener((IOfflineServerListener) ext);
         }
 
-        if (ext instanceof IExtraConfigTables) {
-            engine.getTriggerRouterService().addExtraConfigTables((IExtraConfigTables) ext);
-        }
-
         if (ext instanceof IDatabaseUpgradeListener) {
             engine.getSymmetricDialect().addDatabaseUpgradeListener((IDatabaseUpgradeListener) ext);
         }

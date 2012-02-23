@@ -12,12 +12,12 @@ public class ProtocolDataWriter extends AbstractProtocolDataWriter {
 
     private BufferedWriter writer;
 
-    public ProtocolDataWriter(Writer writer) {
-        this(null, writer);
+    public ProtocolDataWriter(String sourceNodeId, Writer writer) {
+        this(sourceNodeId, null, writer);
     }
 
-    public ProtocolDataWriter(List<IProtocolDataWriterListener> listeners, Writer writer) {
-        super(listeners);
+    public ProtocolDataWriter(String sourceNodeId, List<IProtocolDataWriterListener> listeners, Writer writer) {
+        super(sourceNodeId, listeners);
         if (writer instanceof BufferedWriter) {
             this.writer = (BufferedWriter) writer;
         } else {
