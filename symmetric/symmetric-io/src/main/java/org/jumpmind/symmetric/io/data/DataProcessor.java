@@ -20,8 +20,8 @@ public class DataProcessor {
     public DataProcessor() {
     }
 
-    public DataProcessor(IDataReader dataReader, IDataWriter dataWriter) {
-        this(dataReader, dataWriter, null);
+    public DataProcessor(IDataReader dataReader, IDataWriter defaultDataWriter) {
+        this(dataReader, defaultDataWriter, null);
     }
 
     public DataProcessor(IDataReader dataReader, IDataWriter defaultDataWriter,
@@ -31,6 +31,13 @@ public class DataProcessor {
         this.listener = listener;
     }
 
+    /**
+     * This method may be overridden in order to choose different
+     * {@link IDataWriter} based on the batch that is being written.
+     * 
+     * @param batch The batch that is about to be written
+     * @return The data writer to use for the writing of the batch
+     */
     protected IDataWriter chooseDataWriter(Batch batch) {
         return this.defaultDataWriter;
     }
