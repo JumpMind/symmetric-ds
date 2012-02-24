@@ -89,6 +89,8 @@ public class SymmetricLauncher {
     private static final String OPTION_AUTO_CREATE = "auto-create";
 
     private static final String OPTION_PORT_SERVER = "port";
+    
+    private static final String OPTION_HOST_SERVER = "host";
 
     private static final String OPTION_SECURE_PORT_SERVER = "secure-port";
 
@@ -309,6 +311,7 @@ public class SymmetricLauncher {
         addOption(options, "T", OPTION_START_SECURE_SERVER, false);
         addOption(options, "U", OPTION_START_MIXED_SERVER, false);
         addOption(options, "P", OPTION_PORT_SERVER, true);
+        addOption(options, "H", OPTION_HOST_SERVER, true);
         addOption(options, "Q", OPTION_SECURE_PORT_SERVER, true);
         addOption(options, "I", OPTION_MAX_IDLE_TIME, true);
         addOption(options, "nnio", OPTION_NO_NIO, false);
@@ -350,6 +353,7 @@ public class SymmetricLauncher {
     protected boolean executeOptions(CommandLine line) throws Exception {
 
         int port = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT);
+        String host = null;
         int securePort = Integer.parseInt(SymmetricWebServer.DEFAULT_HTTPS_PORT);
         String webDir = SymmetricWebServer.DEFAULT_WEBAPP_DIR;
         int maxIdleTime = SymmetricWebServer.DEFAULT_MAX_IDLE_TIME;
@@ -359,6 +363,10 @@ public class SymmetricLauncher {
 
         if (line.hasOption(OPTION_PORT_SERVER)) {
             port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
+        }
+        
+        if (line.hasOption(OPTION_HOST_SERVER)) {
+            host = line.getOptionValue(OPTION_HOST_SERVER);
         }
         
         if (line.hasOption(OPTION_SECURE_PORT_SERVER)) {
@@ -519,6 +527,7 @@ public class SymmetricLauncher {
         if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER)
                 || line.hasOption(OPTION_START_MIXED_SERVER)) {
             webServer = new SymmetricWebServer(chooseWebDir(line, webDir), maxIdleTime, propertiesFile, join, noNio, noDirectBuffer);
+            webServer.setHost(host);
             if (line.hasOption(OPTION_START_SERVER)) {
                 webServer.start(port);
             } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
