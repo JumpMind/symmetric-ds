@@ -183,5 +183,13 @@ public class NodeChannel implements Serializable {
     public boolean isContainsBigLob() {
         return this.channel.isContainsBigLob();
     }
+    
+    public void setDataLoaderType(String type) {
+        channel.setDataLoaderType(type);
+    }
+    
+    public String getDataLoaderType() {
+        return channel.getDataLoaderType();
+    }
 
 }

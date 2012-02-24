@@ -89,7 +89,7 @@ abstract public class AbstractWriterTest extends AbstractDbTest {
     }
 
     protected long writeData(IDataWriter writer, TableCsvData... datas) {
-        DataContext context = new DataContext(null, writer);
+        DataContext context = new DataContext();
         writer.open(context);
         try {
             for (TableCsvData tableCsvData : datas) {

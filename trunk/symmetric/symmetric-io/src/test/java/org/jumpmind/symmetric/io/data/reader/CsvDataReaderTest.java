@@ -25,7 +25,7 @@ public class CsvDataReaderTest {
         endCsv(builder);
         
         ProtocolDataReader reader = new ProtocolDataReader(builder);
-        DataContext ctx = new DataContext(reader, null);
+        DataContext ctx = new DataContext(reader);
         reader.open(ctx);
         
         Batch batch = reader.nextBatch();
@@ -94,7 +94,7 @@ public class CsvDataReaderTest {
         endCsv(builder);
         
         ProtocolDataReader reader = new ProtocolDataReader(builder);
-        DataContext ctx = new DataContext(reader, null);
+        DataContext ctx = new DataContext(reader);
         reader.open(ctx);
         
         Batch batch = reader.nextBatch();

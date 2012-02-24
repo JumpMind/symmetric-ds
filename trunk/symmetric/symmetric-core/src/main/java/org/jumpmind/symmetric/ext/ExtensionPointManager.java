@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
+import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
@@ -149,6 +150,13 @@ public class ExtensionPointManager implements IExtensionPointManager {
                     INodePasswordFilter.class, true));
             engine.getNodeService().setNodePasswordFilter((INodePasswordFilter) ext);
             engine.getRegistrationService().setNodePasswordFilter((INodePasswordFilter) ext);
+        }
+        
+        if (ext instanceof IDataLoaderFactory) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
+                    IDataLoaderFactory.class, true));
+            engine.getDataLoaderService().addDataLoaderFactory((IDataLoaderFactory)ext);
         }
 
         if (ext instanceof IAcknowledgeEventListener) {

@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
@@ -42,8 +43,10 @@ public interface IDataLoaderService {
     public void loadDataFromPull(Node remote, RemoteNodeStatus status) throws IOException;
 
     public void loadDataFromPush(String sourceNodeId, InputStream in, OutputStream out) throws IOException;
+    
+    public void addDataLoaderFactory(IDataLoaderFactory factory);
 
-    public void addDatabaseWriterFilter(IDatabaseWriterFilter filter);    
+    public void addDatabaseWriterFilter(IDatabaseWriterFilter filter);            
 
     public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter);
     
