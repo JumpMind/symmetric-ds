@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.io.data.reader;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlReadCursor;
@@ -71,17 +73,22 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
                 StringUtils.isNotBlank(whereClause) ? " where " + whereClause : "");
         this.cursor = platform.getSqlTemplate().queryForCursor(sql, new ISqlRowMapper<CsvData>() {
             public CsvData mapRow(Row row) {
-                return new CsvData(DataEventType.INSERT, toPkData(row), toRowData(row));
+                return new CsvData(DataEventType.INSERT, toStringData(row, table.getPrimaryKeyColumns()), toStringData(row, table.getColumns()));
             }
         });
     }
 
-    protected String[] toRowData(Row row) {
-        return null;
-    }
-
-    protected String[] toPkData(Row row) {
-        return null;
+    protected String[] toStringData(Row row, Column[] columns) {
+        String[] stringValues = new String[columns.length];
+        for (int i = 0; i < columns.length; i++) {            
+            Object value = row.get(columns[i].getName());
+            if (value instanceof byte[]) {
+                stringValues[i] = new String(Base64.encodeBase64((byte[])value));
+            } else if (value != null) {
+                stringValues[i] = value.toString();
+            }
+        }
+        return stringValues;
     }
 
     public boolean requiresLobsSelectedFromSource() {
