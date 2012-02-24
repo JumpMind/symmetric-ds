@@ -2,11 +2,13 @@ package org.jumpmind.symmetric.db.hsqldb;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerTemplate;
+import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 
-public class HsqlDbTriggerTemplate extends TriggerTemplate {
+public class HsqlDbTriggerTemplate extends AbstractTriggerTemplate {
 
-    public HsqlDbTriggerTemplate() { 
+    public HsqlDbTriggerTemplate(ISymmetricDialect symmetricDialect) {
+        super(symmetricDialect); 
         functionInstalledSql = "select count(*) from INFORMATION_SCHEMA.SYSTEM_ALIASES where ALIAS='$(functionName)'" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else concat(concat(''\"'',replace(replace($(tableAlias)\"$(columnName)\",''\\'',''\\\\''),''\"'',''\\\"'')),''\"'') end" ;

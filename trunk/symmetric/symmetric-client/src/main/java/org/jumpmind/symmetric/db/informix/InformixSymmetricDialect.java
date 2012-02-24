@@ -31,7 +31,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     
     public InformixSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);       
-        this.triggerText = new InformixTriggerTemplate();
+        this.triggerText = new InformixTriggerTemplate(this);
     }    
 
     @Override

@@ -4,7 +4,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 
-public interface IExtractWriterSource {
+public interface IExtractDataReaderSource {
     
     public Batch getBatch();
     

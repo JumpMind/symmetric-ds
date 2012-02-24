@@ -2,11 +2,13 @@ package org.jumpmind.symmetric.db.postgresql;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerTemplate;
+import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 
-public class PostgreSqlTriggerTemplate extends TriggerTemplate {
+public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 
-    public PostgreSqlTriggerTemplate() { 
+    public PostgreSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
+        super(symmetricDialect);
         functionInstalledSql = "select count(*) from information_schema.routines " + 
 "                        where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;
         emptyColumnTemplate = "''" ;

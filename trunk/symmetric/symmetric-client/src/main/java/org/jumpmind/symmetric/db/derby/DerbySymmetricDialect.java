@@ -33,7 +33,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
 
     public DerbySymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new DerbyTriggerTemplate();
+        this.triggerText = new DerbyTriggerTemplate(this);
     }
 
     @Override

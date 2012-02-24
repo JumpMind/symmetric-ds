@@ -27,9 +27,9 @@ public class ExtractDataReader implements IDataReader {
 
     protected IDatabasePlatform platform;
 
-    protected List<IExtractWriterSource> sourcesToUse;
+    protected List<IExtractDataReaderSource> sourcesToUse;
 
-    protected IExtractWriterSource currentSource;
+    protected IExtractDataReaderSource currentSource;
 
     protected Batch batch;
 
@@ -37,14 +37,14 @@ public class ExtractDataReader implements IDataReader {
 
     protected CsvData data;
 
-    public ExtractDataReader(IDatabasePlatform platform, IExtractWriterSource source) {
-        this.sourcesToUse = new ArrayList<IExtractWriterSource>();
+    public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source) {
+        this.sourcesToUse = new ArrayList<IExtractDataReaderSource>();
         this.sourcesToUse.add(source);
         this.platform = platform;
     }
 
-    public ExtractDataReader(IDatabasePlatform platform, List<IExtractWriterSource> sources) {
-        this.sourcesToUse = new ArrayList<IExtractWriterSource>(sources);
+    public ExtractDataReader(IDatabasePlatform platform, List<IExtractDataReaderSource> sources) {
+        this.sourcesToUse = new ArrayList<IExtractDataReaderSource>(sources);
         this.platform = platform;
     }
 

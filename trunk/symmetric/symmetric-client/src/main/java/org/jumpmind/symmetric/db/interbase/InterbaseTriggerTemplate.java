@@ -2,11 +2,13 @@ package org.jumpmind.symmetric.db.interbase;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerTemplate;
+import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 
-public class InterbaseTriggerTemplate extends TriggerTemplate {
+public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 
-    public InterbaseTriggerTemplate() { 
+    public InterbaseTriggerTemplate(ISymmetricDialect symmetricDialect) {
+        super(symmetricDialect); 
         functionInstalledSql = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else '\"' || sym_escape($(tableAlias).$(columnName)) || '\"' end" ;

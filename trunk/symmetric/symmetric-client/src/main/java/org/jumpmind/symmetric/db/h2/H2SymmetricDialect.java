@@ -37,7 +37,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     
     public H2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new H2TriggerTemplate();
+        this.triggerText = new H2TriggerTemplate(this);
     }
     
     @Override

@@ -69,7 +69,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected IDatabasePlatform platform;
 
-    protected TriggerTemplate triggerText;
+    protected AbstractTriggerTemplate triggerText;
 
     protected IParameterService parameterService;
 
@@ -177,7 +177,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table,
             TriggerHistory triggerHistory, Channel channel) {
-        return triggerText.createInitalLoadSql(node, this, trigger, table, triggerHistory, channel)
+        return triggerText.createInitalLoadSql(node, trigger, table, triggerHistory, channel)
                 .trim();
     }
 
@@ -190,23 +190,23 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
             String whereClause) {
         return triggerText.createCsvDataSql(
-                this,
                 trigger,
                 triggerHistory,
                 platform.getTableFromCache(trigger.getSourceCatalogName(),
                         trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
-                channel, whereClause).trim();
+                channel,
+                whereClause).trim();
     }
 
     public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory,
             Channel channel, String whereClause) {
         return triggerText.createCsvPrimaryKeySql(
-                this,
                 trigger,
                 triggerHistory,
                 platform.getTableFromCache(trigger.getSourceCatalogName(),
                         trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
-                channel, whereClause).trim();
+                channel,
+                whereClause).trim();
     }
 
     public Set<String> getSqlKeywords() {
@@ -253,8 +253,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         String defaultCatalog = platform.getDefaultCatalog();
         String defaultSchema = platform.getDefaultSchema();
 
-        String triggerSql = triggerText.createTriggerDDL(AbstractSymmetricDialect.this, dml,
-                trigger, hist, channel, tablePrefix, table, defaultCatalog, defaultSchema);
+        String triggerSql = triggerText.createTriggerDDL(dml, trigger,
+                hist, channel, tablePrefix, table, defaultCatalog, defaultSchema);
 
         String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
                 table);
@@ -312,8 +312,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist,
             Channel channel, String tablePrefix, Table table) {
-        return triggerText.createPostTriggerDDL(this, dml, trigger, hist, channel, tablePrefix,
-                table, platform.getDefaultCatalog(), platform.getDefaultSchema());
+        return triggerText.createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix, table,
+                platform.getDefaultCatalog(), platform.getDefaultSchema());
     }
 
     public String getCreateSymmetricDDL() {
@@ -748,7 +748,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         databaseUpgradeListeners.add(listener);
     }
 
-    public TriggerTemplate getTriggerText() {
+    public AbstractTriggerTemplate getTriggerText() {
         return triggerText;
     }
 

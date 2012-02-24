@@ -44,7 +44,7 @@ import org.jumpmind.util.FormatUtils;
  * Responsible for generating dialect specific SQL such as trigger bodies and
  * functions
  */
-public class TriggerTemplate {
+abstract public class AbstractTriggerTemplate {
 
     protected static final String ORIG_TABLE_ALIAS = "orig";
 
@@ -77,7 +77,7 @@ public class TriggerTemplate {
     protected String timeColumnTemplate;
 
     protected String dateColumnTemplate;
-    
+
     protected String dateTimeWithTimeZoneTemplate;
 
     protected String clobColumnTemplate;
@@ -99,14 +99,20 @@ public class TriggerTemplate {
     protected String newColumnPrefix = "";
 
     protected String otherColumnTemplate;
-    
-    public String createInitalLoadSql(Node node, ISymmetricDialect dialect, TriggerRouter triggerRouter,
+
+    protected ISymmetricDialect symmetricDialect;
+
+    protected AbstractTriggerTemplate(ISymmetricDialect symmetricDialect) {
+        this.symmetricDialect = symmetricDialect;
+    }
+
+    public String createInitalLoadSql(Node node, TriggerRouter triggerRouter,
             Table table, TriggerHistory triggerHistory, Channel channel) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-        Column[] columns = dialect.orderColumns(triggerHistory.getParsedColumnNames(), table);
-        String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(),
-                dialect.getInitialLoadTableAlias(), "", columns, dialect, DataEventType.INSERT,
-                false, channel, triggerRouter.getTrigger()).columnString;
+        Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(), table);
+        String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
+                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT, false,
+                channel, triggerRouter.getTrigger()).columnString;
 
         sql = FormatUtils.replace("columns", columnsText, sql);
         sql = FormatUtils
@@ -114,45 +120,48 @@ public class TriggerTemplate {
                         "whereClause",
                         StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                                 : triggerRouter.getInitialLoadSelect(), sql);
-        sql = FormatUtils.replace("tableName", quote(table.getName(), dialect), sql);
-        sql = FormatUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger(), dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
+        sql = FormatUtils.replace("tableName", quote(table.getName()), sql);
+        sql = FormatUtils.replace("schemaName",
+                triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger())
+                        : getSourceTablePrefix(triggerHistory), sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
-                getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(),
-                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), sql);
+                getPrimaryKeyWhereString(symmetricDialect.getInitialLoadTableAlias(),
+                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()),
+                sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to
         // reference the node that is being loaded
         sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
         sql = FormatUtils.replace("nodeId", node.getNodeId(), sql);
-        sql = replaceDefaultSchemaAndCatalog(dialect, triggerRouter.getTrigger(), sql);
-        sql = FormatUtils.replace("prefixName", dialect.getTablePrefix(), sql);
+        sql = replaceDefaultSchemaAndCatalog(triggerRouter.getTrigger(), sql);
+        sql = FormatUtils.replace("prefixName", symmetricDialect.getTablePrefix(), sql);
         sql = FormatUtils.replace("oracleToClob",
                 triggerRouter.getTrigger().isUseCaptureLobs() ? "to_clob('')||" : "", sql);
 
         return sql;
     }
 
-    protected String getSourceTablePrefix(Trigger trigger, ISymmetricDialect symmetricDialect) {
-        String schemaPlus = (trigger.getSourceSchemaName() != null ?
-                trigger.getSourceSchemaName() + "." : "");
-        String catalogPlus = (trigger.getSourceCatalogName() != null ?
-                trigger.getSourceCatalogName() + "." : "")
+    protected String getSourceTablePrefix(Trigger trigger) {
+        String schemaPlus = (trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName()
+                + "." : "");
+        String catalogPlus = (trigger.getSourceCatalogName() != null ? trigger
+                .getSourceCatalogName() + "." : "")
                 + schemaPlus;
         return catalogPlus;
     }
-    
-    protected String getSourceTablePrefix(TriggerHistory triggerHistory, ISymmetricDialect symmetricDialect) {
-        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? 
-                triggerHistory.getSourceSchemaName() + "." : "");
-        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? 
-                triggerHistory.getSourceCatalogName() + "." : "")
+
+    protected String getSourceTablePrefix(TriggerHistory triggerHistory) {
+        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? quote(triggerHistory
+                .getSourceSchemaName()) + "." : "");
+        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? quote(triggerHistory
+                .getSourceCatalogName()) + "." : "")
                 + schemaPlus;
         return catalogPlus;
-    }    
+    }
 
-    protected String quote(String name, ISymmetricDialect symmetricDialect) {
+    protected String quote(String name) {
         String quote = symmetricDialect.getPlatform().getPlatformInfo().getIdentifierQuoteString();
         if (StringUtils.isNotBlank(quote)) {
             return quote + name + quote;
@@ -161,64 +170,71 @@ public class TriggerTemplate {
         }
     }
 
-    protected String replaceDefaultSchemaAndCatalog(ISymmetricDialect symmetricDialect, Trigger trigger,
-            String sql) {        
+    protected String replaceDefaultSchemaAndCatalog(Trigger trigger,
+            String sql) {
         String defaultCatalog = symmetricDialect.getPlatform().getDefaultCatalog();
         String defaultSchema = symmetricDialect.getPlatform().getDefaultSchema();
 
         boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
-        || trigger.getSourceSchemaName() != null;
-        
-        sql = FormatUtils.replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
-                && defaultSchema.length() > 0 ? defaultSchema + "." : "", sql);
+                || trigger.getSourceSchemaName() != null;
+
+        sql = replaceDefaultSchema(sql, defaultSchema);
 
         return FormatUtils.replace("defaultCatalog", resolveSchemaAndCatalogs
                 && defaultCatalog != null && defaultCatalog.length() > 0 ? defaultCatalog + "."
                 : "", sql);
     }
 
-    public String createCsvDataSql(ISymmetricDialect dialect, Trigger trigger, TriggerHistory triggerHistory, Table table,
-            Channel channel, String whereClause) {
+    public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory,
+            Table table, Channel channel, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = trigger.orderColumnsForTable(table);
-        String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(),
-                dialect.getInitialLoadTableAlias(), "", columns, dialect, DataEventType.INSERT,
-                false, channel, trigger).columnString;
+        String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
+                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT, false,
+                channel, trigger).columnString;
         sql = FormatUtils.replace("columns", columnsText, sql);
-        sql = FormatUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
-                sql);
+        sql = FormatUtils.replace("oracleToClob",
+                trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
 
-        sql = FormatUtils.replace("tableName", quote(table.getName(), dialect), sql);
-        sql = FormatUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
+        sql = FormatUtils.replace("tableName", quote(table.getName()), sql);
+        sql = FormatUtils.replace("schemaName",
+                triggerHistory == null ? getSourceTablePrefix(trigger)
+                        : getSourceTablePrefix(triggerHistory), sql);
 
         sql = FormatUtils.replace("whereClause", whereClause, sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
-                getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(),
-                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), sql);
+                getPrimaryKeyWhereString(symmetricDialect.getInitialLoadTableAlias(),
+                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()),
+                sql);
 
-        sql = replaceDefaultSchemaAndCatalog(dialect, trigger, sql);
+        sql = replaceDefaultSchemaAndCatalog(trigger, sql);
 
         return sql;
     }
 
-    public String createCsvPrimaryKeySql(ISymmetricDialect dialect, Trigger trigger, TriggerHistory triggerHistory, Table table,
-            Channel channel, String whereClause) {
+    public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory,
+            Table table, Channel channel, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = table.getPrimaryKeyColumns();
-        String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(),
-                dialect.getInitialLoadTableAlias(), "", columns, dialect, DataEventType.INSERT,
-                false, channel, trigger).toString();
+        String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
+                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT, false,
+                channel, trigger).toString();
         sql = FormatUtils.replace("columns", columnsText, sql);
-        sql = FormatUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
-                sql);
-        sql = FormatUtils.replace("tableName", quote(table.getName(), dialect), sql);
-        sql = FormatUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
+        sql = FormatUtils.replace("oracleToClob",
+                trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
+        sql = FormatUtils.replace("tableName", quote(table.getName()), sql);
+        sql = FormatUtils.replace("schemaName",
+                triggerHistory == null ? getSourceTablePrefix(trigger)
+                        : getSourceTablePrefix(triggerHistory), sql);
         sql = FormatUtils.replace("whereClause", whereClause, sql);
-        sql = FormatUtils.replace("primaryKeyWhereString",
-                getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), sql);
+        sql = FormatUtils.replace(
+                "primaryKeyWhereString",
+                getPrimaryKeyWhereString(symmetricDialect.getInitialLoadTableAlias(),
+                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()),
+                sql);
 
         return sql;
     }
@@ -232,24 +248,24 @@ public class TriggerTemplate {
         }
     }
 
-    public String createTriggerDDL(ISymmetricDialect dialect, DataEventType dml, Trigger trigger,
-            TriggerHistory history, Channel channel, String tablePrefix, Table table,
-            String defaultCatalog, String defaultSchema) {
+    public String createTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory history,
+            Channel channel, String tablePrefix, Table table, String defaultCatalog,
+            String defaultSchema) {
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
-                    + dialect.getPlatform().getName());
+                    + symmetricDialect.getPlatform().getName());
         }
-        return replaceTemplateVariables(dialect, dml, trigger, history, channel, tablePrefix,
-                table, defaultCatalog, defaultSchema, ddl);
+        return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, table,
+                defaultCatalog, defaultSchema, ddl);
     }
 
-    public String createPostTriggerDDL(ISymmetricDialect dialect, DataEventType dml, Trigger trigger,
+    public String createPostTriggerDDL(DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table table,
             String defaultCatalog, String defaultSchema) {
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
-        return replaceTemplateVariables(dialect, dml, trigger, history, channel, tablePrefix,
-                table, defaultCatalog, defaultSchema, ddl);
+        return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, table,
+                defaultCatalog, defaultSchema, ddl);
     }
 
     protected String getDefaultTargetTableName(Trigger trigger, TriggerHistory history) {
@@ -262,44 +278,46 @@ public class TriggerTemplate {
         return targetTableName;
     }
 
-    public String replaceTemplateVariables(ISymmetricDialect dialect, DataEventType dml, Trigger trigger,
+    public String replaceTemplateVariables(DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
 
-        ddl = FormatUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
+        ddl = FormatUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history),
+                ddl);
 
         ddl = FormatUtils.replace("triggerName", history.getTriggerNameForDmlType(dml), ddl);
         ddl = FormatUtils.replace("channelName", trigger.getChannelId(), ddl);
         ddl = FormatUtils.replace("triggerHistoryId",
                 Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
-        String triggerExpression = dialect.getTransactionTriggerExpression(defaultCatalog,
+        String triggerExpression = symmetricDialect.getTransactionTriggerExpression(defaultCatalog,
                 defaultSchema, trigger);
-        if (dialect.isTransactionIdOverrideSupported()
+        if (symmetricDialect.isTransactionIdOverrideSupported()
                 && !StringUtils.isBlank(trigger.getTxIdExpression())) {
             triggerExpression = trigger.getTxIdExpression();
         }
         ddl = FormatUtils.replace("txIdExpression",
-                dialect.preProcessTriggerSqlClause(triggerExpression), ddl);
+                symmetricDialect.preProcessTriggerSqlClause(triggerExpression), ddl);
 
         ddl = FormatUtils
                 .replace("externalSelect", (trigger.getExternalSelect() == null ? "null" : "("
-                        + dialect.preProcessTriggerSqlClause(trigger.getExternalSelect()) + ")"),
+                        + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect()) + ")"),
                         ddl);
 
         ddl = FormatUtils.replace("syncOnInsertCondition",
-                dialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()), ddl);
+                symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()), ddl);
         ddl = FormatUtils.replace("syncOnUpdateCondition",
-                dialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()), ddl);
+                symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()), ddl);
         ddl = FormatUtils.replace("syncOnDeleteCondition",
-                dialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()), ddl);
+                symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()), ddl);
         ddl = FormatUtils.replace("dataHasChangedCondition",
-                dialect.preProcessTriggerSqlClause(dialect.getDataHasChangedCondition(trigger)),
+                symmetricDialect.preProcessTriggerSqlClause(symmetricDialect.getDataHasChangedCondition(trigger)),
                 ddl);
-        ddl = FormatUtils.replace("sourceNodeExpression", dialect.getSourceNodeExpression(), ddl);
+        ddl = FormatUtils.replace("sourceNodeExpression", symmetricDialect.getSourceNodeExpression(), ddl);
 
-        ddl = FormatUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? "clob" : "long", ddl);
+        ddl = FormatUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? "clob" : "long",
+                ddl);
 
-        String syncTriggersExpression = dialect.getSyncTriggersExpression();
+        String syncTriggersExpression = symmetricDialect.getSyncTriggersExpression();
         ddl = FormatUtils.replace("syncOnIncomingBatchCondition",
                 trigger.isSyncOnIncomingBatch() ? Constants.ALWAYS_TRUE_CONDITION
                         : syncTriggersExpression, ddl);
@@ -307,57 +325,65 @@ public class TriggerTemplate {
 
         Column[] columns = trigger.orderColumnsForTable(table);
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue,
-                newColumnPrefix, columns, dialect, dml, false, channel, trigger);
+                newColumnPrefix, columns, dml, false, channel, trigger);
         ddl = FormatUtils.replace("columns", columnString.toString(), ddl);
 
-        ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
+        ddl = replaceDefaultSchemaAndCatalog(trigger, ddl);
 
         ddl = FormatUtils
                 .replace(
                         "virtualOldNewTable",
-                        buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix,
-                                table.getColumns()), ddl);
+                        buildVirtualTableSql(oldColumnPrefix, newColumnPrefix, table.getColumns()), ddl);
         ddl = FormatUtils.replace(
                 "oldColumns",
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
-                        dialect, dml, true, channel, trigger).toString(), ddl);
+                        dml, true, channel, trigger).toString(), ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
-        
+
         // some column templates need tableName and schemaName
-        ddl = FormatUtils.replace("tableName", quote(table.getName(), dialect), ddl);
-        ddl = FormatUtils.replace("schemaName", table.getQualifiedTablePrefix(null), ddl);
+        ddl = FormatUtils.replace("tableName", quote(table.getName()), ddl);
+        ddl = FormatUtils.replace("schemaName", table.getQualifiedTablePrefix(symmetricDialect.getPlatform().getPlatformInfo().getIdentifierQuoteString()), ddl);
 
         columns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace(
                 "oldKeys",
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
-                        dialect, dml, true, channel, trigger).toString(), ddl);
-        ddl = FormatUtils.replace("oldNewPrimaryKeyJoin",
-                aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns.length == 0 ? table.getColumns() : columns), ddl);
-        ddl = FormatUtils.replace("tableNewPrimaryKeyJoin",
-                aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns.length == 0 ? table.getColumns() : columns), ddl);
+                        dml, true, channel, trigger).toString(), ddl);
+        ddl = FormatUtils.replace(
+                "oldNewPrimaryKeyJoin",
+                aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue,
+                        columns.length == 0 ? table.getColumns() : columns), ddl);
+        ddl = FormatUtils.replace(
+                "tableNewPrimaryKeyJoin",
+                aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue,
+                        columns.length == 0 ? table.getColumns() : columns), ddl);
         ddl = FormatUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue
-                        : newTriggerValue, table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), ddl);
+                        : newTriggerValue, table.hasPrimaryKey() ? table.getPrimaryKeyColumns()
+                        : table.getColumns()), ddl);
 
-        ddl = FormatUtils.replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"),
-                ddl);
-        ddl = FormatUtils.replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"),
-                ddl);
-        
+        ddl = FormatUtils.replace("declareOldKeyVariables",
+                buildKeyVariablesDeclare(columns, "old"), ddl);
+        ddl = FormatUtils.replace("declareNewKeyVariables",
+                buildKeyVariablesDeclare(columns, "new"), ddl);
+
         String builtString = buildColumnNameString(oldTriggerValue, columns);
-        ddl = FormatUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
-        
+        ddl = FormatUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","
+                + builtString : "", ddl);
+
         builtString = buildColumnNameString(newTriggerValue, columns);
-        ddl = FormatUtils.replace("newKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
-        
+        ddl = FormatUtils.replace("newKeyNames", StringUtils.isNotBlank(builtString) ? ","
+                + builtString : "", ddl);
+
         builtString = buildKeyVariablesString(columns, "old");
-        ddl = FormatUtils.replace("oldKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
-        
+        ddl = FormatUtils.replace("oldKeyVariables", StringUtils.isNotBlank(builtString) ? ","
+                + builtString : "", ddl);
+
         builtString = buildKeyVariablesString(columns, "new");
-        ddl = FormatUtils.replace("newKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
-        
+        ddl = FormatUtils.replace("newKeyVariables", StringUtils.isNotBlank(builtString) ? ","
+                + builtString : "", ddl);
+
         ddl = FormatUtils.replace("varNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoinVar(newTriggerValue, "new", columns), ddl);
         ddl = FormatUtils.replace("varOldPrimaryKeyJoin",
@@ -369,28 +395,28 @@ public class TriggerTemplate {
         ddl = FormatUtils.replace("newColumnPrefix", newColumnPrefix, ddl);
         ddl = FormatUtils.replace("oldColumnPrefix", oldColumnPrefix, ddl);
         ddl = FormatUtils.replace("prefixName", tablePrefix, ddl);
-        ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
-        
-        ddl = FormatUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
-                ddl);
+        ddl = replaceDefaultSchemaAndCatalog(trigger, ddl);
+
+        ddl = FormatUtils.replace("oracleToClob",
+                trigger.isUseCaptureLobs() ? "to_clob('')||" : "", ddl);
 
         switch (dml) {
-        case DELETE:
-            ddl = FormatUtils.replace("curTriggerValue", oldTriggerValue, ddl);
-            ddl = FormatUtils.replace("curColumnPrefix", oldColumnPrefix, ddl);
-            break;
-        case INSERT:
-        case UPDATE:
-        default:
-            ddl = FormatUtils.replace("curTriggerValue", newTriggerValue, ddl);
-            ddl = FormatUtils.replace("curColumnPrefix", newColumnPrefix, ddl);
-            break;
+            case DELETE:
+                ddl = FormatUtils.replace("curTriggerValue", oldTriggerValue, ddl);
+                ddl = FormatUtils.replace("curColumnPrefix", oldColumnPrefix, ddl);
+                break;
+            case INSERT:
+            case UPDATE:
+            default:
+                ddl = FormatUtils.replace("curTriggerValue", newTriggerValue, ddl);
+                ddl = FormatUtils.replace("curColumnPrefix", newColumnPrefix, ddl);
+                break;
         }
         return ddl;
     }
 
-    protected String buildVirtualTableSql(ISymmetricDialect dialect, String oldTriggerValue,
-            String newTriggerValue, Column[] columns) {
+    protected String buildVirtualTableSql(String oldTriggerValue, String newTriggerValue,
+            Column[] columns) {
         if (oldTriggerValue.indexOf(".") >= 0) {
             oldTriggerValue = oldTriggerValue.substring(oldTriggerValue.indexOf(".") + 1);
         }
@@ -474,7 +500,7 @@ public class TriggerTemplate {
         return text;
     }
 
-    // TODO: move to DerbySqlTemplate or change language for use in all DBMSes
+    // TODO: move to DerbyTriggerTemplate or change language for use in all DBMSes
     protected String getPrimaryKeyWhereString(String alias, Column[] columns) {
         List<Column> columnsMinusLobs = new ArrayList<Column>();
         for (Column column : columns) {
@@ -482,41 +508,41 @@ public class TriggerTemplate {
                 columnsMinusLobs.add(column);
             }
         }
-        
+
         StringBuilder b = new StringBuilder("'");
         for (Column column : columnsMinusLobs) {
             b.append("\"").append(column.getName()).append("\"=");
             switch (column.getTypeCode()) {
-            case Types.BIT:
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.INTEGER:
-            case Types.BIGINT:
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-            case Types.BOOLEAN:
-                b.append("'").append(triggerConcatCharacter);
-                b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
-                        .append("\"))");
-                b.append(triggerConcatCharacter).append("'");
-                break;
-            case Types.CHAR:
-            case Types.VARCHAR:
-            case Types.LONGVARCHAR:
-                b.append("'''").append(triggerConcatCharacter);
-                b.append(alias).append(".\"").append(column.getName()).append("\"");
-                b.append(triggerConcatCharacter).append("'''");
-                break;
-            case Types.DATE:
-            case Types.TIMESTAMP:
-                b.append("{ts '''").append(triggerConcatCharacter);
-                b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
-                        .append("\"))");
-                b.append(triggerConcatCharacter).append("'''}");
-                break;
+                case Types.BIT:
+                case Types.TINYINT:
+                case Types.SMALLINT:
+                case Types.INTEGER:
+                case Types.BIGINT:
+                case Types.FLOAT:
+                case Types.REAL:
+                case Types.DOUBLE:
+                case Types.NUMERIC:
+                case Types.DECIMAL:
+                case Types.BOOLEAN:
+                    b.append("'").append(triggerConcatCharacter);
+                    b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
+                            .append("\"))");
+                    b.append(triggerConcatCharacter).append("'");
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                    b.append("'''").append(triggerConcatCharacter);
+                    b.append(alias).append(".\"").append(column.getName()).append("\"");
+                    b.append(triggerConcatCharacter).append("'''");
+                    break;
+                case Types.DATE:
+                case Types.TIMESTAMP:
+                    b.append("{ts '''").append(triggerConcatCharacter);
+                    b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
+                            .append("\"))");
+                    b.append(triggerConcatCharacter).append("'''}");
+                    break;
             }
             if (!column.equals(columnsMinusLobs.get(columnsMinusLobs.size() - 1))) {
                 b.append(" and ");
@@ -525,17 +551,17 @@ public class TriggerTemplate {
         b.append("'");
         return b.toString();
     }
-    
+
     protected boolean requiresWrappedBlobTemplateForBlobType() {
         return false;
     }
-    
+
     protected boolean requiresEmptyLobTemplateForDeletes() {
         return false;
     }
 
     protected ColumnString buildColumnString(String origTableAlias, String tableAlias,
-            String columnPrefix, Column[] columns, ISymmetricDialect symmetricDialect, DataEventType dml,
+            String columnPrefix, Column[] columns, DataEventType dml,
             boolean isOld, Channel channel, Trigger trigger) {
         String columnsText = "";
         boolean isLob = false;
@@ -549,100 +575,101 @@ public class TriggerTemplate {
             if (column != null) {
                 String templateToUse = null;
                 switch (column.getTypeCode()) {
-                case Types.TINYINT:
-                case Types.SMALLINT:
-                case Types.INTEGER:
-                case Types.BIGINT:
-                case Types.FLOAT:
-                case Types.REAL:
-                case Types.DOUBLE:
-                case Types.NUMERIC:
-                case Types.DECIMAL:
-                    templateToUse = numberColumnTemplate;
-                    break;
-                case Types.CHAR:
-                case Types.VARCHAR:
-                    templateToUse = stringColumnTemplate;
-                    break;
-                case Types.LONGVARCHAR:
-                    templateToUse = stringColumnTemplate;
-                    isLob = true;
-                    break;
-                case Types.SQLXML:
-                    templateToUse = xmlColumnTemplate;
-                    break;
-                case Types.ARRAY:
-                    templateToUse = arrayColumnTemplate;
-                    break;
-                case Types.CLOB:
-                    if (isOld && symmetricDialect.needsToSelectLobData()) {
-                        templateToUse = emptyColumnTemplate;
-                    } else {
-                        templateToUse = clobColumnTemplate;
-                    }
-                    isLob = true;
-                    break;
-                case Types.BLOB:
-                    if (requiresWrappedBlobTemplateForBlobType()) {
-                        templateToUse = wrappedBlobColumnTemplate;
-                        isLob = true;
-                        break;
-                    }
-                case Types.BINARY:
-                case Types.VARBINARY:
-                case Types.LONGVARBINARY:
-                    // SQL-Server ntext binary type
-                case -10:
-                    if (isOld && symmetricDialect.needsToSelectLobData()) {
-                        templateToUse = emptyColumnTemplate;
-                    } else {
-                        templateToUse = blobColumnTemplate;
-                    }
-                    isLob = true;
-                    break;
-                case Types.DATE:
-                    if (noDateColumnTemplate()) {
-                        templateToUse = datetimeColumnTemplate;
-                        break;
-                    }
-                    templateToUse = dateColumnTemplate;
-                    break;
-                case Types.TIME:
-                    if (noTimeColumnTemplate()) {
-                        templateToUse = datetimeColumnTemplate;
-                        break;
-                    }
-                    templateToUse = timeColumnTemplate;
-                    break;
-                case Types.TIMESTAMP:
-                    templateToUse = datetimeColumnTemplate;
-                    break;
-                case Types.BOOLEAN:
-                case Types.BIT:
-                    templateToUse = booleanColumnTemplate;
-                    break;
-                case Types.NULL:
-                case Types.OTHER:
-                	templateToUse = this.otherColumnTemplate;
-                	break;
-                case -101:
-                    if (StringUtils.isNotBlank(this.dateTimeWithTimeZoneTemplate)) {
-                        templateToUse = this.dateTimeWithTimeZoneTemplate;
-                        break;
-                    }                	
-                case Types.JAVA_OBJECT:
-                case Types.DISTINCT:
-                case Types.STRUCT:
-                case Types.REF:
-                case Types.DATALINK:
-                default:
-                    if (column.getJdbcTypeName() != null
-                            && column.getJdbcTypeName().equalsIgnoreCase("interval")) {
+                    case Types.TINYINT:
+                    case Types.SMALLINT:
+                    case Types.INTEGER:
+                    case Types.BIGINT:
+                    case Types.FLOAT:
+                    case Types.REAL:
+                    case Types.DOUBLE:
+                    case Types.NUMERIC:
+                    case Types.DECIMAL:
                         templateToUse = numberColumnTemplate;
                         break;
-                    }
-                    throw new NotImplementedException(column.getName() + " is of type "
-                            + column.getType() + " with JDBC type of " + column.getJdbcTypeName());
+                    case Types.CHAR:
+                    case Types.VARCHAR:
+                        templateToUse = stringColumnTemplate;
+                        break;
+                    case Types.LONGVARCHAR:
+                        templateToUse = stringColumnTemplate;
+                        isLob = true;
+                        break;
+                    case Types.SQLXML:
+                        templateToUse = xmlColumnTemplate;
+                        break;
+                    case Types.ARRAY:
+                        templateToUse = arrayColumnTemplate;
+                        break;
+                    case Types.CLOB:
+                        if (isOld && symmetricDialect.needsToSelectLobData()) {
+                            templateToUse = emptyColumnTemplate;
+                        } else {
+                            templateToUse = clobColumnTemplate;
+                        }
+                        isLob = true;
+                        break;
+                    case Types.BLOB:
+                        if (requiresWrappedBlobTemplateForBlobType()) {
+                            templateToUse = wrappedBlobColumnTemplate;
+                            isLob = true;
+                            break;
+                        }
+                    case Types.BINARY:
+                    case Types.VARBINARY:
+                    case Types.LONGVARBINARY:
+                        // SQL-Server ntext binary type
+                    case -10:
+                        if (isOld && symmetricDialect.needsToSelectLobData()) {
+                            templateToUse = emptyColumnTemplate;
+                        } else {
+                            templateToUse = blobColumnTemplate;
+                        }
+                        isLob = true;
+                        break;
+                    case Types.DATE:
+                        if (noDateColumnTemplate()) {
+                            templateToUse = datetimeColumnTemplate;
+                            break;
+                        }
+                        templateToUse = dateColumnTemplate;
+                        break;
+                    case Types.TIME:
+                        if (noTimeColumnTemplate()) {
+                            templateToUse = datetimeColumnTemplate;
+                            break;
+                        }
+                        templateToUse = timeColumnTemplate;
+                        break;
+                    case Types.TIMESTAMP:
+                        templateToUse = datetimeColumnTemplate;
+                        break;
+                    case Types.BOOLEAN:
+                    case Types.BIT:
+                        templateToUse = booleanColumnTemplate;
+                        break;
+                    case Types.NULL:
+                    case Types.OTHER:
+                        templateToUse = this.otherColumnTemplate;
+                        break;
+                    case -101:
+                        if (StringUtils.isNotBlank(this.dateTimeWithTimeZoneTemplate)) {
+                            templateToUse = this.dateTimeWithTimeZoneTemplate;
+                            break;
+                        }
+                    case Types.JAVA_OBJECT:
+                    case Types.DISTINCT:
+                    case Types.STRUCT:
+                    case Types.REF:
+                    case Types.DATALINK:
+                    default:
+                        if (column.getJdbcTypeName() != null
+                                && column.getJdbcTypeName().equalsIgnoreCase("interval")) {
+                            templateToUse = numberColumnTemplate;
+                            break;
+                        }
+                        throw new NotImplementedException(column.getName() + " is of type "
+                                + column.getType() + " with JDBC type of "
+                                + column.getJdbcTypeName());
                 }
 
                 if (dml == DataEventType.DELETE && isLob && requiresEmptyLobTemplateForDeletes()) {
@@ -664,7 +691,8 @@ public class TriggerTemplate {
                         symmetricDialect.getMasterCollation(), formattedColumnText);
 
                 if (isLob) {
-                    formattedColumnText = symmetricDialect.massageForLob(formattedColumnText, channel);
+                    formattedColumnText = symmetricDialect.massageForLob(formattedColumnText,
+                            channel);
                 }
 
                 columnsText = columnsText + "\n          " + formattedColumnText + lastCommandToken;
@@ -679,19 +707,20 @@ public class TriggerTemplate {
 
         columnsText = FormatUtils.replace("origTableAlias", origTableAlias, columnsText);
         columnsText = FormatUtils.replace("tableAlias", tableAlias, columnsText);
-        columnsText = FormatUtils.replace("prefixName", symmetricDialect.getTablePrefix(), columnsText);
+        columnsText = FormatUtils.replace("prefixName", symmetricDialect.getTablePrefix(),
+                columnsText);
         return new ColumnString(columnsText, isLob);
     }
 
     public String getOtherColumnTemplate() {
-		return otherColumnTemplate;
-	}
+        return otherColumnTemplate;
+    }
 
-	public void setOtherColumnTemplate(String otherColumnTemplate) {
-		this.otherColumnTemplate = otherColumnTemplate;
-	}
+    public void setOtherColumnTemplate(String otherColumnTemplate) {
+        this.otherColumnTemplate = otherColumnTemplate;
+    }
 
-	protected boolean noTimeColumnTemplate() {
+    protected boolean noTimeColumnTemplate() {
         return timeColumnTemplate == null || timeColumnTemplate.equals("null")
                 || timeColumnTemplate.trim().equals("");
     }
@@ -717,60 +746,60 @@ public class TriggerTemplate {
         for (int i = 0; i < columns.length; i++) {
             text += "declare @" + prefix + "pk" + i + " ";
             switch (columns[i].getTypeCode()) {
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.INTEGER:
-            case Types.BIGINT:
-                text += "bigint\n";
-                break;
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-                text += "decimal\n";
-                break;
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-                text += "float\n";
-                break;
-            case Types.CHAR:
-            case Types.VARCHAR:
-            case Types.LONGVARCHAR:
-                text += "varchar(1000)\n";
-                break;
-            case Types.DATE:
-                text += "date\n";
-                break;
-            case Types.TIME:
-                text += "time\n";
-                break;
-            case Types.TIMESTAMP:
-                text += "datetime\n";
-                break;
-            case Types.BOOLEAN:
-            case Types.BIT:
-                text += "bit\n";
-                break;
-            case Types.CLOB:
-                text += "varchar(max)\n";
-                break;
-            case Types.BLOB:
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-            case -10: // SQL-Server ntext binary type
-                text += "varbinary(max)\n";
-                break;
-            case Types.OTHER:
-        		text +="varbinary(max)\n";
-        		break;
-            default:
-                if (columns[i].getJdbcTypeName() != null
-                        && columns[i].getJdbcTypeName().equalsIgnoreCase("interval")) {
-                    text += "interval";
+                case Types.TINYINT:
+                case Types.SMALLINT:
+                case Types.INTEGER:
+                case Types.BIGINT:
+                    text += "bigint\n";
                     break;
-                }
-                throw new NotImplementedException(columns[i] + " is of type "
-                        + columns[i].getType());
+                case Types.NUMERIC:
+                case Types.DECIMAL:
+                    text += "decimal\n";
+                    break;
+                case Types.FLOAT:
+                case Types.REAL:
+                case Types.DOUBLE:
+                    text += "float\n";
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                    text += "varchar(1000)\n";
+                    break;
+                case Types.DATE:
+                    text += "date\n";
+                    break;
+                case Types.TIME:
+                    text += "time\n";
+                    break;
+                case Types.TIMESTAMP:
+                    text += "datetime\n";
+                    break;
+                case Types.BOOLEAN:
+                case Types.BIT:
+                    text += "bit\n";
+                    break;
+                case Types.CLOB:
+                    text += "varchar(max)\n";
+                    break;
+                case Types.BLOB:
+                case Types.BINARY:
+                case Types.VARBINARY:
+                case Types.LONGVARBINARY:
+                case -10: // SQL-Server ntext binary type
+                    text += "varbinary(max)\n";
+                    break;
+                case Types.OTHER:
+                    text += "varbinary(max)\n";
+                    break;
+                default:
+                    if (columns[i].getJdbcTypeName() != null
+                            && columns[i].getJdbcTypeName().equalsIgnoreCase("interval")) {
+                        text += "interval";
+                        break;
+                    }
+                    throw new NotImplementedException(columns[i] + " is of type "
+                            + columns[i].getType());
             }
         }
 
@@ -885,20 +914,25 @@ public class TriggerTemplate {
             String ddl = FormatUtils.replace("functionName", functionName,
                     this.functionTemplatesToInstall.get(functionKey));
             ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = FormatUtils.replace("defaultSchema", defaultSchema != null
-                    && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
+            ddl = replaceDefaultSchema(ddl, defaultSchema);
             return ddl;
         } else {
             return null;
         }
     }
 
+    protected String replaceDefaultSchema(String ddl, String defaultSchema) {
+        if (StringUtils.isNotBlank(defaultSchema)) {
+            ddl = FormatUtils.replace("defaultSchema", quote(defaultSchema) + ".", ddl);
+        }
+        return ddl;
+    }
+
     public String getFunctionInstalledSql(String functionName, String defaultSchema) {
         if (functionInstalledSql != null) {
             String ddl = FormatUtils.replace("functionName", functionName, functionInstalledSql);
             ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = FormatUtils.replace("defaultSchema", defaultSchema != null
-                    && defaultSchema.length() > 0 ? defaultSchema : "", ddl);
+            ddl = replaceDefaultSchema(ddl, defaultSchema);
             return ddl;
         } else {
             return null;
