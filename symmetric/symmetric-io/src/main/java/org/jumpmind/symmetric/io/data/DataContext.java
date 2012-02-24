@@ -17,8 +17,7 @@ public class DataContext extends Context {
     public DataContext() {
     }
 
-    public DataContext(IDataReader reader, IDataWriter writer) {
-        this.writer = writer;
+    public DataContext(IDataReader reader) {
         this.reader = reader;
     }
 
@@ -28,6 +27,10 @@ public class DataContext extends Context {
 
     public IDataWriter getWriter() {
         return writer;
+    }
+    
+    protected void setWriter(IDataWriter writer) {
+        this.writer = writer;
     }
 
     public void setBatch(Batch batch) {

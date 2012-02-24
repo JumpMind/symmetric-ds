@@ -76,8 +76,9 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.CHANNEL,
+                TestConstants.TEST_CHANNEL_ID });                
         String nextBatchId = getNextBatchId();
-        writer.writeRecord(new String[] { CsvConstants.CHANNEL, "test_channel" });
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
 
@@ -92,7 +93,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status. " + printDatabase());
-        assertEquals(batch.getChannelId(), "test_channel", "Wrong channel. " + printDatabase());
+        assertEquals(batch.getChannelId(), TestConstants.TEST_CHANNEL_ID, "Wrong channel. " + printDatabase());
     }
 
     @Test
@@ -108,6 +109,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.CHANNEL,
+                TestConstants.TEST_CHANNEL_ID });        
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
@@ -176,6 +179,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.CHANNEL,
+                TestConstants.TEST_CHANNEL_ID });        
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
@@ -219,6 +224,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.CHANNEL,
+                TestConstants.TEST_CHANNEL_ID });                
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
@@ -311,6 +318,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.CHANNEL,
+                TestConstants.TEST_CHANNEL_ID });        
         writer.writeRecord(new String[] { CsvConstants.BATCH, getBatchId() });
         writer.write(CsvConstants.KEYS);
         writer.writeRecord(TEST_KEYS);
@@ -336,6 +345,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.CHANNEL,
+                TestConstants.TEST_CHANNEL_ID });        
         writer.writeRecord(new String[] { CsvConstants.BATCH, getNextBatchId() });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         writer.write(CsvConstants.INSERT);
@@ -379,8 +390,10 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.CHANNEL,
+                TestConstants.TEST_CHANNEL_ID });                
         String nextBatchId = getNextBatchId();
-        writer.write("UnknownTokenOutsideBatch");        
+        writer.write("UnknownTokenOutsideBatch");                
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writer.writeRecord(new String[] { CsvConstants.TABLE, TEST_TABLE });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
@@ -455,6 +468,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.CHANNEL,
+                TestConstants.TEST_CHANNEL_ID });                
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
@@ -491,6 +506,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.CHANNEL,
+                TestConstants.TEST_CHANNEL_ID });                
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);

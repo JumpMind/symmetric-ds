@@ -150,6 +150,7 @@
         <column name="use_pk_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the pk data during routing."/>
         <column name="contains_big_lob" type="BOOLEANINT" size="1" required="true" default="0" description="Provides SymmetricDS a hint as to whether this channel will contain big lobs data.  Some databases have shortcuts that SymmetricDS can take advantage of if it knows that the lob columns in sym_data aren't going to contain large lobs.  The definition of how big a 'large' lob is will differ from database to database."/>        
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>
+        <column name="data_loader_type" type="VARCHAR" size="50" required="true" default="default" description="Identify the type of data loader this channel should use.  Allows for the default dataloader to be swapped out via configuration for more efficient platform specific data loaders."/>
         <column name="description" type="VARCHAR" size="255" description="Description on the type of data carried in this channel."/>
     </table>
 

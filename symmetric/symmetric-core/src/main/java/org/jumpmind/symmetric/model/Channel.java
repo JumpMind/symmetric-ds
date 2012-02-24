@@ -54,6 +54,8 @@ public class Channel implements Serializable {
     private String batchAlgorithm = "default";
 
     private long extractPeriodMillis = 0;
+    
+    private String dataLoaderType = "default";
 
     public Channel() {
     }
@@ -183,6 +185,14 @@ public class Channel implements Serializable {
     
     public boolean isContainsBigLob() {
         return containsBigLob;
+    }
+    
+    public void setDataLoaderType(String dataloader) {
+        this.dataLoaderType = dataloader;
+    }
+    
+    public String getDataLoaderType() {
+        return dataLoaderType;
     }
     
     @Override

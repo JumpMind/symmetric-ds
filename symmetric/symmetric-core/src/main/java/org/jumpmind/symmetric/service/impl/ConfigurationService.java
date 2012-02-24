@@ -164,7 +164,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         channel.isUseRowDataToRoute() ? 1 : 0,
                         channel.isUsePkDataToRoute() ? 1 : 0, channel.isContainsBigLob() ? 1 : 0,
                         channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(),
-                        channel.getExtractPeriodMillis(), channel.getChannelId() })) {
+                        channel.getExtractPeriodMillis(), channel.getDataLoaderType(), channel.getChannelId() })) {
             sqlTemplate.update(
                     getSql("insertChannelSql"),
                     new Object[] { channel.getChannelId(), channel.getProcessingOrder(),
@@ -173,7 +173,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             channel.isUseRowDataToRoute() ? 1 : 0,
                             channel.isUsePkDataToRoute() ? 1 : 0,
                             channel.isContainsBigLob() ? 1 : 0, channel.isEnabled() ? 1 : 0,
-                            channel.getBatchAlgorithm(), channel.getExtractPeriodMillis() });
+                            channel.getBatchAlgorithm(), channel.getExtractPeriodMillis(), channel.getDataLoaderType() });
         }
         if (reloadChannels) {
             reloadChannels();
@@ -254,8 +254,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     NodeChannel nodeChannel = new NodeChannel();
                                     nodeChannel.setChannelId(row.getString("channel_id"));
                                     nodeChannel.setNodeId(nodeId);
-                                    // note that 2 is intentionally missing
-                                    // here.
                                     nodeChannel.setIgnoreEnabled(row.getBoolean("ignore_enabled"));
                                     nodeChannel.setSuspendEnabled(row.getBoolean("suspend_enabled"));
                                     nodeChannel.setProcessingOrder(row.getInt("processing_order"));
@@ -276,6 +274,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                             .getDateTime("last_extract_time"));
                                     nodeChannel.setExtractPeriodMillis(row
                                             .getLong("extract_period_millis"));
+                                    nodeChannel.setDataLoaderType(row.getString("data_loader_type"));
                                     return nodeChannel;
                                 };
                             }, nodeId);
@@ -515,6 +514,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             channel.setBatchAlgorithm(row.getString("batch_algorithm"));
                             channel.setExtractPeriodMillis(row
                                     .getLong("extract_period_millis"));
+                            channel.setDataLoaderType(row.getString("data_loader_type"));
                             return channel;
                         }
                     });
