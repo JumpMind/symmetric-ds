@@ -49,7 +49,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new MySqlTriggerTemplate();
+        this.triggerText = new MySqlTriggerTemplate(this);
         this.parameterService = parameterService;
     }
 

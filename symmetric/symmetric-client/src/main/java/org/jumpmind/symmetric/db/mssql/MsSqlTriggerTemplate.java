@@ -2,11 +2,13 @@ package org.jumpmind.symmetric.db.mssql;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerTemplate;
+import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 
-public class MsSqlTriggerTemplate extends TriggerTemplate {
+public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
     
-    public MsSqlTriggerTemplate() {
+    public MsSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
+        super(symmetricDialect);
         
         // @formatter:off
         

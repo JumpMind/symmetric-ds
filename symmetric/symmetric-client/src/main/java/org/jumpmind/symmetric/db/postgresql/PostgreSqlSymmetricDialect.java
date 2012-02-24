@@ -48,7 +48,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         
     public PostgreSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new PostgreSqlTriggerTemplate();
+        this.triggerText = new PostgreSqlTriggerTemplate(this);
     }
     
     @Override

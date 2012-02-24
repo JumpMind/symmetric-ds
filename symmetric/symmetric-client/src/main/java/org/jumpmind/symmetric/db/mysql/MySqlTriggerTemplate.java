@@ -2,11 +2,13 @@ package org.jumpmind.symmetric.db.mysql;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerTemplate;
+import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 
-public class MySqlTriggerTemplate extends TriggerTemplate {
+public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 
-    public MySqlTriggerTemplate() { 
+    public MySqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
+        super(symmetricDialect); 
         functionInstalledSql = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',replace(replace($(tableAlias).`$(columnName)`,'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"'))" ;

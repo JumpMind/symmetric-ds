@@ -2,11 +2,13 @@ package org.jumpmind.symmetric.db.derby;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerTemplate;
+import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 
-public class DerbyTriggerTemplate extends TriggerTemplate {
+public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 
-    public DerbyTriggerTemplate() { 
+    public DerbyTriggerTemplate(ISymmetricDialect symmetricDialect) {
+        super(symmetricDialect); 
         functionInstalledSql = "select count(*) from sys.sysaliases where alias = upper('$(functionName)')" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "sym_escape($(tableAlias).\"$(columnName)\")" ;

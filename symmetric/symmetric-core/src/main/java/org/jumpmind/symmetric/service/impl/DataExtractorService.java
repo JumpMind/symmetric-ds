@@ -45,7 +45,7 @@ import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
-import org.jumpmind.symmetric.io.data.reader.IExtractWriterSource;
+import org.jumpmind.symmetric.io.data.reader.IExtractDataReaderSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
@@ -544,7 +544,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentTable;
     }
 
-    class SelectFromSymDataSource implements IExtractWriterSource {
+    class SelectFromSymDataSource implements IExtractDataReaderSource {
 
         private Batch batch;
 
@@ -650,7 +650,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    class SelectFromTableSource implements IExtractWriterSource {
+    class SelectFromTableSource implements IExtractDataReaderSource {
 
         private Batch batch;
 

@@ -2,11 +2,13 @@ package org.jumpmind.symmetric.db.firebird;
 
 import java.util.HashMap;
 
-import org.jumpmind.symmetric.db.TriggerTemplate;
+import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 
-public class FirebirdTriggerTemplate extends TriggerTemplate {
+public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 
-    public FirebirdTriggerTemplate() { 
+    public FirebirdTriggerTemplate(ISymmetricDialect symmetricDialect) {
+        super(symmetricDialect); 
         
         // @formatter:off
         

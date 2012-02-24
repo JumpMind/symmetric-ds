@@ -39,7 +39,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
 
     public HsqlDbSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerText = new HsqlDbTriggerTemplate();
+        this.triggerText = new HsqlDbTriggerTemplate(this);
 
         platform.getSqlTemplate().update("SET WRITE_DELAY 100 MILLIS");
         platform.getSqlTemplate().update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
