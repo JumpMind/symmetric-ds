@@ -249,11 +249,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.pullService.addOfflineListener(defaultlistener);
         this.pushService.addOfflineListener(defaultlistener);
 
-        this.extensionPointManger = createExtensionPointManager();
-        this.extensionPointManger.register();
-
-        registerWithJMX();
-
         registerHandleToEngine();
 
     }   
@@ -268,10 +263,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     abstract protected ISymmetricDialect createSymmetricDialect();
 
     abstract protected IJobManager createJobManager();
-
-    abstract protected void registerWithJMX();
-
-    abstract protected IExtensionPointManager createExtensionPointManager();
 
     public String getSyncUrl() {
         return parameterService.getSyncUrl();

@@ -35,9 +35,11 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.ClientSymmetricEngine;
+import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
 import org.slf4j.Logger;
@@ -49,13 +51,16 @@ import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for a node")
-public class NodeManagementService {
+public class NodeManagementService implements IExtensionPoint, ISymmetricEngineAware {
 
     final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected ClientSymmetricEngine engine;
+    protected ISymmetricEngine engine;
 
-    public NodeManagementService(ClientSymmetricEngine engine) {
+    public NodeManagementService() {
+    }
+
+    public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
     }
 
@@ -77,7 +82,7 @@ public class NodeManagementService {
                 return false;
             }
         } catch (Exception ex) {
-            log.error(ex.getMessage(),ex);
+            log.error(ex.getMessage(), ex);
             return false;
         }
     }
@@ -89,7 +94,7 @@ public class NodeManagementService {
                 engine.stop();
             }
         } catch (Exception ex) {
-            log.error(ex.getMessage(),ex);
+            log.error(ex.getMessage(), ex);
         }
     }
 
@@ -335,7 +340,8 @@ public class NodeManagementService {
     public void writeBatchRangeToFile(String startBatchId, String endBatchId, String fileName)
             throws Exception {
         Writer writer = new FileWriter(new File(fileName));
-        engine.getDataExtractorService().extractBatchRange(writer, Long.valueOf(startBatchId), Long.valueOf(endBatchId));
+        engine.getDataExtractorService().extractBatchRange(writer, Long.valueOf(startBatchId),
+                Long.valueOf(endBatchId));
         IOUtils.closeQuietly(writer);
     }
 

@@ -26,10 +26,6 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
     private static final String[] OPTIONS = new String[] { OPTION_TIMESTAMP, OPTION_DATE,
             OPTION_SOURCE_NODE_ID };
 
-    public boolean isAutoRegister() {
-        return true;
-    }
-
     public String getName() {
         return NAME;
     }

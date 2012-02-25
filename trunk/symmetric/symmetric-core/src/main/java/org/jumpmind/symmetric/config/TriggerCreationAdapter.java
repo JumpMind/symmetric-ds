@@ -42,9 +42,5 @@ public class TriggerCreationAdapter implements ITriggerCreationListener {
 
     public void triggerInactivated(Trigger trigger, TriggerHistory oldHistory) {
     }
-
-    public boolean isAutoRegister() {
-        return true;
-    }
-
+    
 }

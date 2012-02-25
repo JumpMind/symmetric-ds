@@ -40,10 +40,6 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
 
     protected static final StringMapper lookupColumnRowMapper = new StringMapper();
 
-    public boolean isAutoRegister() {
-        return true;
-    }
-
     public String getName() {
         return NAME;
     }

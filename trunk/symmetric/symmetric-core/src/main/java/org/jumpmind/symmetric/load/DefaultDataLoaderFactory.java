@@ -35,10 +35,6 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         this.filters = filters;
     }
 
-    public boolean isAutoRegister() {
-        return true;
-    }
-
     public String getTypeName() {
         return "default";
     }

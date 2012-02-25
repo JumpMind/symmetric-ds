@@ -55,8 +55,6 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
 
     private String[] nodeGroups;
 
-    private boolean autoRegister = true;
-
     protected IPublisher publisher;
 
     protected Set<String> tableNamesToPublishAsGroup;
@@ -214,11 +212,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         }
         return null;
     }
-
-    public boolean isAutoRegister() {
-        return autoRegister;
-    }
-
+    
     public String[] getNodeGroupIdsToApplyTo() {
         return nodeGroups;
     }
@@ -229,10 +223,6 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
 
     public void setNodeGroup(String nodeGroup) {
         this.nodeGroups = new String[] { nodeGroup };
-    }
-
-    public void setAutoRegister(boolean autoRegister) {
-        this.autoRegister = autoRegister;
     }
 
     public void setPublisher(IPublisher publisher) {

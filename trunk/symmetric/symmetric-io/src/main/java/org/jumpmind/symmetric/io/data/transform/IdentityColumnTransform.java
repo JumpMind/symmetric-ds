@@ -14,10 +14,6 @@ public class IdentityColumnTransform implements ISingleValueColumnTransform, IBu
     
     public static final String NAME = "identity";
 
-    public boolean isAutoRegister() {
-        return true;
-    }
-
     public String getName() {
         return NAME;
     }

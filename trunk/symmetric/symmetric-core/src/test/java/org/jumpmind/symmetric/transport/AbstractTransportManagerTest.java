@@ -48,9 +48,6 @@ public class AbstractTransportManagerTest {
             public String resolveUrl(URI url) {
                 return "test";
             }
-            public boolean isAutoRegister() {
-                return false;
-            }
         });
         return tm;
     }

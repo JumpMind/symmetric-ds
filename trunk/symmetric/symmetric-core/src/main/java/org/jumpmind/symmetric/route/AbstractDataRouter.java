@@ -43,16 +43,6 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
-    private boolean autoRegister = true;
-
-    public boolean isAutoRegister() {
-        return autoRegister;
-    }
-
-    public void setAutoRegister(boolean autoRegister) {
-        this.autoRegister = autoRegister;
-    }
-    
     public void contextCommitted(SimpleRouterContext context) {
     }
 

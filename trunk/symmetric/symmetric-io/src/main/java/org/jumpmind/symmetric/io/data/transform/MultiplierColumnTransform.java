@@ -36,10 +36,6 @@ public class MultiplierColumnTransform implements IMultipleValueColumnTransform,
 
     protected static final StringMapper rowMapper = new StringMapper();
 
-    public boolean isAutoRegister() {
-        return true;
-    }
-
     public String getName() {
         return NAME;
     }

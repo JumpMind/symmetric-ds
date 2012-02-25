@@ -11,10 +11,6 @@ public class SubstrColumnTransform implements ISingleValueColumnTransform, IBuil
 
     public static final String NAME = "substr";
 
-    public boolean isAutoRegister() {
-        return true;
-    }
-
     public String getName() {
         return NAME;
     }

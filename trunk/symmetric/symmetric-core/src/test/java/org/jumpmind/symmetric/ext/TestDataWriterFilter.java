@@ -34,8 +34,6 @@ import org.junit.Ignore;
 public class TestDataWriterFilter extends DatabaseWriterFilterAdapter implements
         IDatabaseWriterFilter {
 
-    private boolean autoRegister = true;
-
     private int numberOfTimesCalled = 0;
 
     private static int numberOfTimesCreated;
@@ -53,14 +51,6 @@ public class TestDataWriterFilter extends DatabaseWriterFilterAdapter implements
 
     public static int getNumberOfTimesCreated() {
         return numberOfTimesCreated;
-    }
-
-    public boolean isAutoRegister() {
-        return this.autoRegister;
-    }
-
-    public void setAutoRegister(boolean autoRegister) {
-        this.autoRegister = autoRegister;
     }
 
     public int getNumberOfTimesCalled() {

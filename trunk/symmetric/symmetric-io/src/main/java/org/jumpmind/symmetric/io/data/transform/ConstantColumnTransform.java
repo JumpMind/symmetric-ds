@@ -9,10 +9,6 @@ import org.jumpmind.symmetric.io.data.DataContext;
 public class ConstantColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
     public static final String NAME = "const";
-    
-    public boolean isAutoRegister() {
-        return true;
-    }
 
     public String getName() {
         return NAME;

@@ -25,10 +25,6 @@ public class RunSqlReloadListener implements IReloadListener {
         }
     }
 
-    public boolean isAutoRegister() {
-        return true;
-    }
-
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
     }
