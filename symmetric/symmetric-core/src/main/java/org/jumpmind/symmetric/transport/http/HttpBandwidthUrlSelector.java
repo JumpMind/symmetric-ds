@@ -171,10 +171,6 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
         return map;
     }
 
-    public boolean isAutoRegister() {
-        return autoRegister;
-    }
-
     public void setDefaultSampleSize(long sampleSize) {
         this.defaultSampleSize = sampleSize;
     }

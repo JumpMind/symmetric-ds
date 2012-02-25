@@ -80,9 +80,5 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
     }
-
-    public boolean isAutoRegister() {
-        return autoRegister;
-    }
-
+    
 }

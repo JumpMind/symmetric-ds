@@ -30,6 +30,9 @@ import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -41,6 +44,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected Properties properties;
 
     protected BasicDataSource dataSource;
+    
+    protected ClassPathXmlApplicationContext springContext;
 
     public ClientSymmetricEngine(File propertiesFile) {
         setDeploymentType("client");
@@ -52,6 +57,32 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         setDeploymentType("client");
         this.properties = properties;
         this.init();
+    }
+    
+    @Override
+    protected void init() {
+        super.init();
+        
+        PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+        Properties properties = new Properties();
+        properties.setProperty("engine.name", getEngineName());
+        configurer.setProperties(properties);
+
+        this.springContext = new ClassPathXmlApplicationContext();
+        springContext.addBeanFactoryPostProcessor(configurer);
+
+        springContext.setConfigLocations(new String[] {"classpath:/symmetric-ext-points.xml", "classpath:/symmetric-jmx.xml"});
+        springContext.refresh();
+        
+        this.extensionPointManger = createExtensionPointManager(springContext);
+        this.extensionPointManger.register();
+    }
+    
+    @Override
+    public synchronized void stop() {
+        this.springContext.stop();
+        this.springContext = null;
+        super.stop();        
     }
 
     public static BasicDataSource createBasicDataSource(File propsFile) {
@@ -128,9 +159,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         this.dataSource = createBasicDataSource(properties, securityService);
     }
 
-    @Override
-    protected IExtensionPointManager createExtensionPointManager() {
-        return new ExtensionPointManager(this);
+    protected IExtensionPointManager createExtensionPointManager(ApplicationContext springContext) {
+        return new ExtensionPointManager(this, springContext);
     }
 
     @Override
@@ -215,11 +245,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             } catch (SQLException e) {
             }
         }
-    }
-
-    @Override
-    protected void registerWithJMX() {
-        // TODO
     }
 
 }

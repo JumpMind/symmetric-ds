@@ -4,7 +4,7 @@
 
     <bean id="mbeanserver" class="org.springframework.jmx.support.MBeanServerFactoryBean">
         <property name="locateExistingServerIfPossible" value="true" />
-        <property name="defaultDomain" value="$[sym.engine.name]" />
+        <property name="defaultDomain" value="org.jumpmind.symmetric.${engine.name}" />
     </bean>
 
     <bean id="domainServerExporter" class="org.springframework.jmx.export.MBeanExporter">
@@ -12,17 +12,8 @@
         <property name="assembler" ref="assembler" />
         <property name="beans">
             <map>
-                <entry key="$[sym.engine.name]:name=Node" value-ref="nodeManagementService" />
-                <entry key="$[sym.engine.name]:name=Incoming" value-ref="incomingManagementService" />
-                <entry key="$[sym.engine.name]:name=Outgoing" value-ref="outgoingManagementService" />
-                <entry key="$[sym.engine.name]:name=Parameters" value-ref="parameterManagementService" />
-                <entry key="$[sym.engine.name]:name=RouterJob" value-ref="job.routing" />
-                <entry key="$[sym.engine.name]:name=PullJob" value-ref="job.pull" />
-                <entry key="$[sym.engine.name]:name=PushJob" value-ref="job.push" />
-                <entry key="$[sym.engine.name]:name=OutgoingPurgeJob" value-ref="job.purge.outgoing" />                
-                <entry key="$[sym.engine.name]:name=IncomingPurgeJob" value-ref="job.purge.incoming" />
-                <entry key="$[sym.engine.name]:name=DataGapPurgeJob" value-ref="job.purge.datagaps" />
-                <entry key="$[sym.engine.name]:name=Notifications" value-ref="notificationService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Node" value-ref="nodeManagementService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Parameters" value-ref="parameterManagementService" />
             </map>
         </property>
         <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
@@ -35,25 +26,8 @@
         <property name="attributeSource" ref="jmxAttributeSource" />
     </bean>
 
-    <bean id="nodeManagementService" class="org.jumpmind.symmetric.service.jmx.NodeManagementService">
-        <property name="purgeService" ref="purgeService" />
-        <property name="dataService" ref="dataService" />
-        <property name="clusterService" ref="clusterService" />
-        <property name="registrationService" ref="registrationService" />
-        <property name="triggerRouterService" ref="triggerRouterService" />
-        <property name="dataSource" ref="dataSource" />
-        <property name="outgoingBatchService" ref="outgoingBatchService" />
-        <property name="nodeService" ref="nodeService" />
-        <property name="dataExtractorService" ref="dataExtractorService" />
-        <property name="statisticManager" ref="statisticManager" />
-        <property name="parameterService" ref="parameterService" />
-        <property name="concurrentConnectionManager" ref="concurrentConnectionManager" />
-        <property name="securityService" ref="securityService" />
-        <property name="configurationService" ref="configurationService"/>
-    </bean>
+    <bean id="nodeManagementService" class="org.jumpmind.symmetric.service.jmx.NodeManagementService"/>
 
-    <bean id="parameterManagementService" class="org.jumpmind.symmetric.service.jmx.ParameterManagementService">
-        <property name="parameterService" ref="parameterService" />
-    </bean>
+    <bean id="parameterManagementService" class="org.jumpmind.symmetric.service.jmx.ParameterManagementService"/>
 
 </beans>

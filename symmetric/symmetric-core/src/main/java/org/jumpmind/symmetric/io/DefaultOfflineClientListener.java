@@ -68,9 +68,5 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     public void registrationRequired(Node remoteNode) {
         log.warn("Registration is required before this operation can complete");
     }
-
-    public boolean isAutoRegister() {
-        return true;
-    }
     
 }

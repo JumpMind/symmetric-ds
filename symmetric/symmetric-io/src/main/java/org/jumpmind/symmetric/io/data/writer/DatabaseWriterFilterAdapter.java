@@ -8,16 +8,6 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 
 public class DatabaseWriterFilterAdapter implements IDatabaseWriterFilter {
     
-    protected boolean autoRegister = true;
-
-    public boolean isAutoRegister() {
-        return autoRegister;
-    }
-    
-    public void setAutoRegister(boolean autoRegister) {
-        this.autoRegister = autoRegister;
-    }
-
     public <R extends IDataReader, W extends IDataWriter> boolean beforeWrite(
             DataContext context, Table table, CsvData data) {
         return true;

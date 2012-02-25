@@ -64,8 +64,4 @@ public class PushHeartbeatListener implements IHeartbeatListener {
         return parameterService.getLong(ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC, 600);
     }
 
-    public boolean isAutoRegister() {
-        return true;
-    }
-
 }

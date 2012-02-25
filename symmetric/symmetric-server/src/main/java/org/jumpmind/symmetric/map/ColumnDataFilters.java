@@ -40,8 +40,6 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
 
     final Logger log = LoggerFactory.getLogger(getClass());
 
-    private boolean autoRegister = true;
-
     private String[] nodeGroupIdsToApplyTo;
 
     List<TableColumnValueFilter> filters;
@@ -110,14 +108,6 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
 
     public void setFilters(List<TableColumnValueFilter> filters) {
         this.filters = filters;
-    }
-
-    public boolean isAutoRegister() {
-        return autoRegister;
-    }
-
-    public void setAutoRegister(boolean autoRegister) {
-        this.autoRegister = autoRegister;
     }
 
     public String[] getNodeGroupIdsToApplyTo() {

@@ -47,10 +47,6 @@ public class NodeGroupTestDataWriterFilter extends DatabaseWriterFilterAdapter i
         return true;
     }
 
-    public boolean isAutoRegister() {
-        return true;
-    }
-
     public void setNodeGroups(String[] nodeGroups) {
         this.nodeGroups = nodeGroups;
     }

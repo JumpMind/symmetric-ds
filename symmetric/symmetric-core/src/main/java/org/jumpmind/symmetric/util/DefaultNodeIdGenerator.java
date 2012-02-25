@@ -27,14 +27,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 
-/**
- * 
- */
 public class DefaultNodeIdGenerator implements INodeIdGenerator {
-
-    public boolean isAutoRegister() {
-        return true;
-    }
 
     public String selectNodeId(INodeService nodeService, Node node) {
         if (StringUtils.isBlank(node.getNodeId())) {

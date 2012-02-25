@@ -62,9 +62,5 @@ public class DefaultOfflineServerListener implements IOfflineServerListener,
         outgoingBatchService.markAllAsSentForNode(node);
         nodeService.deleteNodeSecurity(node.getNodeId());
     }
-
-    public boolean isAutoRegister() {
-        return true;
-    }
     
 }

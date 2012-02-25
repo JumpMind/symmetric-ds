@@ -21,8 +21,11 @@
 
 package org.jumpmind.symmetric.service.jmx;
 
+import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -31,12 +34,15 @@ import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for node parameters")
-public class ParameterManagementService {
+public class ParameterManagementService implements IExtensionPoint, ISymmetricEngineAware {
 
     private IParameterService parameterService;
 
-    public ParameterManagementService(IParameterService parameterService) {
-        this.parameterService = parameterService;
+    public ParameterManagementService() {
+    }
+    
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+         this.parameterService = engine.getParameterService();        
     }
 
     @ManagedOperation(description = "Reload supported parameters from file or database")

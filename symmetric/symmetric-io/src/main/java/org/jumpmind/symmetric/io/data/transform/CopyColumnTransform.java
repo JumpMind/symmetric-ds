@@ -9,10 +9,6 @@ import org.jumpmind.symmetric.io.data.DataContext;
 public class CopyColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
     public final static String NAME = "copy";
-    
-    public boolean isAutoRegister() {
-        return true;
-    }
 
     public String getName() {
         return NAME;

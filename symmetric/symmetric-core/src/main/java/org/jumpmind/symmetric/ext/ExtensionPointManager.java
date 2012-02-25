@@ -47,7 +47,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * This manager registers {@link IExtensionPoint}s defined both by SymmetricDS
@@ -68,21 +67,22 @@ public class ExtensionPointManager implements IExtensionPointManager {
     private Map<String, IExtensionPoint> extensions;
 
     private List<ExtensionPointMetaData> extensionPoints = new ArrayList<ExtensionPointMetaData>();
+    
+    private ApplicationContext springContext;
 
-    public ExtensionPointManager(ISymmetricEngine engine) {
+    public ExtensionPointManager(ISymmetricEngine engine, ApplicationContext springContext) {
         this.engine = engine;
+        this.springContext = springContext;
     }
 
     public void register() throws BeansException {
 
-        ApplicationContext cfgBeanFactory = new ClassPathXmlApplicationContext(
-                "classpath:/symmetric-ext-points.xml");
         if (!initialized) {
             extensions = new TreeMap<String, IExtensionPoint>();
-            extensions.putAll(cfgBeanFactory.getBeansOfType(IExtensionPoint.class));
-            if (cfgBeanFactory.getParentBeanFactory() != null
-                    && cfgBeanFactory.getParentBeanFactory() instanceof ListableBeanFactory) {
-                extensions.putAll(((ListableBeanFactory) cfgBeanFactory.getParentBeanFactory())
+            extensions.putAll(springContext.getBeansOfType(IExtensionPoint.class));
+            if (springContext.getParentBeanFactory() != null
+                    && springContext.getParentBeanFactory() instanceof ListableBeanFactory) {
+                extensions.putAll(((ListableBeanFactory) springContext.getParentBeanFactory())
                         .getBeansOfType(IExtensionPoint.class));
             }
             for (String beanName : extensions.keySet()) {
@@ -91,28 +91,26 @@ public class ExtensionPointManager implements IExtensionPointManager {
                     ((ISymmetricEngineAware) ext).setSymmetricEngine(engine);
                 }
                 boolean registered = false;
-                if (ext.isAutoRegister()) {
-                    boolean registerExtension = false;
-                    if (ext instanceof INodeGroupExtensionPoint) {
-                        String nodeGroupId = engine.getParameterService().getNodeGroupId();
-                        INodeGroupExtensionPoint nodeExt = (INodeGroupExtensionPoint) ext;
-                        String[] ids = nodeExt.getNodeGroupIdsToApplyTo();
-                        if (ids != null) {
-                            for (String targetNodeGroupId : ids) {
-                                if (nodeGroupId.equals(targetNodeGroupId)) {
-                                    registerExtension = true;
-                                }
+                boolean registerExtension = false;
+                if (ext instanceof INodeGroupExtensionPoint) {
+                    String nodeGroupId = engine.getParameterService().getNodeGroupId();
+                    INodeGroupExtensionPoint nodeExt = (INodeGroupExtensionPoint) ext;
+                    String[] ids = nodeExt.getNodeGroupIdsToApplyTo();
+                    if (ids != null) {
+                        for (String targetNodeGroupId : ids) {
+                            if (nodeGroupId.equals(targetNodeGroupId)) {
+                                registerExtension = true;
                             }
-                        } else {
-                            registerExtension = true;
                         }
                     } else {
                         registerExtension = true;
                     }
+                } else {
+                    registerExtension = true;
+                }
 
-                    if (registerExtension) {
-                        registered = registerExtension(beanName, ext);
-                    }
+                if (registerExtension) {
+                    registered = registerExtension(beanName, ext);
                 }
 
                 if (!registered) {
@@ -131,9 +129,11 @@ public class ExtensionPointManager implements IExtensionPointManager {
     protected boolean registerExtension(String beanName, IExtensionPoint ext) {
         boolean installed = false;
         if (ext instanceof IBuiltInExtensionPoint) {
-            log.debug("Registering an extension point named {} of type '{}' with SymmetricDS", beanName, ext.getClass().getSimpleName());
+            log.debug("Registering an extension point named {} of type '{}' with SymmetricDS",
+                    beanName, ext.getClass().getSimpleName());
         } else {
-            log.info("Registering an extension point named {} of type '{}' with SymmetricDS", beanName, ext.getClass().getSimpleName());
+            log.info("Registering an extension point named {} of type '{}' with SymmetricDS",
+                    beanName, ext.getClass().getSimpleName());
         }
 
         if (ext instanceof ISyncUrlExtension) {
@@ -151,12 +151,12 @@ public class ExtensionPointManager implements IExtensionPointManager {
             engine.getNodeService().setNodePasswordFilter((INodePasswordFilter) ext);
             engine.getRegistrationService().setNodePasswordFilter((INodePasswordFilter) ext);
         }
-        
+
         if (ext instanceof IDataLoaderFactory) {
             installed = true;
-            extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
-                    IDataLoaderFactory.class, true));
-            engine.getDataLoaderService().addDataLoaderFactory((IDataLoaderFactory)ext);
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IDataLoaderFactory.class,
+                    true));
+            engine.getDataLoaderService().addDataLoaderFactory((IDataLoaderFactory) ext);
         }
 
         if (ext instanceof IAcknowledgeEventListener) {
@@ -253,7 +253,7 @@ public class ExtensionPointManager implements IExtensionPointManager {
     @SuppressWarnings("unchecked")
     public <T extends IExtensionPoint> T getExtensionPoint(String name) {
         if (extensions != null) {
-            return (T)extensions.get(name);
+            return (T) extensions.get(name);
         } else {
             return null;
         }

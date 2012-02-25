@@ -20,7 +20,7 @@ DONE = +
   * add database reader filter  
   * unit test
   
-* Hook up JMX
+* Integrate Eric's SecurityService changes
 
 * Get rid of IOException in service apis in favor of IoException
 * Can BatchInfo go away?  
@@ -72,4 +72,4 @@ Documentation
 * Removed support for db.metadata.ignore.case
 * SymmetricDS tables are now created in the default case of the database
 * Now supports mixed case tables on Firebird.
-
+* Got rid of the isAutoRegister() method from IExtensionPoint
