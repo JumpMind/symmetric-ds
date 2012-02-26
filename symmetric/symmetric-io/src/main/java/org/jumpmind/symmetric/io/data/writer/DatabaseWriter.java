@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseIO;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ModelException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
@@ -88,7 +89,7 @@ public class DatabaseWriter implements IDataWriter {
     public DatabaseWriter(IDatabasePlatform platform,
             IDatabaseWriterConflictResolver conflictResolver,
             DatabaseWriterSettings defaultSettings,
-            Map<String, DatabaseWriterSettings> channelSpecificSettings, 
+            Map<String, DatabaseWriterSettings> channelSpecificSettings,
             IDatabaseWriterFilter... filters) {
         this.platform = platform;
         this.conflictResolver = conflictResolver == null ? new DefaultDatabaseWriterConflictResolver()
@@ -138,30 +139,30 @@ public class DatabaseWriter implements IDataWriter {
         if (filterBefore(data)) {
             boolean success = false;
             switch (data.getDataEventType()) {
-            case UPDATE:
-                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                success = update(data);
-                break;
-            case INSERT:
-                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                success = insert(data);
-                break;
-            case DELETE:
-                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                success = delete(data);
-                break;
-            case BSH:
-                success = script(data);
-                break;
-            case SQL:
-                success = sql(data);
-                break;
-            case CREATE:
-                success = create(data);
-                break;
-            default:
-                success = true;
-                break;
+                case UPDATE:
+                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                    success = update(data);
+                    break;
+                case INSERT:
+                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                    success = insert(data);
+                    break;
+                case DELETE:
+                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                    success = delete(data);
+                    break;
+                case BSH:
+                    success = script(data);
+                    break;
+                case SQL:
+                    success = sql(data);
+                    break;
+                case CREATE:
+                    success = create(data);
+                    break;
+                default:
+                    success = true;
+                    break;
             }
 
             if (!success) {
@@ -317,8 +318,7 @@ public class DatabaseWriter implements IDataWriter {
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             try {
-                String[] values = (String[]) ArrayUtils.addAll(
-                        getRowData(data), getPkData(data));
+                String[] values = (String[]) ArrayUtils.addAll(getRowData(data), getPkData(data));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 return count > 0;
@@ -333,7 +333,7 @@ public class DatabaseWriter implements IDataWriter {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
     }
-    
+
     protected String[] getRowData(CsvData data) {
         String[] targetValues = new String[targetTable.getColumnCount()];
         String[] originalValues = data.getParsedData(CsvData.ROW_DATA);
@@ -446,17 +446,22 @@ public class DatabaseWriter implements IDataWriter {
 
     protected boolean create(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String xml = data.getCsvData(CsvData.ROW_DATA);
-            if (log.isDebugEnabled()) {
-                log.debug("About to create table using the following definition: ", xml);
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                String xml = data.getCsvData(CsvData.ROW_DATA);
+                if (log.isDebugEnabled()) {
+                    log.debug("About to create table using the following definition: ", xml);
+                }
+                StringReader reader = new StringReader(xml);
+                Database db = (Database) new DatabaseIO().getReader().parse(reader);
+                platform.alterTables(false, db.getTables());
+                platform.resetCachedTableModel();
+                statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
+                return true;
+            } catch (Exception e) {
+                throw new ModelException(e);
             }
-            StringReader reader = new StringReader(xml);
-            Database db = new DatabaseIO().read(reader);
-            platform.alterTables(false, db.getTables());
-            platform.resetCachedTableModel();
-            statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
-            return true;
+
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
         }
@@ -472,7 +477,8 @@ public class DatabaseWriter implements IDataWriter {
             long count = transaction.prepareAndExecute(sql);
             log.info("{} rows updated when running: {}", count, sql);
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
-            statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT, count);
+            statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT,
+                    count);
             return true;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);

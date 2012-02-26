@@ -131,8 +131,6 @@ public interface ISymmetricDialect {
      */
     public boolean isTransactionIdOverrideSupported();
 
-    public void createTables(String xml);
-    
     public Table getTable(Trigger trigger, boolean useCache);
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);

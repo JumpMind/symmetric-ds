@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -356,12 +355,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         xml = xml.replaceAll("type=\"VARCHAR\" size=\"2147483647\"", "type=\"LONGVARCHAR\"");
         xml = xml.replaceAll("type=\"BINARY\" size=\"2147483647\"", "type=\"LONGVARBINARY\"");
         return xml;
-    }
-
-    public void createTables(String xml) {
-        StringReader reader = new StringReader(xml);
-        Database db = new DatabaseIO().read(reader);
-        platform.createDatabase(db, true, true);
     }
 
     protected void prefixConfigDatabase(Database targetTables) {

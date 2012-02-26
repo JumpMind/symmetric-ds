@@ -538,18 +538,11 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     public void testAutoRegisteredExtensionPoint() {
         TestDataWriterFilter registeredFilter = getSymmetricEngine().getExtensionPointManager()
                 .getExtensionPoint("registeredDataFilter");
-        TestDataWriterFilter unRegisteredFilter = getSymmetricEngine().getExtensionPointManager()
-                .getExtensionPoint("unRegisteredDataFilter");
         assertTrue(registeredFilter.getNumberOfTimesCalled() > 0);
-        assertTrue(unRegisteredFilter.getNumberOfTimesCalled() == 0);
 
         NodeGroupTestDataWriterFilter registeredNodeGroupFilter = getSymmetricEngine()
                 .getExtensionPointManager().getExtensionPoint("registeredNodeGroupTestDataFilter");
-        NodeGroupTestDataWriterFilter unRegisteredNodeGroupFilter = getSymmetricEngine()
-                .getExtensionPointManager()
-                .getExtensionPoint("unRegisteredNodeGroupTestDataFilter");
         assertTrue(registeredNodeGroupFilter.getNumberOfTimesCalled() > 0);
-        assertTrue(unRegisteredNodeGroupFilter.getNumberOfTimesCalled() == 0);
     }
 
     protected CsvWriter getWriter(OutputStream out) {

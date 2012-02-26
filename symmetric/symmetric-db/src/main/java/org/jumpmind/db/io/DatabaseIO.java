@@ -109,7 +109,7 @@ public class DatabaseIO
      * 
      * @return The reader
      */
-    protected BeanReader getReader() throws IntrospectionException, SAXException, IOException
+    public BeanReader getReader() throws IntrospectionException, SAXException, IOException
     {
         BeanReader reader = new BeanReader();
 
