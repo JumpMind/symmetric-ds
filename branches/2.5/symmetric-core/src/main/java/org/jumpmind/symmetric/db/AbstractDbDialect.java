@@ -65,6 +65,7 @@ import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Database;
 import org.jumpmind.symmetric.ddl.model.ForeignKey;
 import org.jumpmind.symmetric.ddl.model.Index;
+import org.jumpmind.symmetric.ddl.model.ModelException;
 import org.jumpmind.symmetric.ddl.model.Table;
 import org.jumpmind.symmetric.ddl.platform.SqlBuilder;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
@@ -612,9 +613,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public void createTables(String xml) {
-        StringReader reader = new StringReader(xml);
-        Database db = new DatabaseIO().read(reader);
-        platform.createTables(db, true, true);
+        try {
+            StringReader reader = new StringReader(xml);
+            Database db = (Database)new DatabaseIO().getReader().parse(reader);
+            platform.createTables(db, true, true);
+        } catch (Exception e) {
+            throw new ModelException(e);
+        }
     }
 
     public boolean doesDatabaseNeedConfigured() {
