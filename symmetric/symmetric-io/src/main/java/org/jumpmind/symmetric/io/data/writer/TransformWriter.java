@@ -77,6 +77,10 @@ public class TransformWriter implements IDataWriter {
         this.transformsBySourceTable = toMap(transforms);
         this.targetWriter = targetWriter;
     }
+    
+    public void setTargetWriter(IDataWriter targetWriter) {
+        this.targetWriter = targetWriter;
+    }
 
     protected Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {
         Map<String, List<TransformTable>> transformsByTable = new HashMap<String, List<TransformTable>>();
