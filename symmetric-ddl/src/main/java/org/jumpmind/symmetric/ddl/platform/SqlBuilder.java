@@ -1842,7 +1842,11 @@ public abstract class SqlBuilder
      */
     public String getTableName(Table table)
     {
-        return shortenName(table.getName(), getMaxTableNameLength());
+        return getTableName(table.getName());
+    }
+    
+    public String getTableName(String tableName) {
+        return shortenName(tableName, getMaxTableNameLength());
     }
     
     /** 
@@ -2591,7 +2595,7 @@ public abstract class SqlBuilder
             print(" FOREIGN KEY (");
             writeLocalReferences(key);
             print(") REFERENCES ");
-            printIdentifier(getTableName(database.findTable(key.getForeignTableName())));
+            printIdentifier(getTableName(key.getForeignTableName()));
             print(" (");
             writeForeignReferences(key);
             print(")");
