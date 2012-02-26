@@ -21,6 +21,7 @@ DONE = +
   * unit test
   
 * Integrate Eric's SecurityService changes
+* Purge stats
 
 * Get rid of IOException in service apis in favor of IoException
 * Can BatchInfo go away?  
