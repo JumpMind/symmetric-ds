@@ -1,58 +1,33 @@
 package org.jumpmind.symmetric.load;
 
-import java.util.List;
-
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.transform.TransformPoint;
-import org.jumpmind.symmetric.io.data.transform.TransformTable;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
+import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResolver;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
-import org.jumpmind.symmetric.io.data.writer.TransformDatabaseWriter;
-import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.ITransformService;
-import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 
 public class DefaultDataLoaderFactory implements IDataLoaderFactory {
 
     private IParameterService parameterService;
 
-    private ITransformService transformService;
-
-    private INodeService nodeService;
-
-    private List<IDatabaseWriterFilter> filters;
-
-    public DefaultDataLoaderFactory(IParameterService parameterService,
-            ITransformService transformService, INodeService nodeService,
-            List<IDatabaseWriterFilter> filters) {
+    public DefaultDataLoaderFactory(IParameterService parameterService) {
         this.parameterService = parameterService;
-        this.transformService = transformService;
-        this.nodeService = nodeService;
-        this.filters = filters;
     }
 
     public String getTypeName() {
         return "default";
     }
 
-    public IDataWriter getDataWriter(String sourceNodeId, IDatabasePlatform platform) {
-        DatabaseWriterSettings settings = buildDatabaseWriterSettings();
-
-        TransformTable[] transforms = null;
-        if (sourceNodeId != null) {
-            List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
-                    new NodeGroupLink(sourceNodeId, nodeService.findIdentityNodeId()),
-                    TransformPoint.LOAD, true);
-            transforms = transformsList != null ? transformsList
-                    .toArray(new TransformTable[transformsList.size()]) : null;
-        }
-
-        return new TransformDatabaseWriter(platform, settings, null, transforms,
-                filters.toArray(new IDatabaseWriterFilter[filters.size()]));
+    public IDataWriter getDataWriter(String sourceNodeId, IDatabasePlatform platform,
+            TransformWriter transformWriter, IDatabaseWriterFilter[] filters) {
+        DatabaseWriterSettings defaultSettings = buildDatabaseWriterSettings();
+        DatabaseWriter writer = new DatabaseWriter(platform, defaultSettings, null, filters);
+        writer.setConflictResolver(new DefaultTransformWriterConflictResolver(transformWriter));
+        return writer;
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

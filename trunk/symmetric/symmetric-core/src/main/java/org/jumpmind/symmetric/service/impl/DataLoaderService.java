@@ -47,6 +47,8 @@ import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
+import org.jumpmind.symmetric.io.data.transform.TransformPoint;
+import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
@@ -64,6 +66,7 @@ import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -75,6 +78,7 @@ import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
+import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
@@ -106,6 +110,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private INodeService nodeService;
 
+    private ITransformService transformService;
+
     private IStagingManager stagingManager;
 
     private Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
@@ -122,12 +128,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.transportManager = transportManager;
         this.statisticManager = statisticManager;
         this.nodeService = nodeService;
+        this.transformService = transformService;
         this.stagingManager = stagingManager;
         this.filters = new ArrayList<IDatabaseWriterFilter>();
         this.filters.add(new ConfigurationChangedFilter(parameterService, configurationService,
                 triggerRouterService, transformService));
-        this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService, transformService,
-                nodeService, filters));
+        this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService));
     }
 
     public void addDataLoaderFactory(IDataLoaderFactory factory) {
@@ -293,8 +299,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         new ProtocolDataReader(transport.open()), null, listener) {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
-                        return getFactory(batch.getChannelId()).getDataWriter(sourceNodeId,
-                                platform);
+                        return buildDataWriter(sourceNodeId, batch.getChannelId());
                     }
                 };
                 processor.process();
@@ -347,20 +352,40 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
+    protected IDataWriter buildDataWriter(String sourceNodeId, String channelId) {
+        TransformTable[] transforms = null;
+        if (sourceNodeId != null) {
+            List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
+                    new NodeGroupLink(sourceNodeId, nodeService.findIdentityNodeId()),
+                    TransformPoint.LOAD, true);
+            transforms = transformsList != null ? transformsList
+                    .toArray(new TransformTable[transformsList.size()]) : null;
+        }
+        
+        TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null, transforms);
+        IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId, platform, transformWriter, filters.toArray(new IDatabaseWriterFilter[filters.size()]));
+        transformWriter.setTargetWriter(targetWriter);
+        return transformWriter;        
+    }
+
     protected IDataLoaderFactory getFactory(String channelId) {
         Channel channel = configurationService.getChannel(channelId);
         String dataLoaderType = "default";
         IDataLoaderFactory factory = null;
         if (channel != null) {
-            dataLoaderType = channel.getDataLoaderType();            
+            dataLoaderType = channel.getDataLoaderType();
         } else {
-            log.warn("Could not locate the channel with the id of '{}'.  Using the 'default' data loader.", channelId);
+            log.warn(
+                    "Could not locate the channel with the id of '{}'.  Using the 'default' data loader.",
+                    channelId);
         }
-        
+
         factory = dataLoaderFactories.get(dataLoaderType);
 
         if (factory == null) {
-            log.warn("Could not find a data loader factory of type '{}'.  Using the 'default' data loader.", dataLoaderType);
+            log.warn(
+                    "Could not find a data loader factory of type '{}'.  Using the 'default' data loader.",
+                    dataLoaderType);
             factory = dataLoaderFactories.get("default");
         }
         return factory;
@@ -399,8 +424,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         listener) {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
-                        return getFactory(batch.getChannelId()).getDataWriter(sourceNodeId,
-                                platform);
+                        return buildDataWriter(sourceNodeId, batch.getChannelId());
                     }
                 };
 
