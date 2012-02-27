@@ -166,6 +166,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     batch.setDatabaseMillis(existingBatch.getDatabaseMillis());
                     batch.setNetworkMillis(existingBatch.getNetworkMillis());
                     batch.setFilterMillis(existingBatch.getFilterMillis());
+                    batch.setSkipCount(existingBatch.getSkipCount() + 1);
+                    batch.setStatementCount(existingBatch.getStatementCount());
                     
                     existingBatch.setSkipCount(existingBatch.getSkipCount() + 1);
                     log.warn("Skipping batch {}", batch.getNodeBatchId());
