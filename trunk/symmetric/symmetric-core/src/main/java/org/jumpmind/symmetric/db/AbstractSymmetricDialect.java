@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -193,8 +194,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 triggerHistory,
                 platform.getTableFromCache(trigger.getSourceCatalogName(),
                         trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
-                channel,
-                whereClause).trim();
+                channel, whereClause).trim();
     }
 
     public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory,
@@ -204,8 +204,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 triggerHistory,
                 platform.getTableFromCache(trigger.getSourceCatalogName(),
                         trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
-                channel,
-                whereClause).trim();
+                channel, whereClause).trim();
     }
 
     public Set<String> getSqlKeywords() {
@@ -252,8 +251,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         String defaultCatalog = platform.getDefaultCatalog();
         String defaultSchema = platform.getDefaultSchema();
 
-        String triggerSql = triggerText.createTriggerDDL(dml, trigger,
-                hist, channel, tablePrefix, table, defaultCatalog, defaultSchema);
+        String triggerSql = triggerText.createTriggerDDL(dml, trigger, hist, channel, tablePrefix,
+                table, defaultCatalog, defaultSchema);
 
         String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
                 table);
@@ -674,8 +673,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             String sql = "select current_timestamp from " + this.parameterService.getTablePrefix()
                     + "_node_identity";
             sql = FormatUtils.replaceTokens(sql, platform.getSqlScriptReplacementTokens(), false);
-            return this.platform.getSqlTemplate().queryForObject(sql, java.util.Date.class)
-                    .getTime();
+            Date dateTime = this.platform.getSqlTemplate()
+                    .queryForObject(sql, java.util.Date.class);
+            if (dateTime != null) {
+                return dateTime.getTime();
+            } else {
+                return System.currentTimeMillis();
+            }
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
             return System.currentTimeMillis();
