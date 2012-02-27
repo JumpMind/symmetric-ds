@@ -107,12 +107,17 @@ public class IncomingBatch implements Serializable {
         filterMillis = writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS);
         databaseMillis = writerStatistics.get(DataWriterStatisticConstants.DATABASEMILLIS);
         statementCount = writerStatistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
-        fallbackInsertCount = writerStatistics.get(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
-        fallbackUpdateCount = writerStatistics.get(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
+        fallbackInsertCount = writerStatistics
+                .get(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
+        fallbackUpdateCount = writerStatistics
+                .get(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
         missingDeleteCount = writerStatistics.get(DataWriterStatisticConstants.MISSINGDELETECOUNT);
         lastUpdatedTime = new Date();
         if (!isSuccess) {
-            failedRowNumber = statementCount;
+            failedRowNumber = writerStatistics.get(DataWriterStatisticConstants.FAILEDROWNUMBER);
+            if (failedRowNumber == 0) {
+                failedRowNumber = statementCount;
+            }
         }
     }
 
