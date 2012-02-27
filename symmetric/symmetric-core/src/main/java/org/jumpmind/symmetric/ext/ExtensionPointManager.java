@@ -154,12 +154,9 @@ public class ExtensionPointManager implements IExtensionPointManager {
 
         if (ext instanceof IDataLoaderFactory) {
             installed = true;
-            IDataLoaderFactory factory = (IDataLoaderFactory) ext;
-            if (factory.isPlatformSupported(engine.getSymmetricDialect().getPlatform())) {
-                extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
-                        IDataLoaderFactory.class, true));
-                engine.getDataLoaderService().addDataLoaderFactory((IDataLoaderFactory) ext);
-            }
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IDataLoaderFactory.class,
+                    true));
+            engine.getDataLoaderService().addDataLoaderFactory((IDataLoaderFactory) ext);
         }
 
         if (ext instanceof IAcknowledgeEventListener) {
