@@ -137,11 +137,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void addDataLoaderFactory(IDataLoaderFactory factory) {
-        if (factory.isPlatformSupported(symmetricDialect.getPlatform())) {
-            this.dataLoaderFactories.put(factory.getTypeName(), factory);
-        }
+        this.dataLoaderFactories.put(factory.getTypeName(), factory);
     }
-    
+
     public List<String> getAvailableDataLoaderFactories() {
         return new ArrayList<String>(dataLoaderFactories.keySet());
     }
@@ -365,11 +363,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             transforms = transformsList != null ? transformsList
                     .toArray(new TransformTable[transformsList.size()]) : null;
         }
-        
-        TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null, transforms);
-        IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId, platform, transformWriter, filters.toArray(new IDatabaseWriterFilter[filters.size()]));
+
+        TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null,
+                transforms);
+        IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId, platform,
+                transformWriter, filters.toArray(new IDatabaseWriterFilter[filters.size()]));
         transformWriter.setTargetWriter(targetWriter);
-        return transformWriter;        
+        return transformWriter;
     }
 
     protected IDataLoaderFactory getFactory(String channelId) {
@@ -392,6 +392,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     dataLoaderType);
             factory = dataLoaderFactories.get("default");
         }
+        
+        if (!factory.isPlatformSupported(platform)) {
+            log.warn(
+                    "The current platform does not support a data loader type of '{}'.  Using the 'default' data loader.",
+                    dataLoaderType);
+            factory = dataLoaderFactories.get("default");            
+        }
+        
         return factory;
     }
 
@@ -456,11 +464,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     || (batch.getChannelId() != null && batch.getChannelId().equals(
                             Constants.CHANNEL_CONFIG))) {
                 IncomingBatch incomingBatch = new IncomingBatch(batch);
-                if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
-                    this.batchesProcessed.add(incomingBatch);
+                this.batchesProcessed.add(incomingBatch);
+                if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {                    
                     this.currentBatch = incomingBatch;
                     return true;
-                }
+                }                
             }
             return false;
         }

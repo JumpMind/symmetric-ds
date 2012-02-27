@@ -161,7 +161,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     log.warn("Retrying batch {}", batch.getNodeBatchId());
                 } else {
                     okayToProcess = false;
-                    existingBatch.setStatus(existingBatch.getStatus());
+                    batch.setStatus(existingBatch.getStatus());
+                    batch.setByteCount(existingBatch.getByteCount());
+                    batch.setDatabaseMillis(existingBatch.getDatabaseMillis());
+                    batch.setNetworkMillis(existingBatch.getNetworkMillis());
+                    batch.setFilterMillis(existingBatch.getFilterMillis());
+                    
                     existingBatch.setSkipCount(existingBatch.getSkipCount() + 1);
                     log.warn("Skipping batch {}", batch.getNodeBatchId());
                 }

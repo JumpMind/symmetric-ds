@@ -17,5 +17,6 @@ abstract public class DataWriterStatisticConstants {
     public static final String FALLBACKINSERTCOUNT = "FALLBACKINSERTCOUNT";
     public static final String FALLBACKUPDATECOUNT = "FALLBACKUPDATECOUNT";
     public static final String MISSINGDELETECOUNT = "MISSINGDELETECOUNT";
+    public static final String FAILEDROWNUMBER = "FAILEDROWNUMBER";
 
 }
