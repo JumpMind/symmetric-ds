@@ -47,17 +47,27 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     
     protected ClassPathXmlApplicationContext springContext;
 
-    public ClientSymmetricEngine(File propertiesFile) {
+    public ClientSymmetricEngine(File propertiesFile, boolean registerEngine) {
+        super(registerEngine);
         setDeploymentType("client");
         this.propertiesFile = propertiesFile;
         this.init();
     }
+    
+    public ClientSymmetricEngine(File propertiesFile) {
+        this(propertiesFile, true);
+    }    
 
-    public ClientSymmetricEngine(Properties properties) {
+    public ClientSymmetricEngine(Properties properties, boolean registerEngine) {
+        super(registerEngine);
         setDeploymentType("client");
         this.properties = properties;
         this.init();
     }
+    
+    public ClientSymmetricEngine(Properties properties) {
+        this(properties, true);
+    }        
     
     @Override
     protected void init() {

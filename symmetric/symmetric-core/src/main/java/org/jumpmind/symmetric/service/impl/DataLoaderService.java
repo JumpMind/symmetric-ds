@@ -141,6 +141,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             this.dataLoaderFactories.put(factory.getTypeName(), factory);
         }
     }
+    
+    public List<String> getAvailableDataLoaderFactories() {
+        return new ArrayList<String>(dataLoaderFactories.keySet());
+    }
 
     public List<IncomingBatch> loadDataBatch(String batchData) throws IOException {
         InternalIncomingTransport transport = new InternalIncomingTransport(new BufferedReader(
