@@ -45,6 +45,8 @@ public interface IDataLoaderService {
     public void loadDataFromPush(String sourceNodeId, InputStream in, OutputStream out) throws IOException;
     
     public void addDataLoaderFactory(IDataLoaderFactory factory);
+    
+    public List<String> getAvailableDataLoaderFactories();
 
     public void addDatabaseWriterFilter(IDatabaseWriterFilter filter);            
 

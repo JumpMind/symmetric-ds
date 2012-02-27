@@ -67,7 +67,7 @@ public class ExtensionPointManager implements IExtensionPointManager {
     private Map<String, IExtensionPoint> extensions;
 
     private List<ExtensionPointMetaData> extensionPoints = new ArrayList<ExtensionPointMetaData>();
-    
+
     private ApplicationContext springContext;
 
     public ExtensionPointManager(ISymmetricEngine engine, ApplicationContext springContext) {
@@ -154,9 +154,12 @@ public class ExtensionPointManager implements IExtensionPointManager {
 
         if (ext instanceof IDataLoaderFactory) {
             installed = true;
-            extensionPoints.add(new ExtensionPointMetaData(ext, beanName, IDataLoaderFactory.class,
-                    true));
-            engine.getDataLoaderService().addDataLoaderFactory((IDataLoaderFactory) ext);
+            IDataLoaderFactory factory = (IDataLoaderFactory) ext;
+            if (factory.isPlatformSupported(engine.getSymmetricDialect().getPlatform())) {
+                extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
+                        IDataLoaderFactory.class, true));
+                engine.getDataLoaderService().addDataLoaderFactory((IDataLoaderFactory) ext);
+            }
         }
 
         if (ext instanceof IAcknowledgeEventListener) {

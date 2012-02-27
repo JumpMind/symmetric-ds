@@ -153,8 +153,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     abstract protected ITypedPropertiesFactory createTypedPropertiesFactory();
 
     abstract protected IDatabasePlatform createDatabasePlatform(TypedProperties properties);
+    
+    private boolean registerEngine = true;
 
-    protected AbstractSymmetricEngine() {
+    protected AbstractSymmetricEngine(boolean registerEngine) {
+        this.registerEngine = registerEngine;
     }
 
     /**
@@ -249,7 +252,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.pullService.addOfflineListener(defaultlistener);
         this.pushService.addOfflineListener(defaultlistener);
 
-        registerHandleToEngine();
+        if (registerEngine) {
+            registerHandleToEngine();
+        }
 
     }   
 
@@ -637,7 +642,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 registeredEnginesByUrl.put(url, this);
             }
         } else {
-            throw new IllegalStateException(
+            throw new EngineAlreadyRegisteredException(
                     "Could not register engine.  There was already an engine registered under the url: "
                             + getSyncUrl());
         }
@@ -646,7 +651,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (alreadyRegister == null || alreadyRegister.equals(this)) {
             registeredEnginesByName.put(getEngineName(), this);
         } else {
-            throw new IllegalStateException(
+            throw new EngineAlreadyRegisteredException(
                     "Could not register engine.  There was already an engine registered under the name: "
                             + getEngineName());
         }

@@ -30,8 +30,8 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DatabasePlatformSettings;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.JdbcUtils;
 import org.springframework.jdbc.support.lob.OracleLobHandler;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 /*
  * The platform for Oracle 8.
@@ -114,17 +114,7 @@ public class OraclePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected void createSqlTemplate() {
         OracleLobHandler lobHandler = new OracleLobHandler();
-        try {
-            NativeJdbcExtractor extractor = (NativeJdbcExtractor) Class
-                    .forName(
-                            System.getProperty("db.native.extractor",
-                                    "org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor"))
-                    .newInstance();
-            lobHandler.setNativeJdbcExtractor(extractor);
-        } catch (Exception ex) {
-            log.error("Could not create a native database connection extractor", ex);
-        }
-
+        lobHandler.setNativeJdbcExtractor(JdbcUtils.getNativeJdbcExtractory());
         this.sqlTemplate = new OracleJdbcSqlTemplate(dataSource, settings, lobHandler);
     }
 
