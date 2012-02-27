@@ -151,7 +151,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                             .getSyncUrl()));
             fireOffline(ex, remote, status);
         } catch (ConnectionRejectedException ex) {
-            log.warn(".");
+            log.warn("The server was too busy to accept the connection");
             fireOffline(ex, remote, status);
         } catch (SocketException ex) {
             log.warn("{}", ex.getMessage());
@@ -160,13 +160,13 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             log.warn("{}", ex.getMessage());
             fireOffline(ex, remote, status);
         } catch (AuthenticationException ex) {
-            log.warn(".");
+            log.warn("Could not authenticate with node");
             fireOffline(ex, remote, status);
         } catch (SyncDisabledException ex) {
-            log.warn(".");
+            log.warn("Synchronization is disabled on the server node");
             fireOffline(ex, remote, status);
         } catch (RegistrationRequiredException ex) {
-            log.warn(".");
+            log.warn("Registration has not been opened for this node");
             fireOffline(ex, remote, status);
         } catch (Exception ex) {
             // just report the error because we want to push to other nodes
