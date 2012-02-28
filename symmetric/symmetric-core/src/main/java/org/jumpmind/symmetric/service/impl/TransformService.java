@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,7 +174,8 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     protected void deleteTransformColumns(ISqlTransaction transaction, String transformTableId) {
-        transaction.prepareAndExecute(getSql("deleteTransformColumnsSql"), (Object) transformTableId);
+        transaction.prepareAndExecute(getSql("deleteTransformColumnsSql"),
+                (Object) transformTableId);
     }
 
     public void deleteTransformTable(String transformTableId) {
@@ -181,7 +183,8 @@ public class TransformService extends AbstractService implements ITransformServi
         try {
             transaction = sqlTemplate.startSqlTransaction();
             deleteTransformColumns(transaction, transformTableId);
-            transaction.prepareAndExecute(getSql("deleteTransformTableSql"), (Object) transformTableId);
+            transaction.prepareAndExecute(getSql("deleteTransformTableSql"),
+                    (Object) transformTableId);
             refreshCache();
             transaction.commit();
         } finally {
@@ -231,9 +234,12 @@ public class TransformService extends AbstractService implements ITransformServi
             table.setTargetSchemaName(rs.getString("target_schema_name"));
             table.setTargetTableName(rs.getString("target_table_name"));
             try {
-                table.setTransformPoint(TransformPoint.valueOf(rs.getString("transform_point").toUpperCase()));
+                table.setTransformPoint(TransformPoint.valueOf(rs.getString("transform_point")
+                        .toUpperCase()));
             } catch (RuntimeException ex) {
-                log.warn("Invalid value provided for transform_point: {}", rs.getString("transform_point"));
+                log.warn(
+                        "Invalid value provided for transform_point of '{}.'  Valid values are: {}",
+                        rs.getString("transform_point"), Arrays.toString(TransformPoint.values()));
                 throw ex;
             }
             table.setTransformOrder(rs.getInt("transform_order"));
