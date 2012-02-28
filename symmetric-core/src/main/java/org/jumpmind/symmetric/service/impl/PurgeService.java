@@ -34,10 +34,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.springframework.jdbc.core.RowMapper;
