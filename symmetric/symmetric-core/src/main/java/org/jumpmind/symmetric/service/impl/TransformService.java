@@ -230,7 +230,12 @@ public class TransformService extends AbstractService implements ITransformServi
             table.setTargetCatalogName(rs.getString("target_catalog_name"));
             table.setTargetSchemaName(rs.getString("target_schema_name"));
             table.setTargetTableName(rs.getString("target_table_name"));
-            table.setTransformPoint(TransformPoint.valueOf(rs.getString("transform_point")));
+            try {
+                table.setTransformPoint(TransformPoint.valueOf(rs.getString("transform_point").toUpperCase()));
+            } catch (RuntimeException ex) {
+                log.warn("Invalid value provided for transform_point: {}", rs.getString("transform_point"));
+                throw ex;
+            }
             table.setTransformOrder(rs.getInt("transform_order"));
             table.setUpdateFirst(rs.getBoolean("update_first"));
             table.setDeleteAction(DeleteAction.valueOf(rs.getString("delete_action")));
