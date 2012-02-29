@@ -1115,6 +1115,12 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                     The transform behaves as the Java substring function would using the specified values in transform_expression.
                 </listitem>
                 <listitem>
+                    Lookup Transform ('lookup'):  This transformation allows for the lookup of a column value from a single row using a SQL statement provided in the transform_expression.
+                    The SQL statement can access the current source row using parameters with a name of the source column name in upper case prefixed by a colon.
+                    For example, a SQL statement that looks up <code>customer_id</code> from another table using the <code>id</code> column of the current source row
+                    is <code>select customer_id from customers where group_id = :ID</code>.
+                </listitem>
+                <listitem>
                     Multiplier Transform ('multiply'):  This transformation allows for the creation of multiple rows in the target table based on the transform_expression.  This transform type
                     can only be used on a primary key column.  The transform_expression is a SQL statement that returns the list to be used to create the multiple targets.
                 </listitem>
@@ -1127,8 +1133,8 @@ insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
                     <code>jdbcTemplate</code> is a Spring JdbcTemplate object for querying or updating the database.
                 </listitem> 
                  <listitem>
-                    Variable Transform ('variable'):  This transformation allows you to place a dynamic variable (such as the current database time) into the target column.  The transform_expression's'
-                    currently supported are:  system_timestamp.
+                    Variable Transform ('variable'):  This transformation allows you to place a dynamic variable (such as the current database time) into the target column.  The only transform_expression
+                    value currently supported is <code>system_timestamp</code>.
                  </listitem>                        
                  <listitem>
                     Identity Transform ('identity'):  This transformation allows you to insert into a identity column by computing a new identity, not copying the actual identity value from the source.
