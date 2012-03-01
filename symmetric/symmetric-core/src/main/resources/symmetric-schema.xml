@@ -401,7 +401,7 @@
     
     <table name="transform_table" description="Defines a data loader transformation which can be used to map arbitrary tables and columns to other tables and columns.">
         <column name="transform_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific transform." />
-        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes are captured." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />        
         <column name="transform_point" type="VARCHAR" size="10" required="true" description="The point during the transport of captured data that a transform happens.  Support values are EXTRACT or LOAD." />
         <column name="source_catalog_name" type="VARCHAR" size="128" description="Optional name for the catalog the configured table is in." />
@@ -424,6 +424,22 @@
         <column name="transform_type" type="VARCHAR" size="50" default="copy"  description="The name of a specific type of transform.  Custom transformers can be configured as extension points." />
         <column name="transform_expression" type="LONGVARCHAR" description="An expression that is specific to the type of transform that is configured in transform_type.  See the documentation for each transformer for more details." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>        
+    </table>
+    
+    <table name="conflict_resolver" description="Defines how conflicts in row data should be handled during the load process.">
+        <column name="conflict_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific conflict resolver." />
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" description="The node group where data changes are captured." />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The node group where data changes will be sent." />
+        <column name="target_channel_id" type="VARCHAR" size="20"  description="Optional id of a channel that this conflict resolver will be applied to.  If left blank the resolver will applied to all tables specified by the target_table_name in the specified node group." />                
+        <column name="target_catalog_name" type="VARCHAR" size="128" description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
+        <column name="target_schema_name" type="VARCHAR" size="128" description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
+        <column name="target_table_name" type="VARCHAR" size="128" description="Optional name for a target table that this resolver will be applied to.  If left blank, the resolver will be for any table in the specified channel or specified node group." />
+        <column name="detector_type_update" type="VARCHAR" size="128" description="Possible values: row_missing, newer_timestamp_column, bigger_version_column, columns_changed_check, row_changed_check" />
+        <column name="resolver_type_update" type="VARCHAR" size="128" description="Possible values: newer_version_wins, last_sync_wins, manual" />
+        <column name="resolver_type_insert" type="VARCHAR" size="128" description="Possible values: newer_version_wins, last_sync_wins, ignore, blind_fallback, manual" />
+        <column name="resolver_type_delete" type="VARCHAR" size="128" description="ignore, manual" />
+        <column name="resolver_column_name" type="VARCHAR" size="128" description="The name of a column that is used by the chosen resolver should the resolver need a column to use in resolution" />
+        <column name="retry_count" type="INTEGER" required="true" default="-1" description="The number of times a batch in conflict will be retried before it is skipped.  A setting of -1 means that the batch will be retried indefinitely." />
     </table>
     
     <!-- 

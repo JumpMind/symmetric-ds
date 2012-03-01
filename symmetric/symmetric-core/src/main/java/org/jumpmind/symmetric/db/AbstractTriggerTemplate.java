@@ -30,6 +30,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -78,7 +79,9 @@ abstract public class AbstractTriggerTemplate {
 
     protected String dateColumnTemplate;
 
-    protected String dateTimeWithTimeZoneTemplate;
+    protected String dateTimeWithTimeZoneColumnTemplate;
+    
+    protected String geometryColumnTemplate;
 
     protected String clobColumnTemplate;
 
@@ -647,26 +650,28 @@ abstract public class AbstractTriggerTemplate {
                     case Types.BIT:
                         templateToUse = booleanColumnTemplate;
                         break;
-                    case Types.NULL:
-                    case Types.OTHER:
-                        templateToUse = this.otherColumnTemplate;
-                        break;
-                    case -101:
-                        if (StringUtils.isNotBlank(this.dateTimeWithTimeZoneTemplate)) {
-                            templateToUse = this.dateTimeWithTimeZoneTemplate;
-                            break;
-                        }
-                    case Types.JAVA_OBJECT:
-                    case Types.DISTINCT:
-                    case Types.STRUCT:
-                    case Types.REF:
-                    case Types.DATALINK:
                     default:
-                        if (column.getJdbcTypeName() != null
-                                && column.getJdbcTypeName().equalsIgnoreCase("interval")) {
-                            templateToUse = numberColumnTemplate;
-                            break;
+                        if (column.getJdbcTypeName() != null) {                            
+                            if (column.getJdbcTypeName().toUpperCase().equals(TypeMap.INTERVAL)) {
+                                templateToUse = numberColumnTemplate;
+                                 break;
+                            } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)
+                                    && StringUtils.isNotBlank(geometryColumnTemplate)) {
+                                templateToUse = geometryColumnTemplate;
+                                break;
+                            } else if (column.getType().equals(TypeMap.TIMESTAMPTZ)
+                                    && StringUtils.isNotBlank(this.dateTimeWithTimeZoneColumnTemplate)) {
+                                templateToUse = this.dateTimeWithTimeZoneColumnTemplate;
+                                break;
+                            }
+
                         }
+                        
+                        if (StringUtils.isBlank(templateToUse) && StringUtils.isNotBlank(this.otherColumnTemplate)) {
+                            templateToUse = this.otherColumnTemplate;
+                            break;
+                        }  
+                        
                         throw new NotImplementedException(column.getName() + " is of type "
                                 + column.getType() + " with JDBC type of "
                                 + column.getJdbcTypeName());

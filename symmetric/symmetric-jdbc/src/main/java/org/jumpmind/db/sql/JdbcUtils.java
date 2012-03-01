@@ -36,12 +36,8 @@ abstract public class JdbcUtils {
         }
     }
     
-    public static void main(String[] args) {
-        System.out.println(new byte[] {'0'}.getClass().equals(byte[].class));
-    }
-    
     protected static int verifyArgType(int argType) {
-        if (argType == -101) {
+        if (argType == -101 || argType == Types.OTHER) {
             return SqlTypeValue.TYPE_UNKNOWN;
         } else {
             return argType;

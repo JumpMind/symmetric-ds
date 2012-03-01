@@ -1,6 +1,7 @@
 package org.jumpmind.db.platform.oracle;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.DmlStatement;
 
 public class OracleDmlStatement extends DmlStatement {
@@ -18,6 +19,8 @@ public class OracleDmlStatement extends DmlStatement {
             if (columns[i] != null) {
                 if (columns[i].getTypeCode() == -101) {
                     sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')").append(",");
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+                    sql.append("SYM_WKT2GEOM(?)").append(",");   
                 } else {
                     sql.append("?").append(",");
                 }
@@ -36,6 +39,9 @@ public class OracleDmlStatement extends DmlStatement {
                 if (columns[i].getTypeCode() == -101) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                             .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')").append(separator);
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                    .append(" = ").append("SYM_WKT2GEOM(?)").append(separator);
                 } else {
                     sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?").append(separator);
                 }
