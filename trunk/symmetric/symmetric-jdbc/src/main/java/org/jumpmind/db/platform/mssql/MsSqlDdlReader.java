@@ -148,12 +148,12 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         }
     }
 
-    protected Integer overrideJdbcTypeForColumn(Map<String, Object> values) {
+    protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.startsWith("TEXT")) {
             return Types.CLOB;
         } else {
-            return super.overrideJdbcTypeForColumn(values);
+            return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
 

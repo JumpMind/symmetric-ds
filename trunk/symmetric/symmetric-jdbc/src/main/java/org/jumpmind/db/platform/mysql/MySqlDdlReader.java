@@ -63,13 +63,13 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Integer overrideJdbcTypeForColumn(Map<String, Object> values) {
+    protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
         if ("YEAR".equals(typeName)) {
             // it is safe to map a YEAR to INTEGER
             return Types.INTEGER;
         } else {
-            return super.overrideJdbcTypeForColumn(values);
+            return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
 

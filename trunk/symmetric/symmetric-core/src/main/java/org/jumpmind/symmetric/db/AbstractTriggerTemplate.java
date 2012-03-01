@@ -138,7 +138,7 @@ abstract public class AbstractTriggerTemplate {
         sql = FormatUtils.replace("groupId", node.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", node.getExternalId(), sql);
         sql = FormatUtils.replace("nodeId", node.getNodeId(), sql);
-        sql = replaceDefaultSchemaAndCatalog(triggerRouter.getTrigger(), sql);
+        sql = replaceDefaultSchemaAndCatalog(sql);
         sql = FormatUtils.replace("prefixName", symmetricDialect.getTablePrefix(), sql);
         sql = FormatUtils.replace("oracleToClob",
                 triggerRouter.getTrigger().isUseCaptureLobs() ? "to_clob('')||" : "", sql);
@@ -172,20 +172,13 @@ abstract public class AbstractTriggerTemplate {
             return name;
         }
     }
-
-    protected String replaceDefaultSchemaAndCatalog(Trigger trigger,
-            String sql) {
+    
+    protected String replaceDefaultSchemaAndCatalog(String sql) {
         String defaultCatalog = symmetricDialect.getPlatform().getDefaultCatalog();
         String defaultSchema = symmetricDialect.getPlatform().getDefaultSchema();
-
-        boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
-                || trigger.getSourceSchemaName() != null;
-
         sql = replaceDefaultSchema(sql, defaultSchema);
-
-        return FormatUtils.replace("defaultCatalog", resolveSchemaAndCatalogs
-                && defaultCatalog != null && defaultCatalog.length() > 0 ? defaultCatalog + "."
-                : "", sql);
+        sql = replaceDefaultCatalog(sql, defaultCatalog);
+        return sql;
     }
 
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory,
@@ -212,7 +205,7 @@ abstract public class AbstractTriggerTemplate {
                         table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()),
                 sql);
 
-        sql = replaceDefaultSchemaAndCatalog(trigger, sql);
+        sql = replaceDefaultSchemaAndCatalog(sql);
 
         return sql;
     }
@@ -331,7 +324,7 @@ abstract public class AbstractTriggerTemplate {
                 newColumnPrefix, columns, dml, false, channel, trigger);
         ddl = FormatUtils.replace("columns", columnString.toString(), ddl);
 
-        ddl = replaceDefaultSchemaAndCatalog(trigger, ddl);
+        ddl = replaceDefaultSchemaAndCatalog(ddl);
 
         ddl = FormatUtils
                 .replace(
@@ -398,7 +391,7 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("newColumnPrefix", newColumnPrefix, ddl);
         ddl = FormatUtils.replace("oldColumnPrefix", oldColumnPrefix, ddl);
         ddl = FormatUtils.replace("prefixName", tablePrefix, ddl);
-        ddl = replaceDefaultSchemaAndCatalog(trigger, ddl);
+        ddl = replaceDefaultSchemaAndCatalog(ddl);
 
         ddl = FormatUtils.replace("oracleToClob",
                 trigger.isUseCaptureLobs() ? "to_clob('')||" : "", ddl);
@@ -914,12 +907,12 @@ abstract public class AbstractTriggerTemplate {
         this.newColumnPrefix = newColumnPrefix;
     }
 
-    public String getFunctionSql(String functionKey, String functionName, String defaultSchema) {
+    public String getFunctionSql(String functionKey, String functionName) {
         if (this.functionTemplatesToInstall != null) {
             String ddl = FormatUtils.replace("functionName", functionName,
                     this.functionTemplatesToInstall.get(functionKey));
             ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = replaceDefaultSchema(ddl, defaultSchema);
+            ddl = replaceDefaultSchemaAndCatalog(ddl);
             return ddl;
         } else {
             return null;
@@ -929,9 +922,20 @@ abstract public class AbstractTriggerTemplate {
     protected String replaceDefaultSchema(String ddl, String defaultSchema) {
         if (StringUtils.isNotBlank(defaultSchema)) {
             ddl = FormatUtils.replace("defaultSchema", quote(defaultSchema) + ".", ddl);
+        } else {
+            ddl = FormatUtils.replace("defaultSchema", "", ddl);
         }
         return ddl;
     }
+    
+    protected String replaceDefaultCatalog(String ddl, String defaultCatalog) {
+        if (StringUtils.isNotBlank(defaultCatalog)) {
+            ddl = FormatUtils.replace("defaultCatalog", quote(defaultCatalog) + ".", ddl);
+        } else {
+            ddl = FormatUtils.replace("defaultCatalog", "", ddl);
+        }
+        return ddl;
+    }    
 
     public String getFunctionInstalledSql(String functionName, String defaultSchema) {
         if (functionInstalledSql != null) {

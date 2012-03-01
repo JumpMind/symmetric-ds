@@ -156,8 +156,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             if (this.platform.getSqlTemplate().queryForInt(
                     triggerText.getFunctionInstalledSql(funcName, platform.getDefaultSchema())) == 0) {
                 this.platform.getSqlTemplate().update(
-                        triggerText.getFunctionSql(functions[i], funcName,
-                                platform.getDefaultSchema()));
+                        triggerText.getFunctionSql(functions[i], funcName));
                 log.info("Just installed {}", funcName);
             }
         }

@@ -54,17 +54,21 @@ public class Column implements Cloneable, Serializable {
     private boolean primaryKey;
 
     /**
-     * Whether the column is required, ie. it must not contain <code>NULL</code>.
+     * Whether the column is required, ie. it must not contain <code>NULL</code>
      */
     private boolean required;
 
     /** Whether the column's value is incremented automatically. */
     private boolean autoIncrement;
 
-    /** The JDBC type code, one of the constants in {@link java.sql.Types}. */
+    /**
+     * The mapped JDBC type code
+     */
     private int typeCode;
 
-    /** The name of the JDBC type. */
+    /**
+     * The mapped JDBC type
+     * */
     private String type;
 
     /** The size of the column for JDBC types that require/support this. */
@@ -79,17 +83,25 @@ public class Column implements Cloneable, Serializable {
     /** The default value. */
     private String defaultValue;
 
+    /**
+     * The actual JDBC type code.
+     */
+    private int jdbcTypeCode;
+
+    /**
+     * The actual JDBC type name.
+     */
     private String jdbcTypeName;
 
     private boolean distributionKey;
-    
-    public Column() {     
+
+    public Column() {
     }
-    
+
     public Column(String name) {
         this(name, false);
     }
-    
+
     public Column(String name, boolean primaryKey) {
         setName(name);
         setPrimaryKey(primaryKey);
@@ -422,35 +434,35 @@ public class Column implements Cloneable, Serializable {
         if ((defaultValue != null) && (defaultValue.length() > 0)) {
             try {
                 switch (typeCode) {
-                case Types.TINYINT:
-                case Types.SMALLINT:
-                    return new Short(defaultValue);
-                case Types.INTEGER:
-                    return new Integer(defaultValue);
-                case Types.BIGINT:
-                    return new Long(defaultValue);
-                case Types.DECIMAL:
-                case Types.NUMERIC:
-                    return new BigDecimal(defaultValue);
-                case Types.REAL:
-                    return new Float(defaultValue);
-                case Types.DOUBLE:
-                case Types.FLOAT:
-                    return new Double(defaultValue);
-                case Types.DATE:
-                    return Date.valueOf(defaultValue);
-                case Types.TIME:
-                    return Time.valueOf(defaultValue);
-                case Types.TIMESTAMP:
-                    return Timestamp.valueOf(defaultValue);
-                case Types.BIT:
-                    return ConvertUtils.convert(defaultValue, Boolean.class);
-                default:
-                    if (PlatformUtils.supportsJava14JdbcTypes()
-                            && (typeCode == PlatformUtils.determineBooleanTypeCode())) {
+                    case Types.TINYINT:
+                    case Types.SMALLINT:
+                        return new Short(defaultValue);
+                    case Types.INTEGER:
+                        return new Integer(defaultValue);
+                    case Types.BIGINT:
+                        return new Long(defaultValue);
+                    case Types.DECIMAL:
+                    case Types.NUMERIC:
+                        return new BigDecimal(defaultValue);
+                    case Types.REAL:
+                        return new Float(defaultValue);
+                    case Types.DOUBLE:
+                    case Types.FLOAT:
+                        return new Double(defaultValue);
+                    case Types.DATE:
+                        return Date.valueOf(defaultValue);
+                    case Types.TIME:
+                        return Time.valueOf(defaultValue);
+                    case Types.TIMESTAMP:
+                        return Timestamp.valueOf(defaultValue);
+                    case Types.BIT:
                         return ConvertUtils.convert(defaultValue, Boolean.class);
-                    }
-                    break;
+                    default:
+                        if (PlatformUtils.supportsJava14JdbcTypes()
+                                && (typeCode == PlatformUtils.determineBooleanTypeCode())) {
+                            return ConvertUtils.convert(defaultValue, Boolean.class);
+                        }
+                        break;
                 }
             } catch (NumberFormatException ex) {
                 return null;
@@ -612,6 +624,14 @@ public class Column implements Cloneable, Serializable {
 
     public void setDistributionKey(boolean distributionKey) {
         this.distributionKey = distributionKey;
+    }
+
+    public void setJdbcTypeCode(int jdbcTypeCode) {
+        this.jdbcTypeCode = jdbcTypeCode;
+    }
+
+    public int getJdbcTypeCode() {
+        return jdbcTypeCode;
     }
 
 }

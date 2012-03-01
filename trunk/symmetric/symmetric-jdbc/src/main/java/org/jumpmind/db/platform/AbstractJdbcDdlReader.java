@@ -827,7 +827,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
     }
 
-    protected Integer overrideJdbcTypeForColumn(Map<String, Object> values) {
+    protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         return null;
     }
 
@@ -849,13 +849,15 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         if (defaultValue != null) {
             column.setDefaultValue(defaultValue.trim());
         }
-        Integer jdbcType = overrideJdbcTypeForColumn(values);
+        
+        Integer jdbcType = mapUnknownJdbcTypeForColumn(values);
         if (jdbcType != null) {
             column.setTypeCode(jdbcType);
         } else {
             column.setTypeCode((Integer) values.get("DATA_TYPE"));
         }
 
+        column.setJdbcTypeCode((Integer) values.get("DATA_TYPE"));
         column.setJdbcTypeName((String) values.get("TYPE_NAME"));
         column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
 
