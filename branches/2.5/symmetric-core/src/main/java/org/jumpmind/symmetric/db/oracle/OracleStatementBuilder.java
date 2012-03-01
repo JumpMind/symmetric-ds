@@ -1,15 +1,16 @@
 package org.jumpmind.symmetric.db.oracle;
 
 import org.jumpmind.symmetric.ddl.model.Column;
+import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.load.StatementBuilder;
 
 public class OracleStatementBuilder extends StatementBuilder {
 
     public OracleStatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
             Column[] preFilteredColumns, boolean isDateOverrideToTimestamp,
-            String identifierQuoteString) {
+            String identifierQuoteString, String tablePrefix) {
         super(type, tableName, keys, columns, preFilteredColumns, isDateOverrideToTimestamp,
-                identifierQuoteString);
+                identifierQuoteString, tablePrefix);
     }
     
     @Override
@@ -18,6 +19,8 @@ public class OracleStatementBuilder extends StatementBuilder {
             if (columns[i] != null) {
                 if (columns[i].getTypeCode() == -101) {
                     sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')").append(",");
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+                    sql.append(tablePrefix).append("_WKT2GEOM(?)").append(",");                    
                 } else {
                     sql.append("?").append(",");
                 }
@@ -36,6 +39,9 @@ public class OracleStatementBuilder extends StatementBuilder {
                 if (columns[i].getTypeCode() == -101) {
                     sql.append(quote).append(columns[i].getName()).append(quote)
                             .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')").append(separator);
+                } else if (columns[i].getType().equals(TypeMap.GEOMETRY)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                    .append(" = ").append(tablePrefix).append("_WKT2GEOM(?)").append(separator);
                 } else {
                     sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?").append(separator);
                 }

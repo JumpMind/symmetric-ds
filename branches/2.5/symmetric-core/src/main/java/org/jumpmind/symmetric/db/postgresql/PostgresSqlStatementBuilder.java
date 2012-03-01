@@ -28,9 +28,9 @@ public class PostgresSqlStatementBuilder extends StatementBuilder {
 
     public PostgresSqlStatementBuilder(DmlType type, String tableName, Column[] keys,
             Column[] columns, Column[] preFilteredColumns, boolean isDateOverrideToTimestamp,
-            String identifierQuoteString) {
+            String identifierQuoteString, String tablePrefix) {
         super(type, tableName, keys, columns, preFilteredColumns, isDateOverrideToTimestamp,
-                identifierQuoteString);
+                identifierQuoteString, tablePrefix);
     }
 
     @Override

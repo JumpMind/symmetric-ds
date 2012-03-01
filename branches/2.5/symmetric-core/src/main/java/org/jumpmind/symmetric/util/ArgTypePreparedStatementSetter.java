@@ -54,8 +54,17 @@ public class ArgTypePreparedStatementSetter implements PreparedStatementSetter {
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else {
-                StatementCreatorUtils.setParameterValue(ps, i, argType == -101 ? Types.VARCHAR : argType, arg);
+                StatementCreatorUtils.setParameterValue(ps, i,
+                        translateUnrecognizedArgTypes(argType), arg);
             }
+        }
+    }
+    
+    protected int translateUnrecognizedArgTypes(int argType) {
+        if (argType == -101 || argType == Types.OTHER) {
+            return Types.VARCHAR;
+        } else {
+            return argType;
         }
     }
 

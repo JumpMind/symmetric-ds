@@ -29,8 +29,6 @@ import org.jumpmind.symmetric.ddl.util.Jdbc3Utils;
 /**
  * A class that maps SQL type names to their JDBC type ID found in
  * {@link java.sql.Types} and vice versa.
- *
- * @version $Revision: 463305 $
  */
 public abstract class TypeMap
 {
@@ -89,7 +87,7 @@ public abstract class TypeMap
     /** The string representation of the {@link java.sql.Types#TIMESTAMP} constant. */
     public static final String TIMESTAMP     = "TIMESTAMP";
     
-    public static final String TIMESTAMPTZ     = "TIMESTAMPTZ";
+    public static final String TIMESTAMPTZ   = "TIMESTAMPTZ";
     
     /** The string representation of the {@link java.sql.Types#TINYINT} constant. */
     public static final String TINYINT       = "TINYINT";
@@ -99,6 +97,10 @@ public abstract class TypeMap
     public static final String VARCHAR       = "VARCHAR";
     
     public static final String SQLXML = "SQLXML";
+    
+    public static final String GEOMETRY = "GEOMETRY";
+    
+    public static final String INTERVAL = "INTERVAL";
 
     public static final String NCHAR = "NCHAR";
     public static final String NVARCHAR = "NVARCHAR";

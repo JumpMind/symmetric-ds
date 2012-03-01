@@ -101,13 +101,38 @@
                                 ]]>
                             </value>
                         </entry> 
+                        <entry key="wkt2geom">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE
+                                  FUNCTION $(functionName)(
+                                      clob_in IN CLOB)
+                                    RETURN SDO_GEOMETRY
+                                  AS
+                                    v_out SDO_GEOMETRY := NULL;
+                                  BEGIN
+                                    IF clob_in IS NOT NULL THEN
+                                      IF DBMS_LOB.GETLENGTH(clob_in) > 0 THEN
+                                        v_out := SDO_GEOMETRY(clob_in);
+                                      END IF;
+                                    END IF;
+                                    RETURN v_out;
+                                  END $(functionName); 
+                                ]]>
+                            </value>
+                        </entry>
                     </map>
                 </property>
-                <property name="stringColumnTemplate" >
+                <property name="stringColumnTemplate">
                     <value>
                         <![CDATA[ decode($(tableAlias)."$(columnName)", null, $(oracleToClob)'', '"'||replace(replace($(oracleToClob)$(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"')]]>
                     </value>
                 </property>
+                <property name="geometryColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then to_clob('') else '"'||replace(replace(SDO_UTIL.TO_WKTGEOMETRY($(tableAlias)."$(columnName)"),'\','\\'),'"','\"')||'"' end]]>
+                    </value>
+                </property>                
                 <property name="clobColumnTemplate">
                     <value>
                         <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, to_clob(''), '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"')]]>

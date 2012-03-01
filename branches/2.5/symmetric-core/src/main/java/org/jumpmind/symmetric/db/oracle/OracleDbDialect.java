@@ -87,7 +87,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public StatementBuilder createStatementBuilder(DmlType type, String tableName, Column[] keys,
             Column[] columns, Column[] preFilteredColumns) {
         return new OracleStatementBuilder(type, tableName, keys, columns, preFilteredColumns,
-                isDateOverrideToTimestamp(), getIdentifierQuoteString());
+                isDateOverrideToTimestamp(), getIdentifierQuoteString(), tablePrefix);
     }
 
     @Override
