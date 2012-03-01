@@ -1384,7 +1384,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public StatementBuilder createStatementBuilder(DmlType type, String tableName, Column[] keys,
             Column[] columns, Column[] preFilteredColumns) {
         return new StatementBuilder(type, tableName, keys, columns, preFilteredColumns,
-                isDateOverrideToTimestamp(), getIdentifierQuoteString());
+                isDateOverrideToTimestamp(), getIdentifierQuoteString(), tablePrefix);
     }
 
     public void setPrimaryKeyViolationCodes(int[] primaryKeyViolationCodes) {

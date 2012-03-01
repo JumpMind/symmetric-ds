@@ -72,7 +72,7 @@ public class Oracle8Platform extends PlatformImplBase
         info.addNativeTypeMapping(Types.LONGVARCHAR,   "CLOB",             Types.CLOB);
         info.addNativeTypeMapping(Types.NULL,          "BLOB",             Types.BLOB);
         info.addNativeTypeMapping(Types.NUMERIC,       "NUMBER",           Types.DECIMAL);
-        info.addNativeTypeMapping(Types.INTEGER,       "NUMBER(22)",           Types.DECIMAL);
+        info.addNativeTypeMapping(Types.INTEGER,       "NUMBER(22)",       Types.DECIMAL);
         info.addNativeTypeMapping(Types.OTHER,         "BLOB",             Types.BLOB);
         info.addNativeTypeMapping(Types.REF,           "BLOB",             Types.BLOB);
         info.addNativeTypeMapping(Types.SMALLINT,      "NUMBER(5)");

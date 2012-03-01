@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.ddl.model.Column;
 import org.jumpmind.symmetric.ddl.model.Table;
+import org.jumpmind.symmetric.ddl.model.TypeMap;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
@@ -75,7 +76,7 @@ public class SqlTemplate {
     private String numberColumnTemplate;
 
     private String datetimeColumnTemplate;
-    
+
     private String datetimeWithTimezoneTemplate;
 
     private String timeColumnTemplate;
@@ -90,6 +91,8 @@ public class SqlTemplate {
 
     private String booleanColumnTemplate;
 
+    private String geometryColumnTemplate;
+
     private String triggerConcatCharacter;
 
     private String newTriggerValue;
@@ -101,7 +104,7 @@ public class SqlTemplate {
     private String newColumnPrefix = "";
 
     private String otherColumnTemplate;
-    
+
     public String createInitalLoadSql(Node node, IDbDialect dialect, TriggerRouter triggerRouter,
             Table table, TriggerHistory triggerHistory, Channel channel) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
@@ -115,13 +118,16 @@ public class SqlTemplate {
                 .replace(
                         "whereClause",
                         StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
-                                : triggerRouter.getInitialLoadSelect(), sql);       
+                                : triggerRouter.getInitialLoadSelect(), sql);
         sql = AppUtils.replace("tableName", quote(table.getName(), dialect), sql);
-        sql = AppUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger(), dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
+        sql = AppUtils.replace("schemaName",
+                triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger(), dialect)
+                        : getSourceTablePrefix(triggerHistory, dialect), sql);
         sql = AppUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(),
-                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), sql);
+                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()),
+                sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to
         // reference the node that is being loaded
@@ -137,22 +143,22 @@ public class SqlTemplate {
     }
 
     protected String getSourceTablePrefix(Trigger trigger, IDbDialect dbDialect) {
-        String schemaPlus = (trigger.getSourceSchemaName() != null ?
-                trigger.getSourceSchemaName() + "." : "");
-        String catalogPlus = (trigger.getSourceCatalogName() != null ?
-                trigger.getSourceCatalogName() + "." : "")
+        String schemaPlus = (trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName()
+                + "." : "");
+        String catalogPlus = (trigger.getSourceCatalogName() != null ? trigger
+                .getSourceCatalogName() + "." : "")
                 + schemaPlus;
         return catalogPlus;
     }
-    
+
     protected String getSourceTablePrefix(TriggerHistory triggerHistory, IDbDialect dbDialect) {
-        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? 
-                triggerHistory.getSourceSchemaName() + "." : "");
-        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? 
-                triggerHistory.getSourceCatalogName() + "." : "")
+        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? triggerHistory
+                .getSourceSchemaName() + "." : "");
+        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? triggerHistory
+                .getSourceCatalogName() + "." : "")
                 + schemaPlus;
         return catalogPlus;
-    }    
+    }
 
     protected String quote(String name, IDbDialect dbDialect) {
         String quote = dbDialect.getIdentifierQuoteString();
@@ -169,8 +175,8 @@ public class SqlTemplate {
         String defaultSchema = dbDialect.getDefaultSchema();
 
         boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
-        || trigger.getSourceSchemaName() != null;
-        
+                || trigger.getSourceSchemaName() != null;
+
         sql = AppUtils.replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
                 && defaultSchema.length() > 0 ? defaultSchema + "." : "", sql);
 
@@ -179,8 +185,8 @@ public class SqlTemplate {
                 : "", sql);
     }
 
-    public String createCsvDataSql(IDbDialect dialect, Trigger trigger, TriggerHistory triggerHistory, Table table,
-            Channel channel, String whereClause) {
+    public String createCsvDataSql(IDbDialect dialect, Trigger trigger,
+            TriggerHistory triggerHistory, Table table, Channel channel, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = trigger.orderColumnsForTable(table);
@@ -192,21 +198,24 @@ public class SqlTemplate {
                 sql);
 
         sql = AppUtils.replace("tableName", quote(table.getName(), dialect), sql);
-        sql = AppUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
+        sql = AppUtils.replace("schemaName",
+                triggerHistory == null ? getSourceTablePrefix(trigger, dialect)
+                        : getSourceTablePrefix(triggerHistory, dialect), sql);
 
         sql = AppUtils.replace("whereClause", whereClause, sql);
         sql = AppUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(),
-                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), sql);
+                        table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()),
+                sql);
 
         sql = replaceDefaultSchemaAndCatalog(dialect, trigger, sql);
 
         return sql;
     }
 
-    public String createCsvPrimaryKeySql(IDbDialect dialect, Trigger trigger, TriggerHistory triggerHistory, Table table,
-            Channel channel, String whereClause) {
+    public String createCsvPrimaryKeySql(IDbDialect dialect, Trigger trigger,
+            TriggerHistory triggerHistory, Table table, Channel channel, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = table.getPrimaryKeyColumns();
@@ -217,7 +226,9 @@ public class SqlTemplate {
         sql = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
                 sql);
         sql = AppUtils.replace("tableName", quote(table.getName(), dialect), sql);
-        sql = AppUtils.replace("schemaName", triggerHistory == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(triggerHistory, dialect), sql);
+        sql = AppUtils.replace("schemaName",
+                triggerHistory == null ? getSourceTablePrefix(trigger, dialect)
+                        : getSourceTablePrefix(triggerHistory, dialect), sql);
         sql = AppUtils.replace("whereClause", whereClause, sql);
         sql = AppUtils.replace("primaryKeyWhereString",
                 getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), columns), sql);
@@ -324,44 +335,57 @@ public class SqlTemplate {
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
                         dialect, dml, true, channel, trigger).toString(), ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
-        
+
         // some column templates need tableName and schemaName
-        ddl = AppUtils.replace("tableName", history == null ? quote(trigger.getSourceTableName(), dialect)
-                : quote(history.getSourceTableName(), dialect), ddl);
-        ddl = AppUtils.replace("schemaName",
-                history == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(history, dialect), ddl);
+        ddl = AppUtils.replace(
+                "tableName",
+                history == null ? quote(trigger.getSourceTableName(), dialect) : quote(
+                        history.getSourceTableName(), dialect), ddl);
+        ddl = AppUtils.replace(
+                "schemaName",
+                history == null ? getSourceTablePrefix(trigger, dialect) : getSourceTablePrefix(
+                        history, dialect), ddl);
 
         columns = table.getPrimaryKeyColumns();
         ddl = AppUtils.replace(
                 "oldKeys",
                 buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns,
                         dialect, dml, true, channel, trigger).toString(), ddl);
-        ddl = AppUtils.replace("oldNewPrimaryKeyJoin",
-                aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns.length == 0 ? table.getColumns() : columns), ddl);
-        ddl = AppUtils.replace("tableNewPrimaryKeyJoin",
-                aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns.length == 0 ? table.getColumns() : columns), ddl);
+        ddl = AppUtils.replace(
+                "oldNewPrimaryKeyJoin",
+                aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue,
+                        columns.length == 0 ? table.getColumns() : columns), ddl);
+        ddl = AppUtils.replace(
+                "tableNewPrimaryKeyJoin",
+                aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue,
+                        columns.length == 0 ? table.getColumns() : columns), ddl);
         ddl = AppUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue
-                        : newTriggerValue, table.hasPrimaryKey() ? table.getPrimaryKeyColumns() : table.getColumns()), ddl);
+                        : newTriggerValue, table.hasPrimaryKey() ? table.getPrimaryKeyColumns()
+                        : table.getColumns()), ddl);
 
         ddl = AppUtils.replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"),
                 ddl);
         ddl = AppUtils.replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"),
                 ddl);
-        
+
         String builtString = buildColumnNameString(oldTriggerValue, columns);
-        ddl = AppUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
-        
+        ddl = AppUtils.replace("oldKeyNames", StringUtils.isNotBlank(builtString) ? ","
+                + builtString : "", ddl);
+
         builtString = buildColumnNameString(newTriggerValue, columns);
-        ddl = AppUtils.replace("newKeyNames", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
-        
+        ddl = AppUtils.replace("newKeyNames", StringUtils.isNotBlank(builtString) ? ","
+                + builtString : "", ddl);
+
         builtString = buildKeyVariablesString(columns, "old");
-        ddl = AppUtils.replace("oldKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
-        
+        ddl = AppUtils.replace("oldKeyVariables", StringUtils.isNotBlank(builtString) ? ","
+                + builtString : "", ddl);
+
         builtString = buildKeyVariablesString(columns, "new");
-        ddl = AppUtils.replace("newKeyVariables", StringUtils.isNotBlank(builtString) ? ","+builtString:"", ddl);
-        
+        ddl = AppUtils.replace("newKeyVariables", StringUtils.isNotBlank(builtString) ? ","
+                + builtString : "", ddl);
+
         ddl = AppUtils.replace("varNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoinVar(newTriggerValue, "new", columns), ddl);
         ddl = AppUtils.replace("varOldPrimaryKeyJoin",
@@ -374,21 +398,21 @@ public class SqlTemplate {
         ddl = AppUtils.replace("oldColumnPrefix", oldColumnPrefix, ddl);
         ddl = AppUtils.replace("prefixName", tablePrefix, ddl);
         ddl = replaceDefaultSchemaAndCatalog(dialect, trigger, ddl);
-        
+
         ddl = AppUtils.replace("oracleToClob", trigger.isUseCaptureLobs() ? "to_clob('')||" : "",
                 ddl);
 
         switch (dml) {
-        case DELETE:
-            ddl = AppUtils.replace("curTriggerValue", oldTriggerValue, ddl);
-            ddl = AppUtils.replace("curColumnPrefix", oldColumnPrefix, ddl);
-            break;
-        case INSERT:
-        case UPDATE:
-        default:
-            ddl = AppUtils.replace("curTriggerValue", newTriggerValue, ddl);
-            ddl = AppUtils.replace("curColumnPrefix", newColumnPrefix, ddl);
-            break;
+            case DELETE:
+                ddl = AppUtils.replace("curTriggerValue", oldTriggerValue, ddl);
+                ddl = AppUtils.replace("curColumnPrefix", oldColumnPrefix, ddl);
+                break;
+            case INSERT:
+            case UPDATE:
+            default:
+                ddl = AppUtils.replace("curTriggerValue", newTriggerValue, ddl);
+                ddl = AppUtils.replace("curColumnPrefix", newColumnPrefix, ddl);
+                break;
         }
         return ddl;
     }
@@ -480,47 +504,47 @@ public class SqlTemplate {
 
     // TODO: move to DerbySqlTemplate or change language for use in all DBMSes
     private String getPrimaryKeyWhereString(String alias, Column[] columns) {
-    	List<Column> columnsMinusLobs = new ArrayList<Column>();
-    	for (Column column : columns) {
-    		if (!column.isOfBinaryType()) {
-    			columnsMinusLobs.add(column);
-    		}
-    	}
-    	
+        List<Column> columnsMinusLobs = new ArrayList<Column>();
+        for (Column column : columns) {
+            if (!column.isOfBinaryType()) {
+                columnsMinusLobs.add(column);
+            }
+        }
+
         StringBuilder b = new StringBuilder("'");
         for (Column column : columnsMinusLobs) {
             b.append("\"").append(column.getName()).append("\"=");
             switch (column.getTypeCode()) {
-            case Types.BIT:
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.INTEGER:
-            case Types.BIGINT:
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-            case Types.BOOLEAN:
-                b.append("'").append(triggerConcatCharacter);
-                b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
-                        .append("\"))");
-                b.append(triggerConcatCharacter).append("'");
-                break;
-            case Types.CHAR:
-            case Types.VARCHAR:
-            case Types.LONGVARCHAR:
-                b.append("'''").append(triggerConcatCharacter);
-                b.append(alias).append(".\"").append(column.getName()).append("\"");
-                b.append(triggerConcatCharacter).append("'''");
-                break;
-            case Types.DATE:
-            case Types.TIMESTAMP:
-                b.append("{ts '''").append(triggerConcatCharacter);
-                b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
-                        .append("\"))");
-                b.append(triggerConcatCharacter).append("'''}");
-                break;
+                case Types.BIT:
+                case Types.TINYINT:
+                case Types.SMALLINT:
+                case Types.INTEGER:
+                case Types.BIGINT:
+                case Types.FLOAT:
+                case Types.REAL:
+                case Types.DOUBLE:
+                case Types.NUMERIC:
+                case Types.DECIMAL:
+                case Types.BOOLEAN:
+                    b.append("'").append(triggerConcatCharacter);
+                    b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
+                            .append("\"))");
+                    b.append(triggerConcatCharacter).append("'");
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                    b.append("'''").append(triggerConcatCharacter);
+                    b.append(alias).append(".\"").append(column.getName()).append("\"");
+                    b.append(triggerConcatCharacter).append("'''");
+                    break;
+                case Types.DATE:
+                case Types.TIMESTAMP:
+                    b.append("{ts '''").append(triggerConcatCharacter);
+                    b.append("rtrim(char(").append(alias).append(".\"").append(column.getName())
+                            .append("\"))");
+                    b.append(triggerConcatCharacter).append("'''}");
+                    break;
             }
             if (!column.equals(columnsMinusLobs.get(columnsMinusLobs.size() - 1))) {
                 b.append(" and ");
@@ -545,100 +569,103 @@ public class SqlTemplate {
             if (column != null) {
                 String templateToUse = null;
                 switch (column.getTypeCode()) {
-                case Types.TINYINT:
-                case Types.SMALLINT:
-                case Types.INTEGER:
-                case Types.BIGINT:
-                case Types.FLOAT:
-                case Types.REAL:
-                case Types.DOUBLE:
-                case Types.NUMERIC:
-                case Types.DECIMAL:
-                    templateToUse = numberColumnTemplate;
-                    break;
-                case Types.CHAR:
-                case Types.VARCHAR:
-                    templateToUse = stringColumnTemplate;
-                    break;
-                case Types.LONGVARCHAR:
-                    templateToUse = stringColumnTemplate;
-                    isLob = true;
-                    break;
-                case Types.SQLXML:
-                    templateToUse = xmlColumnTemplate;
-                    break;
-                case Types.ARRAY:
-                    templateToUse = arrayColumnTemplate;
-                    break;
-                case Types.CLOB:
-                    if (isOld && dbDialect.needsToSelectLobData()) {
-                        templateToUse = emptyColumnTemplate;
-                    } else {
-                        templateToUse = clobColumnTemplate;
-                    }
-                    isLob = true;
-                    break;
-                case Types.BLOB:
-                    if (dbDialect instanceof PostgreSqlDbDialect) {
-                        templateToUse = wrappedBlobColumnTemplate;
-                        isLob = true;
-                        break;
-                    }
-                case Types.BINARY:
-                case Types.VARBINARY:
-                case Types.LONGVARBINARY:
-                    // SQL-Server ntext binary type
-                case -10:
-                    if (isOld && dbDialect.needsToSelectLobData()) {
-                        templateToUse = emptyColumnTemplate;
-                    } else {
-                        templateToUse = blobColumnTemplate;
-                    }
-                    isLob = true;
-                    break;
-                case Types.DATE:
-                    if (noDateColumnTemplate()) {
-                        templateToUse = datetimeColumnTemplate;
-                        break;
-                    }
-                    templateToUse = dateColumnTemplate;
-                    break;
-                case Types.TIME:
-                    if (noTimeColumnTemplate()) {
-                        templateToUse = datetimeColumnTemplate;
-                        break;
-                    }
-                    templateToUse = timeColumnTemplate;
-                    break;
-                case Types.TIMESTAMP:
-                    templateToUse = datetimeColumnTemplate;
-                    break;
-                case Types.BOOLEAN:
-                case Types.BIT:
-                    templateToUse = booleanColumnTemplate;
-                    break;
-                case Types.NULL:
-                case Types.OTHER:
-                	templateToUse = this.otherColumnTemplate;
-                	break;
-                case -101:
-                    if (StringUtils.isNotBlank(this.datetimeWithTimezoneTemplate)) {
-                        templateToUse = this.datetimeWithTimezoneTemplate;
-                        break;
-                    }
-                case Types.JAVA_OBJECT:
-                case Types.DISTINCT:
-                case Types.STRUCT:
-                case Types.REF:
-                case Types.DATALINK:
-                default:
-                    if (column.getJdbcTypeName() != null
-                            && column.getJdbcTypeName().equalsIgnoreCase("interval")) {
+                    case Types.TINYINT:
+                    case Types.SMALLINT:
+                    case Types.INTEGER:
+                    case Types.BIGINT:
+                    case Types.FLOAT:
+                    case Types.REAL:
+                    case Types.DOUBLE:
+                    case Types.NUMERIC:
+                    case Types.DECIMAL:
                         templateToUse = numberColumnTemplate;
                         break;
-                    }
-                    throw new NotImplementedException(column.getName() + " is of type "
-                            + column.getType() + " with JDBC type of " + column.getJdbcTypeName());
+                    case Types.CHAR:
+                    case Types.VARCHAR:
+                        templateToUse = stringColumnTemplate;
+                        break;
+                    case Types.LONGVARCHAR:
+                        templateToUse = stringColumnTemplate;
+                        isLob = true;
+                        break;
+                    case Types.SQLXML:
+                        templateToUse = xmlColumnTemplate;
+                        break;
+                    case Types.ARRAY:
+                        templateToUse = arrayColumnTemplate;
+                        break;
+                    case Types.CLOB:
+                        if (isOld && dbDialect.needsToSelectLobData()) {
+                            templateToUse = emptyColumnTemplate;
+                        } else {
+                            templateToUse = clobColumnTemplate;
+                        }
+                        isLob = true;
+                        break;
+                    case Types.BLOB:
+                        if (dbDialect instanceof PostgreSqlDbDialect) {
+                            templateToUse = wrappedBlobColumnTemplate;
+                            isLob = true;
+                            break;
+                        }
+                    case Types.BINARY:
+                    case Types.VARBINARY:
+                    case Types.LONGVARBINARY:
+                        // SQL-Server ntext binary type
+                    case -10:
+                        if (isOld && dbDialect.needsToSelectLobData()) {
+                            templateToUse = emptyColumnTemplate;
+                        } else {
+                            templateToUse = blobColumnTemplate;
+                        }
+                        isLob = true;
+                        break;
+                    case Types.DATE:
+                        if (noDateColumnTemplate()) {
+                            templateToUse = datetimeColumnTemplate;
+                            break;
+                        }
+                        templateToUse = dateColumnTemplate;
+                        break;
+                    case Types.TIME:
+                        if (noTimeColumnTemplate()) {
+                            templateToUse = datetimeColumnTemplate;
+                            break;
+                        }
+                        templateToUse = timeColumnTemplate;
+                        break;
+                    case Types.TIMESTAMP:
+                        templateToUse = datetimeColumnTemplate;
+                        break;
+                    case Types.BOOLEAN:
+                    case Types.BIT:
+                        templateToUse = booleanColumnTemplate;
+                        break;
+                    case -101:
+                        if (StringUtils.isNotBlank(this.datetimeWithTimezoneTemplate)) {
+                            templateToUse = this.datetimeWithTimezoneTemplate;
+                            break;
+                        }
+                    default:
+                        if (column.getJdbcTypeName() != null) {
+                            if (column.getJdbcTypeName().toUpperCase().equals(TypeMap.INTERVAL)) {
+                                templateToUse = numberColumnTemplate;
+                                break;
+                            } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)
+                                    && StringUtils.isNotBlank(geometryColumnTemplate)) {
+                                templateToUse = geometryColumnTemplate;
+                                break;
+                            }
+                        }
+                        
+                        if (StringUtils.isBlank(templateToUse) && StringUtils.isNotBlank(this.otherColumnTemplate)) {
+                            templateToUse = this.otherColumnTemplate;
+                            break;
+                        }      
+                        
+                        throw new NotImplementedException(column.getName() + " is of type "
+                                + column.getType() + " with JDBC type of "
+                                + column.getJdbcTypeName());
                 }
 
                 if (dml == DataEventType.DELETE && isLob && dbDialect instanceof MsSqlDbDialect) {
@@ -680,14 +707,14 @@ public class SqlTemplate {
     }
 
     public String getOtherColumnTemplate() {
-		return otherColumnTemplate;
-	}
+        return otherColumnTemplate;
+    }
 
-	public void setOtherColumnTemplate(String otherColumnTemplate) {
-		this.otherColumnTemplate = otherColumnTemplate;
-	}
+    public void setOtherColumnTemplate(String otherColumnTemplate) {
+        this.otherColumnTemplate = otherColumnTemplate;
+    }
 
-	private boolean noTimeColumnTemplate() {
+    private boolean noTimeColumnTemplate() {
         return timeColumnTemplate == null || timeColumnTemplate.equals("null")
                 || timeColumnTemplate.trim().equals("");
     }
@@ -713,60 +740,60 @@ public class SqlTemplate {
         for (int i = 0; i < columns.length; i++) {
             text += "declare @" + prefix + "pk" + i + " ";
             switch (columns[i].getTypeCode()) {
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.INTEGER:
-            case Types.BIGINT:
-                text += "bigint\n";
-                break;
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-                text += "decimal\n";
-                break;
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-                text += "float\n";
-                break;
-            case Types.CHAR:
-            case Types.VARCHAR:
-            case Types.LONGVARCHAR:
-                text += "varchar(1000)\n";
-                break;
-            case Types.DATE:
-                text += "date\n";
-                break;
-            case Types.TIME:
-                text += "time\n";
-                break;
-            case Types.TIMESTAMP:
-                text += "datetime\n";
-                break;
-            case Types.BOOLEAN:
-            case Types.BIT:
-                text += "bit\n";
-                break;
-            case Types.CLOB:
-                text += "varchar(max)\n";
-                break;
-            case Types.BLOB:
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-            case -10: // SQL-Server ntext binary type
-                text += "varbinary(max)\n";
-                break;
-            case Types.OTHER:
-        		text +="varbinary(max)\n";
-        		break;
-            default:
-                if (columns[i].getJdbcTypeName() != null
-                        && columns[i].getJdbcTypeName().equalsIgnoreCase("interval")) {
-                    text += "interval";
+                case Types.TINYINT:
+                case Types.SMALLINT:
+                case Types.INTEGER:
+                case Types.BIGINT:
+                    text += "bigint\n";
                     break;
-                }
-                throw new NotImplementedException(columns[i] + " is of type "
-                        + columns[i].getType());
+                case Types.NUMERIC:
+                case Types.DECIMAL:
+                    text += "decimal\n";
+                    break;
+                case Types.FLOAT:
+                case Types.REAL:
+                case Types.DOUBLE:
+                    text += "float\n";
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                    text += "varchar(1000)\n";
+                    break;
+                case Types.DATE:
+                    text += "date\n";
+                    break;
+                case Types.TIME:
+                    text += "time\n";
+                    break;
+                case Types.TIMESTAMP:
+                    text += "datetime\n";
+                    break;
+                case Types.BOOLEAN:
+                case Types.BIT:
+                    text += "bit\n";
+                    break;
+                case Types.CLOB:
+                    text += "varchar(max)\n";
+                    break;
+                case Types.BLOB:
+                case Types.BINARY:
+                case Types.VARBINARY:
+                case Types.LONGVARBINARY:
+                case -10: // SQL-Server ntext binary type
+                    text += "varbinary(max)\n";
+                    break;
+                case Types.OTHER:
+                    text += "varbinary(max)\n";
+                    break;
+                default:
+                    if (columns[i].getJdbcTypeName() != null
+                            && columns[i].getJdbcTypeName().equalsIgnoreCase("interval")) {
+                        text += "interval";
+                        break;
+                    }
+                    throw new NotImplementedException(columns[i] + " is of type "
+                            + columns[i].getType());
             }
         }
 
@@ -916,9 +943,13 @@ public class SqlTemplate {
     public void setDateColumnTemplate(String dateColumnTemplate) {
         this.dateColumnTemplate = dateColumnTemplate;
     }
-    
+
     public void setDatetimeWithTimezoneTemplate(String datetimeWithTimezoneTemplate) {
         this.datetimeWithTimezoneTemplate = datetimeWithTimezoneTemplate;
+    }
+
+    public void setGeometryColumnTemplate(String geometryColumnTemplate) {
+        this.geometryColumnTemplate = geometryColumnTemplate;
     }
 
     private class ColumnString {

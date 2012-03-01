@@ -53,13 +53,16 @@ public class StatementBuilder {
     protected Column[] columns;
 
     protected Column[] preFilteredColumns;
+    
+    protected String tablePrefix;
 
     public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
             Column[] preFilteredColumns, boolean isDateOverrideToTimestamp,
-            String identifierQuoteString) {
+            String identifierQuoteString, String tablePrefix) {
         this.keys = keys;
         this.columns = columns;
         this.preFilteredColumns = preFilteredColumns;
+        this.tablePrefix = tablePrefix;
         quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(tableName, keys, columns);

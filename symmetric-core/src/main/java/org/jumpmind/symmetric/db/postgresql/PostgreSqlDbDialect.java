@@ -281,7 +281,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             Column[] columns, Column[] preFilteredColumns) {
         return new PostgresSqlStatementBuilder(type, tableName, keys,
                 columns,
-                preFilteredColumns, isDateOverrideToTimestamp(), getIdentifierQuoteString());
+                preFilteredColumns, isDateOverrideToTimestamp(), getIdentifierQuoteString(), tablePrefix);
     }
 
     
