@@ -9,8 +9,10 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 
     public PostgreSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
-        functionInstalledSql = "select count(*) from information_schema.routines " + 
-"                        where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;
+        //@formatter:off
+        functionInstalledSql = 
+            " select count(*) from information_schema.routines " + 
+            " where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         xmlColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;

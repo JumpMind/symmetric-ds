@@ -128,7 +128,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Integer overrideJdbcTypeForColumn(Map<String, Object> values) {
+    protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.startsWith("DATE")) {
             return Types.DATE;
@@ -151,7 +151,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         } else if (typeName != null && typeName.startsWith("BINARY_DOUBLE")) {
             return Types.DOUBLE;
         } else {
-            return super.overrideJdbcTypeForColumn(values);
+            return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
 

@@ -80,7 +80,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Integer overrideJdbcTypeForColumn(Map<String, Object> values) {
+    protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
             return Types.TIMESTAMP;
@@ -90,7 +90,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
         } else if (typeName != null && typeName.equalsIgnoreCase("OID")) {
             return Types.BLOB;
         } else {
-            return super.overrideJdbcTypeForColumn(values);
+            return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
 
