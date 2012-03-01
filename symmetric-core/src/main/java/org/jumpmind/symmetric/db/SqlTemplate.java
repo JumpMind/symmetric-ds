@@ -143,19 +143,19 @@ public class SqlTemplate {
     }
 
     protected String getSourceTablePrefix(Trigger trigger, IDbDialect dbDialect) {
-        String schemaPlus = (trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName()
-                + "." : "");
-        String catalogPlus = (trigger.getSourceCatalogName() != null ? trigger
-                .getSourceCatalogName() + "." : "")
+        String schemaPlus = StringUtils.isNotBlank(trigger.getSourceSchemaName()) ? 
+                quote(trigger.getSourceSchemaName(), dbDialect) + "." : "";
+        String catalogPlus = (StringUtils.isNotBlank(trigger.getSourceCatalogName()) ? quote(trigger
+                .getSourceCatalogName(), dbDialect) + "." : "")
                 + schemaPlus;
         return catalogPlus;
     }
 
     protected String getSourceTablePrefix(TriggerHistory triggerHistory, IDbDialect dbDialect) {
-        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? triggerHistory
-                .getSourceSchemaName() + "." : "");
-        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? triggerHistory
-                .getSourceCatalogName() + "." : "")
+        String schemaPlus = StringUtils.isNotBlank(triggerHistory.getSourceSchemaName()) ? 
+                quote(triggerHistory.getSourceSchemaName(), dbDialect) + "." : "";
+        String catalogPlus = (StringUtils.isNotBlank(triggerHistory.getSourceCatalogName()) ? quote(triggerHistory
+                .getSourceCatalogName(), dbDialect) + "." : "")
                 + schemaPlus;
         return catalogPlus;
     }
