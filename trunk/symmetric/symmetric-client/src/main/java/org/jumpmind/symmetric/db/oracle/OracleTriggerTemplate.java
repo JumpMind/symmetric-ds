@@ -13,23 +13,20 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         functionInstalledSql = "select count(*) from user_source where line = 1 and ((type = 'FUNCTION' and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, $(oracleToClob)'', '\"'||replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
-        xmlColumnTemplate = null;
-        arrayColumnTemplate = null;
+        geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then to_clob('') else '\"'||replace(replace(SDO_UTIL.TO_WKTGEOMETRY($(tableAlias).\"$(columnName)\"),'\\','\\\\'),'\"','\\\"')||'\"' end";
         numberColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number(30,10))||'\"')" ;
         datetimeColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF3')),'\"'))" ;
-        dateTimeWithTimeZoneTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')),'\"'))" ;        
+        dateTimeWithTimeZoneColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')),'\"'))" ;        
         timeColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS')),'\"'))" ;
         dateColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS')),'\"'))" ;
         clobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
         blobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||sym_blob2clob($(tableAlias).\"$(columnName)\")||'\"')" ;
-        wrappedBlobColumnTemplate = null;
         booleanColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number(30,10))||'\"')" ;
         triggerConcatCharacter = "||" ;
         newTriggerValue = ":new" ;
         oldTriggerValue = ":old" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
-        otherColumnTemplate = null;
 
         functionTemplatesToInstall = new HashMap<String,String>();
         functionTemplatesToInstall.put("blob2clob" ,
@@ -85,6 +82,22 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                    end;                                                                                                                                                               " + 
 "                                end sym_pkg;                                                                                                                                                           " );
 
+        functionTemplatesToInstall.put("wkt2geom" ,
+                "  CREATE OR REPLACE                                                                                                         " + 
+                "    FUNCTION $(functionName)(                            " + 
+                "        clob_in IN CLOB)                                 " + 
+                "      RETURN SDO_GEOMETRY                                " +
+                "    AS                                                   " + 
+                "      v_out SDO_GEOMETRY := NULL;                        " + 
+                "    BEGIN                                                " + 
+                "      IF clob_in IS NOT NULL THEN                        " + 
+                "        IF DBMS_LOB.GETLENGTH(clob_in) > 0 THEN          " +
+                "          v_out := SDO_GEOMETRY(clob_in);                " + 
+                "        END IF;                                          " + 
+                "      END IF;                                            " + 
+                "      RETURN v_out;                                      " + 
+                "    END $(functionName);                                 ");
+                        
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
 "create or replace trigger $(triggerName)                                         \n" +
