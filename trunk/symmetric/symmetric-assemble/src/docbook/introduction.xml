@@ -204,7 +204,7 @@
                 <para>PostgreSQL version 8.2.5 and above</para>
             </listitem>
             <listitem>
-                <para>Sql Server 2005</para>
+                <para>Sql Server 2005 and above</para>
             </listitem>
             <listitem>
                 <para>HSQLDB 1.8</para>
