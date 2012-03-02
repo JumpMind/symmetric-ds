@@ -155,6 +155,7 @@ public class RouterService extends AbstractService implements IRouterService {
         long dataCount = -1l;
         if (clusterService.lock(ClusterConstants.ROUTE)) {
             try {
+                outgoingBatchService.updateAbandonedRoutingBatches();
                 insertInitialLoadEvents();
                 long ts = System.currentTimeMillis();
                 IDataToRouteGapDetector gapDetector = dataToRouteReaderFactory
