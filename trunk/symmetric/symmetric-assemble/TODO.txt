@@ -56,6 +56,7 @@ Documentation
 3.0 Change Notes:
 * Use SLF4J API exclusively. Log4j is used under the hood.
 * The db.metadata.ignore.case property is no long available.  All configured database names will be case sensitive
+* dont.include.keys.in.update.statement is not longer supported.  if old_data is not provided then pks will not be in the update
 * db.spring.bean.name is no longer available
 * dataloader will now load each batch as it arrives.
 * datareload.batch.insert.transactional is no longer available

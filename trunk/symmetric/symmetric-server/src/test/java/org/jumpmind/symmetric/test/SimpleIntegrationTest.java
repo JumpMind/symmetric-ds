@@ -296,8 +296,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // and ignores
         logTestRunning();
 
-        turnOnNoKeysInUpdateParameter(true);
-
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         Order order = new Order("101", 100, null, date);
         order.getOrderDetails().add(
@@ -363,21 +361,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootConfigurationService.saveNodeChannel(c, true);
 
         clientPush();
-    }
-
-    private boolean turnOnNoKeysInUpdateParameter(boolean newValue) {
-        IParameterService clientParameterService = getClient().getParameterService();
-        IParameterService rootParameterService = getServer().getParameterService();
-        Assert.assertEquals(
-                clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE),
-                rootParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
-        boolean oldValue = clientParameterService
-                .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
-        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
-                newValue);
-        rootParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE,
-                newValue);
-        return oldValue;
     }
 
     @Test(timeout = 120000)
@@ -714,7 +697,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void syncToRoot() throws Exception {
         logTestRunning();
-        turnOnNoKeysInUpdateParameter(true);
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         Order order = new Order("10", 100, null, date);
         order.getOrderDetails().add(
@@ -751,7 +733,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void oneColumnTableWithPrimaryKeyUpdate() throws Exception {
         logTestRunning();
-        boolean oldValue = turnOnNoKeysInUpdateParameter(true);
         getServer().getSqlTemplate().update("insert into one_column_table values(1)");
         Assert.assertTrue(getClient().getSqlTemplate().queryForInt(
                 "select count(*) from one_column_table where my_one_column=1") == 0);
@@ -766,8 +747,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientPull();
 
         assertNoPendingBatchesOnServer();
-
-        turnOnNoKeysInUpdateParameter(oldValue);
     }
 
     @Test(timeout = 120000)

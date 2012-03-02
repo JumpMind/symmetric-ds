@@ -14,12 +14,10 @@ public class DatabaseWriterSettings {
         IGNORE_CONTINUE, ERROR_STOP
     };
 
-    // TODO this should not really be here.  it should be on the channel...
     protected long maxRowsBeforeCommit = 10000;
     
     protected boolean treatDateTimeFieldsAsVarchar = false;
     protected boolean usePrimaryKeysFromSource = true;
-    protected boolean dontIncludeKeysInUpdateStatement = true;
 
     protected boolean useAllColumnsToIdentifyUpdateConflicts = false;
 
