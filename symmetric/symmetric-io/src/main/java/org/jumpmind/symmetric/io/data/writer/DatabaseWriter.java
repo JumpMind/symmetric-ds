@@ -496,15 +496,13 @@ public class DatabaseWriter implements IDataWriter {
             needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
                     || (platform.isLob(column.getTypeCode()) && StringUtils
                             .isBlank(oldData[columnIndex]));
-        } else if (batchSettings.dontIncludeKeysInUpdateStatement) {
+        } else {
             // This is in support of creating update statements that don't use
             // the keys in the set portion of the update statement. </p> In
             // oracle (and maybe not only in oracle) if there is no index on
             // child table on FK column and update is performing on PK on master
             // table, table lock is acquired on child table. Table lock is taken
             // not in exclusive mode, but lock contentions is possible.
-            //
-            // @see ParameterConstants#DATA_LOADER_NO_KEYS_IN_UPDATE
             needsUpdated = !column.isPrimaryKey()
                     || !StringUtils.equals(rowData[columnIndex], getPkDataFor(data, column));
         }

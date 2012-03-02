@@ -25,6 +25,7 @@ drop table sym_node_host_job_stats;
 drop table sym_registration_redirect;
 drop table sym_registration_request;
 drop table sym_data;
+drop table sym_conflict_resolver;
 --drop table sym_alert_def_notifier;
 --drop table sym_alert_event_notifier;
 --drop table sym_alert_event;
