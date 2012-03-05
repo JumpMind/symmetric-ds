@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.0.xsd"
+	>
+
+    <!-- 
+      This is an example of how to add and populate a column called STORE_ID
+      on the SALE and SALE_LINE_ITEM table with the external id of the source
+      node.  The STORE_ID column does not exist at the source node.  The filter
+      will only be applied to nodes that have this configuration uncommented
+      out with the node group id of 'root'.
+    
+	<bean class="org.jumpmind.symmetric.map.AddColumnsFilter">
+		<property name="nodeGroupIdsToApplyTo">
+			<list>
+				<value>root</value>
+			</list>
+		</property>
+		<property name="tables">
+			<list>
+				<value>SALE</value>
+				<value>SALE_LINE_ITEM</value>
+			</list>
+		</property>
+		<property name="additionalColumns">
+			<map>
+				<entry key="STORE_ID" value=":EXTERNAL_ID" />
+			</map>
+		</property>
+	</bean>
+	 -->
+	 
+	 <!-- 
+	 This is an example of how to change the names of columns at the target table.
+	<bean class="org.jumpmind.symmetric.map.ChangeColumnsNamesFilter">
+		<property name="nodeGroupIdsToApplyTo">
+			<list>
+				<value>store</value>
+			</list>
+		</property>
+		<property name="tables">
+			<list>
+				<value>STORE_TABLE</value>
+			</list>
+		</property>
+		<property name="columnNameMapping">
+			<map>
+				<entry key="ID_STR_RT" value="STORE_ID" />
+				<entry key="NM_LOC" value="LOCATION_NAME" />
+				<entry key="CO_CNT" value="COUNTRY" />
+			</map>
+		</property>
+	</bean>
+    -->
+    
+  
+    <!-- 
+    
+    This is an example of modifying column values as data is loaded at the 'corp' SymmetricDS instance
+    from the hands on tutorial in the User Guide.  Uncomment this XML configuration block
+    and restart the 'corp' SymmetricDS instance. Insert a row for SALE_TENDER_LINE_ITEM on the client 
+    and inspect the data on the 'corp' database after it is sync'd.  While the server is running 
+    you may modify the content of mask-account-number.bsh.  Touch the data at the client or 
+    insert another row to see how your changes to the script affects synchronization.  
+    <lang:bsh id="maskAccountNumberScript" refresh-check-delay="10000"
+              init-method="init" 
+              script-source="file:../samples/mask-account-number.bsh"
+              script-interfaces="org.jumpmind.symmetric.map.IValueFilter">
+        <lang:property name="mask" value="XXXXXXXX" />
+        <lang:property name="enabled" value="true" />
+    </lang:bsh>
+
+    <bean id="columnFilters" class="org.jumpmind.symmetric.map.ColumnDataFilters">
+        <property name="nodeGroupIdToApplyTo" value="corp"/>
+        <property name="filters">
+            <list>
+                <bean class="org.jumpmind.symmetric.map.TableColumnValueFilter">
+                    <property name="tableName" value="SALE_TENDER_LINE_ITEM" />
+                    <property name="columnName" value="ACCOUNT_NUMBER" />
+                    <property name="filter" ref="maskAccountNumberScript"/>
+                </bean>
+            </list>
+        </property>
+    </bean> 
+      -->        
+
+
+</beans>
