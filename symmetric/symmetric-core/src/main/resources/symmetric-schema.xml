@@ -447,7 +447,7 @@
     </table>
     
     <table name="conflict_event" description="Identifies rows that were in conflict and how the conflicts were resolved.">
-        <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true" description="The id of the outgoing_batch that is being loaded." />
+        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" description="The id of the outgoing_batch that is being loaded." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_id of the source of the batch being loaded." />
         <column name="failed_row_number" type="BIGINT" required="true" primaryKey="true" description="This is the row number in the batch for the data that was being processed when the batch failed." />
         <column name="conflict_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific conflict resolver." />        

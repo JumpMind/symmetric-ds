@@ -8,61 +8,68 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterConflictResolver {
-    
+
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected boolean autoRegister;
+    
+    public void reportConflict(DatabaseWriter writer, DatabaseWriterSettings writerSettings,
+            CsvData data, ConflictEvent conflictEvent) {
+        
+    }
 
-    public void needsResolved(DatabaseWriter writer, DatabaseWriterSettings writerSettings, CsvData data) {
+    public void needsResolved(DatabaseWriter writer, DatabaseWriterSettings writerSettings,
+            CsvData data) {
         DataEventType originalEventType = data.getDataEventType();
-        ConflictSettings conflictSetting = writerSettings.getConflictSettings(writer.getTargetTable(), writer.getBatch());                    
+        ConflictSettings conflictSetting = writerSettings.getConflictSettings(
+                writer.getTargetTable(), writer.getBatch());
         switch (originalEventType) {
-        case INSERT:
-            switch (conflictSetting.getResolveInsertType()) {
-            case MANUAL:
-                throw new ConflictException(data, writer.getTargetTable(), false);
-            case BLINK_FALLBACK:
-                performFallbackToUpdate(writer, data);
+            case INSERT:
+                switch (conflictSetting.getResolveInsertType()) {
+                    case MANUAL:
+                        throw new ConflictException(data, writer.getTargetTable(), false);
+                    case BLINK_FALLBACK:
+                        performFallbackToUpdate(writer, data);
+                        break;
+                    case NEWER_WINS:
+                        // TODO
+                        throw new NotImplementedException();
+                    case IGNORE:
+                    default:
+                        break;
+                }
                 break;
-            case NEWER_WINS:
-                // TODO
-                throw new NotImplementedException();
-            case IGNORE:
+
+            case UPDATE:
+                switch (conflictSetting.getResolveUpdateType()) {
+                    case MANUAL:
+                        throw new ConflictException(data, writer.getTargetTable(), false);
+                    case BLINK_FALLBACK:
+                        performFallbackToInsert(writer, data);
+                        break;
+                    case NEWER_WINS:
+                        // TODO
+                        throw new NotImplementedException();
+                    case IGNORE:
+                    default:
+                        break;
+                }
+                break;
+
+            case DELETE:
+                switch (conflictSetting.getResolveDeleteType()) {
+                    case MANUAL:
+                        throw new ConflictException(data, writer.getTargetTable(), false);
+                    default:
+                    case IGNORE:
+                        writer.getStatistics().get(writer.getBatch())
+                                .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
+                        break;
+                }
+                break;
+
             default:
                 break;
-            }
-            break;
-
-        case UPDATE:
-            switch (conflictSetting.getResolveUpdateType()) {
-            case MANUAL:
-                throw new ConflictException(data, writer.getTargetTable(), false);
-            case BLINK_FALLBACK:
-                performFallbackToInsert(writer, data);
-                break;
-            case NEWER_WINS:
-                // TODO
-                throw new NotImplementedException();
-            case IGNORE:
-            default:
-                break;
-            }
-            break;
-
-        case DELETE:
-            switch (conflictSetting.getResolveDeleteType()) {
-            case MANUAL:
-                throw new ConflictException(data, writer.getTargetTable(), false);
-            default:
-            case IGNORE:
-                writer.getStatistics().get(writer.getBatch())
-                        .increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
-                break;
-            }
-            break;
-
-        default:
-            break;
         }
     }
 
@@ -87,5 +94,5 @@ public class DefaultDatabaseWriterConflictResolver implements IDatabaseWriterCon
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
     }
-    
+
 }
