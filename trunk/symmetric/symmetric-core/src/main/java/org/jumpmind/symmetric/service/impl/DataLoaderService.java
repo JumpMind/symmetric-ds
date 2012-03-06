@@ -36,7 +36,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -49,6 +51,12 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
+import org.jumpmind.symmetric.io.data.writer.ConflictSettings;
+import org.jumpmind.symmetric.io.data.writer.ConflictSettings.DetectDeleteConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSettings.DetectUpdateConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSettings.ResolveDeleteConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSettings.ResolveInsertConflict;
+import org.jumpmind.symmetric.io.data.writer.ConflictSettings.ResolveUpdateConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
@@ -116,6 +124,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
 
+    private Map<NodeGroupLink, List<ConflictSettingsNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictSettingsNodeGroupLink>>();
+
+    private long lastConflictCacheResetTimeInMs = 0;
+
     public DataLoaderService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IIncomingBatchService incomingBatchService,
             IConfigurationService configurationService, ITransportManager transportManager,
@@ -134,6 +146,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.filters.add(new ConfigurationChangedFilter(parameterService, configurationService,
                 triggerRouterService, transformService));
         this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService));
+        this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
     }
 
     public void addDataLoaderFactory(IDataLoaderFactory factory) {
@@ -366,8 +379,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null,
                 transforms);
+
+        NodeGroupLink link = null;
+        Node sourceNode = nodeService.findNode(sourceNodeId);
+        if (sourceNode != null) {
+            link = new NodeGroupLink(sourceNode.getNodeGroupId(), parameterService.getNodeGroupId());
+        }
         IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId, platform,
-                transformWriter, filters.toArray(new IDatabaseWriterFilter[filters.size()]));
+                transformWriter, filters, getConflictSettingsNodeGroupLinks(link, false));
         transformWriter.setTargetWriter(targetWriter);
         return transformWriter;
     }
@@ -392,19 +411,107 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     dataLoaderType);
             factory = dataLoaderFactories.get("default");
         }
-        
+
         if (!factory.isPlatformSupported(platform)) {
             log.warn(
                     "The current platform does not support a data loader type of '{}'.  Using the 'default' data loader.",
                     dataLoaderType);
-            factory = dataLoaderFactories.get("default");            
+            factory = dataLoaderFactories.get("default");
         }
-        
+
         return factory;
     }
 
+    public List<ConflictSettingsNodeGroupLink> getConflictSettingsNodeGroupLinks(
+            NodeGroupLink link, boolean refreshCache) {
+        if (link != null) {
+            long cacheTime = parameterService
+                    .getLong(ParameterConstants.CACHE_TIMEOUT_CONFLICT_IN_MS);
+            if (System.currentTimeMillis() - lastConflictCacheResetTimeInMs > cacheTime || refreshCache) {
+                synchronized (this) {
+                    conflictSettingsCache.clear();
+                    lastConflictCacheResetTimeInMs = System.currentTimeMillis();
+                }
+            }
+
+            List<ConflictSettingsNodeGroupLink> list = conflictSettingsCache.get(link);
+            if (list == null) {
+                list = sqlTemplate.query(
+                        getSql("selectConflictSettingsSql",
+                                " where source_node_group_id=? and target_node_group_id=?"),
+                        new ConflictSettingsNodeGroupLinkMapper(), link.getSourceNodeGroupId(),
+                        link.getTargetNodeGroupId());
+                synchronized (this) {
+                    conflictSettingsCache.put(link, list);
+                }
+            }
+
+            return list;
+        } else {
+            return new ArrayList<DataLoaderService.ConflictSettingsNodeGroupLink>(0);
+        }
+    }
+
+    public void delete(ConflictSettingsNodeGroupLink settings) {
+        sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictId());
+    }
+
+    public void save(ConflictSettingsNodeGroupLink settings) {
+        this.lastConflictCacheResetTimeInMs = 0;
+        if (sqlTemplate.update(getSql("updateConflictSettingsSql"), settings.getNodeGroupLink()
+                .getSourceNodeGroupId(), settings.getNodeGroupLink().getTargetNodeGroupId(),
+                settings.getTargetChannelId(), settings.getTargetCatalogName(), settings
+                        .getTargetSchemaName(), settings.getTargetTableName(), settings
+                        .getDetectUpdateType().name(), settings.getDetectDeleteType().name(),
+                settings.getResolveUpdateType().name(), settings.getResolveInsertType().name(),
+                settings.getResolveDeleteType().name(), settings.getVersionColumnName(), settings
+                        .getRetryCount(), settings.getLastUpdateBy(), settings.getConflictId()) == 0) {
+            sqlTemplate.update(getSql("insertConflictSettingsSql"), settings.getNodeGroupLink()
+                    .getSourceNodeGroupId(), settings.getNodeGroupLink().getTargetNodeGroupId(),
+                    settings.getTargetChannelId(), settings.getTargetCatalogName(), settings
+                            .getTargetSchemaName(), settings.getTargetTableName(), settings
+                            .getDetectUpdateType().name(), settings.getDetectDeleteType().name(),
+                    settings.getResolveUpdateType().name(), settings.getResolveInsertType().name(),
+                    settings.getResolveDeleteType().name(), settings.getVersionColumnName(),
+                    settings.getRetryCount(), settings.getLastUpdateBy(), settings.getConflictId());
+        }
+    }
+
+    /**
+     * Used for unit tests
+     */
     protected void setTransportManager(ITransportManager transportManager) {
         this.transportManager = transportManager;
+    }
+
+    class ConflictSettingsNodeGroupLinkMapper implements
+            ISqlRowMapper<ConflictSettingsNodeGroupLink> {
+        public ConflictSettingsNodeGroupLink mapRow(Row rs) {
+            ConflictSettingsNodeGroupLink settings = new ConflictSettingsNodeGroupLink();
+            settings.setNodeGroupLink(new NodeGroupLink(rs.getString("source_node_group_id"), rs
+                    .getString("target_node_group_id")));
+            settings.setTargetChannelId(rs.getString("target_channel_id"));
+            settings.setTargetCatalogName(rs.getString("target_catalog_name"));
+            settings.setTargetSchemaName(rs.getString("target_schema_name"));
+            settings.setTargetTableName(rs.getString("target_table_name"));
+            settings.setDetectUpdateType(DetectUpdateConflict.valueOf(rs.getString(
+                    "detect_update_type").toUpperCase()));
+            settings.setDetectDeleteType(DetectDeleteConflict.valueOf(rs.getString(
+                    "detect_delete_type").toUpperCase()));
+            settings.setResolveUpdateType(ResolveUpdateConflict.valueOf(rs.getString(
+                    "resolve_update_type").toUpperCase()));
+            settings.setResolveInsertType(ResolveInsertConflict.valueOf(rs.getString(
+                    "resolve_insert_type").toUpperCase()));
+            settings.setResolveDeleteType(ResolveDeleteConflict.valueOf(rs.getString(
+                    "resolve_delete_type").toUpperCase()));
+            settings.setVersionColumnName(rs.getString("version_column_name"));
+            settings.setRetryCount(rs.getInt("retry_count"));
+            settings.setLastUpdateBy(rs.getString("last_update_by"));
+            settings.setConflictId(rs.getString("conflict_id"));
+            settings.setCreateTime(rs.getDateTime("create_time"));
+            settings.setLastUpdateTime(rs.getDateTime("last_update_time"));
+            return settings;
+        }
     }
 
     class LoadIntoDatabaseOnArrivalListener implements IProtocolDataWriterListener {
@@ -465,10 +572,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             Constants.CHANNEL_CONFIG))) {
                 IncomingBatch incomingBatch = new IncomingBatch(batch);
                 this.batchesProcessed.add(incomingBatch);
-                if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {                    
+                if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
                     this.currentBatch = incomingBatch;
                     return true;
-                }                
+                }
             }
             return false;
         }
@@ -559,6 +666,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public IncomingBatch getCurrentBatch() {
             return currentBatch;
+        }
+    }
+
+    public static class ConflictSettingsNodeGroupLink extends ConflictSettings {
+        private static final long serialVersionUID = 1L;
+        protected NodeGroupLink nodeGroupLink;
+
+        public void setNodeGroupLink(NodeGroupLink nodeGroupLink) {
+            this.nodeGroupLink = nodeGroupLink;
+        }
+
+        public NodeGroupLink getNodeGroupLink() {
+            return nodeGroupLink;
         }
     }
 

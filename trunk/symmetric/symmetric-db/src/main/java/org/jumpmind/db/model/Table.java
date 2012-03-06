@@ -1051,7 +1051,16 @@ public class Table implements Serializable, Cloneable {
         return result;
     }
 
-    
+
+    public static boolean areAllColumnsPrimaryKeys(Column[] columns) {
+        boolean allPks = true;
+        if (columns != null) {
+            for (Column column : columns) {
+                allPks &= column.isPrimaryKey();
+            }
+        }
+        return allPks;
+    }
 
     public static Table buildTable(String tableName, String[] keyNames, String[] columnNames) {
         Table table = new Table();

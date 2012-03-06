@@ -426,21 +426,24 @@
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>        
     </table>
     
-    <table name="conflict_detect" description="Defines how conflicts in row data should be handled during the load process.">
-        <column name="conflict_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific conflict resolver." />
+    <table name="conflict_settings" description="Defines how conflicts in row data should be handled during the load process.">
+        <column name="conflict_id"          type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific conflict resolver." />
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" description="The node group where data changes are captured." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The node group where data changes will be sent." />
-        <column name="target_channel_id" type="VARCHAR" size="20"  description="Optional id of a channel that this conflict resolver will be applied to.  If left blank the resolver will applied to all tables specified by the target_table_name in the specified node group." />                
-        <column name="target_catalog_name" type="VARCHAR" size="128" description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
-        <column name="target_schema_name" type="VARCHAR" size="128" description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
-        <column name="target_table_name" type="VARCHAR" size="128" description="Optional name for a target table that this resolver will be applied to.  If left blank, the resolver will be for any table in the specified channel or specified node group." />
-        <column name="detect_update_type" type="VARCHAR" size="128" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, blind_fallback, ignore), use_changed_data (manual, ignore), use_old_data (manual, ignore), use_timestamp_column (newer_wins, manual, ignore), use_version_column (newer_wins, manual, ignore)" />
-        <column name="detect_delete_type" type="VARCHAR" size="128" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, ignore), use_changed_data (manual, ignore), use_old_data (manual, ignore), use_timestamp_column (newer_wins, manual, ignore), use_version_column (newer_wins, manual, ignore)" />        
-        <column name="resolve_update_type" type="VARCHAR" size="128" description="Indicates the strategy for resolving updates conflicts.  The possible values differ based on the detect_update_type that is specified." />
-        <column name="resolve_insert_type" type="VARCHAR" size="128" description="Indicates the strategy for resolving insert conflicts.  The possible values are: manual, blind_fallback, newer_wins, ignore" />
-        <column name="resolve_delete_type" type="VARCHAR" size="128" description="Indicates the strategy for resolving delete conflicts.  The possible values differ based on the detect_delete_type that is specified." />
-        <column name="resolve_column_name" type="VARCHAR" size="128" description="The name of a column that is used by the chosen resolver should the resolver need a column to use in resolution" />
-        <column name="retry_count" type="INTEGER" required="true" default="-1" description="The number of times a batch in conflict will be retried before it is skipped.  A setting of -1 means that the batch will be retried indefinitely." />
+        <column name="target_channel_id"    type="VARCHAR" size="20"  description="Optional id of a channel that this conflict resolver will be applied to.  If left blank the resolver will applied to all tables specified by the target_table_name in the specified node group." />                
+        <column name="target_catalog_name"  type="VARCHAR" size="128" description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
+        <column name="target_schema_name"   type="VARCHAR" size="128" description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
+        <column name="target_table_name"    type="VARCHAR" size="128" description="Optional name for a target table that this resolver will be applied to.  If left blank, the resolver will be for any table in the specified channel or specified node group." />
+        <column name="detect_update_type"   type="VARCHAR" size="128" required="true" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, blind_fallback, ignore), use_changed_data (manual, ignore), use_old_data (manual, ignore), use_timestamp_column (newer_wins, manual, ignore), use_version_column (newer_wins, manual, ignore)" />
+        <column name="detect_delete_type"   type="VARCHAR" size="128" required="true" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, ignore), use_old_data (manual, ignore), use_timestamp_column (newer_wins, manual, ignore), use_version_column (newer_wins, manual, ignore)" />        
+        <column name="resolve_update_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving updates conflicts.  The possible values differ based on the detect_update_type that is specified." />
+        <column name="resolve_insert_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving insert conflicts.  The possible values are: manual, blind_fallback, newer_wins, ignore" />
+        <column name="resolve_delete_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving delete conflicts.  The possible values differ based on the detect_delete_type that is specified." />
+        <column name="version_column_name"  type="VARCHAR" size="128" description="The name of a column that is used by the chosen resolver should the detector and/or resolver need a column to use in resolution" />
+        <column name="retry_count"          type="INTEGER" required="true" default="-1" description="The number of times a batch in conflict will be retried before it is skipped.  A setting of -1 means that the batch will be retried indefinitely." />
+        <column name="create_time"          type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by"       type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time"     type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
     </table>
     
     <table name="conflict_event" description="Identifies rows that were in conflict and how the conflicts were resolved.">

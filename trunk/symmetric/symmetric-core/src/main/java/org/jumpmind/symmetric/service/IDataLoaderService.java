@@ -30,7 +30,9 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
+import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictSettingsNodeGroupLink;
 
 /**
  * This service provides an API to load data into a SymmetricDS node's database
@@ -53,5 +55,11 @@ public interface IDataLoaderService {
     public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter);
     
     public List<IncomingBatch> loadDataBatch(String batchData) throws IOException;
+    
+    public List<ConflictSettingsNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
+    
+    public void delete(ConflictSettingsNodeGroupLink settings);
+    
+    public void save(ConflictSettingsNodeGroupLink settings);
 
 }
