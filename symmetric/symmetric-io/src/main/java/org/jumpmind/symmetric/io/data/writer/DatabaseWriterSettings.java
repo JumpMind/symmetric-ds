@@ -1,29 +1,27 @@
 package org.jumpmind.symmetric.io.data.writer;
 
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.Batch;
+
 public class DatabaseWriterSettings {
 
-    public enum ConflictResolutionInserts {
-        IGNORE_CONTINUE, FALLBACK_UPDATE, ERROR_STOP
-    };
-
-    public enum ConflictResolutionUpdates {
-        IGNORE_CONTINUE, FALLBACK_INSERT, ERROR_STOP
-    };
-
-    public enum ConflictResolutionDeletes {
-        IGNORE_CONTINUE, ERROR_STOP
-    };
-
     protected long maxRowsBeforeCommit = 10000;
-    
+
     protected boolean treatDateTimeFieldsAsVarchar = false;
+
     protected boolean usePrimaryKeysFromSource = true;
 
-    protected boolean useAllColumnsToIdentifyUpdateConflicts = false;
+    protected ConflictSettings defaultConflictSetting;
 
-    protected ConflictResolutionInserts conflictResolutionInserts = ConflictResolutionInserts.FALLBACK_UPDATE;
-    protected ConflictResolutionUpdates conflictResolutionUpdates = ConflictResolutionUpdates.FALLBACK_INSERT;
-    protected ConflictResolutionDeletes conflictResolutionDeletes = ConflictResolutionDeletes.IGNORE_CONTINUE;
+    protected Map<String, ConflictSettings> conflictSettingsByChannel;
+
+    protected Map<String, ConflictSettings> conflictSettingsByTable;
+
+    protected List<IDatabaseWriterFilter> databaseWriterFilters;
 
     public long getMaxRowsBeforeCommit() {
         return maxRowsBeforeCommit;
@@ -49,37 +47,69 @@ public class DatabaseWriterSettings {
         this.usePrimaryKeysFromSource = usePrimaryKeysFromSource;
     }
 
-    public boolean isUseAllColumnsToIdentifyUpdateConflicts() {
-        return useAllColumnsToIdentifyUpdateConflicts;
+    public ConflictSettings getDefaultConflictSetting() {
+        return defaultConflictSetting;
     }
 
-    public void setUseAllColumnsToIdentifyUpdateConflicts(
-            boolean useAllColumnsToIdentifyUpdateConflicts) {
-        this.useAllColumnsToIdentifyUpdateConflicts = useAllColumnsToIdentifyUpdateConflicts;
+    public void setDefaultConflictSetting(ConflictSettings defaultConflictSetting) {
+        this.defaultConflictSetting = defaultConflictSetting;
     }
 
-    public ConflictResolutionInserts getConflictResolutionInserts() {
-        return conflictResolutionInserts;
+    public Map<String, ConflictSettings> getConflictSettingsByChannel() {
+        return conflictSettingsByChannel;
     }
 
-    public void setConflictResolutionInserts(ConflictResolutionInserts conflictResolutionInserts) {
-        this.conflictResolutionInserts = conflictResolutionInserts;
+    public void setConflictSettingsByChannel(Map<String, ConflictSettings> conflictSettingsByChannel) {
+        this.conflictSettingsByChannel = conflictSettingsByChannel;
     }
 
-    public ConflictResolutionUpdates getConflictResolutionUpdates() {
-        return conflictResolutionUpdates;
+    public Map<String, ConflictSettings> getConflictSettingsByTable() {
+        return conflictSettingsByTable;
     }
 
-    public void setConflictResolutionUpdates(ConflictResolutionUpdates conflictResolutionUpdates) {
-        this.conflictResolutionUpdates = conflictResolutionUpdates;
+    public void setConflictSettingsByTable(Map<String, ConflictSettings> conflictSettingsByTable) {
+        this.conflictSettingsByTable = conflictSettingsByTable;
     }
 
-    public ConflictResolutionDeletes getConflictResolutionDeletes() {
-        return conflictResolutionDeletes;
+    public List<IDatabaseWriterFilter> getDatabaseWriterFilters() {
+        return databaseWriterFilters;
     }
 
-    public void setConflictResolutionDeletes(ConflictResolutionDeletes conflictResolutionDeletes) {
-        this.conflictResolutionDeletes = conflictResolutionDeletes;
+    public void setDatabaseWriterFilters(List<IDatabaseWriterFilter> databaseWriterFilters) {
+        this.databaseWriterFilters = databaseWriterFilters;
+    }
+
+    public ConflictSettings getConflictSettings(Table table, Batch batch) {
+        ConflictSettings settings = null;
+        String fullyQualifiedName = table.getFullyQualifiedTableName();
+        if (conflictSettingsByTable != null) {
+            ConflictSettings found = conflictSettingsByTable.get(fullyQualifiedName);
+
+            if (found == null) {
+                found = conflictSettingsByTable.get(table.getName());
+            }
+
+            if (found != null
+                    && (StringUtils.isBlank(found.getTargetChannelId()) || found
+                            .getTargetChannelId().equals(batch.getChannelId()))) {
+                settings = found;
+            }
+        }
+
+        if (settings == null && conflictSettingsByChannel != null) {
+            settings = conflictSettingsByChannel.get(batch.getChannelId());
+        }
+
+        if (settings == null) {
+            settings = defaultConflictSetting;
+        }
+
+        if (settings == null) {
+            settings = new ConflictSettings();
+        }
+
+        return settings;
+
     }
 
 }

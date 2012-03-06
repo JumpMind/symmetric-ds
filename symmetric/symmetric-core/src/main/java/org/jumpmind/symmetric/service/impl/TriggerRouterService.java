@@ -136,6 +136,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 TableConstants.SYM_TRANSFORM_TABLE));
         configTables.add(TableConstants.getTableName(tablePrefix,
                 TableConstants.SYM_TRANSFORM_COLUMN));
+        configTables.add(TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_CONFLICT_SETTINGS));        
         configTables
                 .add(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         rootConfigChannelTableNames.put("2", configTables);

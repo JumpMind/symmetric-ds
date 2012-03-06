@@ -23,10 +23,11 @@ import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.ext.NodeGroupTestDataWriterFilter;
 import org.jumpmind.symmetric.ext.TestDataWriterFilter;
 import org.jumpmind.symmetric.io.data.CsvConstants;
+import org.jumpmind.symmetric.io.data.writer.ConflictSettings.ResolveInsertConflict;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
-import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictSettingsNodeGroupLink;
 import org.jumpmind.symmetric.transport.MockTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.junit.After;
@@ -338,9 +339,13 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string3", "string not null3", "char3", "char not null3",
                 "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
+        
+        ConflictSettingsNodeGroupLink conflictSettings = new ConflictSettingsNodeGroupLink();
+        conflictSettings.setNodeGroupLink(TestConstants.TEST_2_ROOT);
+        conflictSettings.setConflictId("dont_fallback");
+        conflictSettings.setResolveInsertType(ResolveInsertConflict.MANUAL);
+        getSymmetricEngine().getDataLoaderService().save(conflictSettings);
 
-        IParameterService paramService = getParameterService();
-        paramService.saveParameter("dataloader.enable.fallback.update", "false");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
@@ -376,7 +381,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         assertEquals(batch.getFailedRowNumber(), 2l, "Wrong failed row number");
         assertEquals(batch.getStatementCount(), 2l, "Wrong statement count");
 
-        paramService.saveParameter("dataloader.enable.fallback.update", "true");
+        getSymmetricEngine().getDataLoaderService().delete(conflictSettings);
         setLoggingLevelForTest(old);
     }
 
@@ -535,7 +540,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testAutoRegisteredExtensionPoint() {
+    public void testRegisteredDataWriterFilter() {
         TestDataWriterFilter registeredFilter = getSymmetricEngine().getExtensionPointManager()
                 .getExtensionPoint("registeredDataFilter");
         assertTrue(registeredFilter.getNumberOfTimesCalled() > 0);

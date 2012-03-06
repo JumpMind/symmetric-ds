@@ -16,6 +16,8 @@ abstract public class TestConstants {
     
     public static final NodeGroupLink ROOT_2_TEST = new NodeGroupLink(TEST_ROOT_NODE_GROUP, TEST_CLIENT_NODE_GROUP);
     
+    public static final NodeGroupLink TEST_2_ROOT = new NodeGroupLink(TEST_CLIENT_NODE_GROUP, TEST_ROOT_NODE_GROUP);
+    
     public final static Node TEST_CLIENT_NODE = new Node(TestConstants.TEST_CLIENT_EXTERNAL_ID, TestConstants.TEST_CLIENT_NODE_GROUP);
     
     public final static Node TEST_ROOT_NODE = new Node(TestConstants.TEST_ROOT_EXTERNAL_ID, TestConstants.TEST_ROOT_NODE_GROUP);

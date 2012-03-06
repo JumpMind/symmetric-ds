@@ -59,51 +59,26 @@ public class DatabaseWriter implements IDataWriter {
 
     protected long uncommittedCount = 0;
 
-    protected DatabaseWriterSettings defaultSettings;
-
-    protected DatabaseWriterSettings batchSettings;
-
-    protected List<IDatabaseWriterFilter> filters;
-
-    protected Map<String, DatabaseWriterSettings> channelSpecificSettings;
+    protected DatabaseWriterSettings writerSettings;
 
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
     protected IDatabaseWriterConflictResolver conflictResolver;
 
     public DatabaseWriter(IDatabasePlatform platform) {
-        this(platform, null);
+        this(platform, null, null);
     }
 
-    public DatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings defaultSettings,
-            IDatabaseWriterFilter... filters) {
-        this(platform, null, defaultSettings, null, filters);
-    }
-
-    public DatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings defaultSettings,
-            Map<String, DatabaseWriterSettings> channelSpecificSettings,
-            IDatabaseWriterFilter... filters) {
-        this(platform, null, defaultSettings, channelSpecificSettings, filters);
+    public DatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings settings) {
+        this(platform, null, settings);
     }
 
     public DatabaseWriter(IDatabasePlatform platform,
-            IDatabaseWriterConflictResolver conflictResolver,
-            DatabaseWriterSettings defaultSettings,
-            Map<String, DatabaseWriterSettings> channelSpecificSettings,
-            IDatabaseWriterFilter... filters) {
+            IDatabaseWriterConflictResolver conflictResolver, DatabaseWriterSettings settings) {
         this.platform = platform;
         this.conflictResolver = conflictResolver == null ? new DefaultDatabaseWriterConflictResolver()
                 : conflictResolver;
-        this.defaultSettings = defaultSettings == null ? new DatabaseWriterSettings()
-                : defaultSettings;
-        this.channelSpecificSettings = channelSpecificSettings == null ? new HashMap<String, DatabaseWriterSettings>()
-                : channelSpecificSettings;
-        this.filters = new ArrayList<IDatabaseWriterFilter>();
-        if (filters != null) {
-            for (IDatabaseWriterFilter filter : filters) {
-                this.filters.add(filter);
-            }
-        }
+        this.writerSettings = settings == null ? new DatabaseWriterSettings() : settings;
     }
 
     public void open(DataContext context) {
@@ -113,10 +88,6 @@ public class DatabaseWriter implements IDataWriter {
 
     public void start(Batch batch) {
         this.batch = batch;
-        this.batchSettings = channelSpecificSettings.get(batch.getChannelId());
-        if (this.batchSettings == null) {
-            this.batchSettings = this.defaultSettings;
-        }
         this.statistics.put(batch, new Statistics());
     }
 
@@ -167,7 +138,7 @@ public class DatabaseWriter implements IDataWriter {
 
             if (!success) {
                 if (conflictResolver != null) {
-                    conflictResolver.needsResolved(this, data);
+                    conflictResolver.needsResolved(this, writerSettings, data);
                 } else {
                     throw new ConflictException(data, targetTable, false);
                 }
@@ -179,7 +150,7 @@ public class DatabaseWriter implements IDataWriter {
 
             filterAfter(data);
 
-            if (uncommittedCount >= batchSettings.getMaxRowsBeforeCommit()) {
+            if (uncommittedCount >= writerSettings.getMaxRowsBeforeCommit()) {
                 notifyFiltersEarlyCommit();
                 commit();
             }
@@ -230,6 +201,7 @@ public class DatabaseWriter implements IDataWriter {
 
     protected boolean filterBefore(CsvData data) {
         boolean process = true;
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
         if (filters != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -245,6 +217,7 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected void notifyFiltersEarlyCommit() {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
         if (filters != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -258,6 +231,7 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected void notifyFiltersBatchComplete() {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
         if (filters != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -271,6 +245,7 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected void notifyFiltersBatchCommitted() {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
         if (filters != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -284,6 +259,7 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected void notifyFiltersBatchRolledback() {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
         if (filters != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -297,6 +273,7 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected void filterAfter(CsvData data) {
+        List<IDatabaseWriterFilter> filters = this.writerSettings.getDatabaseWriterFilters();
         if (filters != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.FILTERMILLIS);
@@ -318,7 +295,7 @@ public class DatabaseWriter implements IDataWriter {
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             try {
-                String[] values = (String[]) ArrayUtils.addAll(getRowData(data), getPkData(data));
+                String[] values = (String[]) ArrayUtils.addAll(getRowData(data), getLookupKeyData(data));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 return count > 0;
@@ -352,10 +329,47 @@ public class DatabaseWriter implements IDataWriter {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.DELETE, data)) {
-                this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE, targetTable);
+                ConflictSettings conflictSettings = writerSettings.getConflictSettings(
+                        this.targetTable, batch);
+                Column[] lookupKeys = null;
+                switch (conflictSettings.getDetectDeleteType()) {
+                    case USE_OLD_DATA:
+                        lookupKeys = targetTable.getColumns();
+                        break;
+                    case USE_VERSION:
+                    case USE_TIMESTAMP:
+                        List<Column> lookupColumns = new ArrayList<Column>();
+                        Column versionColumn = targetTable.getColumnWithName(conflictSettings
+                                .getVersionColumnName());
+                        if (versionColumn != null) {
+                            lookupColumns.add(versionColumn);
+                        } else {
+                            log.error(
+                                    "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
+                                    conflictSettings.getVersionColumnName());
+                        }
+                        Column[] pks = targetTable.getPrimaryKeyColumns();
+                        for (Column column : pks) {
+                            // make sure all of the PK keys are in the list only
+                            // once
+                            // and are always at the end of the list
+                            lookupColumns.remove(column);
+                            lookupColumns.add(column);
+                        }
+                        lookupKeys = lookupColumns.toArray(new Column[lookupColumns.size()]);
+                        break;
+                    case USE_PK_DATA:
+                    default:
+                        lookupKeys = targetTable.getPrimaryKeyColumns();
+                        break;
+                }
+
+                this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
+                        targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
+                        lookupKeys, null);
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
-            long count = execute(data, getPkData(data));
+            long count = execute(data, getLookupKeyData(data));
             statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
             return count > 0;
         } finally {
@@ -383,14 +397,56 @@ public class DatabaseWriter implements IDataWriter {
             }
             if (changedColumnNameList.size() > 0) {
                 if (requireNewStatement(DmlType.UPDATE, data)) {
+                    ConflictSettings conflictSettings = writerSettings.getConflictSettings(
+                            this.targetTable, batch);
+                    Column[] lookupKeys = null;
+                    switch (conflictSettings.getDetectUpdateType()) {
+                        case USE_CHANGED_DATA:
+                            ArrayList<Column> lookupColumns = new ArrayList<Column>(
+                                    changedColumnMetaList);
+                            Column[] pks = targetTable.getPrimaryKeyColumns();
+                            for (Column column : pks) {
+                                // make sure all of the PK keys are in the list
+                                // only once
+                                // and are always at the end of the list
+                                lookupColumns.remove(column);
+                                lookupColumns.add(column);
+                            }
+                            lookupKeys = lookupColumns.toArray(new Column[lookupColumns.size()]);
+                            break;
+                        case USE_OLD_DATA:
+                            lookupKeys = targetTable.getColumns();
+                            break;
+                        case USE_VERSION:
+                        case USE_TIMESTAMP:
+                            lookupColumns = new ArrayList<Column>();
+                            Column versionColumn = targetTable.getColumnWithName(conflictSettings
+                                    .getVersionColumnName());
+                            if (versionColumn != null) {
+                                lookupColumns.add(versionColumn);
+                            } else {
+                                log.error(
+                                        "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
+                                        conflictSettings.getVersionColumnName());
+                            }
+                            pks = targetTable.getPrimaryKeyColumns();
+                            for (Column column : pks) {
+                                // make sure all of the PK keys are in the list
+                                // only once
+                                // and are always at the end of the list
+                                lookupColumns.remove(column);
+                                lookupColumns.add(column);
+                            }
+                            lookupKeys = lookupColumns.toArray(new Column[lookupColumns.size()]);
+                            break;
+                        case USE_PK_DATA:
+                        default:
+                            lookupKeys = targetTable.getPrimaryKeyColumns();
+                            break;
+                    }
                     this.currentDmlStatement = platform
-                            .createDmlStatement(
-                                    DmlType.UPDATE,
-                                    targetTable.getCatalog(),
-                                    targetTable.getSchema(),
-                                    targetTable.getName(),
-                                    batchSettings.isUseAllColumnsToIdentifyUpdateConflicts() ? targetTable
-                                            .getColumns() : targetTable.getPrimaryKeyColumns(),
+                            .createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(),
+                                    targetTable.getSchema(), targetTable.getName(), lookupKeys,
                                     changedColumnMetaList.toArray(new Column[changedColumnMetaList
                                             .size()]));
                     transaction.prepare(this.currentDmlStatement.getSql());
@@ -398,7 +454,7 @@ public class DatabaseWriter implements IDataWriter {
                 }
                 columnValues = (String[]) changedColumnValueList
                         .toArray(new String[changedColumnValueList.size()]);
-                String[] values = (String[]) ArrayUtils.addAll(columnValues, getPkData(data));
+                String[] values = (String[]) ArrayUtils.addAll(columnValues, getLookupKeyData(data));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.UPDATECOUNT, count);
                 return count > 0;
@@ -509,29 +565,35 @@ public class DatabaseWriter implements IDataWriter {
         return needsUpdated;
     }
 
-    protected String[] getPkData(CsvData data) {
-        String[] pkData = null;
-        if (batchSettings.isUseAllColumnsToIdentifyUpdateConflicts()) {
-            pkData = data.getParsedData(CsvData.OLD_DATA);
-            if (pkData == null) {
-                pkData = data.getParsedData(CsvData.ROW_DATA);
+    protected String[] getLookupKeyData(CsvData data) {
+        Column[] keys = this.currentDmlStatement.getKeys();
+        if (keys != null && keys.length > 0) {
+            boolean allPks = Table.areAllColumnsPrimaryKeys(keys);
+            if (allPks) {
+                String[] keyDataAsArray = data.getParsedData(CsvData.PK_DATA);
+                if (keyDataAsArray != null && keyDataAsArray.length <=  targetTable.getPrimaryKeyColumnCount()) {
+                    return keyDataAsArray;
+                }                
+            } 
+            
+            Map<String, String> keyData = data.toColumnNameValuePairs(targetTable, CsvData.OLD_DATA);
+            if (keyData == null || keyData.size() == 0) {
+                keyData = data.toColumnNameValuePairs(targetTable, CsvData.ROW_DATA);
             }
-        } else {
-            pkData = data.getParsedData(CsvData.PK_DATA);
-            if (pkData == null || pkData.length < targetTable.getPrimaryKeyColumnCount()) {
-                String[] values = data.getParsedData(CsvData.OLD_DATA);
-                if (values == null) {
-                    values = data.getParsedData(CsvData.ROW_DATA);
+            
+            if (keyData != null && keyData.size() > 0) {
+                String[] keyDataAsArray = new String[keys.length];
+                int index = 0;
+                for (Column keyColumn : keys) {
+                    keyDataAsArray[index++] = keyData.get(keyColumn.getName());
                 }
-                Column[] pkColumns = targetTable.getPrimaryKeyColumns();
-                pkData = new String[pkColumns.length];
-                int i = 0;
-                for (Column column : pkColumns) {
-                    pkData[i++] = values[targetTable.getColumnIndex(column)];
-                }
+                
+                return keyDataAsArray;
             }
         }
-        return pkData;
+        
+        return null;
+        
     }
 
     protected String getPkDataFor(CsvData data, Column column) {
@@ -581,8 +643,8 @@ public class DatabaseWriter implements IDataWriter {
     }
 
     protected boolean hasFilterThatHandlesMissingTable(Table table) {
-        if (filters != null) {
-            for (IDatabaseWriterFilter filter : filters) {
+        if (writerSettings.getDatabaseWriterFilters() != null) {
+            for (IDatabaseWriterFilter filter : writerSettings.getDatabaseWriterFilters()) {
                 if (filter.handlesMissingTable(context, table)) {
                     return true;
                 }
@@ -600,14 +662,14 @@ public class DatabaseWriter implements IDataWriter {
             if (table != null) {
                 table = table.copy();
                 table.reOrderColumns(sourceTable.getColumns(),
-                        this.batchSettings.isUsePrimaryKeysFromSource());
+                        this.writerSettings.isUsePrimaryKeysFromSource());
 
                 boolean setAllColumnsAsPrimaryKey = table.getPrimaryKeyColumnCount() == 0;
 
                 Column[] columns = table.getColumns();
                 for (Column column : columns) {
                     int typeCode = column.getTypeCode();
-                    if (this.batchSettings.isTreatDateTimeFieldsAsVarchar()
+                    if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
                             && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
                         column.setTypeCode(Types.VARCHAR);
                     }
@@ -635,10 +697,6 @@ public class DatabaseWriter implements IDataWriter {
 
     public void setConflictResolver(IDatabaseWriterConflictResolver conflictResolver) {
         this.conflictResolver = conflictResolver;
-    }
-
-    public DatabaseWriterSettings getTargetTableSettings() {
-        return batchSettings;
     }
 
     public DmlStatement getCurrentDmlStatement() {

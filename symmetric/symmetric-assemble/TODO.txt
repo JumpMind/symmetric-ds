@@ -58,11 +58,10 @@ Documentation
 * The db.metadata.ignore.case property is no long available.  All configured database names will be case sensitive
 * dont.include.keys.in.update.statement is not longer supported.  if old_data is not provided then pks will not be in the update
 * db.spring.bean.name is no longer available
-* dataloader will now load each batch as it arrives.
+* dataloader will now load each batch as it arrives
 * datareload.batch.insert.transactional is no longer available
-* routing.data.reader.type is no longer available.  data_ref has been removed.
-* jdbc datasources are no longer supported
-* All data loader properties will be configurable by channel
+* routing.data.reader.type is no longer available.  data_ref has been removed
+* jndi datasources are no longer supported
 * IDatabaseWriterFilter replaces IDataLoaderFilter
 * IDatabaseWriterFilter replaces IBatchListener
 * db.default.schema is no longer used
@@ -75,3 +74,10 @@ Documentation
 * SymmetricDS tables are now created in the default case of the database
 * Now supports mixed case tables on Firebird.
 * Got rid of the isAutoRegister() method from IExtensionPoint
+* data loaders are pluggable
+* There is no longer a data extractor ext point
+* The following parameters have been removed in favor of conflict resolution
+  * dataloader.allow.missing.delete
+  * dataloader.enable.fallback.insert
+  * dataloader.enable.fallback.update
+* The following property is not longer needed: dataloader.enable.fallback.savepoint
