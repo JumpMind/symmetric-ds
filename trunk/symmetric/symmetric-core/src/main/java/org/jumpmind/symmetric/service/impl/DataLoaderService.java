@@ -427,7 +427,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         if (link != null) {
             long cacheTime = parameterService
                     .getLong(ParameterConstants.CACHE_TIMEOUT_CONFLICT_IN_MS);
-            if (System.currentTimeMillis() - lastConflictCacheResetTimeInMs > cacheTime || refreshCache) {
+            if (System.currentTimeMillis() - lastConflictCacheResetTimeInMs > cacheTime
+                    || refreshCache) {
                 synchronized (this) {
                     conflictSettingsCache.clear();
                     lastConflictCacheResetTimeInMs = System.currentTimeMillis();
@@ -453,27 +454,29 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void delete(ConflictSettingsNodeGroupLink settings) {
-        sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictId());
+        sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictSettingId());
     }
 
-    public void save(ConflictSettingsNodeGroupLink settings) {
+    public void save(ConflictSettingsNodeGroupLink setting) {
         this.lastConflictCacheResetTimeInMs = 0;
-        if (sqlTemplate.update(getSql("updateConflictSettingsSql"), settings.getNodeGroupLink()
-                .getSourceNodeGroupId(), settings.getNodeGroupLink().getTargetNodeGroupId(),
-                settings.getTargetChannelId(), settings.getTargetCatalogName(), settings
-                        .getTargetSchemaName(), settings.getTargetTableName(), settings
-                        .getDetectUpdateType().name(), settings.getDetectDeleteType().name(),
-                settings.getResolveUpdateType().name(), settings.getResolveInsertType().name(),
-                settings.getResolveDeleteType().name(), settings.getDetectExpresssion(), settings
-                        .getRetryCount(), settings.getLastUpdateBy(), settings.getConflictId()) == 0) {
-            sqlTemplate.update(getSql("insertConflictSettingsSql"), settings.getNodeGroupLink()
-                    .getSourceNodeGroupId(), settings.getNodeGroupLink().getTargetNodeGroupId(),
-                    settings.getTargetChannelId(), settings.getTargetCatalogName(), settings
-                            .getTargetSchemaName(), settings.getTargetTableName(), settings
-                            .getDetectUpdateType().name(), settings.getDetectDeleteType().name(),
-                    settings.getResolveUpdateType().name(), settings.getResolveInsertType().name(),
-                    settings.getResolveDeleteType().name(), settings.getDetectExpresssion(),
-                    settings.getRetryCount(), settings.getLastUpdateBy(), settings.getConflictId());
+        if (sqlTemplate.update(getSql("updateConflictSettingsSql"), setting.getNodeGroupLink()
+                .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(),
+                setting.getTargetChannelId(), setting.getTargetCatalogName(), setting
+                        .getTargetSchemaName(), setting.getTargetTableName(), setting
+                        .getDetectUpdateType().name(), setting.getDetectDeleteType().name(),
+                setting.getResolveUpdateType().name(), setting.getResolveInsertType().name(),
+                setting.getResolveDeleteType().name(), setting.isResolveAuditEnabled() ? 1 : 0,
+                setting.getDetectExpresssion(), setting.getRetryCount(), setting
+                        .getLastUpdateBy(), setting.getConflictSettingId()) == 0) {
+            sqlTemplate.update(getSql("insertConflictSettingsSql"), setting.getNodeGroupLink()
+                    .getSourceNodeGroupId(), setting.getNodeGroupLink().getTargetNodeGroupId(),
+                    setting.getTargetChannelId(), setting.getTargetCatalogName(), setting
+                            .getTargetSchemaName(), setting.getTargetTableName(), setting
+                            .getDetectUpdateType().name(), setting.getDetectDeleteType().name(),
+                    setting.getResolveUpdateType().name(), setting.getResolveInsertType().name(),
+                    setting.getResolveDeleteType().name(), setting.isResolveAuditEnabled() ? 1
+                            : 0, setting.getDetectExpresssion(), setting.getRetryCount(),
+                    setting.getLastUpdateBy(), setting.getConflictSettingId());
         }
     }
 
@@ -487,30 +490,31 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     class ConflictSettingsNodeGroupLinkMapper implements
             ISqlRowMapper<ConflictSettingsNodeGroupLink> {
         public ConflictSettingsNodeGroupLink mapRow(Row rs) {
-            ConflictSettingsNodeGroupLink settings = new ConflictSettingsNodeGroupLink();
-            settings.setNodeGroupLink(new NodeGroupLink(rs.getString("source_node_group_id"), rs
+            ConflictSettingsNodeGroupLink setting = new ConflictSettingsNodeGroupLink();
+            setting.setNodeGroupLink(new NodeGroupLink(rs.getString("source_node_group_id"), rs
                     .getString("target_node_group_id")));
-            settings.setTargetChannelId(rs.getString("target_channel_id"));
-            settings.setTargetCatalogName(rs.getString("target_catalog_name"));
-            settings.setTargetSchemaName(rs.getString("target_schema_name"));
-            settings.setTargetTableName(rs.getString("target_table_name"));
-            settings.setDetectUpdateType(DetectUpdateConflict.valueOf(rs.getString(
+            setting.setTargetChannelId(rs.getString("target_channel_id"));
+            setting.setTargetCatalogName(rs.getString("target_catalog_name"));
+            setting.setTargetSchemaName(rs.getString("target_schema_name"));
+            setting.setTargetTableName(rs.getString("target_table_name"));
+            setting.setDetectUpdateType(DetectUpdateConflict.valueOf(rs.getString(
                     "detect_update_type").toUpperCase()));
-            settings.setDetectDeleteType(DetectDeleteConflict.valueOf(rs.getString(
+            setting.setDetectDeleteType(DetectDeleteConflict.valueOf(rs.getString(
                     "detect_delete_type").toUpperCase()));
-            settings.setResolveUpdateType(ResolveUpdateConflict.valueOf(rs.getString(
+            setting.setResolveUpdateType(ResolveUpdateConflict.valueOf(rs.getString(
                     "resolve_update_type").toUpperCase()));
-            settings.setResolveInsertType(ResolveInsertConflict.valueOf(rs.getString(
+            setting.setResolveInsertType(ResolveInsertConflict.valueOf(rs.getString(
                     "resolve_insert_type").toUpperCase()));
-            settings.setResolveDeleteType(ResolveDeleteConflict.valueOf(rs.getString(
+            setting.setResolveDeleteType(ResolveDeleteConflict.valueOf(rs.getString(
                     "resolve_delete_type").toUpperCase()));
-            settings.setDetectExpresssion(rs.getString("detect_expression"));
-            settings.setRetryCount(rs.getInt("retry_count"));
-            settings.setLastUpdateBy(rs.getString("last_update_by"));
-            settings.setConflictId(rs.getString("conflict_id"));
-            settings.setCreateTime(rs.getDateTime("create_time"));
-            settings.setLastUpdateTime(rs.getDateTime("last_update_time"));
-            return settings;
+            setting.setDetectExpresssion(rs.getString("detect_expression"));
+            setting.setRetryCount(rs.getInt("retry_count"));
+            setting.setResolveAuditEnabled(rs.getBoolean("resolve_audit_enabled"));
+            setting.setLastUpdateBy(rs.getString("last_update_by"));
+            setting.setConflictSettingId(rs.getString("conflict_setting_id"));
+            setting.setCreateTime(rs.getDateTime("create_time"));
+            setting.setLastUpdateTime(rs.getDateTime("last_update_time"));
+            return setting;
         }
     }
 

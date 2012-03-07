@@ -15,12 +15,17 @@ public class ConflictEvent implements Serializable {
     public enum Status {
         OK, ER, IG
     };
+    
+    public enum ConflictType {
+        PK, FK
+    }
 
     private long batchId;
     private String nodeId;
     private int failedRowNumber;
     private String conflictId;
     private Status status;
+    private ConflictType conflictType;
     private String targetCatalogName;
     private String targetSchemaName;
     private String targetTableName;
@@ -36,7 +41,7 @@ public class ConflictEvent implements Serializable {
     
     public ConflictEvent(Batch batch, ConflictSetting conflictSettings, Table table, Status status, CsvData data, String message) {
         this.batchId = batch.getBatchId();
-        this.conflictId = conflictSettings.getConflictId();
+        this.conflictId = conflictSettings.getConflictSettingId();
         this.targetCatalogName = table.getCatalog();
         this.targetSchemaName = table.getSchema();
         this.targetTableName = table.getName();
@@ -187,4 +192,12 @@ public class ConflictEvent implements Serializable {
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    public void setConflictType(ConflictType conflictType) {
+        this.conflictType = conflictType;
+    }
+    
+    public ConflictType getConflictType() {
+        return conflictType;
+    }
+    
 }

@@ -427,31 +427,33 @@
     </table>
     
     <table name="conflict_setting" description="Defines how conflicts in row data should be handled during the load process.">
-        <column name="conflict_id"          type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific conflict resolver." />
-        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" description="The node group where data changes are captured." />
-        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The node group where data changes will be sent." />
-        <column name="target_channel_id"    type="VARCHAR" size="20"  description="Optional id of a channel that this conflict resolver will be applied to.  If left blank the resolver will applied to all tables specified by the target_table_name in the specified node group." />                
-        <column name="target_catalog_name"  type="VARCHAR" size="128" description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
-        <column name="target_schema_name"   type="VARCHAR" size="128" description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
-        <column name="target_table_name"    type="VARCHAR" size="128" description="Optional name for a target table that this resolver will be applied to.  If left blank, the resolver will be for any table in the specified channel or specified node group." />
-        <column name="detect_update_type"   type="VARCHAR" size="128" required="true" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, blind_fallback, ignore), use_changed_data (manual, blind_fallback, ignore), use_old_data (manual, blind_fallback,, ignore), use_timestamp_column (newer_wins, older_wins, manual, ignore), use_version_column (newer_wins, older_wins, manual, ignore)" />
+        <column name="conflict_setting_id"  type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a specific conflict detection setting." />
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The source node group for which this setting will be applied to. References a node group link." />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The target node group for which this setting will be applied to.  References a node group link." />
+        <column name="target_channel_id"    type="VARCHAR" size="20"  description="Optional channel that this setting will be applied to." />                
+        <column name="target_catalog_name"  type="VARCHAR" size="128" description="Optional database catalog that the target table belongs to. Only use this if the target table is not in the default catalog." />
+        <column name="target_schema_name"   type="VARCHAR" size="128" description="Optional database schema that the target table belongs to. Only use this if the target table is not in the default schema." />
+        <column name="target_table_name"    type="VARCHAR" size="128" description="Optional database table that this setting will apply to.  If left blank, the setting will be for any table in the channel (if set) and in the specified node group link." />
+        <column name="detect_update_type"   type="VARCHAR" size="128" required="true" description="Indicates the strategy to use for detecting conflicts during an update action.  The possible values are: use_pk_data (manual, blind_fallback, ignore), use_changed_data (manual, blind_fallback, ignore), use_old_data (manual, blind_fallback,, ignore), use_timestamp_column (newer_wins, older_wins, manual, ignore), use_version_column (newer_wins, older_wins, manual, ignore)" />
         <column name="detect_delete_type"   type="VARCHAR" size="128" required="true" description="Indicates the strategy to use for detecting conflicts during a delete action.  The possible values are: use_pk_data (manual, blind_fallback, ignore), use_old_data (manual, blind_fallback, ignore), use_timestamp_column (newer_wins, older_wins, manual, ignore), use_version_column (newer_wins, older_wins, manual, ignore)" />        
-        <column name="detect_expression"    type="LONGVARCHAR" description="An expression that provides additional information about the detection mechanism.  If the detection mechanism is use_timestamp_column or use_version_column then this expression will be the name of the column." />
-        <column name="resolve_update_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving updates conflicts.  The possible values differ based on the detect_update_type that is specified." />
+        <column name="detect_expression"    type="LONGVARCHAR" description="An expression that provides additional information about the detection mechanism.  If the detection mechanism is use_timestamp_column or use_version_column then this expression will be the name of the timestamp or version column." />
+        <column name="resolve_update_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving update conflicts.  The possible values differ based on the detect_update_type that is specified." />
         <column name="resolve_insert_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving insert conflicts.  The possible values are: manual, blind_fallback, newer_wins, older_wins, ignore" />
         <column name="resolve_delete_type"  type="VARCHAR" size="128" required="true" description="Indicates the strategy for resolving delete conflicts.  The possible values differ based on the detect_delete_type that is specified." />
+        <column name="resolve_audit_enabled" type="BOOLEANINT" size="1" default="0" description="Indicates whether conflicts that are automatically resolved will be recorded"/>
         <column name="retry_count"          type="INTEGER" required="true" default="-1" description="The number of times a batch in conflict will be retried before it is skipped.  A setting of -1 means that the batch will be retried indefinitely." />
-        <column name="create_time"          type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="create_time"          type="TIMESTAMP" required="true"  description="The date and time when this entry was created." />
         <column name="last_update_by"       type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time"     type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <column name="last_update_time"     type="TIMESTAMP" required="true"  description="The date and time when a user last updated this entry." />
     </table>
     
     <table name="conflict_event" description="Identifies rows that were in conflict and how the conflicts were resolved.">
         <column name="batch_id" type="INTEGER" required="true" primaryKey="true" description="The id of the outgoing_batch that is being loaded." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_id of the source of the batch being loaded." />
         <column name="failed_row_number" type="BIGINT" required="true" primaryKey="true" description="This is the row number in the batch for the data that was being processed when the batch failed." />
-        <column name="conflict_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific conflict resolver." />        
-        <column name="status" type="CHAR" size="2"  description="The current status of the conflict.  The possible values are: Resolved (OK), Conflict (ER), Ignored (IG)" />
+        <column name="conflict_setting_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific conflict resolver." />        
+        <column name="status" type="CHAR" size="2"  description="The current status of the conflict.  The possible values are: Resolved (OK), Conflict (ER)." />
+        <column name="conflict_type" type="CHAR" size="2"  description="The type of conflict. Valid values are PK (Primary Key Violation) and FK (Foreign Key Violation)." />        
         <column name="target_catalog_name" type="VARCHAR" size="128" description="Name of the catalog the target table is in." />
         <column name="target_schema_name" type="VARCHAR" size="128" description="Name of the schema the target table is in." />
         <column name="target_table_name" type="VARCHAR" size="128" description="Name of the target table where the conflict occurred" />

@@ -30,17 +30,18 @@ public class ConflictSetting implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private String conflictId = "default";
+    private String conflictSettingId = "default";
     private String targetChannelId;
     private String targetCatalogName;
     private String targetSchemaName;
     private String targetTableName;
     private DetectUpdateConflict detectUpdateType = DetectUpdateConflict.USE_PK_DATA;
     private DetectDeleteConflict detectDeleteType = DetectDeleteConflict.USE_PK_DATA;
+    private String detectExpresssion;
     private ResolveUpdateConflict resolveUpdateType = ResolveUpdateConflict.BLIND_FALLBACK;
     private ResolveInsertConflict resolveInsertType = ResolveInsertConflict.BLIND_FALLBACK;
     private ResolveDeleteConflict resolveDeleteType = ResolveDeleteConflict.IGNORE;
-    private String detectExpresssion;
+    private boolean resolveAuditEnabled;    
     private int retryCount = -1;
     private Date createTime = new Date();
     private String lastUpdateBy = "symmetricds";
@@ -54,12 +55,12 @@ public class ConflictSetting implements Serializable {
         }
     }
 
-    public String getConflictId() {
-        return conflictId;
+    public String getConflictSettingId() {
+        return conflictSettingId;
     }
 
-    public void setConflictId(String conflictId) {
-        this.conflictId = conflictId;
+    public void setConflictSettingId(String conflictId) {
+        this.conflictSettingId = conflictId;
     }
 
     public String getTargetChannelId() {
@@ -174,4 +175,11 @@ public class ConflictSetting implements Serializable {
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    public boolean isResolveAuditEnabled() {
+        return resolveAuditEnabled;
+    }
+    
+    public void setResolveAuditEnabled(boolean resolveAuditEnabled) {
+        this.resolveAuditEnabled = resolveAuditEnabled;
+    }
 }

@@ -342,7 +342,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         
         ConflictSettingsNodeGroupLink conflictSettings = new ConflictSettingsNodeGroupLink();
         conflictSettings.setNodeGroupLink(TestConstants.TEST_2_ROOT);
-        conflictSettings.setConflictId("dont_fallback");
+        conflictSettings.setConflictSettingId("dont_fallback");
         conflictSettings.setResolveInsertType(ResolveInsertConflict.MANUAL);
         getSymmetricEngine().getDataLoaderService().save(conflictSettings);
 

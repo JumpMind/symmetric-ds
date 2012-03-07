@@ -46,6 +46,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected int[] primaryKeyViolationCodes;
 
     protected String[] primaryKeyViolationSqlStates;
+    
+    protected int[] foreignKeyViolationCodes;
+
+    protected String[] foreignKeyViolationSqlStates;
 
     public JdbcSqlTemplate(DataSource dataSource, DatabasePlatformSettings settings,
             LobHandler lobHandler) {
@@ -704,6 +708,40 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
         return primaryKeyViolation;
     }
+    
+    public boolean isForeignKeyViolation(Exception ex) {
+        boolean foreignKeyViolation = false;
+        if (foreignKeyViolationCodes != null || foreignKeyViolationSqlStates != null) {
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                if (foreignKeyViolationCodes != null) {
+                    int errorCode = sqlEx.getErrorCode();
+                    for (int foreignKeyViolationCode : foreignKeyViolationCodes) {
+                        if (foreignKeyViolationCode == errorCode) {
+                            foreignKeyViolation = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (foreignKeyViolationSqlStates != null) {
+                    String sqlState = sqlEx.getSQLState();
+                    if (sqlState != null) {
+                        for (String foreignKeyViolationSqlState : foreignKeyViolationSqlStates) {
+                            if (foreignKeyViolationSqlState != null
+                                    && foreignKeyViolationSqlState.equals(sqlState)) {
+                                foreignKeyViolation = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return foreignKeyViolation;
+    }
+
 
     protected SQLException findSQLException(Throwable ex) {
         if (ex instanceof SQLException) {
